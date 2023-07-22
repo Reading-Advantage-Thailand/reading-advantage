@@ -9,6 +9,9 @@ Extensive reading app incorporating AI.
 ### Article leveling
 1. Uses the NN NLP CEFR project API call (docker image finished) to return confidence of CEFR levels, then calulates weighted average based on GSE levels.
 2. Tokenizes text, computes Automated Readability Index, transforms ARI to 20-90 range
-3. RA level = 30% ARI + 70% CEFR
+3. RA level = 30% ARI + 70% CEFR 
+0.3(20+5ARI)+0.7(25A1+35A2+50B1+65B2+75C1+85C2)
+
+
 
 ```
