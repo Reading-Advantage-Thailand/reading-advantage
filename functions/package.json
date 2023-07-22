@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "fs": "^0.0.1-security",
+    "openai": "^3.3.0",
+    "vocabulary-level-grader": "^1.1.0"
+  }
+}
