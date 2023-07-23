@@ -9,8 +9,6 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-// This function is used to add the ordinal suffix to a number
-// For example: 1 => 1st, 2 => 2nd
 function addOrdinalSuffix(number) {
     const suffixes = ['th', 'st', 'nd', 'rd'];
     const num = Number(number);
@@ -19,139 +17,117 @@ function addOrdinalSuffix(number) {
     return num + suffix;
 }
 
-// Tbis function is used to generate articles 
-async function generateArticles(type, genre, subGenre, topic, lowLevel, midLevel, highLevel) {
-    let results = [];
+function removeNewlines(jsonObject) {
+    try {
+        // Remove '\n\n' occurrences
+        jsonObject.content = jsonObject.content.replace(/\n\n/g, ' ');
+        // Remove remaining '\n' occurrences
+        jsonObject.content = jsonObject.content.replace(/\n/g, ' ');
+
+        return jsonObject;
+    } catch (error) {
+        console.error('Error removing newlines:', error.message);
+        return jsonObject; // Return the original object if an error occurs
+    }
+}
+
+async function generateArticle(type, genre, subGenre, topic, gradeLevel) {
+    const nonFictionPrompt = `Please write non-fiction article of about ${(90 + 140) * gradeLevel} words in the genre of ${genre} and subgenre of ${subGenre}. The topic of the article is ${topic}. Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
+    const fictionPrompt = `Please write a fictional story of about ${(90 + 140) * gradeLevel} words in the genre of ${genre} and subgenre of ${subGenre}. The topic of the story is ${topic}.  Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
+    const prompt = type === 'Fiction' ? fictionPrompt : nonFictionPrompt;
+    const temperature = type === 'Fiction' ? 0.5 : 1.2;
+    const schema = {
+        type: 'object',
+        properties: {
+            title: {
+                type: 'string',
+                description: "The title of the article returned in plain text with no formatting or '\n' breaks"
+            },
+            content: {
+                type: 'string',
+                description: "The content of the article based on the topic, genre, sub-genre, grade level, and word count. Returned in plain text with no formatting, or '\\n\\n' and '\\n' breaks."
+            },
+        },
+        required: [
+            'title',
+            'content',
+        ]
+    };
+
+    console.log('prompt:', prompt);
+    console.log('is fiction:', type === 'Fiction');
+
+    const reponse = await openai.createChatCompletion({
+        model: 'gpt-3.5-turbo',
+        messages: [
+            {
+                "role": "system",
+                "content": "You are a article database assistant.",
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        functions: [
+            {
+                "name": 'get_article',
+                "parameters": schema,
+            }
+        ],
+        function_call: {
+            name: 'get_article',
+        },
+        temperature: temperature,
+    })
+    const result = JSON.parse(reponse.data.choices[0].message.function_call.arguments);
+    const data = {
+        title: result.title,
+        content: result.content,
+        grade: gradeLevel,
+    }
+    console.log('data:', data);
+    const modifiedData = removeNewlines(data);
+    console.log('modified:', modifiedData);
+    return modifiedData;
+}
+
+async function generateArticles(
+    type, genre, subGenre, topic, lowLevel, midLevel, highLevel
+) {
     const levels = [
         lowLevel,
         midLevel,
         highLevel
     ];
-
-    // Generate 3 articles for each level
+    const results = [];
     for (let i = 0; i < 3; i++) {
         const gradeLevel = levels[i];
-        const propmt = type === 'Fiction' ?
-            `Please write an article for a fictional story of about ${(90 + 140) * gradeLevel} words in the genre of ${genre} and subgenre of ${subGenre}. The title and concept for the story are ${topic}. Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level. And get the main body of the article.`
-            : `Please write an article for a non-fictional story of about ${(90 + 140) * gradeLevel} words in the genre of ${genre} and subgenre of ${subGenre}. The title and concept for the story are ${topic}. Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level. And get the main body of the article.`;
-        console.log(`article type: ${type} genre: ${genre} subgenre: ${subGenre} topic: ${topic} gradeLevel: ${gradeLevel} grade`);
-        console.log('condition: ', type === 'Fiction');
-
-        // Generate the article
-        const article = await generateArticle(
-            propmt,
+        const result = await generateArticle(
             type,
             genre,
             subGenre,
             topic,
-            gradeLevel
-        );
-        const articleContent = article.choices[0].message.content;
-
-        // If the article is null, try again to generate the article for the same level
-        // This is because sometimes the article is null
-        if (articleContent == null) {
-            console.log('articleContent is null: trying again-------------------------------');
+            gradeLevel,
+        ).then((article) => {
+            return article;
+        }).catch((error) => {
+            console.error('Error generating article:', error.message);
             i--;
-            continue;
-        } else {
-            results.push(articleContent);
-        }
+        });
+        results.push(result);
+        console.log('generated article for grade level', gradeLevel);
     }
     return results;
-};
 
-// This function is used to generate an article based on the prompt, type, genre, sub-genre, topic, and level
-async function generateArticle(prompt, type, genre, subGenre, topic, gradeLevel) {
-    const wordCount = (90 + 140) * gradeLevel;
-    const grade = `${addOrdinalSuffix(gradeLevel)} grade`;
-
-    // Prompt the GPT-3 to generate the article
-    // The article is generated based on the prompt, type, genre, sub-genre, topic, and level
-    const article = await openai.createChatCompletion({
-        model: 'gpt-3.5-turbo',
-        messages: [
-            {
-                role: 'user',
-                content: prompt,
-            },
-            {
-                role: 'assistant',
-                content: null,
-                function_call: {
-                    name: 'get_article',
-                    arguments: JSON.stringify({
-                        type,
-                        genre,
-                        subGenre,
-                        topic,
-                        gradeLevel: grade,
-                        wordCount: wordCount,
-                    })
-                }
-            },
-        ],
-        functions: [
-            {
-                name: 'get_article',
-                description: 'Get an article based on type, genre, sub-genre, topic, and level. Follow the word to not more than the word count, get the article and title, and return it',
-                parameters: {
-                    type: 'object',
-                    properties: {
-                        type: {
-                            type: 'string',
-                            description: 'The type of the article, non-fiction and fiction'
-                        },
-                        genre: {
-                            type: 'string',
-                            description: 'The genre of the article, e.g. science and technology, history, tales and myths, life and skills, media, teen themes, young themes etc.'
-                        },
-                        subGenre: {
-                            type: 'string',
-                            description: 'The sub-genre of the article, e.g. Ocean organisms, Arctic Organisms, Desert Organisms, Prarie Organisms, Festivals, Historical Events, Mythology, Occupations, Fictional Characters, World Literature, Freshwater organisms, Rainforest organisms etc.'
-                        },
-                        topic: {
-                            type: 'string',
-                            description: 'The specific topic of the article.'
-                        },
-                        gradeLevel: {
-                            type: 'string',
-                            description: 'The grade reading level e.g. 1st grade, 2nd grade, 3rd grade, 4th grade, 5th grade, 6th grade, 7th grade, 8th grade, 9th grade, 10th grade, 11th grade, 12th grade'
-                        },
-                        wordCount: {
-                            type: 'number',
-                            description: 'The word count of the article'
-                        },
-                    },
-                    required: [
-                        'type',
-                        'genre',
-                        'subGenre',
-                        'topic',
-                        'gradeLevel',
-                        'wordCount',
-                    ]
-                }
-            }
-        ],
-        // The temperature is used to control the randomness of the article
-        temperature: 1.2,
-    });
-    const result = article.data;
-    return result;
 }
 
-// This function is used to generate the articles for the given csv file
-(async () => {
-    // Load the csv file
-    const fileName = '../data/Corrected_Prompts.csv';
+async function generateArticlesFromCSV(csvFile, startIndex, endIndex, outputPath) {
+    const results = [];
+    const csvData = [];
+
     let countRow = 0;
-    // The number of rows to read from the csv file.
-    // You can change this number to read more rows
-    let numberOfRowsToRead = 2
-    let csvData = [];
-    let results = [];
-    const stream = fs.createReadStream(fileName)
+    const stream = fs.createReadStream(csvFile)
         .pipe(csvParser())
         .on('data', (row) => {
             const data = {
@@ -170,9 +146,9 @@ async function generateArticle(prompt, type, genre, subGenre, topic, gradeLevel)
             console.log('CSV data loaded');
 
             // Generate the articles for each row in the csv file
-            for (let i = 0; i < numberOfRowsToRead; i++) {
+            for (let i = startIndex; i <= endIndex; i++) {
                 const row = csvData[i];
-                console.log('row: ', i);
+                console.log('csv row:', i);
                 const result = await generateArticles(
                     row.type,
                     row.genre,
@@ -190,9 +166,15 @@ async function generateArticle(prompt, type, genre, subGenre, topic, gradeLevel)
                     topic: row.topic,
                     articles: result,
                 });
+                fs.writeFileSync(outputPath, JSON.stringify(results));
+                console.log('updated JSON file:', outputPath);
             }
-            // console.log(results);
-            fs.writeFileSync('../data/articles.json', JSON.stringify(results));
-            console.log('Articles generated');
-        })
-})();
+            console.log('articles generated ');
+        });
+}
+
+module.exports = {
+    generateArticle,
+    generateArticles,
+    generateArticlesFromCSV,
+};
