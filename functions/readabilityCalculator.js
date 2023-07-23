@@ -21,28 +21,28 @@ async function calculateReadabilityIndex(sentenceCount, wordCount, characterCoun
 
 function calculateArticleStats(article) {
     // Remove all double new lines
-    let cleanedArticle = article.replace(/\n\n/g, '');
-    cleanedArticle = article.replace(/\s+/g, ' ');
-    const sentenceCount = (cleanedArticle.match(/[.!?]+/g) || []).length;
-    const wordCount = cleanedArticle.split(/\s+/).length;
-    const characterCount = cleanedArticle.length;
-    console.log('cleanedArticle:', cleanedArticle);
-    console.log('sentenceCount:', sentenceCount);
-    console.log('wordCount:', wordCount);
+    // let cleanedArticle = article.replace(/\n\n/g, '');
+    // cleanedArticle = article.replace(/\s+/g, ' ');
+    const sentenceCount = (article.match(/[.!?]+/g) || []).length;
+    const wordCount = article.split(/\s+/).length;
+    const characterCount = article.length;
+    // console.log('cleanedArticle:', cleanedArticle);
+    // console.log('sentenceCount:', sentenceCount);
+    // console.log('wordCount:', wordCount);
 
-    return { sentenceCount, wordCount, characterCount, cleanedArticle };
+    return { sentenceCount, wordCount, characterCount };
 }
 
 async function fetchCEFRScores(article) {
-    const { cleanedArticle } = calculateArticleStats(article);
+    // const { cleanedArticle } = calculateArticleStats(article);
 
     try {
         const response = await axios.post('https://cefr-english-predictor-api-hxamzdhgwa-et.a.run.app/predict', {
-            texts: [cleanedArticle],
+            texts: [article],
         });
         console.log('CEFR scores:', response.data[0].scores)
 
-        return response.data[0].scores;
+        return response.data[0];
     } catch (error) {
         console.error('Error fetching CEFR scores:', error);
         return null;
