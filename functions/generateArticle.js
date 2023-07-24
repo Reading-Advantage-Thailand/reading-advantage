@@ -8,7 +8,7 @@ const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
-
+let generatedCount = 0;
 function addOrdinalSuffix(number) {
     const suffixes = ['th', 'st', 'nd', 'rd'];
     const num = Number(number);
@@ -32,8 +32,8 @@ function removeNewlines(jsonObject) {
 }
 
 async function generateArticle(type, genre, subGenre, topic, gradeLevel) {
-    const nonFictionPrompt = `Please write non-fiction article of about ${(90 + 140) * gradeLevel} words in the genre of ${genre} and subgenre of ${subGenre}. The topic of the article is ${topic}. Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
-    const fictionPrompt = `Please write a fictional story of about ${(90 + 140) * gradeLevel} words in the genre of ${genre} and subgenre of ${subGenre}. The topic of the story is ${topic}.  Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
+    const nonFictionPrompt = `Please write non-fiction article of about ${90 + (140 * gradeLevel)} words in the genre of ${genre} and subgenre of ${subGenre}. The topic of the article is ${topic} Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
+    const fictionPrompt = `Please write a fictional story of about ${90 + (140 * gradeLevel)} words in the genre of ${genre} and subgenre of ${subGenre}. The topic of the story is ${topic}  Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
     const prompt = type === 'Fiction' ? fictionPrompt : nonFictionPrompt;
     const temperature = type === 'Fiction' ? 0.5 : 1.2;
     const schema = {
@@ -41,7 +41,7 @@ async function generateArticle(type, genre, subGenre, topic, gradeLevel) {
         properties: {
             title: {
                 type: 'string',
-                description: "The title of the article returned in plain text with no formatting or '\n' breaks"
+                description: "The title of the article returned in plain text with no formatting or '\\n' breaks"
             },
             content: {
                 type: 'string',
@@ -84,9 +84,9 @@ async function generateArticle(type, genre, subGenre, topic, gradeLevel) {
     const data = {
         title: result.title,
         content: result.content,
-        grade: gradeLevel,
+        grade: parseInt(gradeLevel),
     }
-    console.log('data:', data);
+    // console.log('data:', data);
     const modifiedData = removeNewlines(data);
     console.log('modified:', modifiedData);
     return modifiedData;
@@ -110,6 +110,7 @@ async function generateArticles(
             topic,
             gradeLevel,
         ).then((article) => {
+            generatedCount++;
             return article;
         }).catch((error) => {
             console.error('Error generating article:', error.message);
@@ -117,9 +118,72 @@ async function generateArticles(
         });
         results.push(result);
         console.log('generated article for grade level', gradeLevel);
+        console.log('generatedCount:', generatedCount);
     }
     return results;
 
+}
+function getRandomNumbers(amount, maxValue) {
+    const randomNumbers = [];
+    for (let i = 0; i < amount; i++) {
+        const randomNumber = Math.floor(Math.random() * (maxValue + 1));
+        randomNumbers.push(randomNumber);
+    }
+    fs.writeFileSync('../data/randomNumbers.json', JSON.stringify(randomNumbers));
+    return randomNumbers;
+}
+
+async function randomGenerateArticle(csvFile, amount, outputPath) {
+    const results = [];
+    const csvData = [];
+    let ramdomNumbers = [];
+
+    let countRow = 0;
+    const stream = fs.createReadStream(csvFile)
+        .pipe(csvParser())
+        .on('data', (row) => {
+            const data = {
+                index: countRow,
+                type: row['Type'],
+                genre: row['Genre'],
+                subGenre: row['Sub-genre'],
+                topic: row['Topic'],
+                lowLevel: row['Low level'],
+                midLevel: row['mid level'],
+                highLevel: row['high level'],
+            }
+            csvData.push(data);
+            ramdomNumbers = getRandomNumbers(amount, csvData.length - 1)
+        })
+        .on('end', async () => {
+            console.log('CSV data loaded');
+
+            // Generate the articles for each row in the csv file
+            for (let i = 0; i < ramdomNumbers.length; i++) {
+                const row = csvData[ramdomNumbers[i]];
+                console.log('csv row:', ramdomNumbers[i]);
+                const result = await generateArticles(
+                    row.type,
+                    row.genre,
+                    row.subGenre,
+                    row.topic,
+                    row.lowLevel,
+                    row.midLevel,
+                    row.highLevel
+                );
+                results.push({
+                    index: ramdomNumbers[i],
+                    type: row.type,
+                    genre: row.genre,
+                    subGenre: row.subGenre,
+                    topic: row.topic,
+                    articles: result,
+                });
+                fs.writeFileSync(outputPath, JSON.stringify(results));
+                console.log('updated JSON file:', outputPath);
+            }
+            console.log('articles generated ');
+        });
 }
 
 async function generateArticlesFromCSV(csvFile, startIndex, endIndex, outputPath) {
@@ -177,4 +241,5 @@ module.exports = {
     generateArticle,
     generateArticles,
     generateArticlesFromCSV,
+    randomGenerateArticle,
 };
