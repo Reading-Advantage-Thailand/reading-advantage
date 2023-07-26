@@ -2,6 +2,8 @@ const { Configuration, OpenAIApi } = require('openai');
 const dotenv = require('dotenv');
 const fs = require('fs');
 const csvParser = require('csv-parser');
+const readline = require('readline');
+const printFullWidthLine = require('./utils/printLine');
 
 dotenv.config({ path: './config.env' });
 const configuration = new Configuration({
@@ -9,6 +11,18 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 let generatedCount = 0;
+let nullErrorCount = 0;
+let gradeCount = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+    6: 0,
+    7: 0,
+    8: 0,
+    9: 0
+}
 function addOrdinalSuffix(number) {
     const suffixes = ['th', 'st', 'nd', 'rd'];
     const num = Number(number);
@@ -32,8 +46,13 @@ function removeNewlines(jsonObject) {
 }
 
 async function generateArticle(type, genre, subGenre, topic, gradeLevel) {
-    const nonFictionPrompt = `Please write non-fiction article of about ${90 + (140 * gradeLevel)} words in the genre of ${genre} and subgenre of ${subGenre}. The topic of the article is ${topic} Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
-    const fictionPrompt = `Please write a fictional story of about ${90 + (140 * gradeLevel)} words in the genre of ${genre} and subgenre of ${subGenre}. The topic of the story is ${topic}  Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
+    const isLowLevel = gradeLevel <= 2;
+    const isMidLevel = gradeLevel >= 3 && gradeLevel <= 5;
+    const levelSentencePrompt = isLowLevel ? `Try to make the average sentence length ${3 + 2 * gradeLevel} words and try to make the text very predictable`
+        : isMidLevel ? `Try to make the average sentence length ${3 + 2 * gradeLevel} words and try to make the text very predictable and try to make the text somewhat predictable1`
+            : `Try to make the average sentence length ${3 + 2 * gradeLevel} words`;
+    const nonFictionPrompt = `Please write non-fiction article of about ${(90 + 140) * gradeLevel} words. ${levelSentencePrompt} in the genre of ${genre} and subgenre of ${subGenre}. The topic of the article is ${topic} Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
+    const fictionPrompt = `Please write a fictional story of about ${(90 + 140) * gradeLevel} words. ${levelSentencePrompt} in the genre of ${genre} and subgenre of ${subGenre}. The topic of the story is ${topic} Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
     const prompt = type === 'Fiction' ? fictionPrompt : nonFictionPrompt;
     const temperature = type === 'Fiction' ? 0.5 : 1.2;
     const schema = {
@@ -95,14 +114,16 @@ async function generateArticle(type, genre, subGenre, topic, gradeLevel) {
 async function generateArticles(
     type, genre, subGenre, topic, lowLevel, midLevel, highLevel
 ) {
+
     const levels = [
-        lowLevel,
-        midLevel,
-        highLevel
+        Math.round(Math.random()) + 1, // 1 or 2
+        Math.floor(Math.random() * (5 - 3 + 1)) + 3, // 3, 4, or 5
+        Math.floor(Math.random() * (9 - 6 + 1)) + 6, // 6, 7, 8, or 9
     ];
     const results = [];
     for (let i = 0; i < 3; i++) {
         const gradeLevel = levels[i];
+        gradeCount[gradeLevel]++;
         const result = await generateArticle(
             type,
             genre,
@@ -113,12 +134,20 @@ async function generateArticles(
             generatedCount++;
             return article;
         }).catch((error) => {
+            nullErrorCount++;
             console.error('Error generating article:', error.message);
             i--;
         });
         results.push(result);
         console.log('generated article for grade level', gradeLevel);
+        printFullWidthLine();
         console.log('generatedCount:', generatedCount);
+        console.log('left:', 1500 - generatedCount);
+        //percent complete
+        console.log('percent complete:', (generatedCount / 1500) * 100);
+        console.log('nullErrorCount:', nullErrorCount);
+        console.log('gradeCount:', gradeCount);
+        printFullWidthLine();
     }
     return results;
 
