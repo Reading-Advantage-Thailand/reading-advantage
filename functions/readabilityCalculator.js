@@ -59,11 +59,12 @@ function calculateReadabilityLevel(ari, scores) {
 
     const weightedAverage = ((25 * a1) + (35 * a2) + (50 * b1) + (65 * b2) + (75 * c1) + (85 * c2));
     const level = 0.3 * (20 + 5 * ari) + 0.7 * weightedAverage;
-    console.log('weightedAverage:', weightedAverage);
-    console.log('ari:', ari);
+    const raLevel = (level - 40) * 70 / 60 + 20
     //math round using int
-    let round = Math.round(level);
+    let round = Math.round(raLevel);
     return round;
+    // console.log('weightedAverage:', weightedAverage);
+    // console.log('ari:', ari);
 }
 
 module.exports = {
