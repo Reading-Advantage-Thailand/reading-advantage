@@ -37,21 +37,21 @@ export default function StartPage(): JSX.Element {
     const stepList = [
         {
             title: 'Choose the type',
-            detail: `Found 2 types in ${value} level.`,
+            detail: `Found 2 types in level ${value}.`,
             items: types,
             selectedItem: selectedType,
             setSelectedItem: setSelectedType,
         },
         {
             title: 'Choose the genre',
-            detail: `Found ${genres.length} genres in ${value} level.`,
+            detail: `Found ${genres.length} genres in level ${value}.`,
             items: genres,
             selectedItem: selectedGenre,
             setSelectedItem: setSelectedGenre,
         },
         {
             title: 'Choose the sub-genre',
-            detail: `Found ${subGenres.length} sub-genres in ${value} level.`,
+            detail: `Found ${subGenres.length} sub-genres in level ${value}.`,
             items: subGenres,
             selectedItem: selectedSubGenre,
             setSelectedItem: setSelectedSubGenre,
@@ -216,6 +216,7 @@ export default function StartPage(): JSX.Element {
                     ) : step === 4 ? (
                         <ArticleComponent
                             article={article as Article}
+                            currentLevel={value as number}
                         />
                     ) : (
                         <SelectItemComponent

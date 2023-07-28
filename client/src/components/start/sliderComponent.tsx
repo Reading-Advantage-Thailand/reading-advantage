@@ -28,7 +28,7 @@ const SliderComponent: React.FC<SliderComponentProps> = ({ value, onChange }) =>
                         variant='h6'
                         color='#7356fb'
                     >
-                        {`CSE`}
+                        {`GSE`}
                     </Typography>
                     <Typography
                         variant='h6'

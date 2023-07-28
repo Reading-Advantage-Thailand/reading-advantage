@@ -1,14 +1,18 @@
+'use client';
 import * as React from 'react';
 import { Box, Rating, Stack, Typography } from '@mui/material';
 import { Article } from '@/models/article';
 
 interface ArticleComponentProps {
     article: Article,
+    currentLevel: number,
 }
 
 const ArticleComponent: React.FC<ArticleComponentProps> = ({
     article,
+    currentLevel,
 }) => {
+    const [rating, setRating] = React.useState<number>(-1);
     const details = [
         {
             'title': 'RA Level',
@@ -83,13 +87,20 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
             </Typography>
             <Rating
                 name="simple-controlled"
-                value={3}
+                value={rating}
                 onChange={(event, newValue) => {
-                    // setValue(newValue);
+                    setRating(newValue ? newValue : 0);
                 }}
             />
-
-
+            {
+                rating !== -1 ? (
+                    <Typography
+                        color='#9995a9'
+                    >
+                        Your new level for next time is {currentLevel + rating - 3}.
+                    </Typography>
+                ) : null
+            }
         </Box>
     );
 };
