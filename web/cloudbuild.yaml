@@ -1,0 +1,38 @@
+steps:
+  # build the container images
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+         "--build-arg",
+        "SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY",
+         "-t", 
+         "gcr.io/$PROJECT_ID/reading-advantage-web", 
+         "./web"
+      ]
+
+  # push the container images to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/reading-advantage-web"]
+
+  # Deploy container images to Cloud Run
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      [
+        "run",
+        "deploy",
+        "reading-advantage-web",
+        "--image",
+        "gcr.io/$PROJECT_ID/reading-advantage-web",
+        "--region",
+        "asia-southeast2",
+        "--platform",
+        "managed",
+        "--allow-unauthenticated",
+      ]
+
+images:
+  - gcr.io/$PROJECT_ID/reading-advantage-web
+
+options:
+  logging: CLOUD_LOGGING_ONLY
