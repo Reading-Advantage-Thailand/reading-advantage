@@ -1,6 +1,6 @@
 // api/articles/levels/[level]/types/[type]/genres/[genre]
 
-import db from "@config/firebaseConfig";
+import db from "@configs/firebaseConfig";
 import { NextResponse } from "next/server";
 
 export const GET = async (req, { params }) => {
