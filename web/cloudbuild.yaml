@@ -25,7 +25,7 @@ steps:
         "--image",
         "gcr.io/$PROJECT_ID/reading-advantage-web",
         "--region",
-        "asia-southeast2",
+        "asia-southeast1",
         "--platform",
         "managed",
         "--allow-unauthenticated",
