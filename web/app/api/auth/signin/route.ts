@@ -1,9 +1,9 @@
 import db from "@configs/firebaseConfig";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-export const POST = async (req: NextResponse) => {
+export const POST = async (req: NextRequest) => {
     try {
         const { email, password } = await req.json();
 
