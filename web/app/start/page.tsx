@@ -192,10 +192,10 @@ export default function StartPage(): JSX.Element {
               sx={{
                 marginTop: 2,
                 height: "50px",
-                width: "200px",
+                width: "150px",
                 fontSize: {
                   xs: "50%",
-                  md: "100%",
+                  md: "80%",
                 },
                 textAlign: "center",
                 bgcolor:
