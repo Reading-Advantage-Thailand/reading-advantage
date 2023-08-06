@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, CircularProgress, Stack, Typography } from '@mui/material';
+import { TextField, Button, CircularProgress, Stack, Typography, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { User } from '@models/userModel';
 import { bg, text } from '../../constants/colors';
+import languages from '@constants/languages';
 
 const SignInForm = ({ onSwitch }) => {
     const router = useRouter();
@@ -16,7 +17,7 @@ const SignInForm = ({ onSwitch }) => {
     const onSignIn = async () => {
         try {
             setLoading(true);
-            const res = await axios.post('/api/user/signin', { email, password });
+            const res = await axios.post('/api/auth/signin', { email, password });
             const user: User = res.data;
             localStorage.setItem('user', JSON.stringify(user));
             router.push('/start');
@@ -82,11 +83,17 @@ const SignUpForm = ({ onSwitch }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    // first language
+    const [fLang, setFLang] = React.useState('');
+
+    const onFLangChange = (event: SelectChangeEvent) => {
+        setFLang(event.target.value as string);
+    };
 
     const onSignUp = async () => {
         try {
             setLoading(true);
-            const res = await axios.post('/api/user/signup', { email, username, password });
+            const res = await axios.post('/api/auth/signup', { email, username, password, fLang });
             const user: User = res.data;
             localStorage.setItem('user', JSON.stringify(user));
             router.push('/start');
@@ -98,13 +105,29 @@ const SignUpForm = ({ onSwitch }) => {
     };
 
     const isSignUpDisabled =
-        !email || !username || !password || !confirmPassword || password !== confirmPassword || loading;
+        !email || !username || !fLang || !password || !confirmPassword || password !== confirmPassword || loading;
 
     return (
         <>
             <Stack gap="1rem">
                 <TextField label="Email" type="email" onChange={(e) => setEmail(e.target.value)} value={email} />
                 <TextField label="Username" type="text" onChange={(e) => setUsername(e.target.value)} value={username} />
+                <FormControl fullWidth>
+                    <InputLabel id="f-lang-select-label">First Language</InputLabel>
+                    <Select
+                        labelId="f-lang-select-label"
+                        id="f-lang-select"
+                        value={fLang}
+                        label="FirstLanguage"
+                        onChange={onFLangChange}
+                    >
+                        {
+                            languages.map((lang) => (
+                                <MenuItem value={lang}>{lang}</MenuItem>
+                            ))
+                        }
+                    </Select>
+                </FormControl>
                 <TextField label="Password" type="password" onChange={(e) => setPassword(e.target.value)} value={password} />
                 <TextField
                     label="Confirm Password"
