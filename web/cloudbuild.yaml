@@ -6,6 +6,8 @@ steps:
         "build",
          "--build-arg",
         "SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY",
+        "--build-arg",
+        "JWT_SECRET=${_JWT_SECRET}",
          "-t", 
          "gcr.io/$PROJECT_ID/reading-advantage-web", 
          "./web"
