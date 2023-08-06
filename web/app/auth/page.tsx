@@ -183,26 +183,44 @@ const AuthPage = () => {
             sx={{
                 height: '100vh',
                 backgroundColor: bg,
-                justifyContent: 'center',
+                justifyContent: {
+                    xs: 'center',
+                    sm: 'center',
+                },
                 alignItems: 'center',
                 flexDirection: {
                     xs: 'column',
                     md: 'row',
                 },
-                gap: '2rem',
+                gap: {
+                    xs: '1rem',
+                    md: '2rem',
+                }
             }}
         >
             <Stack>
-                <Typography variant="h3" fontWeight={700} color={text}>
+                <Typography variant="h3" fontWeight={700} color={text}
+                    textAlign={{
+                        xs: 'center',
+                        md: 'start'
+                    }}>
                     Reading Advantage
                 </Typography>
-                <Typography variant="h6" color={text} textAlign={{ xs: 'center', md: 'left' }}>
+                <Typography display={{
+                    xs: 'none',
+                    sm: 'block'
+                }} variant="h6" color={text} textAlign={{ xs: 'center', md: 'left' }}>
                     Extensive reading app incorporating AI.
                 </Typography>
             </Stack>
             <Stack
                 sx={{
-                    minWidth: '360px',
+                    minWidth: {
+                        xs: '80%',
+                        sm: '50%',
+                        md: '30%',
+
+                    },
                     minHeight: '300px',
                     backgroundColor: 'white',
                     boxShadow: 4,
