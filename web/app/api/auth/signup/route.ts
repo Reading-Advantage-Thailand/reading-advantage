@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 
 export async function POST(req: NextRequest) {
     try {
-        const { username, email, password } = await req.json();
+        const { username, email, password, fLang } = await req.json();
 
         // Check if email is already in use
         const emailExistsQuery = await db.collection('users')
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
             username,
             email,
             password: hashedPassword,
+            fLang,
         });
 
         // Retrieve newly created user document
