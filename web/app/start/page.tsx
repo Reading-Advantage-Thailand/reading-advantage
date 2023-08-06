@@ -169,14 +169,11 @@ export default function StartPage(): JSX.Element {
   const handleResult = (stepValue: string) => {
     if (stepValue === "Level") {
       return <Box>{value}</Box>;
-    }
-    else if (stepValue === "Type") {
+    } else if (stepValue === "Type") {
       return <Box>{selectedType}</Box>;
-    }
-    else if (stepValue === "Genre") {
+    } else if (stepValue === "Genre") {
       return <Box>{selectedGenre}</Box>;
-    }
-    else if (stepValue === "Sub-Genre") {
+    } else if (stepValue === "Sub-Genre") {
       return <Box>{selectedSubGenre}</Box>;
     }
   };
@@ -193,13 +190,14 @@ export default function StartPage(): JSX.Element {
             <Box
               key={index}
               sx={{
-                mt: 2,
-                px: {
-                  xs: 3,
-                  md: 4,
+                marginTop: 2,
+                height: "50px",
+                width: "200px",
+                fontSize: {
+                  xs: "50%",
+                  md: "100%",
                 },
-                py: 1,
-                mr: 1,
+                textAlign: "center",
                 bgcolor:
                   step === index
                     ? "#b5aacd"
