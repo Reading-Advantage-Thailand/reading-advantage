@@ -166,6 +166,21 @@ export default function StartPage(): JSX.Element {
     }
   };
 
+  const handleResult = (stepValue: string) => {
+    if (stepValue === "Level") {
+      return <Box>{value}</Box>;
+    }
+    else if (stepValue === "Type") {
+      return <Box>{selectedType}</Box>;
+    }
+    else if (stepValue === "Genre") {
+      return <Box>{selectedGenre}</Box>;
+    }
+    else if (stepValue === "Sub-Genre") {
+      return <Box>{selectedSubGenre}</Box>;
+    }
+  };
+
   return (
     <DefaultLayout>
       <Box>
@@ -192,8 +207,13 @@ export default function StartPage(): JSX.Element {
                     ? "#b5aacd90"
                     : "#FFFFFF",
               }}
+              display={"flex"}
+              flexDirection={"column"}
+              justifyContent={"center"}
+              alignItems={"center"}
             >
               <Typography variant="body1">{stepValue}</Typography>
+              {handleResult(stepValue)}
             </Box>
           ))}
         </Stack>
