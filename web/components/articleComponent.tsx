@@ -37,7 +37,14 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   ];
   return (
     <Box>
-      <Box display={'flex'} gap={1} marginX={3} position={'absolute'} top={20} right={0} flexDirection={'column'}>
+      <Box sx={{
+        display:"flex",
+        gap:1,
+        flexDirection:"column",
+        position:"absolute",
+        top:10,
+        right:10,
+      }}>
         <Typography
           bgcolor="lightgreen"
           px="12px"
