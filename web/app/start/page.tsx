@@ -1,7 +1,15 @@
 "use client";
 import * as React from "react";
 import Box from "@mui/material/Box";
-import { Button, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  Stack,
+  Step,
+  StepLabel,
+  Stepper,
+  Typography,
+  makeStyles,
+} from "@mui/material";
 import { useState } from "react";
 import axios from "axios";
 import { Article } from "@models/articleModel";
@@ -24,7 +32,6 @@ export default function StartPage(): JSX.Element {
       console.log(error);
     }
   };
-
   const [step, setStep] = useState<number>(0);
   const [value, setValue] = useState<number | number[]>(0);
 
@@ -185,36 +192,39 @@ export default function StartPage(): JSX.Element {
         <Typography variant="h3" fontWeight="bold" color="#36343e">
           Reading Advantage
         </Typography>
-        <Stack direction="row">
+        <Stepper activeStep={step} sx={{maxWidth:"100vw",overflow:"scroll"}}>
           {steps.map((stepValue, index) => (
-            <Box
-              key={index}
-              sx={{
-                marginTop: 2,
-                height: "50px",
-                width: "150px",
-                fontSize: {
-                  xs: "50%",
-                  md: "80%",
-                },
-                textAlign: "center",
-                bgcolor:
-                  step === index
-                    ? "#b5aacd"
-                    : step > index
-                    ? "#b5aacd90"
-                    : "#FFFFFF",
-              }}
-              display={"flex"}
-              flexDirection={"column"}
-              justifyContent={"center"}
-              alignItems={"center"}
-            >
-              <Typography variant="body1">{stepValue}</Typography>
-              {handleResult(stepValue)}
-            </Box>
+            <Step key={index}>
+              <Box
+                key={index}
+                sx={{
+                  marginTop: 2,
+                  height: "100px",
+                  width: "100px",
+                  borderRadius:"100%",
+                  fontSize: {
+                    xs: "50%",
+                    md: "80%",
+                  },
+                  textAlign: "center",
+                  bgcolor:
+                    step === index
+                      ? "#b5aacd"
+                      : step > index
+                      ? "#b5aacd90"
+                      : "#FFFFFF",
+                }}
+                display={"flex"}
+                flexDirection={"column"}
+                justifyContent={"center"}
+                alignItems={"center"}
+              >
+                <Typography variant="body1">{stepValue}</Typography>
+                {handleResult(stepValue)}
+              </Box>
+            </Step>
           ))}
-        </Stack>
+        </Stepper>
         {step === 0 ? (
           <SliderComponent
             value={value}
