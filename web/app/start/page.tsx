@@ -8,6 +8,7 @@ import { Article } from '@models/articleModel';
 import ArticleComponent from '@components/articleComponent';
 import SliderComponent from '@components/sliderComponent';
 import SelectItemComponent from '@components/selectItemComponent';
+import { useRouter } from 'next/navigation';
 
 const steps: string[] = [
     'Level',
@@ -18,6 +19,18 @@ const steps: string[] = [
 ];
 
 export default function StartPage(): JSX.Element {
+    const router = useRouter();
+    const logout = async () => {
+        try {
+            await axios.post('/api/auth/logout');
+            router.push('/auth');
+            console.log('logout');
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+
     const [step, setStep] = useState<number>(0);
     const [value, setValue] = useState<number | number[]>(0);
 
@@ -178,6 +191,11 @@ export default function StartPage(): JSX.Element {
         }}
         >
             <Box>
+                <Button
+                    onClick={logout}
+                >
+                    logout
+                </Button>
                 <Typography
                     variant='h3'
                     fontWeight='bold'
