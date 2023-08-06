@@ -1,4 +1,5 @@
 export interface Article {
+    id: string;
     ari: number;
     cefrLevel: string;
     cefrScores: {
