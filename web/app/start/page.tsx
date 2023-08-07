@@ -192,20 +192,19 @@ export default function StartPage(): JSX.Element {
         <Typography variant="h3" fontWeight="bold" color="#36343e">
           Reading Advantage
         </Typography>
-        <Stepper activeStep={step} sx={{maxWidth:"100vw",overflow:"scroll"}}>
+        <Stepper
+          activeStep={step}
+          sx={{ maxWidth: "100vw", overflow: "scroll" }}
+        >
           {steps.map((stepValue, index) => (
             <Step key={index}>
               <Box
                 key={index}
                 sx={{
                   marginTop: 2,
-                  height: "100px",
-                  width: "100px",
-                  borderRadius:"100%",
-                  fontSize: {
-                    xs: "50%",
-                    md: "80%",
-                  },
+                  height: { xs: "12vw", md: "100px" },
+                  width: { xs: "12vw", md: "100px" },
+                  borderRadius: "100%",
                   textAlign: "center",
                   bgcolor:
                     step === index
@@ -219,8 +218,15 @@ export default function StartPage(): JSX.Element {
                 justifyContent={"center"}
                 alignItems={"center"}
               >
-                <Typography variant="body1">{stepValue}</Typography>
-                {handleResult(stepValue)}
+                <Typography
+                  variant="body1"
+                  sx={{ fontSize: { xs: "50%", md: "100%" } }}
+                >
+                  {stepValue}
+                </Typography>
+                <Box sx={{ fontSize: { xs: "50%", md: "100%" } }}>
+                  {handleResult(stepValue)}
+                </Box>
               </Box>
             </Step>
           ))}
