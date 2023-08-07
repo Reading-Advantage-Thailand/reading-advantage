@@ -220,11 +220,11 @@ export default function StartPage(): JSX.Element {
               >
                 <Typography
                   variant="body1"
-                  sx={{ fontSize: { xs: "50%", md: "100%" }, fontWeight:"bold" }}
+                  sx={{ fontSize: { xs: "50%", md: "80%" }, fontWeight:"bold" }}
                 >
                   {stepValue}
                 </Typography>
-                <Box sx={{ fontSize: { xs: "50%", md: "100%" } }}>
+                <Box sx={{ fontSize: { xs: "50%", md: "80%" } }}>
                   {handleResult(stepValue)}
                 </Box>
               </Box>
