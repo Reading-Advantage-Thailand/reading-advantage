@@ -13,28 +13,6 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   currentLevel,
 }) => {
   const [rating, setRating] = React.useState<number>(-1);
-  const details = [
-    {
-      title: "ARI",
-      value: article.ari,
-    },
-    {
-      title: "Grade",
-      value: article.grade,
-    },
-    {
-      title: "Genre",
-      value: article.genre,
-    },
-    {
-      title: "Sub-Genre",
-      value: article.subGenre,
-    },
-    {
-      title: "Type",
-      value: article.type,
-    },
-  ];
   return (
     <Box>
       <Box sx={{
@@ -73,22 +51,6 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
         {article.title}
       </Typography>
       <Typography color="#9995a9">{article.content}</Typography>
-      <Stack direction="row" flexWrap="wrap" gap="7px" mt="1rem">
-        {details.map((detail, index) => (
-          <Typography
-            key={index}
-            bgcolor="lightgreen"
-            px="12px"
-            fontSize="12px"
-            fontWeight="bold"
-            textAlign="center"
-            borderRadius="5px"
-            color="#FFFFFF"
-          >
-            {detail.title}: {detail.value}
-          </Typography>
-        ))}
-      </Stack>
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         How easy is this article?
       </Typography>
