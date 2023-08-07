@@ -220,7 +220,7 @@ export default function StartPage(): JSX.Element {
               >
                 <Typography
                   variant="body1"
-                  sx={{ fontSize: { xs: "50%", md: "100%" } }}
+                  sx={{ fontSize: { xs: "50%", md: "100%" }, fontWeight:"bold" }}
                 >
                   {stepValue}
                 </Typography>
