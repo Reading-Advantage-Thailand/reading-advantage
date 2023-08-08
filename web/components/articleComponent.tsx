@@ -1,7 +1,8 @@
 "use client";
 import * as React from "react";
-import { Box, Rating, Stack, Typography } from "@mui/material";
+import { Box, Button, Rating, Stack, Typography } from "@mui/material";
 import { Article } from "@models/articleModel";
+import Tokenizer from "sentence-tokenizer";
 
 interface ArticleComponentProps {
   article: Article;
@@ -13,6 +14,20 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   currentLevel,
 }) => {
   const [rating, setRating] = React.useState<number>(-1);
+
+  const text_to_ssml = (article : string)=>{
+    const tokenizer = new Tokenizer("Chuck")
+    tokenizer.setEntry(article)
+    const result = tokenizer.getSentences()
+    var ssml = "<speak>"
+    result.map((sentence,i)=>{
+      ssml+= `<s><mark name='sentence${i+1}'/>${sentence}</s>`
+    })
+
+    ssml += "</speak>"
+
+    console.log(ssml)
+  }
   return (
     <Box>
       <Box sx={{
@@ -66,6 +81,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
           Your new level for next time is {currentLevel + rating - 3}.
         </Typography>
       ) : null}
+      <Button onClick={()=>text_to_ssml(article.content)}>test</Button>
     </Box>
   );
 };
