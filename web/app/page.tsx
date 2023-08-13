@@ -27,16 +27,17 @@ const Home = () => {
             >
                 Extensive reading app incorporating AI.
             </Typography>
-            <Link href='/start'>
-                <Button
-                    variant='contained'
-                    sx={{
-                        maxWidth: '200px',
-                    }}
-                >
-                    {`Get Started`}
-                </Button>
-            </Link>
+            {/* <Link href='/start'> */}
+            <Button
+                href='/home'
+                variant='contained'
+                sx={{
+                    maxWidth: '200px',
+                }}
+            >
+                {`Get Started`}
+            </Button>
+            {/* </Link> */}
         </Box >
     )
 }
