@@ -6,22 +6,25 @@ import { Article } from "@models/articleModel";
 interface ArticleComponentProps {
   article: Article;
   currentLevel: number;
+  setRating: React.Dispatch<React.SetStateAction<number>>;
+  rating: number;
 }
 
 const ArticleComponent: React.FC<ArticleComponentProps> = ({
   article,
   currentLevel,
+  setRating,
+  rating,
 }) => {
-  const [rating, setRating] = React.useState<number>(-1);
   return (
     <Box>
       <Box sx={{
-        display:"flex",
-        gap:1,
-        flexDirection:"column",
-        position:"absolute",
-        top:10,
-        right:10,
+        display: "flex",
+        gap: 1,
+        flexDirection: "column",
+        position: "absolute",
+        top: 10,
+        right: 10,
       }}>
         <Typography
           bgcolor="lightgreen"

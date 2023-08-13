@@ -48,6 +48,9 @@ export default function StartPage(): JSX.Element {
   const [selectedSubGenre, setSelectedSubGenre] = useState<string>("");
 
   const [article, setArticle] = useState<Article | null>(null);
+
+  const [rating, setRating] = React.useState<number>(-1);
+
   const stepList = [
     {
       title: "Choose the type",
@@ -76,6 +79,8 @@ export default function StartPage(): JSX.Element {
 
   // on next button click
   const handleNext = async () => {
+    console.log('step', step);
+
     if (step === 0) {
       console.log(value);
       setStep((prevActiveStep) => prevActiveStep + 1);
@@ -93,6 +98,28 @@ export default function StartPage(): JSX.Element {
         selectedGenre,
         selectedSubGenre
       );
+    } else if (step === 4) {
+      console.log('test');
+      console.log((value as number) + rating - 3);
+      console.log(article.id);
+      await updateUserLevel();
+    }
+  };
+
+  // update user level
+  const updateUserLevel = async () => {
+    const updateUserLevelUrl = `/api/user/record-article`;
+    try {
+      const res = await axios.post(updateUserLevelUrl, {
+        articleId: article.id,
+        newLevel: (value as number) + rating - 3,
+        // rating: (value as number) + rating - 3,
+      });
+      console.log(res.data);
+      router.push('/home');
+
+    } catch (error) {
+      console.log(error);
     }
   };
   // on back button click
@@ -210,8 +237,8 @@ export default function StartPage(): JSX.Element {
                     step === index
                       ? "#b5aacd"
                       : step > index
-                      ? "#b5aacd90"
-                      : "#FFFFFF",
+                        ? "#b5aacd90"
+                        : "#FFFFFF",
                 }}
                 display={"flex"}
                 flexDirection={"column"}
@@ -220,7 +247,7 @@ export default function StartPage(): JSX.Element {
               >
                 <Typography
                   variant="body1"
-                  sx={{ fontSize: { xs: "50%", md: "80%" }, fontWeight:"bold" }}
+                  sx={{ fontSize: { xs: "50%", md: "80%" }, fontWeight: "bold" }}
                 >
                   {stepValue}
                 </Typography>
@@ -242,6 +269,8 @@ export default function StartPage(): JSX.Element {
           <ArticleComponent
             article={article as Article}
             currentLevel={value as number}
+            rating={rating}
+            setRating={setRating}
           />
         ) : (
           <SelectItemComponent
