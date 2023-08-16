@@ -23,8 +23,10 @@ const SignInForm = ({ onSwitch }) => {
         try {
             setLoading(true);
             await signIn('credentials', { email, password, redirect: false });
+            console.log(signIn);
             router.push('/home');
         } catch (error) {
+            console.log('error', error);
             setError(error.response.data.message);
         } finally {
             setLoading(false);

@@ -1,5 +1,4 @@
 "use client";
-
 import { SessionProvider } from "next-auth/react";
 
 type Props = {
@@ -7,5 +6,6 @@ type Props = {
 };
 
 export const NextAuthProvider = ({ children }: Props) => {
-    return <SessionProvider>{children}</SessionProvider>;
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    return <SessionProvider basePath={basePath}>{children}</SessionProvider>;
 };
