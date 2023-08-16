@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import db from "@configs/firebaseConfig";
+import { getToken } from "next-auth/jwt";
 
 export async function GET(req: NextRequest, res: NextResponse) {
     try {
-        const token = req.cookies.get("token")?.value || "";
-        // Verify the token
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
-        if (!decodedToken) {
-            return NextResponse.redirect(new URL("/auth", req.nextUrl));
-        }
-        // Access user data from decoded token
-        const { id, username, email, level } = decodedToken;
+        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+        const { id, username, email } = token;
 
         // Get articles
         const articlesRef = db.collection("user-article-records")
@@ -30,11 +25,6 @@ export async function GET(req: NextRequest, res: NextResponse) {
             articles,
         });
 
-        response.cookies.set('level', level, {
-            secure: true,
-            httpOnly: true,
-            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days expiry
-        });
         // Create response
         return response;
 
