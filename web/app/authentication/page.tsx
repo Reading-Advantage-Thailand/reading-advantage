@@ -19,6 +19,7 @@ const SignInForm = ({ onSwitch }) => {
 
     const isSignInDisabled = !email || !password || loading;
     const onSignIn = async () => {
+        // debugger;
         try {
             setLoading(true);
             await signIn('credentials', { email, password, redirect: false });
