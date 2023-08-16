@@ -1,0 +1,8 @@
+.sequential-highlight {
+  display: inline-block;
+}
+
+.highlighted {
+  background-color: yellow; /* Adjust the highlight color as desired */
+  transition: background-color 0.5s ease; /* Adjust the transition duration as desired */
+}
