@@ -51,7 +51,7 @@ const SliderComponent: React.FC<SliderComponentProps> = ({ value, onChange }) =>
                     <Slider
                         aria-label="Custom marks"
                         value={value}
-                        step={0.5}
+                        step={1}
                         valueLabelDisplay="auto"
                         sx={{
                             // color: '#EEEEEE',
@@ -98,12 +98,12 @@ const SliderComponent: React.FC<SliderComponentProps> = ({ value, onChange }) =>
                         }}
                         marks={[
                             { value: 10, label: '<A1' },
-                            { value: 21.5, label: 'A1' },
-                            { value: 29.5, label: 'A2' },
-                            { value: 42.5, label: 'B1' },
+                            { value: 21, label: 'A1' },
+                            { value: 29, label: 'A2' },
+                            { value: 42, label: 'B1' },
                             { value: 58, label: 'B2' },
-                            { value: 75.5, label: 'C1' },
-                            { value: 89.4, label: 'C2' },
+                            { value: 75, label: 'C1' },
+                            { value: 89, label: 'C2' },
                         ]}
                         onChange={onChange}
                     />

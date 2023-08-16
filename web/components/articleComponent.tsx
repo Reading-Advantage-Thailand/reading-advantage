@@ -9,13 +9,17 @@ import { get } from "http";
 interface ArticleComponentProps {
   article: Article;
   currentLevel: number;
+  setRating: React.Dispatch<React.SetStateAction<number>>;
+  rating: number;
 }
 
 const ArticleComponent: React.FC<ArticleComponentProps> = ({
   article,
   currentLevel,
+  setRating,
+  rating,
 }) => {
-  const [rating, setRating] = React.useState<number>(-1);
+  // const [rating, setRating] = React.useState<number>(-1);
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [isPaused, setIsPaused] = React.useState(false);
   const [currentAudio, setCurrentAudio] = React.useState(null);
@@ -84,7 +88,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
     if (isPaused) {
       currentAudio.pause();
     }
-    else{
+    else {
       currentAudio.play();
     }
   };

@@ -31,31 +31,10 @@ export async function POST(req: NextRequest) {
             fLang,
         });
 
-        // Retrieve newly created user document
-        const newUserSnapshot = await newUserRef.get();
-        const newUser = newUserSnapshot.data();
-
-        // Create JWT token
-        const token = jwt.sign({
-            id: newUserRef.id,
-            username: newUser.username,
-            email: newUser.email,
-        }, process.env.JWT_SECRET, {
-            expiresIn: '30d',
-        });
-
         // Create response
         const response = NextResponse.json({
             message: 'User created',
             success: true,
-        });
-
-        // Set token as a secure HTTP-only cookie
-        response.cookies.set('token', token, {
-            secure: true,
-            httpOnly: true, // Prevent JavaScript access
-            path: '/', // Set cookie path as needed
-            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days expiry
         });
 
         return response;
