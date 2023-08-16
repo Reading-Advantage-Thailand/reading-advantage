@@ -18,20 +18,13 @@ import SliderComponent from "@components/sliderComponent";
 import SelectItemComponent from "@components/selectItemComponent";
 import { useRouter } from "next/navigation";
 import DefaultLayout from "@components/DefaultLayout";
+import { getSession, useSession } from 'next-auth/react'
 
 const steps: string[] = ["Level", "Type", "Genre", "Sub-Genre", "Article"];
 
 export default function StartPage(): JSX.Element {
   const router = useRouter();
-  const logout = async () => {
-    try {
-      await axios.post("/api/auth/logout");
-      router.push("/auth");
-      console.log("logout");
-    } catch (error) {
-      console.log(error);
-    }
-  };
+
   const [step, setStep] = useState<number>(0);
   const [value, setValue] = useState<number | number[]>(0);
 
@@ -105,19 +98,25 @@ export default function StartPage(): JSX.Element {
       await updateUserLevel();
     }
   };
+  const { data: session, status, update } = useSession();
+  // get session
+  const sessions = getSession();
+
+
 
   // update user level
   const updateUserLevel = async () => {
-    const updateUserLevelUrl = `/api/user/record-article`;
+    const updateUserLevelUrl = `/api/user/record-articles`;
     try {
       const res = await axios.post(updateUserLevelUrl, {
         articleId: article.id,
         newLevel: (value as number) + rating - 3,
         // rating: (value as number) + rating - 3,
       });
-      console.log(res.data);
-      router.push('/home');
-
+      await update({
+        level: (value as number) + rating - 3,
+      });
+      router.refresh();
     } catch (error) {
       console.log(error);
     }
@@ -214,8 +213,12 @@ export default function StartPage(): JSX.Element {
 
   return (
     <DefaultLayout>
-      <Box>
-        <Button onClick={logout}>logout</Button>
+      <Box sx={{
+        pt: {
+          xs: 6,
+          sm: 8
+        }
+      }}>
         <Typography variant="h3" fontWeight="bold" color="#36343e">
           Reading Advantage
         </Typography>
