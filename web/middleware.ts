@@ -3,9 +3,9 @@ import { decode } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
   let decoded;
-  console.log("middleware");
+  // console.log("middleware");
   const token = req.cookies.get("next-auth.session-token")?.value;
-  console.log("token", token);
+  // console.log("token", token);
   if (!token && process.env.NEXTAUTH_URL) {
     return NextResponse.redirect(new URL("/authentication", req.nextUrl));
   }
@@ -15,10 +15,10 @@ export async function middleware(req: NextRequest) {
         token: token,
         secret: process.env.NEXTAUTH_SECRET,
       });
-      console.log("decoded", decoded);
+      // console.log("decoded", decoded);
 
     } catch (error) {
-      console.log("error", error);
+      // console.log("error", error);
       return NextResponse.redirect(new URL("/authentication", req.nextUrl));
     }
 
