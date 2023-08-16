@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from '@mui/material';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 const Home = () => {
     return (
@@ -27,7 +28,7 @@ const Home = () => {
             >
                 Extensive reading app incorporating AI.
             </Typography>
-            <Link href='/start'>
+            <Link href='/home'>
                 <Button
                     variant='contained'
                     sx={{

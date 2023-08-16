@@ -3,9 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Button, CircularProgress, Stack, Typography, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { User } from '@models/userModel';
-import { bg, text } from '../../constants/colors';
+import { useSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
+import { bg, text } from '@constants/colors';
 import languages from '@constants/languages';
+import { User } from '@models/userModel';
+import { sign } from 'crypto';
 
 const SignInForm = ({ onSwitch }) => {
     const router = useRouter();
@@ -14,22 +17,21 @@ const SignInForm = ({ onSwitch }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const isSignInDisabled = !email || !password || loading;
     const onSignIn = async () => {
+        // debugger;
         try {
             setLoading(true);
-            const res = await axios.post('/api/auth/signin', { email, password });
-            const user: User = res.data;
-            localStorage.setItem('user', JSON.stringify(user));
-            router.push('/start');
+            await signIn('credentials', { email, password, redirect: false });
+            console.log(signIn);
+            router.push('/home');
         } catch (error) {
+            console.log('error', error);
             setError(error.response.data.message);
         } finally {
             setLoading(false);
         }
     };
-
-    const isSignInDisabled = !email || !password || loading;
-
     return (
         <>
             <Stack gap="1rem">
@@ -93,10 +95,11 @@ const SignUpForm = ({ onSwitch }) => {
     const onSignUp = async () => {
         try {
             setLoading(true);
-            const res = await axios.post('/api/auth/signup', { email, username, password, fLang });
-            const user: User = res.data;
-            localStorage.setItem('user', JSON.stringify(user));
-            router.push('/start');
+            const res = await axios.post('/api/user/signup', { email, username, password, fLang });
+            // const user: User = res.data;
+            // localStorage.setItem('user', JSON.stringify(user));
+            await signIn('credentials', { email, password, redirect: false });
+            router.push('/home');
         } catch (error) {
             setError(error.response.data.message);
         } finally {

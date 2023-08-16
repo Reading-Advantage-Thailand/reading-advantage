@@ -49,7 +49,7 @@ async function generateArticle(type, genre, subGenre, topic, gradeLevel) {
     const isLowLevel = gradeLevel <= 2;
     const isMidLevel = gradeLevel >= 3 && gradeLevel <= 5;
     const levelSentencePrompt = isLowLevel ? `Try to make the average sentence length ${3 + 2 * gradeLevel} words and try to make the text very predictable`
-        : isMidLevel ? `Try to make the average sentence length ${3 + 2 * gradeLevel} words and try to make the text very predictable and try to make the text somewhat predictable1`
+        : isMidLevel ? `Try to make the average sentence length ${3 + 2 * gradeLevel} words and try to make the text somewhat predictable`
             : `Try to make the average sentence length ${3 + 2 * gradeLevel} words`;
     const nonFictionPrompt = `Please write non-fiction article of about ${(90 + 140) * gradeLevel} words. ${levelSentencePrompt} in the genre of ${genre} and subgenre of ${subGenre}. The topic of the article is ${topic} Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;
     const fictionPrompt = `Please write a fictional story of about ${(90 + 140) * gradeLevel} words. ${levelSentencePrompt} in the genre of ${genre} and subgenre of ${subGenre}. The topic of the story is ${topic} Write it to a ${addOrdinalSuffix(gradeLevel)} grade reading level.`;

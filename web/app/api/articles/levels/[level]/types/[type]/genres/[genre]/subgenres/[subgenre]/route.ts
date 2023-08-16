@@ -19,15 +19,21 @@ export const GET = async (req, { params }) => {
             .where('type', '==', type)
             .where('genre', '==', genre)
             .where('subGenre', '==', subgenre)
-            .orderBy('raLevel')
             .get();
-        const article = articlesSnapshot.docs[0].data();
+
+        //random article from snapshot and get only 1 article
+        const randomArticle = Math.floor(Math.random() * articlesSnapshot.size);
+        const article = articlesSnapshot.docs[randomArticle].data();
+
 
         return NextResponse.json({
             status: 'success',
             result: data.length,
             data: {
-                article: article,
+                article: {
+                    id: articlesSnapshot.docs[randomArticle].id,
+                    ...article,
+                },
             }
         });
 
