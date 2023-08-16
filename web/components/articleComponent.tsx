@@ -173,7 +173,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
       <Button onClick={playAudio} disabled={isPlaying}>
         Play article
       </Button>
-      <Button onClick={pauseAudio}>{!isPlaying ? "Resume" : "Pause"}</Button>
+      <Button onClick={pauseAudio}>{!isPaused ? "Resume" : "Pause"}</Button>
     </Box>
   );
 };
