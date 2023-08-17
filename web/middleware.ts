@@ -6,7 +6,7 @@ export async function middleware(req: NextRequest) {
   // console.log("middleware");
   const token = req.cookies.get("next-auth.session-token")?.value;
   // console.log("token", token);
-  if (!token && process.env.NEXTAUTH_URL) {
+  if (!token) {
     return NextResponse.redirect(new URL("/authentication", req.nextUrl));
   }
   if (token) {
