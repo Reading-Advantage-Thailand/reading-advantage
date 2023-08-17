@@ -1,8 +1,15 @@
+'use client';
 import { Box, Button, Typography } from '@mui/material';
+import axios from 'axios';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
 const Home = () => {
+    const getEnv = async () => {
+        const res = await axios.get('/api/check-env');
+        console.log(res);
+    }
+
     return (
         <Box sx={{
             display: 'flex',
@@ -38,6 +45,15 @@ const Home = () => {
                     {`Get Started`}
                 </Button>
             </Link>
+            <Button
+                variant='outlined'
+                onClick={getEnv}
+                sx={{
+                    maxWidth: '200px',
+                }}
+            >
+                {`Check Env`}
+            </Button>
         </Box >
     )
 }
