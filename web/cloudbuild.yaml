@@ -4,7 +4,7 @@ steps:
     args:
       [
         "build",
-         "--build-arg",
+        "--build-arg",
         "SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY",
         "--build-arg",
         "JWT_SECRET=$_JWT_SECRET",
@@ -16,9 +16,9 @@ steps:
         "NEXTAUTH_URL=$_NEXTAUTH_URL",
         "--build-arg",
         "API_KEY=$_API_KEY",
-         "-t", 
-         "gcr.io/$PROJECT_ID/reading-advantage-web", 
-         "./web",
+        "-t", 
+        "gcr.io/$PROJECT_ID/reading-advantage-web", 
+        "./web",
       ]
 
   # push the container images to Container Registry
