@@ -2,11 +2,12 @@
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { text } from '@constants/colors';
-import { Link, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import formatDate from '@utils/formatDate';
 import { useEffect, useState } from 'react';
 import router from 'next/router';
 import axios from 'axios';
+import Link from 'next/link';
 
 
 function HomePage() {
@@ -34,7 +35,7 @@ function HomePage() {
             {
                 //map articles with index
                 articles.map((article, index) => (
-                    <Link href={`home/article/${article.articleId}`} key={article.id}>
+                    <Link href={`home/article/${article.articleId}`} key={article.id} >
                         <Stack key={index} sx={{
                             boxShadow: 3,
                             m: 1,
