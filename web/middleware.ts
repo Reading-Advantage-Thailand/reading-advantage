@@ -18,16 +18,17 @@ export async function middleware(req: NextRequest) {
       // console.log("decoded", decoded);
 
     } catch (error) {
-      // console.log("error", error);
-      return NextResponse.redirect(new URL("/authentication", req.nextUrl));
+      console.log("error", error);
+      throw new Error(error);
+      // return NextResponse.redirect(new URL("/authentication", req.nextUrl));
     }
 
     // if user is level 0 and not in start page, redirect to level page
-    if (token && decoded && decoded.userLevel === 0 && req.nextUrl.pathname !== "/start") {
-      return NextResponse.redirect(new URL("/start", req.nextUrl));
+    if (token && decoded && decoded.userLevel === 0 && req.nextUrl.pathname !== "/level") {
+      return NextResponse.redirect(new URL("/level", req.nextUrl));
     }
     // if user is not level 0 and in start page, redirect to me page
-    if (token && decoded && decoded.userLevel !== 0 && req.nextUrl.pathname === "/start") {
+    if (token && decoded && decoded.userLevel !== 0 && req.nextUrl.pathname === "/level") {
       return NextResponse.redirect(new URL("/home", req.nextUrl));
     }
   }
@@ -36,4 +37,4 @@ export async function middleware(req: NextRequest) {
 
 
 
-export const config = { matcher: ["/home", "/start"] }
+export const config = { matcher: ["/home", "/level"] }
