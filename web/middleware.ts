@@ -1,40 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
-import { decode } from "next-auth/jwt";
+import { decode, getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
 
 export async function middleware(req: NextRequest) {
-  let decoded;
-  // console.log("middleware");
-  const token = req.cookies.get("next-auth.session-token")?.value;
-  // console.log("token", token);
-  if (!token) {
+  const token = await getToken({
+    req
+  });
+  if (token === null) {
     return NextResponse.redirect(new URL("/authentication", req.nextUrl));
   }
-  if (token) {
-    try {
-      decoded = await decode({
-        token: token,
-        secret: process.env.NEXTAUTH_SECRET,
-      });
-      // console.log("decoded", decoded);
-
-    } catch (error) {
-      console.log("error", error);
-      throw new Error(error);
-      // return NextResponse.redirect(new URL("/authentication", req.nextUrl));
-    }
-
-    // if user is level 0 and not in start page, redirect to level page
-    if (token && decoded && decoded.userLevel === 0 && req.nextUrl.pathname !== "/level") {
-      return NextResponse.redirect(new URL("/level", req.nextUrl));
-    }
-    // if user is not level 0 and in start page, redirect to me page
-    if (token && decoded && decoded.userLevel !== 0 && req.nextUrl.pathname === "/level") {
-      return NextResponse.redirect(new URL("/home", req.nextUrl));
-    }
+  // console.log('token', token);
+  // if user is level 0 and not in level page, redirect to level page
+  if (token !== null && token.userLevel === 0 && req.nextUrl.pathname !== "/level") {
+    return NextResponse.redirect(new URL("/level", req.nextUrl));
+  }
+  // if user is not level 0 and in level page, redirect to me page
+  if (token !== null && token.userLevel !== 0 && req.nextUrl.pathname === "/level") {
+    return NextResponse.redirect(new URL("/home", req.nextUrl));
   }
   return NextResponse.next();
 }
 
+export const config = { matcher: ["/level", "/home",] }
 
-
-export const config = { matcher: ["/home", "/level"] }

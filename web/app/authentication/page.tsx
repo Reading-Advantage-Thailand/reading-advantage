@@ -22,14 +22,15 @@ const SignInForm = ({ onSwitch }) => {
         // debugger;
         try {
             setLoading(true);
-            await signIn('credentials', { email, password, redirect: false }).then(({ ok, error }) => {
-                console.log('error:', error);
-                router.push('/home');
-            });
-            // router.push('/home');
+            const res = await signIn('credentials', { email, password, redirect: false })
+            console.log(res);
+            setLoading(false);
+            // redirect to home page
+            router.push('/level');
+
         } catch (error) {
             console.log('error', error);
-            setError(error.response.data.message);
+            // setError(error.response.data.message);
         } finally {
             setLoading(false);
         }
