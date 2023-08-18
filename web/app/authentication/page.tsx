@@ -1,14 +1,11 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { TextField, Button, CircularProgress, Stack, Typography, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { signIn } from 'next-auth/react';
 import { bg, text } from '@constants/colors';
 import languages from '@constants/languages';
-import { User } from '@models/userModel';
-import { sign } from 'crypto';
 
 const SignInForm = ({ onSwitch }) => {
     const router = useRouter();
@@ -99,10 +96,9 @@ const SignUpForm = ({ onSwitch }) => {
         try {
             setLoading(true);
             const res = await axios.post('/api/user/signup', { email, username, password, fLang });
-            // const user: User = res.data;
-            // localStorage.setItem('user', JSON.stringify(user));
             await signIn('credentials', { email, password, redirect: false });
-            router.push('/home');
+            setLoading(false);
+            router.push('/level');
         } catch (error) {
             setError(error.response.data.message);
         } finally {

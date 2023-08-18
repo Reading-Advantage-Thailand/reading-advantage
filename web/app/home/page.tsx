@@ -5,13 +5,10 @@ import { text } from '@constants/colors';
 import { Stack } from '@mui/material';
 import formatDate from '@utils/formatDate';
 import { useEffect, useState } from 'react';
-import router from 'next/router';
 import axios from 'axios';
 import Link from 'next/link';
 
-
 function HomePage() {
-
     const [articles, setArticles] = useState([])
 
     useEffect(() => {
