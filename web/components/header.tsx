@@ -82,7 +82,7 @@ export default function (props: Props) {
                     </Typography>
                     <Divider orientation="vertical" flexItem sx={{ mx: 2, display: { xs: 'none', md: 'block' } }} variant="middle" color="#F0E4CE" />
                     {
-                        path === '/start' ?
+                        path === '/level' ?
                             <Box sx={{ flexGrow: { xs: 0, sm: 1 }, display: { xs: 'none', sm: 'block' } }}>
                                 <Button
                                     sx={{
