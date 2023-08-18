@@ -5,6 +5,7 @@ import bcryptjs from "bcryptjs";
 
 const handler = NextAuth({
     secret: process.env.NEXTAUTH_SECRET as string,
+    session: { strategy: 'jwt' },
     pages: {
         signIn: '/authentication',
     },
@@ -13,36 +14,43 @@ const handler = NextAuth({
             name: "credentials",
             credentials: {},
             async authorize(credentials, req) {
-                let docId;
-                const user = await db.collection("users")
-                    .where("email", "==", req.body.email)
-                    .get().then((querySnapshot) => {
-                        if (querySnapshot.empty) {
-                            return null
-                        } else {
-                            docId = querySnapshot.docs[0].id
-                            return querySnapshot.docs[0].data()
-                        }
-                    });
+                try {
+                    let docId;
+                    const user = await db.collection("users")
+                        .where("email", "==", req.body.email)
+                        .get().then((querySnapshot) => {
+                            if (querySnapshot.empty) {
+                                throw new Error("User not found");
+                                // return null
+                            } else {
+                                docId = querySnapshot.docs[0].id
+                                return querySnapshot.docs[0].data()
+                            }
+                        });
 
-                // check password
-                if (user) {
-                    const passwordMatch = await bcryptjs.compare(req.body.password, user.password);
-                    if (!passwordMatch) {
-                        return null
+                    // check password
+                    if (user) {
+                        const passwordMatch = await bcryptjs.compare(req.body.password, user.password);
+                        if (!passwordMatch) {
+                            throw new Error("Password not match");
+                            // return null
+                        }
                     }
-                }
-                if (user) {
-                    return {
-                        id: docId,
-                        username: user.username,
-                        email: user.email || "",
-                        image: user.image,
-                        level: user.level || 0,
-                        fLang: user.fLang,
+                    if (user) {
+                        return {
+                            id: docId,
+                            username: user.username,
+                            email: user.email || "",
+                            image: user.image,
+                            level: user.level || 0,
+                            fLang: user.fLang,
+                        }
+                    } else {
+                        throw new Error("User not found");
+                        // return null
                     }
-                } else {
-                    return null
+                } catch (error) {
+                    throw new Error(error);
                 }
             }
 
