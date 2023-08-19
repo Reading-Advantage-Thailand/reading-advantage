@@ -1,25 +1,33 @@
+import { withAuth } from "next-auth/middleware"
 import { NextRequest, NextResponse } from "next/server"
-import { decode, getToken } from "next-auth/jwt";
-import { getServerSession } from "next-auth";
+import { getToken } from "next-auth/jwt";
 
-export async function middleware(req: NextRequest) {
-  const token = await getToken({
-    req
-  });
-  if (token === null) {
-    return NextResponse.redirect(new URL("/authentication", req.nextUrl));
+export default withAuth(
+  async function middleware(req: NextRequest) {
+    const token = await getToken({
+      req
+    });
+    console.log('token', token);
+    // if user is level 0 and not in level page, redirect to level page
+    if (token.userLevel === 0 && req.nextUrl.pathname !== "/level") {
+      return NextResponse.redirect(new URL("/level", req.nextUrl));
+    }
+    // if user is not level 0 and in level page, redirect to me page
+    if (token.userLevel !== 0 && req.nextUrl.pathname === "/level") {
+      return NextResponse.redirect(new URL("/home", req.nextUrl));
+    }
+  },
+  {
+    callbacks: {
+      authorized({ req, token }) {
+        // if (req.nextUrl.pathname === "/level") {
+        //   return token?.userLevel === 0;
+        // }
+        // `/home` only requires the user to be logged in
+        return !!token
+      },
+    },
   }
-  // console.log('token', token);
-  // if user is level 0 and not in level page, redirect to level page
-  if (token !== null && token.userLevel === 0 && req.nextUrl.pathname !== "/level") {
-    return NextResponse.redirect(new URL("/level", req.nextUrl));
-  }
-  // if user is not level 0 and in level page, redirect to me page
-  if (token !== null && token.userLevel !== 0 && req.nextUrl.pathname === "/level") {
-    return NextResponse.redirect(new URL("/home", req.nextUrl));
-  }
-  return NextResponse.next();
-}
+)
 
-export const config = { matcher: ["/level", "/home",] }
-
+export const config = { matcher: ["/level", "/home"] }

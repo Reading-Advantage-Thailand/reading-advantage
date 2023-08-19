@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import db from "@configs/firebaseConfig";
 import { getToken } from "next-auth/jwt";
 
 export async function GET(req: NextRequest, res: NextResponse) {
     try {
         const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-        const { id, username, email } = token;
+        const { sub, username, email } = token;
 
         // Get articles
         const articlesRef = db.collection("user-article-records")
-            .where("userId", "==", id)
+            .where("userId", "==", sub)
             .orderBy("createdAt", "desc")
             .limit(10);
         const articlesSnapshot = await articlesRef.get();

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { use, useState } from 'react';
 import { TextField, Button, CircularProgress, Stack, Typography, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
@@ -11,19 +11,21 @@ const SignInForm = ({ onSwitch }) => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [email, setEmail] = useState('');
+    const [emailOrUsername, setEmailOrUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    const isSignInDisabled = !email || !password || loading;
+    const isSignInDisabled = !emailOrUsername || !password || loading;
     const onSignIn = async () => {
         // debugger;
         try {
             setLoading(true);
-            const res = await signIn('credentials', { email, password, redirect: false })
-            console.log(res);
+            const res = await signIn('credentials', { emailOrUsername, password, redirect: false })
+            setError(res.error);
             setLoading(false);
-            // redirect to home page
-            router.push('/level');
+            // redirect to level page
+            if (!res.error) {
+                router.push('/level');
+            }
 
         } catch (error) {
             console.log('error', error);
@@ -35,7 +37,7 @@ const SignInForm = ({ onSwitch }) => {
     return (
         <>
             <Stack gap="1rem">
-                <TextField label="Email" type="email" onChange={(e) => setEmail(e.target.value)} value={email} />
+                <TextField label="Email or Username" type="emailOrUsername" onChange={(e) => setEmailOrUsername(e.target.value)} value={emailOrUsername} />
                 <TextField label="Password" type="password" onChange={(e) => setPassword(e.target.value)} value={password} />
                 <Button disabled={isSignInDisabled} variant="contained" size="large" onClick={onSignIn}>
                     {loading ? <CircularProgress size={24} /> : 'Sign In'}
@@ -79,6 +81,7 @@ const SignInForm = ({ onSwitch }) => {
 
 const SignUpForm = ({ onSwitch }) => {
     const router = useRouter();
+    const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [email, setEmail] = useState('');
@@ -91,29 +94,77 @@ const SignUpForm = ({ onSwitch }) => {
     const onFLangChange = (event: SelectChangeEvent) => {
         setFLang(event.target.value as string);
     };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const usernameRegex = /^[a-zA-Z0-9]+$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
     const onSignUp = async () => {
+        setSubmitted(true);
+        if (password !== confirmPassword) {
+            setError('Password does not match');
+            return;
+        }
+        if (password.length < 8) {
+            setError('Password must be at least 8 characters');
+            return;
+        }
+        if (!emailRegex.test(email)) {
+            setError('Invalid email');
+            return;
+        }
+        if (!usernameRegex.test(username)) {
+            setError('Username must be alphanumeric');
+            return;
+        }
+        if (!passwordRegex.test(password)) {
+            setError(`Password must contain at least 1 lowercase, 1 uppercase and 1 number`);
+            return;
+        }
+
         try {
             setLoading(true);
             const res = await axios.post('/api/user/signup', { email, username, password, fLang });
-            await signIn('credentials', { email, password, redirect: false });
-            setLoading(false);
-            router.push('/level');
+            console.log('res', res);
+
+            if (res.status === 200) {
+                const signInRes = await signIn('credentials', {
+                    emailOrUsername: email,
+                    password,
+                    redirect: false
+                });
+                if (!signInRes.error) {
+                    router.push('/home');
+                }
+            }
+            setError('');
         } catch (error) {
             setError(error.response.data.message);
         } finally {
             setLoading(false);
+
         }
     };
 
+
     const isSignUpDisabled =
         !email || !username || !fLang || !password || !confirmPassword || password !== confirmPassword || loading;
-
     return (
         <>
             <Stack gap="1rem">
-                <TextField label="Email" type="email" onChange={(e) => setEmail(e.target.value)} value={email} />
-                <TextField label="Username" type="text" onChange={(e) => setUsername(e.target.value)} value={username} />
+                <TextField
+                    label="Email"
+                    type="email"
+                    onChange={(e) => setEmail(e.target.value)}
+                    value={email}
+                    error={submitted && error === 'Email already in use' || !emailRegex.test(email)}
+                />
+                <TextField
+                    label="Username"
+                    type="text"
+                    onChange={(e) => setUsername(e.target.value)}
+                    value={username}
+                    error={submitted && error === 'Username already in use' || !usernameRegex.test(username)}
+                />
                 <FormControl fullWidth>
                     <InputLabel id="f-lang-select-label">First Language</InputLabel>
                     <Select
@@ -130,15 +181,21 @@ const SignUpForm = ({ onSwitch }) => {
                         }
                     </Select>
                 </FormControl>
-                <TextField label="Password" type="password" onChange={(e) => setPassword(e.target.value)} value={password} />
+                <TextField
+                    label="Password"
+                    type="password"
+                    onChange={(e) => setPassword(e.target.value)}
+                    value={password}
+                    error={submitted && !passwordRegex.test(password)}
+                />
                 <TextField
                     label="Confirm Password"
                     type="password"
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     value={confirmPassword}
-                    error={password !== confirmPassword}
+                    error={submitted && !passwordRegex.test(password)}
                 />
-                {error && <Typography color="error">{error}</Typography>}
+                {error && <Typography maxWidth='420px' color="error">* {error}</Typography>}
                 <Button
                     variant="contained"
                     size="large"
