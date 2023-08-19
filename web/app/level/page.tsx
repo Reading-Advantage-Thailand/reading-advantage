@@ -99,10 +99,6 @@ export default function StartPage(): JSX.Element {
     }
   };
   const { data: session, status, update } = useSession();
-  // get session
-  const sessions = getSession();
-
-
 
   // update user level
   const updateUserLevel = async () => {
@@ -117,6 +113,7 @@ export default function StartPage(): JSX.Element {
         level: (value as number) + rating - 3,
       });
       router.refresh();
+      router.push('/home');
     } catch (error) {
       console.log(error);
     }

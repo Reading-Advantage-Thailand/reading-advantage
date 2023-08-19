@@ -1,23 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@configs/firebaseConfig';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
 export async function POST(req: NextRequest) {
     try {
         const { username, email, password, fLang } = await req.json();
+        console.log('username', username);
+        console.log('email', email);
 
         // Check if email is already in use
         const emailExistsQuery = await db.collection('users')
             .where('email', '==', email)
             .get();
-
-        if (!emailExistsQuery.empty) {
-            return NextResponse.json({
+        console.log('emailExistsQuery', emailExistsQuery.docs.length);
+        if (emailExistsQuery.docs.length > 0) {
+            console.log('emailExistsQuery-test', emailExistsQuery.docs.length);
+            const response = NextResponse.json({
                 status: 'error',
-                message: 'Email already in use',
+                message: 'Email already in use by another user',
             }, { status: 409 });
+            return response;
         }
+
+        // Check if username is already in use
+        const usernameExistsQuery = await db.collection('users')
+            .where('username', '==', username)
+            .get();
+
+        console.log('usernameExistsQuery', usernameExistsQuery.docs.length);
+        if (usernameExistsQuery.docs.length > 0) {
+            console.log('usernameExistsQuery-test', usernameExistsQuery.docs.length);
+            const response = NextResponse.json({
+                status: 'error',
+                message: 'Username already in use by another user',
+            }, { status: 409 });
+            return response;
+        }
+
+
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
@@ -29,6 +49,8 @@ export async function POST(req: NextRequest) {
             email,
             password: hashedPassword,
             fLang,
+            level: 0,
+            createdAt: new Date(),
         });
 
         // Create response
@@ -38,7 +60,6 @@ export async function POST(req: NextRequest) {
         });
 
         return response;
-
     } catch (error) {
         console.error('Error:', error);
         return NextResponse.json({

@@ -8,21 +8,21 @@ import { get } from "http";
 export async function POST(req: NextRequest) {
     try {
         const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-        const { id, username, email } = token;
+        const { sub, username, email } = token;
         // Access request body
         const { articleId, newLevel } = await req.json();
         console.log('articleId', articleId);
 
         // Create user article record
         const userArticleRecordRef = await db.collection("user-article-records").add({
-            userId: id,
+            userId: sub,
             articleId,
             level: newLevel,
             createdAt: new Date(),
         });
 
         // Update user level
-        const userRef = db.collection("users").doc(id as string);
+        const userRef = db.collection("users").doc(sub as string);
 
         await userRef.update({
             level: newLevel
