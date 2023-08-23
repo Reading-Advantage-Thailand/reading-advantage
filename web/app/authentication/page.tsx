@@ -22,9 +22,9 @@ const SignInForm = ({ onSwitch }) => {
             const res = await signIn('credentials', { emailOrUsername, password, redirect: false })
             setError(res.error);
             setLoading(false);
-            // redirect to level page
+            // redirect to home page
             if (!res.error) {
-                router.push('/level');
+                router.push('/home/article-records');
             }
 
         } catch (error) {
