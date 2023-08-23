@@ -23,11 +23,12 @@ interface Props {
 }
 
 const drawerWidth = 240;
-const navItems = ['Home', 'Article'];
+const navItems = ['Home', 'Article Records'];
 
 export default function (props: Props) {
     const { window } = props;
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { data: session, status } = useSession()
 
     const handleDrawerToggle = () => {
         setMobileOpen((prevState) => !prevState);
@@ -43,21 +44,25 @@ export default function (props: Props) {
             <Divider />
             <List>
                 {navItems.map((item) => (
-                    <ListItem key={item} disablePadding>
-                        <ListItemButton sx={{ textAlign: 'center' }}>
-                            <ListItemText primary={item} />
-                        </ListItemButton>
-                    </ListItem>
+                    <Link href={item === 'Article Records' ?
+                        `/home/article-records` :
+                        `/${item.toLowerCase()}`}>
+                        <ListItem key={item} disablePadding>
+                            <ListItemButton sx={{ textAlign: 'center' }}>
+                                <ListItemText primary={item} />
+                            </ListItemButton>
+                        </ListItem>
+                    </Link>
+
                 ))}
             </List>
         </Box>
     );
 
     const container = window !== undefined ? () => window().document.body : undefined;
-    const { data: session, status } = useSession()
     const loading = status === "loading"
     const avatarTemp = session?.user?.email || 'https://static.vecteezy.com/system/resources/previews/002/002/403/original/man-with-beard-avatar-character-isolated-icon-free-vector.jpg';
-
+    const userLevel = session?.level || 0;
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
@@ -82,7 +87,7 @@ export default function (props: Props) {
                     </Typography>
                     <Divider orientation="vertical" flexItem sx={{ mx: 2, display: { xs: 'none', md: 'block' } }} variant="middle" color="#F0E4CE" />
                     {
-                        path === '/level' ?
+                        userLevel === 0 ?
                             <Box sx={{ flexGrow: { xs: 0, sm: 1 }, display: { xs: 'none', sm: 'block' } }}>
                                 <Button
                                     sx={{
@@ -112,10 +117,16 @@ export default function (props: Props) {
                                             <Link
                                                 style={{ textDecoration: 'none', color: '#fff' }}
                                                 href={
-                                                    item === 'Article' ?
-                                                        `/home/article` :
+                                                    item === 'Article Records' ?
+                                                        `/home/article-records` :
                                                         `/${item.toLowerCase()}`
-                                                }>
+                                                }
+                                                onClick={() => {
+                                                    // path
+                                                    console.log('click');
+                                                }}
+                                            >
+
                                                 {item}
                                             </Link>
                                         </Button>
