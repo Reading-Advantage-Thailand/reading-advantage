@@ -92,6 +92,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
       currentAudio.play();
     }
   };
+  const baseUrl = "https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images";
 
   return (
     <Box>
@@ -128,7 +129,16 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
           CEFR Level : {article.cefrLevel}
         </Typography>
       </Box>
-
+      <Stack alignItems='center'>
+        <img
+          style={{
+            marginTop: "2rem",
+            //center
+          }}
+          src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images/${article.id}.png`}
+          alt={`${article.id}.png`}
+        />
+      </Stack>
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         {article.title}
       </Typography>

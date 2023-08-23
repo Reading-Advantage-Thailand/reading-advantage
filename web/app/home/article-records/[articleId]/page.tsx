@@ -17,10 +17,22 @@ const ArticlePage = ({ params }: { params: { articleId: string } }) => {
     const article = result.data.data.article
     return (
         <Container>
-            <h1>Article Page</h1>
             <p>RA level: {article.raLevel} </p>
             <p>Article ID: {params.articleId}</p>
             <p>Article Title: {article.title}</p>
+            <p>type: {article.type}</p>
+            <p>genre: {article.genre}</p>
+            <p>sub genre: {article.subGenre}</p>
+            <p>grade: {article.grade}</p>
+            <img
+                style={{
+                    marginTop: "2rem",
+                    //center
+                }}
+                src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images/${params.articleId}.png`}
+                // src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images/${article.id}.png`}
+                alt={`${article.id}.png`}
+            />
             <p>Article Content: {article.content}</p>
             {/* Use the fetched data */}
             {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}

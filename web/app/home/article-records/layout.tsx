@@ -1,4 +1,5 @@
 import Header from '@components/header'
+import { Box } from '@mui/material'
 import React from 'react'
 
 const Layout = ({
@@ -9,7 +10,14 @@ const Layout = ({
     return (
         <div>
             <Header />
-            {children}
+            <Box
+                mt={{
+                    xs: 8,
+                    sm: 10,
+                }}
+            >
+                {children}
+            </Box>
         </div>
 
     )
