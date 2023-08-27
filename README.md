@@ -3,7 +3,7 @@
 1. [x] Establish functions for creating and evaluating levels of articles. [working]
 2. [x] Create simple frontend for choosing article, displaying article, and user evaluation of difficulty.
 3. [x] Create auth system and level tracking.
-4. [ ] Add images to all articles.
+4. [x] Add images to all articles.
 5. [ ] Provide audio with highlighting by sentence for all articles.
 6. [ ] Provide an optional translation pane for the current sentence.
 7. [ ] Option to save specific sentences, translations, and audio for later review.
