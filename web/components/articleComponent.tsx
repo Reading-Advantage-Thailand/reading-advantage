@@ -32,7 +32,6 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
     splitToText(article);
   }, []);
 
-
   const handleHighlight = (audioCurrentTime: number) => {
     const index = text.findIndex((word) => word.begin >= audioCurrentTime);
     setHighlightedWordIndex(index - 1);
@@ -58,8 +57,10 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
       ]);
     }
   };
-  const baseUrl = "https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images";
 
+  const handleSkipToSentence = (time: number) => {
+    audioRef.current.currentTime = time;
+  };
 
   return (
     <Box>
@@ -96,7 +97,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
           CEFR Level : {article.cefrLevel}
         </Typography>
       </Box>
-      <Stack alignItems='center'>
+      <Stack alignItems="center">
         <img
           style={{
             marginTop: "2rem",
@@ -117,6 +118,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
               backgroundColor:
                 highlightedWordIndex === index ? "yellow" : "transparent",
             }}
+            onClick={() =>handleSkipToSentence(word.begin)}
           >
             {word.text}{" "}
           </span>
