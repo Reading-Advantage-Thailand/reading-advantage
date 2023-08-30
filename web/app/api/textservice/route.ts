@@ -1,6 +1,6 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -39,7 +39,7 @@ export const POST = async (req: NextRequest) => {
     });
   } catch (error) {
     return NextResponse.json({
-      status: "error from google",
+      status: error.status,
       message: error.message,
     });
   }
