@@ -1,8 +1,9 @@
 "use client";
 import * as React from "react";
-import { Box, Button, Rating, Stack, Typography } from "@mui/material";
+import { Box, Button, Menu, MenuItem, Rating, Stack, Typography } from "@mui/material";
 import { Article } from "@models/articleModel";
 import Tokenizer from "sentence-tokenizer";
+import axios from "axios";
 
 interface ArticleComponentProps {
   article: Article;
@@ -29,6 +30,28 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const textContainer = React.useRef<HTMLParagraphElement | null>(null);
 
+  const [selectedSentence, setSelectedSentence] = React.useState<Number>(-1);
+  const [contextMenu, setContextMenu] = React.useState<{
+    mouseX: number;
+    mouseY: number;
+  } | null>(null);
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setContextMenu(
+      contextMenu === null
+        ? {
+          mouseX: event.clientX + 2,
+          mouseY: event.clientY - 6,
+        }
+        : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
+        // Other native context menus might behave different.
+        // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
+        null,
+    );
+  };
+  const handleClose = () => {
+    setContextMenu(null);
+  };
   React.useEffect(() => {
     splitToText(article);
   }, [article]);
@@ -81,8 +104,34 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
     audioRef.current.currentTime = time;
   };
 
+  const saveToFlashcard = async () => {
+    try {
+      let endTimepoint = 0;
+      if (selectedSentence !== text.length - 1) {
+        endTimepoint = text[selectedSentence as number + 1].begin;
+      } else {
+        endTimepoint = audioRef.current.duration;
+      }
+      const res = await axios.post("/api/user/sentence-saved", {
+        sentence: text[selectedSentence as number].text,
+        sn: selectedSentence,
+        articleId: article.id,
+        translation: "translation",
+        timepoint: text[selectedSentence as number].begin,
+        endTimepoint: endTimepoint,
+      });
+    } catch (error) {
+      window.alert(error.response.data.message);
+    }
+    // console.log(res);
+    console.log(text[selectedSentence as number].text);
+  }
+  // const [onStart, onEnd] = useLongPress(() => {
+  //   handleContextMenu;
+  // }, 1000);
+
   return (
-    <Box>
+    <Box >
       <Box
         sx={{
           display: "flex",
@@ -120,7 +169,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
         <img
           style={{
             marginTop: "2rem",
-            //center
+            maxWidth: "100%",
           }}
           src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images/${article.id}.png`}
           alt={`${article.id}.png`}
@@ -129,20 +178,53 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         {article.title}
       </Typography>
-      <p ref={textContainer}>
-        {text.map((word, index) => (
-          <span
+      <Box onContextMenu={handleContextMenu} style={{ cursor: 'context-menu' }}>
+        {text.map((sentence, index) => (
+          <Typography
             key={index}
-            style={{
+            sx={{
+              display: "inline",
               backgroundColor:
-                highlightedWordIndex === index ? "yellow" : "transparent",
+                selectedSentence === index ? 'lightblue' :
+                  highlightedWordIndex === index ? "yellow" : "transparent",
+              //hover
+              // ":hover": {
+              //   backgroundColor: "lightblue",
+              //   // update highlighted word
+              // },
             }}
-            onClick={() => handleSkipToSentence(word.begin)}
+            // onHover update selected word
+            onMouseEnter={() => {
+              setSelectedSentence(index);
+            }}
+            onClick={() => handleSkipToSentence(sentence.begin)}
+          // long press log long press
+          // onTouchStart={onStart}
+          // onTouchEnd={onEnd}
           >
-            {word.text}{" "}
-          </span>
+            {sentence.text}{" "}
+          </Typography>
         ))}
-      </p>
+        <Menu
+          open={contextMenu !== null}
+          onClose={handleClose}
+          anchorReference="anchorPosition"
+          anchorPosition={
+            contextMenu !== null
+              ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+              : undefined
+          }
+        >
+          <MenuItem onClick={
+            () => {
+              handleClose();
+              saveToFlashcard();
+            }
+          }>
+            Save to flashcard
+          </MenuItem>
+        </Menu>
+      </Box>
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         How easy is this article?
       </Typography>

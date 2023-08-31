@@ -23,7 +23,7 @@ interface Props {
 }
 
 const drawerWidth = 240;
-const navItems = ['Home', 'Article Records'];
+const navItems = ['Home', 'Article Records', 'Flashcard'];
 
 export default function (props: Props) {
     const { window } = props;
@@ -46,7 +46,9 @@ export default function (props: Props) {
                 {navItems.map((item) => (
                     <Link href={item === 'Article Records' ?
                         `/home/article-records` :
-                        `/${item.toLowerCase()}`}>
+                        item === 'Flashcard' ?
+                            `/home/flashcard` :
+                            `/${item.toLowerCase()}`}>
                         <ListItem key={item} disablePadding>
                             <ListItemButton sx={{ textAlign: 'center' }}>
                                 <ListItemText primary={item} />
@@ -118,8 +120,9 @@ export default function (props: Props) {
                                                 style={{ textDecoration: 'none', color: '#fff' }}
                                                 href={
                                                     item === 'Article Records' ?
-                                                        `/home/article-records` :
-                                                        `/${item.toLowerCase()}`
+                                                        `/home/article-records` : item === 'Flashcard' ?
+                                                            `/home/flashcard` :
+                                                            `/${item.toLowerCase()}`
                                                 }
                                                 onClick={() => {
                                                     // path
