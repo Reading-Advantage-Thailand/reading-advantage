@@ -1,10 +1,9 @@
 "use client";
 import * as React from "react";
-import { Box, Button, Rating, Stack, Typography } from "@mui/material";
+import { Box, Button, Menu, MenuItem, Rating, Stack, Typography } from "@mui/material";
 import { Article } from "@models/articleModel";
 import Tokenizer from "sentence-tokenizer";
 import axios from "axios";
-import { get } from "http";
 
 interface ArticleComponentProps {
   article: Article;
@@ -25,7 +24,28 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   const [currentAudio, setCurrentAudio] = React.useState(null);
   const [text, setText] = React.useState<String[]>([]);
   const [highlightedWordIndex, setHighlightedWordIndex] = React.useState(-1);
-
+  const [selectedSentence, setSelectedSentence] = React.useState<Number>(-1);
+  const [contextMenu, setContextMenu] = React.useState<{
+    mouseX: number;
+    mouseY: number;
+  } | null>(null);
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setContextMenu(
+      contextMenu === null
+        ? {
+          mouseX: event.clientX + 2,
+          mouseY: event.clientY - 6,
+        }
+        : // repeated contextmenu when it is already open closes it with Chrome 84 on Ubuntu
+        // Other native context menus might behave different.
+        // With this behavior we prevent contextmenu from the backdrop to re-locale existing context menus.
+        null,
+    );
+  };
+  const handleClose = () => {
+    setContextMenu(null);
+  };
   React.useEffect(() => {
     splitToText(article.content);
     // getTTSresponse(text_to_ssml(article.content));
@@ -94,8 +114,26 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   };
   const baseUrl = "https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images";
 
+  const saveToFlashcard = async () => {
+    try {
+      const res = await axios.post("/api/user/sentence-saved", {
+        sentence: text[selectedSentence as number],
+        sn: selectedSentence,
+        articleId: article.id,
+        translation: "translation",
+      });
+    } catch (error) {
+      window.alert(error.response.data.message);
+    }
+    // console.log(res);
+    console.log(text[selectedSentence as number]);
+  }
+  // const [onStart, onEnd] = useLongPress(() => {
+  //   handleContextMenu;
+  // }, 1000);
+
   return (
-    <Box>
+    <Box >
       <Box
         sx={{
           display: "flex",
@@ -134,6 +172,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
           style={{
             marginTop: "2rem",
             //center
+            maxWidth: "100%",
           }}
           src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images/${article.id}.png`}
           alt={`${article.id}.png`}
@@ -142,19 +181,52 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         {article.title}
       </Typography>
-      <p>
+      <Box onContextMenu={handleContextMenu} style={{ cursor: 'context-menu' }}>
         {text.map((word, index) => (
-          <span
+          <Typography
             key={index}
-            style={{
+            sx={{
+              display: "inline",
               backgroundColor:
-                highlightedWordIndex === index ? "yellow" : "transparent",
+                selectedSentence === index ? 'lightblue' :
+                  highlightedWordIndex === index ? "yellow" : "transparent",
+              //hover
+              // ":hover": {
+              //   backgroundColor: "lightblue",
+              //   // update highlighted word
+              // },
             }}
+            // onHover update selected word
+            onMouseEnter={() => {
+              setSelectedSentence(index);
+            }}
+          // long press log long press
+          // onTouchStart={onStart}
+          // onTouchEnd={onEnd}
           >
             {word}{" "}
-          </span>
+          </Typography>
         ))}
-      </p>
+        <Menu
+          open={contextMenu !== null}
+          onClose={handleClose}
+          anchorReference="anchorPosition"
+          anchorPosition={
+            contextMenu !== null
+              ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+              : undefined
+          }
+        >
+          <MenuItem onClick={
+            () => {
+              handleClose();
+              saveToFlashcard();
+            }
+          }>
+            Save to flashcard
+          </MenuItem>
+        </Menu>
+      </Box>
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         How easy is this article?
       </Typography>
