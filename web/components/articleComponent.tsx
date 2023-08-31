@@ -178,7 +178,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         {article.title}
       </Typography>
-      <Box onContextMenu={handleContextMenu} style={{ cursor: 'context-menu' }}>
+      <Box onContextMenu={handleContextMenu} style={{ cursor: 'context-menu' }} ref={textContainer}>
         {text.map((sentence, index) => (
           <Typography
             key={index}
