@@ -27,14 +27,33 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   const [highlightedWordIndex, setHighlightedWordIndex] = React.useState(-1);
   const [isplaying, setIsPlaying] = React.useState(false);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const textContainer = React.useRef<HTMLParagraphElement | null>(null);
 
   React.useEffect(() => {
     splitToText(article);
-  }, []);
+  }, [article]);
 
   const handleHighlight = (audioCurrentTime: number) => {
-    const index = text.findIndex((word) => word.begin >= audioCurrentTime);
-    setHighlightedWordIndex(index - 1);
+    const lastIndex = text.length - 1;
+
+    if (audioCurrentTime >= text[lastIndex].begin!) {
+      setHighlightedWordIndex(lastIndex);
+    } else {
+      const index = text.findIndex((word) => word.begin! >= audioCurrentTime);
+      setHighlightedWordIndex(index - 1);
+    }
+
+    if (textContainer.current && highlightedWordIndex !== -1) {
+      const highlightedWordElement = textContainer.current.children[
+        highlightedWordIndex
+      ] as HTMLElement;
+      if (highlightedWordElement) {
+        highlightedWordElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }
   };
 
   const handlePause = () => {
@@ -110,7 +129,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         {article.title}
       </Typography>
-      <p>
+      <p ref={textContainer}>
         {text.map((word, index) => (
           <span
             key={index}
@@ -118,7 +137,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
               backgroundColor:
                 highlightedWordIndex === index ? "yellow" : "transparent",
             }}
-            onClick={() =>handleSkipToSentence(word.begin)}
+            onClick={() => handleSkipToSentence(word.begin)}
           >
             {word.text}{" "}
           </span>
