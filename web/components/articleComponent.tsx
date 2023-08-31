@@ -84,12 +84,11 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   const handleSkipToSentence = (time: number) => {
     audioRef.current.currentTime = time;
   };
-  const baseUrl = "https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images";
 
   const saveToFlashcard = async () => {
     try {
       const res = await axios.post("/api/user/sentence-saved", {
-        sentence: text[selectedSentence as number],
+        sentence: text[selectedSentence as number].text,
         sn: selectedSentence,
         articleId: article.id,
         translation: "translation",
@@ -98,7 +97,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
       window.alert(error.response.data.message);
     }
     // console.log(res);
-    console.log(text[selectedSentence as number]);
+    console.log(text[selectedSentence as number].text);
   }
   // const [onStart, onEnd] = useLongPress(() => {
   //   handleContextMenu;
@@ -143,7 +142,6 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
         <img
           style={{
             marginTop: "2rem",
-            //center
             maxWidth: "100%",
           }}
           src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images/${article.id}.png`}
@@ -154,7 +152,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
         {article.title}
       </Typography>
       <Box onContextMenu={handleContextMenu} style={{ cursor: 'context-menu' }}>
-        {text.map((word, index) => (
+        {text.map((sentence, index) => (
           <Typography
             key={index}
             sx={{
@@ -172,12 +170,12 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
             onMouseEnter={() => {
               setSelectedSentence(index);
             }}
-            onClick={() => handleSkipToSentence(word.begin)}
+            onClick={() => handleSkipToSentence(sentence.begin)}
           // long press log long press
           // onTouchStart={onStart}
           // onTouchEnd={onEnd}
           >
-            {word}{" "}
+            {sentence.text}{" "}
           </Typography>
         ))}
         <Menu
