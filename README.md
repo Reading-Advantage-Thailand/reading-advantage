@@ -7,9 +7,10 @@
 5. [x] Provide audio with highlighting by sentence for all articles.
 6. [ ] Provide an optional translation pane for the current sentence.
 7. [x] Option to save specific sentences, translations, and audio for later review.
-8. [ ] Comprehension questions with feedback.
-9. [ ] Writing prompts with writing assistance.
-10. [ ] Running records using speech to text and further analysis.
+8. [ ] Vocabulary SRS practice
+9. [ ] Comprehension questions with feedback.
+10. [ ] Writing prompts with writing assistance.
+11. [ ] Running records using speech to text and further analysis.
 
 ## Article leveling
 1. Uses the NN NLP CEFR project API call (docker image finished) to return confidence of CEFR levels, then calulates weighted average based on GSE levels.
