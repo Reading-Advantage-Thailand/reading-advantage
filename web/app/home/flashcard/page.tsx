@@ -4,10 +4,12 @@ import Container from '@mui/material/Container';
 import { text } from '@constants/colors';
 import { Box, Button, Stack } from '@mui/material';
 import formatDate from '@utils/formatDate';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { FlashcardArray } from "react-quizlet-flashcard";
+import React from 'react';
+import AudioButton from '@components/audio';
 
 function FlashcardPage() {
     const [sentences, setSentences] = useState([])
@@ -42,18 +44,19 @@ function FlashcardPage() {
     const cards = sentences.map((sentence, index) => {
         return {
             id: index,
-            frontHTML: <div style={{
-                padding: '1rem',
-                fontSize: '1.5rem',
-                fontWeight: 'bold',
-                //center
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100%',
-                textAlign: 'center',
-                color: text
-            }}>
+            frontHTML: <div
+                style={{
+                    padding: '1rem',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    //center
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100%',
+                    textAlign: 'center',
+                    color: text
+                }}>
                 {sentence.sentence}
             </div>,
             backHTML: <div style={{
@@ -73,6 +76,9 @@ function FlashcardPage() {
         }
     })
 
+
+    //currentCardFlipRef
+    const [currentCardIndex, setCurrentCardIndex] = useState(0);
     return (
         <Container>
             <Typography variant='h5' fontWeight='bold' color={text}>
@@ -85,7 +91,20 @@ function FlashcardPage() {
             >
                 {
                     sentences.length != 0 ?
-                        <FlashcardArray cards={cards} />
+                        <>
+                            <FlashcardArray
+                                cards={cards}
+                                onCardChange={(index) => {
+                                    console.log(index);
+                                    setCurrentCardIndex(index)
+                                }}
+                            />
+                            <AudioButton
+                                audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${sentences[currentCardIndex]?.articleId}.mp3`}
+                                startTime={sentences[currentCardIndex]?.timepoint}
+                                endTime={sentences[currentCardIndex]?.endTimepoint}
+                            />
+                        </>
                         :
                         null
                 }
@@ -139,6 +158,7 @@ function FlashcardPage() {
                                 Delete
                             </Button>
                         </Stack>
+
                     </Box>
                 )) :
                     <Typography color={text}>

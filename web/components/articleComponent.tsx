@@ -87,11 +87,19 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
 
   const saveToFlashcard = async () => {
     try {
+      let endTimepoint = 0;
+      if (selectedSentence !== text.length - 1) {
+        endTimepoint = text[selectedSentence as number + 1].begin;
+      } else {
+        endTimepoint = audioRef.current.duration;
+      }
       const res = await axios.post("/api/user/sentence-saved", {
         sentence: text[selectedSentence as number].text,
         sn: selectedSentence,
         articleId: article.id,
         translation: "translation",
+        timepoint: text[selectedSentence as number].begin,
+        endTimepoint: endTimepoint,
       });
     } catch (error) {
       window.alert(error.response.data.message);
