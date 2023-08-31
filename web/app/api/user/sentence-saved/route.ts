@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
     try {
         // Access request body
-        const { articleId, sentence, translation, sn } = await req.json();
+        const { articleId, sentence, translation, sn, timepoint, endTimepoint } = await req.json();
         // sn is the sentence number in the article
 
         // Get user id from token
@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
             sentence,
             translation,
             sn,
+            timepoint,
+            endTimepoint,
             createdAt: new Date(),
         });
 
