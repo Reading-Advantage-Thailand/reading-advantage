@@ -3,11 +3,14 @@
     "@google-cloud/storage": "^7.0.1",
     "automated-readability": "^2.0.1",
     "axios": "^1.4.0",
+    "base64-js": "^1.5.1",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "dotenv": "^16.3.1",
+    "firebase-admin": "^11.10.1",
     "fs": "^0.0.1-security",
     "openai": "^3.3.0",
+    "sentence-tokenizer": "^1.0.1",
     "vocabulary-level-grader": "^1.1.0"
   }
 }
