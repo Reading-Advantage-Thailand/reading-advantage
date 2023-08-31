@@ -11,6 +11,9 @@
 9. [ ] Comprehension questions with feedback.
 10. [ ] Writing prompts with writing assistance.
 11. [ ] Running records using speech to text and further analysis.
+12. [ ] Teacher and classroom management and reporting functions
+13. [ ] School admin management and reporting functions
+14. [ ] App admin function
 
 ## Article leveling
 1. Uses the NN NLP CEFR project API call (docker image finished) to return confidence of CEFR levels, then calulates weighted average based on GSE levels.
