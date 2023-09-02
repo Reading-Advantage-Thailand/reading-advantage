@@ -28,6 +28,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   const [highlightedWordIndex, setHighlightedWordIndex] = React.useState(-1);
   const [isplaying, setIsPlaying] = React.useState(false);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const textContainer = React.useRef<HTMLParagraphElement | null>(null);
 
   const [selectedSentence, setSelectedSentence] = React.useState<Number>(-1);
   const [contextMenu, setContextMenu] = React.useState<{
@@ -53,11 +54,29 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   };
   React.useEffect(() => {
     splitToText(article);
-  }, []);
+  }, [article]);
 
   const handleHighlight = (audioCurrentTime: number) => {
-    const index = text.findIndex((word) => word.begin >= audioCurrentTime);
-    setHighlightedWordIndex(index - 1);
+    const lastIndex = text.length - 1;
+
+    if (audioCurrentTime >= text[lastIndex].begin!) {
+      setHighlightedWordIndex(lastIndex);
+    } else {
+      const index = text.findIndex((word) => word.begin! >= audioCurrentTime);
+      setHighlightedWordIndex(index - 1);
+    }
+
+    if (textContainer.current && highlightedWordIndex !== -1) {
+      const highlightedWordElement = textContainer.current.children[
+        highlightedWordIndex
+      ] as HTMLElement;
+      if (highlightedWordElement) {
+        highlightedWordElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }
   };
 
   const handlePause = () => {
@@ -159,7 +178,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         {article.title}
       </Typography>
-      <Box onContextMenu={handleContextMenu} style={{ cursor: 'context-menu' }}>
+      <Box onContextMenu={handleContextMenu} style={{ cursor: 'context-menu' }} ref={textContainer}>
         {text.map((sentence, index) => (
           <Typography
             key={index}
