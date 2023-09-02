@@ -11,7 +11,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
         const articlesRef = db.collection("user-article-records")
             .where("userId", "==", sub)
             .orderBy("createdAt", "desc")
-            .limit(10);
+        // .limit(10);
+
         const articlesSnapshot = await articlesRef.get();
         const articles = articlesSnapshot.docs.map((doc) => ({
             id: doc.id,
