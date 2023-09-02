@@ -22,7 +22,10 @@ export const GET = async (req, { params }) => {
         return NextResponse.json({
             status: 'success',
             data: {
-                article,
+                article: {
+                    id: articleId,
+                    ...article,
+                }
             },
         });
     } catch (error) {

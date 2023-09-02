@@ -107,6 +107,8 @@ export default function HomePage(): JSX.Element {
             const res = await axios.post(updateUserLevelUrl, {
                 articleId: article.id,
                 newLevel: (value as number) + rating - 3,
+                rating,
+                title: article.title,
                 // rating: (value as number) + rating - 3,
             });
             await update({
