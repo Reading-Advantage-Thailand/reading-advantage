@@ -2,9 +2,7 @@ import db from "@configs/firebaseConfig";
 import NextAuth, { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcryptjs from "bcryptjs";
-import { redirect } from "next/dist/server/api-utils";
 
-// const handler = NextAuth({
 export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET as string,
     session: { strategy: 'jwt' },
@@ -17,8 +15,8 @@ export const authOptions: NextAuthOptions = {
             name: "credentials",
             credentials: {},
             async authorize(credentials, req) {
-                let docId;
-                let isEmail = false;
+                let docId: string;
+                let isEmail: boolean = false;
                 let user;
                 // check email or username
                 if (req.body.emailOrUsername.includes("@")) {
@@ -91,12 +89,5 @@ export const authOptions: NextAuthOptions = {
             session.level = token.userLevel
             return session
         },
-        // async redirect({ url, baseUrl }) {
-        //     console.log('redirect', url, baseUrl);
-        //     return baseUrl
-        // }
     },
 }
-// );
-export default NextAuth(authOptions)
-// export { handler as GET, handler as POST };
