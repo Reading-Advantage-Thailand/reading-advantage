@@ -1,44 +1,59 @@
-import { Box, Button, Typography } from '@mui/material';
-import Link from 'next/link';
+import { Button, Card, CardContent, Container, Typography } from '@mui/material'
+import Link from 'next/link'
+import React from 'react'
 
-const Home = () => {
+type Props = {}
+export default function IndexPage({ }: Props) {
     return (
-        <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            padding: {
-                xs: '1rem',
-                sm: '2rem',
-            },
-        }}>
-            <Typography
-                variant='h3'
-                fontWeight={'bold'}
-                color={'#36343e'}
-            >
-                Reading Advantage
-            </Typography>
-            <Typography
-                variant='h6'
-                marginTop={'1rem'}
-                color={'#9995a9'}
-                mb='3rem'
+        <>
+            <Container
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100vh',
+                }}>
+                <Typography
+                    variant="h4"
+                    component="h1"
+                    textAlign='center'
+                    sx={{
+                        fontWeight: 'bold',
+                    }}
+                >
+                    Reading Advantage
+                </Typography>
+                <Typography
+                    variant="h4"
+                    component="h2"
+                    color='text.secondary'
+                    textAlign='center'
+                    sx={{
+                        fontWeight: 'bold',
+                    }}
 
-            >
-                Extensive reading app incorporating AI.
-            </Typography>
-            <Link href='/home'>
+                >
+                    Extensive reading app
+                    incorporating AI.
+                </Typography>
                 <Button
                     variant='contained'
                     sx={{
-                        maxWidth: '200px',
+                        mt: '1rem',
                     }}
                 >
-                    {`Get Started`}
+                    <Link
+                        href='/home'
+                        style={{
+                            textDecoration: 'none',
+                            color: 'inherit',
+                        }}
+                    >
+                        get started
+                    </Link>
                 </Button>
-            </Link>
-        </Box >
+            </Container>
+        </>
     )
 }
-
-export default Home

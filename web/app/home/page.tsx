@@ -210,6 +210,8 @@ export default function HomePage(): JSX.Element {
         }
     };
 
+    const [isQuestionCompleted, setIsQuestionCompleted] = useState<boolean>(false);
+
     return (
         <DefaultLayout>
             <Box sx={{
@@ -277,6 +279,9 @@ export default function HomePage(): JSX.Element {
                         currentLevel={value as number}
                         rating={rating}
                         setRating={setRating}
+                        questions={article?.questions}
+                        setIsQuestionCompleted={setIsQuestionCompleted}
+
                     />
                 ) : (
                     <SelectItemComponent
@@ -299,7 +304,7 @@ export default function HomePage(): JSX.Element {
                             (step === 1 && selectedType === "") ||
                             (step === 2 && selectedGenre === "") ||
                             (step === 3 && selectedSubGenre === "") ||
-                            (step === 4 && rating === -1)
+                            (step === 4 && rating === -1 && !isQuestionCompleted)
                         }
                         variant="contained"
                         onClick={handleNext}

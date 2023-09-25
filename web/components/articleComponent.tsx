@@ -4,12 +4,16 @@ import { Box, Button, Menu, MenuItem, Rating, Stack, Typography } from "@mui/mat
 import { Article } from "@models/articleModel";
 import Tokenizer from "sentence-tokenizer";
 import axios from "axios";
+import MCQ from "./mcq";
+
 
 interface ArticleComponentProps {
   article: Article;
   currentLevel: number;
   setRating: React.Dispatch<React.SetStateAction<number>>;
   rating: number;
+  questions: any,
+  setIsQuestionCompleted: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 interface ITextAudio {
@@ -22,6 +26,8 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
   currentLevel,
   setRating,
   rating,
+  questions,
+  setIsQuestionCompleted
 }) => {
   //const [rating, setRating] = React.useState<number>(-1);
   const [text, setText] = React.useState<ITextAudio[]>([]);
@@ -226,6 +232,14 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
         </Menu>
       </Box>
       <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
+        Questions
+      </Typography>
+      <MCQ
+        questions={questions}
+        articleId={article.id}
+        setIsQuestionCompleted={setIsQuestionCompleted}
+      />
+      <Typography color="#36343e" variant="h6" fontWeight="bold" pt="1rem">
         How easy is this article?
       </Typography>
       <Rating
@@ -249,6 +263,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
         />
       </audio>
       <Button onClick={handlePause}>{isplaying ? "Pause" : "Play"}</Button>
+
     </Box>
   );
 };

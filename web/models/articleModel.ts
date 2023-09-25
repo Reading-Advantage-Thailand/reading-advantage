@@ -24,4 +24,18 @@ export interface Article {
       markName: string;
     }
   ];
+  questions: {
+    multiple_choice_questions: [
+      {
+        question: string;
+        id: string;
+        answers: {
+          choice_a: string;
+          choice_b: string;
+          choice_c: string;
+          choice_d: string;
+        };
+      }
+    ];
+  }
 }
