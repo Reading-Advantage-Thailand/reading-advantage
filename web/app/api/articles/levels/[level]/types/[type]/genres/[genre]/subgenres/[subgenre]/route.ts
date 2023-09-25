@@ -25,7 +25,20 @@ export const GET = async (req, { params }) => {
         const randomArticle = Math.floor(Math.random() * articlesSnapshot.size);
         const article = articlesSnapshot.docs[randomArticle].data();
 
+        // switch answer choices in each question 
+        const switchChoices = (choices) => {
+            let currentIndex = choices.length, randomIndex;
+            while (0 !== currentIndex) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [choices[currentIndex], choices[randomIndex]] = [
+                    choices[randomIndex], choices[currentIndex]];
+            }
+            return choices;
+        }
 
+
+        //get questions
         return NextResponse.json({
             status: 'success',
             result: data.length,
@@ -33,6 +46,15 @@ export const GET = async (req, { params }) => {
                 article: {
                     id: articlesSnapshot.docs[randomArticle].id,
                     ...article,
+                    // swich choices for all questions
+                    questions: {
+                        multiple_choice_questions: article.questions.multiple_choice_questions.map(question => {
+                            return {
+                                ...question,
+                                answers: switchChoices(Object.values(question.answers))
+                            }
+                        })
+                    }
                 },
             }
         });
