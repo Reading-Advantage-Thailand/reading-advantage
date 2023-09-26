@@ -201,3 +201,5 @@ const Header = (props: Props) => {
         </Box>
     );
 }
+
+export default Header

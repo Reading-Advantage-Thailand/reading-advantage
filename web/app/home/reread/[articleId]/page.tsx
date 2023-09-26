@@ -87,6 +87,8 @@ export default function HomePage(
     }, []);
 
 
+    const [isQuestionCompleted, setIsQuestionCompleted] = useState<boolean>(false);
+
     return (
         <DefaultLayout>
             <Box sx={{
@@ -105,6 +107,8 @@ export default function HomePage(
                             currentLevel={value as number}
                             rating={rating}
                             setRating={setRating}
+                            setIsQuestionCompleted={setIsQuestionCompleted}
+                            questions={article.questions}
                         />
                     )
                 }
