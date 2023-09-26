@@ -5,6 +5,7 @@ import { Article } from "@models/articleModel";
 import Tokenizer from "sentence-tokenizer";
 import axios from "axios";
 import MCQ from "./mcq";
+import Image from "next/image";
 
 
 interface ArticleComponentProps {
@@ -172,7 +173,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
         </Typography>
       </Box>
       <Stack alignItems="center">
-        <img
+        <Image
           style={{
             marginTop: "2rem",
             maxWidth: "100%",

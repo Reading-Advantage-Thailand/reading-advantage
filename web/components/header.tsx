@@ -25,7 +25,10 @@ interface Props {
 const drawerWidth = 240;
 const navItems = ['Home', 'Article Records', 'Flashcard'];
 
-export default function (props: Props) {
+import React from 'react'
+
+
+const Header = (props: Props) => {
     const { window } = props;
     const [mobileOpen, setMobileOpen] = useState(false);
     const { data: session, status } = useSession()
@@ -44,7 +47,7 @@ export default function (props: Props) {
             <Divider />
             <List>
                 {navItems.map((item) => (
-                    <Link href={item === 'Article Records' ?
+                    <Link key={item} href={item === 'Article Records' ?
                         `/home/article-records` :
                         item === 'Flashcard' ?
                             `/home/flashcard` :
