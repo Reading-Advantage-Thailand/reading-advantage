@@ -58,7 +58,7 @@ const SignInForm = ({ onSwitch }) => {
                 </Typography>
             </Stack>
             <Stack flexDirection="row" justifyContent="center" alignItems="center">
-                <Typography color={text}>Don't have an account yet?</Typography>
+                <Typography color={text}>Don&apos;t have an account yet?</Typography>
                 <Button
                     onClick={onSwitch}
                     sx={{
@@ -176,7 +176,7 @@ const SignUpForm = ({ onSwitch }) => {
                     >
                         {
                             languages.map((lang) => (
-                                <MenuItem value={lang}>{lang}</MenuItem>
+                                <MenuItem key={lang} value={lang}>{lang}</MenuItem>
                             ))
                         }
                     </Select>
