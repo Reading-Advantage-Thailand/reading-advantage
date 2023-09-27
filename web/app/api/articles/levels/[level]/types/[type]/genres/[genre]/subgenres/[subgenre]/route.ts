@@ -25,17 +25,25 @@ export const GET = async (req, { params }) => {
         const randomArticle = Math.floor(Math.random() * articlesSnapshot.size);
         const article = articlesSnapshot.docs[randomArticle].data();
 
+        // remove suggested_answer from answers of all questions
+        article.questions.multiple_choice_questions.forEach(question => {
+            delete question.answers.suggested_answer;
+        });
+        console.log('multiple_choice_questions', article.questions.multiple_choice_questions);
         // switch answer choices in each question 
         const switchChoices = (choices) => {
             let currentIndex = choices.length, randomIndex;
             while (0 !== currentIndex) {
                 randomIndex = Math.floor(Math.random() * currentIndex);
+                // switch choices
                 currentIndex--;
                 [choices[currentIndex], choices[randomIndex]] = [
                     choices[randomIndex], choices[currentIndex]];
             }
             return choices;
         }
+        const switchedChoices = switchChoices(Object.values(article.questions.multiple_choice_questions[0].answers));
+        console.log('switchedChoices', switchedChoices);
 
 
         //get questions
