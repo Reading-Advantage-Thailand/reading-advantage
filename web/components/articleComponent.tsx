@@ -173,7 +173,7 @@ const ArticleComponent: React.FC<ArticleComponentProps> = ({
         </Typography>
       </Box>
       <Stack alignItems="center">
-        <Image
+        <img
           style={{
             marginTop: "2rem",
             maxWidth: "100%",
