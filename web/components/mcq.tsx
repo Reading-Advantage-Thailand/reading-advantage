@@ -16,8 +16,14 @@ const MCQ = (props) => {
     const [correctAnswers, setCorrectAnswers] = useState([]); // Use an array to track correct answers
     const [correctAnswer, setCorrectAnswer] = useState(''); // correct answer for current question
     const [isAnswered, setIsAnswered] = useState(false);
+    useEffect(() => {
+        console.log('props.questions', props.questions);
+
+    }, [props.questions]);
 
     const handleNextQuestion = () => {
+        setSelectedAnswer('');
+        setCorrectAnswer('');
         if (currentQuestion + 1 >= props.questions.multiple_choice_questions.length) {
             // alert('You have finished the article');
             props.setIsQuestionCompleted(true);
@@ -56,9 +62,9 @@ const MCQ = (props) => {
         }
     };
 
-    useEffect(() => {
-        console.log('correctAnswers', correctAnswers);
-    }, [correctAnswers]);
+    // useEffect(() => {
+    //     console.log('correctAnswers', correctAnswers);
+    // }, [correctAnswers]);
 
     return (
         <div>
