@@ -14,7 +14,7 @@ async function fetchArticle(
     articleId: string
 ) {
     const response = await fetch(
-        `${process.env.NEXTAUTH_URL}/api/articles/${articleId}`,
+        `${process.env.NEXT_PUBLIC_URL}/api/articles/${articleId}`,
         {
             method: 'GET',
             headers: headers(),

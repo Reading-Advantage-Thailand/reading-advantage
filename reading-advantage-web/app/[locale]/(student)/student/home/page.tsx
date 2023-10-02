@@ -17,7 +17,7 @@ export const metadata = {
 async function getUserArticleRecords(userId: string) {
     // fetch user article records
     const res = await fetch(
-        `${process.env.NEXTAUTH_URL}/api/users/${userId}/article-records`,
+        `${process.env.NEXT_PUBLIC_URL}/api/users/${userId}/article-records`,
         {
             method: 'GET',
             headers: headers(),
@@ -28,37 +28,36 @@ async function getUserArticleRecords(userId: string) {
 export default async function StudentHomePage({ }: Props) {
     // const t = useTranslations('pages.student.article-records')
     const user = await getCurrentUser();
-    console.log('user----', user);
-
     if (!user) {
         return redirect('/login');
     }
     if (user.level === 0) {
         return redirect('/student/level');
     }
-
-
-
     const res = await getUserArticleRecords(user.id);
-
     // articles that have been read
     // put the articles that have rating lower than 3 in the reminder table
     const reminderArticles = res.articles.filter((article: any) => article.rating < 3);
     // put the articles that have rating higher than 3 in the article records table
     const articleRecords = res.articles.filter((article: any) => article.rating >= 3);
-
     return (
         <>
-            <Header
-                // heading={t('heading-reminder-reread')}
-                // text={t('text-reminder-reread')}
-                heading='Reminder to reread'
-                text='test'
-                variant='warning'
-            />
-            <ReminderRereadTable
-                articles={reminderArticles}
-            />
+            {
+                reminderArticles.length !== 0 && (
+                    <>
+                        <Header
+                            // heading={t('heading-reminder-reread')}
+                            // text={t('text-reminder-reread')}
+                            heading='Reminder to reread'
+                            text='test'
+                            variant='warning'
+                        />
+                        <ReminderRereadTable
+                            articles={reminderArticles}
+                        />
+                    </>
+                )
+            }
             <Header
                 // heading={t('heading')}
                 // text={t('text')}

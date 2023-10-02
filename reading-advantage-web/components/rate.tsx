@@ -36,7 +36,7 @@ export function RateDialog({
     const [userLevel, setUserLevel] = React.useState(0);
 
     const instance = axios.create({
-        baseURL: 'http://localhost:3000',
+        baseURL: process.env.NEXT_PUBLIC_URL,
         timeout: 1000,
     });
     async function onUpdateUser() {

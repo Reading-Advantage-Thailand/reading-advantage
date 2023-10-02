@@ -85,7 +85,7 @@ function Quiz({
     const [correctAnswers, setCorrectAnswers] = React.useState<string[]>([]); // Use an array to track correct answers
 
     const instance = axios.create({
-        baseURL: `${process.env.NEXTAUTH_URL}`,
+        baseURL: `${process.env.NEXT_PUBLIC_URL}`,
         timeout: 1000,
     })
 
