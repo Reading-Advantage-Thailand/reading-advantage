@@ -1,12 +1,13 @@
-import { SessionProvider } from 'next-auth/react'
-import React from 'react'
-
+"use client";
+import { SessionProvider } from "next-auth/react"
 type Props = {
-    children: React.ReactNode
-}
+    children?: React.ReactNode;
+    session: any;
+};
 
-export default function NextAuthSessionProvider({ children }: Props) {
-    return (
-        <SessionProvider>{children}</SessionProvider>
-    )
-}
+export const NextAuthSessionProvider = ({ children, session }: Props) => {
+    const basePath = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+    return <SessionProvider session={session} basePath={basePath}>
+        {children}
+    </ SessionProvider>;
+};

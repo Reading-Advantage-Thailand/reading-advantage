@@ -4,21 +4,27 @@ import localFont from 'next/font/local'
 import { siteConfig } from '@/configs/site-config'
 import '@/styles/globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { Analytics } from '@/components/analytics'
 import { Toaster } from '@/components/ui/toaster'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 
+import { notFound } from 'next/navigation';
+import { NextIntlProvider } from '@/components/providers/nextintl-provider'
+import { NextAuthSessionProvider } from '@/components/providers/nextauth-session-provider'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/nextauth'
+
+const locales = ['en', 'th'];
 const cabinSketch = localFont({
-  src: '../assets/fonts/CabinSketch-Regular.ttf',
+  src: '../../assets/fonts/CabinSketch-Regular.ttf',
   variable: '--font-cabin-sketch',
   weight: '400',
 })
 
 const cabinSketchBold = localFont({
-  src: '../assets/fonts/CabinSketch-Bold.ttf',
+  src: '../../assets/fonts/CabinSketch-Bold.ttf',
   variable: '--font-cabin-sketch-bold',
   weight: '700',
 })
@@ -62,13 +68,37 @@ export const metadata: Metadata = {
 
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params: { locale },
 }: {
-  children: React.ReactNode
+  children: React.ReactNode,
+  params: { locale: string },
 }) {
+  /**
+ * Next.js 13 internationalization library
+ * @see https://next-intl-docs.vercel.app
+ */
+  let messages: any;
+  try {
+    messages = (await import(`../../messages/${locale}.json`)).default;
+  } catch (error) {
+    console.log("❌ Internationalization", error);
+  }
+
+  /**
+   * _For debug purposes_ use this to check the session object:
+   * @example ```<pre>{JSON.stringify(session, null, 2)}</pre>```
+   * @see https://next-auth.js.org/configuration/nextjs#in-app-router
+   */
+  // Validate that the incoming `locale` parameter is valid
+  const isValidLocale = locales.some((cur) => cur === locale);
+  if (!isValidLocale) notFound();
+
+  // const session = await getServerSession(authOptions);
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head />
       <body
         className={cn(
@@ -78,12 +108,16 @@ export default function RootLayout({
           cabinSketchBold.variable,
         )}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-          {/* <Analytics /> */}
-          <Toaster />
-          <TailwindIndicator />
-        </ThemeProvider>
+        <NextIntlProvider locale={locale} messages={messages}>
+          {/* <NextAuthSessionProvider session={session}> */}
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            {children}
+            {/* <Analytics /> */}
+            <Toaster />
+            <TailwindIndicator />
+          </ThemeProvider>
+          {/* </NextAuthSessionProvider> */}
+        </NextIntlProvider>
       </body>
     </html>
   )

@@ -49,3 +49,33 @@ export type User = {
     lastLogin: Date;
     level: number;
 }
+
+// multiple choice question type
+export type Question = {
+    question: string;
+    descriptor_id: string;
+    answers: string[];
+}
+
+// article table type
+export type ArticleRecord = {
+    id: string,
+    createdAt: {
+        _seconds: number,
+        _nanoseconds: number
+    },
+    articleId: string,
+    userId: string,
+    timeRecorded: number,
+    questions: any[],
+    userLevel?: number,
+    updatedLevel?: number,
+    calculatedLevel?: number,
+    rating: number,
+    title: string,
+    status: string,
+    updatedAt: {
+        _seconds: number,
+        _nanoseconds: number
+    }
+}

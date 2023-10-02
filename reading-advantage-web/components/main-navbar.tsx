@@ -7,6 +7,7 @@ import { useSelectedLayoutSegment } from "next/navigation";
 import { MobileNav } from "./mobile-navbar";
 import { Icons } from "./icons";
 import { siteConfig } from "@/configs/site-config";
+import { useTranslations } from "next-intl";
 
 interface MainNavProps {
     children?: React.ReactNode;
@@ -15,6 +16,8 @@ interface MainNavProps {
 export function MainNav({ children, items }: MainNavProps) {
     const [showMobileMenu, setShowMobileMenu] = React.useState(false);
     const segment = useSelectedLayoutSegment()
+
+    const t = useTranslations("components.main-navbar")
 
     return (
         <div className='flex md:gap-10 gap-6'>
@@ -38,7 +41,8 @@ export function MainNav({ children, items }: MainNavProps) {
                                 item.disabled && "cursor-not-allowed opacity-80"
                             )}
                         >
-                            {item.title}
+                            {/* {item.title} */}
+                            {t(item.title)}
                         </Link>
                     ))}
                 </nav>
@@ -48,7 +52,7 @@ export function MainNav({ children, items }: MainNavProps) {
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
             >
                 {showMobileMenu ? <Icons.close color="#3b82f6" /> : <Icons.logo />}
-                <span className="font-bold text-[#3b82f6]">Menu</span>
+                <span className="font-bold text-[#3b82f6]">{t('Menu')}</span>
             </button>
             {showMobileMenu && items && (
                 <MobileNav items={items}>{children}</MobileNav>

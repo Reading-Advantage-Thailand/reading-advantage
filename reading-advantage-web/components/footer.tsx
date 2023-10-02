@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils"
 import { Icons } from "@/components/icons"
 import { ModeToggle } from "./theme-switcher-toggle"
 import { siteConfig } from "@/configs/site-config"
+import LocaleSwitcher from "./locale-switcher"
 
 interface FooterProps {
     className?: string
@@ -36,6 +37,7 @@ export function Footer({ className }: FooterProps) {
                         .
                     </p>
                 </div>
+                <LocaleSwitcher />
                 <ModeToggle />
             </div>
         </footer>

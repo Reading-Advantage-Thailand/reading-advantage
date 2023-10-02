@@ -20,7 +20,6 @@ import {
 } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -39,30 +38,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { useTranslations } from "next-intl"
 import { ArticleRecord } from "@/types"
 
 export const columns: ColumnDef<ArticleRecord>[] = [
-    // check box
-    // {
-    //     id: "select",
-    //     header: ({ table }) => (
-    //         <Checkbox
-    //             checked={table.getIsAllPageRowsSelected()}
-    //             onCheckedChange={(value: any) => table.toggleAllPageRowsSelected(!!value)}
-    //             aria-label="Select all"
-    //         />
-    //     ),
-    //     cell: ({ row }) => (
-    //         <Checkbox
-    //             checked={row.getIsSelected()}
-    //             onCheckedChange={(value: any) => row.toggleSelected(!!value)}
-    //             aria-label="Select row"
-    //         />
-    //     ),
-    //     enableSorting: false,
-    //     enableHiding: false,
-    // },
     {
         accessorKey: "title",
         header: ({ column }) => {
@@ -117,14 +95,12 @@ export const columns: ColumnDef<ArticleRecord>[] = [
     // },
 ]
 
-interface ArticleRecordsTableProps {
-    className?: string
-    articles: ArticleRecord[],
+interface ReminderRereadTableProps {
+    articles: ArticleRecord[]
 }
-
-export function ArticleRecordsTable({
+export function ReminderRereadTable({
     articles,
-}: ArticleRecordsTableProps) {
+}: ReminderRereadTableProps) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
@@ -152,49 +128,11 @@ export function ArticleRecordsTable({
         },
     })
 
-    const t = useTranslations("components.article-records-table")
-
     return (
         <div className="w-full">
-            <div className="flex items-center py-4">
-                <Input
-                    placeholder={t("search-placeholder")}
-                    value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-                    onChange={(event) =>
-                        table.getColumn("title")?.setFilterValue(event.target.value)
-                    }
-                    className="max-w-sm"
-                />
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-auto">
-                            Columns <ChevronDownIcon className="ml-2 h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {table
-                            .getAllColumns()
-                            .filter((column) => column.getCanHide())
-                            .map((column) => {
-                                return (
-                                    <DropdownMenuCheckboxItem
-                                        key={column.id}
-                                        className="capitalize"
-                                        checked={column.getIsVisible()}
-                                        onCheckedChange={(value) =>
-                                            column.toggleVisibility(!!value)
-                                        }
-                                    >
-                                        {column.id}
-                                    </DropdownMenuCheckboxItem>
-                                )
-                            })}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
+            <div className="rounded-md border mt-3 mb-4 bg-[#ffedd5] dark:bg-[#7c2d12]">
+                <Table >
+                    <TableHeader >
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
@@ -241,30 +179,6 @@ export function ArticleRecordsTable({
                         )}
                     </TableBody>
                 </Table>
-            </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <div className="flex-1 text-sm text-muted-foreground">
-                    {table.getFilteredSelectedRowModel().rows.length} {t("of")}{" "}
-                    {table.getFilteredRowModel().rows.length} {t("row-selected")}
-                </div>
-                <div className="space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        {t("previous")}
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        {t("next")}
-                    </Button>
-                </div>
             </div>
         </div>
     )

@@ -17,18 +17,19 @@ export const studentHomePageConfig: StudentHomePageConfig = {
     ],
     sidebarNav: [
         {
-            title: "Article Records",
-            href: "/student/home",
+            title: "article-records",
+            href: '/student/home',
             icon: "record",
         },
         {
-            title: "Dashboard",
-            href: "/dashboard",
+            title: "dashboard",
+            href: '/student/dashboard',
             icon: "dashboard",
+            disabled: true,
         },
         {
-            title: "Next Quiz",
-            href: "/quiz",
+            title: "next-quiz",
+            href: '/student/next-quiz',
             icon: "book",
         },
     ],

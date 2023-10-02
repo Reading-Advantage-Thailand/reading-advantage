@@ -1,0 +1,48 @@
+{
+    "pages": {
+        "index": {
+            "description": "Extensive reading app incorporating AI. Beta version and testing in progress.",
+            "get-started": "Get started"
+        },
+        "login": {
+            "title": "Welcome back!",
+            "description": "Login to your account.",
+            "back-button": "Back"
+        },
+        "student": {
+            "article-records": {
+                "heading-reminder-reread": "Reminder reread",
+                "text-reminder-reread": "You might want to try reading one of these articles again to see if you've improved.",
+                "heading": "Article records",
+                "text": "History of articles you have read."
+            }
+        }
+    },
+    "components": {
+        "main-navbar": {
+            "Home": "Home",
+            "About": "About",
+            "Contact": "Contact",
+            "Login": "Login",
+            "Menu": "Menu"
+        },
+        "buttons": {
+            "Login": "Login"
+        },
+        "article-records-table": {
+            "search-placeholder": "Search articles...",
+            "of": "of",
+            "row-selected": "row(s) selected",
+            "previous": "Previous",
+            "next": "Next"
+        },
+        "locale-switcher": {
+            "switch": "Switch language to Thai"
+        },
+        "sidebar": {
+            "article-records": "Article records",
+            "dashboard": "Dashboard",
+            "next-quiz": "Next quiz"
+        }
+    }
+}

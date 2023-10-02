@@ -3,9 +3,10 @@ import { MainNav } from '@/components/main-navbar'
 import { buttonVariants } from '@/components/ui/button'
 import { indexPageConfig } from '@/configs/index-page-config'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import React from 'react'
 
+import React from 'react'
 type Props = {
     children: React.ReactNode
 }
@@ -13,6 +14,7 @@ type Props = {
 export default function IndexLayout({
     children
 }: Props) {
+    const t = useTranslations('components.buttons')
     return (
         <div className="flex min-h-screen flex-col">
             <header className="container z-40 bg-background">
@@ -26,7 +28,7 @@ export default function IndexLayout({
                                 "px-4"
                             )}
                         >
-                            Login
+                            {t('Login')}
                         </Link>
                     </nav>
                 </div>

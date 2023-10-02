@@ -5,6 +5,7 @@ import { useLockBody } from "@/hooks/use-lock-body"
 import { cn } from "@/lib/utils"
 import { Icons } from "./icons"
 import { siteConfig } from "@/configs/site-config"
+import { useTranslations } from "next-intl"
 
 interface MobileNavProps {
     items: MainNavItem[]
@@ -13,7 +14,7 @@ interface MobileNavProps {
 
 export function MobileNav({ items, children }: MobileNavProps) {
     useLockBody()
-
+    const t = useTranslations("components.main-navbar")
     return (
         <div
             className={cn(
@@ -34,7 +35,7 @@ export function MobileNav({ items, children }: MobileNavProps) {
                                 item.disabled && "cursor-not-allowed opacity-60"
                             )}
                         >
-                            {item.title}
+                            {t(item.title)}
                         </Link>
                     ))}
                 </nav>

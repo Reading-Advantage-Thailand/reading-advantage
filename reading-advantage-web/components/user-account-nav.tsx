@@ -12,9 +12,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { UserAvatar } from "@/components/user-avatar"
+import LocaleSwitcher from "./locale-switcher"
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
-    user: Pick<User, "name" | "image" | "email">
+    user: Pick<User, "name" | "image" | "email"> & { level: number }
 }
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
@@ -23,7 +24,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
             <DropdownMenuTrigger>
                 <UserAvatar
                     user={{ name: user.name || null, image: user.image || null }}
-                    className="h-8 w-8"
+                    className="h-8 w-8 border-2 border-[#E5E7EB] rounded-full cursor-pointer"
                 />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -35,11 +36,22 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
                                 {user.email}
                             </p>
                         )}
+                        {user.level && (
+                            <p className="w-[200px] truncate text-sm text-muted-foreground">
+                                Level {user.level}
+                            </p>
+                        )}
                     </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings">Settings</Link>
+                <DropdownMenuItem
+                    className="cursor-pointer"
+                >
+                    <LocaleSwitcher />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild disabled>
+                    <Link href="/student/home/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -49,7 +61,9 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
                         signOut({
                             callbackUrl: `${window.location.origin}/login`,
                         })
+                        // signOut();
                     }}
+
                 >
                     Sign out
                 </DropdownMenuItem>
