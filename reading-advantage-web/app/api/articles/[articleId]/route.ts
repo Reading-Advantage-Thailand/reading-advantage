@@ -3,9 +3,7 @@
 import { db } from "@/configs/firestore-config";
 
 import { authOptions } from "@/lib/nextauth";
-import { get } from "lodash";
 import { getServerSession } from "next-auth";
-import { getToken } from "next-auth/jwt";
 
 export const GET = async (req: Request, { params }: any) => {
     const articleId = params.articleId;
@@ -18,11 +16,11 @@ export const GET = async (req: Request, { params }: any) => {
                 message: 'Unauthorized',
             }), { status: 403 })
         }
+        const userLevel = session.user.level;
 
         // Use the articleId as the document ID to fetch the article
         const articleSnapshot = await db.collection('articles').doc(articleId).get();
 
-        const userLevel = get(session, 'user.level');
         const articleLevel = articleSnapshot.data()?.raLevel;
 
         // example 
