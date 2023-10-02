@@ -6,7 +6,7 @@ type Props = {
 };
 
 export const NextAuthProvider = ({ children, session }: Props) => {
-    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    const basePath = process.env.NEXT_PUBLIC_URL || "";
     return <SessionProvider session={session} basePath={basePath}>
         {children}
     </ SessionProvider>;
