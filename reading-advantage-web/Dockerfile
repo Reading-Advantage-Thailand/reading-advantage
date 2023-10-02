@@ -1,0 +1,41 @@
+FROM node:alpine
+
+# Setup environment variable arguments
+# ----------------------------------
+ARG NODE_ENV
+# NextAuth
+ARG NEXTAUTH_URL
+ARG NEXTAUTH_SECRET
+ARG NEXTAUTH_PUBLIC_URL
+# NextJS
+ARG NEXT_PUBLIC_URL
+# Google
+ARG GOOGLE_CLIENT_ID
+ARG GOOGLE_CLIENT_SECRET
+# Service Account
+ARG SERVICE_ACCOUNT_KEY
+
+# Environment variables
+# ----------------------------------
+ENV NODE_ENV=$NODE_ENV
+# NextAuth
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
+ENV NEXTAUTH_PUBLIC_URL=$NEXTAUTH_PUBLIC_URL
+# NextJS
+ENV NEXT_PUBLIC_URL=$NEXT_PUBLIC_URL
+# Google
+ENV GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+ENV GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
+# Service Account
+ENV SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY . /usr/src/app/
+
+RUN npm install
+RUN npm run build
+
+CMD ["npm", "start"]

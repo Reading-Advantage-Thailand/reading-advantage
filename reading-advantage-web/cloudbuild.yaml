@@ -1,0 +1,51 @@
+@ -1,48 +0,0 @@
+steps:
+  # build the container images
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "--build-arg",
+        "NODE_ENV=$_NODE_ENV",
+        "--build-arg",
+        "NEXTAUTH_SECRET=$_NEXTAUTH_SECRET",
+        "--build-arg",
+        "NEXTAUTH_PUBLIC_URL=$_NEXTAUTH_PUBLIC_URL",
+        "--build-arg",
+        "NEXTAUTH_URL=$_NEXTAUTH_URL",
+        "--build-arg",
+        "GOOGLE_CLIENT_ID=$_GOOGLE_CLIENT_ID",
+        "--build-arg",
+        "GOOGLE_CLIENT_SECRET=$_GOOGLE_CLIENT_SECRET",
+        "--build-arg",
+        "SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY",
+        "-t", 
+        "gcr.io/$PROJECT_ID/reading-advantage-web", 
+        "./web",
+      ]
+
+  # push the container images to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/reading-advantage-web"]
+
+  # Deploy container images to Cloud Run
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      [
+        "run",
+        "deploy",
+        "reading-advantage-web",
+        "--image",
+        "gcr.io/$PROJECT_ID/reading-advantage-web",
+        "--region",
+        "asia-southeast1",
+        "--platform",
+        "managed",
+        "--allow-unauthenticated",
+      ]
+
+images:
+  - gcr.io/$PROJECT_ID/reading-advantage-web
+
+options:
+  logging: CLOUD_LOGGING_ONLY
