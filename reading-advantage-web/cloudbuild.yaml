@@ -1,4 +1,3 @@
-@ -1,48 +0,0 @@
 steps:
   # build the container images
   - name: "gcr.io/cloud-builders/docker"
