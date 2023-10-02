@@ -13,9 +13,7 @@ import { Rating } from "@mui/material";
 import React from "react";
 import { toast } from "./ui/use-toast";
 import axios from "axios";
-import { redirect } from "next/navigation";
 import { Link } from "next-intl";
-import { set } from "lodash";
 
 
 interface RateDialogProps {

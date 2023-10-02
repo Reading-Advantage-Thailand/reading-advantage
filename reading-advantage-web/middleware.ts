@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { withAuth } from "next-auth/middleware";
 import createIntlMiddleware from "next-intl/middleware";
-import { get } from "lodash";
 import { getToken } from "next-auth/jwt";
 
 const locales = ['en', 'th'];

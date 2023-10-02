@@ -1,7 +1,6 @@
 // user/[userId]
 import { db } from "@/configs/firestore-config";
 import { authOptions } from "@/lib/nextauth";
-import { get } from "lodash";
 import { getServerSession } from "next-auth";
 
 // update user level 
@@ -13,8 +12,7 @@ export async function PATCH(req: Request, res: Response) {
         if (!session) {
             return new Response("Unauthorized", { status: 403 })
         }
-
-        const userId = get(session, 'user.id');
+        const userId = session.user.id;
 
         await db.collection('users')
             .doc(userId)
