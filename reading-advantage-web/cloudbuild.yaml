@@ -20,7 +20,7 @@ steps:
         "SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY",
         "-t", 
         "gcr.io/$PROJECT_ID/reading-advantage-web", 
-        "./web",
+        "./reading-advantage-web",
       ]
 
   # push the container images to Container Registry
