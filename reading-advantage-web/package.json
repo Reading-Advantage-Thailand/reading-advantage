@@ -1,11 +1,10 @@
 {
-  "name": "reading-advantage-web",
-  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next",
     "build": "next build",
     "start": "next start",
+    "build-env": "printenv > .env",
     "lint": "next lint"
   },
   "dependencies": {
