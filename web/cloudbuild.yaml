@@ -4,6 +4,8 @@ steps:
     args:
       [
         "build",
+        "--no-cache",
+        "-t",
         "--build-arg",
         "NODE_ENV=$_NODE_ENV",
         "--build-arg",
