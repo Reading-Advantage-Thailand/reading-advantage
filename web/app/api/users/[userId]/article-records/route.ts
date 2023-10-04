@@ -1,9 +1,9 @@
 // user/[userId/articles-records
 // this route is used to update user level and update user-article-record
-import { db } from "@/configs/firestore-config";
+import db from "@/configs/firestore-config";
 import { authOptions } from "@/lib/nextauth";
 import { getServerSession } from "next-auth";
-import { use } from "react";
+import * as z from "zod"
 
 // get user-article-record
 export async function GET(req: Request, res: Response) {
@@ -43,6 +43,11 @@ export async function GET(req: Request, res: Response) {
     }
 };
 
+const userArticleRecordSchema = z.object({
+    articleId: z.string(),
+    rating: z.number(),
+    title: z.string(),
+})
 // update user level
 export async function PATCH(req: Request, res: Response) {
     try {
@@ -53,7 +58,13 @@ export async function PATCH(req: Request, res: Response) {
                 message: 'Unauthorized',
             }), { status: 403 })
         }
-        const { articleId, rating, title } = await req.json();
+
+        const json = await req.json();
+        const body = userArticleRecordSchema.parse(json);
+        // const { articleId, rating, title } = await req.json();
+        const articleId = body.articleId;
+        const rating = body.rating;
+        const title = body.title;
         console.log('articleId', articleId);
         console.log('rating', rating);
         console.log('title', title);

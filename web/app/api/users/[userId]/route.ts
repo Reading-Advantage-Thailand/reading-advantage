@@ -1,18 +1,25 @@
 // user/[userId]
-import { db } from "@/configs/firestore-config";
+import db from "@/configs/firestore-config";
 import { authOptions } from "@/lib/nextauth";
 import { getServerSession } from "next-auth";
+import * as z from "zod"
+
+const userLevelSchema = z.object({
+    level: z.number(),
+})
 
 // update user level 
 export async function PATCH(req: Request, res: Response) {
-    const { level } = await req.json();
-
     try {
         const session = await getServerSession(authOptions);
         if (!session) {
             return new Response("Unauthorized", { status: 403 })
         }
         const userId = session.user.id;
+
+        const json = await req.json();
+        const body = userLevelSchema.parse(json);
+        const level = body.level;
 
         await db.collection('users')
             .doc(userId)

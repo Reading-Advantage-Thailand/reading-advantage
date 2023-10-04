@@ -1,10 +1,9 @@
 import admin from 'firebase-admin';
-// const credentials = require('../service-account.json');
-// import dotenv from 'dotenv';
+import dotenv from 'dotenv';
 
-// dotenv.config();
+dotenv.config();
 const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY as string);
-// const serviceAccount = process.env.GOOGLE_APPLICATION_CREDENTIALS
+
 // Check if the app has already been initialized
 if (!admin.apps.length) {
     admin.initializeApp({
@@ -13,7 +12,5 @@ if (!admin.apps.length) {
 }
 
 const db = admin.firestore();
-const storage = admin.storage();
-const app = admin.app();
 
-export { db, storage, app };
+export default db;

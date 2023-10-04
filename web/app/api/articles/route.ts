@@ -1,6 +1,6 @@
 //route
 // api/articles?level=1&type=fiction&genre=animals
-import { db } from "@/configs/firestore-config";
+import db from "@/configs/firestore-config";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/nextauth";
 
@@ -33,7 +33,6 @@ export async function GET(req: Request, res: Response) {
         if (level && !type && !genre && !subgenre) {
             return new Response(JSON.stringify({
                 data: ['Fiction', 'Non-fiction'],
-                articleId: null,
             }), { status: 200 })
         }
 
@@ -58,7 +57,6 @@ export async function GET(req: Request, res: Response) {
             });
             return new Response(JSON.stringify({
                 data: articles,
-                articleId: null,
             }), { status: 200 })
         }
         // Subgenres response data
@@ -83,7 +81,6 @@ export async function GET(req: Request, res: Response) {
             });
             return new Response(JSON.stringify({
                 data: articles,
-                articleId: null,
             }), { status: 200 })
         }
         // Articles response data
@@ -114,10 +111,10 @@ export async function GET(req: Request, res: Response) {
 
         return new Response(JSON.stringify({
             data: [],
-            articleId: null,
         }), { status: 404 })
     } catch (error) {
-        if (process.env.NODE_ENV === 'development') console.error(error);
-        return new Response(null, { status: 500 })
+        return new Response(JSON.stringify({
+            message: 'Internal server error'
+        }), { status: 500 })
     }
 };

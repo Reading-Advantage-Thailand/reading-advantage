@@ -1,19 +1,41 @@
-import { db } from "@/configs/firestore-config";
+import db from "@/configs/firestore-config";
+import * as z from "zod"
+
 import { authOptions } from "@/lib/nextauth";
 import { getServerSession } from "next-auth";
+import { NextRequest } from "next/server";
 
-export const POST = async (req: Request, { params }: { params: { articleId: string; descriptorId: string; }; }) => {
-    const articleId = params.articleId;
-    const descriptorId = params.descriptorId;
+const routeContextSchema = z.object({
+    params: z.object({
+        articleId: z.string(),
+        descriptorId: z.string(),
+    }),
+})
 
+const articleRecordSchema = z.object({
+    answer: z.string(),
+    timeRecorded: z.number(),
+})
+
+export async function POST(
+    req: Request,
+    context: z.infer<typeof routeContextSchema>
+) {
     try {
+        const { params } = routeContextSchema.parse(context)
+        const articleId = params.articleId;
+        const descriptorId = params.descriptorId;
+
         const session = await getServerSession(authOptions);
         if (!session) {
             return new Response(JSON.stringify({
                 message: 'Unauthorized',
             }), { status: 403 })
         }
-        const { answer, timeRecorded } = await req.json();
+        const json = await req.json();
+        const body = articleRecordSchema.parse(json);
+        const answer = body.answer;
+        const timeRecorded = body.timeRecorded;
         console.log('answer', answer);
         console.log('timeRecorded', timeRecorded);
 
@@ -85,7 +107,11 @@ export const POST = async (req: Request, { params }: { params: { articleId: stri
         }),
             { status: 200 })
     } catch (error) {
-        return new Response(null, { status: 500 })
+        console.log('error', error);
+        return new Response(JSON.stringify({
+            message: 'Internal server error',
+            error: `errors: ${error}`
+        }), { status: 500 })
 
     }
 }

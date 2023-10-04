@@ -1,4 +1,4 @@
-import { db } from "@/configs/firestore-config";
+import db from "@/configs/firestore-config";
 import { type NextAuthOptions, type DefaultSession, User } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 

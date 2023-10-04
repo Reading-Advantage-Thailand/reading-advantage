@@ -1,16 +1,25 @@
 // route
 // api/articles/[articleId]
-import { db } from "@/configs/firestore-config";
-
+import db from "@/configs/firestore-config";
+import * as z from "zod"
 import { authOptions } from "@/lib/nextauth";
 import { getServerSession } from "next-auth";
 
-export const GET = async (req: Request, { params }: any) => {
-    const articleId = params.articleId;
-
+const routeContextSchema = z.object({
+    params: z.object({
+        articleId: z.string(),
+    }),
+})
+export async function GET(
+    req: Request,
+    context: z.infer<typeof routeContextSchema>
+) {
     try {
-        const session = await getServerSession(authOptions);
+        // Validate the route params.
+        const { params } = routeContextSchema.parse(context)
+        const articleId = params.articleId;
 
+        const session = await getServerSession(authOptions);
         if (!session) {
             return new Response(JSON.stringify({
                 message: 'Unauthorized',
@@ -58,7 +67,6 @@ export const GET = async (req: Request, { params }: any) => {
             return choices;
         }
         return new Response(JSON.stringify({
-            data: null,
             article: {
                 id: article?.id,
                 ...article,
@@ -75,8 +83,8 @@ export const GET = async (req: Request, { params }: any) => {
             // article: null,
         }), { status: 200 });
     } catch (error) {
-        if (process.env.NODE_ENV === 'development') console.error(error);
-        return new Response(null, { status: 500 })
+        return new Response(JSON.stringify({
+            message: 'Internal server error',
+        }), { status: 500 })
     }
 }
-
