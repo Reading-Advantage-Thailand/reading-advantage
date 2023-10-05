@@ -5,26 +5,32 @@ steps:
       [
         "build",
         "--build-arg",
-        "NODE_ENV=$_NODE_ENV",
+        "SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY",
         "--build-arg",
-        "NEXTAUTH_URL=$_NEXTAUTH_URL",
+        "JWT_SECRET=$_JWT_SECRET",
+        "--build-arg",
+        "NEXT_PUBLIC_BASE_URL=$_NEXT_PUBLIC_BASE_URL",
         "--build-arg",
         "NEXTAUTH_SECRET=$_NEXTAUTH_SECRET",
         "--build-arg",
+        "NEXTAUTH_URL=$_NEXTAUTH_URL",
+        "--build-arg",
+        "API_KEY=$_API_KEY",
+        "--build-arg",
+        "NODE_ENV=$_NODE_ENV",
+        "--build-arg",
         "NEXTAUTH_PUBLIC_URL=$_NEXTAUTH_PUBLIC_URL",
         "--build-arg",
-        "NEXT_PUBLIC_URL=$_NEXT_PUBLIC_URL",
+        "NEXT_PUBLIC_URL",
         "--build-arg",
         "GOOGLE_CLIENT_ID=$_GOOGLE_CLIENT_ID",
         "--build-arg",
         "GOOGLE_CLIENT_SECRET=$_GOOGLE_CLIENT_SECRET",
-        "--build-arg",
-        "SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY",
-        "--no-cache",
         "-t", 
         "gcr.io/$PROJECT_ID/reading-advantage-web", 
         "./web",
       ]
+
   # push the container images to Container Registry
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/reading-advantage-web"]
