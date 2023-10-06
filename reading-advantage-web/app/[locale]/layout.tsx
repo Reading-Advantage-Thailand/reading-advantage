@@ -1,19 +1,22 @@
+import { ReactElement } from 'react'
+import '@/styles/globals.css'
+import { siteConfig } from '@/configs/site-config'
+import { Metadata } from 'next'
 import { Inter as FontSans } from 'next/font/google'
-import localFont from 'next/font/local'
-import './globals.css';
-import type { Metadata } from 'next'
 import { cn } from '@/lib/utils'
+import localFont from 'next/font/local'
+import { ThemeProvider } from '@/components/providers/theme-provider'
+import { Toaster } from '@/components/ui/toaster'
+import { TailwindIndicator } from '@/components/helpers/tailwind-indicator'
 
-
-const locales = ['en', 'th'];
 const cabinSketch = localFont({
-  src: '../assets/fonts/CabinSketch-Regular.ttf',
+  src: '../../assets/fonts/CabinSketch-Regular.ttf',
   variable: '--font-cabin-sketch',
   weight: '400',
 })
 
 const cabinSketchBold = localFont({
-  src: '../assets/fonts/CabinSketch-Bold.ttf',
+  src: '../../assets/fonts/CabinSketch-Bold.ttf',
   variable: '--font-cabin-sketch-bold',
   weight: '700',
 })
@@ -25,10 +28,10 @@ const fontSans = FontSans({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Reading Advantage',
-    template: '%s | ' + 'Reading Advantage',
+    default: siteConfig.name,
+    template: '%s | ' + siteConfig.name,
   },
-  description: 'Reading Advantage',
+  description: siteConfig.description,
   keywords: [
     'reading advantage',
     'reading',
@@ -53,20 +56,11 @@ export const metadata: Metadata = {
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
-  manifest: `https://app.reading-advantage.com/site.webmanifest`,
-
+  manifest: `${siteConfig.url}/site.webmanifest`,
 }
-
-export default async function RootLayout({
-  children,
-  params: { locale },
-}: {
-  children: React.ReactNode,
-  params: { locale: string },
-}) {
+export default function RootLayout({ children }: { children: ReactElement }) {
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <head />
+    <html lang="en">
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
@@ -75,8 +69,13 @@ export default async function RootLayout({
           cabinSketchBold.variable,
         )}
       >
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster />
+          <TailwindIndicator />
+        </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
+
