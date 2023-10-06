@@ -31,11 +31,11 @@ export default function MCQ({
     }
 
     return (
-        <Card className='mt-4 mb-40'>
+        <Card className='mb-40 mt-4'>
             {step === 0 ? (
                 <>
                     <CardHeader>
-                        <CardTitle className='font-bold text-3xl md:text-3xl'>
+                        <CardTitle className='text-3xl font-bold md:text-3xl'>
                             Quiz
                         </CardTitle>
                         <CardDescription>
@@ -139,7 +139,7 @@ function Quiz({
     }
     return (
         <>
-            <div className='flex gap-2 items-end mt-6'>
+            <div className='mt-6 flex items-end gap-2'>
                 <Badge className="flex-1" variant="destructive">{timer} seconds elapsed</Badge>
                 {mcq.map((question, index) => {
                     if (correctAnswers[index]) {
@@ -150,10 +150,10 @@ function Quiz({
                     return <Icons.unChecked key={index} className='text-gray-500' size={22} />
                 })}
             </div>
-            <CardTitle className='font-bold text-3xl md:text-3xl mt-3'>
+            <CardTitle className='mt-3 text-3xl font-bold md:text-3xl'>
                 Question {currentQuestionIndex + 1} of {mcq.length}
             </CardTitle>
-            <CardDescription className='text-2xl md:text-2xl mt-3'>
+            <CardDescription className='mt-3 text-2xl md:text-2xl'>
                 {mcq[currentQuestionIndex].question}
             </CardDescription>
             <div className='flex flex-col'>

@@ -6,15 +6,11 @@ import '@/styles/globals.css'
 import type { Metadata } from 'next'
 import { cn } from '@/lib/utils'
 import { ThemeProvider } from '@/components/providers/theme-provider'
-import { Analytics } from '@/components/analytics'
 import { Toaster } from '@/components/ui/toaster'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 
 import { notFound } from 'next/navigation';
 import { NextIntlProvider } from '@/components/providers/nextintl-provider'
-import { NextAuthSessionProvider } from '@/components/providers/nextauth-session-provider'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/nextauth'
 
 const locales = ['en', 'th'];
 const cabinSketch = localFont({
@@ -109,14 +105,11 @@ export default async function RootLayout({
         )}
       >
         <NextIntlProvider locale={locale} messages={messages}>
-          {/* <NextAuthSessionProvider session={session}> */}
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             {children}
-            {/* <Analytics /> */}
             <Toaster />
             <TailwindIndicator />
           </ThemeProvider>
-          {/* </NextAuthSessionProvider> */}
         </NextIntlProvider>
       </body>
     </html>

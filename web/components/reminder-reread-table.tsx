@@ -130,7 +130,7 @@ export function ReminderRereadTable({
 
     return (
         <div className="w-full">
-            <div className="rounded-md border mt-3 mb-4 bg-[#ffedd5] dark:bg-[#7c2d12]">
+            <div className="mb-4 mt-3 rounded-md border bg-[#ffedd5] dark:bg-[#7c2d12]">
                 <Table >
                     <TableHeader >
                         {table.getHeaderGroups().map((headerGroup) => (

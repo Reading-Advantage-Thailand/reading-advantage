@@ -2,14 +2,13 @@ import { buttonVariants } from '@/components/ui/button'
 import { siteConfig } from '@/configs/site-config'
 import { cn } from '@/lib/utils'
 import React from 'react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 type Props = {}
 
 export default function IndexPage({ }: Props) {
     const t = useTranslations('pages.index')
-    const locale = useLocale();
 
     return (
         <>

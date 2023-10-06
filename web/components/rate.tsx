@@ -82,7 +82,7 @@ export function RateDialog({
                             />
                         </div>
                     ) : (
-                        <p className="flex items-center justify-center font-bold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600" >
+                        <p className="flex items-center justify-center bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-3xl font-bold text-transparent" >
                             {`Your new level is ${userLevel}.`}
                         </p>
                     )
@@ -95,7 +95,7 @@ export function RateDialog({
                             </Button>)
                             :
                             (
-                                <div className="flex gap-4 justify-center">
+                                <div className="flex justify-center gap-4">
                                     <Button disabled={loading} onClick={onUpdateUser}>
                                         <Link href={`/student/home`}>Back to home</Link>
                                     </Button>

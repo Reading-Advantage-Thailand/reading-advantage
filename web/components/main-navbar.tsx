@@ -20,10 +20,10 @@ export function MainNav({ children, items }: MainNavProps) {
     const t = useTranslations("components.main-navbar")
 
     return (
-        <div className='flex md:gap-10 gap-6'>
+        <div className='flex gap-6 md:gap-10'>
             <Link href="/" className="hidden items-center space-x-2 md:flex">
                 <Icons.logo />
-                <span className="hidden text-[#3b82f6] font-heading font-bold sm:inline-block">
+                <span className="font-heading hidden font-bold text-[#3b82f6] sm:inline-block">
                     {siteConfig.name}
                 </span>
             </Link>

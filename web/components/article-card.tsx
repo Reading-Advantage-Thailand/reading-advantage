@@ -28,7 +28,7 @@ export default async function ArticleCard({
         <>
             <Card className='mt-4'>
                 <CardHeader>
-                    <CardTitle className='font-bold text-3xl md:text-3xl'>
+                    <CardTitle className='text-3xl font-bold md:text-3xl'>
                         {article.title}
                     </CardTitle>
                     <div className='flex justify-center'>

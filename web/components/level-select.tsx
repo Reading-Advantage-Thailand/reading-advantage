@@ -64,7 +64,7 @@ export default function LevelSelect({
         <>
             <Card>
                 <CardHeader>
-                    <CardTitle className='font-bold text-2xl md:text-2xl'>
+                    <CardTitle className='text-2xl font-bold md:text-2xl'>
                         Let&apos;s get start by choosing your level!
                     </CardTitle>
                     <CardDescription>

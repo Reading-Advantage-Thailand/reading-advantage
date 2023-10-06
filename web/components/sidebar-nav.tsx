@@ -24,7 +24,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
 
 
     return (
-        <nav className="flex md:grid items-start gap-2 mb-4 md:mb-0">
+        <nav className="mb-4 flex items-start gap-2 md:mb-0 md:grid">
             {items.map((item, index) => {
                 const Icon = Icons[item.icon as keyof typeof Icons]
                 return (
