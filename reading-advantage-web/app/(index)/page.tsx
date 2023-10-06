@@ -1,0 +1,33 @@
+import { cn } from '@/lib/utils'
+import React from 'react'
+import Link from 'next/link'
+
+type Props = {}
+
+export default function IndexPage({ }: Props) {
+
+    return (
+        <>
+            <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
+                <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center">
+                    <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
+                        <span>
+                            Reading Advantage
+                        </span>
+                        <span className='text-orange-500'>
+                            {" "}Beta
+                        </span>
+                    </h1>
+                    <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+                        Reading Advantage is a web app
+                    </p>
+                    <div className="space-x-4">
+                        <Link href="/app">
+                            Login
+                        </Link>
+                    </div>
+                </div>
+            </section>
+        </>
+    )
+}
