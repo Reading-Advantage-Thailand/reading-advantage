@@ -4,7 +4,6 @@ steps:
     args:
       [
         "build",
-        "-t", 
         "--build-arg",
         "GOOGLE_CLIENT_ID=$_GOOGLE_CLIENT_ID",
         "--build-arg",
@@ -21,6 +20,7 @@ steps:
         "NODE_ENV=$_NODE_ENV",
         "--build-arg",
         "SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY",
+        "-t", 
         "gcr.io/$PROJECT_ID/reading-advantage-web", 
         "./reading-advantage-web",
       ]
