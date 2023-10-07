@@ -1,11 +1,8 @@
-import ArticleCard from '@/components/article-card'
 import { Header } from '@/components/header'
-import LevelSelect from '@/components/level-select'
 import Select from '@/components/select'
 import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import React from 'react'
-import axios from 'axios'
 
 type Props = {}
 async function getTypes(

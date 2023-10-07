@@ -48,7 +48,7 @@ export default withAuth(
 
         if (isEnAuthPage || isThAuthPage) {
             if (isAuth) {
-                if (isNoLevel) return NextResponse.redirect(new URL(`${locale}/level`, req.url))
+                if (isNoLevel) return NextResponse.redirect(new URL(`${locale}/student/level`, req.url))
                 return NextResponse.redirect(new URL(`${locale}/student/home`, req.url))
             }
             return null
