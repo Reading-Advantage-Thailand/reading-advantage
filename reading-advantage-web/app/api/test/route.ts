@@ -7,6 +7,7 @@ export async function GET(req: Request, res: Response) {
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
     const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET;
+    const NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
     const NEXT_PUBLIC_URL_BASE = process.env.NEXT_PUBLIC_URL_BASE;
     return new Response(JSON.stringify({
@@ -16,6 +17,7 @@ export async function GET(req: Request, res: Response) {
         GOOGLE_CLIENT_SECRET,
         NEXTAUTH_SECRET,
         NEXT_PUBLIC_URL_BASE,
+        NEXT_PUBLIC_BASE_URL,
     }), {
         headers: {
             "content-type": "application/json",
