@@ -1,4 +1,5 @@
 import LevelSelect from '@/components/level-select'
+import { NextAuthSessionProvider } from '@/components/providers/nextauth-session-provider';
 import { getCurrentUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import React from 'react'
@@ -18,6 +19,10 @@ export default async function LevelPage({ }: Props) {
         return redirect('/student/home',);
     }
 
-    return <LevelSelect userId={user.id} />
+    return (
+        <NextAuthSessionProvider session={user}>
+            <LevelSelect userId={user.id} />
+        </NextAuthSessionProvider>
 
+    )
 }

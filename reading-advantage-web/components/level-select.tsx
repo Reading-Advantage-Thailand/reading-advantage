@@ -30,8 +30,11 @@ export default function LevelSelect({
     async function updateLevel(level: number) {
         try {
             setLoading(true)
+            console.log('level', level);
             const response = await axios.patch(`/api/users/${userId}`, {
-                body: JSON.stringify({ level }),
+                body: JSON.stringify({
+                    level,
+                }),
             })
             const data = await response.data;
             await update({

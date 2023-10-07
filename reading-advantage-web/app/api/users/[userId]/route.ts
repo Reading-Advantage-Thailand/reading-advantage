@@ -8,18 +8,21 @@ const userLevelSchema = z.object({
     level: z.number(),
 })
 
-// update user level 
+// update user level
 export async function PATCH(req: Request, res: Response) {
     try {
         const session = await getServerSession(authOptions);
+        console.log('sessionxxxx', session);
         if (!session) {
-            return new Response("Unauthorized", { status: 403 })
+            return new Response(JSON.stringify({
+                message: 'Unauthorized',
+            }), { status: 403 })
         }
-        const userId = session.user.id;
 
         const json = await req.json();
-        const body = userLevelSchema.parse(json);
+        const body = JSON.parse(json.body);
         const level = body.level;
+        const userId = session.user.id;
 
         await db.collection('users')
             .doc(userId)
@@ -34,6 +37,7 @@ export async function PATCH(req: Request, res: Response) {
             message: 'success',
         }), { status: 200 })
     } catch (error) {
+        console.log('error', error);
         return new Response(JSON.stringify({
             message: error,
         }), { status: 500 })
