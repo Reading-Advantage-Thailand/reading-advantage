@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import React from 'react'
+import axios from 'axios'
 
 type Props = {}
 
@@ -14,14 +15,10 @@ export const metadata = {
 
 async function getUserArticleRecords(userId: string) {
     // fetch user article records
-    const res = await fetch(
-        `${process.env.NEXT_PUBLIC_URL}/api/users/${userId}/article-records`,
-        {
-            method: 'GET',
-            headers: headers(),
-        }
+    const res = await axios.get(
+        `/api/users/${userId}/article-records`,
     );
-    return res.json();
+    return res.data;
 }
 export default async function StudentHomePage({ }: Props) {
     // const t = useTranslations('pages.student.article-records')

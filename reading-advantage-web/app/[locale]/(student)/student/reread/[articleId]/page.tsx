@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import React from 'react'
 import { headers } from 'next/headers';
+import axios from 'axios';
 type Props = {}
 
 export const metadata = {
@@ -10,22 +11,18 @@ export const metadata = {
     description: "Article Quiz",
 }
 
-async function fetchArticle(
+async function getArticle(
     articleId: string
 ) {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/articles/${articleId}`,
-        {
-            method: 'GET',
-            headers: headers(),
-        }
+    const response = await axios.get(
+        `/api/articles/${articleId}`,
     );
-    const data = await response.json();
+    const data = await response.data;
     return data;
 }
 export default async function ArticleQuizPage({ params }: { params: { articleId: string } }) {
     const user = await getCurrentUser();
-    const res = await fetchArticle(params.articleId);
+    const res = await getArticle(params.articleId);
     if (!user) {
         return redirect('/login');
     }

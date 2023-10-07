@@ -7,6 +7,7 @@ import { Icons } from './icons'
 import { toast } from './ui/use-toast'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import axios from 'axios'
 
 type Props = {
     userId: string,
@@ -29,15 +30,10 @@ export default function LevelSelect({
     async function updateLevel(level: number) {
         try {
             setLoading(true)
-            const response = await fetch(`/api/users/${userId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-
+            const response = await axios.patch(`/api/users/${userId}`, {
                 body: JSON.stringify({ level }),
             })
-            const data = await response.json()
+            const data = await response.data;
             await update({
                 user: {
                     ...session?.user,

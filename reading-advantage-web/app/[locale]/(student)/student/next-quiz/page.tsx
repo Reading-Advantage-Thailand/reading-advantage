@@ -5,21 +5,16 @@ import Select from '@/components/select'
 import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import React from 'react'
+import axios from 'axios'
 
 type Props = {}
-async function fetchTypes(
+async function getTypes(
     level: number
 ) {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/articles?level=${level}`,
-        {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }
+    const response = await axios.get(
+        `/api/articles?level=${level}`,
     );
-    const data = await response.json();
+    const data = await response.data;
     return data;
 }
 
@@ -31,7 +26,7 @@ export default async function NextQuizPage({ }: Props) {
     if (user.level === 0) {
         return redirect('/student/level');
     }
-    const response = await fetchTypes(user.level);
+    const response = await getTypes(user.level);
     return (
         <>
             <Header
