@@ -1,6 +1,8 @@
 import db from "@/configs/firestore-config"
 import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
+import dotenv from "dotenv"
+dotenv.config()
 
 export const authOptions: NextAuthOptions = {
     providers: [
