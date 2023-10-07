@@ -1,9 +1,5 @@
 import admin from 'firebase-admin';
-import dotenv from 'dotenv';
 
-dotenv.config({
-    path: '../.env',
-})
 const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY as string);
 
 // Check if the app has already been initialized
