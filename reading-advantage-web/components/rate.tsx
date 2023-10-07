@@ -39,7 +39,7 @@ export function RateDialog({
     });
     async function onUpdateUser() {
         if (rating === -1) return;
-        const response = await axios.patch(`/api/users/${userId}/article-records`, {
+        const response = await instance.patch(`/api/users/${userId}/article-records`, {
             title: articleTitle,
             articleId,
             rating,

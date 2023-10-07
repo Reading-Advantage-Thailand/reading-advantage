@@ -14,10 +14,14 @@ export const metadata = {
 async function getArticle(
     articleId: string
 ) {
-    const response = await axios.get(
-        `/api/articles/${articleId}`,
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/articles/${articleId}`,
+        {
+            method: 'GET',
+            headers: headers(),
+        }
     );
-    const data = await response.data;
+    const data = await response.json();
     return data;
 }
 export default async function ArticleQuizPage({ params }: { params: { articleId: string } }) {

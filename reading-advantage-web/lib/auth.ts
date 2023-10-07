@@ -20,6 +20,8 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         jwt: async ({ token }) => {
+            // console.log("jwt callback");
+            // console.log('token', token);
             const user = await db.collection("users")
                 .doc(token.sub as string)
                 .get();
@@ -56,6 +58,8 @@ export const authOptions: NextAuthOptions = {
                 session.user.image = token.picture;
                 session.user.level = token.level;
             }
+            // console.log("session callback");
+            console.log('session', session);
             return session;
         },
     },

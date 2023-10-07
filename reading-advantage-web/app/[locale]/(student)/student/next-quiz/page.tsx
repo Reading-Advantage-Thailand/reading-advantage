@@ -11,10 +11,16 @@ type Props = {}
 async function getTypes(
     level: number
 ) {
-    const response = await axios.get(
-        `/api/articles?level=${level}`,
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/articles?level=${level}`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }
     );
-    const data = await response.data;
+    const data = await response.json();
     return data;
 }
 
