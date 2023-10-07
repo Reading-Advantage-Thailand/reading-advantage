@@ -1,10 +1,8 @@
-import { Footer } from "@/components/footer"
 import { MainNav } from "@/components/main-navbar"
 import { getCurrentUser } from "@/lib/session"
-import { notFound } from "next/navigation"
+import { redirect } from "next/navigation"
 import { studentHomePageConfig } from "@/configs/student-home-config"
 import { UserAccountNav } from "@/components/user-account-nav"
-import { SidebarNav } from "@/components/sidebar-nav"
 interface LevelLayoutProps {
     children?: React.ReactNode
 }
@@ -16,7 +14,7 @@ export default async function StudentHomeLayout({
     const user = await getCurrentUser()
 
     if (!user) {
-        return notFound()
+        return redirect('/login')
     }
 
     return (
