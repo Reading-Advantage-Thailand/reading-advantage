@@ -4,6 +4,6 @@ type Props = {}
 
 export default function StudentHomePage({ }: Props) {
     return (
-        <div className='mt-10'>StudentHomePage</div>
+        <div className='mt-10'>StudentHomePage test</div>
     )
 }
