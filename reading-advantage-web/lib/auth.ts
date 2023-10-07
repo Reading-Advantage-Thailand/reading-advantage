@@ -5,8 +5,8 @@ import GoogleProvider from "next-auth/providers/google"
 export const authOptions: NextAuthOptions = {
     providers: [
         GoogleProvider({
-            clientId: '1090865515742-nnj4vikfak8beedqf5nnhd5ahllv9moi.apps.googleusercontent.com',
-            clientSecret: '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',
+            clientId: process.env.GOOGLE_CLIENT_ID as string,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
         }),
     ],
     session: {
@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
         'signIn': '/login',
     },
     jwt: {
-        secret: 'readingsecretadvantagebangkok',
+        secret: process.env.NEXTAUTH_SECRET,
     },
     callbacks: {
         jwt: async ({ token }) => {
