@@ -16,7 +16,7 @@ export default async function StudentHomePage({ }: Props) {
                 {session?.name}
             </div>
             <div>
-                {JSON.stringify(test)}
+                {test && JSON.stringify(test)}
             </div>
             <ButtonLogout />
         </>
