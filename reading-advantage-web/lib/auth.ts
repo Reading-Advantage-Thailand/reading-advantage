@@ -1,14 +1,12 @@
 import db from "@/configs/firestore-config"
 import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
-import dotenv from "dotenv"
-dotenv.config()
 
 export const authOptions: NextAuthOptions = {
     providers: [
         GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            clientId: '1090865515742-nnj4vikfak8beedqf5nnhd5ahllv9moi.apps.googleusercontent.com',
+            clientSecret: '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',
         }),
     ],
     session: {
@@ -18,7 +16,7 @@ export const authOptions: NextAuthOptions = {
         'signIn': '/login',
     },
     jwt: {
-        secret: process.env.NEXTAUTH_SECRET,
+        secret: 'readingsecretadvantagebangkok',
     },
     callbacks: {
         jwt: async ({ token }) => {
