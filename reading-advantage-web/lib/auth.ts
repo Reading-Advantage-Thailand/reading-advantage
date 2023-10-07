@@ -1,22 +1,22 @@
-import db from "@/configs/firestore-config";
+import db from "@/configs/firestore-config"
 import { NextAuthOptions } from "next-auth"
-import GoogleProvider from "next-auth/providers/google";
+import GoogleProvider from "next-auth/providers/google"
 
 export const authOptions: NextAuthOptions = {
     providers: [
         GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            clientId: '1090865515742-nnj4vikfak8beedqf5nnhd5ahllv9moi.apps.googleusercontent.com',
+            clientSecret: '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',
         }),
     ],
     session: {
         strategy: "jwt",
     },
     pages: {
-        signIn: "/login",
+        'signIn': '/login',
     },
     jwt: {
-        secret: process.env.NEXTAUTH_SECRET,
+        secret: 'readingsecretadvantagebangkok',
     },
     callbacks: {
         jwt: async ({ token }) => {
@@ -54,12 +54,8 @@ export const authOptions: NextAuthOptions = {
                 session.user.name = token.name;
                 session.user.email = token.email;
                 session.user.image = token.picture;
-                session.user.level = token.level;
             }
-            // console.log("session callback");
-            console.log('session', session);
             return session;
         },
     },
 };
-
