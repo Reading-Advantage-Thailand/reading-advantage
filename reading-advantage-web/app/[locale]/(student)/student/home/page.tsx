@@ -2,8 +2,8 @@ import React from 'react'
 
 type Props = {}
 
-export default function StudentHomePage({ }: Props) {
+export default function HomePage({ }: Props) {
     return (
-        <div>StudentHomePage</div>
+        <div>HomePage</div>
     )
 }

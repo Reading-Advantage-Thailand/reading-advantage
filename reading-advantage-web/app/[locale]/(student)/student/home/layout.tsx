@@ -13,11 +13,11 @@ interface StudentHomeLayoutProps {
 export default async function StudentHomeLayout({
     children,
 }: StudentHomeLayoutProps) {
-    const user = await getCurrentUser()
+    // const user = await getCurrentUser()
 
-    if (!user) {
-        return notFound()
-    }
+    // if (!user) {
+    //     return notFound()
+    // }
 
     return (
         <div className="flex min-h-screen flex-col space-y-6">
@@ -25,14 +25,14 @@ export default async function StudentHomeLayout({
                 <div className="container flex h-16 items-center justify-between py-4">
                     <MainNav items={studentHomePageConfig.mainNav} />
                     <div className="flex space-x-2">
-                        <UserAccountNav
+                        {/* <UserAccountNav
                             user={{
                                 name: user.name,
                                 image: user.image,
                                 email: user.email,
                                 level: user.level
                             }}
-                        />
+                        /> */}
                     </div>
                 </div>
             </header>
