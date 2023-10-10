@@ -32,11 +32,20 @@ export async function GET(
 
         const articleLevel = articleSnapshot.data()?.raLevel;
 
-        // example 
+        const articleRecord = db.collection('user-article-records').doc(`${session.user.id}-${articleId}`);
+        const articleRecordSnapshot = await articleRecord.get();
+        // Check if the article exists
+        // If exists, return user unable to reread the article and insufficient level
+        // example
         // user level = 51
         // article level = 53
         // This article can read only user level 51 - 55
-        if (userLevel < articleLevel - 2 || userLevel > articleLevel + 2) {
+        console.log('userLevel', userLevel);
+        console.log('articleLevel', articleLevel);
+        const isUserAbleToRead = userLevel >= articleLevel - 2 && userLevel <= articleLevel + 2;
+        console.log('isUserAbleToRead', isUserAbleToRead);
+        console.log('articleRecordSnapshot.exists', articleRecordSnapshot.exists);
+        if (!articleRecordSnapshot.exists && !isUserAbleToRead) {
             return new Response(JSON.stringify({
                 message: 'Insufficient level'
             }), { status: 403 })

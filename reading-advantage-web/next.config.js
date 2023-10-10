@@ -19,6 +19,9 @@ const nextConfig = {
             'lh5.googleusercontent.com',
         ],
     },
+    // compiler: {
+    //     removeConsole: true,
+    // },
 };
 
 module.exports = nextConfig;

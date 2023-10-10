@@ -22,15 +22,14 @@ export const studentHomePageConfig: StudentHomePageConfig = {
             icon: "record",
         },
         {
-            title: "dashboard",
-            href: '/student/dashboard',
-            icon: "dashboard",
-            disabled: true,
-        },
-        {
             title: "next-quiz",
             href: '/student/next-quiz',
             icon: "book",
+        },
+        {
+            title: "flashcard",
+            href: '/student/flashcard',
+            icon: "flashcard",
         },
     ],
 };

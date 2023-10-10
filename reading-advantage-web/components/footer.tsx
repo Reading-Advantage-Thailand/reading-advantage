@@ -37,8 +37,10 @@ export function Footer({ className }: FooterProps) {
                         .
                     </p>
                 </div>
-                <LocaleSwitcher />
-                <ThemeSwitcher />
+                <div className="flex items-center gap-4 md:flex-row md:gap-2">
+                    <LocaleSwitcher />
+                    <ThemeSwitcher />
+                </div>
             </div>
         </footer>
     )

@@ -71,15 +71,17 @@ export default function LevelSelect({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Stack direction="row" spacing={2}>
+                    <Stack direction="row">
                         <Stack direction="column" spacing={1}>
                             <Typography
+                                className='hidden sm:block sm:mr-2'
                                 variant='h6'
                                 color='#7356fb'
                             >
                                 GSE
                             </Typography>
                             <Typography
+                                className='hidden sm:block'
                                 variant='h6'
                                 color='#7356fb'
                             >

@@ -1,11 +1,10 @@
-import { Footer } from "@/components/footer"
 import { MainNav } from "@/components/main-navbar"
 import { getCurrentUser } from "@/lib/session"
-import { notFound } from "next/navigation"
+import { redirect } from "next/navigation"
 import { studentHomePageConfig } from "@/configs/student-home-config"
+import { ModeToggle } from "@/components/theme-switcher-toggle"
 import { UserAccountNav } from "@/components/user-account-nav"
 import { SidebarNav } from "@/components/sidebar-nav"
-import { ModeToggle } from "@/components/theme-switcher-toggle"
 interface StudentHomeLayoutProps {
     children?: React.ReactNode
 }
@@ -17,7 +16,7 @@ export default async function StudentHomeLayout({
     const user = await getCurrentUser()
 
     if (!user) {
-        return notFound()
+        return redirect('/login');
     }
 
     return (
@@ -38,8 +37,8 @@ export default async function StudentHomeLayout({
                     </div>
                 </div>
             </header>
-            <div className="container md:grid md:flex-1 gap-12 md:grid-cols-[200px_1fr]">
-                <aside className="md:w-[200px] md:flex-col md:flex">
+            <div className="container mx-auto px-4 lg:grid lg:flex-1 gap-12 lg:grid-cols-[200px_1fr]">
+                <aside className="lg:w-[200px] lg:flex-col lg:flex">
                     <SidebarNav items={studentHomePageConfig.sidebarNav} />
                 </aside>
                 <main className="flex w-full flex-1 flex-col overflow-hidden">

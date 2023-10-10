@@ -35,16 +35,12 @@ export async function POST(
         const body = articleRecordSchema.parse(json);
         const answer = body.answer;
         const timeRecorded = body.timeRecorded;
-        console.log('answer', answer);
-        console.log('timeRecorded', timeRecorded);
-
         const userId = session.user.id;
         // get article
         const articleRef = db.collection('articles').doc(articleId);
         const articleSnapshot = await articleRef.get();
         const article = articleSnapshot.data();
 
-        console.log('descriptorId', descriptorId);
         // get question
         const question = article?.questions.multiple_choice_questions.find((question: { descriptor_id: string; }) => question.descriptor_id === descriptorId);
 
@@ -53,11 +49,12 @@ export async function POST(
 
         // check answer
         const isCorrect = answer === correctAnswer;
-        console.log('answer', answer);
-        console.log('correctAnswer', correctAnswer);
 
         // creaet new user-article-record 
         // if user-article-record exists, update it
+        console.log('isCorrect', isCorrect)
+        console.log('correctAnswer', correctAnswer)
+        console.log('answer', answer)
         const userArticleRecordRef = db.collection('user-article-records').doc(`${userId}-${articleId}`);
         const userArticleRecordSnapshot = await userArticleRecordRef.get();
 
@@ -106,7 +103,6 @@ export async function POST(
         }),
             { status: 200 })
     } catch (error) {
-        console.log('error', error);
         return new Response(JSON.stringify({
             message: 'Internal server error',
             error: `errors: ${error}`

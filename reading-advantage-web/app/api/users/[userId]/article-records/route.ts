@@ -27,15 +27,10 @@ export async function GET(req: Request, res: Response) {
             ...doc.data(),
         }));
 
-        // console.log('userArticleRecordRef', articles);
         return new Response(JSON.stringify({
-            // data: userArticleRecordRef,
             message: 'success',
             articles,
         }), { status: 200 })
-        // return new Response(JSON.stringify({
-        //     message: 'success',
-        // }), { status: 200 })
     } catch (error) {
         return new Response(JSON.stringify({
             message: error,
@@ -52,7 +47,6 @@ const userArticleRecordSchema = z.object({
 export async function PATCH(req: Request, res: Response) {
     try {
         const session = await getServerSession(authOptions);
-        console.log('session----------------', session);
         if (!session) {
             return new Response(JSON.stringify({
                 message: 'Unauthorized',
@@ -61,18 +55,12 @@ export async function PATCH(req: Request, res: Response) {
 
         const json = await req.json();
         const body = userArticleRecordSchema.parse(json);
-        // const { articleId, rating, title } = await req.json();
         const articleId = body.articleId;
         const rating = body.rating;
         const title = body.title;
-        console.log('articleId', articleId);
-        console.log('rating', rating);
-        console.log('title', title);
 
         const userId = session.user.id;
         const userLevel = session.user.level;
-        console.log('userLevel', userLevel);
-        console.log('userId', userId);
 
         // update user level
         const userRef = db.collection('users')

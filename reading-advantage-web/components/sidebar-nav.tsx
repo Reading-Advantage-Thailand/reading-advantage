@@ -14,13 +14,13 @@ interface SidebarNavProps {
 
 export function SidebarNav({ items }: SidebarNavProps) {
     const path = usePathname()
-    // remove en or th from path
+    // Extract the base path without locale and subpaths
     const pathWithoutLocale = path.replace(/\/(en|th)/, "")
     if (!items?.length) {
         return null
     }
     return (
-        <nav className="flex md:grid items-start gap-2 mb-4 md:mb-0">
+        <nav className="flex lg:grid items-start gap-2 mb-4 lg:mb-0">
             {items.map((item, index) => {
                 const Icon = Icons[item.icon as keyof typeof Icons]
                 return (
@@ -29,12 +29,20 @@ export function SidebarNav({ items }: SidebarNavProps) {
                             <span
                                 className={cn(
                                     "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                                    pathWithoutLocale === item.href ? "bg-accent" : "transparent",
+                                    pathWithoutLocale.startsWith(item.href) ? "bg-accent" : "transparent",
                                     item.disabled && "cursor-not-allowed opacity-80"
                                 )}
                             >
                                 <Icon className="mr-2 h-4 w-4" />
-                                <span>{item.title}</span>
+                                <span
+                                    className={cn(
+                                        "truncate",
+                                        !pathWithoutLocale.startsWith(item.href) && "hidden group-hover:block sm:block",
+                                        pathWithoutLocale.startsWith(item.href) ? "text-accent-foreground" : "text-muted-foreground"
+                                    )}
+                                >
+                                    {item.title}
+                                </span>
                             </span>
                         </Link>
                     )

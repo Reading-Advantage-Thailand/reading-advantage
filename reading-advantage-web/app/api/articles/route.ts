@@ -4,7 +4,6 @@ import db from "@/configs/firestore-config";
 
 export async function GET(req: Request, res: Response) {
     const url = new URL(req.url as string);
-    console.log('url', url);
     let level = url.searchParams.get('level');
     const levelInt = parseInt(level as string);
     let type = url.searchParams.get('type')

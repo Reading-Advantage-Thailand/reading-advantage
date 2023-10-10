@@ -27,7 +27,7 @@ export default async function NextQuizPage({ }: Props) {
         return redirect('/login');
     }
     if (user.level === 0) {
-        return redirect('/student/level');
+        return redirect('/level');
     }
     const response = await getTypes(user.level);
     return (

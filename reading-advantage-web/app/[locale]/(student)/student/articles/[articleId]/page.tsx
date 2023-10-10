@@ -3,7 +3,6 @@ import { getCurrentUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import React from 'react'
 import { headers } from 'next/headers';
-import axios from 'axios';
 type Props = {}
 
 export const metadata = {
@@ -14,12 +13,17 @@ export const metadata = {
 async function getArticle(
     articleId: string
 ) {
-    const response = await axios.get(
-        `/api/articles/${articleId}`,
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/articles/${articleId}`,
+        {
+            method: 'GET',
+            headers: headers(),
+        }
     );
-    const data = await response.data;
+    const data = await response.json();
     return data;
 }
+
 export default async function ArticleQuizPage({ params }: { params: { articleId: string } }) {
     const user = await getCurrentUser();
     const res = await getArticle(params.articleId);
@@ -40,6 +44,7 @@ export default async function ArticleQuizPage({ params }: { params: { articleId:
     }
 
     return (
+        // <div>Article Quiz Page</div>
         <ArticleCard article={res.article} userId={user.id} articleId={params.articleId} />
     )
 }

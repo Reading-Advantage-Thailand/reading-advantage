@@ -39,6 +39,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { ArticleRecord } from "@/types"
+import { useRouter } from "next/navigation"
+import { formatDate } from "@/lib/utils"
 
 export const columns: ColumnDef<ArticleRecord>[] = [
     {
@@ -57,11 +59,11 @@ export const columns: ColumnDef<ArticleRecord>[] = [
         cell: ({ row }) => <div className="captoliza">{row.getValue("title")}</div>,
     },
     {
-        accessorKey: "createdAt",
+        accessorKey: "updatedAt",
         header: "Date",
         cell: ({ row }) => {
-            const createdAt = row.getValue("createdAt") as { _seconds: number, _nanoseconds: number };
-            const date = new Date(createdAt._seconds * 1000).toLocaleString('en-GB', { timeZone: 'Asia/Bangkok' });
+            const createdAt = row.getValue("updatedAt") as { _seconds: number, _nanoseconds: number };
+            const date = formatDate(createdAt);
             return <div>{date}</div>;
         },
     },
@@ -127,6 +129,11 @@ export function ReminderRereadTable({
             rowSelection,
         },
     })
+    const router = useRouter();
+
+    const handleNavigateToArticle = (articleId: string) => {
+        router.push(`/student/next-quiz/${articleId}`)
+    }
 
     return (
         <div className="w-full">
@@ -154,6 +161,8 @@ export function ReminderRereadTable({
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
+                                    className="cursor-pointer"
+                                    onClick={() => handleNavigateToArticle(row.original.articleId)}
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
                                 >

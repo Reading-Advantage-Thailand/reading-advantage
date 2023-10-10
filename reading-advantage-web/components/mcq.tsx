@@ -16,6 +16,8 @@ type Props = {
     articleId: string,
     userId: string,
     articleTitle: string,
+    className?: string,
+    isRequiz?: boolean,
 }
 
 export default function MCQ({
@@ -23,6 +25,8 @@ export default function MCQ({
     articleId,
     userId,
     articleTitle,
+    className,
+    isRequiz,
 }: Props) {
     const [step, setStep] = React.useState(0);
 
@@ -31,20 +35,20 @@ export default function MCQ({
     }
 
     return (
-        <Card className='mt-4 mb-40'>
+        <Card className={cn(className)}>
             {step === 0 ? (
                 <>
                     <CardHeader>
                         <CardTitle className='font-bold text-3xl md:text-3xl'>
-                            Quiz
+                            {isRequiz ? 'Requiz' : 'Quiz'}
                         </CardTitle>
                         <CardDescription>
-                            Start the quiz to test your knowledge. And see how easy this article is for you.
+                            {isRequiz ? 'You have completed this quiz before. You can retake the quiz to improve your score.' : 'Start the quiz to test your knowledge. And see how easy this article is for you.'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button onClick={nextStep}>
-                            Start Quiz
+                            {isRequiz ? 'Requiz' : 'Start Quiz'}
                         </Button>
                     </CardContent>
                 </>

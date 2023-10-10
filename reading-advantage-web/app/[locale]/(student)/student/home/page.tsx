@@ -30,7 +30,7 @@ export default async function StudentHomePage({ }: Props) {
         return redirect('/login');
     }
     if (user.level === 0) {
-        return redirect('/student/level');
+        return redirect('/level');
     }
     const res = await getUserArticleRecords(user.id);
     // articles that have been read
@@ -47,7 +47,7 @@ export default async function StudentHomePage({ }: Props) {
                             // heading={t('heading-reminder-reread')}
                             // text={t('text-reminder-reread')}
                             heading='Reminder to reread'
-                            text='test'
+                            text="You might want to try reading one of these articles again to see if you've improved."
                             variant='warning'
                         />
                         <ReminderRereadTable
@@ -60,7 +60,7 @@ export default async function StudentHomePage({ }: Props) {
                 // heading={t('heading')}
                 // text={t('text')}
                 heading='Article records'
-                text='test'
+                text="History of articles you have read."
             />
             <ArticleRecordsTable
                 articles={articleRecords}

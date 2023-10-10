@@ -8,29 +8,45 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import Image from 'next/image'
-import { Button } from './ui/button'
-import { Icons } from './icons'
-import axios from 'axios'
 import MCQ from './mcq'
+import ArticleContent from './article-content'
+import { Badge } from './ui/badge'
 
 type Props = {
     article: any,
     articleId: string,
     userId: string,
+    isRequiz?: boolean,
 }
 
 export default async function ArticleCard({
     article,
     articleId,
     userId,
+    isRequiz,
 }: Props) {
+
     return (
-        <>
-            <Card className='mt-4'>
-                <CardHeader>
+        <div className='md:flex md:flex-row md:gap-3 md:mb-5'>
+            <Card className='mt-4 basis-3/5'>
+                <CardHeader >
                     <CardTitle className='font-bold text-3xl md:text-3xl'>
                         {article.title}
                     </CardTitle>
+                    <div className='flex flex-wrap gap-3'>
+                        <Badge>
+                            Reading ability level is {article.raLevel}
+                        </Badge>
+                        <Badge>
+                            CEFR level is {article.cefrLevel}
+                        </Badge>
+                        <Badge>
+                            Grade {article.grade}
+                        </Badge>
+                    </div>
+                    <CardDescription>
+                        The article pertains to the topic of {article.topic}, which falls within the {article.genre.toLowerCase()} genre.
+                    </CardDescription>
                     <div className='flex justify-center'>
                         <Image
                             src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images/${articleId}.png`}
@@ -39,17 +55,17 @@ export default async function ArticleCard({
                             height={640}
                         />
                     </div>
-                    <CardDescription>
-                        {article.content}
-                    </CardDescription>
+                    <ArticleContent article={article} articleId={articleId} userId={userId} />
                 </CardHeader>
-            </Card>
+            </Card >
             <MCQ
+                isRequiz={isRequiz}
+                className='mt-4 mb-40 basis-2/5 h-auto'
                 articleTitle={article.title}
                 articleId={articleId}
                 mcq={article.questions.multiple_choice_questions}
                 userId={userId}
             />
-        </>
+        </div >
     )
 }

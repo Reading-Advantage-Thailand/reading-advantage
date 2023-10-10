@@ -12,7 +12,6 @@ const userLevelSchema = z.object({
 export async function PATCH(req: Request, res: Response) {
     try {
         const session = await getServerSession(authOptions);
-        console.log('sessionxxxx', session);
         if (!session) {
             return new Response(JSON.stringify({
                 message: 'Unauthorized',
@@ -37,7 +36,6 @@ export async function PATCH(req: Request, res: Response) {
             message: 'success',
         }), { status: 200 })
     } catch (error) {
-        console.log('error', error);
         return new Response(JSON.stringify({
             message: error,
         }), { status: 500 })

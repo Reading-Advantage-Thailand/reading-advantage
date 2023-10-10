@@ -96,7 +96,7 @@ export function RateDialog({
                             :
                             (
                                 <div className="flex gap-4 justify-center">
-                                    <Button disabled={loading} onClick={onUpdateUser}>
+                                    <Button disabled={loading}>
                                         <Link href={`/student/home`}>Back to home</Link>
                                     </Button>
                                     <Button>
@@ -105,7 +105,6 @@ export function RateDialog({
                                 </div>
                             )
                     }
-
                 </DialogFooter>
             </DialogContent >
 

@@ -7,7 +7,6 @@ interface LevelLayoutProps {
     children?: React.ReactNode
 }
 
-
 export default async function StudentHomeLayout({
     children,
 }: LevelLayoutProps) {
