@@ -72,7 +72,6 @@ export default function FlashCard({
             id: index,
             frontHTML: <div className='flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground'>{sentence.sentence}</div>,
             backHTML: <div className='flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground'>{sentence.translation}</div>,
-
         }
     })
 
@@ -112,7 +111,7 @@ export default function FlashCard({
                     {
                         sentences.length != 0 && sentences.map((sentence, index) => {
                             return (
-                                <div className="-mx-4 flex items-center rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground cursor-pointer gap-3">
+                                <div key={sentence.id} className="-mx-4 flex items-center rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground cursor-pointer gap-3">
                                     <Link href={`/student/next-quiz/${sentence.articleId}`} >
                                         <div className="ml-4 space-y-1">
                                             <p className="text-sm font-medium leading-none">{sentence.sentence}</p>
