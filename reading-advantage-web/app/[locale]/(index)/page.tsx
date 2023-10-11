@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils'
 import React from 'react'
 import Link from 'next/link'
 import { getScopedI18n } from '@/locales/server'
-import SignOutButton from '@/components/signout-button'
 
 type Props = {}
 

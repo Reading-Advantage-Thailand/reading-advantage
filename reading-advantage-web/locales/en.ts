@@ -172,7 +172,7 @@ export default {
             pause: 'Pause sound',
         },
         menu: 'Menu',
-        loginButton: 'เข้าสู่ระบบ',
+        loginButton: 'Login',
     },
 
 } as const
