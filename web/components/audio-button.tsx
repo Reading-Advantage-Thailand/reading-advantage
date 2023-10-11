@@ -19,12 +19,12 @@ export default function AudioButton({
     const [isplaying, setIsPlaying] = React.useState(false);
     const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
-    function handlePause(time: number, endTime: number) {
+    function handlePause() {
         setIsPlaying(!isplaying);
         if (isplaying) {
             audioRef.current?.pause();
         } else if (audioRef.current) {
-            audioRef.current.currentTime = time;
+            audioRef.current.currentTime = startTimestamp;
             audioRef.current?.play();
 
             // Use a tolerance for comparison due to floating-point precision
@@ -32,7 +32,7 @@ export default function AudioButton({
 
             // Set up a listener to check the playback progress
             const checkProgress = setInterval(() => {
-                if (audioRef.current && audioRef.current?.currentTime + tolerance >= endTime) {
+                if (audioRef.current && audioRef.current?.currentTime + tolerance >= endTimestamp) {
                     audioRef.current?.pause();
                     clearInterval(checkProgress); // Clear the interval once the end time is reached
                     setIsPlaying(false);
@@ -41,7 +41,9 @@ export default function AudioButton({
         }
     }
     return (
-        <div>
+        <div
+            className='select-none'
+        >
             <audio
                 ref={audioRef}
             >
@@ -53,8 +55,8 @@ export default function AudioButton({
                 className={cn(buttonVariants({ size: "sm" }))}
                 onClick={() => {
                     handlePause(
-                        startTimestamp,
-                        endTimestamp,
+                        // startTimestamp,
+                        // endTimestamp,
                     )
                 }}>
                 {isplaying ? t('pause') : t('play')}

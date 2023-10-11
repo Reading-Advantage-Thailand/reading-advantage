@@ -95,11 +95,18 @@ export default function FlashCard({
                                 setCurrentCardIndex(index)
                             }}
                         />
-                        <AudioButton
-                            audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${sentences[currentCardIndex]?.articleId}.mp3`}
-                            startTimestamp={sentences[currentCardIndex]?.timepoint}
-                            endTimestamp={sentences[currentCardIndex]?.endTimepoint}
-                        />
+                        {sentences.map((sentence, index) => {
+                            if (index === currentCardIndex) {
+                                return (
+                                    <AudioButton
+                                        key={sentence.id}
+                                        audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${sentence.articleId}.mp3`}
+                                        startTimestamp={sentence.timepoint}
+                                        endTimestamp={sentence.endTimepoint}
+                                    />
+                                )
+                            }
+                        })}
                     </>
                 }
             </div>
@@ -132,6 +139,7 @@ export default function FlashCard({
                                     <Button className="ml-auto font-medium" size='sm' variant='destructive' onClick={() => handleDelete(sentence.id)}>
                                         {t('deleteButton')}
                                     </Button>
+
                                 </div>
                             )
                         })}
