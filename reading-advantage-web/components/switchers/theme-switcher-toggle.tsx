@@ -3,10 +3,11 @@ import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Icons } from "@/components/icons"
+import { useScopedI18n } from "@/locales/client"
 
 export function ThemeSwitcher() {
     const { setTheme } = useTheme()
-
+    const t = useScopedI18n("components.themeSwitcher")
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -19,15 +20,15 @@ export function ThemeSwitcher() {
             <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setTheme("light")}>
                     <Icons.sun className="mr-2 h-4 w-4" />
-                    <span>Light</span>
+                    <span>{t('light')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("dark")}>
                     <Icons.moon className="mr-2 h-4 w-4" />
-                    <span>Dark</span>
+                    <span>{t('dark')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("system")}>
                     <Icons.system className="mr-2 h-4 w-4" />
-                    <span>System</span>
+                    <span>{t('system')}</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

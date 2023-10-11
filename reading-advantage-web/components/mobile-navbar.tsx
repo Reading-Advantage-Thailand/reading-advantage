@@ -3,8 +3,8 @@ import Link from "next/link"
 import { MainNavItem } from "@/types"
 import { useLockBody } from "@/hooks/use-lock-body"
 import { cn } from "@/lib/utils"
-import { Icons } from "./icons"
 import { siteConfig } from "@/configs/site-config"
+import { useScopedI18n } from "@/locales/client"
 
 interface MobileNavProps {
     items: MainNavItem[]
@@ -13,6 +13,7 @@ interface MobileNavProps {
 
 export function MobileNav({ items, children }: MobileNavProps) {
     useLockBody()
+    const t = useScopedI18n('components.mainNav');
     return (
         <div
             className={cn(
@@ -33,7 +34,7 @@ export function MobileNav({ items, children }: MobileNavProps) {
                                 item.disabled && "cursor-not-allowed opacity-60"
                             )}
                         >
-                            {item.title}
+                            {t(item.title)}
                         </Link>
                     ))}
                 </nav>

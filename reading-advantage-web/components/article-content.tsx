@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/context-menu"
 import { Badge } from './ui/badge';
 import { Icons } from './icons';
+import { useScopedI18n } from '@/locales/client';
 
 interface ITextAudio {
     text: string;
@@ -72,6 +73,7 @@ export default function ArticleContent({
     userId,
     className,
 }: Props) {
+    const t = useScopedI18n('components.articleContent');
     //const [rating, setRating] = React.useState<number>(-1);
     const [text, setText] = React.useState<ITextAudio[]>([]);
     const [highlightedWordIndex, setHighlightedWordIndex] = React.useState(-1);
@@ -187,7 +189,7 @@ export default function ArticleContent({
     return (
         <>
             <div className='inline-flex gap-3'>
-                <p>Voice assistant</p>
+                <p>{t('voiceAssistant')}</p>
                 <Badge>
                     {
                         isplaying ? (
@@ -196,7 +198,7 @@ export default function ArticleContent({
                             <Icons.play className='mr-1' size={12} />
                         )
                     }
-                    <button onClick={handlePause}>{isplaying ? "Pause" : "Play"}</button>
+                    <button onClick={handlePause}>{isplaying ? t('soundButton.pause') : t('soundButton.play')}</button>
                 </Badge>
             </div>
             <ContextMenu>

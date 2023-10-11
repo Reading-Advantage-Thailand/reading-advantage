@@ -1,12 +1,10 @@
 "use client"
-
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-
 import { cn } from "@/lib/utils"
 import { Icons } from "@/components/icons"
-
 import { SidebarNavItem } from "@/types"
+import { useScopedI18n } from "@/locales/client"
 
 interface SidebarNavProps {
     items: SidebarNavItem[]
@@ -19,6 +17,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
     if (!items?.length) {
         return null
     }
+    const t = useScopedI18n('components.sidebarNav');
     return (
         <nav className="flex lg:grid items-start gap-2 mb-4 lg:mb-0">
             {items.map((item, index) => {
@@ -41,7 +40,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
                                         pathWithoutLocale.startsWith(item.href) ? "text-accent-foreground" : "text-muted-foreground"
                                     )}
                                 >
-                                    {item.title}
+                                    {t(item.title)}
                                 </span>
                             </span>
                         </Link>

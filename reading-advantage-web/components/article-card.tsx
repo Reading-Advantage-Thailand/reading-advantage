@@ -11,6 +11,7 @@ import Image from 'next/image'
 import MCQ from './mcq'
 import ArticleContent from './article-content'
 import { Badge } from './ui/badge'
+import { getScopedI18n } from '@/locales/server'
 
 type Props = {
     article: any,
@@ -25,7 +26,7 @@ export default async function ArticleCard({
     userId,
     isRequiz,
 }: Props) {
-
+    const t = await getScopedI18n('components.articleCard');
     return (
         <div className='md:flex md:flex-row md:gap-3 md:mb-5'>
             <Card className='mt-4 basis-3/5'>
@@ -35,17 +36,21 @@ export default async function ArticleCard({
                     </CardTitle>
                     <div className='flex flex-wrap gap-3'>
                         <Badge>
-                            Reading ability level is {article.raLevel}
+                            {t('raLevel', {
+                                raLevel: article.raLevel,
+                            })}
                         </Badge>
                         <Badge>
-                            CEFR level is {article.cefrLevel}
-                        </Badge>
-                        <Badge>
-                            Grade {article.grade}
+                            {t('cefrLevel', {
+                                cefrLevel: article.cefrLevel,
+                            })}
                         </Badge>
                     </div>
                     <CardDescription>
-                        The article pertains to the topic of {article.topic}, which falls within the {article.genre.toLowerCase()} genre.
+                        {t('articleCardDescription', {
+                            topic: article.topic.toLowerCase(),
+                            genre: article.genre.toLowerCase(),
+                        })}
                     </CardDescription>
                     <div className='flex justify-center'>
                         <Image

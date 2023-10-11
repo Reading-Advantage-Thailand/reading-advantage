@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/lib/utils';
 import { Header } from '@/components/header';
+import { getScopedI18n } from '@/locales/server';
 type Props = {}
 
 export const metadata = {
@@ -45,13 +46,14 @@ async function getArticleRecords(
 }
 
 export default async function ArticleQuizPage({ params }: { params: { articleId: string } }) {
+    const t = await getScopedI18n('pages.student.nextQuizPage.article');
     const user = await getCurrentUser();
     const res = await getArticle(params.articleId);
     if (!user) {
         return redirect('/login');
     }
     if (res.message === 'Article not found') {
-        return <div>Article not found</div>
+        return <div>{t('articleNotFound')}</div>
     }
     if (user.level === 0) {
         return redirect('/level');
@@ -59,36 +61,41 @@ export default async function ArticleQuizPage({ params }: { params: { articleId:
     const articleRecord = await getArticleRecords(user?.id, params.articleId);
     if (articleRecord.message === 'Record not found') {
         if (res.message === 'Insufficient level') {
-            return <div>Insufficient level</div>
+            return <div>{t('articleInsufficientLevel')}</div>
         }
         return <ArticleCard article={res.article} userId={user.id} articleId={params.articleId} />
     } else {
         if (res.message === 'Insufficient level') {
-            return <div>Insufficient level</div>
+            return <div>{t('articleInsufficientLevel')}</div>
         }
         const score = articleRecord.userArticleRecord.questions.map((question: { descriptorId: string, isCorrect: boolean }) => {
             return question.isCorrect ? 1 : 0;
         }).reduce((a: number, b: number) => a + b, 0);
-        const scorePoints = score > 1 ? `${score} points` : `${score} point`;
-        const timeSeconds = articleRecord.userArticleRecord.timeRecorded > 1 ? `${articleRecord.userArticleRecord.timeRecorded} seconds` : `${articleRecord.userArticleRecord.timeRecorded} second`;
+        const scorePoints = score > 1 ? `${score} ${t('scoreSuffix.points')}` : `${score} ${t('scoreSuffix.point')}`;
+        const timeSeconds = articleRecord.userArticleRecord.timeRecorded > 1 ? `${articleRecord.userArticleRecord.timeRecorded} ${t('secondSuffix.seconds')}` : `${articleRecord.userArticleRecord.timeRecorded} ${t('secondSuffix.second')}`;
         return (
             <>
                 <Header
-                    heading='You have read this before'
-                    text='
-                    You might try reading and practicing again to improve your reading skills. And this is the result of your previous reading.'
+                    heading={t('readBefore')}
+                    text={t('readBeforeDescription')}
                 />
                 <div className="grid mt-3 gap-4 grid-cols-2 md:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">
-                                Status
+                                {t('status')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-xl font-bold">{articleRecord.userArticleRecord.status}</div>
+                            <div className="text-xl font-bold">{
+                                articleRecord.userArticleRecord.status === 'completed' ?
+                                    t('statusText.completed') :
+                                    t('statusText.uncompleted')
+                            }</div>
                             <p className="text-xs text-muted-foreground">
-                                last updated {formatDate(articleRecord.userArticleRecord.updatedAt)}
+                                {t('statusDescription', {
+                                    date: formatDate(articleRecord.userArticleRecord.updatedAt),
+                                })}
                             </p>
                         </CardContent>
                     </Card>
@@ -98,37 +105,53 @@ export default async function ArticleQuizPage({ params }: { params: { articleId:
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                         <CardTitle className="text-sm font-medium">
-                                            Score
+                                            {t('score')}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{scorePoints}</div>
+                                        <div className="text-2xl font-bold">
+                                            {t('scoreText', {
+                                                score: scorePoints
+                                            })}
+                                        </div>
                                         <p className="text-xs text-muted-foreground">
-                                            of {articleRecord.userArticleRecord.questions.length} questions
+                                            {t('scoreDescription', {
+                                                total: articleRecord.userArticleRecord.questions.length
+                                            })}
                                         </p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">Rated</CardTitle>
+                                        <CardTitle className="text-sm font-medium">{t('rated')}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{articleRecord.userArticleRecord.rating}</div>
+                                        <div className="text-2xl font-bold">
+                                            {t('ratedText', {
+                                                rated: articleRecord.userArticleRecord.rating
+                                            })}
+                                        </div>
                                         <p className="text-xs text-muted-foreground">
-                                            You rated this article
+                                            {t('ratedDescription')}
                                         </p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                         <CardTitle className="text-sm font-medium">
-                                            Time Spent
+                                            {t('timeSpend')}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{timeSeconds}</div>
+                                        <div className="text-2xl font-bold">
+                                            {t('timeSpendText', {
+                                                time: timeSeconds
+                                            })}
+                                        </div>
                                         <p className="text-xs text-muted-foreground">
-                                            answering of {articleRecord.userArticleRecord.questions.length} questions
+                                            {t('timeSpendDescription', {
+                                                total: articleRecord.userArticleRecord.questions.length
+                                            })}
                                         </p>
                                     </CardContent>
                                 </Card>

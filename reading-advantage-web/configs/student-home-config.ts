@@ -3,26 +3,26 @@ import { StudentHomePageConfig } from "@/types";
 export const studentHomePageConfig: StudentHomePageConfig = {
     mainNav: [
         {
-            title: "Home",
+            title: "home",
             href: "/",
         },
         {
-            title: "About",
+            title: "about",
             href: "/about",
         },
         {
-            title: "Contact",
+            title: "contact",
             href: "/contact",
         },
     ],
     sidebarNav: [
         {
-            title: "article-records",
+            title: "articleRecords",
             href: '/student/home',
             icon: "record",
         },
         {
-            title: "next-quiz",
+            title: "nextQuiz",
             href: '/student/next-quiz',
             icon: "book",
         },

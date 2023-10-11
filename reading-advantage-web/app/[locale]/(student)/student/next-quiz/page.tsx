@@ -1,6 +1,7 @@
 import { Header } from '@/components/header'
 import Select from '@/components/select'
 import { getCurrentUser } from '@/lib/session'
+import { getScopedI18n } from '@/locales/server'
 import { redirect } from 'next/navigation'
 import React from 'react'
 
@@ -30,10 +31,11 @@ export default async function NextQuizPage({ }: Props) {
         return redirect('/level');
     }
     const response = await getTypes(user.level);
+    const t = await getScopedI18n('pages.student.nextQuizPage');
     return (
         <>
             <Header
-                heading='Article selection'
+                heading={t('articleSelection')}
             />
             <Select
                 types={response.data}

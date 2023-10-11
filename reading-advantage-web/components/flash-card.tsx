@@ -5,11 +5,11 @@ import axios from 'axios';
 import AudioButton from './audio-button';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Icons } from './icons';
 import { Button } from './ui/button';
 import { formatDate } from '@/lib/utils';
 import { Header } from './header';
 import { toast } from './ui/use-toast';
+import { useScopedI18n } from '@/locales/client';
 
 type Props = {
     userId: string;
@@ -29,6 +29,7 @@ type Sentence = {
 export default function FlashCard({
     userId,
 }: Props) {
+    const t = useScopedI18n('pages.student.flashcardPage');
     const [sentences, setSentences] = useState<Sentence[]>([])
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
@@ -54,14 +55,14 @@ export default function FlashCard({
             console.log(res.data);
             getUserSentenceSaved()
             toast({
-                title: "Success",
-                description: `You have deleted the sentence`,
+                title: t('toast.success'),
+                description: t('toast.successDescription')
             });
         } catch (error) {
             console.log(error);
             toast({
-                title: "Something went wrong.",
-                description: "Your sentence was not deleted. Please try again.",
+                title: t('toast.error'),
+                description: t('toast.errorDescription'),
                 variant: "destructive",
             });
         }
@@ -78,8 +79,8 @@ export default function FlashCard({
     return (
         <>
             <Header
-                heading="Flashcard"
-                text='You can review your saved sentences here'
+                heading={t('flashcard')}
+                text={t('flashcardDescription')}
             />
             <div className="flex flex-col items-center justify-center space-y-2 mt-4">
                 {
@@ -102,9 +103,13 @@ export default function FlashCard({
             </div>
             <Card className="col-span-3 mt-4 mb-10">
                 <CardHeader>
-                    <CardTitle>Saved Sentences</CardTitle>
+                    <CardTitle>{t('savedSentences')}</CardTitle>
                     <CardDescription>
-                        {sentences.length == 0 ? 'You have no saved sentences' : `You have ${sentences.length} saved sentences`}
+                        {sentences.length == 0 ?
+                            t('noSavedSentences')
+                            : t('savedSentencesDescription', {
+                                total: sentences.length,
+                            })}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -116,12 +121,14 @@ export default function FlashCard({
                                         <div className="ml-4 space-y-1">
                                             <p className="text-sm font-medium leading-none">{sentence.sentence}</p>
                                             <p className="text-sm text-muted-foreground">
-                                                Added {formatDate(sentence.createdAt)}
+                                                {t('added', {
+                                                    date: formatDate(sentence.createdAt)
+                                                })}
                                             </p>
                                         </div>
                                     </Link>
                                     <Button className="ml-auto font-medium" size='sm' variant='destructive' onClick={() => handleDelete(sentence.id)}>
-                                        delete
+                                        {t('deleteButton')}
                                     </Button>
                                 </div>
                             )

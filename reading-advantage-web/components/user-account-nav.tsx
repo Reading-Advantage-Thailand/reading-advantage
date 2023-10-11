@@ -12,12 +12,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { UserAvatar } from "@/components/user-avatar"
+import { useScopedI18n } from "@/locales/client"
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
     user: Pick<User, "name" | "image" | "email"> & { level: number }
 }
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
+    const t = useScopedI18n("components.userAccountNav")
     return (
         <DropdownMenu>
             <DropdownMenuTrigger>
@@ -37,14 +39,14 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
                         )}
                         {user.level && (
                             <p className="w-[200px] truncate text-sm text-muted-foreground">
-                                Level {user.level}
+                                {t('level', { level: <b>{user.level}</b> })}
                             </p>
                         )}
                     </div>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild disabled>
-                    <Link href="/student/home/settings">Settings</Link>
+                    <Link href="/student/home/settings">{t('settings')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -54,11 +56,9 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
                         signOut({
                             callbackUrl: `${window.location.origin}/login`,
                         })
-                        // signOut();
                     }}
-
                 >
-                    Sign out
+                    {t('signOut')}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

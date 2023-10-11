@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import React from 'react'
+import { getScopedI18n } from '@/locales/server'
 
 type Props = {}
 
@@ -38,16 +39,15 @@ export default async function StudentHomePage({ }: Props) {
     const reminderArticles = res.articles.filter((article: any) => article.rating < 3);
     // put the articles that have rating higher than 3 in the article records table
     const articleRecords = res.articles.filter((article: any) => article.rating >= 3);
+    const t = await getScopedI18n('pages.student.homePage');
     return (
         <>
             {
                 reminderArticles.length !== 0 && (
                     <>
                         <Header
-                            // heading={t('heading-reminder-reread')}
-                            // text={t('text-reminder-reread')}
-                            heading='Reminder to reread'
-                            text="You might want to try reading one of these articles again to see if you've improved."
+                            heading={t('reminderToReread')}
+                            text={t('reminderToRereadDescription')}
                             variant='warning'
                         />
                         <ReminderRereadTable
@@ -57,10 +57,8 @@ export default async function StudentHomePage({ }: Props) {
                 )
             }
             <Header
-                // heading={t('heading')}
-                // text={t('text')}
-                heading='Article records'
-                text="History of articles you have read."
+                heading={t('articleRecords')}
+                text={t('articleRecordsDescription')}
             />
             <ArticleRecordsTable
                 articles={articleRecords}

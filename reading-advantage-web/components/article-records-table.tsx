@@ -43,6 +43,7 @@ import { ArticleRecord } from "@/types"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { formatDate } from "@/lib/utils"
+import { useScopedI18n } from "@/locales/client"
 
 export const columns: ColumnDef<ArticleRecord>[] = [
     // check box
@@ -159,7 +160,7 @@ export function ArticleRecordsTable({
     const handleNavigateToArticle = (articleId: string) => {
         router.push(`/student/next-quiz/${articleId}`)
     }
-
+    const t = useScopedI18n('components.articleRecordsTable');
     return (
         <div className="w-full">
             <div className="flex items-center py-4">
@@ -252,8 +253,10 @@ export function ArticleRecordsTable({
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
                 <div className="flex-1 text-sm text-muted-foreground">
-                    {table.getFilteredSelectedRowModel().rows.length} of
-                    {table.getFilteredRowModel().rows.length} {'selected'}
+                    {t('select', {
+                        selected: table.getFilteredSelectedRowModel().rows.length,
+                        total: table.getFilteredRowModel().rows.length,
+                    })}
                 </div>
                 <div className="space-x-2">
                     <Button
@@ -262,7 +265,7 @@ export function ArticleRecordsTable({
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
-                        previous
+                        {t('previous')}
                     </Button>
                     <Button
                         variant="outline"
@@ -270,7 +273,7 @@ export function ArticleRecordsTable({
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
                     >
-                        next
+                        {t('next')}
                     </Button>
                 </div>
             </div>

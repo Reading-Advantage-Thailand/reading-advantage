@@ -10,6 +10,7 @@ import { toast } from './ui/use-toast';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 import { RateDialog } from './rate';
+import { useScopedI18n } from '@/locales/client';
 
 type Props = {
     mcq: Question[],
@@ -28,6 +29,7 @@ export default function MCQ({
     className,
     isRequiz,
 }: Props) {
+    const t = useScopedI18n('components.mcq');
     const [step, setStep] = React.useState(0);
 
     function nextStep() {
@@ -40,15 +42,15 @@ export default function MCQ({
                 <>
                     <CardHeader>
                         <CardTitle className='font-bold text-3xl md:text-3xl'>
-                            {isRequiz ? 'Requiz' : 'Quiz'}
+                            {isRequiz ? t('reQuiz') : t('quiz')}
                         </CardTitle>
                         <CardDescription>
-                            {isRequiz ? 'You have completed this quiz before. You can retake the quiz to improve your score.' : 'Start the quiz to test your knowledge. And see how easy this article is for you.'}
+                            {isRequiz ? t('reQuizDescription') : t('quizDescription')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button onClick={nextStep}>
-                            {isRequiz ? 'Requiz' : 'Start Quiz'}
+                            {isRequiz ? t('retakeButton') : t('startButton')}
                         </Button>
                     </CardContent>
                 </>
@@ -80,6 +82,7 @@ function Quiz({
     userId,
     articleTitle,
 }: QuizProps) {
+    const t = useScopedI18n('components.mcq');
     const { timer, setPaused } = useContext(QuizContext);
 
     const [loading, setLoading] = React.useState(false);
@@ -114,28 +117,28 @@ function Quiz({
             if (res.data.data.isCorrect) {
                 setCorrectAnswers([...correctAnswers, res.data.data.correctAnswer]); // Add true for correct answer
                 toast({
-                    title: "Correct",
-                    description: "You got it right!",
+                    title: t('toast.correct'),
+                    description: t('toast.correctDescription'),
                 })
             } else {
                 setCorrectAnswers([...correctAnswers, '']); // Add false for incorrect answer
                 toast({
-                    title: "Incorrect",
-                    description: "You got it wrong.",
+                    title: t('toast.incorrect'),
+                    description: t('toast.incorrectDescription'),
                 })
             }
             if (currentQuestionIndex === mcq.length - 1) {
                 //pause timer
                 setPaused(true);
                 return toast({
-                    title: "Quiz completed",
-                    description: "You have completed the quiz.",
+                    title: t('toast.quizCompleted'),
+                    description: t('toast.quizCompletedDescription'),
                 })
             }
         } catch (error) {
             toast({
-                title: "Error",
-                description: "Something went wrong",
+                title: t('toast.error'),
+                description: t('toast.errorDescription'),
             })
         } finally {
             setLoading(false)
@@ -144,7 +147,11 @@ function Quiz({
     return (
         <>
             <div className='flex gap-2 items-end mt-6'>
-                <Badge className="flex-1" variant="destructive">{timer} seconds elapsed</Badge>
+                <Badge className="flex-1" variant="destructive">
+                    {t('elapsedTime', {
+                        time: timer,
+                    })}
+                </Badge>
                 {mcq.map((question, index) => {
                     if (correctAnswers[index]) {
                         return <Icons.correctChecked key={index} className='text-green-500' size={22} />
@@ -155,7 +162,10 @@ function Quiz({
                 })}
             </div>
             <CardTitle className='font-bold text-3xl md:text-3xl mt-3'>
-                Question {currentQuestionIndex + 1} of {mcq.length}
+                {t('questionHeading', {
+                    number: currentQuestionIndex + 1,
+                    total: mcq.length,
+                })}
             </CardTitle>
             <CardDescription className='text-2xl md:text-2xl mt-3'>
                 {mcq[currentQuestionIndex].question}
@@ -179,7 +189,7 @@ function Quiz({
             </div>
             {mcq.length - 1 !== currentQuestionIndex ? (
                 <Button className='mt-4' variant='outline' disabled={!isAnswered || loading} size='sm' onClick={onNextQuestion}>
-                    Next Question
+                    {t('nextQuestionButton')}
                 </Button>
             ) : (<RateDialog disabled={!isAnswered || loading} userId={userId} articleId={articleId} articleTitle={articleTitle} />)
             }

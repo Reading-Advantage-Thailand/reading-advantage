@@ -1,4 +1,4 @@
-import { ReactElement } from 'react'
+import { ReactElement, ReactNode } from 'react'
 import '@/styles/globals.css'
 import { siteConfig } from '@/configs/site-config'
 import { Metadata } from 'next'
@@ -8,6 +8,7 @@ import localFont from 'next/font/local'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { TailwindIndicator } from '@/components/helpers/tailwind-indicator'
+import { LocaleProvider } from '@/components/providers/locale-provider'
 
 const cabinSketch = localFont({
   src: '../../assets/fonts/CabinSketch-Regular.ttf',
@@ -58,7 +59,7 @@ export const metadata: Metadata = {
   },
   manifest: `${siteConfig.url}/site.webmanifest`,
 }
-export default function RootLayout({ children }: { children: ReactElement }) {
+export default function RootLayout({ params: { locale }, children }: { params: { locale: string }; children: ReactNode }) {
   return (
     <html lang="en">
       <body
@@ -70,7 +71,9 @@ export default function RootLayout({ children }: { children: ReactElement }) {
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
+          <LocaleProvider locale={locale}>
+            {children}
+          </LocaleProvider>
           <Toaster />
           <TailwindIndicator />
         </ThemeProvider>

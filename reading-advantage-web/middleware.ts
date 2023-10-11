@@ -1,11 +1,13 @@
 import { getToken } from 'next-auth/jwt';
 import withAuth from 'next-auth/middleware';
 import { createI18nMiddleware } from 'next-international/middleware';
+import local from 'next/font/local';
 import { NextRequest, NextResponse } from 'next/server';
+import { localeConfig } from './configs/locale-config';
 
 const I18nMiddleware = createI18nMiddleware({
-    locales: ['en', 'th'],
-    defaultLocale: 'en',
+    locales: localeConfig.locales,
+    defaultLocale: localeConfig.defaultLocale,
 });
 
 const authPages = ["/login"];

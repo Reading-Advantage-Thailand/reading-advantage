@@ -10,7 +10,7 @@ export type SiteConfig = {
 export type MainNavItem = NavItem
 
 export type NavItem = {
-    title: string;
+    title: "home" | "about" | "contact",
     href: string;
     disabled?: boolean;
 }
@@ -25,7 +25,7 @@ export type StudentHomePageConfig = {
 }
 
 export type SidebarNavItem = {
-    title: string
+    title: "articleRecords" | "nextQuiz" | "flashcard",
     disabled?: boolean
     external?: boolean
     icon?: keyof typeof Icons

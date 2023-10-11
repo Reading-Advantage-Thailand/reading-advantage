@@ -2,6 +2,7 @@
 import { cn } from '@/lib/utils';
 import React from 'react'
 import { buttonVariants } from './ui/button';
+import { useScopedI18n } from '@/locales/client';
 
 type Props = {
     audioUrl: string;
@@ -14,6 +15,7 @@ export default function AudioButton({
     startTimestamp,
     endTimestamp,
 }: Props) {
+    const t = useScopedI18n('components.audioButton');
     const [isplaying, setIsPlaying] = React.useState(false);
     const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
@@ -55,7 +57,7 @@ export default function AudioButton({
                         endTimestamp,
                     )
                 }}>
-                {isplaying ? "Pause" : "Play"}
+                {isplaying ? t('pause') : t('play')}
             </button>
         </div>
     )

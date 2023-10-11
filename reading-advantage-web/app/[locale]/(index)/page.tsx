@@ -29,9 +29,6 @@ export default async function IndexPage({ }: Props) {
                         {t('getStartedButton')}
                     </Link>
                 </div>
-                <div>
-                    <SignOutButton />
-                </div>
             </div>
         </section>
     )

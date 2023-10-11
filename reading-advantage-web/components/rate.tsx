@@ -14,6 +14,7 @@ import React from "react";
 import { toast } from "./ui/use-toast";
 import axios from "axios";
 import Link from "next/link";
+import { useScopedI18n } from "@/locales/client";
 
 
 interface RateDialogProps {
@@ -28,6 +29,7 @@ export function RateDialog({
     articleId,
     articleTitle,
 }: RateDialogProps) {
+    const t = useScopedI18n('components.rate');
     const [rating, setRating] = React.useState(-1);
     const [loading, setLoading] = React.useState(false);
     const [isRated, setIsRated] = React.useState(false);
@@ -49,8 +51,10 @@ export function RateDialog({
         console.log(data.message === 'success')
         if (data.message === 'success') {
             toast({
-                title: "Success",
-                description: `Your new level is ${data.level}.`,
+                title: t('toast.success'),
+                description: t('toast.successDescription', {
+                    level: data.level,
+                }),
             });
             setUserLevel(data.level);
             setIsRated(true);
@@ -60,13 +64,13 @@ export function RateDialog({
     return (
         <Dialog >
             <DialogTrigger asChild>
-                <Button className='mt-4' disabled={disabled} size='sm' variant="outline">Rate Article</Button>
+                <Button className='mt-4' disabled={disabled} size='sm' variant="outline">{t('title')}</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Rate Article</DialogTitle>
+                    <DialogTitle>{t('title')}</DialogTitle>
                     <DialogDescription>
-                        This rating is use for calculating your next level.
+                        {t('description')}
                     </DialogDescription>
                 </DialogHeader>
                 {
@@ -83,7 +87,7 @@ export function RateDialog({
                         </div>
                     ) : (
                         <p className="flex items-center justify-center font-bold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600" >
-                            {`Your new level is ${userLevel}.`}
+                            {t('newLevel', { level: userLevel })}
                         </p>
                     )
                 }
@@ -91,16 +95,16 @@ export function RateDialog({
                     {
                         !isRated ? (
                             <Button disabled={loading} onClick={onUpdateUser}>
-                                Submit
+                                {t('submitButton')}
                             </Button>)
                             :
                             (
                                 <div className="flex gap-4 justify-center">
                                     <Button disabled={loading}>
-                                        <Link href={`/student/home`}>Back to home</Link>
+                                        <Link href={`/student/home`}>{t('backToHomeButton')}</Link>
                                     </Button>
                                     <Button>
-                                        <Link href={`/student/next-quiz`} >Next quiz</Link>
+                                        <Link href={`/student/next-quiz`} >{t('nextQuizButton')}</Link>
                                     </Button>
                                 </div>
                             )

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button'
 import axios from 'axios'
 import { useRouter } from 'next/navigation';
+import { useScopedI18n } from '@/locales/client';
 type Props = {
     user: {
         level: number,
@@ -18,6 +19,8 @@ export default function Select({
     user,
     types,
 }: Props) {
+    const t = useScopedI18n('components.select');
+    const ta = useScopedI18n('components.article');
     const router = useRouter();
 
     const [loading, setLoading] = React.useState(false);
@@ -91,10 +94,16 @@ export default function Select({
         <Card className='mt-2'>
             <CardHeader>
                 <CardTitle>
-                    Please choose the article {step === 0 ? 'type' : step === 1 ? 'genre' : 'sub-genre'}
+                    {t('articleChoose', {
+                        article: <b>{ta(step === 0 ? 'type' : step === 1 ? 'genre' : 'subGenre')}</b>,
+                    })}
                 </CardTitle>
                 <CardDescription>
-                    Your level is {user.level} and here are the article {step === 0 ? 'types' : step === 1 ? 'genres' : 'sub-genres'} that you can choose.
+                    {t('articleChooseDescription', {
+                        level: <b>{user.level}</b>,
+                        article: <b>{ta(step === 0 ? 'type' : step === 1 ? 'genre' : 'subGenre')}</b>,
+                    })}
+                    {/* Your level is {user.level} and here are the article {step === 0 ? 'types' : step === 1 ? 'genres' : 'sub-genres'} that you can choose. */}
                 </CardDescription>
             </CardHeader>
             <CardContent>

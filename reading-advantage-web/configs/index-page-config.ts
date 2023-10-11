@@ -3,15 +3,15 @@ import { IndexPageConfig } from "@/types";
 export const indexPageConfig: IndexPageConfig = {
     mainNav: [
         {
-            title: "Home",
+            title: "home",
             href: "/",
         },
         {
-            title: "About",
+            title: "about",
             href: "/about",
         },
         {
-            title: "Contact",
+            title: "contact",
             href: "/contact",
         },
     ],
