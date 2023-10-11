@@ -33,9 +33,6 @@ export default function FlashCard({
     const [sentences, setSentences] = useState<Sentence[]>([])
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
-    useEffect(() => {
-        getUserSentenceSaved()
-    }, [])
     const getUserSentenceSaved = async () => {
         try {
             const res = await axios.get(`/api/users/${userId}/sentences`)
@@ -45,6 +42,11 @@ export default function FlashCard({
             console.log(error);
         }
     }
+
+    useEffect(() => {
+        getUserSentenceSaved();
+    }, []);
+
     const handleDelete = async (id: string) => {
         try {
             const res = await axios.delete(`/api/users/${userId}/sentences`, {

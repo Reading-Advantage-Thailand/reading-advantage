@@ -11,13 +11,13 @@ interface SidebarNavProps {
 }
 
 export function SidebarNav({ items }: SidebarNavProps) {
+    const t = useScopedI18n('components.sidebarNav');
     const path = usePathname()
     // Extract the base path without locale and subpaths
     const pathWithoutLocale = path.replace(/\/(en|th)/, "")
     if (!items?.length) {
         return null
     }
-    const t = useScopedI18n('components.sidebarNav');
     return (
         <nav className="flex lg:grid items-start gap-2 mb-4 lg:mb-0">
             {items.map((item, index) => {

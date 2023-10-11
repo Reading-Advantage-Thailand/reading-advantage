@@ -201,13 +201,13 @@ export default function ArticleContent({
                     <button onClick={handlePause}>{isplaying ? t('soundButton.pause') : t('soundButton.play')}</button>
                 </Badge>
             </div>
-            <ContextMenu>
+            <ContextMenu >
                 <ContextMenuTrigger>
                     {text.map((sentence, index) => (
                         <p
                             key={index}
                             className={cn(
-                                "inline text-muted-foreground hover:bg-blue-200 dark:hover:bg-blue-600",
+                                "inline text-muted-foreground hover:bg-blue-200 dark:hover:bg-blue-600 select-none cursor-pointer",
                                 highlightedWordIndex === index ? "bg-yellow-50" : "bg-transparent",
                             )}
                             onMouseEnter={() => {
