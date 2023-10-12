@@ -119,7 +119,7 @@ export default async function ArticleQuizPage({ params }: { params: { articleId:
                                         {articleRecord.userArticleRecord.questions.map((question: { descriptorId: string, isCorrect: boolean, timeLogged: number }, index: number) => {
                                             return (
                                                 <p key={question.descriptorId} className="text-xs text-muted-foreground">
-                                                    Choice 1: {articleRecord.userArticleRecord.questions[index].isCorrect ? 'Correct' : 'Incorrect'} (finish at {articleRecord.userArticleRecord.questions[index].timeLogged} s.)
+                                                    Choice {index + 1}: {articleRecord.userArticleRecord.questions[index].isCorrect ? 'Correct' : 'Incorrect'} (finish at {articleRecord.userArticleRecord.questions[index].timeLogged} s.)
                                                 </p>
                                             )
                                         })}
