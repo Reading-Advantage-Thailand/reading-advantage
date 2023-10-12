@@ -45,19 +45,18 @@ export async function GET(
         const isUserAbleToRead = userLevel >= articleLevel - 2 && userLevel <= articleLevel + 2;
         console.log('isUserAbleToRead', isUserAbleToRead);
         console.log('articleRecordSnapshot.exists', articleRecordSnapshot.exists);
+        if (!articleSnapshot.exists) {
+            return new Response(JSON.stringify({
+                message: 'Article not found',
+            }), { status: 404 })
+        }
         if (!articleRecordSnapshot.exists && !isUserAbleToRead) {
             return new Response(JSON.stringify({
                 message: 'Insufficient level'
             }), { status: 403 })
         }
         // Check if the article exists
-        if (!articleSnapshot.exists) {
-            return new Response(JSON.stringify({
-                message: 'Article not found',
-            }), { status: 404 })
-        }
         const article = articleSnapshot.data();
-
         // remove suggested_answer from answers of all questions
         article?.questions.multiple_choice_questions.forEach((question: { answers: { suggested_answer: any; }; }) => {
             delete question.answers.suggested_answer;
@@ -80,18 +79,24 @@ export async function GET(
                 id: article?.id,
                 ...article,
                 // swich choices for all questions
+
                 questions: {
-                    multiple_choice_questions: article?.questions.multiple_choice_questions.map((question: { answers: { [s: string]: unknown; } | ArrayLike<unknown>; }) => {
+                    mcqs: article?.questions.multiple_choice_questions.map((question: { answers: { [s: string]: unknown; } | ArrayLike<unknown>; }) => {
                         return {
                             ...question,
                             answers: switchChoices(Object.values(question.answers))
                         }
-                    })
+                    }),
+                    shortAnswer: {
+                        question: article?.questions.short_answer_question.question,
+                        suggestedAnswer: article?.questions.short_answer_question.suggested_answer,
+                    }
                 },
             },
             // article: null,
         }), { status: 200 });
     } catch (error) {
+        console.log('error', error);
         return new Response(JSON.stringify({
             message: 'Internal server error',
         }), { status: 500 })

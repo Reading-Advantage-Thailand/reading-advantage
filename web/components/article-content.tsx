@@ -59,6 +59,10 @@ export interface Article {
                 };
             }
         ];
+        short_answer_questions: {
+            question: string;
+            suggested_answer: string;
+        }
     }
 }
 type Props = {

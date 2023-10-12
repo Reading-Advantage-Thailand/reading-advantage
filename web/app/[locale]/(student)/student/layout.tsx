@@ -6,10 +6,10 @@ import { UserAccountNav } from "@/components/user-account-nav"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle"
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher"
+
 interface StudentHomeLayoutProps {
     children?: React.ReactNode
 }
-
 
 export default async function StudentHomeLayout({
     children,

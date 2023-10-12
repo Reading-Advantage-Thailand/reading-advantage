@@ -3,6 +3,7 @@ import * as z from "zod"
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { RecordStatus } from "@/types/constants";
 
 const routeContextSchema = z.object({
     params: z.object({
@@ -45,6 +46,7 @@ export async function POST(
         const question = article?.questions.multiple_choice_questions.find((question: { descriptor_id: string; }) => question.descriptor_id === descriptorId);
 
         // get correct answer
+        console.log('questionxxxx', question)
         const correctAnswer = question.answers.answer_a;
 
         // check answer
@@ -69,7 +71,7 @@ export async function POST(
                 }
             ],
             timeRecorded: timeRecorded,
-            status: 'uncompleted', // uncompleted, completed
+            status: RecordStatus.UNCOMPLETED_MCQ,
             createdAt: new Date(),
             updatedAt: new Date(),
         }
@@ -108,6 +110,7 @@ export async function POST(
         }),
             { status: 200 })
     } catch (error) {
+        console.log('error', error)
         return new Response(JSON.stringify({
             message: 'Internal server error',
             error: `errors: ${error}`

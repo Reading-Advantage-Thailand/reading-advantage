@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Rating } from "@mui/material";
 import React from "react";
-import { toast } from "./ui/use-toast";
+import { toast } from "../ui/use-toast";
 import axios from "axios";
 import Link from "next/link";
 import { useScopedI18n } from "@/locales/client";
@@ -21,13 +21,11 @@ interface RateDialogProps {
     disabled?: boolean;
     userId: string;
     articleId: string,
-    articleTitle: string,
 }
 export function RateDialog({
     disabled = false,
     userId,
     articleId,
-    articleTitle,
 }: RateDialogProps) {
     const t = useScopedI18n('components.rate');
     const [rating, setRating] = React.useState(-1);
@@ -42,7 +40,6 @@ export function RateDialog({
     async function onUpdateUser() {
         if (rating === -1) return;
         const response = await instance.patch(`/api/users/${userId}/article-records`, {
-            title: articleTitle,
             articleId,
             rating,
         })
@@ -64,7 +61,7 @@ export function RateDialog({
     return (
         <Dialog >
             <DialogTrigger asChild>
-                <Button className='mt-4' disabled={disabled} size='sm' variant="outline">{t('title')}</Button>
+                <Button disabled={disabled} size='sm' variant="outline">{t('title')}</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

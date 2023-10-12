@@ -44,7 +44,7 @@ export default async function ArticleQuizPage({ params }: { params: { articleId:
     }
 
     return (
-        // <div>Article Quiz Page</div>
-        <ArticleCard article={res.article} userId={user.id} articleId={params.articleId} />
+        <div>Article Quiz Page</div>
+        // <ArticleCard isRequiz={false} article={res.article} userId={user.id} articleId={params.articleId} />
     )
 }

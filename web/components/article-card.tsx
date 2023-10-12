@@ -1,35 +1,33 @@
 import React, { use } from 'react'
 import {
     Card,
-    CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
 import Image from 'next/image'
-import MCQ from './mcq'
 import ArticleContent from './article-content'
 import { Badge } from './ui/badge'
 import { getScopedI18n } from '@/locales/server'
+import QuestionHeader from './questions/question-header'
+import MCQ from './questions/mcq'
+import Questions from './questions/questions'
 
 type Props = {
     article: any,
     articleId: string,
     userId: string,
-    isRequiz?: boolean,
 }
 
 export default async function ArticleCard({
     article,
     articleId,
     userId,
-    isRequiz,
 }: Props) {
     const t = await getScopedI18n('components.articleCard');
     return (
         <div className='md:flex md:flex-row md:gap-3 md:mb-5'>
-            <Card className='mt-4 basis-3/5'>
+            <Card className='mt-4 md:basis-3/5'>
                 <CardHeader >
                     <CardTitle className='font-bold text-3xl md:text-3xl'>
                         {article.title}
@@ -63,14 +61,22 @@ export default async function ArticleCard({
                     <ArticleContent article={article} articleId={articleId} userId={userId} />
                 </CardHeader>
             </Card >
-            <MCQ
+            <Questions
+                className='flex flex-col mt-4 mb-40 md:mb-0 md:basis-2/5'
+                questions={article.questions}
+                articleId={articleId}
+                userId={userId}
+                articleTitle={article.title}
+            />
+            {/* <MCQ
                 isRequiz={isRequiz}
                 className='mt-4 mb-40 basis-2/5 h-auto'
                 articleTitle={article.title}
                 articleId={articleId}
                 mcq={article.questions.multiple_choice_questions}
+                shortAnswer={article.questions.short_answer_question}
                 userId={userId}
-            />
+            /> */}
         </div >
     )
 }

@@ -1,86 +1,76 @@
 'use client';
 import React, { useContext } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { Icons } from './icons'
-import { Button } from './ui/button'
+import { Card, CardContent, CardDescription, CardTitle } from '../ui/card'
+import { Icons } from '../icons'
+import { Button } from '../ui/button'
 import { QuizContextProvider, QuizContext } from '@/contexts/quiz-context';
-import { Question } from '@/types';
+import { MCQType } from '@/types';
 import axios from 'axios';
-import { toast } from './ui/use-toast';
-import { Badge } from './ui/badge';
+import { toast } from '../ui/use-toast';
+import { Badge } from '../ui/badge';
 import { cn } from '@/lib/utils';
-import { RateDialog } from './rate';
 import { useScopedI18n } from '@/locales/client';
 
 type Props = {
-    mcq: Question[],
+    mcqs: MCQType[],
     articleId: string,
     userId: string,
     articleTitle: string,
+    isQuizCompleted: boolean,
+    loadingUpdateUserArticleRecord: boolean,
+    onQuizCompleted: () => void,
     className?: string,
-    isRequiz?: boolean,
+
 }
 
 export default function MCQ({
-    mcq,
+    mcqs,
     articleId,
     userId,
     articleTitle,
+    onQuizCompleted,
     className,
-    isRequiz,
+    isQuizCompleted,
+    loadingUpdateUserArticleRecord,
 }: Props) {
     const t = useScopedI18n('components.mcq');
-    const [step, setStep] = React.useState(0);
-
-    function nextStep() {
-        setStep(step + 1)
-    }
-
     return (
         <Card className={cn(className)}>
-            {step === 0 ? (
-                <>
-                    <CardHeader>
-                        <CardTitle className='font-bold text-3xl md:text-3xl'>
-                            {isRequiz ? t('reQuiz') : t('quiz')}
-                        </CardTitle>
-                        <CardDescription>
-                            {isRequiz ? t('reQuizDescription') : t('quizDescription')}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button onClick={nextStep}>
-                            {isRequiz ? t('retakeButton') : t('startButton')}
-                        </Button>
-                    </CardContent>
-                </>
-            ) : (
-                <QuizContextProvider>
-                    <CardContent>
-                        <Quiz
-                            articleTitle={articleTitle}
-                            mcq={mcq}
-                            articleId={articleId}
-                            userId={userId}
-                        />
-                    </CardContent>
-                </QuizContextProvider>
-            )}
+            <QuizContextProvider>
+                <CardContent>
+                    <Quiz
+                        isQuizCompleted={isQuizCompleted}
+                        loadingUpdateUserArticleRecord={loadingUpdateUserArticleRecord}
+                        articleTitle={articleTitle}
+                        mcqs={mcqs}
+                        articleId={articleId}
+                        userId={userId}
+                        onQuizCompleted={onQuizCompleted}
+                    />
+                </CardContent>
+            </QuizContextProvider>
         </Card>
     )
 }
+
 interface QuizProps {
-    mcq: Question[],
+    loadingUpdateUserArticleRecord: boolean,
+    isQuizCompleted: boolean,
+    mcqs: MCQType[],
     articleId: string,
     userId: string,
     articleTitle: string,
+    onQuizCompleted: () => void,
 }
 
 function Quiz({
-    mcq,
+    mcqs,
+    isQuizCompleted,
+    loadingUpdateUserArticleRecord,
     articleId,
     userId,
     articleTitle,
+    onQuizCompleted,
 }: QuizProps) {
     const t = useScopedI18n('components.mcq');
     const { timer, setPaused } = useContext(QuizContext);
@@ -104,7 +94,7 @@ function Quiz({
     async function nextQuestion(answer: string) {
         setIsAnswered(true);
         if (isAnswered) return;
-        const descriptorId = mcq[currentQuestionIndex].descriptor_id;
+        const descriptorId = mcqs[currentQuestionIndex].descriptor_id;
         try {
             setLoading(true)
             const res = await axios.post(
@@ -127,13 +117,9 @@ function Quiz({
                     description: t('toast.incorrectDescription'),
                 })
             }
-            if (currentQuestionIndex === mcq.length - 1) {
+            if (currentQuestionIndex === mcqs.length - 1) {
                 //pause timer
                 setPaused(true);
-                return toast({
-                    title: t('toast.quizCompleted'),
-                    description: t('toast.quizCompletedDescription'),
-                })
             }
         } catch (error) {
             toast({
@@ -152,7 +138,7 @@ function Quiz({
                         time: timer,
                     })}
                 </Badge>
-                {mcq.map((question, index) => {
+                {mcqs.map((question, index) => {
                     if (correctAnswers[index]) {
                         return <Icons.correctChecked key={index} className='text-green-500' size={22} />
                     } else if (correctAnswers[index] === '') {
@@ -164,14 +150,14 @@ function Quiz({
             <CardTitle className='font-bold text-3xl md:text-3xl mt-3'>
                 {t('questionHeading', {
                     number: currentQuestionIndex + 1,
-                    total: mcq.length,
+                    total: mcqs.length,
                 })}
             </CardTitle>
             <CardDescription className='text-2xl md:text-2xl mt-3'>
-                {mcq[currentQuestionIndex].question}
+                {mcqs[currentQuestionIndex].question}
             </CardDescription>
             <div className='flex flex-col'>
-                {mcq[currentQuestionIndex].answers.map((answer, index) => {
+                {mcqs[currentQuestionIndex].answers.map((answer, index) => {
                     return (
                         <Button key={index}
                             className={cn(
@@ -187,11 +173,15 @@ function Quiz({
                     )
                 })}
             </div>
-            {mcq.length - 1 !== currentQuestionIndex ? (
+            {mcqs.length - 1 !== currentQuestionIndex ? (
                 <Button className='mt-4' variant='outline' disabled={!isAnswered || loading} size='sm' onClick={onNextQuestion}>
                     {t('nextQuestionButton')}
                 </Button>
-            ) : (<RateDialog disabled={!isAnswered || loading} userId={userId} articleId={articleId} articleTitle={articleTitle} />)
+            ) : (
+                <Button className='mt-4' variant='outline' onClick={onQuizCompleted} disabled={isQuizCompleted || loadingUpdateUserArticleRecord || loading} size='sm'>
+                    finish quiz
+                </Button>
+            )
             }
         </>
     )

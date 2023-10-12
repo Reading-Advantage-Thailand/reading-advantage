@@ -2,6 +2,7 @@
 // this route is used to update user level and update user-article-record
 import db from "@/configs/firestore-config";
 import { authOptions } from "@/lib/auth";
+import { RecordStatus } from "@/types/constants";
 import { getServerSession } from "next-auth";
 import * as z from "zod"
 
@@ -41,7 +42,6 @@ export async function GET(req: Request, res: Response) {
 const userArticleRecordSchema = z.object({
     articleId: z.string(),
     rating: z.number(),
-    title: z.string(),
 })
 // update user level
 export async function PATCH(req: Request, res: Response) {
@@ -57,7 +57,6 @@ export async function PATCH(req: Request, res: Response) {
         const body = userArticleRecordSchema.parse(json);
         const articleId = body.articleId;
         const rating = body.rating;
-        const title = body.title;
 
         const userId = session.user.id;
         const userLevel = session.user.level;
@@ -75,8 +74,7 @@ export async function PATCH(req: Request, res: Response) {
             .doc(`${userId}-${articleId}`)
             .update({
                 rating: rating,
-                status: 'completed',
-                title: title,
+                status: RecordStatus.COMPLETED,
                 userLevel: userLevel,
                 updatedLevel: userLevel + (rating - 3),
                 updatedAt: new Date(),

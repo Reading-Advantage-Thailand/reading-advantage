@@ -83,3 +83,47 @@ export type ArticleRecord = {
 export type WithChildren<T = unknown> = T & { children: React.ReactNode };
 
 export type LocaleLayoutParams = { params: { locale: string } };
+
+export type QuestionsType = {
+    mcqs: MCQType[],
+    shortAnswer: ShortAnswerType,
+}
+
+export type MCQType = {
+    question: string,
+    descriptor_id: string,
+    answers: string[],
+}
+
+export type ShortAnswerType = {
+    question: string,
+    suggestedAnswer: string,
+}
+
+export type MCQRecordType = {
+    descriptorId: string,
+    timeLogged: number,
+    isCorrect: boolean,
+}
+export type ShortAnswerRecordType = {
+    answer: string,
+    timeLogged: number,
+}
+// user article record type
+export type UserArticleRecordType = {
+    createdAt: {
+        _seconds: number,
+        _nanoseconds: number
+    },
+    articleId: string,
+    userId: string,
+    status: RecordStatus,
+    questions: MCQRecordType[],
+    timeRecorded: number,
+    short_answer: ShortAnswerRecordType,
+    rating: number,
+    updatedAt: {
+        _seconds: number,
+        _nanoseconds: number
+    },
+}
