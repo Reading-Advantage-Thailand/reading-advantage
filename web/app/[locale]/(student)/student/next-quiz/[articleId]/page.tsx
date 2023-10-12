@@ -41,7 +41,6 @@ async function getArticleRecords(
         }
     );
     const data = await response.json();
-    console.log(data);
     return data;
 }
 
@@ -117,6 +116,13 @@ export default async function ArticleQuizPage({ params }: { params: { articleId:
                                                 total: articleRecord.userArticleRecord.questions.length
                                             })}
                                         </p>
+                                        {articleRecord.userArticleRecord.questions.map((question: { descriptorId: string, isCorrect: boolean, timeLogged: number }, index: number) => {
+                                            return (
+                                                <p key={question.descriptorId} className="text-xs text-muted-foreground">
+                                                    Choice 1: {articleRecord.userArticleRecord.questions[index].isCorrect ? 'Correct' : 'Incorrect'} (finish at {articleRecord.userArticleRecord.questions[index].timeLogged} s.)
+                                                </p>
+                                            )
+                                        })}
                                     </CardContent>
                                 </Card>
                                 <Card>

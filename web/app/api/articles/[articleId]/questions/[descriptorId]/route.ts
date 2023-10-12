@@ -52,18 +52,19 @@ export async function POST(
 
         // creaet new user-article-record 
         // if user-article-record exists, update it
-        console.log('isCorrect', isCorrect)
-        console.log('correctAnswer', correctAnswer)
-        console.log('answer', answer)
+        // console.log('isCorrect', isCorrect)
+        // console.log('correctAnswer', correctAnswer)
+        // console.log('answer', answer)
         const userArticleRecordRef = db.collection('user-article-records').doc(`${userId}-${articleId}`);
         const userArticleRecordSnapshot = await userArticleRecordRef.get();
-
+        console.log('time logged:', timeRecorded);
         const updateRecordData = {
             articleId: articleId,
             userId: userId,
             questions: [
                 {
                     descriptorId: descriptorId,
+                    timeLogged: timeRecorded,
                     isCorrect: isCorrect,
                 }
             ],
@@ -79,12 +80,16 @@ export async function POST(
             const question = questions.find((question: { descriptorId: string; }) => question.descriptorId === descriptorId);
             if (question) {
                 question.isCorrect = isCorrect;
+                question.timeLogged = timeRecorded;
             } else {
                 questions.push({
                     descriptorId: descriptorId,
                     isCorrect: isCorrect,
+                    timeLogged: timeRecorded,
                 })
             }
+            // console.log('timeRecorded', timeRecorded)
+            // console.log('questions', questions)
             await userArticleRecordRef.update({
                 questions: questions,
                 timeRecorded: timeRecorded,

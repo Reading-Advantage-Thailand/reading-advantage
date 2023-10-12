@@ -31,7 +31,7 @@ export default {
                     status: 'สถานะ',
                     statusText: {
                         completed: 'เสร็จสิ้น',
-                        unCompleted: 'ยังไม่เสร็จสิ้น',
+                        uncompleted: 'ยังไม่เสร็จสิ้น',
                     },
                     statusDescription: 'อัพเดทล่าสุดเมื่อ {date}',
                     score: 'คะแนนการทำแบบทดสอบ',
