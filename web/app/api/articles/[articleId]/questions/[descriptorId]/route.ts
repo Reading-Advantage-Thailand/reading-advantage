@@ -73,6 +73,7 @@ export async function POST(
             timeRecorded: timeRecorded,
             status: RecordStatus.UNCOMPLETED_MCQ,
             createdAt: new Date(),
+            score: 0,
             updatedAt: new Date(),
         }
         if (userArticleRecordSnapshot.exists) {
@@ -95,13 +96,13 @@ export async function POST(
             await userArticleRecordRef.update({
                 questions: questions,
                 timeRecorded: timeRecorded,
+                score: userArticleRecord?.score + (isCorrect ? 1 : 0),
                 updatedAt: new Date(),
             });
         } else {
             // create new user-article-record
             await userArticleRecordRef.set(updateRecordData);
         }
-
         return new Response(JSON.stringify({
             data: {
                 isCorrect: isCorrect,

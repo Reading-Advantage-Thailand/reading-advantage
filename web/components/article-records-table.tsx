@@ -82,8 +82,14 @@ export const columns: ColumnDef<ArticleRecord>[] = [
         cell: ({ row }) => <div className="captoliza">{row.getValue("title")}</div>,
     },
     {
+        accessorKey: "score",
+        header: ({ column }) => {
+            return <div>{column.id}</div>
+        },
+    },
+    {
         accessorKey: "updatedAt",
-        header: "Date",
+        header: "Time",
         cell: ({ row }) => {
             const createdAt = row.getValue("updatedAt") as { _seconds: number, _nanoseconds: number };
             const date = formatDate(createdAt);

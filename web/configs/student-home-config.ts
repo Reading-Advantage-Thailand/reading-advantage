@@ -31,5 +31,10 @@ export const studentHomePageConfig: StudentHomePageConfig = {
             href: '/student/flashcard',
             icon: "flashcard",
         },
+        {
+            title: "dashboard",
+            href: '/student/dashboard',
+            icon: "dashboard",
+        }
     ],
 };

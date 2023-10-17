@@ -40,6 +40,7 @@
     "react-hook-form": "^7.47.0",
     "react-quizlet-flashcard": "^3.0.0",
     "react-textarea-autosize": "^8.5.3",
+    "recharts": "^2.8.0",
     "sentence-tokenizer": "^1.0.1",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",

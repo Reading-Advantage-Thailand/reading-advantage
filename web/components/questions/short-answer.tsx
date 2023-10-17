@@ -127,24 +127,14 @@ function ShortAnswerQuestion({
                     </Badge>
                 </div>
                 <CardTitle className='flex font-bold text-3xl md:text-3xl mt-3'>
-                    <p className='flex-1'>Short Answer Question</p>
-                    <Popover>
-                        <PopoverTrigger>
-                            <Icons.suggestion color='green' className="hover:bg-gray-100 rounded-md p-1 rotate-0 h-8 w-8 px-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                        </PopoverTrigger>
-                        <PopoverContent>
-                            <div className='flex flex-col gap-2 p-2'>
-                                <p className='font-bold'>Suggested Answer</p>
-                                <p>{shortAnswer.suggestedAnswer}</p>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
+                    Short Answer Question
                 </CardTitle>
                 <CardDescription className='text-2xl md:text-2xl mt-3'>
                     {shortAnswer.question}
                 </CardDescription>
                 <TextareaAutosize
                     autoFocus
+                    disabled={isCompleted}
                     id="short-answer"
                     placeholder="Type your answer here..."
                     className="w-full my-3 p-3 rounded-sm resize-none appearance-none overflow-hidden bg-gray-100 dark:bg-gray-900 focus:outline-none"
@@ -152,10 +142,19 @@ function ShortAnswerQuestion({
                 />
                 {
                     isCompleted ? (
-                        <RateDialog
-                            articleId={articleId}
-                            userId={userId}
-                        />) : (
+                        <>
+                            <p className="text-xl font-bold">
+                                Suggested Answer
+                            </p>
+                            <p className="text-muted-foreground mb-3" >
+                                {shortAnswer.suggestedAnswer}
+                            </p>
+                            <RateDialog
+                                articleId={articleId}
+                                userId={userId}
+                            />
+                        </>
+                    ) : (
                         <button type="submit" className={cn(buttonVariants({
                             size: 'sm',
                             variant: 'outline',

@@ -1,5 +1,4 @@
 import { getScopedI18n } from '@/locales/server';
-import { headers } from 'next/headers';
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { formatDate } from '@/lib/utils';

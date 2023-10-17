@@ -72,8 +72,9 @@ export type ArticleRecord = {
     updatedLevel?: number,
     calculatedLevel?: number,
     rating: number,
+    score: number,
     title: string,
-    status: string,
+    status: RecordStatus,
     updatedAt: {
         _seconds: number,
         _nanoseconds: number
