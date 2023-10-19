@@ -24,11 +24,21 @@ import { DialogPortal } from '@radix-ui/react-dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
 async function getTranslate(sentences: string[], articleId: string) {
-    const res = await axios.post(`/api/articles/${articleId}/translate`, {
-        sentences,
-        language: 'th'
-    });
-    return res.data;
+    try {
+        const res = await axios.post(`/api/articles/${articleId}/translate`, {
+            sentences,
+            language: 'th'
+        });
+        return res.data;
+    } catch (error) {
+        console.log(error);
+        toast({
+            title: "Something went wrong.",
+            description: error as string,
+            variant: "destructive",
+        });
+    }
+
 }
 
 interface ITextAudio {
