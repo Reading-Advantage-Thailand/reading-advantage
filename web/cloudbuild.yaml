@@ -22,6 +22,8 @@ steps:
         "SERVICE_ACCOUNT_KEY=$_SERVICE_ACCOUNT_KEY",
         '--build-arg',
         "NEXT_PUBLIC_BASE_URL=$_NEXT_PUBLIC_BASE_URL",
+        '--build-arg',
+        'OPENAI_API_KEY=$_OPENAI_API_KEY',
         "-t", 
         "gcr.io/$PROJECT_ID/reading-advantage-web", 
         "./web",
