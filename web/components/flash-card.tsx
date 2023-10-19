@@ -21,7 +21,7 @@ type Sentence = {
     sentence: string;
     sn: number;
     timepoint: number;
-    translation: string;
+    translation: { th: string; }
     userId: string;
     id: string;
 }
@@ -74,7 +74,7 @@ export default function FlashCard({
         return {
             id: index,
             frontHTML: <div className='flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground'>{sentence.sentence}</div>,
-            backHTML: <div className='flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground'>{sentence.translation}</div>,
+            backHTML: <div className='flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground'>{sentence.translation.th}</div>,
         }
     })
 

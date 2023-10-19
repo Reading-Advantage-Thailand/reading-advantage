@@ -17,7 +17,7 @@ export async function POST(req: Request, res: Response) {
             }), { status: 403 });
         }
         const { articleId, sentence, translation, sn, timepoint, endTimepoint } = await req.json();
-
+        console.log('translation', translation);
         // Get user id from token
         const sub = session.user.id;
         const username = session.user.name;

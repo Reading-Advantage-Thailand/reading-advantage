@@ -46,6 +46,14 @@ async function getArticleRecord(
     return data;
 }
 
+async function getTranslate(sentences: string[], articleId: string) {
+    const res = await axios.post(`/api/articles/${articleId}/translate`, {
+        sentences,
+        language: 'th'
+    });
+    return res.data;
+}
+
 export default async function ArticleQuizPage({ params }: { params: { articleId: string } }) {
     const t = await getScopedI18n('pages.student.nextQuizPage.article');
 

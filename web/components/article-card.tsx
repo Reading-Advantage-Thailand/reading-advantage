@@ -1,4 +1,4 @@
-import React, { use } from 'react'
+import React from 'react'
 import {
     Card,
     CardDescription,
@@ -9,15 +9,16 @@ import Image from 'next/image'
 import ArticleContent from './article-content'
 import { Badge } from './ui/badge'
 import { getScopedI18n } from '@/locales/server'
-import QuestionHeader from './questions/question-header'
-import MCQ from './questions/mcq'
 import Questions from './questions/questions'
+import { ArticleType } from '@/types'
 
 type Props = {
-    article: any,
+    article: ArticleType,
     articleId: string,
     userId: string,
 }
+
+
 
 export default async function ArticleCard({
     article,
@@ -25,10 +26,11 @@ export default async function ArticleCard({
     userId,
 }: Props) {
     const t = await getScopedI18n('components.articleCard');
+
     return (
         <div className='md:flex md:flex-row md:gap-3 md:mb-5'>
             <Card className='mt-4 md:basis-3/5'>
-                <CardHeader >
+                <CardHeader>
                     <CardTitle className='font-bold text-3xl md:text-3xl'>
                         {article.title}
                     </CardTitle>
