@@ -211,25 +211,27 @@ export default function ArticleContent({
     }
     return (
         <>
-            <div className='inline-flex gap-3 items-center'>
-                <p>{t('voiceAssistant')}</p>
-                <Button
-                    size='sm'
-                    variant='secondary'
-                    onClick={handlePause}
-                >
-                    {
-                        isplaying ? (
-                            <Icons.pause className='mr-1' size={12} />
-                        ) : (
-                            <Icons.play className='mr-1' size={12} />
-                        )
-                    }
-                    {isplaying ? t('soundButton.pause') : t('soundButton.play')}
-                </Button>
+            <div className='flex flex-wrap gap-3 items-center'>
+                <div className='inline-flex gap-2'>
+                    <p>{t('voiceAssistant')}</p>
+                    <Button
+                        size='sm'
+                        variant='secondary'
+                        onClick={handlePause}
+                    >
+                        {
+                            isplaying ? (
+                                <Icons.pause className='mr-1' size={12} />
+                            ) : (
+                                <Icons.play className='mr-1' size={12} />
+                            )
+                        }
+                        {isplaying ? t('soundButton.pause') : t('soundButton.play')}
+                    </Button>
+                </div>
                 {
                     !isTranslate && (
-                        <>
+                        <div className='inline-flex gap-2'>
                             <p>Translate</p>
                             <Button
                                 size='sm'
@@ -237,14 +239,14 @@ export default function ArticleContent({
                                 onClick={handleTranslateSentence}
                                 disabled={loading}
                             >
-                                {loading ? 'Loading' : 'Translate'}
+                                {loading ? 'Loading' : 'Translate to Thai'}
                             </Button>
-                        </>
+                        </div>
                     )
                 }
             </div>
             {isTranslate && (
-                <div className='h-32 md:h-24  flex flex-col justify-between items-center'>
+                <div className='h-32 md:h-24 flex flex-col justify-between items-center'>
                     <Separator />
                     {!isplaying && highlightedWordIndex === -1 ? (
                         <p className='text-center text-green-500'>Your translate sentence will be here</p>
@@ -300,7 +302,6 @@ export default function ArticleContent({
                             </>
                         )
                     }
-
                 </ContextMenuContent>
             </ContextMenu>
             <AlertDialog
