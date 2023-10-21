@@ -50,11 +50,11 @@ export async function GET(
                 message: 'Article not found',
             }), { status: 404 })
         }
-        if (!articleRecordSnapshot.exists && !isUserAbleToRead) {
-            return new Response(JSON.stringify({
-                message: 'Insufficient level'
-            }), { status: 403 })
-        }
+        // if (!articleRecordSnapshot.exists && !isUserAbleToRead) {
+        //     return new Response(JSON.stringify({
+        //         message: 'Insufficient level'
+        //     }), { status: 403 })
+        // }
         // Check if the article exists
         const article = articleSnapshot.data();
         // remove suggested_answer from answers of all questions

@@ -19,9 +19,9 @@ const nextConfig = {
             'lh5.googleusercontent.com',
         ],
     },
-    compiler: {
-        removeConsole: process.env.NODE_ENV === 'production',
-    },
+    // compiler: {
+    //     removeConsole: process.env.NODE_ENV === 'production',
+    // },
 };
 
 module.exports = nextConfig;

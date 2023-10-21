@@ -24,21 +24,11 @@ import { DialogPortal } from '@radix-ui/react-dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
 async function getTranslate(sentences: string[], articleId: string) {
-    try {
-        const res = await axios.post(`/api/articles/${articleId}/translate`, {
-            sentences,
-            language: 'th'
-        });
-        return res.data;
-    } catch (error) {
-        console.log(error);
-        toast({
-            title: "Something went wrong.",
-            description: error as string,
-            variant: "destructive",
-        });
-    }
-
+    const res = await axios.post(`/api/articles/${articleId}/translate`, {
+        sentences,
+        language: 'th'
+    });
+    return res.data;
 }
 
 interface ITextAudio {
@@ -188,13 +178,22 @@ export default function ArticleContent({
         try {
             const sentences = text.map((sentence) => sentence.text);
             const res = await getTranslate(sentences, articleId);
-            console.log(res);
-            setTranslate(res.translation);
-            setIsTranslate(true);
-            toast({
-                title: "Success",
-                description: "Your sentence was translated.",
-            });
+            console.log('res', res);
+            if (res.message) {
+                toast({
+                    title: "Something went wrong.",
+                    description: res.message,
+                    variant: "destructive",
+                });
+                return;
+            } else {
+                setTranslate(res.translation);
+                setIsTranslate(true);
+                toast({
+                    title: "Success",
+                    description: "Your sentence was translated.",
+                });
+            }
         } catch (error) {
             console.log(error);
             setIsTranslate(false);

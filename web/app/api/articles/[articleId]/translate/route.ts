@@ -128,10 +128,10 @@ export async function POST(
         }
 
     } catch (error) {
-        console.log('error', error);
+        console.log('error', (error as Error).message);
         return new Response(JSON.stringify({
-            message: error,
-        }), { status: 500 })
+            message: (error as Error).message,
+        }))
 
     }
 }
