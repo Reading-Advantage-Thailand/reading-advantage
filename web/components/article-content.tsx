@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/context-menu"
 import { Badge } from './ui/badge';
 import { Icons } from './icons';
-import { useScopedI18n } from '@/locales/client';
+import { useCurrentLocale, useScopedI18n } from '@/locales/client';
 import { ArticleType } from '@/types';
 import { Button } from './ui/button';
 import { set } from 'lodash';
@@ -22,11 +22,12 @@ import { Dialog } from '@mui/material';
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { DialogPortal } from '@radix-ui/react-dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
+import { getCurrentLocale } from '@/locales/server';
 
-async function getTranslate(sentences: string[], articleId: string) {
-    const res = await axios.post(`/api/articles/${articleId}/translate`, {
+async function getTranslate(sentences: string[], articleId: string, language: string) {
+    const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
         sentences,
-        language: 'th'
+        language,
     });
     return res.data;
 }
@@ -60,7 +61,7 @@ export default function ArticleContent({
     const [loading, setLoading] = React.useState(false);
     const [translate, setTranslate] = React.useState<string[]>([]);
     const [isTranslate, setIsTranslate] = React.useState(false);
-
+    const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
     React.useEffect(() => {
         if (!isSplit) {
             splitToText(article);
@@ -172,14 +173,20 @@ export default function ArticleContent({
         }
 
     }
+    const locale = useCurrentLocale();
 
     async function handleTranslateSentence() {
         setLoading(true);
         try {
             const sentences = text.map((sentence) => sentence.text);
-            const res = await getTranslate(sentences, articleId);
+            // get language from local
+            if (!locale || locale === 'en') {
+                return;
+            }
+            const res = await getTranslate(sentences, articleId, locale);
             console.log('res', res);
             if (res.message) {
+                setIsTranslateOpen(false);
                 toast({
                     title: "Something went wrong.",
                     description: res.message,
@@ -187,16 +194,18 @@ export default function ArticleContent({
                 });
                 return;
             } else {
+                setIsTranslateOpen(!isTranslateOpen);
                 setTranslate(res.translation);
                 setIsTranslate(true);
-                toast({
-                    title: "Success",
-                    description: "Your sentence was translated.",
-                });
+                // toast({
+                //     title: "Success",
+                //     description: "Your sentence was translated.",
+                // });
             }
         } catch (error) {
             console.log(error);
             setIsTranslate(false);
+            setIsTranslateOpen(false);
             toast({
                 title: "Something went wrong.",
                 description: "Your sentence was not translated. Please try again.",
@@ -239,22 +248,19 @@ export default function ArticleContent({
                     </Button>
                 </div>
                 {
-                    !isTranslate && (
-                        <div className='inline-flex gap-2'>
-                            <p>Translate</p>
-                            <Button
-                                size='sm'
-                                variant='secondary'
-                                onClick={handleTranslateSentence}
-                                disabled={loading}
-                            >
-                                {loading ? 'Loading' : 'Translate to Thai'}
-                            </Button>
-                        </div>
+                    locale !== 'en' && (
+                        <Button
+                            size='sm'
+                            variant='secondary'
+                            onClick={handleTranslateSentence}
+                            disabled={loading}
+                        >
+                            {loading ? 'Loading' : isTranslate && isTranslateOpen ? 'ปิดหน้าต่างการแปล' : 'แปลเป็นภาษาไทย'}
+                        </Button>
                     )
                 }
             </div>
-            {isTranslate && (
+            {isTranslate && isTranslateOpen && (
                 <div className='h-32 md:h-24 flex flex-col justify-between items-center'>
                     <Separator />
                     {!isplaying && highlightedWordIndex === -1 ? (
@@ -304,7 +310,7 @@ export default function ArticleContent({
                                     onClick={() => {
                                         handleTranslate();
                                     }}
-                                    disabled={loading}
+                                    disabled={loading || locale === 'en'}
                                 >
                                     Translate
                                 </ContextMenuItem>
