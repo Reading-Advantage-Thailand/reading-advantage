@@ -91,6 +91,8 @@ export default {
         localeSwitcher: {
             en: 'English',
             th: 'ไทย',
+            zh-CN: '简体字',
+            zh-TW: ' 繁體字',
         },
         sidebarNav: {
             articleRecords: 'Article Records',
