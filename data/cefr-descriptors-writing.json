@@ -2,37 +2,37 @@
   "CEFR": {
     "C2 Level": {
       "Reading Long-form Questions": "Understand and critically analyze complex, abstract writing prompts or questions.",
-      "Writing Responses": "Produce clear, smoothly flowing, complex texts in response to these prompts, effectively structuring arguments and ideas to aid reader comprehension.",
+      "Writing Responses": "Produce clear, smoothly flowing, complex texts in response to these prompts, effectively structuring arguments and ideas to aid reader comprehension. Expected length: 300-500 words.",
       "Creative Writing": "Relate engaging, complex stories or descriptions, employing a style appropriate to the genre, with effective use of idiom and humor.",
       "Reports and Essays": "Craft comprehensive, nuanced reports or essays, presenting multiple perspectives and a critical appreciation of the topic."
     },
     "C1 Level": {
       "Reading Long-form Questions": "Understand detailed writing prompts on complex subjects, including implicit nuances.",
-      "Writing Responses": "Produce clear, well-structured texts with expanded and supported viewpoints, including relevant examples, suitable for a variety of complex subjects.",
+      "Writing Responses": "Produce clear, well-structured texts with expanded and supported viewpoints, including relevant examples, suitable for a variety of complex subjects. Expected length: 200-400 words.",
       "Creative Writing": "Generate detailed, imaginative texts with a natural, personal style, incorporating idioms and humor where appropriate.",
       "Reports and Essays": "Compose clear, structured expositions or arguments, with in-depth coverage of salient issues and logical conclusions."
     },
     "B2 Level": {
       "Reading Long-form Questions": "Understand and interpret writing prompts related to a variety of subjects, especially within personal fields of interest.",
-      "Writing Responses": "Create detailed texts synthesizing information from multiple sources, clearly outlining arguments or narratives.",
+      "Writing Responses": "Create detailed texts synthesizing information from multiple sources, clearly outlining arguments or narratives. Expected length: 120-180 words.",
       "Creative Writing": "Give clear, detailed descriptions and narratives, adhering to genre conventions.",
       "Reports and Essays": "Produce essays or reports developing systematic arguments with appropriate detailing and supporting evidence."
     },
     "B1 Level": {
       "Reading Long-form Questions": "Understand straightforward writing prompts on familiar topics.",
-      "Writing Responses": "Generate connected texts on various familiar subjects, linking ideas in a linear sequence.",
+      "Writing Responses": "Generate connected texts on various familiar subjects, linking ideas in a linear sequence. Expected length: About 100 words (no fewer than 80).",
       "Creative Writing": "Signal chronological sequence in narratives; give simple reviews or descriptions on familiar topics.",
       "Reports and Essays": "Write short essays or reports on topics of personal interest, summarizing and expressing opinions with some confidence."
     },
     "A2 Level": {
       "Reading Long-form Questions": "Understand basic writing prompts on familiar, everyday subjects.",
-      "Writing Responses": "Produce simple sentences and phrases in response, using connectors like 'and', 'but', and 'because'.",
+      "Writing Responses": "Produce simple sentences and phrases in response, using connectors like 'and', 'but', and 'because'. Expected length: 25-35 words.",
       "Creative Writing": "Create short, basic descriptions or stories; write simple imaginary biographies or diary entries.",
       "Reports and Essays": "Write simple texts linking sentences on familiar topics, expressing basic opinions and impressions."
     },
     "A1 Level": {
       "Reading Long-form Questions": "Understand very simple writing prompts related to personal relevance.",
-      "Writing Responses": "Compose basic sentences and phrases about personal topics like family, likes, and dislikes.",
+      "Writing Responses": "Compose basic sentences and phrases about personal topics like family, likes, and dislikes. Expected length: Under 25 words.",
       "Creative Writing": "Describe simple everyday objects and scenarios using basic words and phrases."
     }
   }
