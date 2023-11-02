@@ -1,0 +1,70 @@
+{
+   "CEFR":{
+      "C2 Level":{
+         "Overall Reading Comprehension":"Understand virtually all texts including abstract, structurally complex, or highly colloquial literary and non-literary writings.",
+         "Reading Correspondence":"Understand specialised, formal correspondence on a complex topic.",
+         "Reading for Orientation":"Scan quickly through several sources, identify relevance and usefulness of particular sections.",
+         "Reading for Information and Argument":"Understand the finer points and implications of a complex report or article even outside their area of specialisation.",
+         "Reading Instructions":"Understand in detail lengthy, complex instructions on a new machine or procedure.",
+         "Reading as a Leisure Activity":"Read virtually all forms of texts in different genres, appreciating subtle distinctions of style and meaning.",
+         "Vocabulary Control":"Maintain consistently correct and appropriate use of vocabulary.",
+         "Vocabulary Range":"Draw upon a very broad lexical repertoire including idiomatic expressions and colloquialisms; aware of connotative meanings."
+      },
+      "C1 Level":{
+         "Overall Reading Comprehension":"Understand in detail lengthy, complex texts; wide variety of texts including literary writings and specialised publications.",
+         "Reading Correspondence":"Understand any correspondence with occasional dictionary use; understand implicit/explicit attitudes, emotions, and opinions.",
+         "Reading for Orientation":"Scan quickly through several sources in parallel; identify relevance and usefulness of particular sections.",
+         "Reading for Information and Argument":"Understand in detail a wide range of lengthy, complex texts.",
+         "Reading Instructions":"Understand in detail lengthy, complex instructions on a new machine or procedure.",
+         "Reading as a Leisure Activity":"Read and appreciate various literary texts and non-fiction.",
+         "Vocabulary Control":"Use less common vocabulary idiomatically and appropriately.",
+         "Vocabulary Range":"Good command of a broad lexical repertoire; use circumlocutions with little searching for expressions."
+      },
+      "B2 Level":{
+         "Overall Reading Comprehension":"Read with independence, adapt style and speed of reading to different texts and purposes.",
+         "Reading Correspondence":"Read correspondence relating to field of interest; understand personal e-mails or postings with some colloquial language.",
+         "Reading for Orientation":"Scan quickly through several sources in parallel; identify relevance and usefulness of particular sections.",
+         "Reading for Information and Argument":"Obtain information, ideas, and opinions from specialised sources; understand reports on contemporary problems.",
+         "Reading Instructions":"Understand lengthy, complex instructions in their field.",
+         "Reading as a Leisure Activity":"Read for pleasure with independence; read various texts like magazines, novels, biographies.",
+         "Vocabulary Control":"Maintain a generally high level of lexical accuracy, though some confusion occurs.",
+         "Vocabulary Range":"Understand and use the main technical terminology of their field; good range of vocabulary for connected matters."
+      },
+      "B1 Level":{
+         "Overall Reading Comprehension":"Read straightforward factual texts on subjects related to their field of interest.",
+         "Reading Correspondence":"Understand formal correspondence on less familiar subjects; understand personal letters, e-mails, or postings.",
+         "Reading for Orientation":"Scan longer texts for desired information; find and understand relevant information in everyday material.",
+         "Reading for Information and Argument":"Understand straightforward, factual texts on subjects of interest.",
+         "Reading Instructions":"Understand instructions and procedures in a manual; follow simple instructions on packaging.",
+         "Reading as a Leisure Activity":"Understand newspaper/magazine accounts of events; follow the plot of stories, simple novels.",
+         "Vocabulary Control":"Maintain good control of elementary vocabulary; major errors occur with complex thoughts.",
+         "Vocabulary Range":"Good range of vocabulary related to familiar topics and everyday situations."
+      },
+      "A2 Level":{
+         "Overall Reading Comprehension":"Understand short, simple texts on familiar matters.",
+         "Reading Correspondence":"Understand simple personal letters, e-mails, or posts; basic types of standard routine letters and faxes.",
+         "Reading for Orientation":"Find specific information in practical texts; understand everyday signs and notices in public places.",
+         "Reading for Information and Argument":"Identify specific information in simpler material; follow the general outline of a news report.",
+         "Reading Instructions":"Understand regulations in simple language; follow short instructions illustrated step by step.",
+         "Reading as a Leisure Activity":"Understand short, simple stories and comic strips; main points in short magazine reports.",
+         "Vocabulary Control":"Control a narrow repertoire dealing with concrete, everyday needs.",
+         "Vocabulary Range":"Sufficient vocabulary for routine everyday transactions and basic communicative needs."
+      },
+      "A1 Level":{
+         "Overall Reading Comprehension":"Understand very short, simple texts a single phrase at a time.",
+         "Reading Correspondence":"Understand short, simple messages on postcards; social media or e-mail messages.",
+         "Reading for Orientation":"Recognise familiar names, words/signs on simple notices; understand basic hotel information.",
+         "Reading for Information and Argument":"Get an idea of the content of simpler informational material.",
+         "Reading Instructions":"Follow short, simple directions.",
+         "Reading as a Leisure Activity":"Understand short, illustrated narratives about everyday activities.",
+         "Vocabulary Range":"Basic vocabulary repertoire related to particular concrete situations."
+      },
+      "A0 Level":{
+         "Overall Reading Comprehension":"Recognise familiar words/signs accompanied by pictures.",
+         "Reading Correspondence":"Understand from a letter, card, or e-mail the event to which they are being invited.",
+         "Reading for Orientation":"Understand simple everyday signs; find information about places, times, and prices.",
+         "Reading for Information and Argument":"Understand the simplest informational material with illustrations.",
+         "Reading Instructions":"Understand very short, simple instructions used in familiar contexts."
+      }
+   }
+}
