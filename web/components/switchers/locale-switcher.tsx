@@ -26,7 +26,7 @@ export function LocaleSwitcher() {
                     <span>{t('th')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => changeLocale("cn")}>
-                    <Icons.th className="mr-2 h-4 w-4" />
+                    <Icons.cn className="mr-2 h-4 w-4" />
                     <span>{t('cn')}</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
