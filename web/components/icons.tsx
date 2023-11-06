@@ -1,4 +1,4 @@
-import { Lightbulb, Newspaper, Pause, Play, Album, Waves, Flag, Globe2, History, X, LucideIcon, LucideProps, SunMedium, Moon, Laptop, ChevronLeft, Loader2, User, Book, LayoutDashboard, CheckCircle2, MinusCircle, XCircle, Star } from "lucide-react"
+import { Flower, Flame, Lightbulb, Newspaper, Pause, Play, Album, Waves, Flag, Globe2, History, X, LucideIcon, LucideProps, SunMedium, Moon, Laptop, ChevronLeft, Loader2, User, Book, LayoutDashboard, CheckCircle2, MinusCircle, XCircle, Star } from "lucide-react"
 
 export type Icon = LucideIcon
 export const Icons = {
@@ -19,6 +19,8 @@ export const Icons = {
     globe: Globe2,
     th: Flag,
     en: Waves,
+    cn: Flame,
+    tw: Flower,
     flashcard: Album,
     play: Play,
     pause: Pause,
