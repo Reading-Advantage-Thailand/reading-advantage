@@ -1,7 +1,7 @@
 export default {
     pages: {
         indexPage: {
-            description: '綜合閱讀應用, 集成了AI。目前正在進行Beta測試。',
+            description: '綜合閱讀應用，集成了AI。目前正在進行Beta測試。',
             getStartedButton: '開始',
         },
         loginPage: {
@@ -84,7 +84,7 @@ export default {
             en: 'English',
             th: 'ไทย',
             cn: '简体字',
-            zhtw: ' 繁體字',
+            tw: '繁體字',
         },
         sidebarNav: {
             articleRecords: '文章記錄',

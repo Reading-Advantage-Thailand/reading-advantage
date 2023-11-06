@@ -27,8 +27,9 @@ export default withAuth(
         const isEnAuthPage = req.nextUrl.pathname.startsWith("/en/login");
         const isThAuthPage = req.nextUrl.pathname.startsWith("/th/login");
         const isCnAuthPage = req.nextUrl.pathname.startsWith("/cn/login");
+        const isTwAuthPage = req.nextUrl.pathname.startsWith("/tw/login");
 
-        const locale = isEnAuthPage ? "/en" : isThAuthPage ? "/th" : isCnAuthPage ? "/cn" : "/en";
+        const locale = isEnAuthPage ? "/en" : isThAuthPage ? "/th" : isCnAuthPage ? "/cn" : isTwAuthPage ? "/tw" : "/en";
 
         const isAuth = !!token;
         const isNoLevel = token?.level === 0;
@@ -52,7 +53,7 @@ export default withAuth(
             return I18nMiddleware(req);
         }
 
-        if (isEnAuthPage || isThAuthPage || isCnAuthPage) {
+        if (isEnAuthPage || isThAuthPage || isCnAuthPage || isTwAuthPage) {
             if (isAuth) {
                 if (isNoLevel) return NextResponse.redirect(new URL(`${locale}/level`, req.url))
                 return NextResponse.redirect(new URL(`${locale}/student/home`, req.url))

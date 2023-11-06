@@ -84,7 +84,7 @@ export default {
             en: 'English',
             th: 'ไทย',
             cn: '简体中文',
-
+            tw: '繁體字',
         },
         sidebarNav: {
             articleRecords: '文章记录',

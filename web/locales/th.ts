@@ -92,6 +92,7 @@ export default {
             en: 'English',
             th: 'ไทย',
             cn: '简体字',
+            tw: '繁體字',
         },
         sidebarNav: {
             articleRecords: 'บทความที่อ่านแล้ว',
