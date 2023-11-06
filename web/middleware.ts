@@ -23,9 +23,13 @@ export default withAuth(
     async function onSuccess(req) {
         // const token = req.nextauth.token;
         const token = await getToken({ req });
+        const locales = localeConfig.locales;
         const isEnAuthPage = req.nextUrl.pathname.startsWith("/en/login");
         const isThAuthPage = req.nextUrl.pathname.startsWith("/th/login");
-        const locale = isEnAuthPage ? '/en' : '/th';
+        const isCnAuthPage = req.nextUrl.pathname.startsWith("/cn/login");
+
+        const locale = isEnAuthPage ? "/en" : isThAuthPage ? "/th" : isCnAuthPage ? "/cn" : "/en";
+
         const isAuth = !!token;
         const isNoLevel = token?.level === 0;
         if (req.nextUrl.pathname.startsWith("/api")) {
@@ -48,7 +52,7 @@ export default withAuth(
             return I18nMiddleware(req);
         }
 
-        if (isEnAuthPage || isThAuthPage) {
+        if (isEnAuthPage || isThAuthPage || isCnAuthPage) {
             if (isAuth) {
                 if (isNoLevel) return NextResponse.redirect(new URL(`${locale}/level`, req.url))
                 return NextResponse.redirect(new URL(`${locale}/student/home`, req.url))

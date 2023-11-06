@@ -14,7 +14,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
     const t = useScopedI18n('components.sidebarNav');
     const path = usePathname()
     // Extract the base path without locale and subpaths
-    const pathWithoutLocale = path.replace(/\/(en|th)/, "")
+    const pathWithoutLocale = path.replace(/\/(en|th|cn)/, "")
     if (!items?.length) {
         return null
     }

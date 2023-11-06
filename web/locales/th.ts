@@ -91,8 +91,7 @@ export default {
         localeSwitcher: {
             en: 'English',
             th: 'ไทย',
-            zh-CN: '简体字',
-            zh-TW: ' 繁體字',
+            cn: '简体字',
         },
         sidebarNav: {
             articleRecords: 'บทความที่อ่านแล้ว',

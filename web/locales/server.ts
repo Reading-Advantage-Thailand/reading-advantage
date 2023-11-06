@@ -4,6 +4,7 @@ export const { getI18n, getScopedI18n, getCurrentLocale, getStaticParams } = cre
     {
         en: () => import('./en'),
         th: () => import('./th'),
+        cn: () => import('./cn'),
     },
     {
         // Uncomment to use custom segment name

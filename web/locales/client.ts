@@ -5,6 +5,7 @@ export const { useI18n, useScopedI18n, I18nProviderClient, useChangeLocale, defi
         {
             en: () => import('./en'),
             th: () => import('./th'),
+            cn: () => import('./cn'),
         },
         {
             // Uncomment to set base path
