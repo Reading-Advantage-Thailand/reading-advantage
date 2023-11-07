@@ -6,6 +6,7 @@ export const { getI18n, getScopedI18n, getCurrentLocale, getStaticParams } = cre
         th: () => import('./th'),
         cn: () => import('./cn'),
         tw: () => import('./tw'),
+        vi: () => import('./vi'),
     },
     {
         // Uncomment to use custom segment name

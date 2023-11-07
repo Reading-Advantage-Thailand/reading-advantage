@@ -33,6 +33,10 @@ export function LocaleSwitcher() {
                     <Icons.tw className="mr-2 h-4 w-4" />
                     <span>{t('tw')}</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => changeLocale("vi")}>
+                    <Icons.star className="mr-2 h-4 w-4" />
+                    <span>{t('vi')}</span>
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     )

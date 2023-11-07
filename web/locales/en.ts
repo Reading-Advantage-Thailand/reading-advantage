@@ -93,6 +93,7 @@ export default {
             th: 'ไทย',
             cn: '简体字',
             tw: '繁體字',
+            vi: 'Tiếng Việt',
         },
         sidebarNav: {
             articleRecords: 'Article Records',

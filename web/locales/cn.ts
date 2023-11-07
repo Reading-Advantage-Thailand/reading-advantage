@@ -85,6 +85,7 @@ export default {
             th: 'ไทย',
             cn: '简体中文',
             tw: '繁體字',
+            vi: 'Tiếng Việt',
         },
         sidebarNav: {
             articleRecords: '文章记录',
