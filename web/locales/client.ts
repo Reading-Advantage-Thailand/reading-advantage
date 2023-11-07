@@ -7,6 +7,7 @@ export const { useI18n, useScopedI18n, I18nProviderClient, useChangeLocale, defi
             th: () => import('./th'),
             cn: () => import('./cn'),
             tw: () => import('./tw'),
+            vi: () => import('./vi'),
         },
         {
             // Uncomment to set base path

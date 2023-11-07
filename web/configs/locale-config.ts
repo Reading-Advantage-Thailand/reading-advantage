@@ -2,7 +2,7 @@
 // The locales are the languages that the app supports.
 // The defaultLocale is the default language that the app will use.
 export const localeConfig: LocaleConfig = {
-    locales: ['en', 'th', 'cn', 'tw'],
+    locales: ['en', 'th', 'cn', 'tw', 'vi'],
     defaultLocale: 'en',
 };
 
