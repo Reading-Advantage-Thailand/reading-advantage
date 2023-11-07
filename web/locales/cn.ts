@@ -83,7 +83,7 @@ export default {
         localeSwitcher: {
             en: 'English',
             th: 'ไทย',
-            cn: '简体中文',
+            cn: '简体字',
             tw: '繁體字',
             vi: 'Tiếng Việt',
         },
