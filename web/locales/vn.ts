@@ -81,10 +81,11 @@
       "system": "Hệ thống"
     },
     "localeSwitcher": {
-      "en": "Tiếng Anh",
-      "th": "Tiếng Thái",
-      "cn": "Tiếng Trung (Giản thể)",
-      "tw": "Tiếng Trung (Phồn thể)"
+      en: 'English',
+            th: 'ไทย',
+            cn: '简体字',
+            tw: '繁體字',
+            vn: 'Tiếng Việt',
     },
     "sidebarNav": {
       "articleRecords": "Hồ sơ Bài báo",
