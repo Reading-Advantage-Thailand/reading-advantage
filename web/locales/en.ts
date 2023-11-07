@@ -5,7 +5,7 @@ export default {
             getStartedButton: 'Get Started',
         },
         loginPage: {
-            loginDescription: 'Login to your account',
+            loginDescription: 'Log in to your account',
             backButton: 'Back',
         },
         student: {
@@ -122,7 +122,7 @@ export default {
             subGenre: 'article sub-genre',
         },
         articleCard: {
-            raLevel: 'Reading ability level is {raLevel}',
+            raLevel: 'Reading Advantage level is {raLevel}',
             cefrLevel: 'CEFR level is {cefrLevel}',
             // The article pertains to the topic of A clever girl outsmarts an evil sorceress and saves her village from a curse., which falls within the tales and myths genre.
             articleCardDescription: 'The article pertains to the topic of {topic}, which falls within the {genre} genre.',
@@ -139,7 +139,7 @@ export default {
             quiz: 'Quiz',
             reQuiz: 'Re-Quiz',
             //descriptions
-            quizDescription: 'Start the quiz to test your knowledge. And see how easy this article is for you.',
+            quizDescription: 'Start the quiz to test your knowledge in order to see how easy this article is for you.',
             reQuizDescription: 'You have completed this quiz before. You can retake the quiz to improve your score.',
             startButton: 'Start Quiz',
             retakeButton: 'Retake Quiz',
@@ -160,7 +160,7 @@ export default {
         },
         rate: {
             title: 'Rate this article',
-            description: 'This rating is use for calculating your next level.',
+            description: 'This rating is used for calculating your next level.',
             newLevel: 'Your new level is {level}',
             submitButton: 'Submit',
             backToHomeButton: 'Back to Home',
