@@ -83,8 +83,9 @@ export default {
         localeSwitcher: {
             en: 'English',
             th: 'ไทย',
-            cn: '简体中文',
+            cn: '简体字',
             tw: '繁體字',
+            vn: 'Tiếng Việt',
         },
         sidebarNav: {
             articleRecords: '文章记录',
