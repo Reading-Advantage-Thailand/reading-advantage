@@ -46,7 +46,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild disabled>
-                    <Link href="/student/home/settings">{t('settings')}</Link>
+                    <Link href="/student/settings">{t('settings')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

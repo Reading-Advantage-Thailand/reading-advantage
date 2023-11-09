@@ -1,13 +1,21 @@
 'use client';
-import { useChangeLocale, useScopedI18n } from "@/locales/client";
+import { useChangeLocale, useCurrentLocale, useScopedI18n } from "@/locales/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { Icons } from "../icons";
+import { Locale, localeConfig, localeNames } from "@/configs/locale-config";
 
 export function LocaleSwitcher() {
     // Uncomment to preserve the search params. Don't forget to also uncomment the Suspense in the layout
     const changeLocale = useChangeLocale(/* { preserveSearchParams: true } */);
     const t = useScopedI18n("components.localeSwitcher")
+
+    // Get the current locale
+    const currentLocale = useCurrentLocale();
+
+    // Move the current locale to the front of the array
+    const sortedLocales = [currentLocale, ...Object.keys(localeNames).filter(locale => locale !== currentLocale)];
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -17,26 +25,13 @@ export function LocaleSwitcher() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => changeLocale("en")}>
-                    <Icons.en className="mr-2 h-4 w-4" />
-                    <span>{t('en')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => changeLocale("th")}>
-                    <Icons.th className="mr-2 h-4 w-4" />
-                    <span>{t('th')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => changeLocale("cn")}>
-                    <Icons.cn className="mr-2 h-4 w-4" />
-                    <span>{t('cn')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => changeLocale("tw")}>
-                    <Icons.tw className="mr-2 h-4 w-4" />
-                    <span>{t('tw')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => changeLocale("vi")}>
-                    <Icons.star className="mr-2 h-4 w-4" />
-                    <span>{t('vi')}</span>
-                </DropdownMenuItem>
+                {sortedLocales.map(locale => (
+                    <DropdownMenuItem key={locale} onClick={() => changeLocale(locale as Locale)}>
+                        <span className={`text-sm ${locale === currentLocale ? 'font-semibold' : 'text-muted-foreground'}`}>
+                            {t(locale as Locale)}
+                        </span>
+                    </DropdownMenuItem>
+                ))}
             </DropdownMenuContent>
         </DropdownMenu>
     )

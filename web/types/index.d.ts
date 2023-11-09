@@ -19,13 +19,13 @@ export type IndexPageConfig = {
     mainNav: MainNavItem[];
 }
 
-export type StudentHomePageConfig = {
+export type StudentPageConfig = {
     mainNav: MainNavItem[];
     sidebarNav: sidebarNav[];
 }
 
 export type SidebarNavItem = {
-    title: "articleRecords" | "nextQuiz" | "flashcard",
+    title: "read" | "history" | "practice" | "reports",
     disabled?: boolean
     external?: boolean
     icon?: keyof typeof Icons
@@ -128,7 +128,6 @@ export type UserArticleRecordType = {
         _nanoseconds: number
     },
 }
-
 
 //Article type
 export type ArticleType = {

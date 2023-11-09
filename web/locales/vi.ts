@@ -9,15 +9,7 @@ export default {
             backButton: 'Quay lại',
         },
         student: {
-            homePage: {
-                // Headings
-                reminderToReread: 'Lời nhắc đọc lại',
-                articleRecords: 'Hồ sơ bài viết',
-                // Descriptions
-                reminderToRereadDescription: "Bạn có thể muốn đọc lại một trong những bài viết này để xem liệu bạn đã cải thiện chưa.",
-                articleRecordsDescription: 'Hồ sơ đọc của bạn sẽ được hiển thị ở đây.',
-            },
-            nextQuizPage: {
+            readPage: {
                 // Headings
                 articleSelection: 'Chọn bài viết',
                 // Trang nextquiz/[articleId]
@@ -53,7 +45,15 @@ export default {
                     },
                 },
             },
-            flashcardPage: {
+            historyPage: {
+                // Headings
+                reminderToReread: 'Lời nhắc đọc lại',
+                articleRecords: 'Hồ sơ bài viết',
+                // Descriptions
+                reminderToRereadDescription: "Bạn có thể muốn đọc lại một trong những bài viết này để xem liệu bạn đã cải thiện chưa.",
+                articleRecordsDescription: 'Hồ sơ đọc của bạn sẽ được hiển thị ở đây.',
+            },
+            practicePage: {
                 // Headings
                 flashcard: 'Thẻ học',
                 // Descriptions
@@ -96,9 +96,10 @@ export default {
             vi: 'Tiếng Việt',
         },
         sidebarNav: {
-            articleRecords: 'Hồ sơ bài viết',
-            nextQuiz: 'Bài kiểm tra tiếp theo',
-            flashcard: 'Thẻ học',
+            read: 'Đọc',
+            history: 'Lịch sử',
+            practice: 'Luyện tập',
+            reports: 'Báo cáo',
         },
         articleRecordsTable: {
             title: 'Tiêu đề',

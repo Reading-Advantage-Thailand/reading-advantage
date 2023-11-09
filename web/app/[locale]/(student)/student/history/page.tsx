@@ -24,7 +24,7 @@ async function getUserArticleRecords(userId: string) {
     );
     return res.json();
 }
-export default async function StudentHomePage({ }: Props) {
+export default async function HistoryPage({ }: Props) {
     // const t = useTranslations('pages.student.article-records')
     const user = await getCurrentUser();
     if (!user) {
@@ -39,7 +39,7 @@ export default async function StudentHomePage({ }: Props) {
     const reminderArticles = res.articles.filter((article: any) => article.rating < 3);
     // put the articles that have rating higher than 3 in the article records table
     const articleRecords = res.articles.filter((article: any) => article.rating >= 3);
-    const t = await getScopedI18n('pages.student.homePage');
+    const t = await getScopedI18n('pages.student.historyPage');
     return (
         <>
             {

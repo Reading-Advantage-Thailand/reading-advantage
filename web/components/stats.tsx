@@ -12,7 +12,7 @@ type StatsProps = {
 export default async function Stats({
     articleRecord,
 }: StatsProps) {
-    const t = await getScopedI18n('pages.student.nextQuizPage.article');
+    const t = await getScopedI18n('pages.student.readPage.article');
 
     // Calculate score
     const score = articleRecord.questions.map((question: { descriptorId: string, isCorrect: boolean }) => {

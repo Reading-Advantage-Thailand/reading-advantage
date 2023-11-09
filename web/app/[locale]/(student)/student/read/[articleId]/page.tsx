@@ -55,7 +55,7 @@ async function getTranslate(sentences: string[], articleId: string) {
 }
 
 export default async function ArticleQuizPage({ params }: { params: { articleId: string } }) {
-    const t = await getScopedI18n('pages.student.nextQuizPage.article');
+    const t = await getScopedI18n('pages.student.readPage.article');
 
     const user = await getCurrentUser();
     if (!user) return redirect('/login');

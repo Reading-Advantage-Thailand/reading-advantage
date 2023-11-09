@@ -9,15 +9,7 @@ export default {
             backButton: 'กลับ',
         },
         student: {
-            homePage: {
-                //Headings
-                reminderToReread: 'เตือนในการอ่านซ้ำ',
-                articleRecords: 'บทความที่อ่านแล้ว',
-                //descriptions
-                reminderToRereadDescription: 'คุณอาจต้องการลองอ่านบทความหนึ่งในบทความเหล่านี้อีกครั้งเพื่อดูว่าคุณได้ปรับปรุงการอ่านของคุณได้หรือไม่',
-                articleRecordsDescription: 'บันทึกการอ่านของคุณจะปรากฏที่นี่',
-            },
-            nextQuizPage: {
+            readPage: {
                 //Headings
                 articleSelection: 'การเลือกบทความ',
                 // nextquiz/[articleId] page
@@ -53,7 +45,15 @@ export default {
                     },
                 },
             },
-            flashcardPage: {
+            historyPage: {
+                //Headings
+                reminderToReread: 'เตือนในการอ่านซ้ำ',
+                articleRecords: 'บทความที่อ่านแล้ว',
+                //descriptions
+                reminderToRereadDescription: 'คุณอาจต้องการลองอ่านบทความหนึ่งในบทความเหล่านี้อีกครั้งเพื่อดูว่าคุณได้ปรับปรุงการอ่านของคุณได้หรือไม่',
+                articleRecordsDescription: 'บันทึกการอ่านของคุณจะปรากฏที่นี่',
+            },
+            practicePage: {
                 //Headings
                 flashcard: 'การ์ดคำศัพท์',
                 //descriptions
@@ -96,9 +96,10 @@ export default {
             vi: 'Tiếng Việt',
         },
         sidebarNav: {
-            articleRecords: 'บทความที่อ่านแล้ว',
-            nextQuiz: 'บทความต่อไป',
-            flashcard: 'การ์ดคำศัพท์',
+            read: 'อ่าน',
+            history: 'ประวัติ',
+            practice: 'ฝึก',
+            reports: 'รายงาน',
         },
         articleRecordsTable: {
             title: 'ชื่อบทความ',

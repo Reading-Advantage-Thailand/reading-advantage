@@ -138,7 +138,7 @@ export function ReminderRereadTable({
     const router = useRouter();
 
     const handleNavigateToArticle = (articleId: string) => {
-        router.push(`/student/next-quiz/${articleId}`)
+        router.push(`/student/read/${articleId}`)
     }
 
     return (

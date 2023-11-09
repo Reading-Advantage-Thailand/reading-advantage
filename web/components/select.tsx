@@ -77,7 +77,7 @@ export default function Select({
                 params: params
             });
             if (step === 2) {
-                return router.push(`/student/next-quiz/${response.data.articleId}`)
+                return router.push(`/student/read/${response.data.articleId}`)
             }
             const data = response.data.data;
             console.log(data);
