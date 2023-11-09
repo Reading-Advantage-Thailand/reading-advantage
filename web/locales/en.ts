@@ -9,15 +9,7 @@ export default {
             backButton: 'Back',
         },
         student: {
-            homePage: {
-                //Headings
-                reminderToReread: 'Reminder to read',
-                articleRecords: 'Article Records',
-                //descriptions
-                reminderToRereadDescription: "You might want to try reading one of these articles again to see if you've improved.",
-                articleRecordsDescription: 'Your reading records will be displayed here.',
-            },
-            nextQuizPage: {
+            readPage: {
                 //Headings
                 articleSelection: 'Article Selection',
                 // nextquiz/[articleId] page
@@ -53,7 +45,15 @@ export default {
                     },
                 },
             },
-            flashcardPage: {
+            historyPage: {
+                //Headings
+                reminderToReread: 'Reminder to read',
+                articleRecords: 'Article Records',
+                //descriptions
+                reminderToRereadDescription: "You might want to try reading one of these articles again to see if you've improved.",
+                articleRecordsDescription: 'Your reading records will be displayed here.',
+            },
+            practicePage: {
                 //Headings
                 flashcard: 'Flashcard',
                 //descriptions
@@ -96,9 +96,10 @@ export default {
             vi: 'Tiếng Việt',
         },
         sidebarNav: {
-            articleRecords: 'Article Records',
-            nextQuiz: 'Next Quiz',
-            flashcard: 'Flashcard',
+            read: 'Read',
+            history: 'History',
+            practice: 'Practice',
+            reports: 'Reports',
         },
         articleRecordsTable: {
             title: 'Title',
@@ -120,6 +121,7 @@ export default {
             type: 'article type',
             genre: 'article genre',
             subGenre: 'article sub-genre',
+            article: 'article',
         },
         articleCard: {
             raLevel: 'Reading Advantage level is {raLevel}',

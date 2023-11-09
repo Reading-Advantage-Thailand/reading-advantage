@@ -20,7 +20,7 @@ async function getUserArticleRecords(userId: string) {
     return res.json();
 }
 
-export default async function DashboardPage({ }: Props) {
+export default async function ReportsPage({ }: Props) {
     const user = await getCurrentUser();
     if (!user) return redirect('/login');
     if (user.level === 0) return redirect('/level');
@@ -29,8 +29,7 @@ export default async function DashboardPage({ }: Props) {
     return (
         <>
             <Header
-                heading='Dashboard'
-                text="Welcome to your dashboard. Here you can see your activity and level."
+                heading='Reports'
             />
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4 mb-10">
                 <Card className="md:col-span-4">

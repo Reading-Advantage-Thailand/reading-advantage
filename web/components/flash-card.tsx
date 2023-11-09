@@ -29,7 +29,7 @@ type Sentence = {
 export default function FlashCard({
     userId,
 }: Props) {
-    const t = useScopedI18n('pages.student.flashcardPage');
+    const t = useScopedI18n('pages.student.practicePage');
     const [sentences, setSentences] = useState<Sentence[]>([])
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
@@ -126,7 +126,7 @@ export default function FlashCard({
                         sentences.length != 0 && sentences.map((sentence, index) => {
                             return (
                                 <div key={sentence.id} className="-mx-4 flex items-center rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground cursor-pointer gap-3">
-                                    <Link href={`/student/next-quiz/${sentence.articleId}`} >
+                                    <Link href={`/student/read/${sentence.articleId}`} >
                                         <div className="ml-4 space-y-1">
                                             <p className="text-sm font-medium leading-none">{sentence.sentence}</p>
                                             <p className="text-sm text-muted-foreground">

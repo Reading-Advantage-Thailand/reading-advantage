@@ -19,13 +19,13 @@ export type IndexPageConfig = {
     mainNav: MainNavItem[];
 }
 
-export type StudentHomePageConfig = {
+export type StudentPageConfig = {
     mainNav: MainNavItem[];
     sidebarNav: sidebarNav[];
 }
 
 export type SidebarNavItem = {
-    title: "articleRecords" | "nextQuiz" | "flashcard",
+    title: "read" | "history" | "practice" | "reports",
     disabled?: boolean
     external?: boolean
     icon?: keyof typeof Icons
@@ -129,7 +129,6 @@ export type UserArticleRecordType = {
     },
 }
 
-
 //Article type
 export type ArticleType = {
     id: string;
@@ -158,4 +157,15 @@ export type ArticleType = {
         }
     ];
     questions: QuestionsType;
+}
+
+export type articleShowcaseType = {
+    articleId: string,
+    title: string,
+    type: string,
+    genre: string,
+    subgenre: string,
+    raLevel: number,
+    cefrLevel: string,
+    summary: string,
 }

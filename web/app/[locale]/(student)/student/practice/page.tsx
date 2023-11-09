@@ -5,7 +5,7 @@ import React from 'react'
 
 type Props = {}
 
-export default async function FlashCardPage({ }: Props) {
+export default async function PracticePage({ }: Props) {
     const user = await getCurrentUser();
     if (!user) {
         return redirect('/login');

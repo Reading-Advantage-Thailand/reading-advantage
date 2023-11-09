@@ -22,7 +22,7 @@ async function getTypes(
     return data;
 }
 
-export default async function NextQuizPage({ }: Props) {
+export default async function ReadPage({ }: Props) {
     const user = await getCurrentUser();
     if (!user) {
         return redirect('/login');
@@ -31,7 +31,7 @@ export default async function NextQuizPage({ }: Props) {
         return redirect('/level');
     }
     const response = await getTypes(user.level);
-    const t = await getScopedI18n('pages.student.nextQuizPage');
+    const t = await getScopedI18n('pages.student.readPage');
     return (
         <>
             <Header

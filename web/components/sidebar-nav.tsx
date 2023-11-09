@@ -13,13 +13,12 @@ interface SidebarNavProps {
 export function SidebarNav({ items }: SidebarNavProps) {
     const t = useScopedI18n('components.sidebarNav');
     const path = usePathname()
-    // Extract the base path without locale and subpaths
-    const pathWithoutLocale = path.replace(/\/(en|th|cn|tw|vi)/, "")
+    const pathWithoutLocale = '/' + path.split('/').slice(2).join('/')
     if (!items?.length) {
         return null
     }
     return (
-        <nav className="flex lg:grid items-start gap-2 mb-4 lg:mb-0">
+        <nav className="flex flex-wrap lg:grid items-start gap-2 mb-4 lg:mb-0">
             {items.map((item, index) => {
                 const Icon = Icons[item.icon as keyof typeof Icons]
                 return (
@@ -36,7 +35,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
                                 <span
                                     className={cn(
                                         "truncate",
-                                        !pathWithoutLocale.startsWith(item.href) && "hidden group-hover:block sm:block",
+                                        !pathWithoutLocale.startsWith(item.href) && "group-hover:block sm:block",
                                         pathWithoutLocale.startsWith(item.href) ? "text-accent-foreground" : "text-muted-foreground"
                                     )}
                                 >

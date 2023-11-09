@@ -164,7 +164,7 @@ export function ArticleRecordsTable({
 
     const router = useRouter();
     const handleNavigateToArticle = (articleId: string) => {
-        router.push(`/student/next-quiz/${articleId}`)
+        router.push(`/student/read/${articleId}`)
     }
     const t = useScopedI18n('components.articleRecordsTable');
     return (

@@ -98,10 +98,10 @@ export function RateDialog({
                             (
                                 <div className="flex gap-4 justify-center">
                                     <Button disabled={loading}>
-                                        <Link href={`/student/home`}>{t('backToHomeButton')}</Link>
+                                        <Link href={`/student/history`}>{t('backToHomeButton')}</Link>
                                     </Button>
                                     <Button>
-                                        <Link href={`/student/next-quiz`} >{t('nextQuizButton')}</Link>
+                                        <Link href={`/student/read`} >{t('nextQuizButton')}</Link>
                                     </Button>
                                 </div>
                             )

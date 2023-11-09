@@ -9,13 +9,7 @@ export default {
             backButton: '返回',
         },
         student: {
-            homePage: {
-                reminderToReread: '重读提醒',
-                articleRecords: '文章记录',
-                reminderToRereadDescription: '您可能想再次尝试阅读这些文章，以查看您是否有所提高。',
-                articleRecordsDescription: '您的阅读记录将在这里显示。',
-            },
-            nextQuizPage: {
+            readPage: {
                 articleSelection: '文章选择',
                 article: {
                     articleNotFound: '找不到文章',
@@ -47,7 +41,13 @@ export default {
                     },
                 },
             },
-            flashcardPage: {
+            historyPage: {
+                reminderToReread: '重读提醒',
+                articleRecords: '文章记录',
+                reminderToRereadDescription: '您可能想再次尝试阅读这些文章，以查看您是否有所提高。',
+                articleRecordsDescription: '您的阅读记录将在这里显示。',
+            },
+            practicePage: {
                 flashcard: '单词卡',
                 flashcardDescription: '您可以使用单词卡来练习您的阅读技能，您保存的句子将在这里显示。',
                 savedSentences: '保存的句子',
@@ -88,9 +88,10 @@ export default {
             vi: 'Tiếng Việt',
         },
         sidebarNav: {
-            articleRecords: '文章记录',
-            nextQuiz: '下一个测验',
-            flashcard: '单词卡',
+            read: '阅读',
+            history: '历史',
+            practice: '练习',
+            reports: '报告',
         },
         articleRecordsTable: {
             title: '标题',
@@ -109,6 +110,7 @@ export default {
             type: '文章类型',
             genre: '文章种类',
             subGenre: '文章子类',
+            article: '文章',
         },
         articleCard: {
             raLevel: '阅读能力等级为 {raLevel}',

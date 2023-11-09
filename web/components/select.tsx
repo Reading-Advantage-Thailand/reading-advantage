@@ -5,6 +5,8 @@ import { Button } from './ui/button'
 import axios from 'axios'
 import { useRouter } from 'next/navigation';
 import { useScopedI18n } from '@/locales/client';
+import ArticleShowcaseCard from './article-showcase-card';
+import { articleShowcaseType } from '@/types';
 type Props = {
     user: {
         level: number,
@@ -13,7 +15,6 @@ type Props = {
     }
     types: string[],
 }
-
 
 export default function Select({
     user,
@@ -35,7 +36,7 @@ export default function Select({
         return type.replace('-', ' ')
     })
     const [values, setValues] = React.useState<string[]>(typesWithoutDash);
-
+    const [articleShowcaseData, setArticleShowcaseData] = React.useState<articleShowcaseType[]>([]);
     //function to replace all '-' with ' '
     function replaceDashes(str: string) {
         return str.replace(/\s/g, '-');
@@ -76,11 +77,12 @@ export default function Select({
             const response = await axios.get(`/api/articles`, {
                 params: params
             });
-            if (step === 2) {
-                return router.push(`/student/next-quiz/${response.data.articleId}`)
-            }
             const data = response.data.data;
             console.log(data);
+            if (step === 2) {
+                setArticleShowcaseData(data);
+                // return router.push(`/student/read/${response.data.articleId}`)
+            }
             setValues(data);
             setStep(step + 1);
         } catch (error) {
@@ -91,24 +93,45 @@ export default function Select({
     };
 
     return (
-        <Card className='mt-2'>
+        <Card className='my-2'>
             <CardHeader>
                 <CardTitle>
                     {t('articleChoose', {
-                        article: <b>{ta(step === 0 ? 'type' : step === 1 ? 'genre' : 'subGenre')}</b>,
+                        article: <b>{ta(step === 0 ? 'type' : step === 1 ? 'genre' : step === 2 ? 'subGenre' : 'article')}</b>,
                     })}
                 </CardTitle>
                 <CardDescription>
                     {t('articleChooseDescription', {
                         level: <b>{user.level}</b>,
-                        article: <b>{ta(step === 0 ? 'type' : step === 1 ? 'genre' : 'subGenre')}</b>,
+                        article: <b>{ta(step === 0 ? 'type' : step === 1 ? 'genre' : step === 2 ? 'subGenre' : 'article')}</b>,
                     })}
                     {/* Your level is {user.level} and here are the article {step === 0 ? 'types' : step === 1 ? 'genres' : 'sub-genres'} that you can choose. */}
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className='flex flex-wrap gap-2'>
-                    {values.map((value, index) => (
+                {
+                    step !== 3 ? <div className='flex flex-wrap gap-2'>
+                        {values.map((value, index) => (
+                            <Button
+                                key={index}
+                                onClick={() => onSubmit(value)}
+                                disabled={loading}
+                            >
+                                {value}
+                            </Button>
+                        ))}
+                    </div> :
+                        <div className='grid sm:grid-cols-2 grid-flow-row gap-4'>
+                            {articleShowcaseData.map((article, index) => (
+                                <ArticleShowcaseCard
+                                    key={index}
+                                    article={articleShowcaseData[index]}
+                                />
+                            ))}
+                        </div>
+                }
+                {/* {
+                     values.map((value, index) => (
                         <Button
                             key={index}
                             onClick={() => onSubmit(value)}
@@ -116,8 +139,8 @@ export default function Select({
                         >
                             {value}
                         </Button>
-                    ))}
-                </div>
+                    ))
+                } */}
             </CardContent>
         </Card>
 

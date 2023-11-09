@@ -14,15 +14,13 @@ export default async function LevelPage({ }: Props) {
     if (!user) {
         return redirect('/login');
     }
-
     if (user.level > 0) {
-        return redirect('/student/home',);
+        return redirect('/student/read',);
     }
 
     return (
         <NextAuthSessionProvider session={user}>
             <LevelSelect userId={user.id} />
         </NextAuthSessionProvider>
-
     )
 }

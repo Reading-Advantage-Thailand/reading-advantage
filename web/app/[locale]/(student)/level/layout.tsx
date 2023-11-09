@@ -1,7 +1,7 @@
 import { MainNav } from "@/components/main-navbar"
 import { getCurrentUser } from "@/lib/session"
 import { redirect } from "next/navigation"
-import { studentHomePageConfig } from "@/configs/student-home-config"
+import { studentPageConfig } from "@/configs/student-page-config"
 import { UserAccountNav } from "@/components/user-account-nav"
 interface LevelLayoutProps {
     children?: React.ReactNode
@@ -20,7 +20,7 @@ export default async function StudentHomeLayout({
         <div className="flex min-h-screen flex-col space-y-6">
             <header className="sticky top-0 z-40 border-b bg-background">
                 <div className="container flex h-16 items-center justify-between py-4">
-                    <MainNav items={studentHomePageConfig.mainNav} />
+                    <MainNav items={studentPageConfig.mainNav} />
                     <UserAccountNav
                         user={{
                             name: user.name,
