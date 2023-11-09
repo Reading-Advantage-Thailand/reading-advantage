@@ -121,6 +121,7 @@ export default {
             type: 'ประเภทบทความ',
             genre: 'ชนิดของบทความ',
             subGenre: 'ชนิดย่อยของบทความ',
+            article: 'บทความ',
         },
         articleCard: {
             raLevel: 'ระดับการอ่านของบทความคือ {raLevel}',

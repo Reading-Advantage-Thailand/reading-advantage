@@ -121,6 +121,7 @@ export default {
             type: 'article type',
             genre: 'article genre',
             subGenre: 'article sub-genre',
+            article: 'article',
         },
         articleCard: {
             raLevel: 'Reading Advantage level is {raLevel}',

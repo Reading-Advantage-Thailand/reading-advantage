@@ -97,14 +97,25 @@ export async function GET(req: Request, res: Response) {
 
             const articlesSnapshot = await articlesQuery.get();
 
-            //ramdom article from articles
-            const randomArticle = articlesSnapshot.docs[Math.floor(Math.random() * articlesSnapshot.docs.length)];
+            articlesSnapshot.forEach((doc) => {
+                articles.push({
+                    articleId: doc.id,
+                    type: doc.data().type,
+                    subgenre: doc.data().subGenre,
+                    genre: doc.data().genre,
+                    raLevel: doc.data().raLevel,
+                    title: doc.data().title,
+                    cefrLevel: doc.data().cefrLevel,
+                    summary: 'wait for summary',
+                });
+            });
 
             return new Response(JSON.stringify({
-                data: [],
-                articleId: randomArticle.id,
+                data: articles,
+                // articleId: randomArticle.id,
             }), { status: 200 })
         }
+
 
         return new Response(JSON.stringify({
             data: [],

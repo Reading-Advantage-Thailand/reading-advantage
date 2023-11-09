@@ -110,6 +110,7 @@ export default {
             type: '文章类型',
             genre: '文章种类',
             subGenre: '文章子类',
+            article: '文章',
         },
         articleCard: {
             raLevel: '阅读能力等级为 {raLevel}',

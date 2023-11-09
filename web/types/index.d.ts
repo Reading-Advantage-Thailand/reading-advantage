@@ -158,3 +158,14 @@ export type ArticleType = {
     ];
     questions: QuestionsType;
 }
+
+export type articleShowcaseType = {
+    articleId: string,
+    title: string,
+    type: string,
+    genre: string,
+    subgenre: string,
+    raLevel: number,
+    cefrLevel: string,
+    summary: string,
+}

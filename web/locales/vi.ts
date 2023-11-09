@@ -121,6 +121,7 @@ export default {
             type: 'Thể loại bài viết',
             genre: 'Thể loại bài viết',
             subGenre: 'Thể loại phụ bài viết',
+            article: 'Bài viết',
         },
         articleCard: {
             raLevel: 'Trình độ đọc là {raLevel}',
