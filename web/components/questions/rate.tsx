@@ -64,12 +64,16 @@ export function RateDialog({
                 <Button disabled={disabled} size='sm' variant="outline">{t('title')}</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>{t('title')}</DialogTitle>
-                    <DialogDescription>
-                        {t('description')}
-                    </DialogDescription>
-                </DialogHeader>
+                {
+                    !isRated && (
+                        <DialogHeader>
+                            <DialogTitle>{t('title')}</DialogTitle>
+                            <DialogDescription>
+                                How do you rate the quality of this article?
+                            </DialogDescription>
+                        </DialogHeader>
+                    )
+                }
                 {
                     !isRated ? (
                         <div className="flex items-center justify-center">

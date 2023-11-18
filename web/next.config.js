@@ -20,9 +20,9 @@ const nextConfig = {
             'd33wubrfki0l68.cloudfront.net'
         ],
     },
-    // compiler: {
-    //     removeConsole: process.env.NODE_ENV === 'production',
-    // },
+    compiler: {
+        removeConsole: process.env.NODE_ENV === 'production',
+    },
 };
 
 module.exports = nextConfig;

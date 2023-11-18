@@ -126,6 +126,8 @@ export async function GET(req: Request, res: Response) {
                     summary: 'wait for summary',
                     isRead: userArticleRecord ? true : false,
                     status: userArticleRecord?.status,
+                    averageRating: articlesSnapshot.docs[i].data().averageRating,
+                    totalRatings: articlesSnapshot.docs[i].data().totalRatings,
                 });
             }
             // articlesSnapshot.forEach(async (doc) => {

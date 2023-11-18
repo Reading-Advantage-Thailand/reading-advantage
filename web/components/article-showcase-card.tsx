@@ -32,6 +32,14 @@ export default function ArticleShowcaseCard({
                     CEFR Level: {article.cefrLevel}
                 </Badge>
                 {
+                    article.totalRatings >= 0 && <Badge
+                        className='shadow-lg max-w-max'
+                        variant='destructive'
+                    >
+                        Average Rating: {article.averageRating.toFixed(2)}
+                    </Badge>
+                }
+                {
                     article.isRead && <Badge
                         className='shadow-lg max-w-max'
                         variant='destructive'
