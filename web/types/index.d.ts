@@ -168,4 +168,6 @@ export type articleShowcaseType = {
     raLevel: number,
     cefrLevel: string,
     summary: string,
+    isRead: boolean,
+    status: RecordStatus,
 }

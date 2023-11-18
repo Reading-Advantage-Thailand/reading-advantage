@@ -1,6 +1,8 @@
 //route
 // api/articles?level=1&type=fiction&genre=animals
 import db from "@/configs/firestore-config";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 
 export async function GET(req: Request, res: Response) {
     const url = new URL(req.url as string);
@@ -84,7 +86,14 @@ export async function GET(req: Request, res: Response) {
         // data: ['article1', 'article2', 'article3', 'article4']
         // article: ...
         if (level && type && genre && subgenre) {
-            console.log('testttttt--------------');
+            const session = await getServerSession(authOptions);
+            console.log('sessionaskdksadj', session);
+            if (!session) {
+                return new Response(JSON.stringify({
+                    message: 'Unauthorized',
+                }), { status: 403 })
+            }
+
             // Start with a base query
             const articlesQuery = db.collection('articles')
                 .where('raLevel', '>=', levelInt - 2)
@@ -97,18 +106,54 @@ export async function GET(req: Request, res: Response) {
 
             const articlesSnapshot = await articlesQuery.get();
 
-            articlesSnapshot.forEach((doc) => {
+            const userId = session.user.id;
+            for (let i = 0; i < articlesSnapshot.size; i++) {
+                const articleId = articlesSnapshot.docs[i].id;
+                console.log('articleId', articleId);
+                const articleRecord = db.collection('user-article-records').doc(`${userId}-${articleId}`);
+                const articleRecordSnapshot = await articleRecord.get();
+                const userArticleRecord = articleRecordSnapshot.data();
+                console.log('userArticleRecord', userArticleRecord);
+                console.log('userArticleRecord', userArticleRecord ? true : false);
                 articles.push({
-                    articleId: doc.id,
-                    type: doc.data().type,
-                    subgenre: doc.data().subGenre,
-                    genre: doc.data().genre,
-                    raLevel: doc.data().raLevel,
-                    title: doc.data().title,
-                    cefrLevel: doc.data().cefrLevel,
+                    articleId: articlesSnapshot.docs[i].id,
+                    type: articlesSnapshot.docs[i].data().type,
+                    subgenre: articlesSnapshot.docs[i].data().subGenre,
+                    genre: articlesSnapshot.docs[i].data().genre,
+                    raLevel: articlesSnapshot.docs[i].data().raLevel,
+                    title: articlesSnapshot.docs[i].data().title,
+                    cefrLevel: articlesSnapshot.docs[i].data().cefrLevel,
                     summary: 'wait for summary',
+                    isRead: userArticleRecord ? true : false,
+                    status: userArticleRecord?.status,
                 });
-            });
+            }
+            // articlesSnapshot.forEach(async (doc) => {
+            //     // const articleId = doc.id;
+            //     // console.log('articleId', articleId);
+            //     // console.log('userId', userId);
+            //     // const articleRecord = db.collection('user-article-records').doc(`${session.user.id}-${articleId}`);
+            //     // const userArticleRecord = articleRecordSnapshot.data();
+            //     // console.log('userArticleRecord', userArticleRecord);
+            //     // const userArticleRecord = userArticleRecordSnapshot.data();
+            //     // let isRead = false;
+            //     // if (userArticleRecord) {
+            //     //     isRead = true;
+            //     // }
+            //     articles.push({
+            //         articleId: doc.id,
+            //         type: doc.data().type,
+            //         subgenre: doc.data().subGenre,
+            //         genre: doc.data().genre,
+            //         raLevel: doc.data().raLevel,
+            //         title: doc.data().title,
+            //         cefrLevel: doc.data().cefrLevel,
+            //         summary: 'wait for summary',
+            //         // isRead,
+            //         // status: userArticleRecord?.status,
+            //     });
+            // });
+            console.log('articles', articles);
 
             return new Response(JSON.stringify({
                 data: articles,
