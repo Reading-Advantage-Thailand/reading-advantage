@@ -157,6 +157,8 @@ export type ArticleType = {
         }
     ];
     questions: QuestionsType;
+    averageRating: number;
+    totalRatings: number;
 }
 
 export type articleShowcaseType = {
@@ -168,4 +170,8 @@ export type articleShowcaseType = {
     raLevel: number,
     cefrLevel: string,
     summary: string,
+    isRead: boolean,
+    status: RecordStatus,
+    averageRating: number,
+    totalRatings: number,
 }

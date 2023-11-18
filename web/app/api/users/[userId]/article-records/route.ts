@@ -130,6 +130,52 @@ export async function PATCH(req: Request, res: Response) {
             });
         console.log('new level', userLevel + (rating - 3));
 
+        const article = await db.collection('articles').doc(articleId).get();
+
+        const averageRating = article.data()?.averageRating || 0;
+        const totalRating = article.data()?.totalRatings || 0;
+        const newAverageRating = (averageRating * totalRating + rating) / (totalRating + 1);
+        const newTotalRatings = totalRating + 1;
+        // update article
+        const articleRef = db.collection('articles')
+            .doc(articleId)
+            .update({
+                averageRating: newAverageRating,
+                totalRatings: newTotalRatings,
+            });
+
+        // update user level
+        const userArticleRecord = db.collection('user-article-records').doc(`${userId}-${articleId}`);
+        const userArticleRecordSnapshot = await userArticleRecord.get();
+        const userArticleRecordData = userArticleRecordSnapshot.data();
+
+        let percentageCorrect = 0;
+        console.log('userArticleRecordData?.questions', userArticleRecordData?.questions);
+        userArticleRecordData?.questions.forEach((question: any) => {
+            if (question.isCorrect) {
+                percentageCorrect += 1;
+            }
+        });
+        percentageCorrect = percentageCorrect / userArticleRecordData?.questions.length;
+        console.log('percentageCorrect', percentageCorrect);
+
+        let newLevel = 0;
+        if (percentageCorrect >= 0.9) {
+            newLevel = article.data()?.raLevel + 1;
+            console.log('newLevel + 1', newLevel);
+        } else if (percentageCorrect >= 0.7) {
+            newLevel = article.data()?.raLevel;
+            console.log('newLevel + 0', newLevel);
+        } else if (percentageCorrect >= 0.4) {
+            newLevel = article.data()?.raLevel - 1;
+            console.log('newLevel - 1', newLevel);
+        } else {
+            newLevel = article.data()?.raLevel - 2;
+            console.log('newLevel - 2', newLevel);
+        }
+        console.log('article.data()?.raLevel', article.data()?.raLevel);
+        console.log('userLevel', userLevel);
+        console.log('newLevel', newLevel);
         // update user-article-record
         const userArticleRecordRef = db.collection('user-article-records')
             .doc(`${userId}-${articleId}`)
@@ -137,12 +183,12 @@ export async function PATCH(req: Request, res: Response) {
                 rating: rating,
                 status: RecordStatus.COMPLETED,
                 userLevel: userLevel,
-                updatedLevel: userLevel + (rating - 3),
+                updatedLevel: newLevel,
                 updatedAt: new Date(),
             });
         return new Response(JSON.stringify({
             message: 'success',
-            level: userLevel + (rating - 3),
+            level: newLevel,
         }), { status: 200 })
     } catch (error) {
         console.log('error', error);

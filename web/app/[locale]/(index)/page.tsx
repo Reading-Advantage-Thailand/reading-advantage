@@ -55,7 +55,7 @@ export default async function IndexPage({ }: Props) {
                             </div>
                             <div className='flex flex-wrap gap-3'>
                                 <Badge>
-                                    Reading Ability Level: 54
+                                    Reading Advantage Level: 54
                                 </Badge>
                                 <Badge>
                                     CEFR level: B1+

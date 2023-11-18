@@ -26,3 +26,9 @@ export function formatDate(updatedAt: { _seconds: number, _nanoseconds: number }
     return `${days} ${days === 1 ? 'day' : 'days'} ago`;
   }
 }
+
+export function camelToSentenceCase(str: string) {
+  return str
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase())
+}

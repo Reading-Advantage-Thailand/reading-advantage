@@ -2,6 +2,7 @@ import { articleShowcaseType } from '@/types'
 import React from 'react'
 import { Badge } from './ui/badge'
 import Link from 'next/link'
+import { camelToSentenceCase } from '@/lib/utils'
 type Props = {
     article: articleShowcaseType,
 }
@@ -22,16 +23,30 @@ export default function ArticleShowcaseCard({
                     className='shadow-lg max-w-max'
                     variant='destructive'
                 >
-                    Reading Ability Level: {article.raLevel}
+                    Reading Advantage Level: {article.raLevel}
                 </Badge>
                 <Badge
                     className='shadow-lg max-w-max'
                     variant='destructive'
-
-
                 >
                     CEFR Level: {article.cefrLevel}
                 </Badge>
+                {
+                    article.totalRatings >= 0 && <Badge
+                        className='shadow-lg max-w-max'
+                        variant='destructive'
+                    >
+                        Average Rating: {article.averageRating.toFixed(2)}
+                    </Badge>
+                }
+                {
+                    article.isRead && <Badge
+                        className='shadow-lg max-w-max'
+                        variant='destructive'
+                    >
+                        Previously Read - {camelToSentenceCase(article.status)}
+                    </Badge>
+                }
                 <div className='mt-auto'>
                     <p className='text-xl drop-shadow-lg font-bold text-white'>
                         {article.title}
