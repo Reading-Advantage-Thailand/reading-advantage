@@ -23,7 +23,7 @@ export default function ArticleShowcaseCard({
                     className='shadow-lg max-w-max'
                     variant='destructive'
                 >
-                    Reading Ability Level: {article.raLevel}
+                    Reading Advantage Level: {article.raLevel}
                 </Badge>
                 <Badge
                     className='shadow-lg max-w-max'
