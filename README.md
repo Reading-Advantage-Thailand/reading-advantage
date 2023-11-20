@@ -5,7 +5,7 @@
 3. [x] Create auth system and level tracking.
 4. [x] Add images to all articles.
 5. [x] Provide audio with highlighting by sentence for all articles.
-6. [ ] Provide an optional translation pane for the current sentence.
+6. [x] Provide an optional translation pane for the current sentence.
 7. [x] Option to save specific sentences, translations, and audio for later review.
 8. [ ] Vocabulary SRS practice
 9. [x] Comprehension questions with feedback.
