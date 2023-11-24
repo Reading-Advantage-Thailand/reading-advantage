@@ -63,7 +63,6 @@ export default async function ArticleCard({
                     </div>
                     <ArticleContent article={article} articleId={articleId} userId={userId} />
                 </CardHeader>
-                {/* article footer coming soon */}
                 <ArticleFooter />
             </Card >
             <Questions

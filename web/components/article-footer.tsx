@@ -1,8 +1,5 @@
 import { cn } from "@/lib/utils"
 import { Icons } from "@/components/icons"
-import { siteConfig } from "@/configs/site-config"
-import { ThemeSwitcher } from "./switchers/theme-switcher-toggle"
-import { LocaleSwitcher } from "./switchers/locale-switcher"
 
 interface FooterProps {
     className?: string
