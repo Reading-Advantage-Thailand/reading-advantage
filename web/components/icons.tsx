@@ -1,4 +1,4 @@
-import { Flower, Flame, Lightbulb, Newspaper, Pause, Play, Album, Waves, Flag, Globe2, History, X, LucideIcon, LucideProps, SunMedium, Moon, Laptop, ChevronLeft, Loader2, User, Book, LayoutDashboard, CheckCircle2, MinusCircle, XCircle, Star } from "lucide-react"
+import { Flower, Flame, Lightbulb, Newspaper, Pause, Play, Album, Waves, Flag, Globe2, History, X, LucideIcon, LucideProps, SunMedium, Moon, Laptop, ChevronLeft, Loader2, User, Book, LayoutDashboard, CheckCircle2, MinusCircle, XCircle, Star, AlertCircle } from "lucide-react"
 
 export type Icon = LucideIcon
 export const Icons = {
@@ -26,6 +26,7 @@ export const Icons = {
     pause: Pause,
     article: Newspaper,
     suggestion: Lightbulb,
+    AlertCircle: AlertCircle,
     logo: ({ ...props }: LucideProps) => (
         <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
             width="18.000000pt" height="18.000000pt" viewBox="0 0 180.000000 180.000000"

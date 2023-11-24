@@ -11,6 +11,7 @@ import { Badge } from './ui/badge'
 import { getScopedI18n } from '@/locales/server'
 import Questions from './questions/questions'
 import { ArticleType } from '@/types'
+import { ArticleFooter } from './article-footer'
 
 type Props = {
     article: ArticleType,
@@ -62,6 +63,8 @@ export default async function ArticleCard({
                     </div>
                     <ArticleContent article={article} articleId={articleId} userId={userId} />
                 </CardHeader>
+                {/* article footer coming soon */}
+                <ArticleFooter />
             </Card >
             <Questions
                 className='flex flex-col mt-4 mb-40 md:mb-0 md:basis-2/5'
