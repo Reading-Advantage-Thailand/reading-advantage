@@ -30,7 +30,6 @@ async function getArticle(
     const data = await response.json();
     return data;
 }
-
 async function getArticleRecord(
     userId: string,
     articleId: string
@@ -45,7 +44,6 @@ async function getArticleRecord(
     const data = await response.json();
     return data;
 }
-
 async function getTranslate(sentences: string[], articleId: string) {
     const res = await axios.post(`/api/articles/${articleId}/translate`, {
         sentences,
