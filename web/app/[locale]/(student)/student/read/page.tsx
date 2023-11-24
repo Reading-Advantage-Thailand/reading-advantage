@@ -46,7 +46,6 @@ export default async function ReadPage({ }: Props) {
                     id: user.id,
                 }}
             />
-            <p>hello</p>
         </>
     )
 }
