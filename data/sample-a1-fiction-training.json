@@ -6,10 +6,10 @@
     }, 
     {
       "role": "user", 
-      "content": "Write a short and very simple fiction story in the ${genre} genre, specifically tailored to the ${subgenre} subgenre, for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
+      "content": "Write a short and very simple fiction story in the $(genre) genre, specifically tailored to the $(subgenre) subgenre, for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
           Key Guidelines:
-          1. **Length:** The story should be approximately ${wordcount} words.
-          2. **Sentence Structure:** Use very short sentences, with an average of around ${wordspersentence} words per sentence. The sentence structure should be basic and repetitive, using simple present tense and common, everyday language.
+          1. **Length:** The story should be approximately $(wordcount) words.
+          2. **Sentence Structure:** Use very short sentences, with an average of around $(wordspersentence) words per sentence. The sentence structure should be basic and repetitive, using simple present tense and common, everyday language.
           3. **Vocabulary:** Stick to a limited vocabulary, comprising basic nouns, verbs, and adjectives familiar to beginners. Avoid any complex or abstract words. Repeat key vocabulary to aid understanding and memorization.
           4. **Content:** Focus on concrete, relatable themes and simple, linear storylines. Characters should be straightforward, and their actions or experiences should be described using simple and clear language.
           5. **Style and Tone:** Keep the style very simple and the tone friendly and encouraging. The narrative should be engaging but not confusing or overwhelming for a beginner.
@@ -57,10 +57,10 @@
     {
       "role": "assistant", 
       "content": "{
-          title: ${title},
-          content: ${content},
-          summary: ${summary},
-          image: ${image},
+          title: $(title),
+          content: $(content),
+          summary: $(summary),
+          image: $(image),
       }"
     }]
 }
