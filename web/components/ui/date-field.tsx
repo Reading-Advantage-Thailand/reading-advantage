@@ -24,24 +24,25 @@ function DateField({ label, value, onChange, placeholder }: DateFieldProps) {
     }
   };
   return (
-    <div className="relative">
+    <>
       {label && (
-        <label className="text-sm font-medium text-gray-700">{label}</label>
+        <label className="text-sm font-medium">{label}</label>
       )}
-      <Datepicker
-        placeholder={placeholder}
-        value={value}
-        onChange={handleValueChange}
-        readOnly={true}
-        showFooter={true}
-        showShortcuts={true}
-        useRange={true}
-        toggleClassName="text-base-500 disabled:hidden"
-        displayFormat={"DD/MM/YYYY"}
-        inputClassName={`relative transition-all duration-300 py-2.5 pl-4 pr-10 w-full border-gray-300 dark:bg-slate-800 dark:text-white/80 dark:border-slate-600 rounded-lg tracking-wide font-light text-sm placeholder-gray-400 bg-white focus:ring disabled:opacity-40 disabled:cursor-not-allowed focus:border-blue-500 focus:ring-blue-500/20 date-field w-full py-[9px] appearance-none rounded transition-none border text-base-800 !text-lu4-regular focus:ring-0 focus:outline-none placeholder:text-base-400 placeholder:text-lu4-regular focus:outline-0 opacity-100 text-ellipsis 
-              `}
-      />
-    </div>
+      <div id="datepicker-wrapper">
+        <Datepicker
+          placeholder={placeholder}
+          value={value}
+          onChange={handleValueChange}
+          readOnly={true}
+          showFooter={true}
+          showShortcuts={true}
+          useRange={true}
+          toggleClassName="text-base-500 disabled:hidden"
+          displayFormat={"DD/MM/YYYY"}
+          inputClassName="relative mt-2 transition-all duration-300 py-2.5 pl-4 pr-10 w-full border-gray-300 dark:bg-slate-800 dark:text-white/80 dark:border-slate-600 rounded-lg tracking-wide font-light text-sm placeholder-gray-400 bg-white focus:ring disabled:opacity-40 disabled:cursor-not-allowed focus:border-blue-500 focus:ring-blue-500/20 date-field w-full py-[9px] appearance-none rounded transition-none border text-base-800 !text-lu4-regular focus:ring-0 focus:outline-none placeholder:text-base-400 placeholder:text-lu4-regular focus:outline-0 opacity-100 text-ellipsis"
+        />
+      </div>
+    </>
   );
 }
 
