@@ -106,7 +106,7 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
 
   return (
     <div>
-      <div id="datepicker-wrapper" className="relative w-full mb-5">
+      <div className="relative w-full px-4 mb-4">
         <DateField
           label="Date"
           value={calendarValue}
