@@ -22,37 +22,32 @@ import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 // This function takes in the articles and the number of days to go back
 // It returns an array of objects with the day of the week and the total number of articles read on that day
 // Example: [{ day: "Sun 1", total: 5 }, { day: "Mon 2", total: 10 }, ...]
-function formatDataForDays(articles: ArticleRecord[], numDays: number) {
-  const today = new Date();
-  const specifiedDaysAgo = new Date(
-    today.getTime() - numDays * 24 * 60 * 60 * 1000
-  );
+function formatDataForDays(articles: ArticleRecord[], calendarValue: DateValueType) {
+  const startDate = new Date(calendarValue.startDate);
+  const endDate = calendarValue.endDate ? new Date(calendarValue.endDate) : new Date();
+  startDate.setHours(0, 0, 0, 0); // Set start of the day
+  endDate.setHours(23, 59, 59, 999); // Set end of the day
 
   const data = [];
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  for (let i = specifiedDaysAgo; i <= today; i.setDate(i.getDate() + 1)) {
+  for (let i = new Date(startDate); i <= endDate; i.setDate(i.getDate() + 1)) {
     const dayOfWeek = daysOfWeek[i.getDay()];
     const dayOfMonth = i.getDate();
 
-    const filteredArticles = articles.filter((article: ArticleRecord) => {
+   const filteredArticles = articles.filter((article: ArticleRecord) => {
       const articleDate = new Date(article.createdAt._seconds * 1000);
-      return articleDate.toDateString() === i.toDateString();
+      articleDate.setHours(0, 0, 0, 0); // Compare only the date part
+      return articleDate.getTime() === i.getTime();
     });
 
     const total = filteredArticles.length;
+    const articleInfo = filteredArticles.map(article => `${formatStatusToEmoji(article.status)} ${article.title}`);
 
-    const articleInfo = filteredArticles.map((article: ArticleRecord) => {
-      return `${formatStatusToEmoji(article.status)} ${article.title}`;
-    });
-    data.push({
-      day: `${dayOfWeek} ${dayOfMonth}`,
-      total,
-      articleInfo,
-    });
+    data.push({ day: `${dayOfWeek} ${dayOfMonth}`, total, articleInfo });
   }
 
-  return data;
+   return data;
 }
 
 function formatStatusToEmoji(status: RecordStatus) {
@@ -93,8 +88,7 @@ interface UserActiviryChartProps {
   data: ArticleRecord[];
 }
 
-export function UserActivityChart({ data }: UserActiviryChartProps) {
-  const formattedData = formatDataForDays(data, 10);
+export function UserActivityChart({ data }: UserActiviryChartProps) {  
   const [calendarValue, setCalendarValue] = useState<DateValueType>({
     startDate: null,
     endDate: null,
@@ -103,6 +97,8 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
   const handleValueChange = (newValue: DateValueType) => {
     setCalendarValue(newValue);
   };
+
+  const formattedData = formatDataForDays(data, calendarValue);
 
   return (
     <div>
