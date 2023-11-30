@@ -23,8 +23,19 @@ import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 // It returns an array of objects with the day of the week and the total number of articles read on that day
 // Example: [{ day: "Sun 1", total: 5 }, { day: "Mon 2", total: 10 }, ...]
 function formatDataForDays(articles: ArticleRecord[], calendarValue: DateValueType) {
-  const startDate = new Date(calendarValue.startDate);
-  const endDate = calendarValue.endDate ? new Date(calendarValue.endDate) : new Date();
+  let startDate: Date;
+  let endDate: Date;
+
+  if (calendarValue) {
+    startDate = calendarValue.startDate ? new Date(calendarValue.startDate) : new Date();
+    endDate = calendarValue.endDate ? new Date(calendarValue.endDate) : new Date();
+  } else {
+    // Handle the case when calendarValue is null
+    // You can set default values for startDate and endDate here
+    startDate = new Date(); // default start date
+    endDate = new Date(); // default end date
+  }
+  
   startDate.setHours(0, 0, 0, 0); // Set start of the day
   endDate.setHours(23, 59, 59, 999); // Set end of the day
 
