@@ -14,7 +14,6 @@ import {
   CartesianGrid,
 } from "recharts";
 import React, { useState } from "react";
-// import Datepicker from "react-tailwindcss-datepicker";
 import { DateField } from "@/components/ui/date-field";
 import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 
@@ -101,8 +100,8 @@ interface UserActiviryChartProps {
 
 export function UserActivityChart({ data }: UserActiviryChartProps) {  
   const [calendarValue, setCalendarValue] = useState<DateValueType>({
-    startDate: null,
-    endDate: null,
+    startDate: new Date(new Date().setDate(new Date().getDate() - 6)),
+    endDate: new Date(),
   });
 
   const handleValueChange = (newValue: DateValueType) => {
