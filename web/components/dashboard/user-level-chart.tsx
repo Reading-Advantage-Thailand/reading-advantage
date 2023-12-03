@@ -1,6 +1,7 @@
 "use client"
 import { ArticleRecord } from "@/types";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, } from "recharts"
+import { useTheme } from "next-themes";
 
 // Function to calculate the data for the chart
 // This function takes in the articles and the number of days to go back
@@ -43,7 +44,6 @@ function formatDataForDays(articles: any, numDays: number) {
             level,
         });
     }
-    console.log('data', data);
 
     return data;
 }
@@ -69,27 +69,43 @@ export function UserLevelChart({
     data,
 }: UserActiviryChartProps) {
     const formattedData = formatDataForDays(data, 7);
+    const { theme } = useTheme();
+
     return (
+      <>
         <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={formattedData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                    dataKey="day"
-                    stroke="#888888"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                />
-                <YAxis
-                    stroke="#888888"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value: any) => `${value}`}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Line dataKey="level" stroke="#adfa1d" strokeDasharray="3 4 5 2" />
-            </LineChart>
-        </ResponsiveContainer >
-    )
+          <LineChart data={formattedData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="day"
+              stroke="#888888"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              stroke="#888888"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value: any) => `${value}`}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            {theme === "dark" ? (
+              <Line
+                dataKey="level"
+                stroke="#fafafa"
+                strokeWidth={3}
+              />
+            ) : (
+              <Line
+                dataKey="level"
+                stroke="#009688"
+                strokeWidth={3}
+              />
+            )}
+          </LineChart>
+        </ResponsiveContainer>
+      </>
+    );
 }
