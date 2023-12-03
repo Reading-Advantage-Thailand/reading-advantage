@@ -16,6 +16,7 @@ import {
 import React, { useState } from "react";
 import { DateField } from "@/components/ui/date-field";
 import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
+import { useTheme } from "next-themes";
 
 // Function to calculate the data for the chart
 // This function takes in the articles and the number of days to go back
@@ -99,6 +100,7 @@ interface UserActiviryChartProps {
 }
 
 export function UserActivityChart({ data }: UserActiviryChartProps) {  
+   const { theme } = useTheme();
   const [calendarValue, setCalendarValue] = useState<DateValueType>({
     startDate: new Date(new Date().setDate(new Date().getDate() - 6)),
     endDate: new Date(),
@@ -139,8 +141,14 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
           <Tooltip
             cursor={{ fill: "transparent" }}
             content={<CustomTooltip />}
-          />
-          <Bar dataKey="total" fill="#adfa1d" radius={[4, 4, 0, 0]} />
+          />        
+          {theme === "dark" ? (
+
+            <Bar dataKey="total" fill="#fafafa" radius={[4, 4, 0, 0]} />
+          ) : (
+
+            <Bar dataKey="total" fill="#009688" radius={[4, 4, 0, 0]} />
+          )}
         </BarChart>
       </ResponsiveContainer>
       <div className="m-6">
