@@ -39,44 +39,44 @@
                     content: $(content),
                     summary: $(summary),
                     image: $(image),
-                }
             }
-        ],
-        functions: [
-            {
-                'name': 'get_article',
-                'parameters': {
-                    type: 'object',
-                    properties: {
-                        title: {
-                            type: 'string',
-                            description: "The title of the story returned in plain text with no formatting or '\\n' breaks"
-                        },
-                        content: {
-                            type: 'string',
-                            description: "The content of the story based on the topic, genre, sub-genre, CEFR Level, and word count. Returned in plain text with no formatting, or '\\n\\n' and '\\n' breaks."
-                        },
-                        summary: {
-                            type: 'string',
-                            description: "A one-sentence summary of the content without spoilers."
-                        },
-                        image: {
-                            type: 'string',
-                            description: "The desription of an image which can be displayed alongside the story."
-                        },
+        }
+    ],
+    functions: [
+        {
+            'name': 'get_article',
+            'parameters': {
+                type: 'object',
+                properties: {
+                    title: {
+                        type: 'string',
+                        description: "The title of the story returned in plain text with no formatting or '\\n' breaks"
                     },
-                    required: [
-                        'title',
-                        'content',
-                        'summary',
-                        'image',
-                    ]
-                }
+                    content: {
+                        type: 'string',
+                        description: "The content of the story based on the topic, genre, sub-genre, CEFR Level, and word count. Returned in plain text with no formatting, or '\\n\\n' and '\\n' breaks."
+                    },
+                    summary: {
+                        type: 'string',
+                        description: "A one-sentence summary of the content without spoilers."
+                    },
+                    image: {
+                        type: 'string',
+                        description: "The desription of an image which can be displayed alongside the story."
+                    },
+                },
+                required: [
+                    'title',
+                    'content',
+                    'summary',
+                    'image',
+                ]
             }
-        ],
-        function_call: {
-            name: 'get_article',
-        },
-        temperature: 1,
-    });
+        }
+    ],
+    function_call: {
+        name: 'get_article',
+    },
+    temperature: 1,
+    ]
 }
