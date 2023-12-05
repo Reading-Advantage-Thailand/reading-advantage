@@ -3,12 +3,11 @@
 
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
-import { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
 import { ScoreRange } from "@/types/constants";
 
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
+export async function GET(req: Request, res: Response) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -27,7 +26,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     );
 
     const fileContents = fs.readFileSync(filePath, "utf8");
-    const dataObject = JSON.parse(fileContents)?.CEFR_Level_Descriptions;    
+    const dataObject = JSON.parse(fileContents)?.CEFR_Level_Descriptions;
     const level = session.user.level;
     let CEFR_Level = "";
 
@@ -36,7 +35,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
       if (level >= min && level <= max) {
         CEFR_Level = key;
       }
-    }    
+    }
 
     return new Response(
       JSON.stringify({
@@ -45,7 +44,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
       }),
       { status: 200 }
     );
-    
   } catch (error) {
     return new Response(
       JSON.stringify({
