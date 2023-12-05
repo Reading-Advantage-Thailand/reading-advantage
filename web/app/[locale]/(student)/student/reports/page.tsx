@@ -20,12 +20,26 @@ async function getUserArticleRecords(userId: string) {
     return res.json();
 }
 
+async function getGeneralDescription(userLevel: number) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/master-data/level-mean/${userLevel}`,
+    {
+      method: "GET",
+      headers: headers(),
+    }
+  );
+  return res.json();
+}
 export default async function ReportsPage({ }: Props) {
     const user = await getCurrentUser();
     if (!user) return redirect('/login');
     if (user.level === 0) return redirect('/level');
 
+    
     const res = await getUserArticleRecords(user.id);
+    const resGeneralDescription = await getGeneralDescription(user.level);
+    console.log("resGeneralDescription : ", resGeneralDescription);
+
     return (
         <>
             <Header

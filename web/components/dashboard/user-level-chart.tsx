@@ -25,7 +25,6 @@ function formatDataForDays(articles: any, numDays: number) {
             return articleDate.toDateString() === i.toDateString();
         });
 
-        console.log(filteredArticles);
 
         // get the latest level of the user for that day is the status is completed
         // if level is dosent change then the user didnt complete any article that day return the last user updatedLevel 
