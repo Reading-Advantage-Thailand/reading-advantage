@@ -19,17 +19,18 @@
         },
         {
             role: 'user',
-            content: `Write a short and very simple fiction story in the $(genre) genre and the $(subgenre) subgenre, for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR). \n
-        Key Guidelines:\n
-        1. **Length:** The story should be approximately $(wordcount) words.\n
-        2. **Sentence Structure:** Use very short sentences, with an average of around $(wordspersentence) words per sentence. The sentence structure should be basic and repetitive, using simple present tense and common, everyday language.\n
-        3. **Vocabulary:** Stick to a limited vocabulary, comprising basic nouns, verbs, and adjectives familiar to beginners. Avoid any complex or abstract words. Repeat key vocabulary to aid understanding and memorization.\n
-        4. **Content:** Focus on concrete, relatable themes and simple, linear storylines. Characters should be straightforward, and their actions or experiences should be described using simple and clear language.\n
-        5. **Style and Tone:** Keep the style very simple and the tone friendly and encouraging. The narrative should be engaging but not confusing or overwhelming for a beginner.\n
-        6. **Engagement:** Use basic story elements to keep the narrative interesting. This can include everyday events, simple actions, and familiar settings. Illustrations or images can be helpful to support the text.\n
-        7. **References:** Avoid any references or cultural idioms that require prior knowledge or cultural understanding beyond that of a beginner.\n
-        Begin with a clear, simple setting and characters, followed by a predictable sequence of events, and conclude with a straightforward ending that reinforces the main points of the story.\n
-        After you complete the story, write a title, a one-sentence summary (without spoilers) and a description of an image to be displayed alongside the story.`
+            content: `Write a short, nonfiction article within the {genre} genre and the {subgenre} subgenre. This article is meant for readers at the A1 English proficiency level, according to the CEFR guidelines.
+
+            Key Guidelines:
+            1. **Length:** The article should be about {approximate number of words} words, keeping it brief and to the point.
+            2. **Sentence Structure:** Limit the average to {average words per sentence} words per sentence. Use very basic sentence structures, predominantly simple present tense, with straightforward subject-verb-object constructs.
+            3. **Vocabulary:** Use elementary vocabulary, consisting mostly of common, everyday words. The language should be highly repetitive, focusing on words and phrases related to daily life and closely tied to the {subgenre}. Avoid any idiomatic expressions, slang, or abstract concepts.
+            4. **Content:** Stick to very concrete and familiar topics, with a focus on naming and describing in simple terms. Avoid any form of abstraction or complexity.
+            5. **Style and Tone:** Keep the style extremely simple, clear, and direct. The tone should be friendly and encouraging, with an emphasis on positivity and support for the beginner reader.
+            6. **Engagement:** Use very basic questions or direct instructions to engage the reader.
+            7. **References:** Avoid using references. If necessary, any reference to external content should be made extremely straightforward and directly related to the reader's immediate experience.
+            
+            The article's structure should be very basic, with a clear and direct introduction, a body made up of short, simple sections or bullet points, and a clear conclusion that reiterates the main points using different words.`
         },
             {
                 role: 'assistant',
@@ -49,11 +50,11 @@
                 properties: {
                     title: {
                         type: 'string',
-                        description: "The title of the story returned in plain text with no formatting or '\\n' breaks"
+                        description: "The title of the article returned in plain text with no formatting or '\\n' breaks"
                     },
                     content: {
                         type: 'string',
-                        description: "The content of the story based on the topic, genre, sub-genre, CEFR Level, and word count. Returned in plain text with no formatting, or '\\n\\n' and '\\n' breaks."
+                        description: "The content of the article based on the topic, genre, sub-genre, CEFR Level, and word count. Returned in plain text with no formatting, or '\\n\\n' and '\\n' breaks."
                     },
                     summary: {
                         type: 'string',
