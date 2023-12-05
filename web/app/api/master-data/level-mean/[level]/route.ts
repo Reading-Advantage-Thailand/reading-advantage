@@ -21,7 +21,7 @@ export async function GET(req: Request, res: Response) {
 
     const filePath = path.join(
       process.cwd(),
-      "../data",
+      "/assets/json",
       "whats-my-level-mean.json"
     );
 
