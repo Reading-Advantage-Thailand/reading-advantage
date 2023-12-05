@@ -1,7 +1,10 @@
 "use client"
 import { ArticleRecord } from "@/types";
-import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, } from "recharts"
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, } from "recharts"
 import { useTheme } from "next-themes";
+import {
+  CardDescription,
+} from "@/components/ui/card";
 
 // Function to calculate the data for the chart
 // This function takes in the articles and the number of days to go back
@@ -25,7 +28,6 @@ function formatDataForDays(articles: any, numDays: number) {
             return articleDate.toDateString() === i.toDateString();
         });
 
-        console.log(filteredArticles);
 
         // get the latest level of the user for that day is the status is completed
         // if level is dosent change then the user didnt complete any article that day return the last user updatedLevel 
@@ -63,13 +65,17 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 interface UserActiviryChartProps {
-    data: ArticleRecord[];
+  data: ArticleRecord[];
+  resGeneralDescription: { message: string; general_description : string};
 }
 export function UserLevelChart({
     data,
+    resGeneralDescription
 }: UserActiviryChartProps) {
     const formattedData = formatDataForDays(data, 7);
     const { theme } = useTheme();
+
+    console.log("resGeneralDescription : ", resGeneralDescription);
 
     return (
       <>
@@ -92,20 +98,17 @@ export function UserLevelChart({
             />
             <Tooltip content={<CustomTooltip />} />
             {theme === "dark" ? (
-              <Line
-                dataKey="level"
-                stroke="#fafafa"
-                strokeWidth={3}
-              />
+              <Line dataKey="level" stroke="#fafafa" strokeWidth={3} />
             ) : (
-              <Line
-                dataKey="level"
-                stroke="#009688"
-                strokeWidth={3}
-              />
+              <Line dataKey="level" stroke="#009688" strokeWidth={3} />
             )}
           </LineChart>
         </ResponsiveContainer>
+        <div className="mt-6">
+          <CardDescription>
+            {resGeneralDescription.general_description}
+          </CardDescription>
+        </div>
       </>
     );
 }
