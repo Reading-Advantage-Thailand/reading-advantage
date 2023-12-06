@@ -13,10 +13,11 @@ export default function ArticleShowcaseCard({
     return (
         <Link href={`/student/read/${article.articleId}`}>
             <div
-                className='w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black'
+                className='w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black '
                 style={{
                     backgroundImage: `url('https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/article-images/${article.articleId}.png')`,
                     boxShadow: 'inset 80px 10px 90px 10px rgba(0, 0, 0, 0.9)',
+                    opacity: article.isRead ? 0.3 : 1,
                 }}
             >
                 <Badge
@@ -39,14 +40,6 @@ export default function ArticleShowcaseCard({
                         Average Rating: {article.averageRating.toFixed(2)}
                     </Badge>
                 }
-                {
-                    article.isRead && <Badge
-                        className='shadow-lg max-w-max'
-                        variant='destructive'
-                    >
-                        Previously Read - {camelToSentenceCase(article.status)}
-                    </Badge>
-                }
                 <div className='mt-auto'>
                     <p className='text-xl drop-shadow-lg font-bold text-white'>
                         {article.title}
@@ -60,6 +53,16 @@ export default function ArticleShowcaseCard({
                     </p>
                 </div>
             </div >
+            {
+                article.isRead && <div className="flex justify-center"> {/* Added container for centering */}
+                    <Badge
+                        className='relative m-auto -top-[11rem] text-md left-0 right-0 shadow-lg max-w-max bg-slate-200 text-slate-900'
+
+                    >
+                        Previously Read
+                    </Badge>
+                </div>
+            }
         </Link>
     )
 }
