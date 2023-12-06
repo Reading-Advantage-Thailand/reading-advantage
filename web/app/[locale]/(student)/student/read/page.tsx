@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/session'
 import { getScopedI18n } from '@/locales/server'
 import { redirect } from 'next/navigation'
 import React from 'react'
+import { Footer } from '@/components/footer'    
 
 type Props = {}
 async function getTypes(

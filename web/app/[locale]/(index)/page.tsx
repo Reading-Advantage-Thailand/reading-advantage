@@ -20,7 +20,7 @@ export default async function IndexPage({ }: Props) {
                             {siteConfig.name}
                         </span>
                         <span className='text-orange-500'>
-                            {" "}Beta
+                            {" "}Alpha
                         </span>
                     </h1>
 

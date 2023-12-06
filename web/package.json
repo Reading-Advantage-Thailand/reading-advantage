@@ -43,6 +43,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.47.0",
     "react-quizlet-flashcard": "^3.0.0",
+    "react-tailwindcss-datepicker": "^1.6.6",
     "react-textarea-autosize": "^8.5.3",
     "recharts": "^2.8.0",
     "sentence-tokenizer": "^1.0.1",
