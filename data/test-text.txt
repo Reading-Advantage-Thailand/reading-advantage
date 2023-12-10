@@ -1,5 +1,0 @@
-apple_for_the_teacher.txt: Word Count = 117, Average Words per Sentence = 7.31, Average Characters per Word = 3.71, 
-asking_for_donation.txt: Word Count = 130, Average Words per Sentence = 7.22, Average Characters per Word = 3.51, 
-a_bad_roommate.txt: Word Count = 132, Average Words per Sentence = 6.29, Average Characters per Word = 3.16, 
-a_barking_dog.txt: Word Count = 99, Average Words per Sentence = 7.07, Average Characters per Word = 3.38, 
-a_beautiful_jacket.txt: Word Count = 149, Average Words per Sentence = 6.21, Average Characters per Word = 3.29, 
