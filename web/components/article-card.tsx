@@ -27,7 +27,6 @@ export default async function ArticleCard({
     userId,
 }: Props) {
     const t = await getScopedI18n('components.articleCard');
-
     return (
         <div className='md:flex md:flex-row md:gap-3 md:mb-5'>
             <Card className='mt-4 md:basis-3/5'>
