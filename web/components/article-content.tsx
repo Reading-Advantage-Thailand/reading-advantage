@@ -462,12 +462,13 @@ export default function ArticleContent({
             {loading
               ? "Loading"
               : isTranslate && isTranslateOpen
-              ? "ปิดหน้าต่างการแปล"
-              : "แปลเป็นภาษาไทย"}
+              ? t("translateฺButton.close")
+              : t("translateฺButton.open")}
           </Button>
         )}
       </div>
       {console.log("translate : ", translate)}
+      {console.log("highlightedWordIndex : ", highlightedWordIndex)}
       {/* show ที่แปลภาษาทีละประโยค */}
       {isTranslate && isTranslateOpen && (
         <div className="h-32 md:h-24 flex flex-col justify-between items-center">
