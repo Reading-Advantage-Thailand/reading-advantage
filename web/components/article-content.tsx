@@ -124,170 +124,11 @@ export default function ArticleContent({
     }
   };
 
-  const splitToText = (article: ArticleType) => {
-    /*
-        {
-    "subGenre": "The Grimm Brothers",
-    "cefrScores": {
-        "A1": 0.20283226668834686,
-        "B2": 0.00017777649918571115,
-        "A2": 0.793014407157898,
-        "C1": 0.0001771106180967763,
-        "B1": 0.003724394366145134,
-        "C2": 0.00007401969924103469
-    },
-    "cefrLevel": "A2",
-    "grade": 1,
-    "genre": "Tales and Myths",
-    "ari": 7.462619047619047,
-    "topic": "The Elves and the Shoemaker",
-    "title": "The Elves and the Shoemaker",
-    "type": "Fiction",
-    "content": "Once upon a time, there was a shoemaker who worked very hard. He made the best shoes in the town. But he was very poor and had no money. One day, he had only enough leather to make one pair of shoes. He cut the leather and left it on his table. The next morning, he found a beautiful pair of shoes on his table. They were perfect! The shoemaker was amazed. He sold the shoes and earned a lot of money. With the money, he bought more leather. Again, he cut the leather and left it on his table. The next morning, he found another pair of shoes on his table. They were even more beautiful than the first pair. This happened every night. The shoemaker became rich and famous. One night, he decided to find out who was making the shoes. He hid behind a curtain and waited. At midnight, he saw two little elves. They were making the shoes! The shoemaker thanked the elves for their help. From that day on, the shoemaker and the elves became good friends.",
-    "raLevel": 20,
-    "timepoints": [
-        {
-            "timeSeconds": 0.36040371656417847,
-            "markName": "sentence1"
-        },
-        {
-            "timeSeconds": 4.767460346221924,
-            "markName": "sentence2"
-        },
-        {
-            "timeSeconds": 7.213415622711182,
-            "markName": "sentence3"
-        },
-        {
-            "timeSeconds": 10.031344413757324,
-            "markName": "sentence4"
-        },
-        {
-            "timeSeconds": 14.523951530456543,
-            "markName": "sentence5"
-        },
-        {
-            "timeSeconds": 17.5306339263916,
-            "markName": "sentence6"
-        },
-        {
-            "timeSeconds": 21.950830459594727,
-            "markName": "sentence7"
-        },
-        {
-            "timeSeconds": 23.57438087463379,
-            "markName": "sentence8"
-        },
-        {
-            "timeSeconds": 25.544336318969727,
-            "markName": "sentence9"
-        },
-        {
-            "timeSeconds": 28.47727394104004,
-            "markName": "sentence10"
-        },
-        {
-            "timeSeconds": 31.025312423706055,
-            "markName": "sentence11"
-        },
-        {
-            "timeSeconds": 35.10248565673828,
-            "markName": "sentence12"
-        },
-        {
-            "timeSeconds": 39.48305130004883,
-            "markName": "sentence13"
-        },
-        {
-            "timeSeconds": 42.35913848876953,
-            "markName": "sentence14"
-        },
-        {
-            "timeSeconds": 44.20032501220703,
-            "markName": "sentence15"
-        },
-        {
-            "timeSeconds": 46.99827194213867,
-            "markName": "sentence16"
-        },
-        {
-            "timeSeconds": 51.2790641784668,
-            "markName": "sentence17"
-        },
-        {
-            "timeSeconds": 53.85567855834961,
-            "markName": "sentence18"
-        },
-        {
-            "timeSeconds": 56.79862594604492,
-            "markName": "sentence19"
-        },
-        {
-            "timeSeconds": 58.840389251708984,
-            "markName": "sentence20"
-        },
-        {
-            "timeSeconds": 61.91453170776367,
-            "markName": "sentence21"
-        }
-    ],
-    "questions": {
-        "mcqs": [
-            {
-                "descriptor_id": "19.YL.17",
-                "question": "What did the shoemaker make in his shop?",
-                "answers": [
-                    "Shoes",
-                    "Pants",
-                    "Hats",
-                    "Jackets"
-                ]
-            },
-            {
-                "descriptor_id": "19.YL.17",
-                "question": "Why was the shoemaker poor?",
-                "answers": [
-                    "He didn't like making shoes",
-                    "He didn't work hard",
-                    "He had no money",
-                    "He didn't have any shoes"
-                ]
-            },
-            {
-                "descriptor_id": "19.W.12",
-                "question": "How did the shoemaker feel when he found the pair of shoes made by the elves?",
-                "answers": [
-                    "Angry",
-                    "Amazed",
-                    "Sad",
-                    "Happy"
-                ]
-            },
-            {
-                "descriptor_id": "20.YL.21",
-                "question": "What happened every night in the shoemaker's shop?",
-                "answers": [
-                    "The shoemaker fell asleep",
-                    "The shop became crowded",
-                    "The elves came to play",
-                    "A pair of shoes appeared on the table"
-                ]
-            }
-        ],
-        "shortAnswer": {
-            "question": "Describe what the shoemaker did when he found out that the elves were making the shoes.",
-            "suggestedAnswer": "The shoemaker thanked the elves for their help and became good friends with them."
-        }
-    }
-}
-        
-        */
+  const splitToText = (article: ArticleType) => {   
     const tokenizer = new Tokenizer("Chuck");
     tokenizer.setEntry(article.content);
     const result = tokenizer.getSentences();
-    console.log("splitToText article : ", article);
-    console.log("splitToText result : ", result);
-    console.log("splitToText tokenizer : ", tokenizer);
+
     // Clear the existing content in the 'text' array
     setText([]);
 
@@ -317,7 +158,7 @@ export default function ArticleContent({
         } else {
           endTimepoint = audioRef.current?.duration as number;
         }
-        console.log("translate", translate[selectedSentence as number]);
+       
         const res = await axios.post(`/api/users/${userId}/sentences`, {
           sentence: text[selectedSentence as number].text,
           sn: selectedSentence,
@@ -328,7 +169,7 @@ export default function ArticleContent({
           timepoint: text[selectedSentence as number].begin,
           endTimepoint: endTimepoint,
         });
-        console.log("res", res);
+        
         toast({
           title: "Success",
           description: `You have saved "${
@@ -356,8 +197,6 @@ export default function ArticleContent({
   };
   const locale = useCurrentLocale();
 
-  console.log("text: ", text);
-
   async function handleTranslateSentence() {
     setLoading(true);
     try {
@@ -366,34 +205,20 @@ export default function ArticleContent({
       if (!locale || locale === "en") {
         return;
       }
-      const res = await getTranslate(sentences, articleId, locale);
-      console.log("handleTranslateSentence res", res);
-      /*
-            articleId,
-            translation : [
-                "กาลครั้งหนึ่งมีช่างทำรองเท้าคนหนึ่งทำงานหนักมาก",
-                "เขาทำรองเท้าที่ดีที่สุดในเมือง",
-                "แต่เขายากจนมากและไม่มีเงิน",
-                "วันหนึ่งเขามีหนังเพียงพอที่จะทำรองเท้าคู่เดียว",
-                "เขาตัดหนังแล้วทิ้งมันไว้บนโต๊ะ",
-                "เช้าวันรุ่งขึ้น เขาพบรองเท้าคู่สวยคู่หนึ่งอยู่บนโต๊ะ",
-                "พวกเขาสมบูรณ์แบบ!",
-                "ช่างทำรองเท้ารู้สึกประหลาดใจ",
-                "เขาขายรองเท้าและได้รับเงินมากมาย",
-                "ด้วยเงินที่เขาซื้อหนังเพิ่ม",
-                "เขาตัดหนังอีกครั้งและทิ้งมันไว้บนโต๊ะ",
-                "เช้าวันรุ่งขึ้น เขาพบรองเท้าอีกคู่หนึ่งอยู่บนโต๊ะของเขา",
-                "พวกเขาสวยกว่าคู่แรกด้วยซ้ำ",
-                "สิ่งนี้เกิดขึ้นทุกคืน",
-                "ช่างทำรองเท้าเริ่มร่ำรวยและมีชื่อเสียง",
-                "คืนหนึ่ง เขาตัดสินใจค้นหาว่าใครเป็นคนทำรองเท้าคู่นี้",
-                "เขาซ่อนตัวอยู่หลังม่านและรอ",
-                "ในเวลาเที่ยงคืน เขาเห็นเอลฟ์ตัวน้อยสองตัว",
-                "พวกเขากำลังทำรองเท้า!",
-                "ช่างทำรองเท้าขอบคุณพวกเอลฟ์ที่ช่วยเหลือ",
-                "ตั้งแต่วันนั้นเป็นต้นมา ช่างทำรองเท้าและเอลฟ์ก็กลายเป็นเพื่อนที่ดีต่อกัน"
-            ]
-          */
+
+      type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
+      let localeTarget: ExtendedLocale = locale as ExtendedLocale;
+
+      switch (locale) {
+        case "cn":
+          localeTarget = "zh-CN";
+          break;
+        case "tw":
+          localeTarget = "zh-TW";
+          break;
+      }
+
+      const res = await getTranslate(sentences, articleId, localeTarget);
 
       if (res.message) {
         setIsTranslateOpen(false);
@@ -467,8 +292,7 @@ export default function ArticleContent({
           </Button>
         )}
       </div>
-      {console.log("translate : ", translate)}
-      {console.log("highlightedWordIndex : ", highlightedWordIndex)}
+
       {/* show ที่แปลภาษาทีละประโยค */}
       {isTranslate && isTranslateOpen && (
         <div className="h-32 md:h-24 flex flex-col justify-between items-center">
