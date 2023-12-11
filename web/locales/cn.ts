@@ -129,7 +129,7 @@ export default {
       },
       // button translate
       translateฺButton: {
-        open: "翻譯成泰文",
+        open: "翻译",
         close: "關閉翻譯視窗",
       },
     },
