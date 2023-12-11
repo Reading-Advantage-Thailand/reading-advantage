@@ -68,8 +68,8 @@ lines.forEach(line => {
             const jsonFileName = file.split('-').shift();
 
             if (textFileName === jsonFileName) {
-                messages =  [
-                                 {
+                messages =  
+                              {"messages":  [ {
                                      role: 'system',
                                      content:
                      
@@ -110,53 +110,14 @@ lines.forEach(line => {
                                          image: jsonData.image,
                                      }
                                  }
-                             ];
-                const jsonDataFinalPrompt = {
-                                model: 'gpt-3.5-turbo',
-                                messages: `${JSON.stringify(messages)}`,
-                                functions: [
-                                    {
-                                        'name': 'get_article',
-                                        'parameters': {
-                                            type: 'object',
-                                            properties: {
-                                                title: {
-                                                    type: 'string',
-                                                    description: "The title of the article returned in plain text with no formatting or '\\n' breaks"
-                                                },
-                                                content: {
-                                                    type: 'string',
-                                                    description: "The content of the story based on the topic, genre, sub-genre, CEFR Level, and word count. Returned in plain text with no formatting, or '\\n\\n' and '\\n' breaks."
-                                                },
-                                                summary: {
-                                                    type: 'string',
-                                                    description: "A one-sentence summary of the content without spoilers."
-                                                },
-                                                image: {
-                                                    type: 'string',
-                                                    description: "The desription of an image which can be displayed alongside the story."
-                                                },
-                                            },
-                                            required: [
-                                                'title',
-                                                'content',
-                                                'summary',
-                                                'image',
-                                            ]
-                                        }
-                                    }
-                                ],
-                                function_call: {
-                                    name: 'get_article',
-                                },
-                                temperature: 1,
-                            };
-          
+                                ]}
+                             ;
+             
                              // save it to json file 
-                                const dir = '../data/training-message/';
+                                const dir = '../data/training-message/A1-fiction';
                                 fs.mkdirSync(dir, { recursive: true });
 
-                                const jsonContent = JSON.stringify(jsonDataFinalPrompt);
+                                const jsonContent = JSON.stringify(messages);
                                 fs.writeFile(path.join(dir, `${textFileName}.json`), jsonContent, 'utf8', (err) => {
                                     if (err) {
                                         console.error("Error writing file:", err);
