@@ -144,7 +144,7 @@ export default {
       },
       // button translate
       translateฺButton: {
-        open: "แปลเป็นภาษาไทย",
+        open: "แปล",
         close: "ปิดหน้าต่างการแปล",
       },
     },

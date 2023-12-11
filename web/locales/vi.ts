@@ -144,7 +144,7 @@ export default {
       },
       // button translate
       translateฺButton: {
-        open: "Dịch sang tiếng Việt",
+        open: "Dịch",
         close: "Đóng cửa sổ dịch",
       },
     },
