@@ -140,12 +140,9 @@ export default function ArticleContent({
     }
   };
 
-  const handleSkipToSentence = (time: number, index: number) => {
+  const handleSkipToSentence = (time: number) => {
     if (audioRef.current) {
       audioRef.current.currentTime = time;
-      setSelectedSentence(index);
-      setSelectedIndex(index);
-      setHighlightedWordIndex(index + 1);
     }
   };
 
@@ -295,6 +292,8 @@ export default function ArticleContent({
           </Button>
         )}
       </div>
+
+      {/* show ที่แปลภาษาทีละประโยค */}
       {isTranslate && isTranslateOpen && (
         <div className="h-32 md:h-24 flex flex-col justify-between items-center">
           <Separator />
@@ -333,7 +332,11 @@ export default function ArticleContent({
                   ? "bg-yellow-50"
                   : "bg-transparent"
               )}
-              onClick={() => handleSkipToSentence(sentence.begin ?? 0, index)}
+              onMouseEnter={() => {
+                setSelectedSentence(index);
+                setSelectedIndex(index);
+              }}
+              onClick={() => handleSkipToSentence(sentence.begin ?? 0)}
             >
               {sentence.text}{" "}
             </p>
