@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Construct four intricate and closely related answer choices that challenge the reader's ability to discern and appreciate subtle nuances. The correct answer should demand a deep and comprehensive understanding of the text.
 5. **Engagement:** Foster a level of engagement that requires a mature, critical, and reflective approach to reading, interpreting, and appreciating literature.
 
-Example question format:
-- In what way does the author's use of stream-of-consciousness narrative technique enhance the understanding of the protagonist's inner turmoil?
-  a) It offers a fragmented and non-linear perspective of the protagonist's thoughts.
-  b) It directly expresses the protagonist's emotional state without any bias.
-  c) It contrasts the protagonist's inner world with the external reality.
-  d) It provides a chronological and clear depiction of the protagonist's experiences.
-
 Design these questions to challenge C2 level learners' highest capacities in literary analysis, critical thinking, and appreciation of complex narrative structures and themes.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3
