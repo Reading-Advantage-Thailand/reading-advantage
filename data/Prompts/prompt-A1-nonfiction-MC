@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Provide three to four answer choices, ensuring that they are clearly distinct from each other, with only one correct answer. Use simple words and phrases, and keep the structure of each option consistent.
 5. **Engagement:** Ensure the questions are directly related to the content of the article and are written in an engaging manner that encourages the reader to recall specific details from the text.
 
-Example question format:
-- Based on the article, what color is the sunflower?
-  a) Blue
-  b) Yellow
-  c) Green
-  d) Red
-
 Create questions that help assess the reader's understanding of the text in a way that is appropriate and accessible for A1 level learners.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3
