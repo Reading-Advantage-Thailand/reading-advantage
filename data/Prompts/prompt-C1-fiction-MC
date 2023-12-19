@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Offer four well-crafted answer choices that demand discernment and insight to identify the correct one. Distractors should be closely related to the text but distinct enough to test deep comprehension and interpretation.
 5. **Engagement:** Encourage a profound engagement with the story, inviting learners to analyze and reflect on the text's deeper messages and artistic qualities.
 
-Example question format:
-- What does the recurring motif of the ocean symbolize in the protagonist's journey?
-  a) The unpredictability of life.
-  b) The protagonist's fear of the unknown.
-  c) The isolation felt by the protagonist.
-  d) The constant presence of danger in the protagonist's life.
-
 Construct questions that engage C1 level learners in sophisticated analysis and interpretation of the story, challenging them to explore and appreciate complex literary elements and deeper meanings.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3
