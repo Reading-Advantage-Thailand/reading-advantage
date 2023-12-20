@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Provide three to four options for each question, with one correct answer. Ensure that the incorrect options are plausible but clearly distinguishable from the correct answer.
 5. **Engagement:** Make sure the questions are engaging and encourage the reader to think back to the key points and details of the article.
 
-Example question format:
-- In the article, why did Maria decide to plant a garden?
-  a) Because she loves cooking.
-  b) To spend more time outdoors.
-  c) She wanted to sell vegetables.
-  d) The article does not say.
-
 Develop questions that not only assess the direct recall of facts from the text but also basic comprehension, including simple cause and effect or understanding of motives, suitable for A2 level learners.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3

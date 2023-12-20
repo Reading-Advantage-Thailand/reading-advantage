@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Provide three to four simple answer options, making sure that the correct answer is clearly identifiable and the distractors are obviously incorrect.
 5. **Engagement:** Encourage engagement with the story by asking about straightforward details that can be directly recalled from the text.
 
-Example question format:
-- Where did the story take place?
-  a) In a forest
-  b) In a house
-  c) On a boat
-  d) In a school
-
 Create questions that help A1 level learners to focus on and recall the most basic and clear-cut details of the story.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3

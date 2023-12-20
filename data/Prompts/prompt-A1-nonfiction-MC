@@ -1,4 +1,4 @@
-Develop a set of simple multiple-choice questions based on the provided {nonfiction article text}, tailored for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
+Develop a set of 10 simple multiple-choice questions based on the provided {nonfiction article text}, tailored for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Style:** Questions should be very short and straightforward, focusing on basic information and concrete facts presented in the text. Use simple present tense and familiar, everyday language.
@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Provide three to four answer choices, ensuring that they are clearly distinct from each other, with only one correct answer. Use simple words and phrases, and keep the structure of each option consistent.
 5. **Engagement:** Ensure the questions are directly related to the content of the article and are written in an engaging manner that encourages the reader to recall specific details from the text.
 
-Example question format:
-- Based on the article, what color is the sunflower?
-  a) Blue
-  b) Yellow
-  c) Green
-  d) Red
-
 Create questions that help assess the reader's understanding of the text in a way that is appropriate and accessible for A1 level learners.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3

@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Provide four nuanced answer options, ensuring one correct answer. Distractors should be challenging and plausible, requiring careful reading and interpretation to differentiate.
 5. **Engagement:** Motivate readers to think critically about the story, analyzing language, style, and deeper meanings beyond the surface narrative.
 
-Example question format:
-- How does the author convey the protagonist's inner conflict in the story?
-  a) Through direct dialogue with other characters.
-  b) By describing the protagonist's thoughts and feelings.
-  c) Through the use of symbolic objects and settings.
-  d) By contrasting the protagonist with secondary characters.
-
 Design questions that challenge B2 level learners to delve into more sophisticated analysis of the story, considering aspects such as symbolism, tone, and complex character dynamics.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3
