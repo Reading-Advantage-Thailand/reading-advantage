@@ -124,7 +124,7 @@ export default function ArticleContent({
     }
   };
 
-  const splitToText = (article: ArticleType) => {   
+  const splitToText = (article: ArticleType) => {
     const tokenizer = new Tokenizer("Chuck");
     tokenizer.setEntry(article.content);
     const result = tokenizer.getSentences();
@@ -158,7 +158,7 @@ export default function ArticleContent({
         } else {
           endTimepoint = audioRef.current?.duration as number;
         }
-       
+
         const res = await axios.post(`/api/users/${userId}/sentences`, {
           sentence: text[selectedSentence as number].text,
           sn: selectedSentence,
@@ -169,7 +169,7 @@ export default function ArticleContent({
           timepoint: text[selectedSentence as number].begin,
           endTimepoint: endTimepoint,
         });
-        
+
         toast({
           title: "Success",
           description: `You have saved "${
@@ -297,13 +297,20 @@ export default function ArticleContent({
       {isTranslate && isTranslateOpen && (
         <div className="h-32 md:h-24 flex flex-col justify-between items-center">
           <Separator />
-          {!isplaying && highlightedWordIndex === -1 ? (
-            <p className="text-center text-green-500">
-              Your translate sentence will be here
-            </p>
+          {/* กรณีกดเล่นเสียง และกดแปล */}
+          {isplaying === true ? (
+            highlightedWordIndex === -1 ? (
+              <p className="text-center text-green-500">
+                Your translate sentence will be here
+              </p>
+            ) : (
+              <p className="text-center text-green-500">
+                {translate[highlightedWordIndex]}
+              </p>
+            )
           ) : (
             <p className="text-center text-green-500">
-              {translate[highlightedWordIndex]}
+              {translate[highlightedWordIndex + 1]}
             </p>
           )}
           <Separator />
@@ -317,7 +324,11 @@ export default function ArticleContent({
               key={index}
               className={cn(
                 "inline text-muted-foreground hover:bg-blue-200 dark:hover:bg-blue-600 select-none cursor-pointer",
-                highlightedWordIndex === index
+                isplaying === true
+                  ? highlightedWordIndex === index
+                    ? "bg-yellow-50"
+                    : "bg-transparent"
+                  : highlightedWordIndex + 1 === index
                   ? "bg-yellow-50"
                   : "bg-transparent"
               )}
