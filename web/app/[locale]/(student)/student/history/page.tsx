@@ -28,7 +28,7 @@ export default async function HistoryPage({ }: Props) {
     // const t = useTranslations('pages.student.article-records')
     const user = await getCurrentUser();
     if (!user) {
-        return redirect('/login');
+        return redirect('/auth/signin');
     }
     if (user.level === 0) {
         return redirect('/level');
