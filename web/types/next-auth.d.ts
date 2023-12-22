@@ -3,8 +3,6 @@ import { JWT } from "next-auth/jwt"
 
 type UserId = string
 
-type UserId = string
-
 declare module "next-auth/jwt" {
     interface JWT {
         id: UserId
@@ -19,10 +17,10 @@ declare module "next-auth" {
     interface Session {
         user: User & {
             id: UserId,
-            level: number,
             name: string,
             email: string,
             image: string,
+            level: number,
         },
     }
 }

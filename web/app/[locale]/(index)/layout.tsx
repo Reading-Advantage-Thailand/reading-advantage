@@ -16,7 +16,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
                     <MainNav items={indexPageConfig.mainNav} />
                     <nav>
                         <Link
-                            href="/login"
+                            href="/auth/signin"
                             className={cn(
                                 buttonVariants({ variant: "secondary", size: "sm" }),
                                 "px-4"
