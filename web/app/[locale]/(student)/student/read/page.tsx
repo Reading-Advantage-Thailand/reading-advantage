@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/session'
 import { getScopedI18n } from '@/locales/server'
 import { redirect } from 'next/navigation'
 import React from 'react'
-import { Footer } from '@/components/footer'    
+import { Footer } from '@/components/footer'
 
 type Props = {}
 async function getTypes(
@@ -26,7 +26,7 @@ async function getTypes(
 export default async function ReadPage({ }: Props) {
     const user = await getCurrentUser();
     if (!user) {
-        return redirect('/login');
+        return redirect('/auth/signin');
     }
     if (user.level === 0) {
         return redirect('/level');

@@ -56,7 +56,7 @@ export default async function ArticleQuizPage({ params }: { params: { articleId:
     const t = await getScopedI18n('pages.student.readPage.article');
 
     const user = await getCurrentUser();
-    if (!user) return redirect('/login');
+    if (!user) return redirect('/auth/signin');
     if (user.level === 0) return redirect('/level');
 
     const articleResult = await getArticle(params.articleId);

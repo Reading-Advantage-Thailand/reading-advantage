@@ -13,7 +13,7 @@ export default async function StudentHomeLayout({
     const user = await getCurrentUser()
 
     if (!user) {
-        return redirect('/login')
+        return redirect('/auth/signin')
     }
 
     return (

@@ -9,7 +9,7 @@ export default function SignOutButton({ }: Props) {
         <button
             onClick={() => {
                 signOut({
-                    callbackUrl: `${window.location.origin}/login`,
+                    callbackUrl: `${window.location.origin}/auth/signin`,
                 })
             }}
         >
