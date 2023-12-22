@@ -1,4 +1,4 @@
-Develop a set of engaging multiple-choice questions based on the provided {fiction story text}, suitable for readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
+Develop a set of 10 engaging multiple-choice questions based on the provided {fiction story text}, suitable for readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Style:** Questions should test understanding of the story at a deeper level, such as motivations of characters, main themes, and the sequence of events. Questions can include why characters behave in certain ways or the implications of their actions.
@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Provide four answer choices, ensuring one correct answer with subtler distractors that require closer reading or inference to distinguish.
 5. **Engagement:** Encourage deeper engagement with the text by asking questions that make the readers think about the story's various layers and underlying messages.
 
-Example question format:
-- What can be inferred about the character's decision at the end of the story?
-  a) They were trying to escape their responsibilities.
-  b) They wanted to make a new friend.
-  c) They were looking for adventure.
-  d) They regretted their past actions.
-
 Create questions that help B1 level learners to engage more critically with the story, understanding its deeper meanings and nuances, and recognizing character development and thematic elements.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3

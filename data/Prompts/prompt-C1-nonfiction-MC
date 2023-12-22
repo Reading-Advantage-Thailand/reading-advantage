@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Provide four sophisticated and closely related options, with one clearly correct answer that requires careful thought and deeper understanding to identify.
 5. **Engagement:** Challenge the reader's ability to analyze, synthesize, and evaluate information from the text, encouraging a deep engagement with the material.
 
-Example question format:
-- What does the article imply about the future impact of climate change on global agriculture?
-  a) It will have devastating effects if current trends continue.
-  b) It is likely to be minimal with technological advancements.
-  c) The article suggests a range of possible outcomes, depending on human actions.
-  d) The impact is unpredictable and thus not a major concern.
-
 Compose questions that stimulate C1 level learners to apply advanced critical thinking skills and comprehensive language understanding to grasp the full depth and breadth of the article's content.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3

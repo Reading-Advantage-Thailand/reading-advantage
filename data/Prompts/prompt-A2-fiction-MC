@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Provide three to four answer choices, with one clear correct answer. Distractors should be simple but plausible, avoiding overly complex or abstract options.
 5. **Engagement:** Encourage readers to think a little beyond the most basic plot points, but keep the focus on direct comprehension and simple deductions.
 
-Example question format:
-- Why was the main character feeling sad?
-  a) They lost their toy.
-  b) It was raining outside.
-  c) They had a lot of homework.
-  d) They were going on an adventure.
-
 Construct questions that help A2 level learners to practice understanding of simple storylines, character motivations, and settings, while beginning to develop inferential thinking skills.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3

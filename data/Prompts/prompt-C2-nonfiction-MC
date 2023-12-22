@@ -7,11 +7,12 @@ Key Guidelines:
 4. **Answers:** Offer four nuanced answer choices, requiring discerning judgment and deep comprehension to select the correct one. Distractors should be plausible but distinguishable through critical analysis and detailed understanding of the text.
 5. **Engagement:** Challenge readers to engage critically with the text, analyzing and evaluating its assertions, methodology, and conclusions at a sophisticated level.
 
-Example question format:
-- In exploring the dynamics of socio-economic inequality, the article's author employs which rhetorical strategy to emphasize their point?
-  a) A metaphor comparing economic disparities to a 'tectonic fault'
-  b) An anecdote illustrating the struggles of a specific underprivileged group
-  c) A statistical analysis debunking common myths about wealth distribution
-  d) A philosophical argument drawing from historical socio-economic theories
-
 Craft questions that require C2 level learners to engage deeply with the text, utilizing their full range of linguistic skills and critical thinking abilities to interpret and evaluate complex ideas and arguments.
+
+Output the questions as strict JSON,  with the following fields:
+question number
+question
+correct answer
+distractor 1
+distractor 2
+distractor 3
