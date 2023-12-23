@@ -75,8 +75,6 @@ export function UserLevelChart({
     const formattedData = formatDataForDays(data, 7);
     const { theme } = useTheme();
 
-    console.log("resGeneralDescription : ", resGeneralDescription);
-
     return (
       <>
         <ResponsiveContainer width="100%" height={350}>
