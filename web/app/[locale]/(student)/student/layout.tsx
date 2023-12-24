@@ -30,10 +30,11 @@ export default async function StudentHomeLayout({
                         <ThemeSwitcher />
                         <UserAccountNav
                             user={{
-                                name: user.name,
-                                image: user.image,
-                                email: user.email,
-                                level: user.level
+                                name: user.name || "",
+                                image: user.image || "",
+                                email: user.email || "",
+                                level: user.level || 0,
+                                verified: user.verified || false
                             }}
                         />
                     </div>
