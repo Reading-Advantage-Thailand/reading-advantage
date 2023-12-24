@@ -1,5 +1,4 @@
 "use client"
-
 import Link from "next/link"
 import { User } from "next-auth"
 import { signOut } from "next-auth/react"
@@ -13,13 +12,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { UserAvatar } from "@/components/user-avatar"
 import { useScopedI18n } from "@/locales/client"
+import { Icons } from "./icons"
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
-    user: Pick<User, "name" | "image" | "email"> & { level: number }
+    user: Pick<User, "name" | "image" | "email"> & { level: number, verified: boolean }
 }
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
     const t = useScopedI18n("components.userAccountNav")
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger>
@@ -37,6 +38,17 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
                                 {user.email}
                             </p>
                         )}
+                        {
+                            //check user verified email
+                            !user.verified && (
+                                <Link href="/settings/user-profile">
+                                    <button className="w-[200px] text-start truncate text-sm text-red-500 flex items-center">
+                                        <Icons.unVerified className="inline-block mr-1 w-4 h-4" />
+                                        Not verified email
+                                    </button>
+                                </Link>
+                            )
+                        }
                         {user.level && (
                             <p className="w-[200px] truncate text-sm text-muted-foreground">
                                 {t('level', { level: <b>{user.level}</b> })}
@@ -45,8 +57,8 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
                     </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild disabled>
-                    <Link href="/student/settings">{t('settings')}</Link>
+                <DropdownMenuItem asChild>
+                    <Link href="/settings/user-profile">{t('settings')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

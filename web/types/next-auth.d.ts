@@ -10,6 +10,7 @@ declare module "next-auth/jwt" {
         email: string
         picture: string
         level: number
+        verified: boolean
     }
 }
 
@@ -21,6 +22,7 @@ declare module "next-auth" {
             email: string,
             image: string,
             level: number,
+            verified: boolean,
         },
     }
 }
