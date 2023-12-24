@@ -11,16 +11,18 @@ export const authOptions: NextAuthOptions = {
                 if (credentials && credentials.idToken) {
                     try {
                         const decoded = await firebaseAdmin.auth().verifyIdToken(credentials.idToken);
-                        // console.log('decoded', decoded);
+                        console.log('decoded', decoded);
                         // Convert the decoded token to a User object
+                        const defaultName = decoded.name || decoded.email?.split('@')[0];
                         const user = {
                             id: decoded.uid,
-                            name: decoded.name,
+                            name: decoded.name || defaultName,
                             email: decoded.email,
-                            image: decoded.picture,
+                            image: decoded.picture || "",
+                            verified: decoded.email_verified
                         };
                         console.log('user', user);
-                        return user;
+                        return Promise.resolve(user);
                     } catch (err) {
                         console.error(err);
                         return Promise.resolve(null);
@@ -40,19 +42,20 @@ export const authOptions: NextAuthOptions = {
         secret: process.env.NEXTAUTH_SECRET,
     },
     callbacks: {
-        jwt: async ({ token }) => {
+        jwt: async ({ token, user, profile }: any) => {
             try {
                 console.log('token', token);
-                const user = await db.collection("users")
+                const userdb = await db.collection("users")
                     .doc(token.sub as string)
                     .get();
-                const userData = user.data();
+                const userData = userdb.data();
                 if (userData) {
                     token.id = userData.id;
                     token.name = userData.name;
                     token.email = userData.email;
                     token.picture = userData.picture;
                     token.level = userData.level;
+                    token.verified = userData.verified;
                 }
                 // create account if it doesn't exist
                 else {
@@ -65,6 +68,7 @@ export const authOptions: NextAuthOptions = {
                             picture: token.picture,
                             createAt: new Date(),
                             level: 0,
+                            verified: user.verified,
                         });
                 }
                 return token;
@@ -72,13 +76,15 @@ export const authOptions: NextAuthOptions = {
                 return Promise.reject(error);
             }
         },
-        session: ({ session, token }) => {
+        session: ({ session, token, user }) => {
+            console.log('user-session', user);
             if (token) {
                 session.user.id = token.id;
                 session.user.name = token.name;
                 session.user.email = token.email;
                 session.user.image = token.picture;
                 session.user.level = token.level;
+                session.user.verified = token.verified;
             }
             // console.log("session callback");
             console.log('session', session);
