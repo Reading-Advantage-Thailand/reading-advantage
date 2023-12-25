@@ -1,5 +1,7 @@
 import React from 'react'
 import { siteConfig } from '@/configs/site-config'
+import Link from 'next/link'
+import { Icons } from '@/components/icons'
 
 type Props = {
     children: React.ReactNode,
@@ -28,9 +30,15 @@ export default function AuthLayout({
                                     borderRadius: '10px 0px 0px 10px',
                                 }}
                             />
-                            <div className="relative z-20 flex items-center text-lg drop-shadow-lg font-bold">
-                                {siteConfig.name}
-                            </div>
+                            <Link
+                                href='/'
+                                className='flex items-center space-x-2 drop-shadow-md'
+                            >
+                                <Icons.logo />
+                                <div className="relative z-20 flex items-center text-lg drop-shadow-lg font-bold">
+                                    {siteConfig.name}
+                                </div>
+                            </Link>
                             <div className="relative z-20 mt-auto">
                                 <p className="text-lg drop-shadow-lg">
                                     {siteConfig.description}
