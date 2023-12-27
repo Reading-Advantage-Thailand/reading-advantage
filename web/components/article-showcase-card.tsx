@@ -34,8 +34,14 @@ export default async function ArticleShowcaseCard({
                 >
                     CEFR Level: {article.cefrLevel}
                 </Badge>
+                <Badge
+                    className='shadow-lg max-w-max'
+                    variant='destructive'
+                >
+                    Rating: {article.averageRating}
+                </Badge>
                 {
-                    article.totalRatings >= 0 && <Badge
+                    article.readCount >= 0 && <Badge
                         className='shadow-lg max-w-max'
                         variant='destructive'
                     >
@@ -45,7 +51,6 @@ export default async function ArticleShowcaseCard({
                 <div className='mt-auto'>
                     <p className='text-xl drop-shadow-lg font-bold text-white'>
                         {article.title}
-                        
                     </p>
                     <p
                         style={{
