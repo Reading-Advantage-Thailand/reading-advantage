@@ -8,6 +8,7 @@ import { toast } from './ui/use-toast'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import axios from 'axios'
+import { useTheme } from 'next-themes'
 
 type Props = {
     userId: string,
@@ -25,6 +26,7 @@ export default function LevelSelect({
     const onChange = (event: Event, newLevel: number | number[]) => {
         setLevel(newLevel);
     };
+    const isDarkMode = useTheme().theme === 'dark';
 
 
     async function updateLevel(level: number) {
@@ -76,14 +78,12 @@ export default function LevelSelect({
                             <Typography
                                 className='hidden sm:block sm:mr-2'
                                 variant='h6'
-                                color='#7356fb'
                             >
                                 GSE
                             </Typography>
                             <Typography
                                 className='hidden sm:block'
                                 variant='h6'
-                                color='#7356fb'
                             >
                                 CEFR
                             </Typography>
@@ -92,7 +92,9 @@ export default function LevelSelect({
                             <Stack direction="row" justifyContent={'space-evenly'} px="0.5rem">
                                 {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((item, index) => {
                                     return (
-                                        <Typography key={index} color="#7356fb" fontSize="13px">
+                                        <Typography
+                                            key={index}
+                                            fontSize="13px">
                                             {item}
                                         </Typography>
                                     );
@@ -104,34 +106,30 @@ export default function LevelSelect({
                                 step={1}
                                 valueLabelDisplay="auto"
                                 sx={{
-                                    // color: '#EEEEEE',
-                                    '& .MuiSlider-valueLabel': {
-                                        //blue color
-                                        color: '#EEEEEE',
-                                    },
+                                    // '& .MuiSlider-valueLabel': {
+                                    // },
                                     '& .MuiSlider-markLabel': {
-                                        color: '#7356fb70',
+                                        color: isDarkMode ? '#FFFFFF50' : '#00968850',
                                     },
                                     '& .MuiSlider-markLabelActive': {
-                                        color: '#7356fb',
+                                        color: isDarkMode ? '#FFFFFF' : '#009688',
                                     },
                                     '& .MuiSlider-mark': {
-                                        color: '#7356fb',
+                                        color: isDarkMode ? '#FFFFFF80' : '#00968880',
                                         height: 10,
                                     },
                                     '& .MuiSlider-thumb': {
-                                        // color: '#7356fb',
+                                        color: isDarkMode ? '#FFFFFF' : '#009688',
                                         height: 24,
                                         width: 7,
                                         borderRadius: 0,
                                     },
                                     '& .MuiSlider-track': {
-                                        color: '#7356fb',
+                                        color: isDarkMode ? '#FFFFFF' : '#009688',
                                         height: 4,
-
                                     },
                                     '& .MuiSlider-rail': {
-                                        color: '#7356fb',
+                                        color: isDarkMode ? '#FFFFFF80' : '#009688',
                                         height: 4,
 
                                     },
