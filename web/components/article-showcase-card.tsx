@@ -3,6 +3,7 @@ import React from 'react'
 import { Badge } from './ui/badge'
 import Link from 'next/link'
 import { camelToSentenceCase } from '@/lib/utils'
+import { Rating } from '@mui/material'
 
 type Props = {
     article: articleShowcaseType,
@@ -34,18 +35,25 @@ export default async function ArticleShowcaseCard({
                 >
                     CEFR Level: {article.cefrLevel}
                 </Badge>
-                {
+                <Badge
+                    className='shadow-lg max-w-max'
+                    variant='destructive'
+                >
+                   <Rating name="read-only" value={article.averageRating} readOnly />
+                        
+                </Badge>
+                {/* may be use article.readCount instead */}
+                {/* {
                     article.totalRatings >= 0 && <Badge
                         className='shadow-lg max-w-max'
                         variant='destructive'
                     >
                         Average Rating: {article.averageRating.toFixed(2)}
                     </Badge>
-                }
+                } */}
                 <div className='mt-auto'>
                     <p className='text-xl drop-shadow-lg font-bold text-white'>
                         {article.title}
-                        
                     </p>
                     <p
                         style={{

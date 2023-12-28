@@ -145,7 +145,8 @@ export async function GET(req: Request, res: Response) {
           status: userArticleRecord?.status,
           averageRating: articlesSnapshot.docs[i].data().averageRating,
           totalRatings: articlesSnapshot.docs[i].data().totalRatings,
-          topic: articlesSnapshot.docs[i].data().topic
+          topic: articlesSnapshot.docs[i].data().topic,
+          readCount: articlesSnapshot.docs[i].data().readCount
         });
       }
       // articlesSnapshot.forEach(async (doc) => {

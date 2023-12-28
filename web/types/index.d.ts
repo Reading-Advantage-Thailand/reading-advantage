@@ -174,5 +174,6 @@ export type articleShowcaseType = {
     status: RecordStatus,
     averageRating: number,
     totalRatings: number,
-    topic: string
+    topic: string,
+    readCount: number
 }
