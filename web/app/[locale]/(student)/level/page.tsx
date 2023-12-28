@@ -12,7 +12,7 @@ export const metadata = {
 export default async function LevelPage({ }: Props) {
     const user = await getCurrentUser();
     if (!user) {
-        return redirect('/login');
+        return redirect('/auth/signin');
     }
     if (user.level > 0) {
         return redirect('/student/read',);

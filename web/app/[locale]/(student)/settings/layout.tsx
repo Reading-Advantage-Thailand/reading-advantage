@@ -1,19 +1,19 @@
 import { MainNav } from "@/components/main-navbar"
 import { getCurrentUser } from "@/lib/session"
 import { redirect } from "next/navigation"
-import { studentPageConfig } from "@/configs/student-page-config"
 import { UserAccountNav } from "@/components/user-account-nav"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle"
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher"
+import { settingsPageConfig } from "@/configs/settings-page-config"
 
-interface StudentHomeLayoutProps {
+interface SettingsPageLayoutProps {
     children?: React.ReactNode
 }
 
-export default async function StudentHomeLayout({
+export default async function SettingsPageLayout({
     children,
-}: StudentHomeLayoutProps) {
+}: SettingsPageLayoutProps) {
     const user = await getCurrentUser()
 
     if (!user) {
@@ -24,7 +24,7 @@ export default async function StudentHomeLayout({
         <div className="flex min-h-screen flex-col space-y-6">
             <header className="sticky top-0 z-40 border-b bg-background">
                 <div className="container flex h-16 items-center justify-between py-4">
-                    <MainNav items={studentPageConfig.mainNav} />
+                    <MainNav items={settingsPageConfig.mainNav} />
                     <div className="flex space-x-2">
                         <LocaleSwitcher />
                         <ThemeSwitcher />
@@ -42,7 +42,7 @@ export default async function StudentHomeLayout({
             </header>
             <div className="container mx-auto px-4 lg:grid lg:flex-1 gap-12 lg:grid-cols-[200px_1fr]">
                 <aside className="lg:w-[200px] lg:flex-col lg:flex">
-                    <SidebarNav items={studentPageConfig.sidebarNav} />
+                    <SidebarNav items={settingsPageConfig.sidebarNav} />
                 </aside>
                 <main className="flex w-full flex-1 flex-col overflow-hidden">
                     {children}

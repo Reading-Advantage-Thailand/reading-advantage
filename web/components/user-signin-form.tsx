@@ -23,9 +23,9 @@ import type { AuthProvider } from "firebase/auth"
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 
-export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
     const [isLoading, setIsLoading] = React.useState<boolean>(false)
-    const [isEmailSent, setIsEmailSent] = React.useState<boolean>(false)
+    const [error, setError] = React.useState<string>("")
     const googleProvider = new GoogleAuthProvider()
 
     const handleOAuthSignIn = (provider: AuthProvider) => {
@@ -40,32 +40,44 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             .catch((err) => console.error(err))
     }
 
-    const handleEmailSignInWithLink = (provider: AuthProvider) => {
-        const email = "boss4848988@gmail.com"
-        sendSignInLinkToEmail(firebaseAuth, email, {
-            url: "http://localhost:3000/auth-confirm",
-            handleCodeInApp: true,
-        })
-            .then(() => {
-                setIsEmailSent(true)
-                window.localStorage.setItem("emailForSignIn", email)
-            })
-            .catch((err) => console.error(err))
-    }
-
     async function onSubmit(event: React.SyntheticEvent) {
         event.preventDefault()
         setIsLoading(true)
-        const email = 'boss4848988@gmail.com'
-        sendSignInLinkToEmail(firebaseAuth, email, {
-            url: "http://localhost:3000/student/read",
-            handleCodeInApp: true,
-        })
-            .then(() => {
-                setIsEmailSent(true)
-                window.localStorage.setItem("emailForSignIn", email)
+        setError("")
+        const target = event.target as typeof event.target & {
+            email: { value: string };
+            password: { value: string };
+        };
+        const email = target.email.value;
+        const password = target.password.value;
+        console.log(email, password)
+        signInWithEmailAndPassword(firebaseAuth, email, password)
+            .then((credential) => credential.user.getIdToken(true))
+            .catch((err) => {
+                let customMessage;
+                switch (err.code) {
+                    case 'auth/invalid-credential':
+                        customMessage = 'The provided credential is invalid. This can happen if it is malformed, expired, or the user account does not exist.';
+                        break;
+                    case 'auth/too-many-requests':
+                        customMessage = 'Too many unsuccessful login attempts. Please try again later.';
+                        break;
+                    default:
+                        customMessage = 'Something went wrong.';
+                }
+                setError(customMessage);
+                console.log(err)
+                return null
             })
-            .catch((err) => console.error(err))
+            .then((idToken) => {
+                if (idToken) {
+                    signIn("credentials", {
+                        idToken,
+                        callbackUrl: "/student/read",
+                    })
+                }
+            })
+            .finally(() => setIsLoading(false))
     }
     return (
         <div className={cn("grid gap-6", className)} {...props}>
@@ -101,17 +113,22 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             required
                         />
                     </div>
+                    {
+                        error && (
+                            <div className="text-red-500 text-sm">
+                                {error}
+                            </div>
+                        )
+                    }
                     <Button disabled={isLoading}>
                         {isLoading && (
                             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                         )}
                         Sign in
                     </Button>
-                    {/* <div className="mt-2"> */}
-                    <a href="/forgot-password" className="text-sm text-muted-foreground hover:text-blue-500">
+                    <a href="/auth/forgot-password" className="text-sm text-muted-foreground hover:text-blue-500">
                         Forgot Password?
                     </a>
-                    {/* </div> */}
                 </div>
             </form>
             <div className="relative">
@@ -119,7 +136,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                     <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
+                    <span className="px-2 text-muted-foreground">
                         Or continue with
                     </span>
                 </div>
