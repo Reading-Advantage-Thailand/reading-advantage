@@ -1,3 +1,4 @@
+/saquestions
 Formulate a simple and direct short-answer question from the {fiction story text}, aimed at readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
@@ -7,8 +8,10 @@ Key Guidelines:
 4. **Focus Areas:** Concentrate on the main storyline, actions of characters, or obvious moral or message of the story.
 5. **Expected Answer:** The answer should be concise and factual, reflecting the reader's ability to comprehend and recount basic elements of the story.
 
-Example question format:
-- What is the main problem the protagonist faces in the story?
-- Give a brief description of the main character's personality.
-
 These types of questions are designed to assess a B1 learner's ability to grasp the fundamental components of the fiction story and articulate them in a clear, straightforward manner.
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "suggested answer": a possible answer using language appropriate to CEFR B1 learners,
+}
