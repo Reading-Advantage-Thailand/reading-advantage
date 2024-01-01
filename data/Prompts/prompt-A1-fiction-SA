@@ -1,4 +1,5 @@
-"Craft an extremely simple and direct short-answer question based on the {fiction story text}, tailored for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
+/saquestions
+Craft an extremely simple and direct short-answer question based on the {fiction story text}, tailored for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Simplicity:** Formulate a question that deals with the most basic elements of the story, such as naming characters, identifying a simple action, or recognizing the setting.
@@ -7,8 +8,11 @@ Key Guidelines:
 4. **Focus Areas:** Focus on basic facts and direct observations from the story, such as 'Who is in the story?' or 'What does the character see?'
 5. **Expected Answer:** Answers should be very short, one-word or phrase responses that require minimal language production and understanding.
 
-Example questions:
-- Who is the main character in the story?
-- What color is the cat in the story?
+These questions are designed to verify a beginner (A1) learner's ability to identify and understand the simplest and most direct information from the story.
 
-These questions are designed to verify a beginner (A1) learner's ability to identify and understand the simplest and most direct information from the story."
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "suggested answer": a possible single-sentence answer using language appropriate to CEFR A1 learners,
+}
