@@ -1,3 +1,4 @@
+/saquestions
 Craft a simple, direct short-answer question from the {nonfiction article text}, tailored for readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
@@ -7,7 +8,10 @@ Key Guidelines:
 4. **Focus Areas:** The question can address the main topic, key facts, or simple conclusions drawn in the article. It should test the reader's ability to understand and remember basic information.
 5. **Expected Answer:** The answer should be short and to the point, demonstrating the learner's ability to comprehend and recall the primary content of the article.
 
-Example question format:
-- What are two main benefits of solar energy as discussed in the article?
-
 This type of question is designed to evaluate a B1 learner's grasp of essential information in the article and their ability to communicate it using straightforward, simple language.
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "suggested answer": a possible answer using language appropriate to CEFR B1 learners,
+}
