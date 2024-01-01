@@ -1,5 +1,5 @@
 /saquestions
-Construct a clear and focused short-answer question from the {fiction story text}, appropriate for readers at the B2 level of the Common European Framework of Reference for Languages (CEFR).
+Construct 5 clear and focused short-answer questions from the {fiction story text}, appropriate for readers at the B2 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Clarity:** Formulate a question that addresses clear elements of the story such as main plot points, character relationships, or basic themes.
