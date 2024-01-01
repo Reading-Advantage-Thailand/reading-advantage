@@ -1,5 +1,5 @@
 /saquestions
-Craft an extremely simple and direct short-answer question based on the {fiction story text}, tailored for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
+Craft 10 extremely simple and direct short-answer questions based on the {fiction story text}, tailored for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Simplicity:** Formulate a question that deals with the most basic elements of the story, such as naming characters, identifying a simple action, or recognizing the setting.
