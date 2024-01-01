@@ -1,5 +1,5 @@
 /saquestions
-Craft a simple, direct short-answer question from the {nonfiction article text}, tailored for readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
+Craft 5 simple, direct short-answer questions from the {nonfiction article text}, tailored for readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Simplicity:** Formulate a question that is straightforward and easy to understand. It should focus on the recall of clear, factual information or basic ideas presented in the article.
