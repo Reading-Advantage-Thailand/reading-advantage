@@ -1,3 +1,4 @@
+/mcquestions
 Construct a series of 10 multiple-choice questions based on the specified {nonfiction article text}, aimed at readers at the B2 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
@@ -9,10 +10,12 @@ Key Guidelines:
 
 Develop questions that encourage B2 level learners to engage with the text at a deeper level, understanding not only what is directly stated but also what is implied or suggested.
 
-Output the questions as strict JSON,  with the following fields:
-question number
-question
-correct answer
-distractor 1
-distractor 2
-distractor 3
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "correct_answer": contains the correct answer to the question,
+  "distractor 1": incorrect option or distractor,
+  "distractor 2": incorrect option or distractor, 
+  "distractor 3": incorrect option or distractor,
+}
