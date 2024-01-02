@@ -1,4 +1,5 @@
-Develop a detailed short-answer question based on the {nonfiction article text}, suitable for readers at the C1 level of the Common European Framework of Reference for Languages (CEFR).
+/saquestions
+Develop 5 detailed short-answer questions based on the {nonfiction article text}, suitable for readers at the C1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Depth:** The question should encourage a detailed understanding of the article, asking the reader to explain, compare, or analyze key concepts or arguments presented.
@@ -7,7 +8,10 @@ Key Guidelines:
 4. **Focus Areas:** The question may address significant themes, author’s perspectives, or the implications of the information presented in the article.
 5. **Expected Answer:** While the answer should show depth and comprehension, it need not delve into highly theoretical or abstract interpretations. It should be informed, articulate, and well-structured.
 
-Example question format:
-- Reflecting on the article's analysis of technological advancements in renewable energy, what are the key benefits and challenges outlined, and how might these influence future energy policies?
-
 This question is designed to test C1 learners' ability to comprehend complex ideas, articulate a well-reasoned response, and utilize a diverse vocabulary and varied sentence structures.
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "suggested answer": a possible answer using language appropriate to CEFR C1 learners,
+}

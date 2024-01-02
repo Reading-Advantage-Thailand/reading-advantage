@@ -1,3 +1,4 @@
+/mcquestions
 Write a set of 10 multiple-choice questions based on the provided {nonfiction article text}, specifically designed for readers at the A2 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
@@ -9,10 +10,12 @@ Key Guidelines:
 
 Develop questions that not only assess the direct recall of facts from the text but also basic comprehension, including simple cause and effect or understanding of motives, suitable for A2 level learners.
 
-Output the questions as strict JSON,  with the following fields:
-question number
-question
-correct answer
-distractor 1
-distractor 2
-distractor 3
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "correct_answer": contains the correct answer to the question,
+  "distractor 1": incorrect option or distractor,
+  "distractor 2": incorrect option or distractor, 
+  "distractor 3": incorrect option or distractor,
+}

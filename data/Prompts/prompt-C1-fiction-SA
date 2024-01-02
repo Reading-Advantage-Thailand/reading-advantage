@@ -1,4 +1,5 @@
-Design an insightful short-answer question from the {fiction story text}, targeted at readers at the C1 level of the Common European Framework of Reference for Languages (CEFR).
+/saquestions
+Design 5 insightful short-answer questions from the {fiction story text}, targeted at readers at the C1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Insightfulness:** The question should probe into the more sophisticated aspects of the story, like character development, narrative perspective, or the author's use of language.
@@ -7,8 +8,10 @@ Key Guidelines:
 4. **Focus Areas:** Questions can explore detailed aspects of the plot, deeper character analysis, thematic exploration, or the author's stylistic choices.
 5. **Expected Answer:** The answer should reflect a high level of understanding, using varied and rich language to convey complex ideas or interpretations related to the story.
 
-Example question format:
-- What does the protagonist's decision in the final chapter suggest about their personal growth?
-- Analyze how the setting influences the mood and tone of the story.
-
 These types of questions are crafted to test a C1 learner's ability to understand and articulate complex concepts and narrative elements within the fiction story, demonstrating advanced language proficiency and critical thinking skills.
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "suggested answer": a possible answer using language appropriate to CEFR C1 learners,
+}

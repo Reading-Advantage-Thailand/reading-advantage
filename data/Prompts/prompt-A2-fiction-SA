@@ -1,4 +1,5 @@
-"Develop a simple and straightforward short-answer question based on the {fiction story text}, suitable for readers at the A2 level of the Common European Framework of Reference for Languages (CEFR).
+/saquestions
+Develop 5 simple and straightforward short-answer questions based on the {fiction story text}, suitable for readers at the A2 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Simplicity:** Frame a question that focuses on the most basic elements of the story, such as what happens, where the story takes place, or who the main characters are.
@@ -7,8 +8,10 @@ Key Guidelines:
 4. **Focus Areas:** Direct attention to straightforward facts about the story such as the setting, main events, or descriptions of characters.
 5. **Expected Answer:** Answers should be brief, factual, and require little to no inference or analysis.
 
-Example questions:
-- Where does the story happen?
-- What does the main character do in the end?
-
-These questions are meant to check an A2 learner's basic understanding of the story, focusing on direct recall of simple, concrete narrative details."
+These questions are meant to check an A2 learner's basic understanding of the story, focusing on direct recall of simple, concrete narrative details.
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "suggested answer": a possible answer using language appropriate to CEFR A2 learners,
+}

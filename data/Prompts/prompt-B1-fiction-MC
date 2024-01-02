@@ -1,3 +1,4 @@
+/mcquestions
 Develop a set of 10 engaging multiple-choice questions based on the provided {fiction story text}, suitable for readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
@@ -9,10 +10,12 @@ Key Guidelines:
 
 Create questions that help B1 level learners to engage more critically with the story, understanding its deeper meanings and nuances, and recognizing character development and thematic elements.
 
-Output the questions as strict JSON,  with the following fields:
-question number
-question
-correct answer
-distractor 1
-distractor 2
-distractor 3
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "correct_answer": contains the correct answer to the question,
+  "distractor 1": incorrect option or distractor,
+  "distractor 2": incorrect option or distractor, 
+  "distractor 3": incorrect option or distractor,
+}

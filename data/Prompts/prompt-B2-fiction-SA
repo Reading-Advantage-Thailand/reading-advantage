@@ -1,4 +1,5 @@
-Construct a clear and focused short-answer question from the {fiction story text}, appropriate for readers at the B2 level of the Common European Framework of Reference for Languages (CEFR).
+/saquestions
+Construct 5 clear and focused short-answer questions from the {fiction story text}, appropriate for readers at the B2 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
 1. **Question Clarity:** Formulate a question that addresses clear elements of the story such as main plot points, character relationships, or basic themes.
@@ -7,8 +8,10 @@ Key Guidelines:
 4. **Focus Areas:** Target the narrative's key elements, like the resolution of the main conflict, the growth of a central character, or the story's setting and how it affects the plot.
 5. **Expected Answer:** The answer should be more than a simple fact or detail from the story; it should show the reader's ability to connect ideas and provide a thoughtful, yet not overly complex, response.
 
-Example question format:
-- How do the main character's actions lead to the resolution of the story's central conflict?
-- Describe how the setting of the story influences the events that occur.
-
 These questions are tailored to gauge a B2 learner's understanding of the narrative structure and character dynamics in the fiction story, assessing their ability to link different elements of the text and express their thoughts with a good level of language control.
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "suggested answer": a possible answer using language appropriate to CEFR B2 learners,
+}

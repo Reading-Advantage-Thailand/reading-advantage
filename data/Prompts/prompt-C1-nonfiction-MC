@@ -1,3 +1,4 @@
+/mcquestions
 Formulate a set of 10 intricate multiple-choice questions based on the given {nonfiction article text}, aimed at readers at the C1 level of the Common European Framework of Reference for Languages (CEFR).
 
 Key Guidelines:
@@ -9,10 +10,12 @@ Key Guidelines:
 
 Compose questions that stimulate C1 level learners to apply advanced critical thinking skills and comprehensive language understanding to grasp the full depth and breadth of the article's content.
 
-Output the questions as strict JSON,  with the following fields:
-question number
-question
-correct answer
-distractor 1
-distractor 2
-distractor 3
+Output as JSON following this example:
+{
+  "question_number": represents the number of the question,
+  "question": the question text,
+  "correct_answer": contains the correct answer to the question,
+  "distractor 1": incorrect option or distractor,
+  "distractor 2": incorrect option or distractor, 
+  "distractor 3": incorrect option or distractor,
+}
