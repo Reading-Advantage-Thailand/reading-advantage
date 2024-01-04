@@ -308,12 +308,12 @@
         }
       ]
     },
-    {    
+    {
       "level": "C2",
       "points": "21000",
       "questions": [
         {
-          "prompt": "Quantum computing could change data encryption.",
+      "prompt": "Quantum computing could change data encryption.",
           "options": {
             "A": "It poses cybersecurity challenges.",
             "B": "Quantum is a future trend.",
@@ -334,6 +334,30 @@
             "A": "Understanding it is key.",
             "B": "It's a global issue.",
             "C": "Economics are important."
+          }
+        },
+        {
+          "prompt": "Transhumanism explores the potential of enhancing the human condition.",
+          "options": {
+            "A": "It challenges ethical boundaries.",
+            "B": "Humanity is evolving.",
+            "C": "Technology is advancing rapidly."
+          }
+        },
+        {
+          "prompt": "In literary modernism, traditional structures were often discarded.",
+          "options": {
+            "A": "It heralded narrative experimentation.",
+            "B": "Modern literature is diverse.",
+            "C": "Traditional structures were outdated."
+          }
+        },
+        {
+          "prompt": "Climate change discourse is shaped by complex scientific data.",
+          "options": {
+            "A": "Interpreting this data is crucial.",
+            "B": "Climate is a pressing issue.",
+            "C": "Scientific understanding is evolving."
           }
         }
       ]
