@@ -2,7 +2,7 @@
   "language_placement_test": [
     {
       "level": "A0",
-      "points": "3000",
+      "points": 3000,
       "questions": [
         {
           "prompt": "Is this a book?",
@@ -27,12 +27,36 @@
             "B": "Yes, a big dog.",
             "C": "I like cats."
           }
+        },
+        {
+          "prompt": "What is your name?",
+          "options": {
+            "A": "My name is Anna.",
+            "B": "I am fine.",
+            "C": "Goodbye."
+          }
+        },
+        {
+          "prompt": "How are you?",
+          "options": {
+            "A": "I am good, thank you.",
+            "B": "I am Anna.",
+            "C": "Yes, I am here."
+          }
+        },
+        {
+          "prompt": "Is this your pen?",
+          "options": {
+            "A": "Yes, it's mine.",
+            "B": "No, it's a book.",
+            "C": "Yes, it's a cat."
+          }
         }
       ]
     },
     {
       "level": "A1",
-      "points": "6000",
+      "points": 6000,
       "questions": [
         {
           "prompt": "What color is your car?",
@@ -57,12 +81,36 @@
             "B": "Apples are tasty.",
             "C": "I eat rice."
           }
+        },
+        {
+          "prompt": "What time is it?",
+          "options": {
+            "A": "It's three o'clock.",
+            "B": "It's time to go.",
+            "C": "I have a clock."
+          }
+        },
+        {
+          "prompt": "Do you like coffee?",
+          "options": {
+            "A": "Yes, I love coffee.",
+            "B": "Coffee is hot.",
+            "C": "I drink water."
+          }
+        },
+        {
+          "prompt": "Where is the bus station?",
+          "options": {
+            "A": "It's near the park.",
+            "B": "I go by bus.",
+            "C": "The station is big."
+          }
         }
       ]
     },
     {
       "level": "A2",
-      "points": "9000",
+      "points": 9000,
       "questions": [
         {
           "prompt": "Did you enjoy the movie last night?",
@@ -87,12 +135,36 @@
             "B": "Walking is good.",
             "C": "I don't like taxis."
           }
+        },
+        {
+          "prompt": "Have you finished your homework?",
+          "options": {
+            "A": "Not yet, I'm still working on it.",
+            "B": "Homework is hard.",
+            "C": "I will do it later."
+          }
+        },
+        {
+          "prompt": "What did you do last weekend?",
+          "options": {
+            "A": "I went to the beach.",
+            "B": "Weekends are fun.",
+            "C": "I will go next week."
+          }
+        },
+        {
+          "prompt": "Can you help me with this?",
+          "options": {
+            "A": "Of course, what do you need?",
+            "B": "This is difficult.",
+            "C": "I need help too."
+          }
         }
       ]
     },
     {
       "level": "B1",
-      "points": "12000",
+      "points": 12000,
       "questions": [
         {
           "prompt": "I can’t find my glasses anywhere.",
@@ -117,12 +189,36 @@
             "B": "Put on a jacket.",
             "C": "I am not cold."
           }
+        },
+        {
+          "prompt": "What do you think about the new environmental policies?",
+          "options": {
+            "A": "They're a step in the right direction.",
+            "B": "Policies are often complicated.",
+            "C": "I haven't read them."
+          }
+        },
+        {
+          "prompt": "How often do you exercise?",
+          "options": {
+            "A": "I go jogging every morning.",
+            "B": "Exercise is healthy.",
+            "C": "I don't like jogging."
+          }
+        },
+        {
+          "prompt": "Why are you learning English?",
+          "options": {
+            "A": "For my job and to travel.",
+            "B": "English is a common language.",
+            "C": "I like learning languages."
+          }
         }
       ]
     },
     {
       "level": "B2",
-      "points": "15000",
+      "points": 15000,
       "questions": [
         {
           "prompt": "Do you think we should invest in renewable energy?",
@@ -147,12 +243,36 @@
             "B": "Try a simpler book.",
             "C": "I don't read much."
           }
+        },
+        {
+          "prompt": "What are your thoughts on the impact of social media on youth?",
+          "options": {
+            "A": "It has both positive and negative aspects.",
+            "B": "Social media is popular.",
+            "C": "I use social media a lot."
+          }
+        },
+        {
+          "prompt": "Do you believe that space exploration is important?",
+          "options": {
+            "A": "Absolutely, it's vital for scientific advancement.",
+            "B": "Space is fascinating.",
+            "C": "It seems very expensive."
+          }
+        },
+        {
+          "prompt": "How do you manage stress in your daily life?",
+          "options": {
+            "A": "I practice yoga and meditation.",
+            "B": "Stress is hard to handle.",
+            "C": "I get stressed easily."
+          }
         }
       ]
     },
     {
       "level": "C1",
-      "points": "18000",
+      "points": 18000,
       "questions": [
         {
           "prompt": "How do you interpret the rise in digital art sales?",
@@ -177,10 +297,18 @@
             "B": "It's a complex topic.",
             "C": "I haven't thought about it."
           }
+        },
+        {
+          "prompt": "In what ways can technology influence art?",
+          "options": {
+            "A": "It opens up new forms and methods.",
+            "B": "Art and technology are different.",
+            "C": "I like traditional art."
+          }
         }
       ]
     },
-    {
+    {    
       "level": "C2",
       "points": "21000",
       "questions": [
