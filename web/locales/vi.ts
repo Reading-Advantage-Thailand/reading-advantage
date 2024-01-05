@@ -75,6 +75,12 @@ export default {
           errorDescription:
             "Có lỗi xảy ra khi xóa câu đoạn đã lưu. Vui lòng thử lại sau.",
         },
+        flashcardPractice: {
+          buttonVeryHard: "Rất khó",
+          buttonHard: "Khó",
+          buttonGood: "Tốt",
+          buttonEasy: "Dễ",
+        },
       },
     },
   },

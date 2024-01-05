@@ -64,6 +64,12 @@ export default {
           error: "錯誤",
           errorDescription: "刪除保存的句子時出錯",
         },
+        flashcardPractice: {
+          buttonVeryHard: "非常難",
+          buttonHard: "難",
+          buttonGood: "好",
+          buttonEasy: "很容易",
+        },
       },
     },
   },

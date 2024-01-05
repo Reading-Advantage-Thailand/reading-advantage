@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { FlashcardArray } from "react-quizlet-flashcard";
 import axios from "axios";
 import AudioButton from "./audio-button";
+import FlashCardPracticeButton from './flash-card-practice-button'
 import Link from "next/link";
 import {
   Card,
@@ -106,7 +107,7 @@ export default function FlashCard({ userId }: Props) {
               controls={false}
               showCount={false}
               onCardChange={(index) => {
-                console.log(index);
+                console.log("onCardChange index: ", index);
                 setCurrentCardIndex(index);
               }}
               forwardRef={controlRef}
@@ -140,6 +141,10 @@ export default function FlashCard({ userId }: Props) {
             })}
           </>
         )}
+        <FlashCardPracticeButton index={currentCardIndex} />
+      </div>
+      <div>
+
       </div>
       <Card className="col-span-3 mt-4 mb-10">
         <CardHeader>
