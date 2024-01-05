@@ -76,6 +76,13 @@ export default {
           errorDescription:
             "Something went wrong while deleting saved sentence",
         },
+        flashcardPractice: {
+          buttonVeryHard: "Very Hard",
+          buttonHard: "Hard",
+          buttonGood: "Good",
+          buttonEasy: "Easy",
+          flipCard:'Flip'
+        },
       },
     },
   },
