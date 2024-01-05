@@ -80,6 +80,7 @@ export default {
           buttonHard: "Khó",
           buttonGood: "Tốt",
           buttonEasy: "Dễ",
+          flipCard: "Lật thẻ",
         },
       },
     },

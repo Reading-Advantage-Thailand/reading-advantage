@@ -5,48 +5,51 @@ import { buttonVariants } from "./ui/button";
 import { useScopedI18n } from "@/locales/client";
 
 type Props = {
-    index: number;
+  index: number;
+  nextCard: Function;
+};
 
-}
+export default function FlashCardPracticeButton({ index, nextCard }: Props) {
+  const t = useScopedI18n("pages.student.practicePage");
 
-export default function FlashCardPracticeButton({index}: Props) {
-    const t = useScopedI18n("pages.student.practicePage");
-
-    return (
-      <>
-        <button
-          className={cn(buttonVariants({ size: "sm" }))}
-          onClick={() => {
-            console.log(index);
-          }}
-        >
-          {t("flashcardPractice.buttonEasy")}
-        </button>
-        <button
-          className={cn(buttonVariants({ size: "sm" }))}
-          onClick={() => {
-            console.log(index);
-          }}
-        >
-          {t("flashcardPractice.buttonGood")}
-        </button>
-        <button
-          className={cn(buttonVariants({ size: "sm" }))}
-          onClick={() => {
-            console.log(index);
-          }}
-        >
-          {t("flashcardPractice.buttonHard")}
-        </button>
-        <button
-          className={cn(buttonVariants({ size: "sm" }))}
-          onClick={() => {
-            console.log(index);
-          }}
-        >
-          {t("flashcardPractice.buttonVeryHard")}
-        </button>
-      </>
-    );
-
+  return (
+    <div className="flex space-x-2">
+      <button
+        className={cn(buttonVariants({ size: "sm" }))}
+        onClick={() => {
+          console.log(index);
+          nextCard()
+        }}
+      >
+        {t("flashcardPractice.buttonVeryHard")}
+      </button>
+      <button
+        className={cn(buttonVariants({ size: "sm" }))}
+        onClick={() => {
+          console.log(index);
+          nextCard();
+        }}
+      >
+        {t("flashcardPractice.buttonHard")}
+      </button>
+      <button
+        className={cn(buttonVariants({ size: "sm" }))}
+        onClick={() => {
+          console.log(index);
+          nextCard();
+        }}
+      >
+        {t("flashcardPractice.buttonGood")}
+      </button>
+      <button
+        className={cn(buttonVariants({ size: "sm" }))}
+        onClick={() => {
+          console.log(index);
+          nextCard();
+        }}
+      >
+        {t("flashcardPractice.buttonEasy")}
+      </button>
+    </div>
+  );
 }

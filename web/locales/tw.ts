@@ -69,6 +69,7 @@ export default {
           buttonHard: "難",
           buttonGood: "好",
           buttonEasy: "很容易",
+          flipCard:'翻轉'
         },
       },
     },

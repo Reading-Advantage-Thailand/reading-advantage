@@ -79,6 +79,7 @@ export default {
           buttonHard: "ยาก",
           buttonGood: "ดี",
           buttonEasy: "ง่าย",
+          flipCard: "พลิกการ์ด",
         },
       },
     },

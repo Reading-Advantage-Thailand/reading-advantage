@@ -81,6 +81,7 @@ export default {
           buttonHard: "Hard",
           buttonGood: "Good",
           buttonEasy: "Easy",
+          flipCard:'Flip'
         },
       },
     },
