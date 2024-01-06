@@ -1,7 +1,3 @@
-Thank you for pointing out the necessary inclusion. Here's a revised version of the Reading Advantage home wiki page, incorporating both the technical overview and the detailed roadmap, along with a bilingual English and Thai description.
-
----
-
 # Reading Advantage: An AI-Enhanced Language Learning Experience | ประสบการณ์การเรียนภาษาที่เสริมด้วย AI
 
 ## Technical Overview | ภาพรวมทางเทคนิค
@@ -53,5 +49,3 @@ Detailing challenges like AI service integration and user data security, along w
 12. [ ] Teacher & Classroom Management | การจัดการครูและห้องเรียน
 13. [ ] School Admin Management | การจัดการผู้ดูแลโรงเรียน
 14. [ ] App Admin Functions | ฟังก์ชั่นผู้ดูแลแอป
-
-This revised wiki page now accurately reflects the current state and future vision of the Reading Advantage platform, with a focus on the technical aspects and a bilingual English-Thai presentation for broader accessibility.
