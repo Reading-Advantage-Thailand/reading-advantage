@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Report</title>
+<style>
+  /* Styles for boxes, tables, dropdowns */
+  .stats-box {
+    border: 1px solid #ddd;
+    padding: 8px;
+    margin: 4px;
+    display: inline-block;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  .dropdown-content a:hover {background-color: #f1f1f1;}
+  .show {display: block;}
+
+  /* Styles specific for the graph */
+  .graph-container {
+    margin-top: 20px;
+  }
+  .bar {
+    fill: #79a;
+  }
+  .bar.beginning {
+    fill: #396;
+  }
+  .average-line {
+    stroke: red;
+    stroke-dasharray: 4;
+    stroke-width: 2;
+  }
+</style>
+</head>
+<body>
+
+<h1>Class Report: <span id="className">Class Name</span></h1>
+
+<div class="stats-box">Passages Read: <span id="passagesRead">95</span></div>
+<div class="stats-box">Total XP: <span id="totalXP">1,250,435</span></div>
+<div class="stats-box">Average Level: <span id="averageLevel">12</span></div>
+<div class="stats-box">Total Practice Time: <span id="totalPracticeTime">41:25</span></div>
+
+<table id="studentReportTable">
+  <tr>
+    <th>Name</th>
+    <th>XP</th>
+    <th>Nonfiction Read</th>
+    <th>Fiction Read</th>
+    <th>Quizzes Taken</th>
+    <th>Practice Time</th>
+    <th>Actions</th>
+  </tr>
+  <!-- Table rows will be inserted here by JavaScript -->
+</table>
+
+<div class="graph-container">
+  <svg id="levelGraph" width="600" height="300">
+    <!-- SVG content will be inserted here by JavaScript -->
+  </svg>
+</div>
+
+<script>
+// Sample data with additional students and their levels
+var classInfo = {
+  className: "Math 101",
+  statistics: {
+    passagesRead: 95,
+    totalXP: 1250435,
+    averageLevel: 12,
+    totalPracticeTime: "41:25"
+  },
+  students: [
+    { name: "Student 1", xp: 100, nonfictionRead: 3, fictionRead: 5, quizzesTaken: 8, practiceTime: "3:21", beginningLevel: 1, currentLevel: 4 },
+    { name: "Student 2", xp: 200, nonfictionRead: 6, fictionRead: 9, quizzesTaken: 13, practiceTime: "10:15", beginningLevel: 2, currentLevel: 5 },
+    // Add more students with dummy data as needed
+    { name: "Student 3", xp: 150, nonfictionRead: 2, fictionRead: 4, quizzesTaken: 7, practiceTime: "2:30", beginningLevel: 1, currentLevel: 3 },
+    { name: "Student 4", xp: 300, nonfictionRead: 7, fictionRead: 10, quizzesTaken: 15, practiceTime: "12:45", beginningLevel: 3, currentLevel: 6 }
+  ]
+};
+
+// Function to populate table with data
+function populateTable() {
+  var table = document.getElementById('studentReportTable');
+  classInfo.students.forEach(function(student, index) {
+    var row = table.insertRow();
+    row.insertCell(0).innerText = student.name;
+    row.insertCell(1).innerText = student.xp.toLocaleString();
+    row.insertCell(2).innerText = student.nonfictionRead;
+    row.insertCell(3).innerText = student.fictionRead;
+    row.insertCell(4).innerText = student.quizzesTaken;
+    row.insertCell(5).innerText = student.practiceTime;
+    
+    var actionsCell = row.insertCell(6);
+    actionsCell.innerHTML = '<div class="dropdown">' +
+                            '<button onclick="toggleDropdown(' + index + ')">Actions</button>' +
+                            '<div id="dropdown-' + index + '" class="dropdown-content">' +
+                            '<a href="#">View Details</a>' +
+                            '<a href="#">Edit</a>' +
+                            '<a href="#">Remove</a>' +
+                            '</div></div>';
+  });
+}
+
+// Function to show/hide the dropdown menu
+function toggleDropdown(index) {
+  var dropdowns = document.getElementsByClassName('dropdown-content');
+  for (var i = 0; i < dropdowns.length; i++) {
+    var openDropdown = dropdowns[i];
+    if (openDropdown.classList.contains('show')) {
+      openDropdown.classList.remove('show');
+    }
+  }
+  document.getElementById('dropdown-' + index).classList.toggle('show');
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropdown button')) {
+    var dropdowns = document.getElementsByClassName('dropdown-content');
+    for (var i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+
+// Function to draw the graph
+function drawGraph() {
+  var svg = document.getElementById('levelGraph');
+  var maxLevel = Math.max(...classInfo.students.map(s => s.currentLevel)); // Find the highest level to scale the graph
+  var scale = 300 / maxLevel; // Calculate scaling factor based on SVG height
+  var barWidth = 20;
+  var barSpacing = 50;
+  var averageCurrentLevel = classInfo.students.reduce((acc, s) => acc + s.currentLevel, 0) / classInfo.students.length;
+  var averageBeginningLevel = classInfo.students.reduce((acc, s) => acc + s.beginningLevel, 0) / classInfo.students.length;
+
+  // Draw bars for each student's current and beginning levels
+  classInfo.students.forEach(function(student, index) {
+    // Current Level Bar
+    var currentBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    currentBar.setAttribute('class', 'bar');
+    currentBar.setAttribute('x', (barSpacing * index).toString());
+    currentBar.setAttribute('y', (300 - student.currentLevel * scale).toString());
+    currentBar.setAttribute('width', barWidth.toString());
+    currentBar.setAttribute('height', (student.currentLevel * scale).toString());
+    svg.appendChild(currentBar);
+
+    // Beginning Level Bar
+    var beginningBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    beginningBar.setAttribute('class', 'bar beginning');
+    beginningBar.setAttribute('x', (barSpacing * index + barWidth * 1.5).toString());
+    beginningBar.setAttribute('y', (300 - student.beginningLevel * scale).toString());
+    beginningBar.setAttribute('width', barWidth.toString());
+    beginningBar.setAttribute('height', (student.beginningLevel * scale).toString());
+    svg.appendChild(beginningBar);
+  });
+
+  // Draw average lines for current and beginning levels
+  var averageCurrentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  averageCurrentLine.setAttribute('class', 'average-line');
+  averageCurrentLine.setAttribute('x1', '0');
+  averageCurrentLine.setAttribute('y1', (300 - averageCurrentLevel * scale).toString());
+  averageCurrentLine.setAttribute('x2', (barSpacing * classInfo.students.length).toString());
+  averageCurrentLine.setAttribute('y2', (300 - averageCurrentLevel * scale).toString());
+  svg.appendChild(averageCurrentLine);
+
+  var averageBeginningLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  averageBeginningLine.setAttribute('class', 'average-line');
+  averageBeginningLine.setAttribute('x1', '0');
+  averageBeginningLine.setAttribute('y1', (300 - averageBeginningLevel * scale).toString());
+  averageBeginningLine.setAttribute('x2', (barSpacing * classInfo.students.length).toString());
+  averageBeginningLine.setAttribute('y2', (300 - averageBeginningLevel * scale).toString());
+  svg.appendChild(averageBeginningLine);
+}
+
+// Call the functions to populate the table and draw the graph after the page loads
+window.onload = function() {
+  populateTable();
+  drawGraph();
+};
+</script>
+
+</body>
+</html>
