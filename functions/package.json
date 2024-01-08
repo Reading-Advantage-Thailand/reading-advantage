@@ -7,11 +7,13 @@
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "dotenv": "^16.3.1",
+    "firebase": "^10.7.1",
     "firebase-admin": "^11.10.1",
     "fs": "^0.0.1-security",
     "gpt-fine-tuner": "^0.1.1",
     "openai": "^3.3.0",
     "sentence-tokenizer": "^1.0.1",
+    "text-readability": "^1.0.5",
     "vocabulary-level-grader": "^1.1.0",
     "xlsx": "^0.18.5"
   }
