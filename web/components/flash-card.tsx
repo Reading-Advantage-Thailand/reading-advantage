@@ -116,17 +116,9 @@ export default function FlashCard({ userId }: Props) {
               currentCardFlipRef={currentCardFlipRef}
             />
             <div className="flex flex-row justify-center items-center">
-              <ArrowLeftIcon
-                color={theme === "dark" ? "#fafafa" : "#000000"}
-                onClick={() => controlRef.current.prevCard()}
-              />
               <p className="mx-4 my-4 font-medium">
                 {currentCardIndex + 1} / {cards.length}
-              </p>
-              <ArrowRightIcon
-                color={theme === "dark" ? "#fafafa" : "#000000"}
-                onClick={() => controlRef.current.nextCard()}
-              />
+              </p>          
             </div>
 
             {sentences.map((sentence, index) => {
