@@ -176,3 +176,11 @@ export type articleShowcaseType = {
     totalRatings: number,
     topic: string
 }
+
+export type SuggestionItem = {
+    name: string,
+    command: string,
+    desc: string,
+    format?: string,
+    args?: string[],
+}
