@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Level Test Mockup</title>
+<style>
+  /* Basic styling */
+  .container {
+    width: 80%;
+    margin: auto;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .progress-bar-outer {
+    width: 200px;
+    background-color: #ddd;
+  }
+  .progress-bar-inner {
+    height: 20px;
+    background-color: #4CAF50;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+  }
+  .level-section {
+    margin-bottom: 30px;
+  }
+  .question {
+    margin: 20px 0;
+  }
+  .option {
+    display: block;
+    margin: 5px 0;
+  }
+  .btn-next {
+    background-color: #008CBA;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  .btn-next:hover {
+    background-color: #005f73;
+  }
+  .alert {
+    padding: 20px;
+    background-color: #f44336;
+    color: white;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Section header with level and progress bar -->
+  <div class="header">
+    <h2>Section 1</h2>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" style="width: 0%;">0%</div>
+    </div>
+  </div>
+
+  <!-- Questions for level A0 -->
+  <div class="level-section" id="A0">
+    <div class="question">
+      <p>1. Is this a book?</p>
+      <label class="option"><input type="radio" name="A0Q1"> Yes, it is a book.</label>
+      <label class="option"><input type="radio" name="A0Q1"> No, it's a pen.</label>
+      <label class="option"><input type="radio" name="A0Q1"> Yes, it's a table.</label>
+    </div>
+    <div class="question">
+      <p>2. Good morning!</p>
+      <label class="option"><input type="radio" name="A0Q2"> Good morning!</label>
+      <label class="option"><input type="radio" name="A0Q2"> It's evening.</label>
+      <label class="option"><input type="radio" name="A0Q2"> Thank you!</label>
+    </div>
+    <div class="question">
+      <p>3. Do you have a cat?</p>
+      <label class="option"><input type="radio" name="A0Q3"> No, I have a dog.</label>
+      <label class="option"><input type="radio" name="A0Q3"> Yes, a big dog.</label>
+      <label class="option"><input type="radio" name="A0Q3"> I like cats.</label>
+    </div>
+    <button class="btn-next">Next</button>
+  </div>
+
+  <!-- Repeat blocks for other levels (A1, A2, B1, B2, C1, C2) -->
+
+  <!-- Alert for final level -->
+  <div class="alert">
+    Your level is 7!
+  </div>
+</div>
+
+<script>
+  // JavaScript to handle interactions
+</script>
+
+</body>
+</html>

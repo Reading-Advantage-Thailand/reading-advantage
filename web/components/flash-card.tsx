@@ -3,6 +3,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { FlashcardArray } from "react-quizlet-flashcard";
 import axios from "axios";
 import AudioButton from "./audio-button";
+import FlashCardPracticeButton from "./flash-card-practice-button";
+import FlipCardPracticeButton from "./flip-card-button";
 import Link from "next/link";
 import {
   Card,
@@ -16,8 +18,8 @@ import { formatDate } from "@/lib/utils";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
-import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import { useTheme } from "next-themes";
+import { v4 as uuidv4 } from "uuid";
 
 type Props = {
   userId: string;
@@ -106,41 +108,45 @@ export default function FlashCard({ userId }: Props) {
               controls={false}
               showCount={false}
               onCardChange={(index) => {
-                console.log(index);
+                console.log("onCardChange index: ", index);
                 setCurrentCardIndex(index);
               }}
               forwardRef={controlRef}
               currentCardFlipRef={currentCardFlipRef}
             />
             <div className="flex flex-row justify-center items-center">
-              <ArrowLeftIcon
-                color={theme === "dark" ? "#fafafa" : "#000000"}
-                onClick={() => controlRef.current.prevCard()}
-              />
               <p className="mx-4 my-4 font-medium">
                 {currentCardIndex + 1} / {cards.length}
-              </p>
-              <ArrowRightIcon
-                color={theme === "dark" ? "#fafafa" : "#000000"}
-                onClick={() => controlRef.current.nextCard()}
-              />
+              </p>          
             </div>
 
             {sentences.map((sentence, index) => {
               if (index === currentCardIndex) {
                 return (
-                  <AudioButton
-                    key={sentence.id}
-                    audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${sentence.articleId}.mp3`}
-                    startTimestamp={sentence.timepoint}
-                    endTimestamp={sentence.endTimepoint}
-                  />
+                  <div className="flex space-x-3" key={uuidv4()}>
+                    <AudioButton
+                      key={sentence.id}
+                      audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${sentence.articleId}.mp3`}
+                      startTimestamp={sentence.timepoint}
+                      endTimestamp={sentence.endTimepoint}
+                    />
+                    <FlipCardPracticeButton
+                      currentCard={() => currentCardFlipRef.current()}
+                    />
+                  </div>
                 );
               }
             })}
           </>
         )}
+        {sentences.length != 0 && (
+          <FlashCardPracticeButton
+            index={currentCardIndex}
+            nextCard={() => controlRef.current.nextCard()}
+          />
+        )}
       </div>
+      <div></div>
       <Card className="col-span-3 mt-4 mb-10">
         <CardHeader>
           <CardTitle>{t("savedSentences")}</CardTitle>

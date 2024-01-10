@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard</title>
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  .dropdown-content a:hover {background-color: #f1f1f1;}
+  .show {display: block;}
+</style>
+</head>
+<body>
+
+<h2>My Classes</h2>
+<table id="classesTable">
+  <tr>
+    <th>Class Name</th>
+    <th>Class Code</th>
+    <th>No. of Students</th>
+    <th>Actions</th>
+  </tr>
+  <!-- Table rows will be inserted here by JavaScript -->
+</table>
+
+<script>
+// Sample data for the classes
+var classes = [
+  { name: "Class 1", code: "XYZABC", students: 16 },
+  { name: "Class 2", code: "123ABC", students: 5 },
+  { name: "Class 3", code: "YELLOW", students: 21 }
+];
+
+// Function to populate table with data
+function populateTable() {
+  var table = document.getElementById('classesTable');
+  classes.forEach(function(classInfo, index) {
+    var row = table.insertRow();
+    row.insertCell(0).innerText = classInfo.name;
+    row.insertCell(1).innerText = classInfo.code;
+    row.insertCell(2).innerText = classInfo.students;
+    
+    var actionsCell = row.insertCell(3);
+    var dropdown = document.createElement('div');
+    dropdown.className = 'dropdown';
+    dropdown.innerHTML = '<button onclick="toggleDropdown(' + index + ')">Actions</button>' +
+                         '<div id="dropdown-' + index + '" class="dropdown-content">' +
+                         '<a href="#">Edit</a>' +
+                         '<a href="#">Roster</a>' +
+                         '<a href="#">Reports</a>' +
+                         '<a href="#">Archive Class</a>' +
+                         '</div>';
+    actionsCell.appendChild(dropdown);
+  });
+}
+
+// Function to show/hide the dropdown menu
+function toggleDropdown(index) {
+  var dropdown = document.getElementById('dropdown-' + index);
+  dropdown.classList.toggle('show');
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropdown button')) {
+    var dropdowns = document.getElementsByClassName('dropdown-content');
+    for (var i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+
+// Call the function to populate the table
+populateTable();
+</script>
+
+</body>
+</html>

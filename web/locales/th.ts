@@ -74,6 +74,13 @@ export default {
           error: "เกิดข้อผิดพลาด",
           errorDescription: "เกิดข้อผิดพลาดขณะลบประโยคที่บันทึกไว้",
         },
+        flashcardPractice: {
+          buttonVeryHard: "ยากมาก",
+          buttonHard: "ยาก",
+          buttonGood: "ดี",
+          buttonEasy: "ง่าย",
+          flipCard: "พลิกการ์ด",
+        },
       },
     },
   },
