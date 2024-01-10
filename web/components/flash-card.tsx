@@ -18,7 +18,6 @@ import { formatDate } from "@/lib/utils";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
-import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 import { useTheme } from "next-themes";
 import { v4 as uuidv4 } from "uuid";
 
