@@ -1,4 +1,3 @@
-// require('dotenv').config({ path: './config.env' });
 const admin = require('firebase-admin');
 const rs = require('text-readability');
 
@@ -16,21 +15,14 @@ collectionRef.get()
     snapshot.forEach((doc) => {
     const content = doc.data().content;
     const textStandart = rs.textStandard(content, float_output=true);
-    //  console.log(content);
      console.log('textStandart', textStandart);
      
      //for update raLevel
      if(textStandart < 0) {
-        //update raLevel to 0
-        // console.log('raLevel', 0);
         updateRaLevel(0, doc);
      } else if (textStandart > 18) {
-        //update raLevel to 18
-        // console.log('raLevel', 18);
         updateRaLevel(18, doc);
      } else {
-        //update raLevel to textStandart
-        // console.log('raLevel', textStandart);
         updateRaLevel(textStandart, doc);
     }
 
@@ -81,17 +73,18 @@ collectionRef.get()
     console.error('Error getting documents: ', error);
   });
 
-function updateCefrLevel(newCefrLevel, doc) {
+async function updateCefrLevel(newCefrLevel, doc) {
     db.collection('articles').doc(doc.id).update({
             cefrLevel: newCefrLevel
           });
     console.log('updateCefrLevel', newCefrLevel);
 }
 
-function updateRaLevel(textStandart, doc) {
+async function updateRaLevel(textStandart, doc) {
     db.collection('articles').doc(doc.id).update({
             raLevel: textStandart
           });
     console.log('updateRaLevel', textStandart);
 }
  
+module.exports = { updateCefrLevel, updateRaLevel };

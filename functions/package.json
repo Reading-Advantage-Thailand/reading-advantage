@@ -16,5 +16,12 @@
     "text-readability": "^1.0.5",
     "vocabulary-level-grader": "^1.1.0",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "firebase-mock": "^2.3.2",
+    "jest": "^29.7.0"
+  },
+  "scripts": {
+    "test": "jest"
   }
 }
