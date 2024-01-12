@@ -17,11 +17,11 @@ export default {
         article: {
           articleNotFound: "Article not found",
           articleInsufficientLevel:
-            "You cannot read this article because your reading level is insufficient.",
+            "You cannot read this article because your reading level is not high enough.",
           //headings
-          readBefore: "You have read this article before",
+          readBefore: "Welcome back. You have read this article before",
           readBeforeDescription:
-            "You might try reading and practicing again to improve your reading skills. And this is the result of your previous reading.",
+            "You might try reading and practicing again to improve your reading skills. Here is the result of your previous reading.",
           // stats
           status: "Status",
           statusText: {
@@ -129,7 +129,7 @@ export default {
     select: {
       articleChoose: "Please choose the {article} you want to read",
       articleChooseDescription:
-        "Your level is {level} and here are the {article} that you can choose.",
+        "Your level is {level} and here are the {article}s that you can choose.",
     },
     // use this for article selection page
     article: {
