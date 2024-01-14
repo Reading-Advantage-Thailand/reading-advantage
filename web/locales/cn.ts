@@ -65,11 +65,11 @@ export default {
           errorDescription: "删除保存的句子时出错",
         },
         flashcardPractice: {
-          buttonVeryHard: "非常难",
+          buttonVeryHard: "再次",
           buttonHard: "难",
           buttonGood: "好",
           buttonEasy: "很容易",
-          flipCard:'翻转'
+          flipCard: "翻转",
         },
       },
     },

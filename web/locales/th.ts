@@ -75,7 +75,7 @@ export default {
           errorDescription: "เกิดข้อผิดพลาดขณะลบประโยคที่บันทึกไว้",
         },
         flashcardPractice: {
-          buttonVeryHard: "ยากมาก",
+          buttonAgain: "อีกครั้ง",
           buttonHard: "ยาก",
           buttonGood: "ดี",
           buttonEasy: "ง่าย",
