@@ -77,7 +77,7 @@ export default {
             "Something went wrong while deleting saved sentence",
         },
         flashcardPractice: {
-          buttonVeryHard: "Very Hard",
+          buttonAgain: "Again",
           buttonHard: "Hard",
           buttonGood: "Good",
           buttonEasy: "Easy",

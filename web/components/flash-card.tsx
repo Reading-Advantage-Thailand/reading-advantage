@@ -24,7 +24,8 @@ import { v4 as uuidv4 } from "uuid";
 type Props = {
   userId: string;
 };
-type Sentence = {
+
+export type Sentence = {
   articleId: string;
   createdAt: { _seconds: number; _nanoseconds: number };
   endTimepoint: number;
@@ -117,7 +118,7 @@ export default function FlashCard({ userId }: Props) {
             <div className="flex flex-row justify-center items-center">
               <p className="mx-4 my-4 font-medium">
                 {currentCardIndex + 1} / {cards.length}
-              </p>          
+              </p>
             </div>
 
             {sentences.map((sentence, index) => {
@@ -143,6 +144,7 @@ export default function FlashCard({ userId }: Props) {
           <FlashCardPracticeButton
             index={currentCardIndex}
             nextCard={() => controlRef.current.nextCard()}
+            sentences={sentences}
           />
         )}
       </div>

@@ -76,7 +76,7 @@ export default {
             "Có lỗi xảy ra khi xóa câu đoạn đã lưu. Vui lòng thử lại sau.",
         },
         flashcardPractice: {
-          buttonVeryHard: "Rất khó",
+          buttonVeryHard: "lại",
           buttonHard: "Khó",
           buttonGood: "Tốt",
           buttonEasy: "Dễ",

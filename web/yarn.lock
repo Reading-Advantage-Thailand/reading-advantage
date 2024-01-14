@@ -6955,6 +6955,11 @@ scheduler@^0.23.0:
   dependencies:
     loose-envify "^1.1.0"
 
+seedrandom@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.npmjs.org/seedrandom/-/seedrandom-3.0.5.tgz"
+  integrity sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==
+
 semver@^6.3.0:
   version "6.3.1"
   resolved "https://registry.npmjs.org/semver/-/semver-6.3.1.tgz"
@@ -7427,6 +7432,13 @@ ts-api-utils@^1.0.1:
   version "1.0.3"
   resolved "https://registry.npmjs.org/ts-api-utils/-/ts-api-utils-1.0.3.tgz"
   integrity sha512-wNMeqtMz5NtwpT/UZGY5alT+VoKdSsOOP/kqHFcUW1P/VRhH2wJ48+DN2WwUliNbQ976ETwDL0Ifd2VVvgonvg==
+
+ts-fsrs@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.npmjs.org/ts-fsrs/-/ts-fsrs-3.3.0.tgz"
+  integrity sha512-uv22ACRRzOUK+tdrFsGHfBi/lUmxgiPhD+IOlhX3EzFrSDqtmKcRfxbmElBw8NH9ckr3lHCMGF5rNZcdtJ2LkQ==
+  dependencies:
+    seedrandom "^3.0.5"
 
 ts-interface-checker@^0.1.9:
   version "0.1.13"
