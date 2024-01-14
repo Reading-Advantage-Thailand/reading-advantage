@@ -3,24 +3,56 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { buttonVariants } from "./ui/button";
 import { useScopedI18n } from "@/locales/client";
-const fsrsJs = require("fsrs.js");
+import {Sentence} from '@/components/flash-card'
+import {
+  createEmptyCard,
+  formatDate,
+  fsrs,
+  generatorParameters,
+  Rating,
+  Grades,
+  Card,
+  FSRSParameters,
+  FSRS,
+  RecordLog,
+} from "ts-fsrs";
+
 
 type Props = {
   index: number;
   nextCard: Function;
+  sentences: Sentence[];
 };
 
-export default function FlashCardPracticeButton({ index, nextCard }: Props) {
+export default function FlashCardPracticeButton({ index, nextCard, sentences }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
-  let fsrs = new fsrsJs.FSRS();
-  let card = new fsrsJs.Card();
-  let state = fsrsJs.State;
-  let now = new Date();
-  console.log("card :>> ", card);
-  console.log("fsrs.p :>> ", fsrs.p);
-//   let scheduling_cards = fsrs.repeat(card, now);
-//   console.log("scheduling_cards :>> ", scheduling_cards);
+   let now = new Date();
+  const startOfDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    4,
+    0,
+    0,
+    0
+  );
+  
+  // let now = new Date();
+  // const params: FSRSParameters = generatorParameters({
+  //   maximum_interval: 1000,
+  // });
+  // let card: Card = createEmptyCard();
+  // const f: FSRS = fsrs(params);
+  // let scheduling_cards: RecordLog = f.repeat(card, new Date());
 
+
+  const handleClickFsrs = async (index: number, level:string) => {
+    // console.log("sentences :>> ", sentences[index]);
+    // scheduling_cards[Rating.Again].card
+    // scheduling_cards[Rating.Again].log;
+    // console.log("scheduling_cards :>> ", scheduling_cards);
+    
+  };
 
   return (
     <div className="flex space-x-2">
@@ -31,11 +63,11 @@ export default function FlashCardPracticeButton({ index, nextCard }: Props) {
           "hover:bg-red-600"
         )}
         onClick={() => {
-          console.log(index);
+          handleClickFsrs(index, 'Again');
           nextCard();
         }}
       >
-        {t("flashcardPractice.buttonVeryHard")}
+        {t("flashcardPractice.buttonAgain")}
       </button>
       <button
         className={cn(
@@ -44,7 +76,7 @@ export default function FlashCardPracticeButton({ index, nextCard }: Props) {
           "hover:bg-amber-600"
         )}
         onClick={() => {
-          console.log(index);
+          handleClickFsrs(index,'Hard');
           nextCard();
         }}
       >
@@ -57,7 +89,7 @@ export default function FlashCardPracticeButton({ index, nextCard }: Props) {
           "hover:bg-emerald-600"
         )}
         onClick={() => {
-          console.log(index);
+          handleClickFsrs(index,'Good');
           nextCard();
         }}
       >
@@ -70,7 +102,7 @@ export default function FlashCardPracticeButton({ index, nextCard }: Props) {
           "hover:bg-blue-600"
         )}
         onClick={() => {
-          console.log(index);
+          handleClickFsrs(index,'Easy');
           nextCard();
         }}
       >
