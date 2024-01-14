@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { buttonVariants } from "./ui/button";
 import { useScopedI18n } from "@/locales/client";
-import {Sentence} from '@/components/flash-card'
+import { Sentence } from "@/components/flash-card";
 import {
   createEmptyCard,
   formatDate,
@@ -15,8 +15,8 @@ import {
   FSRSParameters,
   FSRS,
   RecordLog,
+  State,
 } from "ts-fsrs";
-
 
 type Props = {
   index: number;
@@ -24,9 +24,14 @@ type Props = {
   sentences: Sentence[];
 };
 
-export default function FlashCardPracticeButton({ index, nextCard, sentences }: Props) {
+export default function FlashCardPracticeButton({
+  index,
+  nextCard,
+  sentences,
+}: Props) {
   const t = useScopedI18n("pages.student.practicePage");
-   let now = new Date();
+  const params = generatorParameters({ enable_fuzz: true });
+  let now = new Date();
   const startOfDay = new Date(
     now.getFullYear(),
     now.getMonth(),
@@ -36,26 +41,55 @@ export default function FlashCardPracticeButton({ index, nextCard, sentences }: 
     0,
     0
   );
-  
-  // let now = new Date();
-  // const params: FSRSParameters = generatorParameters({
-  //   maximum_interval: 1000,
-  // });
-  // let card: Card = createEmptyCard();
-  // const f: FSRS = fsrs(params);
-  // let scheduling_cards: RecordLog = f.repeat(card, new Date());
+  let card: Card = createEmptyCard();
+  const f: FSRS = fsrs(params);
+  let scheduling_cards: RecordLog = f.repeat(card, startOfDay);
 
-
-  const handleClickFsrs = async (index: number, level:string) => {
+  const handleClickFsrs = async (index: number, level: string) => {
+    if (level === "Again") {
+      scheduling_cards[Rating.Again].card;
+      scheduling_cards[Rating.Again].log;
+    } else if (level === "Hard") {
+      scheduling_cards[Rating.Hard].card;
+      scheduling_cards[Rating.Hard].log;
+    } else if (level === "Good") {
+      scheduling_cards[Rating.Good].card;
+      scheduling_cards[Rating.Good].log;
+    } else if (level === "Easy") {
+      scheduling_cards[Rating.Easy].card;
+      scheduling_cards[Rating.Easy].log;
+    }
     // console.log("sentences :>> ", sentences[index]);
     // scheduling_cards[Rating.Again].card
     // scheduling_cards[Rating.Again].log;
     // console.log("scheduling_cards :>> ", scheduling_cards);
-    
+    Grades.forEach((grade) => {
+      // [Rating.Again, Rating.Hard, Rating.Good, Rating.Easy]
+      const { log, card } = scheduling_cards[grade];
+      console.group(`${Rating[grade]}`);
+      console.table({
+        [`card_${Rating[grade]}`]: {
+          ...card,
+          due: formatDate(card.due),
+          last_review: formatDate(card.last_review as Date),
+        },
+      });
+      console.table({
+        [`log_${Rating[grade]}`]: {
+          ...log,
+          review: formatDate(log.review),
+        },
+      });
+      console.groupEnd();
+      console.log(
+        "----------------------------------------------------------------"
+      );
+    });
   };
 
   return (
     <div className="flex space-x-2">
+      <p>{State.Learning}</p><br/>
       <button
         className={cn(
           buttonVariants({ size: "sm" }),
@@ -63,7 +97,7 @@ export default function FlashCardPracticeButton({ index, nextCard, sentences }: 
           "hover:bg-red-600"
         )}
         onClick={() => {
-          handleClickFsrs(index, 'Again');
+          handleClickFsrs(index, "Again");
           nextCard();
         }}
       >
@@ -76,7 +110,7 @@ export default function FlashCardPracticeButton({ index, nextCard, sentences }: 
           "hover:bg-amber-600"
         )}
         onClick={() => {
-          handleClickFsrs(index,'Hard');
+          handleClickFsrs(index, "Hard");
           nextCard();
         }}
       >
@@ -89,7 +123,7 @@ export default function FlashCardPracticeButton({ index, nextCard, sentences }: 
           "hover:bg-emerald-600"
         )}
         onClick={() => {
-          handleClickFsrs(index,'Good');
+          handleClickFsrs(index, "Good");
           nextCard();
         }}
       >
@@ -102,7 +136,7 @@ export default function FlashCardPracticeButton({ index, nextCard, sentences }: 
           "hover:bg-blue-600"
         )}
         onClick={() => {
-          handleClickFsrs(index,'Easy');
+          handleClickFsrs(index, "Easy");
           nextCard();
         }}
       >
