@@ -1,22 +1,10 @@
-/* eslint-disable @next/next/no-async-client-component */
 'use client'
-import React, { use, useState, useEffect } from 'react'
+import React, { use, useState} from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { Stack, Typography, Slider } from '@mui/material'
 import { Button } from './ui/button'
 import { Icons } from './icons'
-import { toast } from './ui/use-toast'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import axios from 'axios'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, } from "@/components/ui/dialog"
-import { GetServerSideProps } from 'next';
-import { set } from 'lodash'
-import { readLevelTestData } from '../../functions/utils/readLevelTestData.js';
-import fs from 'fs/promises';
-import path from 'path';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, } from "@/components/ui/dialog"
 import { headers } from 'next/headers'
-import { Header } from '@/components/header'
 
 type Props = {
     userId: string,
@@ -49,7 +37,7 @@ async function getLevelTestData() {
     return res.json();
   }
 
-export default async function FirstRunLevelTest ({
+export default  function FirstRunLevelTest ({
     userId,
     // levelTestData
     
@@ -57,7 +45,7 @@ export default async function FirstRunLevelTest ({
     const [loading, setLoading] = useState(false);
     // const [levelTestData, setLevelTestData] = useState<any | null>(null);
 // console.log('levelTestData : ', levelTestData);
-const resGeneralDescription = await getLevelTestData();
+const resGeneralDescription = getLevelTestData();
    
 
     return (
