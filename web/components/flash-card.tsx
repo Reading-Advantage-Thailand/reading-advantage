@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { FlashcardArray } from "react-quizlet-flashcard";
@@ -43,7 +44,6 @@ export default function FlashCard({ userId }: Props) {
   const controlRef = useRef<any>({});
   const currentCardFlipRef = useRef<any>();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const { theme } = useTheme();
 
   const getUserSentenceSaved = async () => {
     try {
