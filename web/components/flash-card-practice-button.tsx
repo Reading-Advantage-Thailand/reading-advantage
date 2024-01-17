@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import React from "react";
+import {useState} from "react";
 import { buttonVariants } from "./ui/button";
 import { useScopedI18n } from "@/locales/client";
 import { Sentence } from "@/components/flash-card";
@@ -18,6 +18,19 @@ import {
   State,
 } from "ts-fsrs";
 
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+
 type Props = {
   index: number;
   nextCard: Function;
@@ -31,9 +44,10 @@ export default function FlashCardPracticeButton({
 }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   console.log("==> sentences", sentences);
-  const [review, setReview] = React.useState(new Date());
-  const [cards, setCards] = React.useState([createEmptyCard()] || []);
-  const [logs, setLogs] = React.useState<any>([]);
+  const [review, setReview] = useState(new Date());
+  const [cards, setCards] = useState([createEmptyCard()] || []);
+  const [logs, setLogs] = useState<any>([]);
+  const [showButton, setShowButton] = useState(true);
   // const params = generatorParameters({ enable_fuzz: true });
   // let now = new Date();
   // const startOfDay = new Date(
@@ -60,64 +74,70 @@ export default function FlashCardPracticeButton({
     console.log(scheduling_cards);
     setCards((pre) => [...pre, scheduling_cards[rating].card]);
     setLogs((pre: any) => [...pre, scheduling_cards[rating].log]);
+
+    if (index + 1 === sentences.length) {
+      setShowButton(false);
+    }
   };
 
   return (
     <>
-      <div className="flex space-x-2">
-        <button
-          className={cn(
-            buttonVariants({ size: "sm" }),
-            "bg-red-500",
-            "hover:bg-red-600"
-          )}
-          onClick={() => {
-            handleClickFsrs(index, Rating.Again);
-            nextCard();
-          }}
-        >
-          {t("flashcardPractice.buttonAgain")}
-        </button>
-        <button
-          className={cn(
-            buttonVariants({ size: "sm" }),
-            "bg-amber-500",
-            "hover:bg-amber-600"
-          )}
-          onClick={() => {
-            handleClickFsrs(index, Rating.Hard);
-            nextCard();
-          }}
-        >
-          {t("flashcardPractice.buttonHard")}
-        </button>
-        <button
-          className={cn(
-            buttonVariants({ size: "sm" }),
-            "bg-emerald-500",
-            "hover:bg-emerald-600"
-          )}
-          onClick={() => {
-            handleClickFsrs(index, Rating.Good);
-            nextCard();
-          }}
-        >
-          {t("flashcardPractice.buttonGood")}
-        </button>
-        <button
-          className={cn(
-            buttonVariants({ size: "sm" }),
-            "bg-blue-500",
-            "hover:bg-blue-600"
-          )}
-          onClick={() => {
-            handleClickFsrs(index, Rating.Easy);
-            nextCard();
-          }}
-        >
-          {t("flashcardPractice.buttonEasy")}
-        </button>
-      </div>
+      {showButton && (
+        <div className="flex space-x-2">
+          <button
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "bg-red-500",
+              "hover:bg-red-600"
+            )}
+            onClick={() => {
+              handleClickFsrs(index, Rating.Again);
+              nextCard();
+            }}
+          >
+            {t("flashcardPractice.buttonAgain")}
+          </button>
+          <button
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "bg-amber-500",
+              "hover:bg-amber-600"
+            )}
+            onClick={() => {
+              handleClickFsrs(index, Rating.Hard);
+              nextCard();
+            }}
+          >
+            {t("flashcardPractice.buttonHard")}
+          </button>
+          <button
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "bg-emerald-500",
+              "hover:bg-emerald-600"
+            )}
+            onClick={() => {
+              handleClickFsrs(index, Rating.Good);
+              nextCard();
+            }}
+          >
+            {t("flashcardPractice.buttonGood")}
+          </button>
+          <button
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "bg-blue-500",
+              "hover:bg-blue-600"
+            )}
+            onClick={() => {
+              handleClickFsrs(index, Rating.Easy);
+              nextCard();
+            }}
+          >
+            {t("flashcardPractice.buttonEasy")}
+          </button>
+        </div>
+      )}
       <div className="pt-4">Next review: {review.toLocaleString()}</div>
       <div className="pt-4">Cards:</div>
       <table>
@@ -157,7 +177,7 @@ export default function FlashCardPracticeButton({
           <tr></tr>
         </tbody>
       </table>
-      <div className="pt-4">logRecord:</div>
+      <div className="pt-4">Log Record:</div>
       <table>
         <thead>
           <tr>

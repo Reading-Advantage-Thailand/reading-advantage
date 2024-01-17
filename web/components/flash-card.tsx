@@ -139,7 +139,7 @@ export default function FlashCard({ userId }: Props) {
               }
             })}
           </>
-        )}
+        )}       
         {sentences.length != 0 && (
           <FlashCardPracticeButton
             index={currentCardIndex}
@@ -148,7 +148,7 @@ export default function FlashCard({ userId }: Props) {
           />
         )}
       </div>
-      <div></div>
+    
       <Card className="col-span-3 mt-4 mb-10">
         <CardHeader>
           <CardTitle>{t("savedSentences")}</CardTitle>
