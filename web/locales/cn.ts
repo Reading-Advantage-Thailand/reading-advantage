@@ -68,7 +68,7 @@ export default {
           buttonVeryHard: "再次",
           buttonHard: "难",
           buttonGood: "好",
-          buttonEasy: "很容易",
+          buttonAgain: "再来",
           flipCard: "翻转",
         },
       },
