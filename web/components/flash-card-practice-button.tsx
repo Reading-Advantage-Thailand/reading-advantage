@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import {useState} from "react";
+import { useState } from "react";
 import { buttonVariants } from "./ui/button";
 import { useScopedI18n } from "@/locales/client";
 import { Sentence } from "@/components/flash-card";
@@ -18,14 +18,13 @@ import {
   State,
 } from "ts-fsrs";
 import { ColumnDef } from "@tanstack/react-table";
-import {DataTable} from '@/components/data-table-flash-card';
+import { DataTable } from "@/components/data-table-flash-card";
 
 type Props = {
   index: number;
   nextCard: Function;
   sentences: Sentence[];
 };
-
 
 type Logs = {
   rating: Rating;
@@ -34,9 +33,7 @@ type Logs = {
   elapsed_days: number;
   scheduled_days: number;
   review: Date;
-}
-
-
+};
 
 export default function FlashCardPracticeButton({
   index,
@@ -63,85 +60,108 @@ export default function FlashCardPracticeButton({
   // let card: Card = createEmptyCard();
 
   const params = generatorParameters();
-  const f: FSRS = fsrs(params);
+  const fnFsrs: FSRS = fsrs(params);
   // let scheduling_cards: RecordLog = f.repeat(card, startOfDay);
 
   const columnsCards: ColumnDef<Card>[] = [
     {
       accessorKey: "index",
-      header: "#",
+      header: () => <div className="font-bold text-black">Index</div>,
     },
     {
       accessorKey: "due",
-      header: "Due",
+      header: () => <div className="font-bold text-black">Due</div>,
       cell: ({ row }: any) => {
         return row.getValue("due").toLocaleString();
       },
     },
     {
       accessorKey: "state",
-      header: "State",
+      header: () => <div className="font-bold text-black">State</div>,
       cell: ({ row }: any) => {
         return `${row.getValue("state")} (${State[row.getValue("state")]})`;
       },
     },
     {
       accessorKey: "last_review",
-      header: "Last Review",
+      header: () => <div className="font-bold text-black">Last Review</div>,
       cell: ({ row }: any) => {
         return row.getValue("last_review").toLocaleString();
       },
     },
     {
       accessorKey: "stability",
-      header: "Stability",
+      header: () => <div className="font-bold text-black">Stability</div>,
       cell: ({ row }: any) => {
-        return row.getValue("stability").toFixed(2);
+        return (
+          <div className="text-center">
+            {row.getValue("stability").toFixed(2)}
+          </div>
+        );
       },
     },
     {
       accessorKey: "difficulty",
-      header: "Difficulty",
+      header: () => <div className="font-bold text-black">Difficulty</div>,
       cell: ({ row }: any) => {
-        return row.getValue("difficulty").toFixed(2);
+        return (
+          <div className="text-center">
+            {row.getValue("difficulty").toFixed(2)}
+          </div>
+        );
       },
     },
     // {
     //   accessorKey: "due",
-    //   header: "Difficulty",
+    //   header: () => <div className="font-bold text-black">R</div>,
     //   cell: ({ row }: any) => {
-    //     return `${
-    //       f.get_retrievability(row, row.due) || "/"}`;
+
+    //     return (
+    //       <div className="text-center">
+    //         {`${fnFsrs?.get_retrievability(row, row.due) || "/"}`}
+    //       </div>
+    //     );
     //   },
     // },
     {
       accessorKey: "elapsed_days",
-      header: "Elapsed Days",
+      header: () => <div className="font-bold text-black">Elapsed Days</div>,
       cell: ({ row }: any) => {
-        return row.getValue("elapsed_days");
+        return (
+          <div className="text-center">
+            {row.getValue("elapsed_days").toFixed(2)}
+          </div>
+        );
       },
     },
     {
       accessorKey: "scheduled_days",
-      header: "Scheduled Days",
+      header: () => <div className="font-bold text-black">Scheduled Days</div>,
       cell: ({ row }: any) => {
-        return row.getValue("scheduled_days");
+        return (
+          <div className="text-center">
+            {row.getValue("scheduled_days").toFixed(2)}
+          </div>
+        );
       },
     },
     {
       accessorKey: "reps",
-      header: "Reps",
+      header: () => <div className="font-bold text-black">Reps</div>,
       cell: ({ row }: any) => {
-        return row.getValue("reps");
+        return (
+          <div className="text-center">{row.getValue("reps").toFixed(2)}</div>
+        );
       },
     },
     {
       accessorKey: "lapses",
-      header: "Lapses",
-      // cell: ({ row }) => {
-      //   console.log("==> row", row);
-      //   return +row.id > 0 && row.getValue("state");
-      // },
+      header: () => <div className="font-bold text-black">Lapses</div>,
+      cell: ({ row }: any) => {
+        return (
+          <div className="text-center">{row.getValue("lapses").toFixed(2)}</div>
+        );
+      },
     },
   ];
 
@@ -150,7 +170,7 @@ export default function FlashCardPracticeButton({
     console.log(Rating[rating]);
     const preCard: any =
       cards.length > 0 ? cards[cards.length - 1] : createEmptyCard(new Date());
-    const scheduling_cards: any = f.repeat(preCard, preCard.due);
+    const scheduling_cards: any = fnFsrs.repeat(preCard, preCard.due);
     console.log(scheduling_cards);
     setCards((pre: any) => [...pre, scheduling_cards[rating].card]);
     setLogs((pre: any) => [...pre, scheduling_cards[rating].log]);
@@ -221,6 +241,7 @@ export default function FlashCardPracticeButton({
       <div className="pt-4">Next review: {review.toLocaleString()}</div>
       <div className="pt-4">Cards:</div>
       <DataTable data={cards} columns={columnsCards} />
+      <div className="pb-10"></div>
       <table>
         <thead>
           <tr>
@@ -248,7 +269,7 @@ export default function FlashCardPracticeButton({
               </td>
               <td>{record.stability.toFixed(2)}</td>
               <td>{record.difficulty.toFixed(2)}</td>
-              <td>{f.get_retrievability(record, record.due) || "/"}</td>
+              <td>{fnFsrs.get_retrievability(record, record.due) || "/"}</td>
               <td>{record.elapsed_days}</td>
               <td>{record.scheduled_days}</td>
               <td>{record.reps}</td>
