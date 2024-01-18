@@ -17,25 +17,26 @@ import {
   RecordLog,
   State,
 } from "ts-fsrs";
-
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
+import {DataTable} from '@/components/data-table-flash-card';
 
 type Props = {
   index: number;
   nextCard: Function;
   sentences: Sentence[];
 };
+
+
+type Logs = {
+  rating: Rating;
+  state: State;
+  due: Date;
+  elapsed_days: number;
+  scheduled_days: number;
+  review: Date;
+}
+
+
 
 export default function FlashCardPracticeButton({
   index,
@@ -45,7 +46,7 @@ export default function FlashCardPracticeButton({
   const t = useScopedI18n("pages.student.practicePage");
   console.log("==> sentences", sentences);
   const [review, setReview] = useState(new Date());
-  const [cards, setCards] = useState([createEmptyCard()] || []);
+  const [cards, setCards] = useState<any>([]);
   const [logs, setLogs] = useState<any>([]);
   const [showButton, setShowButton] = useState(true);
   // const params = generatorParameters({ enable_fuzz: true });
@@ -65,6 +66,85 @@ export default function FlashCardPracticeButton({
   const f: FSRS = fsrs(params);
   // let scheduling_cards: RecordLog = f.repeat(card, startOfDay);
 
+  const columnsCards: ColumnDef<Card>[] = [
+    {
+      accessorKey: "index",
+      header: "#",
+    },
+    {
+      accessorKey: "due",
+      header: "Due",
+      cell: ({ row }: any) => {
+        return row.getValue("due").toLocaleString();
+      },
+    },
+    {
+      accessorKey: "state",
+      header: "State",
+      cell: ({ row }: any) => {
+        return `${row.getValue("state")} (${State[row.getValue("state")]})`;
+      },
+    },
+    {
+      accessorKey: "last_review",
+      header: "Last Review",
+      cell: ({ row }: any) => {
+        return row.getValue("last_review").toLocaleString();
+      },
+    },
+    {
+      accessorKey: "stability",
+      header: "Stability",
+      cell: ({ row }: any) => {
+        return row.getValue("stability").toFixed(2);
+      },
+    },
+    {
+      accessorKey: "difficulty",
+      header: "Difficulty",
+      cell: ({ row }: any) => {
+        return row.getValue("difficulty").toFixed(2);
+      },
+    },
+    // {
+    //   accessorKey: "due",
+    //   header: "Difficulty",
+    //   cell: ({ row }: any) => {
+    //     return `${
+    //       f.get_retrievability(row, row.due) || "/"}`;
+    //   },
+    // },
+    {
+      accessorKey: "elapsed_days",
+      header: "Elapsed Days",
+      cell: ({ row }: any) => {
+        return row.getValue("elapsed_days");
+      },
+    },
+    {
+      accessorKey: "scheduled_days",
+      header: "Scheduled Days",
+      cell: ({ row }: any) => {
+        return row.getValue("scheduled_days");
+      },
+    },
+    {
+      accessorKey: "reps",
+      header: "Reps",
+      cell: ({ row }: any) => {
+        return row.getValue("reps");
+      },
+    },
+    {
+      accessorKey: "lapses",
+      header: "Lapses",
+      // cell: ({ row }) => {
+      //   console.log("==> row", row);
+      //   return +row.id > 0 && row.getValue("state");
+      // },
+    },
+  ];
+
   const handleClickFsrs = async (index: number, rating: Rating) => {
     console.log("==> cards", cards.length);
     console.log(Rating[rating]);
@@ -72,7 +152,7 @@ export default function FlashCardPracticeButton({
       cards.length > 0 ? cards[cards.length - 1] : createEmptyCard(new Date());
     const scheduling_cards: any = f.repeat(preCard, preCard.due);
     console.log(scheduling_cards);
-    setCards((pre) => [...pre, scheduling_cards[rating].card]);
+    setCards((pre: any) => [...pre, scheduling_cards[rating].card]);
     setLogs((pre: any) => [...pre, scheduling_cards[rating].log]);
 
     if (index + 1 === sentences.length) {
@@ -140,6 +220,7 @@ export default function FlashCardPracticeButton({
       )}
       <div className="pt-4">Next review: {review.toLocaleString()}</div>
       <div className="pt-4">Cards:</div>
+      <DataTable data={cards} columns={columnsCards} />
       <table>
         <thead>
           <tr>
@@ -157,7 +238,7 @@ export default function FlashCardPracticeButton({
           </tr>
         </thead>
         <tbody className="text-sm text-center">
-          {cards.map((record, index) => (
+          {cards.map((record: Card, index: number) => (
             <tr className="hover:bg-zinc-200" key={index}>
               <td>{index + 1}</td>
               <td>{record.due.toLocaleString()}</td>
