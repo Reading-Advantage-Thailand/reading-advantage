@@ -65,7 +65,7 @@ export default {
           errorDescription: "删除保存的句子时出错",
         },
         flashcardPractice: {
-          buttonVeryHard: "再次",
+          buttonEasy: "容易",
           buttonHard: "难",
           buttonGood: "好",
           buttonAgain: "再来",
