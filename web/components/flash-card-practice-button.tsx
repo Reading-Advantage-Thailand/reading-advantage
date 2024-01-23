@@ -19,6 +19,7 @@ import {
 } from "ts-fsrs";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table-flash-card";
+import { columns } from './reminder-reread-table';
 
 type Props = {
   index: number;
@@ -111,18 +112,6 @@ export default function FlashCardPracticeButton({
         );
       },
     },
-    // {
-    //   accessorKey: "due",
-    //   header: () => <div className="font-bold text-black">R</div>,
-    //   cell: ({ row }: any) => {
-
-    //     return (
-    //       <div className="text-center">
-    //         {`${fnFsrs?.get_retrievability(row, row.due) || "/"}`}
-    //       </div>
-    //     );
-    //   },
-    // },
     {
       accessorKey: "elapsed_days",
       header: () => <div className="font-bold text-black">Elapsed Days</div>,
@@ -161,6 +150,77 @@ export default function FlashCardPracticeButton({
         return (
           <div className="text-center">{row.getValue("lapses").toFixed(2)}</div>
         );
+      },
+    },
+  ];
+
+  /**
+  <th>{"=>"}</th>
+              <td>{`${record.rating}(${Rating[record.rating]})`}</td>
+              <td>{`${record.state}(${State[record.state]})`}</td>
+              <td>{record.due.toLocaleString()}</td>
+              <td>{record.elapsed_days}</td>
+              <td>{record.scheduled_days}</td>
+              <td>{record.review.toLocaleString()}</td>
+   
+   */
+
+  const columnsLogs: ColumnDef<Logs>[] = [
+    {
+      accessorKey: "#",
+      header: () => <div className="font-bold text-black">#</div>,
+      cell: () => {
+        return "=>";
+      },
+    },
+    {
+      accessorKey: "rating",
+      header: () => <div className="font-bold text-black">Rating</div>,
+      cell: ({ row }: any) => {
+        return `${row.getValue("rating")} (${Rating[row.getValue("rating")]})`;
+      },
+    },
+    {
+      accessorKey: "state",
+      header: () => <div className="font-bold text-black">State</div>,
+      cell: ({ row }: any) => {
+        return `${row.getValue("state")} (${State[row.getValue("state")]})`;
+      },
+    },
+    {
+      accessorKey: "due",
+      header: () => <div className="font-bold text-black">Due</div>,
+      cell: ({ row }: any) => {
+        return row.getValue("due").toLocaleString();
+      },
+    },
+    {
+      accessorKey: "elapsed_days",
+      header: () => <div className="font-bold text-black">Elapsed Days</div>,
+      cell: ({ row }: any) => {
+        return (
+          <div className="text-center">
+            {row.getValue("elapsed_days").toFixed(2)}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "scheduled_days",
+      header: () => <div className="font-bold text-black">Scheduled Days</div>,
+      cell: ({ row }: any) => {
+        return (
+          <div className="text-center">
+            {row.getValue("scheduled_days")}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "review",
+      header: () => <div className="font-bold text-black">Review</div>,
+      cell: ({ row }: any) => {
+        return row.getValue("review")?.toLocaleString();
       },
     },
   ];
@@ -239,9 +299,9 @@ export default function FlashCardPracticeButton({
         </div>
       )}
       <div className="pt-4">Next review: {review.toLocaleString()}</div>
-      <div className="pt-4">Cards:</div>
+      <div className="pt-4">Cards :</div>
       <DataTable data={cards} columns={columnsCards} />
-      <div className="pb-10"></div>
+
       <table>
         <thead>
           <tr>
@@ -279,6 +339,8 @@ export default function FlashCardPracticeButton({
           <tr></tr>
         </tbody>
       </table>
+      <div className="pt-4">Log Record :</div>
+      <DataTable data={logs} columns={columnsLogs} />
       <div className="pt-4">Log Record:</div>
       <table>
         <thead>
