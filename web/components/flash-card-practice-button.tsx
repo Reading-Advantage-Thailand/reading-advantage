@@ -19,6 +19,7 @@ import {
 } from "ts-fsrs";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table-flash-card";
+import { columns } from './reminder-reread-table';
 
 type Props = {
   index: number;
@@ -67,11 +68,20 @@ export default function FlashCardPracticeButton({
     {
       accessorKey: "index",
       header: () => <div className="font-bold text-black">Index</div>,
+      cell: ({ row }: any) => {
+         return (
+           <div className="text-center">
+             { row.index+1}
+           </div>
+         );
+        
+      },
     },
     {
       accessorKey: "due",
       header: () => <div className="font-bold text-black">Due</div>,
       cell: ({ row }: any) => {
+       
         return row.getValue("due").toLocaleString();
       },
     },
@@ -111,25 +121,76 @@ export default function FlashCardPracticeButton({
         );
       },
     },
-    // {
-    //   accessorKey: "due",
-    //   header: () => <div className="font-bold text-black">R</div>,
-    //   cell: ({ row }: any) => {
+    {
+      accessorKey: "elapsed_days",
+      header: () => <div className="font-bold text-black">Elapsed Days</div>,
+      cell: ({ row }: any) => {
+        return (
+          <div className="text-center">{row.getValue("elapsed_days")}</div>
+        );
+      },
+    },
+    {
+      accessorKey: "scheduled_days",
+      header: () => <div className="font-bold text-black">Scheduled Days</div>,
+      cell: ({ row }: any) => {
+        return (
+          <div className="text-center">{row.getValue("scheduled_days")}</div>
+        );
+      },
+    },
+    {
+      accessorKey: "reps",
+      header: () => <div className="font-bold text-black">Reps</div>,
+      cell: ({ row }: any) => {
+        return <div className="text-center">{row.getValue("reps")}</div>;
+      },
+    },
+    {
+      accessorKey: "lapses",
+      header: () => <div className="font-bold text-black">Lapses</div>,
+      cell: ({ row }: any) => {
+        return <div className="text-center">{row.getValue("lapses")}</div>;
+      },
+    },
+  ];
 
-    //     return (
-    //       <div className="text-center">
-    //         {`${fnFsrs?.get_retrievability(row, row.due) || "/"}`}
-    //       </div>
-    //     );
-    //   },
-    // },
+  const columnsLogs: ColumnDef<Logs>[] = [
+    {
+      accessorKey: "#",
+      header: () => <div className="font-bold text-black">#</div>,
+      cell: () => {
+        return "=>";
+      },
+    },
+    {
+      accessorKey: "rating",
+      header: () => <div className="font-bold text-black">Rating</div>,
+      cell: ({ row }: any) => {
+        return `${row.getValue("rating")} (${Rating[row.getValue("rating")]})`;
+      },
+    },
+    {
+      accessorKey: "state",
+      header: () => <div className="font-bold text-black">State</div>,
+      cell: ({ row }: any) => {
+        return `${row.getValue("state")} (${State[row.getValue("state")]})`;
+      },
+    },
+    {
+      accessorKey: "due",
+      header: () => <div className="font-bold text-black">Due</div>,
+      cell: ({ row }: any) => {
+        return row.getValue("due").toLocaleString();
+      },
+    },
     {
       accessorKey: "elapsed_days",
       header: () => <div className="font-bold text-black">Elapsed Days</div>,
       cell: ({ row }: any) => {
         return (
           <div className="text-center">
-            {row.getValue("elapsed_days").toFixed(2)}
+            {row.getValue("elapsed_days").toFixed(0)}
           </div>
         );
       },
@@ -140,27 +201,16 @@ export default function FlashCardPracticeButton({
       cell: ({ row }: any) => {
         return (
           <div className="text-center">
-            {row.getValue("scheduled_days").toFixed(2)}
+            {row.getValue("scheduled_days")}
           </div>
         );
       },
     },
     {
-      accessorKey: "reps",
-      header: () => <div className="font-bold text-black">Reps</div>,
+      accessorKey: "review",
+      header: () => <div className="font-bold text-black">Review</div>,
       cell: ({ row }: any) => {
-        return (
-          <div className="text-center">{row.getValue("reps").toFixed(2)}</div>
-        );
-      },
-    },
-    {
-      accessorKey: "lapses",
-      header: () => <div className="font-bold text-black">Lapses</div>,
-      cell: ({ row }: any) => {
-        return (
-          <div className="text-center">{row.getValue("lapses").toFixed(2)}</div>
-        );
+        return row.getValue("review")?.toLocaleString();
       },
     },
   ];
@@ -239,74 +289,10 @@ export default function FlashCardPracticeButton({
         </div>
       )}
       <div className="pt-4">Next review: {review.toLocaleString()}</div>
-      <div className="pt-4">Cards:</div>
+      <div className="pt-4 font-bold">Cards :</div>
       <DataTable data={cards} columns={columnsCards} />
-      <div className="pb-10"></div>
-      <table>
-        <thead>
-          <tr>
-            <th>index</th>
-            <th>due</th>
-            <th>state</th>
-            <th>last_review</th>
-            <th>stability</th>
-            <th>difficulty</th>
-            <th>R</th>
-            <th>elapsed_days</th>
-            <th>scheduled_days</th>
-            <th>reps</th>
-            <th>lapses</th>
-          </tr>
-        </thead>
-        <tbody className="text-sm text-center">
-          {cards.map((record: Card, index: number) => (
-            <tr className="hover:bg-zinc-200" key={index}>
-              <td>{index + 1}</td>
-              <td>{record.due.toLocaleString()}</td>
-              <td>{`${record.state}(${State[record.state]})`}</td>
-              <td>
-                {record.last_review && record.last_review.toLocaleString()}
-              </td>
-              <td>{record.stability.toFixed(2)}</td>
-              <td>{record.difficulty.toFixed(2)}</td>
-              <td>{fnFsrs.get_retrievability(record, record.due) || "/"}</td>
-              <td>{record.elapsed_days}</td>
-              <td>{record.scheduled_days}</td>
-              <td>{record.reps}</td>
-              <td>{record.lapses}</td>
-            </tr>
-          ))}
-          <tr></tr>
-        </tbody>
-      </table>
-      <div className="pt-4">Log Record:</div>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>rating</th>
-            <th>state</th>
-            <th>due</th>
-            <th>elapsed_days</th>
-            <th>scheduled_days</th>
-            <th>review</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((record: any, index: any) => (
-            <tr className="hover:bg-zinc-200" key="index">
-              <th>{"=>"}</th>
-              <td>{`${record.rating}(${Rating[record.rating]})`}</td>
-              <td>{`${record.state}(${State[record.state]})`}</td>
-              <td>{record.due.toLocaleString()}</td>
-              <td>{record.elapsed_days}</td>
-              <td>{record.scheduled_days}</td>
-              <td>{record.review.toLocaleString()}</td>
-            </tr>
-          ))}
-          <tr></tr>
-        </tbody>
-      </table>
+      <div className="pt-4 font-bold">Log Record :</div>
+      <DataTable data={logs} columns={columnsLogs} />
     </>
   );
 }
