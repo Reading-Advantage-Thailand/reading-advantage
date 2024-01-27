@@ -58,7 +58,23 @@ export default function FlashCardPracticeButton({
   //   0,
   //   0
   // );
-  // let card: Card = createEmptyCard();
+  let card: Card = createEmptyCard();
+  console.log("==> card", card);
+
+  /*
+  on save card
+  {
+    "due": "2024-01-26T16:39:37.346Z",
+    "stability": 0,
+    "difficulty": 0,
+    "elapsed_days": 0,
+    "scheduled_days": 0,
+    "reps": 0,
+    "lapses": 0,
+    "state": 0
+}
+  
+  */
 
   const params = generatorParameters();
   const fnFsrs: FSRS = fsrs(params);
@@ -69,19 +85,13 @@ export default function FlashCardPracticeButton({
       accessorKey: "index",
       header: () => <div className="font-bold text-black">Index</div>,
       cell: ({ row }: any) => {
-         return (
-           <div className="text-center">
-             { row.index+1}
-           </div>
-         );
-        
+        return <div className="text-center">{row.index + 1}</div>;
       },
     },
     {
       accessorKey: "due",
       header: () => <div className="font-bold text-black">Due</div>,
       cell: ({ row }: any) => {
-       
         return row.getValue("due").toLocaleString();
       },
     },
@@ -200,9 +210,7 @@ export default function FlashCardPracticeButton({
       header: () => <div className="font-bold text-black">Scheduled Days</div>,
       cell: ({ row }: any) => {
         return (
-          <div className="text-center">
-            {row.getValue("scheduled_days")}
-          </div>
+          <div className="text-center">{row.getValue("scheduled_days")}</div>
         );
       },
     },
