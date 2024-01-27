@@ -16,6 +16,7 @@ import {
   FSRS,
   RecordLog,
   State,
+  ReviewLog,
 } from "ts-fsrs";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table-flash-card";
@@ -41,45 +42,25 @@ export default function FlashCardPracticeButton({
   nextCard,
   sentences,
 }: Props) {
-  const t = useScopedI18n("pages.student.practicePage");
   console.log("==> sentences", sentences);
-  const [review, setReview] = useState(new Date());
-  const [cards, setCards] = useState<any>([]);
-  const [logs, setLogs] = useState<any>([]);
+  const t = useScopedI18n("pages.student.practicePage"); 
+  const [cards, setCards] = useState<Sentence[]>(sentences);
   const [showButton, setShowButton] = useState(true);
-  // const params = generatorParameters({ enable_fuzz: true });
-  // let now = new Date();
-  // const startOfDay = new Date(
-  //   now.getFullYear(),
-  //   now.getMonth(),
-  //   now.getDate(),
-  //   4,
-  //   0,
-  //   0,
-  //   0
-  // );
-  let card: Card = createEmptyCard();
-  console.log("==> card", card);
-
-  /*
-  on save card
-  {
-    "due": "2024-01-26T16:39:37.346Z",
-    "stability": 0,
-    "difficulty": 0,
-    "elapsed_days": 0,
-    "scheduled_days": 0,
-    "reps": 0,
-    "lapses": 0,
-    "state": 0
-}
-  
-  */
-
+  const [logs, setLogs] = useState<Logs[]>([]);  
+  let now = new Date();
+  const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      4,
+      0,
+      0,
+      0
+  );
   const params = generatorParameters();
   const fnFsrs: FSRS = fsrs(params);
   // let scheduling_cards: RecordLog = f.repeat(card, startOfDay);
-
+  
   const columnsCards: ColumnDef<Card>[] = [
     {
       accessorKey: "index",
@@ -224,18 +205,16 @@ export default function FlashCardPracticeButton({
   ];
 
   const handleClickFsrs = async (index: number, rating: Rating) => {
-    console.log("==> cards", cards.length);
-    console.log(Rating[rating]);
-    const preCard: any =
-      cards.length > 0 ? cards[cards.length - 1] : createEmptyCard(new Date());
-    const scheduling_cards: any = fnFsrs.repeat(preCard, preCard.due);
-    console.log(scheduling_cards);
-    setCards((pre: any) => [...pre, scheduling_cards[rating].card]);
-    setLogs((pre: any) => [...pre, scheduling_cards[rating].log]);
+    
+    // const preCard: any =
+    //   cards.length > 0 ? cards[cards.length - 1] : createEmptyCard(new Date());
+    // const scheduling_cards: any = fnFsrs.repeat(preCard, preCard.due);   
+    // setCards((pre: any) => [...pre, scheduling_cards[rating].card]);
+    // setLogs((pre: any) => [...pre, scheduling_cards[rating].log]);
 
-    if (index + 1 === sentences.length) {
-      setShowButton(false);
-    }
+    // if (index + 1 === sentences.length) {
+    //   setShowButton(false);
+    // }
   };
 
   return (
@@ -249,7 +228,7 @@ export default function FlashCardPracticeButton({
               "hover:bg-red-600"
             )}
             onClick={() => {
-              handleClickFsrs(index, Rating.Again);
+              // handleClickFsrs(index, Rating.Again);
               nextCard();
             }}
           >
@@ -262,7 +241,7 @@ export default function FlashCardPracticeButton({
               "hover:bg-amber-600"
             )}
             onClick={() => {
-              handleClickFsrs(index, Rating.Hard);
+              // handleClickFsrs(index, Rating.Hard);
               nextCard();
             }}
           >
@@ -275,7 +254,7 @@ export default function FlashCardPracticeButton({
               "hover:bg-emerald-600"
             )}
             onClick={() => {
-              handleClickFsrs(index, Rating.Good);
+              // handleClickFsrs(index, Rating.Good);
               nextCard();
             }}
           >
@@ -288,7 +267,7 @@ export default function FlashCardPracticeButton({
               "hover:bg-blue-600"
             )}
             onClick={() => {
-              handleClickFsrs(index, Rating.Easy);
+              // handleClickFsrs(index, Rating.Easy);
               nextCard();
             }}
           >
@@ -296,11 +275,11 @@ export default function FlashCardPracticeButton({
           </button>
         </div>
       )}
-      <div className="pt-4">Next review: {review.toLocaleString()}</div>
+      {/* <div className="pt-4">Next review: {review.toLocaleString()}</div>
       <div className="pt-4 font-bold">Cards :</div>
       <DataTable data={cards} columns={columnsCards} />
       <div className="pt-4 font-bold">Log Record :</div>
-      <DataTable data={logs} columns={columnsLogs} />
+      <DataTable data={logs} columns={columnsLogs} /> */}
     </>
   );
 }

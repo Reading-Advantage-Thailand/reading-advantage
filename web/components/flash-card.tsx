@@ -20,6 +20,7 @@ import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
 import { v4 as uuidv4 } from "uuid";
+import { date_scheduler, State } from "ts-fsrs";
 
 type Props = {
   userId: string;
@@ -35,6 +36,15 @@ export type Sentence = {
   translation: { th: string };
   userId: string;
   id: string;
+  due: Date; // Date when the card is next due for review
+  stability: number; // A measure of how well the information is retained
+  difficulty: number; // Reflects the inherent difficulty of the card content
+  elapsed_days: number; // Days since the card was last reviewed
+  scheduled_days: number; // The interval at which the card is next scheduled
+  reps: number; // Total number of times the card has been reviewed
+  lapses: number; // Times the card was forgotten or remembered incorrectly
+  state: State; // The current state of the card (New, Learning, Review, Relearning)
+  last_review?: Date; // The most recent review date, if applicable
 };
 
 export default function FlashCard({ userId }: Props) {
@@ -46,8 +56,20 @@ export default function FlashCard({ userId }: Props) {
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
-      console.log("getUserSentenceSaved : ", res.data);
-      setSentences(res.data.sentences);
+      
+      let now = new Date();
+      if (now.getHours() < 4) {
+        now = date_scheduler(now, -1, true);
+      }
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 4, 0, 0, 0);
+      const filteredData = res.data.sentences.filter((record: Sentence) => {
+        const dueDate = new Date(record.due);
+        return dueDate >= startOfDay;
+      });
+
+      console.log("getUserSentenceSaved : ", filteredData);
+      setSentences(filteredData);
+
     } catch (error) {
       console.log(error);
     }
