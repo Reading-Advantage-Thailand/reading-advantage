@@ -1,152 +1,124 @@
-// 'use client'
-// import React, { use, useState} from 'react'
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-// import { Button } from './ui/button'
-// import { Icons } from './icons'
-// import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, } from "@/components/ui/dialog"
-// import { headers } from 'next/headers'
+"use client";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import React, { useState, useEffect } from "react";
 
-// type Props = {
-//     userId: string,
-//     // levelTestData: any,
-// }
-// // export async function getStaticProps() {
-// //     const filePath = path.join(process.cwd(), '../functions/utils', 'readLevelTestData.js');
-// //     console.log(filePath);
-    
-// //     // const filePath = await fetch('../../functions/utils/readLevelTestData.js');
+type Props = {
+  userId: string;
+  language_placement_test: levelTest[];
+};
 
-// //     const levelTestData = JSON.parse(await fs.readFile(filePath, 'utf8'));
+type levelTest = {
+    level: string;
+    questions: {
+        prompt: string;
+        options: Record<string, string>;
+        }[];
+    points: number;
+    };
 
-// //     // const levelTestData = readLevelTestData();
-// //     return {
-// //       props: {
-// //         levelTestData,
-// //       },
-// //     };
-// //   }
+export default function FirstRunLevelTest({userId, language_placement_test}: Props) {
 
-// async function getLevelTestData() {
-//     const res = await fetch(
-//       `${process.env.NEXT_PUBLIC_BASE_URL}/api/level-test`,
-//       {
-//         method: "GET",
-//         headers: headers(),
-//       }
-//     );
-//     return res.json();
-//   }
+        const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);  
+        const [shuffledQuestions, setShuffledQuestions] = useState<{ prompt: string; options: Record<string, string>; }[]>([]);   
 
-// export default  function FirstRunLevelTest ({
-//     userId,
-//     // levelTestData
-    
-// }: Props) {
-//     const [loading, setLoading] = useState(false);
-//     // const [levelTestData, setLevelTestData] = useState<any | null>(null);
-// // console.log('levelTestData : ', levelTestData);
-// const resGeneralDescription = getLevelTestData();
-   
+        const handleNext = () => {
+          if (currentQuestionIndex < language_placement_test.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+          }
+        };
 
-//     return (
-//         <>
-//           <Dialog >
-//             <DialogContent className="sm:max-w-[425px]">
-//                 <DialogHeader>
-//                     <DialogTitle className='font-bold text-2xl md:text-2xl'>
-//                         Please select your language
-//                     </DialogTitle>
-//               </DialogHeader>
-//                 <DialogFooter>
-                   
-//                 </DialogFooter>
-//             </DialogContent >
-//         </Dialog >
-//         {/* <Card>
-//             <CardContent>
-//             <CardTitle className='font-bold text-2xl md:text-2xl'>
-//                         Please select your language
-//                     </CardTitle>
-//             </CardContent>
-//         </Card> */}
-//             <Card>
-//                 <CardHeader>
-//                     <CardTitle className='font-bold text-2xl md:text-2xl'>
-//                         Let&apos;s get start by testing your skill!
-//                     </CardTitle>
-//                     <CardDescription>
-//                        Choose the correct answer to assess your reading level.
-//                     </CardDescription>
-//                 </CardHeader>
-//                 <CardContent>
-//                     <div>
-//                     <pre>{JSON.stringify(resGeneralDescription, null, 2)}</pre>
-//                     {/* {levelTestData && (
-//         <pre>{JSON.stringify(levelTestData, null, 2)}</pre>
-//       )} */}
-//                     </div>
-//                     <div>content show here</div>
-//                 {/* <div className="container">
-//       <div className="header">
-//         <h2>Section 1</h2>
-//         <div className="progress-bar-outer">
-//           <div className="progress-bar-inner" style={{width: '0%'}}>0%</div>
-//         </div>
-//       </div>
+        useEffect(() => {
+            const questions = [...language_placement_test[0].questions];
+        
+            // Shuffle questions
+            for (let i = questions.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [questions[i], questions[j]] = [questions[j], questions[i]];
+            }
+        
+            // Select the first 'numQuestions' questions
+            const selectedQuestions = questions.slice(0, 3);
+        
+            // Shuffle the choices for each question
+            selectedQuestions.forEach((question) => {
+              let choices = Object.entries(question.options);
+              for (let i = choices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [choices[i], choices[j]] = [choices[j], choices[i]];
+              }
+              question.options = Object.fromEntries(choices);
+            });
+        
+            setShuffledQuestions(selectedQuestions);
+          }, []);
+        
+  
 
+  return (
+    <>
+       <Card>
+        <CardHeader>
+         <CardTitle className="font-bold text-2xl md:text-2xl">
+             Let&apos;s get started by testing your skill!
+           </CardTitle>
+           <CardDescription>
+             Choose the correct answer to assess your reading level.
+           </CardDescription>
+         </CardHeader>
+         <CardContent>
+          <div>
+                  <h1 className="font-bold text-xl mb-4">
+                    Section {currentQuestionIndex + 1}
+                  </h1>
+             {shuffledQuestions.map(
+              (
+                question: { prompt: string; options: Record<string, string> },
+                index: number
+              ) => (
+                <div key={index}>
+                  <p className="font-bold">
+                    {index + 1}. {question.prompt}
+                  </p>
+                  <form>
+                    {Object.entries(question.options).map(([key, value]) => (
+                      <div key={key}>
+                        <input
+                          type="radio"
+                          name={`option${index}`}
+                          value={key}
+                          id={key}
+                          className="mr-3"
+                        />
+                        <label htmlFor={key}>{value}</label>
+                      </div>
+                    ))}
+                  </form>
+                </div>
+              )
+            )}
+          </div>
+        </CardContent>
+      </Card>
+      <div className="flex items-center pt-4">
+        <Button
+          size="lg"
+          onClick={handleNext}
+          // disabled={loading}
+        >
+          {/* {loading && (
+                          <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                      )} */}
+          <span>Next</span>
+        </Button>
+      </div>
+    </>
+  )
+}
 
-//       <div className="level-section" id="A0">
-//         <div className="question">
-//           <p>1. Is this a book?</p>
-//           <label className="option"><input type="radio" name="A0Q1"/> Yes, it is a book.</label>
-//           <label className="option"><input type="radio" name="A0Q1"/> No, it's a pen.</label>
-//           <label className="option"><input type="radio" name="A0Q1"/> Yes, it's a table.</label>
-//         </div>
-//         <div className="question">
-//           <p>2. Good morning!</p>
-//           <label className="option"><input type="radio" name="A0Q2"/> Good morning!</label>
-//           <label className="option"><input type="radio" name="A0Q2"/> It's evening.</label>
-//           <label className="option"><input type="radio" name="A0Q2"/> Thank you!</label>
-//         </div>
-//         <div className="question">
-//           <p>3. Do you have a cat?</p>
-//           <label className="option"><input type="radio" name="A0Q3"/> No, I have a dog.</label>
-//           <label className="option"><input type="radio" name="A0Q3"/> Yes, a big dog.</label>
-//           <label className="option"><input type="radio" name="A0Q3"/> I like cats.</label>
-//         </div>
-//         <button className="btn-next">Next</button>
-//       </div>
-
-//       <div className="alert">
-//         Your level is 7!
-//       </div>
-//     </div> */}
-//                 </CardContent>
-//             </Card>
-//             <div className="flex items-center pt-4">
-//                 <Button
-//                     size="lg"
-//                     disabled={loading}
-                   
-//                 >
-//                     {loading && (
-//                         <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-//                     )}
-//                     <span>Next</span>
-//                 </Button>
-//             </div>
-
- 
-//         </>
-//     )
-// }
-// // export const getServerSideProps: GetServerSideProps = async () => {
-// //     const levelTestData = readLevelTestData();
-// //     console.log('this is levelTestData : ', levelTestData);
-    
-// //     return {
-// //         props: {
-// //         levelTestData
-// //       }
-// //     }
-// // }
