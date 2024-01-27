@@ -173,8 +173,6 @@ export default function ArticleContent({
           ...card,
         });
 
-        console.log(res);
-
         toast({
           title: "Success",
           description: `You have saved "${
