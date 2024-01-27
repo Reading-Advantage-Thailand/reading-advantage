@@ -19,6 +19,7 @@ import {
   ReviewLog,
 } from "ts-fsrs";
 import { ColumnDef } from "@tanstack/react-table";
+import axios from "axios";
 import { DataTable } from "@/components/data-table-flash-card";
 import { columns } from './reminder-reread-table';
 
@@ -59,7 +60,14 @@ export default function FlashCardPracticeButton({
   );
   const params = generatorParameters();
   const fnFsrs: FSRS = fsrs(params);
-  // let scheduling_cards: RecordLog = f.repeat(card, startOfDay);
+
+    const truncateText = (text: string, maxLength: number) => {
+      if (text.length > maxLength) {
+        return text.substring(0, maxLength) + "...";
+      } else {
+        return text;
+      }
+    };
   
   const columnsCards: ColumnDef<Card>[] = [
     {
@@ -67,6 +75,13 @@ export default function FlashCardPracticeButton({
       header: () => <div className="font-bold text-black">Index</div>,
       cell: ({ row }: any) => {
         return <div className="text-center">{row.index + 1}</div>;
+      },
+    },
+    {
+      accessorKey: "sentence",
+      header: () => <div className="font-bold text-black">Sentence</div>,
+      cell: ({ row }: any) => {
+        return truncateText(row.getValue("sentence"), 20);
       },
     },
     {
@@ -83,13 +98,13 @@ export default function FlashCardPracticeButton({
         return `${row.getValue("state")} (${State[row.getValue("state")]})`;
       },
     },
-    {
-      accessorKey: "last_review",
-      header: () => <div className="font-bold text-black">Last Review</div>,
-      cell: ({ row }: any) => {
-        return row.getValue("last_review").toLocaleString();
-      },
-    },
+    // {
+    //   accessorKey: "last_review",
+    //   header: () => <div className="font-bold text-black">Last Review</div>,
+    //   cell: ({ row }: any) => {
+    //     return row.getValue("last_review").toLocaleString();
+    //   },
+    // },
     {
       accessorKey: "stability",
       header: () => <div className="font-bold text-black">Stability</div>,
@@ -204,17 +219,44 @@ export default function FlashCardPracticeButton({
     },
   ];
 
-  const handleClickFsrs = async (index: number, rating: Rating) => {
-    
-    // const preCard: any =
-    //   cards.length > 0 ? cards[cards.length - 1] : createEmptyCard(new Date());
-    // const scheduling_cards: any = fnFsrs.repeat(preCard, preCard.due);   
-    // setCards((pre: any) => [...pre, scheduling_cards[rating].card]);
-    // setLogs((pre: any) => [...pre, scheduling_cards[rating].log]);
 
-    // if (index + 1 === sentences.length) {
-    //   setShowButton(false);
-    // }
+
+  const handleClickFsrs = async (index: number, rating: Rating) => {
+    const idSentence = sentences[index].id;
+
+    console.log("idSentence : ", idSentence);
+    console.log("rating : ", rating);
+
+    const preCard = cards[index];    
+    const scheduling_cards: any = fnFsrs.repeat(preCard, preCard.due);
+
+    console.log("scheduling_cards : ", scheduling_cards);
+    console.log(
+      "scheduling_cards[rating].card : ",
+      scheduling_cards[rating].card
+    );
+
+    // set cards by index
+    const newCards = [...cards];
+    newCards[index] = scheduling_cards[rating].card;
+    setCards(newCards);
+
+    // set logs by index
+    const newLogs = [...logs];
+    newLogs[index] = scheduling_cards[rating].log;
+    setLogs(newLogs);
+
+    const response = await axios.patch(`/api/ts-fsrs`, {
+      body: JSON.stringify({
+        ...newCards[index],
+      }),
+    });
+
+    console.log("==> response : ", response);
+
+    if (index + 1 === sentences.length) {
+      setShowButton(false);
+    }
   };
 
   return (
@@ -228,7 +270,7 @@ export default function FlashCardPracticeButton({
               "hover:bg-red-600"
             )}
             onClick={() => {
-              // handleClickFsrs(index, Rating.Again);
+              handleClickFsrs(index, Rating.Again);
               nextCard();
             }}
           >
@@ -241,7 +283,7 @@ export default function FlashCardPracticeButton({
               "hover:bg-amber-600"
             )}
             onClick={() => {
-              // handleClickFsrs(index, Rating.Hard);
+              handleClickFsrs(index, Rating.Hard);
               nextCard();
             }}
           >
@@ -254,7 +296,7 @@ export default function FlashCardPracticeButton({
               "hover:bg-emerald-600"
             )}
             onClick={() => {
-              // handleClickFsrs(index, Rating.Good);
+              handleClickFsrs(index, Rating.Good);
               nextCard();
             }}
           >
@@ -267,7 +309,7 @@ export default function FlashCardPracticeButton({
               "hover:bg-blue-600"
             )}
             onClick={() => {
-              // handleClickFsrs(index, Rating.Easy);
+              handleClickFsrs(index, Rating.Easy);
               nextCard();
             }}
           >
@@ -275,11 +317,13 @@ export default function FlashCardPracticeButton({
           </button>
         </div>
       )}
-      {/* <div className="pt-4">Next review: {review.toLocaleString()}</div>
       <div className="pt-4 font-bold">Cards :</div>
       <DataTable data={cards} columns={columnsCards} />
-      <div className="pt-4 font-bold">Log Record :</div>
+
+      {/* <div className="pt-4 font-bold">Log Record :</div>
       <DataTable data={logs} columns={columnsLogs} /> */}
+
+
     </>
   );
 }
