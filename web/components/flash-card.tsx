@@ -19,7 +19,6 @@ import { formatDate } from "@/lib/utils";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
-import { useTheme } from "next-themes";
 import { v4 as uuidv4 } from "uuid";
 
 type Props = {
@@ -44,11 +43,10 @@ export default function FlashCard({ userId }: Props) {
   const controlRef = useRef<any>({});
   const currentCardFlipRef = useRef<any>();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
-      console.log(res.data);
+      console.log("getUserSentenceSaved : ", res.data);
       setSentences(res.data.sentences);
     } catch (error) {
       console.log(error);
