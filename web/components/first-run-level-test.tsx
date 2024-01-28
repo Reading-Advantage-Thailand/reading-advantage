@@ -8,6 +8,7 @@ import {
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import React, { useState, useEffect } from "react";
+import { set } from "lodash";
 
 type Props = {
   userId: string;
@@ -28,38 +29,63 @@ export default function FirstRunLevelTest({userId, language_placement_test}: Pro
         const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);  
         const [shuffledQuestions, setShuffledQuestions] = useState<{ prompt: string; options: Record<string, string>; }[]>([]);   
 
+        function shuffleArray(array: any[]) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
         const handleNext = () => {
           if (currentQuestionIndex < language_placement_test.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
+           
+        setShuffledQuestions(() => {
+            const nextQuestions = language_placement_test[currentQuestionIndex + 1].questions.slice(0, 3);
+            const shuffledQuestions = shuffleArray(nextQuestions);
+            shuffledQuestions.forEach((question) => {
+                let choices = Object.entries(question.options);
+                for (let i = choices.length - 1; i > 0; i--) {
+                  const j = Math.floor(Math.random() * (i + 1));
+                  [choices[i], choices[j]] = [choices[j], choices[i]];
+                }
+                question.options = Object.fromEntries(choices);
+              });
+            return shuffledQuestions;
+        });
           }
         };
 
         useEffect(() => {
-            const questions = [...language_placement_test[0].questions];
-        
+            for (let i = language_placement_test.length - 1; i >= 0; i--) {
+            // const questions = [...language_placement_test[i].questions];
+            const questions = [...language_placement_test[i].questions];
+            
             // Shuffle questions
             for (let i = questions.length - 1; i > 0; i--) {
               const j = Math.floor(Math.random() * (i + 1));
               [questions[i], questions[j]] = [questions[j], questions[i]];
             }
-        
             // Select the first 'numQuestions' questions
-            const selectedQuestions = questions.slice(0, 3);
+            if (language_placement_test[i].level === language_placement_test[i].level) {
+                const selectedQuestions = questions.slice(0, 3);
+
+                // Shuffle the choices for each question
+                selectedQuestions.forEach((question) => {
+                  let choices = Object.entries(question.options);
+                  for (let i = choices.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [choices[i], choices[j]] = [choices[j], choices[i]];
+                  }
+                  question.options = Object.fromEntries(choices);
+                });
+            
+                setShuffledQuestions(selectedQuestions);
+            }
+            }
         
-            // Shuffle the choices for each question
-            selectedQuestions.forEach((question) => {
-              let choices = Object.entries(question.options);
-              for (let i = choices.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [choices[i], choices[j]] = [choices[j], choices[i]];
-              }
-              question.options = Object.fromEntries(choices);
-            });
-        
-            setShuffledQuestions(selectedQuestions);
           }, []);
-        
-  
+
 
   return (
     <>
