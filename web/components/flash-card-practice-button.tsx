@@ -21,7 +21,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import axios from "axios";
 import { DataTable } from "@/components/data-table-flash-card";
-import { columns } from './reminder-reread-table';
+import { toast } from "./ui/use-toast";
 
 type Props = {
   index: number;
@@ -43,32 +43,21 @@ export default function FlashCardPracticeButton({
   nextCard,
   sentences,
 }: Props) {
-  console.log("==> sentences", sentences);
-  const t = useScopedI18n("pages.student.practicePage"); 
+  const t = useScopedI18n("pages.student.practicePage");
   const [cards, setCards] = useState<Sentence[]>(sentences);
   const [showButton, setShowButton] = useState(true);
-  const [logs, setLogs] = useState<Logs[]>([]);  
-  let now = new Date();
-  const startOfDay = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      4,
-      0,
-      0,
-      0
-  );
+  const [logs, setLogs] = useState<Logs[]>([]);
   const params = generatorParameters();
   const fnFsrs: FSRS = fsrs(params);
 
-    const truncateText = (text: string, maxLength: number) => {
-      if (text.length > maxLength) {
-        return text.substring(0, maxLength) + "...";
-      } else {
-        return text;
-      }
-    };
-  
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + "...";
+    } else {
+      return text;
+    }
+  };
+
   const columnsCards: ColumnDef<Card>[] = [
     {
       accessorKey: "index",
@@ -88,7 +77,9 @@ export default function FlashCardPracticeButton({
       accessorKey: "due",
       header: () => <div className="font-bold text-black">Due</div>,
       cell: ({ row }: any) => {
-        return row.getValue("due").toLocaleString();
+        return typeof row.getValue("due") === "string"
+          ? new Date(row.getValue("due")).toLocaleString()
+          : row.getValue("due").toLocaleString();
       },
     },
     {
@@ -98,13 +89,15 @@ export default function FlashCardPracticeButton({
         return `${row.getValue("state")} (${State[row.getValue("state")]})`;
       },
     },
-    // {
-    //   accessorKey: "last_review",
-    //   header: () => <div className="font-bold text-black">Last Review</div>,
-    //   cell: ({ row }: any) => {
-    //     return row.getValue("last_review").toLocaleString();
-    //   },
-    // },
+    {
+      accessorKey: "last_review",
+      header: () => <div className="font-bold text-black">Last Review</div>,
+      cell: ({ row }: any) => {
+        return typeof row.getValue("last_review") === "string"
+          ? new Date(row.getValue("last_review"))?.toLocaleString()
+          : row.getValue("last_review")?.toLocaleString();
+      },
+    },
     {
       accessorKey: "stability",
       header: () => <div className="font-bold text-black">Stability</div>,
@@ -219,22 +212,20 @@ export default function FlashCardPracticeButton({
     },
   ];
 
-
-
   const handleClickFsrs = async (index: number, rating: Rating) => {
     const idSentence = sentences[index].id;
 
-    console.log("idSentence : ", idSentence);
-    console.log("rating : ", rating);
+    // console.log("idSentence : ", idSentence);
+    // console.log("rating : ", rating);
 
-    const preCard = cards[index];    
+    const preCard = cards[index];
     const scheduling_cards: any = fnFsrs.repeat(preCard, preCard.due);
 
-    console.log("scheduling_cards : ", scheduling_cards);
-    console.log(
-      "scheduling_cards[rating].card : ",
-      scheduling_cards[rating].card
-    );
+    // console.log("scheduling_cards : ", scheduling_cards);
+    // console.log(
+    //   "scheduling_cards[rating].card : ",
+    //   scheduling_cards[rating].card
+    // );
 
     // set cards by index
     const newCards = [...cards];
@@ -246,13 +237,22 @@ export default function FlashCardPracticeButton({
     newLogs[index] = scheduling_cards[rating].log;
     setLogs(newLogs);
 
-    const response = await axios.patch(`/api/ts-fsrs`, {
-      body: JSON.stringify({
+    const response = await axios.post(
+      `/api/ts-fsrs-test/${newCards[index].id}/flash-card`,
+      {
         ...newCards[index],
-      }),
-    });
+      }
+    );
 
-    console.log("==> response : ", response);
+    console.log("==> handleClickFsrs response : ", response);
+
+    toast({
+      title: "Success",
+      description: `You have saved "${truncateText(
+        newCards[index].sentence,
+        20
+      )}" to Fsrs`,
+    });
 
     if (index + 1 === sentences.length) {
       setShowButton(false);
@@ -322,8 +322,6 @@ export default function FlashCardPracticeButton({
 
       {/* <div className="pt-4 font-bold">Log Record :</div>
       <DataTable data={logs} columns={columnsLogs} /> */}
-
-
     </>
   );
 }
