@@ -171,6 +171,15 @@ export default function ArticleContent({
           timepoint: text[selectedSentence as number].begin,
           endTimepoint: endTimepoint,
           ...card,
+          // due: new Date(
+          //   new Date().getFullYear(),
+          //   new Date().getMonth(),
+          //   new Date().getDate(),
+          //   23,
+          //   59,
+          //   59,
+          //   0
+          // ),
         });
 
         toast({

@@ -213,7 +213,7 @@ export default function FlashCardPracticeButton({
   ];
 
   const handleClickFsrs = async (index: number, rating: Rating) => {
-    const idSentence = sentences[index].id;
+    // const idSentence = sentences[index].id;
 
     // console.log("idSentence : ", idSentence);
     // console.log("rating : ", rating);

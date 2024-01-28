@@ -56,19 +56,15 @@ export default function FlashCard({ userId }: Props) {
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
-      
-      let now = new Date();
-      if (now.getHours() < 4) {
-        now = date_scheduler(now, -1, true);
-      }
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 4, 0, 0, 0);
-      const filteredData = res.data.sentences.filter((record: Sentence) => {
+      const startOfDay = date_scheduler(new Date(), 0, true);     
+      const filteredData = res.data.sentences.filter((record: Sentence) => {        
         const dueDate = new Date(record.due);
-        return dueDate >= startOfDay;
+        console.log("startOfDay : ", startOfDay);
+        console.log("dueDate : ", dueDate);
+        return dueDate >= startOfDay || record.state === 0;
       });
 
       setSentences(filteredData);
-
     } catch (error) {
       console.log(error);
     }
