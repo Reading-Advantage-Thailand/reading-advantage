@@ -67,7 +67,6 @@ export default function FlashCard({ userId }: Props) {
         return dueDate >= startOfDay;
       });
 
-      console.log("getUserSentenceSaved : ", filteredData);
       setSentences(filteredData);
 
     } catch (error) {
@@ -128,8 +127,7 @@ export default function FlashCard({ userId }: Props) {
               cards={cards}
               controls={false}
               showCount={false}
-              onCardChange={(index) => {
-                console.log("onCardChange index: ", index);
+              onCardChange={(index) => {                
                 setCurrentCardIndex(index);
               }}
               forwardRef={controlRef}
