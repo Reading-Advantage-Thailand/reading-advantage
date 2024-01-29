@@ -42,8 +42,8 @@ export async function GET(
         // This article can read only user level 51 - 55
         console.log('userLevel', userLevel);
         console.log('articleLevel', articleLevel);
-        const isUserAbleToRead = userLevel >= articleLevel - 1 && userLevel <= articleLevel + 1;
-        console.log('isUserAbleToRead', isUserAbleToRead);
+        // const isUserAbleToRead = userLevel >= articleLevel - 1 && userLevel <= articleLevel + 1;
+        // console.log('isUserAbleToRead', isUserAbleToRead);
         console.log('articleRecordSnapshot.exists', articleRecordSnapshot.exists);
         if (!articleSnapshot.exists) {
             return new Response(JSON.stringify({
