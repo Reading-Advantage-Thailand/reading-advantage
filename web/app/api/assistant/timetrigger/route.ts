@@ -12,11 +12,18 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: Request, res: Response) {
-    const { userId, assistantId } = await req.json();
-    await generateArticle(userId, assistantId)
-    return new Response(JSON.stringify({
-        messages: 'success',
-    }), { status: 200 });
+    try {
+        const { userId, assistantId } = await req.json();
+        await generateArticle(userId, assistantId)
+        return new Response(JSON.stringify({
+            messages: 'success',
+        }), { status: 200 });
+    } catch (error) {
+        return new Response(JSON.stringify({
+            message: `Error sending command: ${error}`,
+        }), { status: 500 });
+    }
+
 }
 
 async function generateArticle(userID: string, assistantID: string) {
@@ -112,6 +119,6 @@ async function assistant(command: string, assistantID: string, userID: string) {
         return response;
     } catch (error) {
         console.log('error', error);
-        return 'error';
+        return error;
     }
 }
