@@ -12,25 +12,8 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: Request, res: Response) {
-    // const { assistantId } = await req.json();
-    // const assistantID = process.env[assistantId];
-
-    // const session = await getServerSession(authOptions);
-    // if (!session) {
-    //     return new Response(JSON.stringify({
-    //         message: 'Unauthorized',
-    //     }), { status: 403 })
-    // }
-
-    // if (!assistantID) {
-    //     return new Response(JSON.stringify({
-    //         message: 'Invalid assistant ID',
-    //     }), { status: 400 });
-    // }
-
-    // const userID = session.user.id;
-    await generateArticle('passakorn', 'asst_cmS72OcbZsNT20ndfjhBgQgx');
-
+    const { userId, assistantId } = await req.json();
+    await generateArticle(userId, assistantId)
     return new Response(JSON.stringify({
         messages: 'success',
     }), { status: 200 });
@@ -38,11 +21,11 @@ export async function POST(req: Request, res: Response) {
 
 async function generateArticle(userID: string, assistantID: string) {
     try {
-        const genres = JSON.parse(fs.readFileSync('../../../web/data/genres-fiction.json', 'utf8'));
+        const genres = JSON.parse(fs.readFileSync('../data/genres-fiction.json', 'utf8'));
         const genre = genres.Genres[Math.floor(Math.random() * genres.Genres.length)];
         console.log('genre', genre);
 
-        const genresData = await db.collection('genres').where('name', '==', genre.Name).get();
+        const genresData = await db.collection('assistant-articles').where('name', '==', genre.Name).get();
 
         // if no matching generated genre and then add to firestore
         if (genresData.empty) {
@@ -68,7 +51,7 @@ async function generateArticle(userID: string, assistantID: string) {
                     logs: json,
                     createdAt: new Date(),
                 };
-                const docRef = await db.collection('genres').add(data);
+                const docRef = await db.collection('assistant-articles').add(data);
                 console.log('Document written with ID: ', docRef.id);
             }
             return;
