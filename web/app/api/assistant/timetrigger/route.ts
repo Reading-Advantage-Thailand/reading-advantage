@@ -17,6 +17,8 @@ export async function POST(req: Request, res: Response) {
         await generateArticle(userId, assistantId)
         return new Response(JSON.stringify({
             messages: 'success',
+            userId: userId,
+            assistantId: assistantId,
         }), { status: 200 });
     } catch (error) {
         return new Response(JSON.stringify({
