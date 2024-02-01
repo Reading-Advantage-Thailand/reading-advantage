@@ -8,7 +8,7 @@ import {
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import React, { useState, useEffect } from "react";
-import { set } from "lodash";
+import { get, set } from "lodash";
 
 type Props = {
   userId: string;
@@ -16,94 +16,177 @@ type Props = {
 };
 
 type levelTest = {
-    level: string;
-    questions: {
-        prompt: string;
-        options: Record<string, string>;
-        }[];
-    points: number;
-    };
+  level: string;
+  questions: {
+    prompt: string;
+    options: Record<string, string>;
+  }[];
+  points: number;
+};
 
-export default function FirstRunLevelTest({userId, language_placement_test}: Props) {
+export default function FirstRunLevelTest({
+  userId,
+  language_placement_test,
+}: Props) {
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [shuffledQuestions, setShuffledQuestions] = useState<{ prompt: string; options: Record<string, string> }[]>([]);
+  const [score, setScore] = useState(0);
+  const [isAnswered, setIsAnswered] = useState(false);
+  const [correctAnswer, setCorrectAnswer] = React.useState<string[]>([]);
+  const [selectedAnswer, setSelectedAnswer] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([]);
+  const [formkey, setFormKey] = useState(0);
 
-        const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);  
-        const [shuffledQuestions, setShuffledQuestions] = useState<{ prompt: string; options: Record<string, string>; }[]>([]);   
+  function getCorrectAnswer() {
+      let allCorrectAnswers: string[] = [];
+    for (let i = language_placement_test.length - 1; i >= 0; i--) {
+    for (let j = language_placement_test[i].questions.length - 1; j >= 0; j--) {
+        const answerA = language_placement_test[i].questions[j].options["A"];
+        allCorrectAnswers.push(answerA);
+    }
+    setCorrectAnswer(allCorrectAnswers);
+  }}
 
-        function shuffleArray(array: any[]) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
+const onAnswerSelected = (answer: string, index: any) => {
+  
+    // setAnsweredQuestions([...answeredQuestions, index]);
+    // if (!answeredQuestions.includes(index)) {
+        setIsAnswered(true);
+        try {
+            setChecked(true);
+            // setSelectedAnswerIndex(null);
+            if (correctAnswer.includes(answer)) {
+               setSelectedAnswer(true);
+               setScore(score + language_placement_test[currentSectionIndex].points);
+               console.log('true');
+           } else {
+               setSelectedAnswer(false);
+               console.log('false');
+           }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            console.log('finally');
         }
-        const handleNext = () => {
-          if (currentQuestionIndex < language_placement_test.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-           
-        setShuffledQuestions(() => {
-            const nextQuestions = language_placement_test[currentQuestionIndex + 1].questions.slice(0, 3);
-            const shuffledQuestions = shuffleArray(nextQuestions);
-            shuffledQuestions.forEach((question) => {
-                let choices = Object.entries(question.options);
-                for (let i = choices.length - 1; i > 0; i--) {
-                  const j = Math.floor(Math.random() * (i + 1));
-                  [choices[i], choices[j]] = [choices[j], choices[i]];
-                }
-                question.options = Object.fromEntries(choices);
-              });
-            return shuffledQuestions;
-        });
-          }
-        };
+    // }
+  };
+  
+  function shuffleArray(array: any[]) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+  const handleQuestions = () => {
+      setShuffledQuestions(() => {
+                const nextQuestions = language_placement_test[
+                    currentSectionIndex
+                  ].questions.slice(0, 3);
+                  
+                      const shuffledQuestions = shuffleArray(nextQuestions);
+                      shuffledQuestions.forEach((question) => {
+                          let choices = Object.entries(question.options);
+                          for (let i = choices.length - 1; i > 0; i--) {
+                              const j = Math.floor(Math.random() * (i + 1));
+                              [choices[i], choices[j]] = [choices[j], choices[i]];
+                          }
+                          question.options = Object.fromEntries(choices);
+                      });
+                      return shuffledQuestions;
+                  });
+    
+      // if (currentSectionIndex === 0) {
+      //   // setCurrentSectionIndex(currentSectionIndex + 1);
+      //   // setFormKey(formkey + 1);
+      //   setShuffledQuestions(() => {
+      //           const nextQuestions = language_placement_test[
+      //               currentSectionIndex
+      //             ].questions.slice(0, 3);
+                  
+      //                 const shuffledQuestions = shuffleArray(nextQuestions);
+      //                 shuffledQuestions.forEach((question) => {
+      //                     let choices = Object.entries(question.options);
+      //                     for (let i = choices.length - 1; i > 0; i--) {
+      //                         const j = Math.floor(Math.random() * (i + 1));
+      //                         [choices[i], choices[j]] = [choices[j], choices[i]];
+      //                     }
+      //                     question.options = Object.fromEntries(choices);
+      //                 });
+      //                 return shuffledQuestions;
+      //             });
+      // } else if (currentSectionIndex > 0 && currentSectionIndex < language_placement_test.length - 1) {
+      //   setCurrentSectionIndex(currentSectionIndex + 1);
+      //   setFormKey(formkey + 1);
+      //   setShuffledQuestions(() => {
+      //           const nextQuestions = language_placement_test[
+      //               currentSectionIndex + 1
+      //             ].questions.slice(0, 3);
+                  
+      //                 const shuffledQuestions = shuffleArray(nextQuestions);
+      //                 shuffledQuestions.forEach((question) => {
+      //                     let choices = Object.entries(question.options);
+      //                     for (let i = choices.length - 1; i > 0; i--) {
+      //                         const j = Math.floor(Math.random() * (i + 1));
+      //                         [choices[i], choices[j]] = [choices[j], choices[i]];
+      //                     }
+      //                     question.options = Object.fromEntries(choices);
+      //                 });
+      //                 return shuffledQuestions;
+      //             });
+      // } 
 
-        useEffect(() => {
-            for (let i = language_placement_test.length - 1; i >= 0; i--) {
-            // const questions = [...language_placement_test[i].questions];
-            const questions = [...language_placement_test[i].questions];
-            
-            // Shuffle questions
-            for (let i = questions.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [questions[i], questions[j]] = [questions[j], questions[i]];
-            }
-            // Select the first 'numQuestions' questions
-            if (language_placement_test[i].level === language_placement_test[i].level) {
-                const selectedQuestions = questions.slice(0, 3);
-
-                // Shuffle the choices for each question
-                selectedQuestions.forEach((question) => {
+  }
+  const handleNext = () => {
+         if (currentSectionIndex < language_placement_test.length - 1) {
+          setCurrentSectionIndex(currentSectionIndex + 1);
+          setFormKey(formkey + 1);
+          // handleQuestions();
+    setShuffledQuestions(() => {
+        const nextQuestions = language_placement_test[
+            currentSectionIndex + 1
+          ].questions.slice(0, 3);
+          
+              const shuffledQuestions = shuffleArray(nextQuestions);
+              shuffledQuestions.forEach((question) => {
                   let choices = Object.entries(question.options);
                   for (let i = choices.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [choices[i], choices[j]] = [choices[j], choices[i]];
+                      const j = Math.floor(Math.random() * (i + 1));
+                      [choices[i], choices[j]] = [choices[j], choices[i]];
                   }
                   question.options = Object.fromEntries(choices);
-                });
-            
-                setShuffledQuestions(selectedQuestions);
-            }
-            }
-        
-          }, []);
+              });
+              return shuffledQuestions;
+          });
 
+  }
+  // api update xp and level to database when click next
+    };
+    
+    useEffect(() => {
+        handleQuestions();
+        getCorrectAnswer();
+  }, []);
 
   return (
     <>
-       <Card>
+      <Card>
         <CardHeader>
-         <CardTitle className="font-bold text-2xl md:text-2xl">
-             Let&apos;s get started by testing your skill!
-           </CardTitle>
-           <CardDescription>
-             Choose the correct answer to assess your reading level.
-           </CardDescription>
-         </CardHeader>
-         <CardContent>
+          <CardTitle className="font-bold text-2xl md:text-2xl">
+            Let&apos;s get started by testing your skill!
+          </CardTitle>
+          <CardDescription>
+            Choose the correct answer to assess your reading level.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <div>
-                  <h1 className="font-bold text-xl mb-4">
-                    Section {currentQuestionIndex + 1}
-                  </h1>
-             {shuffledQuestions.map(
+            <h1 className="font-bold text-xl mb-4">
+              Section {currentSectionIndex + 1} &nbsp; &nbsp;
+              <span>progress bar</span>
+            </h1>
+            {shuffledQuestions.map(
               (
                 question: { prompt: string; options: Record<string, string> },
                 index: number
@@ -112,16 +195,17 @@ export default function FirstRunLevelTest({userId, language_placement_test}: Pro
                   <p className="font-bold">
                     {index + 1}. {question.prompt}
                   </p>
-                  <form>
+                  <form key={formkey + 1}>
                     {Object.entries(question.options).map(([key, value]) => (
                       <div key={key}>
                         <input
                           type="radio"
                           name={`option${index}`}
-                          value={key}
+                          value={value}
                           id={key}
                           className="mr-3"
-                        />
+                          onChange={(e) => onAnswerSelected(e.target.value, index)}
+                          />
                         <label htmlFor={key}>{value}</label>
                       </div>
                     ))}
@@ -129,22 +213,24 @@ export default function FirstRunLevelTest({userId, language_placement_test}: Pro
                 </div>
               )
             )}
+            score: {score}
           </div>
         </CardContent>
       </Card>
       <div className="flex items-center pt-4">
-        <Button
-          size="lg"
-          onClick={handleNext}
-          // disabled={loading}
-        >
-          {/* {loading && (
-                          <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                      )} */}
-          <span>Next</span>
+      {checked ? (
+        <Button size="lg" onClick={handleNext}>
+        {/* <Button size="lg" onClick={handleQuestions}> */}
+            {currentSectionIndex === language_placement_test.length -1 ? 'Finish' : 'Next'}
         </Button>
+      ):(
+        <Button size="lg" onClick={handleNext} disabled>
+        {/* <Button size="lg" onClick={handleQuestions} disabled>  */}
+            {''}
+            {currentSectionIndex === language_placement_test.length -1 ? 'Finish' : 'Next'}
+        </Button>
+      )}
       </div>
     </>
-  )
+  );
 }
-
