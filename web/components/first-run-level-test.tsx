@@ -8,7 +8,7 @@ import {
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import React, { useState, useEffect } from "react";
-import { get, set } from "lodash";
+import  ProgressBar  from "../components/progress-bar-xp";
 
 type Props = {
   userId: string;
@@ -49,7 +49,6 @@ export default function FirstRunLevelTest({
   }}
 
 const onAnswerSelected = (answer: string, index: any) => {
-  
     // setAnsweredQuestions([...answeredQuestions, index]);
     // if (!answeredQuestions.includes(index)) {
         setIsAnswered(true);
@@ -139,6 +138,8 @@ const onAnswerSelected = (answer: string, index: any) => {
 
   }
   const handleNext = () => {
+
+
          if (currentSectionIndex < language_placement_test.length - 1) {
           setCurrentSectionIndex(currentSectionIndex + 1);
           setFormKey(formkey + 1);
@@ -183,8 +184,8 @@ const onAnswerSelected = (answer: string, index: any) => {
         <CardContent>
           <div>
             <h1 className="font-bold text-xl mb-4">
-              Section {currentSectionIndex + 1} &nbsp; &nbsp;
-              <span>progress bar</span>
+              <span><ProgressBar progress={score} /> {score}</span><br/>
+              Section {currentSectionIndex + 1} 
             </h1>
             {shuffledQuestions.map(
               (
