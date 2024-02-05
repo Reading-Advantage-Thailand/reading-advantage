@@ -77,9 +77,15 @@ export default function FirstRunLevelTest({
   }
 
   const onAnswerSelected = (optionId: number, answer: string, index: any) => {
-    answerOptionIndexArray.push(optionId);
-    answerValueArray.push(answer);
-    questionIndexArray.push(index);
+    if (!answerOptionIndexArray.includes(optionId)) {
+      answerOptionIndexArray.push(optionId);
+    }
+    if (!answerValueArray.includes(answer)) {
+      answerValueArray.push(answer);
+    }
+    if (!questionIndexArray.includes(index)) {
+      questionIndexArray.push(index);
+    }
   };
 
   function shuffleArray(array: any[]) {
@@ -149,7 +155,7 @@ export default function FirstRunLevelTest({
   };
 
   const handleNext = () => {
-    if (answerOptionIndexArray.length !== 3) {
+    if (answerOptionIndexArray.length < 3) {
       toast({
         title: "Attention!",
         description: "Please answer all questions!",
@@ -159,7 +165,7 @@ export default function FirstRunLevelTest({
       //For loop to check if the array answerValueArray is in the array correctAnswer
       for (let i = 0; i < answerOptionIndexArray.length; i++) {
         if (correctAnswer.includes(answerValueArray[i])) {
-          // console.log("Correct answer:" + answerValueArray[i]);
+          console.log("Correct answer:" + answerValueArray[i]);
           correctSelectedAnswer.push(answerValueArray[i]);
           if (!isQuestionAnswered[questionIndexArray[i]]) {
             setCountOfRightAnswers(countOfRightAnswers + 1);
@@ -168,9 +174,12 @@ export default function FirstRunLevelTest({
             setIsQuestionAnswered(newIsQuestionAnswered);
           }
           setHasAnsweredCorrectly(true);
+          console.log('hasAnsweredCorrectly true: ', hasAnsweredCorrectly);
+          
         } else {
           setRightWrongAnswer(false);
           setHasAnsweredCorrectly(false);
+          console.log('hasAnsweredCorrectly false: ', hasAnsweredCorrectly);
         }
       }
       setScore(
