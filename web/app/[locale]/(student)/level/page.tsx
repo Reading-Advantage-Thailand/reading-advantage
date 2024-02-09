@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import React from "react";
 import FirstRunLevelTest from "@/components/first-run-level-test";
+import LevelSelect from "@/components/level-select";
 
 type Props = {
   userId: string;
@@ -17,7 +18,7 @@ export default async function LevelPage({}: Props) {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.level > 3000) {
+  if (user.level > 0) {
     return redirect("/student/read");
   }
 

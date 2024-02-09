@@ -10,6 +10,7 @@ import { articleShowcaseType } from '@/types';
 type Props = {
     user: {
         level: number,
+        // level: string,
         name: string,
         id: string,
     }

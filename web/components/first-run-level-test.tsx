@@ -10,6 +10,11 @@ import { Button } from "../components/ui/button";
 import React, { useState, useEffect } from "react";
 import ProgressBar from "../components/progress-bar-xp";
 import { toast } from './ui/use-toast'
+import { update } from "lodash";
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { useContext } from 'react';
+import { ScoreContext } from '../contexts/score-context';
 
 type Props = {
   userId: string;
@@ -37,6 +42,8 @@ export default function FirstRunLevelTest({
   userId,
   language_placement_test,
 }: Props) {
+  const router = useRouter();
+  const { data: session, status, update } = useSession();
   const [testFinished, setTestFinished] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -56,6 +63,8 @@ export default function FirstRunLevelTest({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [rightAnswersCounts, setRightAnswersCounts] = useState<number[]>([]);
   const [sectionAnswerCount, setSectionAnswerCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const { setScores } = useContext(ScoreContext) || {};
 
   const answerOptionIndexArray: number[] = [];
   const answerValueArray: any[] = [];
@@ -98,24 +107,24 @@ export default function FirstRunLevelTest({
 
   function levelCalculation(score: number) {
     const levels = [
-      { min: 0, max: 5000, cerfLevel: "A0", raLevel: "1" },
-      { min: 5001, max: 11000, cerfLevel: "A0+", raLevel: "2" },
-      { min: 11001, max: 18000, cerfLevel: "A1", raLevel: "3" },
-      { min: 18001, max: 26000, cerfLevel: "A1+", raLevel: "4" },
-      { min: 26001, max: 35000, cerfLevel: "A2-", raLevel: "5" },
-      { min: 35001, max: 45000, cerfLevel: "A2", raLevel: "6" },
-      { min: 45001, max: 56000, cerfLevel: "A2+", raLevel: "7" },
-      { min: 56001, max: 68000, cerfLevel: "B1-", raLevel: "8" },
-      { min: 68001, max: 81000, cerfLevel: "B1", raLevel: "9" },
-      { min: 81001, max: 95000, cerfLevel: "B1+", raLevel: "10" },
-      { min: 95001, max: 110000, cerfLevel: "B2-", raLevel: "11" },
-      { min: 110001, max: 126000, cerfLevel: "B2", raLevel: "12" },
-      { min: 126001, max: 143000, cerfLevel: "B2+", raLevel: "13" },
-      { min: 143001, max: 161000, cerfLevel: "C1-", raLevel: "14" },
-      { min: 161001, max: 180000, cerfLevel: "C1", raLevel: "15" },
-      { min: 180001, max: 221000, cerfLevel: "C1+", raLevel: "16" },
-      { min: 221001, max: 243000, cerfLevel: "C2-", raLevel: "17" },
-      { min: 243001, cerfLevel: "C2", raLevel: "18" }
+      { min: 0, max: 5000, cerfLevel: "A0", raLevel: 1 },
+      { min: 5001, max: 11000, cerfLevel: "A0+", raLevel: 2 },
+      { min: 11001, max: 18000, cerfLevel: "A1", raLevel: 3 },
+      { min: 18001, max: 26000, cerfLevel: "A1+", raLevel: 4 },
+      { min: 26001, max: 35000, cerfLevel: "A2-", raLevel: 5 },
+      { min: 35001, max: 45000, cerfLevel: "A2", raLevel: 6 },
+      { min: 45001, max: 56000, cerfLevel: "A2+", raLevel: 7 },
+      { min: 56001, max: 68000, cerfLevel: "B1-", raLevel: 8 },
+      { min: 68001, max: 81000, cerfLevel: "B1", raLevel: 9 },
+      { min: 81001, max: 95000, cerfLevel: "B1+", raLevel: 10 },
+      { min: 95001, max: 110000, cerfLevel: "B2-", raLevel: 11 },
+      { min: 110001, max: 126000, cerfLevel: "B2", raLevel: 12 },
+      { min: 126001, max: 143000, cerfLevel: "B2+", raLevel: 13 },
+      { min: 143001, max: 161000, cerfLevel: "C1-", raLevel: 14 },
+      { min: 161001, max: 180000, cerfLevel: "C1", raLevel: 15 },
+      { min: 180001, max: 221000, cerfLevel: "C1+", raLevel: 16 },
+      { min: 221001, max: 243000, cerfLevel: "C2-", raLevel: 17 },
+      { min: 243001, cerfLevel: "C2", raLevel: 18 }
   ];
 
   for (let level of levels) {
@@ -165,7 +174,7 @@ export default function FirstRunLevelTest({
       //For loop to check if the array answerValueArray is in the array correctAnswer
       for (let i = 0; i < answerOptionIndexArray.length; i++) {
         if (correctAnswer.includes(answerValueArray[i])) {
-          console.log("Correct answer:" + answerValueArray[i]);
+          // console.log("Correct answer:" + answerValueArray[i]);
           correctSelectedAnswer.push(answerValueArray[i]);
           if (!isQuestionAnswered[questionIndexArray[i]]) {
             setCountOfRightAnswers(countOfRightAnswers + 1);
@@ -174,16 +183,14 @@ export default function FirstRunLevelTest({
             setIsQuestionAnswered(newIsQuestionAnswered);
           }
           setHasAnsweredCorrectly(true);
-          console.log('hasAnsweredCorrectly true: ', hasAnsweredCorrectly);
           
         } else {
           setRightWrongAnswer(false);
           setHasAnsweredCorrectly(false);
-          console.log('hasAnsweredCorrectly false: ', hasAnsweredCorrectly);
         }
       }
       setScore(
-        (prevScore) =>
+        (prevScore: number) =>
           prevScore +
           correctSelectedAnswer.length *
             language_placement_test[currentSectionIndex].points
@@ -214,14 +221,42 @@ export default function FirstRunLevelTest({
 
   const onFinishTest = async () => {
     setTestFinished(true);
-    const response = await fetch(`/api/users/${userId}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        raLevel: levelCalculation(score).raLevel,
-        score: score,
-      }),
-    });
   };
+
+async function updateScore(score: number) {
+  setLoading(true);
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          xp: score,
+          level: levelCalculation(score).raLevel,
+        }),
+      });
+      
+      const data = await response.json();
+      await update({
+        user: {
+          ...session?.user,
+          xp: score,
+          level: levelCalculation(score).raLevel,
+        },
+      });
+      toast({
+        title: "Success",
+        description: "Your XP and level has been updated.",
+      });
+      router.refresh();
+    } catch (error) {
+      return toast({
+        title: "Something went wrong.",
+        description: "Your XP and level were not updated. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+}
 
   useEffect(() => {
     handleQuestions();
@@ -241,9 +276,11 @@ export default function FirstRunLevelTest({
         </CardHeader>
         <CardContent>
           <p>Your Score: {score}</p>
-          <p>Your Level: {levelCalculation(score).cerfLevel}</p><br />
-          <Button size="lg">
+          <p>Your cerfLevel: {levelCalculation(score).cerfLevel}</p>
+          <p>Your raLevel: {levelCalculation(score).raLevel}</p><br />
+          <Button size="lg" onClick={() => updateScore(score as number)}>
             {"Get Start"}
+            
           </Button>
         </CardContent>
       </Card>
