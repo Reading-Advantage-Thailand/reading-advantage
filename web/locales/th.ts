@@ -81,6 +81,9 @@ export default {
           buttonEasy: "ง่าย",
           flipCard: "พลิกการ์ด",
         },
+        //Order Sentences
+        OrderSentences: "เรียงประโยค",
+        OrderSentencesDescription: 'นี่คือบางประโยคจากหนึ่งในบทความที่คุณได้อ่าน จัดเรียงประโยคให้มีลำดับที่ดูมีเหตุผลสำหรับคุณ หากลำดับเดียวกันกับในบทความ คุณจะได้รับ 15 XP.'
       },
     },
   },

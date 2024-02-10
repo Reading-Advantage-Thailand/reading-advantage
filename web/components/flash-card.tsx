@@ -59,8 +59,6 @@ export default function FlashCard({ userId }: Props) {
       const startOfDay = date_scheduler(new Date(), 0, true);     
       const filteredData = res.data.sentences.filter((record: Sentence) => {        
         const dueDate = new Date(record.due);
-        console.log("startOfDay : ", startOfDay);
-        console.log("dueDate : ", dueDate);
         return dueDate >= startOfDay || record.state === 0;
       });
 

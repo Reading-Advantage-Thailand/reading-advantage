@@ -71,6 +71,10 @@ export default {
           buttonEasy: "很容易",
           flipCard: "翻轉",
         },
+        //Order Sentences
+        OrderSentences: "排列句子",
+        OrderSentencesDescription:
+          "这是你读过的一篇文章中的一些句子。请将这些句子排列成对你有意义的顺序。如果顺序与文章中的相同，你将获得15经验值。",
       },
     },
   },
