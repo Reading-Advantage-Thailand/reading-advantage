@@ -9,8 +9,8 @@ function ProgressBar({ progress }: { progress: number }) {
     }
 
     return (
-      <div className="progress-bar" style={{ width: '50%', backgroundColor: '#f3f3f3' }}>
-        <div style={{ width: `${(progress * 100)/(maxProgress || 1)}%`, backgroundColor: 'blue', height: '20px' }} />
+      <div className="progress-bar" style={{ width: '30%', backgroundColor: '#f3f3f3' }}>
+        <div style={{ width: `${(progress * 100)/(maxProgress || 1)}%`, backgroundColor: 'blue', height: '10px' }} />
       </div>
     );
   }

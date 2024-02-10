@@ -10,11 +10,8 @@ import { Button } from "../components/ui/button";
 import React, { useState, useEffect } from "react";
 import ProgressBar from "../components/progress-bar-xp";
 import { toast } from './ui/use-toast'
-import { update } from "lodash";
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { useContext } from 'react';
-import { ScoreContext } from '../contexts/score-context';
 
 type Props = {
   userId: string;
@@ -64,7 +61,6 @@ export default function FirstRunLevelTest({
   const [rightAnswersCounts, setRightAnswersCounts] = useState<number[]>([]);
   const [sectionAnswerCount, setSectionAnswerCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { setScores } = useContext(ScoreContext) || {};
 
   const answerOptionIndexArray: number[] = [];
   const answerValueArray: any[] = [];
@@ -299,11 +295,6 @@ async function updateScore(score: number) {
           </CardHeader>
           <CardContent>
             <div>
-              <span>
-                <ProgressBar progress={score} />
-                {score}
-              </span>
-              <br />
               <h1 className="font-bold text-xl mb-4">
                 Section {currentSectionIndex + 1}
               </h1>

@@ -25,7 +25,8 @@ export default async function StudentHomeLayout({
             <header className="sticky top-0 z-40 border-b bg-background">
                 <div className="container flex h-16 items-center justify-between py-4">
                     <MainNav items={studentPageConfig.mainNav} />
-<ProgressBar progress={0} />
+                    {/* <div> */}
+                    <ProgressBar progress={user.xp} />
                     <UserAccountNav
                         user={{
                             name: user.name || "",
@@ -35,6 +36,7 @@ export default async function StudentHomeLayout({
                             verified: user.verified || false,
                         }}
                     />
+                    {/* </div> */}
                 </div>
             </header>
             <div className="container grid flex-1 gap-12">
@@ -45,16 +47,3 @@ export default async function StudentHomeLayout({
         </div>
     )
 }
-
-// export async function getServerSideProps(context) {
-//     // Fetch user and score data here
-//     const user = await getCurrentUser(context.req, context.res);
-//     const score = await getScoreFromSomewhere(context.req, context.res);
-  
-//     if (!user) {
-//       return redirect('/auth/signin')
-//     }
-  
-//     // Pass user and score data to the page via props
-//     return { props: { user, score } };
-//   }

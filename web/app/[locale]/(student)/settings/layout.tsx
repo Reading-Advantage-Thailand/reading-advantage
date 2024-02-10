@@ -6,6 +6,7 @@ import { SidebarNav } from "@/components/sidebar-nav"
 import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle"
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher"
 import { settingsPageConfig } from "@/configs/settings-page-config"
+import ProgressBar from "@/components/progress-bar-xp"
 
 interface SettingsPageLayoutProps {
     children?: React.ReactNode
@@ -25,6 +26,7 @@ export default async function SettingsPageLayout({
             <header className="sticky top-0 z-40 border-b bg-background">
                 <div className="container flex h-16 items-center justify-between py-4">
                     <MainNav items={settingsPageConfig.mainNav} />
+                    <ProgressBar progress={user.xp} />
                     <div className="flex space-x-2">
                         <LocaleSwitcher />
                         <ThemeSwitcher />
