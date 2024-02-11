@@ -89,6 +89,14 @@ const nextSentence = targetIndex < sentencesInArticle.length - 1 ? sentencesInAr
 
 console.log(`Previous sentence: ${prevSentence}`);
 console.log(`Next sentence: ${nextSentence}`);
+
+// sort random
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
       */
 
       // setSentences(res.data); // Extract the response data and pass it to setSentences
