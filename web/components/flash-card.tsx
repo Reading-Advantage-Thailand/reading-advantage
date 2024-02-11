@@ -79,7 +79,6 @@ export default function FlashCard({ userId }: Props) {
           sentenceId: id,
         },
       });
-      console.log(res.data);
       getUserSentenceSaved();
       toast({
         title: t("toast.success"),
