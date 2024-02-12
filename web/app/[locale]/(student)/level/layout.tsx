@@ -3,8 +3,6 @@ import { getCurrentUser } from "@/lib/session"
 import { redirect } from "next/navigation"
 import { studentPageConfig } from "@/configs/student-page-config"
 import { UserAccountNav } from "@/components/user-account-nav"
-import PregressBar from "@/components/progress-bar-xp"
-import { ScoreContext } from "@/contexts/score-context"
 import ProgressBar from "@/components/progress-bar-xp"
 
 interface LevelLayoutProps {
@@ -25,8 +23,7 @@ export default async function StudentHomeLayout({
             <header className="sticky top-0 z-40 border-b bg-background">
                 <div className="container flex h-16 items-center justify-between py-4">
                     <MainNav items={studentPageConfig.mainNav} />
-                    {/* <div> */}
-                    <ProgressBar progress={user.xp} />
+                    <ProgressBar progress={user.xp} level={user.level} />
                     <UserAccountNav
                         user={{
                             name: user.name || "",
@@ -36,7 +33,6 @@ export default async function StudentHomeLayout({
                             verified: user.verified || false,
                         }}
                     />
-                    {/* </div> */}
                 </div>
             </header>
             <div className="container grid flex-1 gap-12">

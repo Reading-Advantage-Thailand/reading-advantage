@@ -26,7 +26,7 @@ export default async function SettingsPageLayout({
             <header className="sticky top-0 z-40 border-b bg-background">
                 <div className="container flex h-16 items-center justify-between py-4">
                     <MainNav items={settingsPageConfig.mainNav} />
-                    <ProgressBar progress={user.xp} />
+                    <ProgressBar progress={user.xp} level={user.level}/>
                     <div className="flex space-x-2">
                         <LocaleSwitcher />
                         <ThemeSwitcher />

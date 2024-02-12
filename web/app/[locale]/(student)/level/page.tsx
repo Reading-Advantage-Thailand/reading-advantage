@@ -37,7 +37,6 @@ export default async function LevelPage({}: Props) {
   return (
     <>
       <NextAuthSessionProvider session={user}>
-        {/* <LevelSelect userId={user.id} /> */}
         <FirstRunLevelTest
           userId={user.id}
           language_placement_test={

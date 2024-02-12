@@ -8,10 +8,10 @@ import {
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import React, { useState, useEffect } from "react";
-import ProgressBar from "../components/progress-bar-xp";
 import { toast } from './ui/use-toast'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import Confetti from 'react-confetti'
 
 type Props = {
   userId: string;
@@ -26,6 +26,7 @@ type levelTest = {
   }[];
   points: number;
 };
+
 type Option = {
   id: number;
   text: string;
@@ -35,6 +36,8 @@ type Question = {
   prompt: string;
   options: Record<string, Option>;
 };
+
+
 export default function FirstRunLevelTest({
   userId,
   language_placement_test,
@@ -47,7 +50,6 @@ export default function FirstRunLevelTest({
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[][]>([]);
   const [score, setScore] = useState(0);
   const [correctAnswer, setCorrectAnswer] = React.useState<string[]>([]);
-  const [rightWrongAnswer, setRightWrongAnswer] = useState(false);
   const [checked, setChecked] = useState(false);
   const [formkey, setFormKey] = useState(0);
   const [countOfRightAnswers, setCountOfRightAnswers] = useState(0);
@@ -66,7 +68,7 @@ export default function FirstRunLevelTest({
   const answerValueArray: any[] = [];
   const questionIndexArray: number[] = [];
 
-  function getCorrectAnswer() {
+  const getCorrectAnswer = () => {
     let allCorrectAnswers: string[] = [];
     for (let i = language_placement_test.length - 1; i >= 0; i--) {
       for (
@@ -166,11 +168,11 @@ export default function FirstRunLevelTest({
         description: "Please answer all questions!",
       });
     } else {
+    
       const correctSelectedAnswer: string[] = [];
       //For loop to check if the array answerValueArray is in the array correctAnswer
       for (let i = 0; i < answerOptionIndexArray.length; i++) {
         if (correctAnswer.includes(answerValueArray[i])) {
-          // console.log("Correct answer:" + answerValueArray[i]);
           correctSelectedAnswer.push(answerValueArray[i]);
           if (!isQuestionAnswered[questionIndexArray[i]]) {
             setCountOfRightAnswers(countOfRightAnswers + 1);
@@ -181,7 +183,6 @@ export default function FirstRunLevelTest({
           setHasAnsweredCorrectly(true);
           
         } else {
-          setRightWrongAnswer(false);
           setHasAnsweredCorrectly(false);
         }
       }
@@ -261,6 +262,11 @@ async function updateScore(score: number) {
 
   if (testFinished) {
     return (
+      <div>
+      <Confetti
+      width={window.innerWidth}
+      height={window.innerHeight}
+      />
       <Card>
         <CardHeader>
           <CardTitle className="font-bold text-2xl md:text-2xl">
@@ -276,10 +282,10 @@ async function updateScore(score: number) {
           <p>Your raLevel: {levelCalculation(score).raLevel}</p><br />
           <Button size="lg" onClick={() => updateScore(score as number)}>
             {"Get Start"}
-            
           </Button>
         </CardContent>
       </Card>
+      </div>
     );
   } else {
     return (
