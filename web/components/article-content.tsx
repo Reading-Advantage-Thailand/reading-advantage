@@ -4,6 +4,7 @@ import Tokenizer from "sentence-tokenizer";
 import { cn } from "@/lib/utils";
 import axios, { AxiosError } from "axios";
 import { toast } from "./ui/use-toast";
+import { createEmptyCard, Card } from "ts-fsrs";
 
 import {
   ContextMenu,
@@ -152,6 +153,7 @@ export default function ArticleContent({
       await handleTranslateSentence();
     } else {
       try {
+        let card: Card = createEmptyCard();
         let endTimepoint = 0;
         if (selectedSentence !== text.length - 1) {
           endTimepoint = text[(selectedSentence as number) + 1].begin as number;
@@ -168,6 +170,16 @@ export default function ArticleContent({
           },
           timepoint: text[selectedSentence as number].begin,
           endTimepoint: endTimepoint,
+          ...card,
+          // due: new Date(
+          //   new Date().getFullYear(),
+          //   new Date().getMonth(),
+          //   new Date().getDate(),
+          //   23,
+          //   59,
+          //   59,
+          //   0
+          // ),
         });
 
         toast({

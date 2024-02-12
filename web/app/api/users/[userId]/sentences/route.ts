@@ -16,8 +16,23 @@ export async function POST(req: Request, res: Response) {
                 message: 'Unauthorized',
             }), { status: 403 });
         }
-        const { articleId, sentence, translation, sn, timepoint, endTimepoint } = await req.json();
-        console.log('translation', translation);
+        const {
+          articleId,
+          sentence,
+          translation,
+          sn,
+          timepoint,
+          endTimepoint,
+          difficulty,
+          due,
+          elapsed_days,
+          lapses,
+          reps,
+          scheduled_days,
+          stability,
+          state,
+        } = await req.json();
+        console.log("translation", translation);
         // Get user id from token
         const sub = session.user.id;
         const username = session.user.name;
@@ -39,7 +54,9 @@ export async function POST(req: Request, res: Response) {
             }), { status: 400 });
         }
         // Create user article record
-        const userSentenceRecordRef = await db.collection("user-sentence-records").add({
+        const userSentenceRecordRef = await db
+          .collection("user-sentence-records")
+          .add({
             userId: sub,
             articleId,
             sentence,
@@ -48,7 +65,15 @@ export async function POST(req: Request, res: Response) {
             timepoint,
             endTimepoint,
             createdAt: new Date(),
-        });
+            difficulty,
+            due,
+            elapsed_days,
+            lapses,
+            reps,
+            scheduled_days,
+            stability,
+            state,
+          });
 
         // Create response
         return new Response(JSON.stringify({

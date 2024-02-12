@@ -45,8 +45,8 @@ export async function GET(req: Request, res: Response) {
       // Start with a base query
       const articlesQuery = db
         .collection("articles")
-        .where("raLevel", ">=", levelInt - 2)
-        .where("raLevel", "<=", levelInt + 2)
+        .where("raLevel", ">=", levelInt - 1)
+        .where("raLevel", "<=", levelInt + 1)
         .where("type", "==", type);
       const articlesSnapshot = await articlesQuery.get();
       const articles: FirebaseFirestore.DocumentData[] = [];
@@ -73,8 +73,8 @@ export async function GET(req: Request, res: Response) {
       // Start with a base query
       const articlesQuery = db
         .collection("articles")
-        .where("raLevel", ">=", levelInt - 2)
-        .where("raLevel", "<=", levelInt + 2)
+        .where("raLevel", ">=", levelInt - 1)
+        .where("raLevel", "<=", levelInt + 1)
         .where("type", "==", type)
         .where("genre", "==", replaceSpaces(genre));
       const articlesSnapshot = await articlesQuery.get();
@@ -111,8 +111,8 @@ export async function GET(req: Request, res: Response) {
       // Start with a base query
       const articlesQuery = db
         .collection("articles")
-        .where("raLevel", ">=", levelInt - 2)
-        .where("raLevel", "<=", levelInt + 2)
+        .where("raLevel", ">=", levelInt - 1)
+        .where("raLevel", "<=", levelInt + 1)
         .where("type", "==", type)
         .where("genre", "==", replaceSpaces(genre))
         .where("subGenre", "==", replaceSpaces(subgenre));
