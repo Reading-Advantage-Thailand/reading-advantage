@@ -98,7 +98,7 @@ export default function OrderSentences({ userId }: Props) {
     const textList = await splitToText(res.data.article);
     const resultsFindTexts = await findTextsByIndexes(textList, sn);
     const resultsProcess = await processDynamicData(resultsFindTexts);
-    return resultsProcess;
+    return { title: res.data.article.title, result: resultsProcess };
   };
 
   const getUserSentenceSaved = async () => {
