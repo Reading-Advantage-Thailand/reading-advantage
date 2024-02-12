@@ -27,7 +27,7 @@ export async function GET(req: Request, res: Response) {
 
     const fileContents = fs.readFileSync(filePath, "utf8");
     const dataObject = JSON.parse(fileContents)?.language_placement_test;
-console.log('dataObject: ', dataObject);
+
 
     return new Response(
       JSON.stringify({

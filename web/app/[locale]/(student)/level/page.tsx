@@ -1,90 +1,49 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../../../../components/ui/card";
-import { Button } from "../../../../components/ui/button";
-import { Icons } from "../../../../components/icons";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { headers } from "next/headers";
+import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
+import { getCurrentUser } from "@/lib/session";
+import { redirect } from "next/navigation";
+import React from "react";
+import FirstRunLevelTest from "@/components/first-run-level-test";
+import LevelSelect from "@/components/level-select";
 
 type Props = {
-//   userId: string;
-  // levelTestData: any,
+  userId: string;
+};
+export const metadata = {
+  title: "Level grading",
 };
 
-async function getLevelTestData() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/level-test`,
-    {
-      method: "GET",
-      headers: headers(),
-    }
-  );
-  return res.json();
-}
+export default async function LevelPage({}: Props) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return redirect("/auth/signin");
+  }
+  if (user.level > 0) {
+    return redirect("/student/read");
+  }
 
-export default async function FirstRunLevelTest({  }: Props) {
-  // const [loading, setLoading] = useState(false);
+  async function getLevelTestData() {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/level-test`,
+      {
+        method: "GET",
+        headers: headers(),
+      }
+    );
+    return res.json();
+  }
   const resGeneralDescription = await getLevelTestData();
-
 
   return (
     <>
-      <Dialog>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="font-bold text-2xl md:text-2xl">
-              Please select your language
-            </DialogTitle>
-          </DialogHeader>
-          <DialogFooter></DialogFooter>
-        </DialogContent>
-      </Dialog>
-      {/* <Card>
-            <CardContent>
-            <CardTitle className='font-bold text-2xl md:text-2xl'>
-                        Please select your language
-                    </CardTitle>
-            </CardContent>
-        </Card> */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-bold text-2xl md:text-2xl">
-            Let&apos;s get start by testing your skill!
-          </CardTitle>
-          <CardDescription>
-            Choose the correct answer to assess your reading level.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <pre>{JSON.stringify(resGeneralDescription, null, 2)}</pre>
-          </div>
-          <div>content show here</div>
-        </CardContent>
-      </Card>
-      <div className="flex items-center pt-4">
-        <Button
-          size="lg"
-          // disabled={loading}
-        >
-          {/* {loading && (
-                        <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                    )} */}
-          <span>Next</span>
-        </Button>
-      </div>
+      <NextAuthSessionProvider session={user}>
+        <FirstRunLevelTest
+          userId={user.id}
+          language_placement_test={
+            resGeneralDescription.language_placement_test
+          }
+        />
+      </NextAuthSessionProvider>
     </>
   );
 }
