@@ -15,6 +15,7 @@ import { Button } from "./ui/button";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { splitToText } from "@/lib/utils";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 type Props = {
   userId: string;
@@ -40,9 +41,8 @@ type Article = {
 
 export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
-  // const [sentences, setSentences] = useState<Sentence[]>([]);
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
-  const [articleRandom, setArticleRandom] = useState<Article[]>([]);
+  const [articleRandom, setArticleRandom] = useState<any[]>([]);
   const [article, setArticle] = useState<Article[]>([]);
 
   // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
@@ -85,12 +85,21 @@ export default function OrderSentences({ userId }: Props) {
       }));
   };
 
-  const shuffleArray = (array: any) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+  const shuffleArray = (data: any) => {
+    const raeData = JSON.parse(JSON.stringify(data));
+
+    // Loop through each section in the data
+    raeData.forEach((section: any) => {
+      // Check if the result array has at least two items to swap
+      for (let i = section.result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [section.result[i], section.result[j]] = [
+          section.result[j],
+          section.result[i],
+        ];
+      }
+    });
+    return raeData;
   };
 
   const getArticle = async (articleId: string, sn: number[]) => {
@@ -133,9 +142,45 @@ export default function OrderSentences({ userId }: Props) {
         newTodos.push(resultList);
       }
       setArticleBeforeRandom(newTodos);
+      setArticleRandom(shuffleArray(newTodos));
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const onDragEnd = (result:any) => {
+    const { source, destination } = result;
+
+    // If dropped outside the list
+    if (!destination) {
+      return;
+    }
+
+    // Only proceed if dropped in the same list
+    if (source.droppableId === destination.droppableId) {
+      const sectionIndex = parseInt(
+        source.droppableId.replace("droppable-", ""),
+        10
+      );
+      const reorderedItems = reorder(
+        articleRandom[sectionIndex].result,
+        source.index,
+        destination.index
+      );
+
+      const newData = [...articleRandom];
+      newData[sectionIndex].result = reorderedItems;
+      setArticleRandom(newData);
+    }
+  };
+
+  // Reordering the result list
+  const reorder = (list: any, startIndex:number, endIndex:number) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+
+    return result;
   };
 
   useEffect(() => {
@@ -143,31 +188,7 @@ export default function OrderSentences({ userId }: Props) {
   }, []);
 
   console.log("articleBeforeRandom : ", articleBeforeRandom);
-  /*
-  [
-    {
-        "index": 0,
-        "text": "Once upon a time, in a small town called Harmonyville, there were two best friends named Lily and Emma."
-    },
-    {
-        "index": 1,
-        "text": "They were both in the fifth grade at Harmony Elementary School."
-    },
-    {
-        "index": 2,
-        "text": "Lily had curly brown hair and bright blue eyes, while Emma had long blonde hair and sparkling green eyes."
-    },
-    {
-        "index": 3,
-        "text": "They were inseparable and did everything together."
-    },
-    {
-        "index": 4,
-        "text": "One day, they noticed something troubling happening at their school."
-    }
-]
-  
-  */
+  console.log("articleRandom : ", articleRandom);
 
   return (
     <>
@@ -175,7 +196,49 @@ export default function OrderSentences({ userId }: Props) {
         heading={t("OrderSentences")}
         text={t("OrderSentencesDescription")}
       />
-      <div>{JSON.stringify(articleBeforeRandom)}</div>
+      <div className="mt-5">
+        <DragDropContext onDragEnd={onDragEnd}>
+          {articleRandom.map((section, sectionIndex) => (
+            <div key={section.title}>
+              <h2 className="my-5">{section.title}</h2>              
+              <Droppable droppableId={`droppable-${sectionIndex}`}>
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef}>
+                    {section.result.map((item: any, index: number) => (
+                      <Draggable
+                        key={item.index}
+                        draggableId={`item-${item.index}`}
+                        index={index}
+                      >
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              userSelect: "none",
+                              padding: 16,
+                              margin: "0 0 8px 0",
+                              minHeight: "50px",
+                              backgroundColor: "#fff",
+                              color: "#333",
+                              border: "1px solid #210eef",
+                              ...provided.draggableProps.style,
+                            }}
+                          >
+                            {item.text}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          ))}
+        </DragDropContext>
+      </div>
     </>
   );
 }
