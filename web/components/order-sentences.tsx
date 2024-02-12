@@ -2,6 +2,8 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { useScopedI18n } from "@/locales/client";
+import { v4 as uuidv4 } from "uuid";
 import {
   Card,
   CardContent,
@@ -12,9 +14,7 @@ import {
 import { Button } from "./ui/button";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
-import { useScopedI18n } from "@/locales/client";
-import { v4 as uuidv4 } from "uuid";
-import { headers } from "next/headers";
+import { splitToText } from "@/lib/utils";
 
 type Props = {
   userId: string;
@@ -32,14 +32,74 @@ type Sentence = {
   id: string;
 };
 
+type Article = {
+  text?: string;
+  begin: number;
+};
+
+
 export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
-  const [sentences, setSentences] = useState<Sentence[]>([]);
-  // artical id : 1KOLOxdy7aCsf3CrClj3
-  const  getArticle = async (articleId: string, sn: number[]) => {
+  // const [sentences, setSentences] = useState<Sentence[]>([]);
+  const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
+  const [articleRandom, setArticleRandom] = useState<Article[]>([]);
+  const [article, setArticle] = useState<Article[]>([]);
+
+  // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
+  const findTextsByIndexes = (objects: Article[], targetIndexes: number[]) => {
+    return targetIndexes.map((index: number) => {
+      const before =
+        index - 1 >= 0
+          ? { index: index - 1, text: objects[index - 1]?.text }
+          : null; //index - 1 >= 0 ? objects[index - 1]?.text : "ไม่มีข้อมูล";
+      const current = { index: index, text: objects[index]?.text };
+      const after =
+        index + 1 < objects.length
+          ? { index: index + 1, text: objects[index + 1]?.text }
+          : null;
+      return { before, current, after };
+    });
+  };
+
+  // สร้างฟังก์ชันเพื่อจัดการข้อมูล
+  const processDynamicData = (data: any) => {
+    // ใช้ Map เพื่อจัดการการซ้ำของข้อมูล
+    const uniqueTexts = new Map();
+
+    // วนลูปเพื่อดึงข้อมูลจากแต่ละส่วน
+    data.forEach((group: any) => {
+      // ดึงข้อมูล before, current, after และเพิ่มลงใน Map
+      [group?.before, group?.current, group?.after].forEach((item) => {
+        if (item !== null) {
+          uniqueTexts.set(item?.index, item?.text);
+        }
+      });
+    });
+
+    // แปลง Map เป็น Array และเรียงลำดับตาม index
+    return Array.from(uniqueTexts.keys())
+      .sort((a, b) => a - b)
+      .map((index) => ({
+        index,
+        text: uniqueTexts.get(index),
+      }));
+  };
+
+  const shuffleArray = (array: any) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+
+  const getArticle = async (articleId: string, sn: number[]) => {
     const res = await axios.get(`/api/articles/${articleId}`);
-    console.log("getArticle : ", res.data);
-  }
+    const textList = await splitToText(res.data.article);
+    const resultsFindTexts = await findTextsByIndexes(textList, sn);
+    const resultsProcess = await processDynamicData(resultsFindTexts);
+    return resultsProcess;
+  };
 
   const getUserSentenceSaved = async () => {
     try {
@@ -64,42 +124,15 @@ export default function OrderSentences({ userId }: Props) {
       }
 
       // step 4 : get sentence from articleId and sn
+      const newTodos = [...articleBeforeRandom];
       for (const articleId in articleIdToSnMap) {
-        getArticle(articleId, articleIdToSnMap[articleId]);
+        let resultList = await getArticle(
+          articleId,
+          articleIdToSnMap[articleId]
+        );
+        newTodos.push(resultList);
       }
-
-      console.log(articleIdToSnMap);
-
-      /*
-      const targetArticleId = "1KOLOxdy7aCsf3CrClj3";
-const targetSn = 10;
-
-// ค้นหา sentences ใน articleId ที่กำหนด
-const sentencesInArticle = articles.filter(article => article.articleId === targetArticleId);
-
-// เรียงลำดับตาม sn
-sentencesInArticle.sort((a, b) => a.sn - b.sn);
-
-// ค้นหา index ของ sentence ที่มี sn เท่ากับ targetSn
-const targetIndex = sentencesInArticle.findIndex(article => article.sn === targetSn);
-
-// ดึง sentence ก่อนและหลัง
-const prevSentence = targetIndex > 0 ? sentencesInArticle[targetIndex - 1].sentence : null;
-const nextSentence = targetIndex < sentencesInArticle.length - 1 ? sentencesInArticle[targetIndex + 1].sentence : null;
-
-console.log(`Previous sentence: ${prevSentence}`);
-console.log(`Next sentence: ${nextSentence}`);
-
-// sort random
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
-      */
-
-      // setSentences(res.data); // Extract the response data and pass it to setSentences
+      setArticleBeforeRandom(newTodos);
     } catch (error) {
       console.log(error);
     }
@@ -109,7 +142,32 @@ function shuffleArray(array) {
     getUserSentenceSaved();
   }, []);
 
-  console.log(sentences);
+  console.log("articleBeforeRandom : ", articleBeforeRandom);
+  /*
+  [
+    {
+        "index": 0,
+        "text": "Once upon a time, in a small town called Harmonyville, there were two best friends named Lily and Emma."
+    },
+    {
+        "index": 1,
+        "text": "They were both in the fifth grade at Harmony Elementary School."
+    },
+    {
+        "index": 2,
+        "text": "Lily had curly brown hair and bright blue eyes, while Emma had long blonde hair and sparkling green eyes."
+    },
+    {
+        "index": 3,
+        "text": "They were inseparable and did everything together."
+    },
+    {
+        "index": 4,
+        "text": "One day, they noticed something troubling happening at their school."
+    }
+]
+  
+  */
 
   return (
     <>
@@ -117,6 +175,7 @@ function shuffleArray(array) {
         heading={t("OrderSentences")}
         text={t("OrderSentencesDescription")}
       />
+      <div>{JSON.stringify(articleBeforeRandom)}</div>
     </>
   );
 }

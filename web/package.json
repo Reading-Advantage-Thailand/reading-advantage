@@ -47,7 +47,6 @@
     "next-themes": "^0.2.1",
     "openai": "^4.26.0",
     "react": "^18",
-    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18",
     "react-hook-form": "^7.47.0",
     "react-quizlet-flashcard": "^3.0.0",
