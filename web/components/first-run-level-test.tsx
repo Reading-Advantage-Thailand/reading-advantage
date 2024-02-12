@@ -51,7 +51,7 @@ export default function FirstRunLevelTest({
   const [score, setScore] = useState(0);
   const [correctAnswer, setCorrectAnswer] = React.useState<string[]>([]);
   const [checked, setChecked] = useState(false);
-  // const [formkey, setFormKey] = useState(0);
+  const [formkey, setFormKey] = useState(0);
   const [countOfRightAnswers, setCountOfRightAnswers] = useState(0);
   const [hasAnsweredCorrectly, setHasAnsweredCorrectly] = useState(false);
   const [isQuestionAnswered, setIsQuestionAnswered] = useState(
