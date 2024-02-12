@@ -81,8 +81,12 @@ export default {
           buttonHard: "Hard",
           buttonGood: "Good",
           buttonEasy: "Easy",
-          flipCard:'Flip'
+          flipCard: "Flip",
         },
+        //Order Sentences
+        OrderSentences: "Order Sentences",
+        OrderSentencesDescription:
+          "These are some sentences from one of the passages you've read. Put the sentences in an order that makes sense to you. If the order is the same as the passage, you'll receive 15 XP.",
       },
     },
   },

@@ -2,6 +2,7 @@
 import React from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import FlashCard from "@/components/flash-card";
+import OrderSentences from '@/components/order-sentences';
 
 type Props = {
   userId: string;
@@ -33,7 +34,7 @@ export default function TabsPractice ({
         <FlashCard userId={userId} />
       </Tabs.Content>
       <Tabs.Content className="TabsContent" value="tab2">
-        Order Sentences
+        <OrderSentences userId={userId} />
       </Tabs.Content>
       <Tabs.Content className="TabsContent" value="tab3">
         Close Test

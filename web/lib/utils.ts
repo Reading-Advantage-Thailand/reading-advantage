@@ -1,5 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { ArticleType } from "@/types";
+import Tokenizer from "sentence-tokenizer";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -32,3 +34,16 @@ export function camelToSentenceCase(str: string) {
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (str) => str.toUpperCase())
 }
+
+  export const splitToText = (article: ArticleType) => {
+    const tokenizer = new Tokenizer("Chuck");
+    tokenizer.setEntry(article.content);
+    const result = tokenizer.getSentences();
+    const textArray = [];
+
+    for (let i = 0; i < article.timepoints.length; i++) {
+      textArray.push({ text: result[i], begin: article.timepoints[i].timeSeconds });
+    }
+    
+    return textArray;
+  };
