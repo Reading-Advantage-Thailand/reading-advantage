@@ -82,6 +82,10 @@ export default {
           buttonEasy: "Dễ",
           flipCard: "Lật thẻ",
         },
+        //Order Sentences
+        OrderSentences: "Sắp xếp câu",
+        OrderSentencesDescription:
+          "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy xếp các câu theo trật tự có ý nghĩa với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 15 XP.",
       },
     },
   },

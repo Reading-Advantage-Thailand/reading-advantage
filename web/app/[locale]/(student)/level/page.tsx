@@ -6,14 +6,11 @@ import React from "react";
 import FirstRunLevelTest from "@/components/first-run-level-test";
 import { getScopedI18n } from "@/locales/server";
 
-type Props = {
-  userId: string;
-};
 export const metadata = {
   title: "Level grading",
 };
 
-export default async function LevelPage({}: Props) {
+export default async function LevelPage() {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
