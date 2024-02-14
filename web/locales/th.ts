@@ -122,6 +122,26 @@ export default {
       next: "ถัดไป",
       select: "{selected} จาก {total} ที่เลือก",
     },
+    firstRunLevelTest: {
+      heading: "เริ่มต้นด้วยการทดสอบทักษะของคุณ",
+      description: "เลือกคำตอบที่ถูกต้องเพื่อประเมินระดับการอ่านของคุณ",
+      nextButton: "ถัดไป",
+      section: "ส่วนที่ {currentSectionIndex}",
+      toast: {
+        successUpdate: "สำเร็จ",
+        successUpdateDescription: "คะแนนประสบการณ์และระดับของคุณได้รับการอัปเดตแล้ว",
+        attention: "คำเตือน",
+        attentionDescription: "กรุณาตอบทุกคำถาม!",
+        errorTitle: "มีบางอย่างผิดพลาด",
+        errorDescription: "คะแนนประสบการณ์และระดับของคุณไม่ได้รับการอัปเดต กรุณาลองอีกครั้ง",
+      },
+      congratulations: "ยินดีด้วย!",
+      congratulationsDescription: "การทดสอบเสร็จสิ้นแล้ว",
+      yourScore: "คะแนนของคุณคือ {score}",
+      yourCefrLevel: "ระดับภาษาของคุณคือ {cefrLevel}", 
+      yourRaLevel: "ระดับการอ่านของคุณคือ {raLevel}",
+      getStartedButton: "เริ่มกันเลย",
+    },
     // use this for article selection page
     // this is the select component
     select: {
