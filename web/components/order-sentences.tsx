@@ -15,7 +15,15 @@ import { Button } from "./ui/button";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { splitToText } from "@/lib/utils";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+// import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  DraggableProvided,
+  DroppableProvided,
+  DraggableStateSnapshot,
+} from "@hello-pangea/dnd";
 
 type Props = {
   userId: string;
@@ -200,7 +208,7 @@ export default function OrderSentences({ userId }: Props) {
         <DragDropContext onDragEnd={onDragEnd}>
           {articleRandom.map((section, sectionIndex) => (
             <div key={section.title}>
-              <h2 className="my-5">{section.title}</h2>              
+              <h2 className="my-5">{section.title}</h2>
               <Droppable droppableId={`droppable-${sectionIndex}`}>
                 {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef}>
@@ -238,6 +246,47 @@ export default function OrderSentences({ userId }: Props) {
             </div>
           ))}
         </DragDropContext>
+        {/* <DragDropContext onDragEnd={onDragEnd}>
+          {articleRandom.map((section, sectionIndex) => (
+            <div key={section.title}>
+              <h2 className="my-5">{section.title}</h2>              
+              <Droppable droppableId={`droppable-${sectionIndex}`}>
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef}>
+                    {section.result.map((item: any, index: number) => (
+                      <Draggable
+                        key={item.index}
+                        draggableId={`item-${item.index}`}
+                        index={index}
+                      >
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              userSelect: "none",
+                              padding: 16,
+                              margin: "0 0 8px 0",
+                              minHeight: "50px",
+                              backgroundColor: "#fff",
+                              color: "#333",
+                              border: "1px solid #210eef",
+                              ...provided.draggableProps.style,
+                            }}
+                          >
+                            {item.text}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          ))}
+        </DragDropContext> */}
       </div>
     </>
   );
