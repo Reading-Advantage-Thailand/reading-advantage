@@ -9,9 +9,9 @@ function ProgressBar({ progress, level}: { progress: number, level: number }) {
     }
 
     return (
-      <div className="flex gap-4 justify-center" style={{ width: '100%' }}>
+      <div className="flex gap-4 justify-center w-[50%]">
         <p>XP :  </p>
-      <div className="progress-bar" style={{ width: '30%', backgroundColor: '#f3f3f3', borderRadius: '10px' }}>
+      <div className="w-[50%] bg-[#f3f3f3] rounded-xl">
         <div style={{ width: `${(progress * 100)/(maxProgress || 1)}%`, 
         backgroundColor: 'blue', 
         height: '22px', 
@@ -19,7 +19,7 @@ function ProgressBar({ progress, level}: { progress: number, level: number }) {
         animationName: 'progress-bar-animation',
         animationDuration: '5s',
         animationTimingFunction: 'infinite',
-        animationFillMode: 'forwards'
+        animationFillMode: 'forwards',
         }} />
       </div>
         <p>Level {level}  </p>
