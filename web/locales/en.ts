@@ -151,6 +151,10 @@ export default {
       yourRaLevel: "Your RA Level : {raLevel}",
       getStartedButton: "Get Start",
     },
+    progressBarXp: {
+      xp: "XP:",
+      level: "Level {level}",
+    },
     // use this for article selection page
     // this is the select component
     select: {

@@ -145,6 +145,10 @@ export default {
       yourRaLevel: "ระดับการอ่านของคุณคือ {raLevel}",
       getStartedButton: "เริ่มกันเลย",
     },
+    progressBarXp: {
+      xp: "คะแนนประสบการณ์: ",
+      level: "ระดับ {level}",
+    },
     // use this for article selection page
     // this is the select component
     select: {

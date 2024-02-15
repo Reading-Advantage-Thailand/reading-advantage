@@ -136,6 +136,10 @@ export default {
       yourRaLevel: "你的 RA 级别 : {raLevel}",
       getStartedButton: "开始",
     },
+    progressBarXp: {
+      xp: "经验: ",
+      level: "等级 {level}",
+    },
     select: {
       articleChoose: "请选择您想阅读的 {article}",
       articleChooseDescription:

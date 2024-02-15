@@ -147,7 +147,10 @@ export default {
       yourRaLevel: "Cấp RA của bạn: {raLevel}",
       getStartedButton: "Bắt đầu",
     },
-    
+    progressBarXp: {
+      xp: "kinh nghiệm: ",
+      level: "mức độ {level}",
+    },
     // Sử dụng cho trang chọn bài viết
     // Đây là thành phần chọn
     select: {
