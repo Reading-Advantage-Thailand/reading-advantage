@@ -248,17 +248,13 @@ async function updateScore(score: number) {
         },
       });
       toast({
-        // title: "Success!",
         title: t('toast.successUpdate'),
-        // description: "Your XP and level has been updated.",
         description: t('toast.successUpdateDescription'),
       });
       router.refresh();
     } catch (error) {
       return toast({
-        // title: "Something went wrong.",
         title: t('toast.errorTitle'),
-        // description: "Your XP and level were not updated. Please try again.",
         description: t('toast.errorDescription'),
         variant: "destructive"
       });
@@ -282,24 +278,18 @@ async function updateScore(score: number) {
       <Card>
         <CardHeader>
           <CardTitle className="font-bold text-2xl md:text-2xl">
-            {/* Congratulation! */}
             {t('congratulations')}
           </CardTitle>
           <CardDescription>
-          {/* The assessment is done. */}
           {t('congratulationsDescription')}
             </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* <p>Your Score: {score}</p>
-          <p>Your cefrLevel: {levelCalculation(score).cefrLevel}</p>
-          <p>Your raLevel: {levelCalculation(score).raLevel}</p><br /> */}
           <p>{t('yourScore', { score })}</p>
           <p>{t('yourCefrLevel', { cefrLevel: levelCalculation(score).cefrLevel })}</p>
           <p>{t('yourRaLevel', { raLevel: levelCalculation(score).raLevel })}</p><br/>
 
           <Button size="lg" onClick={() => updateScore(score as number)}>
-            {/* {"Get Start"} */}
             {t('getStartedButton')}
           </Button>
         </CardContent>
@@ -313,18 +303,15 @@ async function updateScore(score: number) {
           <CardHeader>
             <CardTitle className="font-bold text-2xl md:text-2xl">
               {t('heading')}
-              {/* Let&apos;s get started by testing your skill! */}
             </CardTitle>
             <CardDescription>
               {t('description')}
-              {/* Choose the correct answer to assess your reading level. */}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div>
               <h1 className="font-bold text-xl mb-4">
                 {t('section', { currentSectionIndex: currentSectionIndex + 1})}
-                {/* Section {currentSectionIndex + 1} */}
               </h1>
               {shuffledQuestions[currentPage] &&
                 shuffledQuestions[currentPage].map(
