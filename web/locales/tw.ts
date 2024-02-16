@@ -131,7 +131,7 @@ export default {
       },
       congratulations: "恭喜!",
       congratulationsDescription: "「評估完成。」",
-      yourScore: "你的分數 : {score}",
+      yourScore: "你的分數 : {xp}",
       yourCefrLevel: "你的 CEFR 等級 : {cefrLevel}", 
       yourRaLevel: "你的 RA 等級 : {raLevel}",
       getStartedButton: "開始",

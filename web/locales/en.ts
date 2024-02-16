@@ -146,7 +146,7 @@ export default {
       },
       congratulations: "Congratulation!",
       congratulationsDescription: "The assessment is done.",
-      yourScore: "Your Score : {score}",
+      yourScore: "Your Score : {xp}",
       yourCefrLevel: "Your CEFR Level : {cefrLevel}", 
       yourRaLevel: "Your RA Level : {raLevel}",
       getStartedButton: "Get Start",

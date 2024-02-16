@@ -136,19 +136,24 @@ export async function PATCH(req: Request, res: Response) {
     }
 
     const json = await req.json();
+    console.log("json", json);
+    const cachedCEFR = json.cefrLevel;
     const xp = JSON.parse(json.xp);
     const level = JSON.parse(json.level);
+    const cefrLevel = cachedCEFR;
 
     const userId = session.user.id;
 
     await db.collection("users").doc(userId).update({
       xp: xp,
       level: level,
+      cefrLevel: cefrLevel,
     });
 
     // update user session
     session.user.xp = xp;
     session.user.level = level;
+    session.user.cefrLevel = cefrLevel;
 
     return new Response(
       JSON.stringify({

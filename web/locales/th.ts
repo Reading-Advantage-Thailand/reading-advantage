@@ -140,7 +140,7 @@ export default {
       },
       congratulations: "ยินดีด้วย!",
       congratulationsDescription: "การทดสอบเสร็จสิ้นแล้ว",
-      yourScore: "คะแนนของคุณคือ {score}",
+      yourScore: "คะแนนของคุณคือ {xp}",
       yourCefrLevel: "ระดับภาษาของคุณคือ {cefrLevel}", 
       yourRaLevel: "ระดับการอ่านของคุณคือ {raLevel}",
       getStartedButton: "เริ่มกันเลย",

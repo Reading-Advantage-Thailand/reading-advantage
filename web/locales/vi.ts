@@ -142,7 +142,7 @@ export default {
       },
       congratulations: "Xin chúc mừng!",
       congratulationsDescription: "Việc đánh giá đã hoàn tất.",
-      yourScore: "Điểm của bạn: {score}",
+      yourScore: "Điểm của bạn: {xp}",
       yourCefrLevel: "Cấp độ CEFR của bạn: {cefrLevel}",
       yourRaLevel: "Cấp RA của bạn: {raLevel}",
       getStartedButton: "Bắt đầu",
