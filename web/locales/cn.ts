@@ -131,10 +131,14 @@ export default {
       },
       congratulations: "恭喜!",
       congratulationsDescription: "评估完成。",
-      yourScore: "你的分数 : {score}",
+      yourScore: "你的分数 : {xp}",
       yourCefrLevel: "你的 CEFR 等级 : {cefrLevel}", 
       yourRaLevel: "你的 RA 级别 : {raLevel}",
       getStartedButton: "开始",
+    },
+    progressBarXp: {
+      xp: "经验: ",
+      level: "等级 {level}",
     },
     select: {
       articleChoose: "请选择您想阅读的 {article}",

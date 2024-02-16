@@ -15,7 +15,9 @@ export default async function LevelPage() {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.level > 0) {
+  if (user.cefrLevel !== "" && user.level >= 0) {
+    // return เมื่อทำเสร็จแล้ว
+    // ถ้่าทำเสร็จแล้วจะต้องมี cefrLevel ที่ไม่ใช่ค่าว่าง และ level ที่มากกว่า 0
     return redirect("/student/read");
   }
 
@@ -29,6 +31,7 @@ export default async function LevelPage() {
   //   );
   //   return res.json();
   // }
+
   async function getLevelTestData() {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/level-test`,
@@ -37,14 +40,14 @@ export default async function LevelPage() {
         headers: headers(),
       }
     );
-  
+
     if (!res.ok) {
       throw new Error(`Server responded with status: ${res.status}`);
     }
-  
+
     return res.json();
   }
-  
+
   const resGeneralDescription = await getLevelTestData();
   return (
     <>

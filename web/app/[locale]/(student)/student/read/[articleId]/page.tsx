@@ -56,7 +56,7 @@ export default async function ArticleQuizPage({
 
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
-  if (user.level === 0) return redirect("/level");
+  // if (user.level === 0) return redirect("/level");
 
   const articleResult = await getArticle(params.articleId);
   console.log("article result", articleResult);
