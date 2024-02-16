@@ -8,10 +8,12 @@ import {
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import React, { useState, useEffect } from "react";
-import { toast } from './ui/use-toast'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import Confetti from 'react-confetti'
+import { toast } from "./ui/use-toast";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import Confetti from "react-confetti";
+import { useScopedI18n } from "../locales/client";
+import { levelCalculation, updateScore } from "../lib/utils";
 
 type Props = {
   userId: string;
@@ -38,17 +40,19 @@ type Question = {
 };
 
 
+
 export default function FirstRunLevelTest({
   userId,
   language_placement_test,
 }: Props) {
+  const t = useScopedI18n("components.firstRunLevelTest");
   const router = useRouter();
   const { data: session, status, update } = useSession();
   const [testFinished, setTestFinished] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[][]>([]);
-  const [score, setScore] = useState(0);
+  const [xp, setXp] = useState(0);
   const [correctAnswer, setCorrectAnswer] = React.useState<string[]>([]);
   const [checked, setChecked] = useState(false);
   const [formkey, setFormKey] = useState(0);
@@ -81,7 +85,7 @@ export default function FirstRunLevelTest({
       }
       setCorrectAnswer(allCorrectAnswers);
     }
-  }
+  };
 
   const onAnswerSelected = (optionId: number, answer: string, index: any) => {
     if (!answerOptionIndexArray.includes(optionId)) {
@@ -101,37 +105,6 @@ export default function FirstRunLevelTest({
       [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
-  }
-
-  function levelCalculation(score: number) {
-    const levels = [
-      { min: 0, max: 5000, cerfLevel: "A0", raLevel: 1 },
-      { min: 5001, max: 11000, cerfLevel: "A0+", raLevel: 2 },
-      { min: 11001, max: 18000, cerfLevel: "A1", raLevel: 3 },
-      { min: 18001, max: 26000, cerfLevel: "A1+", raLevel: 4 },
-      { min: 26001, max: 35000, cerfLevel: "A2-", raLevel: 5 },
-      { min: 35001, max: 45000, cerfLevel: "A2", raLevel: 6 },
-      { min: 45001, max: 56000, cerfLevel: "A2+", raLevel: 7 },
-      { min: 56001, max: 68000, cerfLevel: "B1-", raLevel: 8 },
-      { min: 68001, max: 81000, cerfLevel: "B1", raLevel: 9 },
-      { min: 81001, max: 95000, cerfLevel: "B1+", raLevel: 10 },
-      { min: 95001, max: 110000, cerfLevel: "B2-", raLevel: 11 },
-      { min: 110001, max: 126000, cerfLevel: "B2", raLevel: 12 },
-      { min: 126001, max: 143000, cerfLevel: "B2+", raLevel: 13 },
-      { min: 143001, max: 161000, cerfLevel: "C1-", raLevel: 14 },
-      { min: 161001, max: 180000, cerfLevel: "C1", raLevel: 15 },
-      { min: 180001, max: 221000, cerfLevel: "C1+", raLevel: 16 },
-      { min: 221001, max: 243000, cerfLevel: "C2-", raLevel: 17 },
-      { min: 243001, cerfLevel: "C2", raLevel: 18 }
-  ];
-
-  for (let level of levels) {
-      if (score >= level.min && (!level.max || score <= level.max)) {
-          return { cerfLevel: level.cerfLevel, raLevel: level.raLevel };
-      }
-  }
-
-  return { cerfLevel: "", raLevel: "" };
   }
 
   const handleQuestions = () => {
@@ -164,11 +137,12 @@ export default function FirstRunLevelTest({
   const handleNext = () => {
     if (answerOptionIndexArray.length < 3) {
       toast({
-        title: "Attention!",
-        description: "Please answer all questions!",
+        title: t("toast.attention"),
+        //title: "Attention",
+        description: t("toast.attentionDescription"),
+        //description: "Please answer all questions!",
       });
     } else {
-    
       const correctSelectedAnswer: string[] = [];
       //For loop to check if the array answerValueArray is in the array correctAnswer
       for (let i = 0; i < answerOptionIndexArray.length; i++) {
@@ -181,12 +155,11 @@ export default function FirstRunLevelTest({
             setIsQuestionAnswered(newIsQuestionAnswered);
           }
           setHasAnsweredCorrectly(true);
-          
         } else {
           setHasAnsweredCorrectly(false);
         }
       }
-      setScore(
+      setXp(
         (prevScore: number) =>
           prevScore +
           correctSelectedAnswer.length *
@@ -219,72 +192,120 @@ export default function FirstRunLevelTest({
   const onFinishTest = async () => {
     setTestFinished(true);
   };
+// async function updateScore(score: number, userId: string) {
+//   // const router = useRouter();
+//   // const { data: session, status, update } = useSession();
+//   // const [loading, setLoading] = useState(false);
+//   // const t = useScopedI18n('components.firstRunLevelTest');
 
-async function updateScore(score: number) {
-  setLoading(true);
-    try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          xp: score,
-          level: levelCalculation(score).raLevel,
-        }),
-      });
-      
-      const data = await response.json();
-      await update({
-        user: {
-          ...session?.user,
-          xp: score,
-          level: levelCalculation(score).raLevel,
-        },
-      });
-      toast({
-        title: "Success",
-        description: "Your XP and level has been updated.",
-      });
-      router.refresh();
-    } catch (error) {
-      return toast({
-        title: "Something went wrong.",
-        description: "Your XP and level were not updated. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-}
+//   setLoading(true);
+//     try {
+//       const response = await fetch(`/api/users/${userId}`, {
+//         method: "PATCH",
+//         body: JSON.stringify({
+//           xp: score,
+//           level: levelCalculation(score).raLevel,
+//           cefrLevel: levelCalculation(score).cefrLevel,
+//         }),
+//       });
+
+//       const data = await response.json();
+//       await update({
+//         user: {
+//           ...session?.user,
+//           xp: score,
+//           level: levelCalculation(score).raLevel,
+//           cefrLevel: levelCalculation(score).cefrLevel,
+//         },
+//       });
+//       toast({
+//         title: t('toast.successUpdate'),
+//         description: t('toast.successUpdateDescription'),
+//       });
+//       router.refresh();
+//     } catch (error) {
+//       return toast({
+//         title: t('toast.errorTitle'),
+//         description: t('toast.errorDescription'),
+//         variant: "destructive"
+//       });
+//     } finally {
+//       setLoading(false);
+//     }
+// }
+  // updateScore(score, userId, update, () => router.refresh(), toast);
 
   useEffect(() => {
-    handleQuestions();
-    getCorrectAnswer();
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        await handleQuestions();
+        await getCorrectAnswer();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   if (testFinished) {
     return (
       <div>
-      <Confetti
-      width={window.innerWidth}
-      height={window.innerHeight}
-      />
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-bold text-2xl md:text-2xl">
-            Congratulation!
-          </CardTitle>
-          <CardDescription>
-          The assessment is done.
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>Your Score: {score}</p>
-          <p>Your cerfLevel: {levelCalculation(score).cerfLevel}</p>
-          <p>Your raLevel: {levelCalculation(score).raLevel}</p><br />
-          <Button size="lg" onClick={() => updateScore(score as number)}>
-            {"Get Start"}
-          </Button>
-        </CardContent>
-      </Card>
+        <Confetti width={window.innerWidth} height={window.innerHeight} />
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-bold text-2xl md:text-2xl">
+              {t("congratulations")}
+            </CardTitle>
+            <CardDescription>{t("congratulationsDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>{t("yourScore", { xp })}</p>
+            <p>
+              {t("yourCefrLevel", {
+                cefrLevel: levelCalculation(xp).cefrLevel,
+              })}
+            </p>
+            <p>
+              {t("yourRaLevel", { raLevel: levelCalculation(xp).raLevel })}
+            </p>
+            <br />
+
+            {/* <Button size="lg" onClick={() => updateScore(score, userId, update, () => router.refresh())}> */}
+            <Button
+              size="lg"
+              onClick={async () => {
+                try {
+                  // const updateResult = await updateScore(score, userId, update, () => router.refresh());
+                  const updateResult = await updateScore(xp, userId, update);
+
+                  if (updateResult == "success") {
+                    // console.log(updateResult);
+                    toast({
+                      title: t("toast.successUpdate"),
+                      description: t("toast.successUpdateDescription"),
+                    });
+                    router.refresh();
+                  } else {
+                    console.log("Update Failed");
+                  }
+                } catch (error) {
+                  console.error(error); 
+                  toast({
+                    title: t("toast.errorTitle"),
+                    description: t("toast.errorDescription"),
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              {/* <Button size="lg" onClick={() => updateScore(score as number, userId)}> */}
+              {t("getStartedButton")}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   } else {
@@ -293,56 +314,62 @@ async function updateScore(score: number) {
         <Card>
           <CardHeader>
             <CardTitle className="font-bold text-2xl md:text-2xl">
-              Let&apos;s get started by testing your skill!
+              {t("heading")}
             </CardTitle>
-            <CardDescription>
-              Choose the correct answer to assess your reading level.
-            </CardDescription>
+            <CardDescription>{t("description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div>
-              <h1 className="font-bold text-xl mb-4">
-                Section {currentSectionIndex + 1}
-              </h1>
-              {shuffledQuestions[currentPage] &&
-                shuffledQuestions[currentPage].map(
-                  (
-                    question: {
-                      prompt: string;
-                      options: Record<string, { id: number; text: string }>;
-                    },
-                    questionIndex: number
-                  ) => (
-                    <div key={questionIndex}>
-                      <p className="font-bold">
-                        {questionIndex + 1}. {question.prompt}
-                      </p>
-                      <form key={formkey + 1}>
-                        {Object.entries(question.options).map(
-                          ([key, { id, text }]) => (
-                            <div key={id}>
-                              <input
-                                type="radio"
-                                name={`option${+questionIndex}`}
-                                value={text}
-                                id={key}
-                                className="mr-3"
-                                onChange={(e) =>
-                                  onAnswerSelected(
-                                    id,
-                                    e.target.value,
-                                    questionIndex
-                                  )
-                                }
-                              />
-                              <label htmlFor={key}>{text}</label>
-                            </div>
-                          )
-                        )}
-                      </form>
-                    </div>
-                  )
-                )}
+              {loading ? (
+                <h1>Please wait...</h1>
+              ) : (
+                <div>
+                  <h1 className="font-bold text-xl mb-4">
+                    {t("section", {
+                      currentSectionIndex: currentSectionIndex + 1,
+                    })}
+                  </h1>
+                  {shuffledQuestions[currentPage] &&
+                    shuffledQuestions[currentPage].map(
+                      (
+                        question: {
+                          prompt: string;
+                          options: Record<string, { id: number; text: string }>;
+                        },
+                        questionIndex: number
+                      ) => (
+                        <div key={questionIndex}>
+                          <p className="font-bold">
+                            {questionIndex + 1}. {question.prompt}
+                          </p>
+                          <form key={formkey + 1}>
+                            {Object.entries(question.options).map(
+                              ([key, { id, text }]) => (
+                                <div key={id}>
+                                  <input
+                                    type="radio"
+                                    name={`option${+questionIndex}`}
+                                    value={text}
+                                    id={key}
+                                    className="mr-3"
+                                    onChange={(e) =>
+                                      onAnswerSelected(
+                                        id,
+                                        e.target.value,
+                                        questionIndex
+                                      )
+                                    }
+                                  />
+                                  <label htmlFor={key}>{text}</label>
+                                </div>
+                              )
+                            )}
+                          </form>
+                        </div>
+                      )
+                    )}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -355,7 +382,9 @@ async function updateScore(score: number) {
                 : handleNext
             }
           >
-            {currentPage === shuffledQuestions.length - 1 ? "Finish" : "Next"}
+            {currentPage === shuffledQuestions.length - 1
+              ? "Finish"
+              : t("nextButton")}
           </Button>
         </div>
       </>

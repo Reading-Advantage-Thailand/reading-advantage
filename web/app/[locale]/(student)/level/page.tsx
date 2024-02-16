@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import React from "react";
 import FirstRunLevelTest from "@/components/first-run-level-test";
-import LevelSelect from "@/components/level-select";
+import { getScopedI18n } from "@/locales/server";
 
 export const metadata = {
   title: "Level grading",
@@ -15,9 +15,22 @@ export default async function LevelPage() {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.level > 0) {
+  if (user.cefrLevel !== "" && user.level >= 0) {
+    // return เมื่อทำเสร็จแล้ว
+    // ถ้่าทำเสร็จแล้วจะต้องมี cefrLevel ที่ไม่ใช่ค่าว่าง และ level ที่มากกว่า 0
     return redirect("/student/read");
   }
+
+  // async function getLevelTestData() {
+  //   const res = await fetch(
+  //     `${process.env.NEXT_PUBLIC_BASE_URL}/api/level-test`,
+  //     {
+  //       method: "GET",
+  //       headers: headers(),
+  //     }
+  //   );
+  //   return res.json();
+  // }
 
   async function getLevelTestData() {
     const res = await fetch(
@@ -27,10 +40,15 @@ export default async function LevelPage() {
         headers: headers(),
       }
     );
+
+    if (!res.ok) {
+      throw new Error(`Server responded with status: ${res.status}`);
+    }
+
     return res.json();
   }
-  const resGeneralDescription = await getLevelTestData();
 
+  const resGeneralDescription = await getLevelTestData();
   return (
     <>
       <NextAuthSessionProvider session={user}>

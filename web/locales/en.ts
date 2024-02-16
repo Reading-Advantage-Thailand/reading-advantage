@@ -9,6 +9,9 @@ export default {
       loginDescription: "Log in to your account",
       backButton: "Back",
     },
+    testPage: {
+      xxx: "Let's get started by testing your skill!" 
+    },
     student: {
       readPage: {
         //Headings
@@ -127,6 +130,30 @@ export default {
       previous: "previous",
       next: "next",
       select: "{selected} of {total} selected",
+    },
+    firstRunLevelTest: {
+      heading: "Let's get started by testing your skill!",
+      description: "Choose the correct answer to assess your reading level.",
+      nextButton: "Next",
+      section: "Section {currentSectionIndex}",
+      toast: {
+        successUpdate: "Success!",
+        successUpdateDescription: "Your XP and level has been updated.",
+        attention: "Attention",
+        attentionDescription: "Please answer all questions!",
+        errorTitle: "Something went wrong.",
+        errorDescription: "Your XP and level were not updated. Please try again.",
+      },
+      congratulations: "Congratulation!",
+      congratulationsDescription: "The assessment is done.",
+      yourScore: "Your Score : {xp}",
+      yourCefrLevel: "Your CEFR Level : {cefrLevel}", 
+      yourRaLevel: "Your RA Level : {raLevel}",
+      getStartedButton: "Get Start",
+    },
+    progressBarXp: {
+      xp: "XP:",
+      level: "Level {level}",
     },
     // use this for article selection page
     // this is the select component

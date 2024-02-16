@@ -116,6 +116,30 @@ export default {
       next: "下一个",
       select: "已选择 {selected} 个，共 {total} 个",
     },
+    firstRunLevelTest: {
+      heading: "让我们开始测试你的技能吧！",
+      description: "选择正确的答案来评估您的阅读水平。",
+      nextButton: "下一个",
+      section: "部分 {currentSectionIndex}",
+      toast: {
+        successUpdate: "成功！",
+        successUpdateDescription: "您的经验和等级已更新。",
+        attention: "注意",
+        attentionDescription: "请回答所有问题!",
+        errorTitle: "出了点问题。",
+        errorDescription: "您的经验和等级未更新。请重试。",
+      },
+      congratulations: "恭喜!",
+      congratulationsDescription: "评估完成。",
+      yourScore: "你的分数 : {xp}",
+      yourCefrLevel: "你的 CEFR 等级 : {cefrLevel}", 
+      yourRaLevel: "你的 RA 级别 : {raLevel}",
+      getStartedButton: "开始",
+    },
+    progressBarXp: {
+      xp: "经验: ",
+      level: "等级 {level}",
+    },
     select: {
       articleChoose: "请选择您想阅读的 {article}",
       articleChooseDescription:
