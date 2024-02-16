@@ -1,29 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-"use client";
+// "use client";
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { v4 as uuidv4 } from "uuid";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
 import { Button } from "./ui/button";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { splitToText } from "@/lib/utils";
-// import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import {
-  DragDropContext,
-  Draggable,
-  Droppable,
-  DraggableProvided,
-  DroppableProvided,
-  DraggableStateSnapshot,
-} from "@hello-pangea/dnd";
+import { DragDropContext } from "@hello-pangea/dnd";
+import type { DropResult, DraggableId, DraggableLocation } from "@hello-pangea/dnd";
 
 type Props = {
   userId: string;
@@ -45,6 +31,27 @@ type Article = {
   text?: string;
   begin: number;
 };
+
+type Id = string;
+
+export interface Quote {
+  id: Id;
+  content: string;
+}
+
+export interface Dragging {
+  id: DraggableId;
+  location: DraggableLocation;
+}
+
+export interface QuoteMap {
+  [key: string]: Quote[];
+}
+
+export interface Task {
+  id: Id;
+  content: string;
+}
 
 
 export default function OrderSentences({ userId }: Props) {
@@ -157,6 +164,7 @@ export default function OrderSentences({ userId }: Props) {
   };
 
   const onDragEnd = (result:any) => {
+    /*
     const { source, destination } = result;
 
     // If dropped outside the list
@@ -180,6 +188,7 @@ export default function OrderSentences({ userId }: Props) {
       newData[sectionIndex].result = reorderedItems;
       setArticleRandom(newData);
     }
+    */
   };
 
   // Reordering the result list
@@ -197,6 +206,10 @@ export default function OrderSentences({ userId }: Props) {
 
   console.log("articleBeforeRandom : ", articleBeforeRandom);
   console.log("articleRandom : ", articleRandom);
+  
+  // https://github.com/hello-pangea/dnd/blob/main/stories/src/vertical-grouped/quote-app.tsx
+  // https://github.com/hello-pangea/dnd/blob/main/stories/src/reorder.ts
+  // https://dnd.hellopangea.com/?path=/story/examples-complex-vertical-list--grouped
 
   return (
     <>
@@ -205,6 +218,13 @@ export default function OrderSentences({ userId }: Props) {
         text={t("OrderSentencesDescription")}
       />
       <div className="mt-5">
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="bg-stone-300 flex"> {/*Root */}
+            <div className="flex h-screen overflow-auto flex-col"></div> {/*Column */}
+          </div>
+        </DragDropContext>
+
+        {/* 
         <DragDropContext onDragEnd={onDragEnd}>
           {articleRandom.map((section, sectionIndex) => (
             <div key={section.title}>
@@ -245,48 +265,8 @@ export default function OrderSentences({ userId }: Props) {
               </Droppable>
             </div>
           ))}
-        </DragDropContext>
-        {/* <DragDropContext onDragEnd={onDragEnd}>
-          {articleRandom.map((section, sectionIndex) => (
-            <div key={section.title}>
-              <h2 className="my-5">{section.title}</h2>              
-              <Droppable droppableId={`droppable-${sectionIndex}`}>
-                {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef}>
-                    {section.result.map((item: any, index: number) => (
-                      <Draggable
-                        key={item.index}
-                        draggableId={`item-${item.index}`}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            style={{
-                              userSelect: "none",
-                              padding: 16,
-                              margin: "0 0 8px 0",
-                              minHeight: "50px",
-                              backgroundColor: "#fff",
-                              color: "#333",
-                              border: "1px solid #210eef",
-                              ...provided.draggableProps.style,
-                            }}
-                          >
-                            {item.text}
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          ))}
-        </DragDropContext> */}
+        </DragDropContext>     
+         */}
       </div>
     </>
   );
