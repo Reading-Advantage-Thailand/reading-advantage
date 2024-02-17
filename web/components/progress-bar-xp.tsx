@@ -37,7 +37,6 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
           <div
             className="w-full animated-pulse rounded-x bg-blue-500 h-5 rounded-xl relative items-center flex"
             style={{
-              // width: `${(progress * 100) / (maxProgress || 1)}%`,
               animationName: "progress-bar-animation",
               animationDuration: "2s",
               animationTimingFunction: "ease-out",
@@ -54,4 +53,3 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
 }
 
 export default ProgressBar;
- // width: ${(progress * 100) / (maxProgress || 1)}%;
