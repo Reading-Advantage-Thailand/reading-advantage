@@ -71,6 +71,10 @@ export default {
           buttonEasy: "很容易",
           flipCard: "翻轉",
         },
+        //Order Sentences
+        OrderSentences: "排列句子",
+        OrderSentencesDescription:
+          "这是你读过的一篇文章中的一些句子。请将这些句子排列成对你有意义的顺序。如果顺序与文章中的相同，你将获得15经验值。",
       },
     },
   },
@@ -111,6 +115,30 @@ export default {
       previous: "上一個",
       next: "下一個",
       select: "已選擇 {selected} 個，共 {total} 個",
+    },
+    firstRunLevelTest: {
+      heading: "讓我們開始測試你的技能吧!",
+      description: "選擇正確的答案來評估您的閱讀水平。",
+      nextButton: "下一個",
+      section: "部分 {currentSectionIndex}",
+      toast: {
+        successUpdate: "成功!",
+        successUpdateDescription: "您的經驗和等級已更新。",
+        attention: "注意",
+        attentionDescription: "請回答所有問題!",
+        errorTitle: "出了點問題。",
+        errorDescription: "您的經驗和等級未更新。請重試。",
+      },
+      congratulations: "恭喜!",
+      congratulationsDescription: "「評估完成。」",
+      yourScore: "你的分數 : {xp}",
+      yourCefrLevel: "你的 CEFR 等級 : {cefrLevel}", 
+      yourRaLevel: "你的 RA 等級 : {raLevel}",
+      getStartedButton: "開始",
+    },
+    progressBarXp: {
+      xp: "經驗: ",
+      level: "等級 {level}",
     },
     select: {
       articleChoose: "請選擇您想閱讀的 {article}",

@@ -82,6 +82,10 @@ export default {
           buttonEasy: "Dễ",
           flipCard: "Lật thẻ",
         },
+        //Order Sentences
+        OrderSentences: "Sắp xếp câu",
+        OrderSentencesDescription:
+          "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy xếp các câu theo trật tự có ý nghĩa với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 15 XP.",
       },
     },
   },
@@ -122,6 +126,30 @@ export default {
       previous: "trước",
       next: "sau",
       select: "{selected} trong {total} đã chọn",
+    },
+    firstRunLevelTest: {
+      heading: "Hãy bắt đầu bằng cách kiểm tra kỹ năng của bạn!",
+      description: "Chọn câu trả lời đúng để đánh giá trình độ đọc của bạn.",
+      nextButton: "Tiếp theo",
+      section: "Phần {currentSectionIndex}",
+      toast: {
+        successUpdate: "Thành công!",
+        successUpdateDescription: "Kinh nghiệm và cấp độ của bạn đã được cập nhật.",
+        attention: "chú ý",
+        attentionDescription: "Xin vui lòng trả lời tất cả các câu hỏi!",
+        errorTitle: "Đã xảy ra lỗi.",
+        errorDescription: "Kinh nghiệm và cấp độ của bạn chưa được cập nhật. Vui lòng thử lại.",
+      },
+      congratulations: "Xin chúc mừng!",
+      congratulationsDescription: "Việc đánh giá đã hoàn tất.",
+      yourScore: "Điểm của bạn: {xp}",
+      yourCefrLevel: "Cấp độ CEFR của bạn: {cefrLevel}",
+      yourRaLevel: "Cấp RA của bạn: {raLevel}",
+      getStartedButton: "Bắt đầu",
+    },
+    progressBarXp: {
+      xp: "kinh nghiệm: ",
+      level: "mức độ {level}",
     },
     // Sử dụng cho trang chọn bài viết
     // Đây là thành phần chọn

@@ -13,6 +13,7 @@ interface MainNavProps {
     children?: React.ReactNode;
     items?: MainNavItem[];
 }
+
 export function MainNav({ children, items }: MainNavProps) {
     const [showMobileMenu, setShowMobileMenu] = React.useState(false);
     const segment = useSelectedLayoutSegment()
@@ -27,7 +28,7 @@ export function MainNav({ children, items }: MainNavProps) {
                 </span>
             </Link>
             {items?.length ? (
-                <nav className="hidden gap-6 md:flex">
+                <nav className="hidden gap-6 md:flex" >
                     {items?.map((item, index) => (
                         <Link
                             key={index}
@@ -54,7 +55,7 @@ export function MainNav({ children, items }: MainNavProps) {
             </button>
             {showMobileMenu && items && (
                 <MobileNav items={items}>{children}</MobileNav>
-            )}
+                )}
         </div>
     );
 }

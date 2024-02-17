@@ -58,6 +58,7 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: `${siteConfig.url}/site.webmanifest`,
+  // manifest: `http://localhost:3000/site.webmanifest`,
 }
 export default function RootLayout({ params: { locale }, children }: { params: { locale: string }; children: ReactNode }) {
   return (

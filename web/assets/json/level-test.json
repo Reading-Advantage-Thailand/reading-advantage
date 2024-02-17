@@ -310,7 +310,7 @@
       },
       {
         "level": "C2",
-        "points": "21000",
+        "points": 21000,
         "questions": [
           {
         "prompt": "Quantum computing could change data encryption.",

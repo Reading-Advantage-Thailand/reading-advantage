@@ -11,6 +11,8 @@ declare module "next-auth/jwt" {
         picture: string
         level: number
         verified: boolean
+        xp: number,
+        cefrLevel: string,
     }
 }
 
@@ -23,6 +25,8 @@ declare module "next-auth" {
             image: string,
             level: number,
             verified: boolean,
+            xp: number,
+            cefrLevel: string,
         },
     }
 }

@@ -81,6 +81,9 @@ export default {
           buttonEasy: "ง่าย",
           flipCard: "พลิกการ์ด",
         },
+        //Order Sentences
+        OrderSentences: "เรียงประโยค",
+        OrderSentencesDescription: 'นี่คือบางประโยคจากหนึ่งในบทความที่คุณได้อ่าน จัดเรียงประโยคให้มีลำดับที่ดูมีเหตุผลสำหรับคุณ หากลำดับเดียวกันกับในบทความ คุณจะได้รับ 15 XP.'
       },
     },
   },
@@ -121,6 +124,30 @@ export default {
       previous: "ก่อนหน้า",
       next: "ถัดไป",
       select: "{selected} จาก {total} ที่เลือก",
+    },
+    firstRunLevelTest: {
+      heading: "เริ่มต้นด้วยการทดสอบทักษะของคุณ",
+      description: "เลือกคำตอบที่ถูกต้องเพื่อประเมินระดับการอ่านของคุณ",
+      nextButton: "ถัดไป",
+      section: "ส่วนที่ {currentSectionIndex}",
+      toast: {
+        successUpdate: "สำเร็จ",
+        successUpdateDescription: "คะแนนประสบการณ์และระดับของคุณได้รับการอัปเดตแล้ว",
+        attention: "คำเตือน",
+        attentionDescription: "กรุณาตอบทุกคำถาม!",
+        errorTitle: "มีบางอย่างผิดพลาด",
+        errorDescription: "คะแนนประสบการณ์และระดับของคุณไม่ได้รับการอัปเดต กรุณาลองอีกครั้ง",
+      },
+      congratulations: "ยินดีด้วย!",
+      congratulationsDescription: "การทดสอบเสร็จสิ้นแล้ว",
+      yourScore: "คะแนนของคุณคือ {xp}",
+      yourCefrLevel: "ระดับภาษาของคุณคือ {cefrLevel}", 
+      yourRaLevel: "ระดับการอ่านของคุณคือ {raLevel}",
+      getStartedButton: "เริ่มกันเลย",
+    },
+    progressBarXp: {
+      xp: "คะแนนประสบการณ์: ",
+      level: "ระดับ {level}",
     },
     // use this for article selection page
     // this is the select component
