@@ -2,15 +2,13 @@
 import React from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import FlashCard from "@/components/flash-card";
-import OrderSentences from '@/components/order-sentences';
+import OrderSentences from "@/components/dnd/order-sentences";
 
 type Props = {
   userId: string;
 };
 
-export default function TabsPractice ({
-  userId
-}: Props) {
+export default function TabsPractice({ userId }: Props) {
   return (
     <Tabs.Root className="TabsRoot" defaultValue="tab1">
       <Tabs.List className="TabsList" aria-label="Flashcard Practice">

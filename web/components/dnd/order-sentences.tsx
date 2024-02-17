@@ -4,12 +4,16 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { v4 as uuidv4 } from "uuid";
-import { Button } from "./ui/button";
-import { Header } from "./header";
-import { toast } from "./ui/use-toast";
+import { Button } from "../ui/button";
+import { Header } from "../header";
+import { toast } from "../ui/use-toast";
 import { splitToText } from "@/lib/utils";
 import { DragDropContext } from "@hello-pangea/dnd";
-import type { DropResult, DraggableId, DraggableLocation } from "@hello-pangea/dnd";
+import type {
+  DropResult,
+  DraggableId,
+  DraggableLocation,
+} from "@hello-pangea/dnd";
 
 type Props = {
   userId: string;
@@ -52,7 +56,6 @@ export interface Task {
   id: Id;
   content: string;
 }
-
 
 export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
@@ -163,7 +166,7 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
-  const onDragEnd = (result:any) => {
+  const onDragEnd = (result: any) => {
     /*
     const { source, destination } = result;
 
@@ -192,7 +195,7 @@ export default function OrderSentences({ userId }: Props) {
   };
 
   // Reordering the result list
-  const reorder = (list: any, startIndex:number, endIndex:number) => {
+  const reorder = (list: any, startIndex: number, endIndex: number) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
@@ -206,7 +209,7 @@ export default function OrderSentences({ userId }: Props) {
 
   console.log("articleBeforeRandom : ", articleBeforeRandom);
   console.log("articleRandom : ", articleRandom);
-  
+
   // https://github.com/hello-pangea/dnd/blob/main/stories/src/vertical-grouped/quote-app.tsx
   // https://github.com/hello-pangea/dnd/blob/main/stories/src/reorder.ts
   // https://dnd.hellopangea.com/?path=/story/examples-complex-vertical-list--grouped
@@ -219,8 +222,14 @@ export default function OrderSentences({ userId }: Props) {
       />
       <div className="mt-5">
         <DragDropContext onDragEnd={onDragEnd}>
-          <div className="bg-stone-300 flex"> {/*Root */}
-            <div className="flex h-screen overflow-auto flex-col"></div> {/*Column */}
+          {/*Root */}
+          <div className="bg-stone-300 flex">
+            {/*Column */}
+            <div className="flex h-screen overflow-auto flex-col">
+              {Object.keys(articleRandom).map((section, sectionIndex) => (
+                <>{section}</>
+              ))}
+            </div>
           </div>
         </DragDropContext>
 
