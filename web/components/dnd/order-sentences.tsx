@@ -231,7 +231,7 @@ export default function OrderSentences({ userId }: Props) {
             <div className="bg-[#2684FFß] flex">
               <div className="flex flex-col h-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
                 {articleRandom.map((section, sectionIndex) => (
-                  <div className="mt-5 font-bold" key={section?.title}>
+                  <div className="font-bold" key={section?.title}>
                     <h4 className="py-4 pl-5">{section?.title}</h4>
                     <QuoteList
                       listId={sectionIndex.toString()}
