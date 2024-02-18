@@ -138,9 +138,7 @@ export default function FirstRunLevelTest({
     if (answerOptionIndexArray.length < 3) {
       toast({
         title: t("toast.attention"),
-        //title: "Attention",
         description: t("toast.attentionDescription"),
-        //description: "Please answer all questions!",
       });
     } else {
       const correctSelectedAnswer: string[] = [];
@@ -339,7 +337,7 @@ export default function FirstRunLevelTest({
             }
           >
             {currentPage === shuffledQuestions.length - 1
-              ? "Finish"
+              ? "Next"
               : t("nextButton")}
           </Button>
         </div>
