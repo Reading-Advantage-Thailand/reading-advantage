@@ -42,7 +42,7 @@ Detailing challenges like AI service integration and user data security, along w
 5. ✓ Audio with Highlighting | เสียงพร้อมไฮไลท์ประโยค
 6. ✓ Translation Pane | บานหน้าต่างการแปล
 7. ✓ Sentence Saving | การบันทึกประโยค
-8. [ ] Vocabulary SRS Practice | การฝึกฝนคำศัพท์ SRS
+8. [x] Vocabulary SRS Practice | การฝึกฝนคำศัพท์ SRS
 9. ✓ Comprehension Questions | คำถามความเข้าใจ
 10. [ ] Writing Prompts | คำแนะนำในการเขียน
 11. [ ] Running Records | การบันทึกการวิ่ง
