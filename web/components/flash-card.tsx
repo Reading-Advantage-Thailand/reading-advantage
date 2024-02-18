@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Button } from "./ui/button";
-import { formatDate } from "@/lib/utils";
+import { formatDate, updateScore } from "@/lib/utils";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
@@ -56,13 +56,38 @@ export default function FlashCard({ userId }: Props) {
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
-      const startOfDay = date_scheduler(new Date(), 0, true);     
-      const filteredData = res.data.sentences.filter((record: Sentence) => {        
+      const startOfDay = date_scheduler(new Date(), 0, true);
+      const filteredData = res.data.sentences.filter((record: Sentence) => {
         const dueDate = new Date(record.due);
         return dueDate >= startOfDay || record.state === 0;
       });
 
+      console.log(filteredData);
+      console.log(res.data.sentences);
       setSentences(filteredData);
+
+      // updateScore
+      const filterDataUpdateScore = res.data.sentences.filter((record: Sentence) => {
+        const dueDate = new Date(record.due);
+        const currentDate = new Date();
+        const givenYear = dueDate.getFullYear();
+        const givenMonth = dueDate.getMonth();
+        const givenDay = dueDate.getDate();
+
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth();
+        const currentDay = currentDate.getDate();
+
+        if(givenYear === currentYear && givenMonth === currentMonth && givenDay === currentDay){
+          return record.state === 2;
+        }
+      });
+
+      if (filterDataUpdateScore.length > 0) {
+        filteredData.map(() => {
+          return updateScore(15, userId);
+        });
+      }
     } catch (error) {
       console.log(error);
     }
