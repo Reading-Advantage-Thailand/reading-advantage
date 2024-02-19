@@ -35,15 +35,15 @@ Reading Advantage combines extensive reading with AI to enhance language learnin
 Detailing challenges like AI service integration and user data security, along with implemented solutions.
 
 ## Detailed Roadmap | แผนงานโดยละเอียด
-1. ✓ Article Level Functions | ฟังก์ชั่นระดับบทความ
-2. ✓ Simple Frontend | อินเตอร์เฟซหน้าจอง่าย
-3. ✓ Auth System & Level Tracking | ระบบตรวจสอบสิทธิ์และการติดตามระดับ
-4. ✓ Article Images | ภาพประกอบบทความ
-5. ✓ Audio with Highlighting | เสียงพร้อมไฮไลท์ประโยค
-6. ✓ Translation Pane | บานหน้าต่างการแปล
-7. ✓ Sentence Saving | การบันทึกประโยค
-8. [ ] Vocabulary SRS Practice | การฝึกฝนคำศัพท์ SRS
-9. ✓ Comprehension Questions | คำถามความเข้าใจ
+1. [x] Article Level Functions | ฟังก์ชั่นระดับบทความ
+2. [x] Simple Frontend | อินเตอร์เฟซหน้าจอง่าย
+3. [x] Auth System & Level Tracking | ระบบตรวจสอบสิทธิ์และการติดตามระดับ
+4. [x] Article Images | ภาพประกอบบทความ
+5. [x] Audio with Highlighting | เสียงพร้อมไฮไลท์ประโยค
+6. [x] Translation Pane | บานหน้าต่างการแปล
+7. [x] Sentence Saving | การบันทึกประโยค
+8. [x] Vocabulary SRS Practice | การฝึกฝนคำศัพท์ SRS
+9. [x] Comprehension Questions | คำถามความเข้าใจ
 10. [ ] Writing Prompts | คำแนะนำในการเขียน
 11. [ ] Running Records | การบันทึกการวิ่ง
 12. [ ] Teacher & Classroom Management | การจัดการครูและห้องเรียน
