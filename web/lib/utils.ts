@@ -105,13 +105,9 @@ export async function updateScore(
       //increase new xp with 0
       previousXp = 0;
       newScore = previousXp + xp;
-      console.log("newScore", newScore);
-      console.log("previousXp", previousXp);
     } else {
       // increase new xp with actual new xp
       newScore = previousXp + xp;
-      console.log("newScore2", newScore);
-      console.log("previousXp2", previousXp);
     }
 
     const response = await fetch(`/api/users/${userId}`, {

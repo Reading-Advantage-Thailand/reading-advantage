@@ -237,7 +237,6 @@ export default function FirstRunLevelTest({
                   const updateResult = await updateScore(xp, userId, update);
 
                   if (updateResult == "success") {
-                    // console.log(updateResult);
                     toast({
                       title: t("toast.successUpdate"),
                       description: t("toast.successUpdateDescription"),
