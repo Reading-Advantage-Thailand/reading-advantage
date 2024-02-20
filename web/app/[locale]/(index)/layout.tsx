@@ -13,7 +13,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
     const t = await getScopedI18n('components')
     const user = await getCurrentUser()
 
-    if (!user) {
+    if (!user || user.cefrLevel === "") {
         return (
             <div className="flex min-h-screen flex-col">
                 <header className="container z-40 bg-background">
