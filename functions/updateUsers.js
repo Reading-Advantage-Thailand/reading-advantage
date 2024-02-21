@@ -16,7 +16,6 @@ const new_data = {
 };
 
 const collectionRef = db.collection('users');
-console.log('collectionRef: ', collectionRef);
 
 collectionRef.get()
   .then((snapshot) => {
