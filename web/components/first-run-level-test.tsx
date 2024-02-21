@@ -235,8 +235,8 @@ export default function FirstRunLevelTest({
               onClick={async () => {
                 try {
                   const updateResult = await updateScore(xp, userId, update);
-
-                  if (updateResult == "success") {
+                  // console.log("updateResult", updateResult);
+                  if (updateResult.status == 201) {
                     toast({
                       title: t("toast.successUpdate"),
                       description: t("toast.successUpdateDescription"),

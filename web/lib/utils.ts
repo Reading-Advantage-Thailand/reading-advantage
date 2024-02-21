@@ -4,6 +4,10 @@ import { ArticleType } from "@/types";
 import Tokenizer from "sentence-tokenizer";
 import axios from "axios";
 import { get } from "lodash";
+import 'firebase/database';
+import firebase from "firebase/app";
+import { toast } from "react-toastify";
+import { log } from "console";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -90,10 +94,24 @@ export function levelCalculation(xp: number) {
   return { cefrLevel: "", raLevel: "" };
 }
 
+//function to get cefrLevel and xp from firebase
+export async function getPreviousData(userId: string) {
+  try {
+    const response = await axios.get(`/api/users/${userId}`);
+    const data = response.data;
+    const cefrLevel = data.data.cefrLevel;
+    const previousXp = data.data.xp;
+    // console.log("data", data);
+    return { cefrLevel, previousXp };
+  } catch (error) {
+    console.log("Error:", error);
+  }
+}
+
 export async function updateScore(
   xp: number,
   userId: string,
-  updateSession?: Function
+  updateSession?: Function,
 ) {
   try {
     const previousData = await getPreviousData(userId);
@@ -130,26 +148,20 @@ export async function updateScore(
           },
         }
       : null;
+      
+      return new Response(
+        JSON.stringify({
+          message: "success",
+        }),
+        { status: 201 }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            message: error,
+          }),
+          { status: 501 }
+          );
+        }
+      }
 
-    return "success";
-  } catch (error) {
-    console.log("Error:", error);
-    return "error";
-  }
-}
-
-//function to get cefrLevel and xp from firebase
-export async function getPreviousData(userId: string) {
-  try {
-    const response = await axios.get(`/api/users/${userId}`);
-    const data = response.data;
-    const cefrLevel = data.data.cefrLevel;
-    const previousXp = data.data.xp;
-    console.log("data", data);
-    return { cefrLevel, previousXp };
-  } catch (error) {
-    console.log("Error:", error);
-  }
-}
-
-// updateScore(9000, "qWXtOI9Hr6QtILuhsrOc06zXZUg1");

@@ -1,9 +1,7 @@
 import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import FlashCard from "@/components/flash-card";
 import { updateScore, getPreviousData, levelCalculation } from "../lib/utils";
-import fetch from "node-fetch";
-import { result } from "lodash";
 import fetchMock from "jest-fetch-mock";
 import axios from 'axios';
 
@@ -41,7 +39,7 @@ fetchMock.enableMocks();
 
     const result = await updateScore(10, "qWXtOI9Hr6QtILuhsrOc06zXZUg1", mockUpdateSession);
 
-    expect(result).toEqual("success");
+    expect(result.status).toEqual(201);
   });
 
   it('returns "error" when data is not updated', async () => {
@@ -51,9 +49,8 @@ fetchMock.enableMocks();
 
     const result = await updateScore(1/0, "qWXtOI9Hr6QtILuhsrOc06zXZUg1", mockUpdateSession);
 
-    if(result !== "success"){
-      expect(result).toEqual("error");
-
+    if(result.status !== 201){
+      expect(result.status).toEqual(501);
     }
   });
 
