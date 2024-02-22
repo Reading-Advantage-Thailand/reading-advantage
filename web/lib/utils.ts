@@ -2,14 +2,12 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ArticleType } from "@/types";
 import Tokenizer from "sentence-tokenizer";
-import { toast } from "../components/ui/use-toast";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useScopedI18n } from "@/locales/client";
-// import { showToast } from '../components/ui/use-toast'; // Add the missing import statement
-import { useState } from "react";
 import axios from "axios";
 import { get } from "lodash";
+import 'firebase/database';
+import firebase from "firebase/app";
+import { toast } from "react-toastify";
+import { log } from "console";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -64,7 +62,7 @@ export const splitToText = (article: ArticleType) => {
   return textArray;
 };
 
-export function levelCalculation(score: number) {
+export function levelCalculation(xp: number) {
   const levels = [
     { min: 0, max: 3000, cefrLevel: "A0-", raLevel: 0 },
     { min: 3001, max: 5000, cefrLevel: "A0", raLevel: 1 },
@@ -82,13 +80,13 @@ export function levelCalculation(score: number) {
     { min: 126001, max: 143000, cefrLevel: "B2+", raLevel: 13 },
     { min: 143001, max: 161000, cefrLevel: "C1-", raLevel: 14 },
     { min: 161001, max: 180000, cefrLevel: "C1", raLevel: 15 },
-    { min: 180001, max: 221000, cefrLevel: "C1+", raLevel: 16 },
-    { min: 221001, max: 243000, cefrLevel: "C2-", raLevel: 17 },
-    { min: 243000, max: 243000, cefrLevel: "C2", raLevel: 18 },
+    { min: 180001, max: 200000, cefrLevel: "C1+", raLevel: 16 },
+    { min: 200001, max: 221000, cefrLevel: "C2-", raLevel: 17 },
+    { min: 221001, max: 243000, cefrLevel: "C2", raLevel: 18 },
   ];
 
   for (let level of levels) {
-    if (score >= level.min && score <= level.max) {
+    if (xp >= level.min && xp <= level.max) {
       return { cefrLevel: level.cefrLevel, raLevel: level.raLevel };
     }
   }
@@ -96,35 +94,38 @@ export function levelCalculation(score: number) {
   return { cefrLevel: "", raLevel: "" };
 }
 
+//function to get cefrLevel and xp from firebase
+export async function getPreviousData(userId: string) {
+  try {
+    const response = await axios.get(`/api/users/${userId}`);
+    const data = response.data;
+    const cefrLevel = data.data.cefrLevel;
+    const previousXp = data.data.xp;
+    // console.log("data", data);
+    return { cefrLevel, previousXp };
+  } catch (error) {
+    console.log("Error:", error);
+  }
+}
+
 export async function updateScore(
   xp: number,
   userId: string,
-  updateSession?: Function
+  updateSession?: Function,
 ) {
   try {
     const previousData = await getPreviousData(userId);
     const cefrLevell = previousData?.cefrLevel;
     let previousXp = previousData?.previousXp;
-
-    console.log("cefrLevell: ", cefrLevell);
-
-    // const previousXp = await getCefrLevel(userId);
-
     let newScore = 0;
-    // let previousXp = 0;
 
     if (cefrLevell === "") {
       //increase new xp with 0
       previousXp = 0;
       newScore = previousXp + xp;
-      console.log("newScore", newScore);
-      console.log("previousXp", previousXp);
     } else {
       // increase new xp with actual new xp
-      //  previousXp = previousXp
       newScore = previousXp + xp;
-      console.log("newScore2", newScore);
-      console.log("previousXp2", previousXp);
     }
 
     const response = await fetch(`/api/users/${userId}`, {
@@ -147,27 +148,20 @@ export async function updateScore(
           },
         }
       : null;
+      
+      return new Response(
+        JSON.stringify({
+          message: "success",
+        }),
+        { status: 201 }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            message: error,
+          }),
+          { status: 501 }
+          );
+        }
+      }
 
-    return "success";
-  } catch (error) {
-    console.log("Error:", error);
-    return "error";
-  }
-}
-
-//write a function to get cefrLevel from firebase
-export async function getPreviousData(userId: string) {
-  try {
-    const response = await axios.get(`/api/users/${userId}`);
-    const data = response.data;
-    const cefrLevel = data.data.cefrLevel;
-    const previousXp = data.data.xp;
-    console.log("data", data);
-    // return data.data.cefrLevel;
-    return { cefrLevel, previousXp };
-  } catch (error) {
-    console.log("Error:", error);
-  }
-}
-
-// updateScore(9000, "qWXtOI9Hr6QtILuhsrOc06zXZUg1");
