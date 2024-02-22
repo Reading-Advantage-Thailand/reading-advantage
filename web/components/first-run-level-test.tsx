@@ -138,9 +138,7 @@ export default function FirstRunLevelTest({
     if (answerOptionIndexArray.length < 3) {
       toast({
         title: t("toast.attention"),
-        //title: "Attention",
         description: t("toast.attentionDescription"),
-        //description: "Please answer all questions!",
       });
     } else {
       const correctSelectedAnswer: string[] = [];
@@ -192,48 +190,7 @@ export default function FirstRunLevelTest({
   const onFinishTest = async () => {
     setTestFinished(true);
   };
-// async function updateScore(score: number, userId: string) {
-//   // const router = useRouter();
-//   // const { data: session, status, update } = useSession();
-//   // const [loading, setLoading] = useState(false);
-//   // const t = useScopedI18n('components.firstRunLevelTest');
 
-//   setLoading(true);
-//     try {
-//       const response = await fetch(`/api/users/${userId}`, {
-//         method: "PATCH",
-//         body: JSON.stringify({
-//           xp: score,
-//           level: levelCalculation(score).raLevel,
-//           cefrLevel: levelCalculation(score).cefrLevel,
-//         }),
-//       });
-
-//       const data = await response.json();
-//       await update({
-//         user: {
-//           ...session?.user,
-//           xp: score,
-//           level: levelCalculation(score).raLevel,
-//           cefrLevel: levelCalculation(score).cefrLevel,
-//         },
-//       });
-//       toast({
-//         title: t('toast.successUpdate'),
-//         description: t('toast.successUpdateDescription'),
-//       });
-//       router.refresh();
-//     } catch (error) {
-//       return toast({
-//         title: t('toast.errorTitle'),
-//         description: t('toast.errorDescription'),
-//         variant: "destructive"
-//       });
-//     } finally {
-//       setLoading(false);
-//     }
-// }
-  // updateScore(score, userId, update, () => router.refresh(), toast);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -273,16 +230,13 @@ export default function FirstRunLevelTest({
             </p>
             <br />
 
-            {/* <Button size="lg" onClick={() => updateScore(score, userId, update, () => router.refresh())}> */}
             <Button
               size="lg"
               onClick={async () => {
                 try {
-                  // const updateResult = await updateScore(score, userId, update, () => router.refresh());
                   const updateResult = await updateScore(xp, userId, update);
-
-                  if (updateResult == "success") {
-                    // console.log(updateResult);
+                  // console.log("updateResult", updateResult);
+                  if (updateResult.status == 201) {
                     toast({
                       title: t("toast.successUpdate"),
                       description: t("toast.successUpdateDescription"),
@@ -301,7 +255,6 @@ export default function FirstRunLevelTest({
                 }
               }}
             >
-              {/* <Button size="lg" onClick={() => updateScore(score as number, userId)}> */}
               {t("getStartedButton")}
             </Button>
           </CardContent>
@@ -383,7 +336,7 @@ export default function FirstRunLevelTest({
             }
           >
             {currentPage === shuffledQuestions.length - 1
-              ? "Finish"
+              ? "Next"
               : t("nextButton")}
           </Button>
         </div>
