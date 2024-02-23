@@ -1,9 +1,12 @@
 import SettingInfo from "@/components/setting-info";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/session";
-import { CardContent } from "@mui/material";
+import { Button, CardContent } from "@mui/material";
 import { redirect } from "next/navigation";
-
+import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
+import ResetDialog from "@/components/reset-xp-dialog";
+import { RateDialog } from "@/components/questions/rate";
 
 type Props = {}
 
@@ -12,9 +15,11 @@ export default async function UserProfileSettingsPage({ }: Props) {
     if (!user) {
         return redirect('/auth/signin');
     }
-    if (user.level === 0) {
+    if (user.cefrLevel === "") {
         return redirect('/level');
     }
+ 
+
     return (
         <Card className="mt-4">
             <CardContent >
@@ -70,6 +75,7 @@ export default async function UserProfileSettingsPage({ }: Props) {
                         data={user.level.toString()}
                         isEdit={false}
                     />
+                    <ResetDialog />
                 </div>
             </CardContent>
         </Card>

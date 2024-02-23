@@ -2,14 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ArticleType } from "@/types";
 import Tokenizer from "sentence-tokenizer";
-import { toast } from "../components/ui/use-toast";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useScopedI18n } from "@/locales/client";
-// import { showToast } from '../components/ui/use-toast'; // Add the missing import statement
-import { useState } from "react";
 import axios from "axios";
-import { get } from "lodash";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
