@@ -85,6 +85,7 @@ export default {
           buttonGood: "Good",
           buttonEasy: "Easy",
           flipCard: "Flip",
+          nextButton: "Next",
         },
         //Order Sentences
         OrderSentences: "Order Sentences",

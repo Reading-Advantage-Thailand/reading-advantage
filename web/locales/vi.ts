@@ -81,6 +81,7 @@ export default {
           buttonGood: "Tốt",
           buttonEasy: "Dễ",
           flipCard: "Lật thẻ",
+          nextButton: "Tiếp theo",
         },
         //Order Sentences
         OrderSentences: "Sắp xếp câu",

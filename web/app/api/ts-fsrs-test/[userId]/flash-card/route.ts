@@ -15,10 +15,6 @@ export async function POST(req: Request, res: Response) {
     }
      const json = await req.json();
      const id = json.id;
-     console.log("id: ", id)
-    // const body = JSON.parse(json.body);
-    // const id = body.id;
-
 
     await db
       .collection("user-sentence-records")

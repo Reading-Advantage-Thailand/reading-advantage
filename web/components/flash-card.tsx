@@ -21,6 +21,7 @@ import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
 import { v4 as uuidv4 } from "uuid";
 import { date_scheduler, State } from "ts-fsrs";
+import { filter, forEach } from "lodash";
 
 type Props = {
   userId: string;
@@ -56,37 +57,41 @@ export default function FlashCard({ userId }: Props) {
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
-      const startOfDay = date_scheduler(new Date(), 0, true);
-      const filteredData = res.data.sentences.filter((record: Sentence) => {
-        const dueDate = new Date(record.due);
-        return dueDate >= startOfDay || record.state === 0;
-      });
 
-      console.log(filteredData);
-      console.log(res.data.sentences);
+      const startOfDay = date_scheduler(new Date(), 0, true);
+      const filteredData = await res.data.sentences.filter(
+        (record: Sentence) => {
+          const dueDate = new Date(record.due);
+          return (
+            record.state === 0 ||
+            (record.state === 2 && dueDate < startOfDay) ||
+            (record.state === 3 && dueDate < startOfDay)
+          );
+        }
+      );
+
       setSentences(filteredData);
 
       // updateScore
-      const filterDataUpdateScore = res.data.sentences.filter((record: Sentence) => {
-        const dueDate = new Date(record.due);
-        const currentDate = new Date();
-        const givenYear = dueDate.getFullYear();
-        const givenMonth = dueDate.getMonth();
-        const givenDay = dueDate.getDate();
-
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth();
-        const currentDay = currentDate.getDate();
-
-        if(givenYear === currentYear && givenMonth === currentMonth && givenDay === currentDay){
-          return record.state === 2;
-        }
+      let filterDataUpdateScore = await filter(res.data.sentences, (param) => {
+        const dueDate = new Date(param.due);
+        return (param.state === 2 || param.state === 3) && dueDate < startOfDay;
       });
 
-      if (filterDataUpdateScore.length > 0) {
-        filteredData.map(() => {
-          return updateScore(15, userId);
-        });
+      if (filterDataUpdateScore?.length > 0) {
+        for (let i = 0; i < filterDataUpdateScore.length; i++) {
+          try {
+            if (!filterDataUpdateScore[i]?.update_score) {
+              const updateDatabase = await axios.post(
+                `/api/ts-fsrs-test/${filterDataUpdateScore[i]?.id}/flash-card`,
+                { ...filterDataUpdateScore[i], update_score: true }
+              );
+              const updateScrore = await updateScore(15, userId);
+            }
+          } catch (error) {
+            console.error(`Failed to update data`);
+          }
+        }
       }
     } catch (error) {
       console.log(error);
@@ -145,7 +150,7 @@ export default function FlashCard({ userId }: Props) {
               cards={cards}
               controls={false}
               showCount={false}
-              onCardChange={(index) => {                
+              onCardChange={(index) => {
                 setCurrentCardIndex(index);
               }}
               forwardRef={controlRef}
@@ -156,7 +161,6 @@ export default function FlashCard({ userId }: Props) {
                 {currentCardIndex + 1} / {cards.length}
               </p>
             </div>
-
             {sentences.map((sentence, index) => {
               if (index === currentCardIndex) {
                 return (
@@ -175,7 +179,7 @@ export default function FlashCard({ userId }: Props) {
               }
             })}
           </>
-        )}       
+        )}
         {sentences.length != 0 && (
           <FlashCardPracticeButton
             index={currentCardIndex}
@@ -184,7 +188,7 @@ export default function FlashCard({ userId }: Props) {
           />
         )}
       </div>
-    
+
       <Card className="col-span-3 mt-4 mb-10">
         <CardHeader>
           <CardTitle>{t("savedSentences")}</CardTitle>
