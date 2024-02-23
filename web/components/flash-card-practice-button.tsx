@@ -177,13 +177,13 @@ export default function FlashCardPracticeButton({
       }
     );
 
-    toast({
-      title: "Success",
-      description: `You have saved "${truncateText(
-        newCards[index].sentence,
-        20
-      )}" to Fsrs`,
-    });
+    // toast({
+    //   title: "Success",
+    //   description: `You have saved "${truncateText(
+    //     newCards[index].sentence,
+    //     20
+    //   )}" to Fsrs`,
+    // });
     
     if (index + 1 === sentences.length) {
       setShowButton(false);
