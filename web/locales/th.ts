@@ -80,10 +80,12 @@ export default {
           buttonGood: "ดี",
           buttonEasy: "ง่าย",
           flipCard: "พลิกการ์ด",
+          nextButton: "ถัดไป",
         },
         //Order Sentences
         OrderSentences: "เรียงประโยค",
-        OrderSentencesDescription: 'นี่คือบางประโยคจากหนึ่งในบทความที่คุณได้อ่าน จัดเรียงประโยคให้มีลำดับที่ดูมีเหตุผลสำหรับคุณ หากลำดับเดียวกันกับในบทความ คุณจะได้รับ 15 XP.'
+        OrderSentencesDescription:
+          "นี่คือบางประโยคจากหนึ่งในบทความที่คุณได้อ่าน จัดเรียงประโยคให้มีลำดับที่ดูมีเหตุผลสำหรับคุณ หากลำดับเดียวกันกับในบทความ คุณจะได้รับ 15 XP.",
       },
     },
   },
@@ -132,16 +134,18 @@ export default {
       section: "ส่วนที่ {currentSectionIndex}",
       toast: {
         successUpdate: "สำเร็จ",
-        successUpdateDescription: "คะแนนประสบการณ์และระดับของคุณได้รับการอัปเดตแล้ว",
+        successUpdateDescription:
+          "คะแนนประสบการณ์และระดับของคุณได้รับการอัปเดตแล้ว",
         attention: "คำเตือน",
         attentionDescription: "กรุณาตอบทุกคำถาม!",
         errorTitle: "มีบางอย่างผิดพลาด",
-        errorDescription: "คะแนนประสบการณ์และระดับของคุณไม่ได้รับการอัปเดต กรุณาลองอีกครั้ง",
+        errorDescription:
+          "คะแนนประสบการณ์และระดับของคุณไม่ได้รับการอัปเดต กรุณาลองอีกครั้ง",
       },
       congratulations: "ยินดีด้วย!",
       congratulationsDescription: "การทดสอบเสร็จสิ้นแล้ว",
       yourScore: "คะแนนของคุณคือ {xp}",
-      yourCefrLevel: "ระดับภาษาของคุณคือ {cefrLevel}", 
+      yourCefrLevel: "ระดับภาษาของคุณคือ {cefrLevel}",
       yourRaLevel: "ระดับการอ่านของคุณคือ {raLevel}",
       getStartedButton: "เริ่มกันเลย",
     },

@@ -70,6 +70,7 @@ export default {
           buttonGood: "好",
           buttonEasy: "很容易",
           flipCard: "翻轉",
+          nextButton: "下一個",
         },
         //Order Sentences
         OrderSentences: "排列句子",
