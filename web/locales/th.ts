@@ -81,6 +81,7 @@ export default {
           buttonEasy: "ง่าย",
           flipCard: "พลิกการ์ด",
           nextButton: "ถัดไป",
+          yourXp: "คุณได้รับ {xp} XP สำหรับกิจกรรมนี้",
         },
         //Order Sentences
         OrderSentences: "เรียงประโยค",

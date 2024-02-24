@@ -82,6 +82,7 @@ export default {
           buttonEasy: "Dễ",
           flipCard: "Lật thẻ",
           nextButton: "Tiếp theo",
+          yourXp: "Bạn đã nhận được {xp} XP cho hoạt động này",
         },
         //Order Sentences
         OrderSentences: "Sắp xếp câu",
@@ -135,11 +136,13 @@ export default {
       section: "Phần {currentSectionIndex}",
       toast: {
         successUpdate: "Thành công!",
-        successUpdateDescription: "Kinh nghiệm và cấp độ của bạn đã được cập nhật.",
+        successUpdateDescription:
+          "Kinh nghiệm và cấp độ của bạn đã được cập nhật.",
         attention: "chú ý",
         attentionDescription: "Xin vui lòng trả lời tất cả các câu hỏi!",
         errorTitle: "Đã xảy ra lỗi.",
-        errorDescription: "Kinh nghiệm và cấp độ của bạn chưa được cập nhật. Vui lòng thử lại.",
+        errorDescription:
+          "Kinh nghiệm và cấp độ của bạn chưa được cập nhật. Vui lòng thử lại.",
       },
       congratulations: "Xin chúc mừng!",
       congratulationsDescription: "Việc đánh giá đã hoàn tất.",

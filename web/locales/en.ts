@@ -10,7 +10,7 @@ export default {
       backButton: "Back",
     },
     testPage: {
-      xxx: "Let's get started by testing your skill!" 
+      xxx: "Let's get started by testing your skill!",
     },
     student: {
       readPage: {
@@ -86,6 +86,7 @@ export default {
           buttonEasy: "Easy",
           flipCard: "Flip",
           nextButton: "Next",
+          yourXp: "You've received {xp} XP for this activity.",
         },
         //Order Sentences
         OrderSentences: "Order Sentences",
@@ -143,12 +144,13 @@ export default {
         attention: "Attention",
         attentionDescription: "Please answer all questions!",
         errorTitle: "Something went wrong.",
-        errorDescription: "Your XP and level were not updated. Please try again.",
+        errorDescription:
+          "Your XP and level were not updated. Please try again.",
       },
       congratulations: "Congratulation!",
       congratulationsDescription: "The assessment is done.",
       yourScore: "Your Score : {xp}",
-      yourCefrLevel: "Your CEFR Level : {cefrLevel}", 
+      yourCefrLevel: "Your CEFR Level : {cefrLevel}",
       yourRaLevel: "Your RA Level : {raLevel}",
       getStartedButton: "Get Start",
     },
