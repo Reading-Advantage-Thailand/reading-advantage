@@ -71,6 +71,7 @@ export default {
           buttonAgain: "再来",
           flipCard: "翻转",
           nextButton: "下一个",
+          yourXp: "您已经获得了 {xp} XP 为这个活动。",
         },
         //Order Sentences
         OrderSentences: "排列句子",
@@ -133,7 +134,7 @@ export default {
       congratulations: "恭喜!",
       congratulationsDescription: "评估完成。",
       yourScore: "你的分数 : {xp}",
-      yourCefrLevel: "你的 CEFR 等级 : {cefrLevel}", 
+      yourCefrLevel: "你的 CEFR 等级 : {cefrLevel}",
       yourRaLevel: "你的 RA 级别 : {raLevel}",
       getStartedButton: "开始",
     },

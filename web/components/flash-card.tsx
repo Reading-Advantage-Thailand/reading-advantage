@@ -21,7 +21,7 @@ import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
 import { v4 as uuidv4 } from "uuid";
 import { date_scheduler, State } from "ts-fsrs";
-import { filter, forEach } from "lodash";
+import { filter } from "lodash";
 
 type Props = {
   userId: string;
@@ -50,6 +50,9 @@ export type Sentence = {
 
 export default function FlashCard({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
+  const tUpdateScore = useScopedI18n(
+    "pages.student.practicePage.flashcardPractice"
+  );
   const [sentences, setSentences] = useState<Sentence[]>([]);
   const controlRef = useRef<any>({});
   const currentCardFlipRef = useRef<any>();
@@ -77,7 +80,7 @@ export default function FlashCard({ userId }: Props) {
         const dueDate = new Date(param.due);
         return (param.state === 2 || param.state === 3) && dueDate < startOfDay;
       });
-
+    
       if (filterDataUpdateScore?.length > 0) {
         for (let i = 0; i < filterDataUpdateScore.length; i++) {
           try {
@@ -87,6 +90,13 @@ export default function FlashCard({ userId }: Props) {
                 { ...filterDataUpdateScore[i], update_score: true }
               );
               const updateScrore = await updateScore(15, userId);
+             
+              if(updateScrore?.status === 201){
+                toast({
+                  title: t("toast.success"),
+                  description: tUpdateScore("yourXp", { xp: 15 }),
+                });
+              }
             }
           } catch (error) {
             console.error(`Failed to update data`);
@@ -188,7 +198,7 @@ export default function FlashCard({ userId }: Props) {
           />
         )}
       </div>
-
+    
       <Card className="col-span-3 mt-4 mb-10">
         <CardHeader>
           <CardTitle>{t("savedSentences")}</CardTitle>
