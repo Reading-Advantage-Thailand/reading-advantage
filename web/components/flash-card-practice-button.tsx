@@ -265,11 +265,8 @@ export default function FlashCardPracticeButton({
       ) : (
         <></>
       )}
-      <div className="pt-4 font-bold">Cards :</div>
-      <DataTable data={cards} columns={columnsCards} />
+      {/* <div className="pt-4 font-bold">Cards :</div>
+      <DataTable data={cards} columns={columnsCards} /> */}
     </>
   );
 }
-
-// due = 2024-02-23T07:28:59.903Z
-// state = 0 (Learning)
