@@ -55,6 +55,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.47.0",
     "react-quizlet-flashcard": "^3.0.0",
+    "react-router-dom": "^6.22.1",
     "react-tailwindcss-datepicker": "^1.6.6",
     "react-textarea-autosize": "^8.5.3",
     "react-toastify": "^10.0.4",
@@ -67,7 +68,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.6",
+    "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
     "@types/jest": "^29.5.11",
