@@ -50,13 +50,18 @@ export async function GET(
                 message: 'Article not found',
             }), { status: 404 })
         }
-        // if (!articleRecordSnapshot.exists && !isUserAbleToRead) {
-        //     return new Response(JSON.stringify({
-        //         message: 'Insufficient level'
-        //     }), { status: 403 })
-        // }
-        // Check if the article exists
+
         const article = articleSnapshot.data();
+
+        // If the article does not have questions, return the article as is
+        if (!article?.questions) {
+            return new Response(JSON.stringify({
+                article: {
+                    id: article?.id,
+                    ...article,
+                },
+            }), { status: 200 });
+        }
         // remove suggested_answer from answers of all questions
         article?.questions.multiple_choice_questions.forEach((question: { answers: { suggested_answer: any; }; }) => {
             delete question.answers.suggested_answer;
@@ -74,6 +79,7 @@ export async function GET(
             }
             return choices;
         }
+
         return new Response(JSON.stringify({
             article: {
                 id: article?.id,
