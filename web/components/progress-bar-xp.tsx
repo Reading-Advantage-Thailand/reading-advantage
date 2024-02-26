@@ -22,7 +22,7 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
         {`
           @keyframes progress-bar-animation {
             from{
-              width: 0%;
+              width: 0;
             }
             to {
              
@@ -43,7 +43,7 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
               animationFillMode: "forwards",
             }}
           >
-       <span className="text-white absolute left-3/4 transform -translate-x-1">{percentage}%</span>
+       <span className="text-white absolute left-3/4 transform -translate-x-1">{progress}</span>
        </div>
         </div>
         <p>{t("level", { level })} </p>
