@@ -1,12 +1,9 @@
 import SettingInfo from "@/components/setting-info";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/session";
-import { Button, CardContent } from "@mui/material";
+import { CardContent } from "@mui/material";
 import { redirect } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
 import ResetDialog from "@/components/reset-xp-dialog";
-import { RateDialog } from "@/components/questions/rate";
 
 type Props = {};
 
