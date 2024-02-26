@@ -57,6 +57,7 @@ async function getTranslate(
 interface ITextAudio {
   text: string;
   begin?: number;
+
 }
 
 type Props = {
@@ -126,20 +127,59 @@ export default function ArticleContent({
   };
 
   const splitToText = (article: ArticleType) => {
-    const tokenizer = new Tokenizer("Chuck");
-    tokenizer.setEntry(article.content);
-    const result = tokenizer.getSentences();
+    const paragraphs = article.content.split("\n");
+
+    // Check if the article content already contains paragraph breaks
+    const hasParagraphBreaks = paragraphs.length > 1;
 
     // Clear the existing content in the 'text' array
     setText([]);
 
-    for (let i = 0; i < article.timepoints.length; i++) {
-      setText((prev) => [
-        ...prev,
-        { text: result[i], begin: article.timepoints[i].timeSeconds },
-      ]);
+    if (hasParagraphBreaks) {
+      // Use the modified 'splitToText' function that adds 'para-separate' tokens
+      paragraphs.forEach((paragraph, paragraphIndex) => {
+        const tokenizer = new Tokenizer("Chuck");
+        tokenizer.setEntry(paragraph);
+        const sentences = tokenizer.getSentences();
+
+        sentences.forEach((sentence, sentenceIndex) => {
+          if (sentenceIndex === 0) {
+            setText((prev) => [
+              ...prev,
+              { text: sentence, begin: article.timepoints[paragraphIndex]?.timeSeconds },
+            ]);
+          } else {
+            setText((prev) => [
+              ...prev,
+              { text: 'sen-separate' },
+              { text: sentence, begin: article.timepoints[paragraphIndex]?.timeSeconds },
+            ]);
+          }
+        });
+
+        // Add a 'para-separate' token after each paragraph
+        if (paragraphIndex < paragraphs.length - 1) {
+          setText((prev) => [
+            ...prev,
+            { text: 'para-separate' },
+          ]);
+        }
+      });
+    } else {
+      // Use the original 'splitToText' function that splits the content into sentences
+      const tokenizer = new Tokenizer("Chuck");
+      tokenizer.setEntry(article.content);
+      const sentences = tokenizer.getSentences();
+
+      sentences.forEach((sentence, sentenceIndex) => {
+        setText((prev) => [
+          ...prev,
+          { text: sentence, begin: article.timepoints[sentenceIndex]?.timeSeconds },
+        ]);
+      });
     }
   };
+
 
   const handleSkipToSentence = (time: number) => {
     if (audioRef.current) {
@@ -184,9 +224,8 @@ export default function ArticleContent({
 
         toast({
           title: "Success",
-          description: `You have saved "${
-            text[selectedSentence as number].text
-          }" to flashcard`,
+          description: `You have saved "${text[selectedSentence as number].text
+            }" to flashcard`,
         });
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -299,8 +338,8 @@ export default function ArticleContent({
             {loading
               ? "Loading"
               : isTranslate && isTranslateOpen
-              ? t("translateฺButton.close")
-              : t("translateฺButton.open")}
+                ? t("translateฺButton.close")
+                : t("translateฺButton.open")}
           </Button>
         )}
       </div>
@@ -341,8 +380,8 @@ export default function ArticleContent({
                     ? "bg-yellow-50"
                     : "bg-transparent"
                   : highlightedWordIndex + 1 === index
-                  ? "bg-yellow-50"
-                  : "bg-transparent"
+                    ? "bg-yellow-50"
+                    : "bg-transparent"
               )}
               onMouseEnter={() => {
                 setSelectedSentence(index);
@@ -350,7 +389,20 @@ export default function ArticleContent({
               }}
               onClick={() => handleSkipToSentence(sentence.begin ?? 0)}
             >
-              {sentence.text}{" "}
+              {
+                sentence.text === 'sen-separate' ?
+                  <span className="text-transparent">{" "}</span>
+                  : sentence.text === 'para-separate' ?
+                    <div className="mt-4">{" "}</div>
+                    : sentence.text + " "
+              }
+              {/* {sentence.text === 'para-separate' ?
+                //line break with top margin
+                // <div className="" >
+                // <br />
+                // </div>
+                <div className="h-1">{" "}</div>
+                : sentence.text} */}
             </p>
           ))}
         </ContextMenuTrigger>
