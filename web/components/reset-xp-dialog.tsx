@@ -13,38 +13,51 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { useRouter } from 'next/navigation';
+import { styled } from '@mui/material';
+
 
 export default function ResetDialog() {
   const [isOpen, setIsOpen] = useState(false);
-
-//   const openDialog = () => {
-//     setIsOpen(true);
-//   };
-
+  const router = useRouter();
+  
   const closeDialog = () => {
     setIsOpen(false);
   };
-
-  const resetXP = (userId: string) => {
-    const admin = require('firebase-admin');
-// admin.initializeApp({
-//   credential: admin.credential.applicationDefault(),
-//   databaseURL: 'https://<YOUR_PROJECT_ID>.firebaseio.com'
-// });
-admin.initializeApp({
-    credential: admin.credential.cert(process.env.NEXT_PUBLIC_FIREBASE_SERVICE_ACCOUNT_KEY),
-  });
-
-const db = admin.database();
-const ref = db.ref(`users/${userId}`);
-
-ref.update({
-      xp: 0,
-      level: 0,
-      cefrLevel: ""
-    });
-
-    closeDialog();
+  
+  const resetXP = async (userId: string,) => {
+    console.log('resetXP function called');
+    
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          xp: 0,
+          level: 0,
+          cefrLevel: "",
+        }),
+      });
+    
+      console.log('fetch called');
+      
+      return new Response(
+        JSON.stringify({
+          message: "success",
+        }),
+        { status: 200 }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            message: error,
+          }),
+          { status: 500 }
+          );
+        }
+    finally {
+      closeDialog();
+      router.refresh();
+    }
   };
 
   return (
@@ -53,7 +66,7 @@ ref.update({
             <DialogTrigger asChild>
             <Button className={cn(
           buttonVariants({ variant: "destructive"}),
-          "mt-2 sm:mt-0 w-auto lg:w-1/3",
+          "mt-2 sm:mt-0 w-full lg:w-full",
         )}>Reset XP</Button>
             </DialogTrigger>
             <DialogContent>
@@ -69,7 +82,7 @@ ref.update({
                 className={cn(
                     buttonVariants({ variant: "destructive"}),
                 )}
-                onClick={resetXP}
+                onClick={() => resetXP('userId')}
                 >
                 Confirm Reset
                 </Button>
