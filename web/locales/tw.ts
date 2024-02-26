@@ -70,6 +70,8 @@ export default {
           buttonGood: "好",
           buttonEasy: "很容易",
           flipCard: "翻轉",
+          nextButton: "下一個",
+          yourXp: "您已經獲得了 {xp} XP 為這項活動。",
         },
         //Order Sentences
         OrderSentences: "排列句子",
@@ -132,7 +134,7 @@ export default {
       congratulations: "恭喜!",
       congratulationsDescription: "「評估完成。」",
       yourScore: "你的分數 : {xp}",
-      yourCefrLevel: "你的 CEFR 等級 : {cefrLevel}", 
+      yourCefrLevel: "你的 CEFR 等級 : {cefrLevel}",
       yourRaLevel: "你的 RA 等級 : {raLevel}",
       getStartedButton: "開始",
     },

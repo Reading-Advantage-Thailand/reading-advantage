@@ -12,14 +12,13 @@ import { getScopedI18n } from '@/locales/server'
 import Questions from './questions/questions'
 import { ArticleType } from '@/types'
 import { ArticleFooter } from './article-footer'
+import { Skeleton } from './ui/skeleton'
 
 type Props = {
     article: ArticleType,
     articleId: string,
     userId: string,
 }
-
-
 
 export default async function ArticleCard({
     article,
@@ -64,22 +63,33 @@ export default async function ArticleCard({
                 </CardHeader>
                 <ArticleFooter />
             </Card >
-            <Questions
-                className='flex flex-col mt-4 mb-40 md:mb-0 md:basis-2/5'
-                questions={article.questions}
-                articleId={articleId}
-                userId={userId}
-                articleTitle={article.title}
-            />
-            {/* <MCQ
-                isRequiz={isRequiz}
-                className='mt-4 mb-40 basis-2/5 h-auto'
-                articleTitle={article.title}
-                articleId={articleId}
-                mcq={article.questions.multiple_choice_questions}
-                shortAnswer={article.questions.short_answer_question}
-                userId={userId}
-            /> */}
+            {
+                article.questions && (
+                    <Questions
+                        className='flex flex-col mt-4 mb-40 md:mb-0 md:basis-2/5'
+                        questions={article.questions}
+                        articleId={articleId}
+                        userId={userId}
+                        articleTitle={article.title}
+                    />
+                ) || (
+                    <Card className='flex flex-col mt-4 mb-40 md:mb-0 md:basis-2/5'>
+                        <CardHeader>
+                            <CardTitle>
+                                Generating Questions
+                            </CardTitle>
+                            <CardDescription>
+                                Generating questions for this article. Please wait a moment.
+                                <Skeleton className="h-[80px] w-full my-3" />
+                                <Skeleton className="h-[40px] w-full mb-3" />
+                                <Skeleton className="h-[20px] w-full mb-3" />
+                                <Skeleton className="h-[70px] w-full mb-3" />
+                            </CardDescription>
+                        </CardHeader>
+                    </Card>
+                )
+
+            }
         </div >
     )
 }
