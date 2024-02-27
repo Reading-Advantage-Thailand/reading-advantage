@@ -8,11 +8,12 @@ import { Button } from "../ui/button";
 import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { splitToText } from "@/lib/utils";
-import { Article, Sentence } from "./types";
-import QuoteList from './quote-list';
+import { Article, Quote, Sentence } from "./types";
+import QuoteList from "./quote-list";
 import { DragDropContext } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { Skeleton } from "@/components/ui/skeleton";
+import reorder from "./reorder";
 
 type Props = {
   userId: string;
@@ -89,7 +90,13 @@ export default function OrderSentences({ userId }: Props) {
       resultsFindTexts,
       res.data.article.title
     );
-    return { title: res.data.article.title, result: resultsProcess };
+
+    if (resultsProcess.length > 5) {
+       return { title: res.data.article.title, result: resultsProcess.slice(0, 5) };
+    } else {
+       return { title: res.data.article.title, result: resultsProcess };
+    }
+   
   };
 
   const getUserSentenceSaved = async () => {
@@ -130,50 +137,50 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
-  // Reordering the result list
-  // const reorder = (list: any, startIndex: number, endIndex: number) => {
-  //   const result = Array.from(list);
-  //   const [removed] = result.splice(startIndex, 1);
-  //   result.splice(endIndex, 0, removed);
+    // const reorder = (list: any, startIndex: number, endIndex: number) => {
+    //   const result = Array.from(list);
+    //   const [removed] = result.splice(startIndex, 1);
+    //   result.splice(endIndex, 0, removed);
 
-  //   return result;
-  // };
-  // a little function to help us with reordering the result
-  const reorder = (list: any, startIndex: number, endIndex: number) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
+    //   return result;
+    // };
 
-    return result;
+  const onDragStart = () => {
+    // Add a little vibration if the browser supports it.
+    // Add's a nice little physical feedback
+    console.log("onDragStart");
+    if (window.navigator.vibrate) {
+      window.navigator.vibrate(100);
+    }
   };
 
-
-
   const onDragEnd = (result: DropResult) => {
+    // combining item
+    if (result.combine) {
+      // super simple: just removing the dragging item
+      const newQuotes: Quote[] = [...articleRandom];
+      newQuotes.splice(result.source.index, 1);
+      setArticleRandom(newQuotes);
+      return;
+    }
+
+    // dropped outside the list
     if (!result.destination) {
       return;
     }
 
-    const { source, destination } = result;
-
-    console.log("source : ", source);
-    console.log("destination : ", destination);
-
-    if (source.droppableId === destination.droppableId) {
-      const sectionIndex = parseInt(
-        source.droppableId.replace("droppable-", ""),
-        10
-      );
-      const reorderedItems = reorder(
-        articleRandom[sectionIndex].result,
-        source.index,
-        destination.index
-      );
-
-      const newData = [...articleRandom];
-      newData[sectionIndex].result = reorderedItems;
-      setArticleRandom(newData);
+    if (result.destination.index === result.source.index) {
+      return;
     }
+
+    const newQuotes = reorder(
+      articleRandom,
+      result.source.index,
+      result.destination.index
+    );
+
+    setArticleRandom(newQuotes);
+
     /*
     const { source, destination } = result;
 
@@ -205,8 +212,8 @@ export default function OrderSentences({ userId }: Props) {
     getUserSentenceSaved();
   }, []);
 
-  console.log("articleBeforeRandom : ", articleBeforeRandom);
-  console.log("articleRandom : ", articleRandom);
+  // console.log("articleBeforeRandom : ", articleBeforeRandom);
+  // console.log("articleRandom : ", articleRandom);
 
   // https://dnd.hellopangea.com/?path=/story/examples-complex-vertical-list--grouped
 
@@ -227,10 +234,10 @@ export default function OrderSentences({ userId }: Props) {
             </div>
           </div>
         ) : (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="bg-[#2684FFß] flex">
-              <div className="flex flex-col h-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                {articleRandom.map((section, sectionIndex) => (
+          <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+            <div className="bg-[#2684FFß] flex max-w-screen-lg">
+              <div className="flex flex-col h-screen w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                {/* {articleRandom.map((section, sectionIndex) => (
                   <div className="font-bold" key={section?.title}>
                     <h4 className="py-4 pl-5">{section?.title}</h4>
                     <QuoteList
@@ -240,7 +247,17 @@ export default function OrderSentences({ userId }: Props) {
                       quotes={section?.result}
                     />
                   </div>
-                ))}
+                ))} */}
+
+                <div className="font-bold" key={articleRandom[0]?.title}>
+                  <h4 className="py-4 pl-5">{articleRandom[0]?.title}</h4>
+                  <QuoteList
+                    listId={"0"}
+                    listType={"0"}
+                    key={"0"}
+                    quotes={articleRandom[0].result}
+                  />
+                </div>
               </div>
             </div>
           </DragDropContext>
@@ -250,8 +267,7 @@ export default function OrderSentences({ userId }: Props) {
   );
 }
 
-
-  /* 
+/* 
         <DragDropContext onDragEnd={onDragEnd}>
           {articleRandom.map((section, sectionIndex) => (
             <div key={section.title}>
@@ -294,4 +310,3 @@ export default function OrderSentences({ userId }: Props) {
           ))}
         </DragDropContext>     
          */
-

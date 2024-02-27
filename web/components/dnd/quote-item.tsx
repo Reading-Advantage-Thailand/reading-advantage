@@ -10,6 +10,7 @@ interface Props {
   isGroupedOver?: boolean;
   style?: CSSProperties;
   index?: number;
+  isClone?: boolean;
 }
 
 const getBackgroundColor = (isDragging: boolean, isGroupedOver: boolean) => {
@@ -24,7 +25,7 @@ const getBackgroundColor = (isDragging: boolean, isGroupedOver: boolean) => {
   return "#FFFFFF";
 };
 
-// const getBorderColor = "transparent";
+const getBorderColor = "transparent";
 
 const imageSize = 40;
 
@@ -53,7 +54,7 @@ const Container = styled.a<ContainerProps>`
 
   &:hover,
   &:active {
-    color: #091e42;
+    color: rgb(22 101 52);
     text-decoration: none;
   }
 
@@ -122,7 +123,8 @@ const getStyle = (
 };
 
 const QuoteItem = (props: Props) => {
-  const { quote, isDragging, provided, isGroupedOver, style, index } = props;
+  const { quote, isDragging, provided, isGroupedOver, style, index, isClone } =
+    props;
 
   return (
     <Container
