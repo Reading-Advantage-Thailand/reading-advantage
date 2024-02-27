@@ -152,7 +152,7 @@ export default {
       yourScore: "Your Score : {xp}",
       yourCefrLevel: "Your CEFR Level : {cefrLevel}",
       yourRaLevel: "Your RA Level : {raLevel}",
-      getStartedButton: "Get Start",
+      getStartedButton: "Get Started",
     },
     progressBarXp: {
       xp: "XP:",

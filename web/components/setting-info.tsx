@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 type Props = {
     title: string,
     description: string,
-    data: string,
+    data: string | JSX.Element,
     isEdit: boolean,
     verifyButton?: boolean
     isVerified?: boolean
@@ -109,7 +109,7 @@ export default function SettingInfo({
                             "gap-2 items-center py-3",
                         )}
                     >
-                        <p>
+                        <p className='w-full'>
                             {data}
                         </p>
                         {isEdit && <Icons.edit className="w-4 h-4 hover:text-blue-500 cursor-pointer" />}

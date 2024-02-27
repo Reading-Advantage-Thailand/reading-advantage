@@ -3,11 +3,6 @@ import { twMerge } from "tailwind-merge";
 import { ArticleType } from "@/types";
 import Tokenizer from "sentence-tokenizer";
 import axios from "axios";
-import { get } from "lodash";
-import 'firebase/database';
-import firebase from "firebase/app";
-import { toast } from "react-toastify";
-import { log } from "console";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
