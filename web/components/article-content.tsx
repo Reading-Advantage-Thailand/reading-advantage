@@ -2,45 +2,29 @@
 import React from "react";
 import Tokenizer from "sentence-tokenizer";
 import { cn } from "@/lib/utils";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { toast } from "./ui/use-toast";
 import { createEmptyCard, Card } from "ts-fsrs";
-
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Badge } from "./ui/badge";
 import { Icons } from "./icons";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import { ArticleType } from "@/types";
 import { Button } from "./ui/button";
-import { set } from "lodash";
 import { Separator } from "./ui/separator";
-import { Dialog } from "@mui/material";
-import {
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
-import { DialogPortal } from "@radix-ui/react-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { getCurrentLocale } from "@/locales/server";
 
 async function getTranslate(
   sentences: string[],
@@ -57,7 +41,6 @@ async function getTranslate(
 interface ITextAudio {
   text: string;
   begin?: number;
-
 }
 
 type Props = {
@@ -73,7 +56,6 @@ export default function ArticleContent({
   className,
 }: Props) {
   const t = useScopedI18n("components.articleContent");
-  //const [rating, setRating] = React.useState<number>(-1);
   const [text, setText] = React.useState<ITextAudio[]>([]);
   const [highlightedWordIndex, setHighlightedWordIndex] = React.useState(-1);
   const [isplaying, setIsPlaying] = React.useState(false);
@@ -127,59 +109,20 @@ export default function ArticleContent({
   };
 
   const splitToText = (article: ArticleType) => {
-    const paragraphs = article.content.split("\n");
-
-    // Check if the article content already contains paragraph breaks
-    const hasParagraphBreaks = paragraphs.length > 1;
+    const tokenizer = new Tokenizer("Chuck");
+    tokenizer.setEntry(article.content);
+    const result = tokenizer.getSentences();
 
     // Clear the existing content in the 'text' array
     setText([]);
 
-    if (hasParagraphBreaks) {
-      // Use the modified 'splitToText' function that adds 'para-separate' tokens
-      paragraphs.forEach((paragraph, paragraphIndex) => {
-        const tokenizer = new Tokenizer("Chuck");
-        tokenizer.setEntry(paragraph);
-        const sentences = tokenizer.getSentences();
-
-        sentences.forEach((sentence, sentenceIndex) => {
-          if (sentenceIndex === 0) {
-            setText((prev) => [
-              ...prev,
-              { text: sentence, begin: article.timepoints[paragraphIndex]?.timeSeconds },
-            ]);
-          } else {
-            setText((prev) => [
-              ...prev,
-              { text: 'sen-separate' },
-              { text: sentence, begin: article.timepoints[paragraphIndex]?.timeSeconds },
-            ]);
-          }
-        });
-
-        // Add a 'para-separate' token after each paragraph
-        if (paragraphIndex < paragraphs.length - 1) {
-          setText((prev) => [
-            ...prev,
-            { text: 'para-separate' },
-          ]);
-        }
-      });
-    } else {
-      // Use the original 'splitToText' function that splits the content into sentences
-      const tokenizer = new Tokenizer("Chuck");
-      tokenizer.setEntry(article.content);
-      const sentences = tokenizer.getSentences();
-
-      sentences.forEach((sentence, sentenceIndex) => {
-        setText((prev) => [
-          ...prev,
-          { text: sentence, begin: article.timepoints[sentenceIndex]?.timeSeconds },
-        ]);
-      });
+    for (let i = 0; i < article.timepoints.length; i++) {
+      setText((prev) => [
+        ...prev,
+        { text: result[i], begin: article.timepoints[i].timeSeconds },
+      ]);
     }
   };
-
 
   const handleSkipToSentence = (time: number) => {
     if (audioRef.current) {
@@ -211,15 +154,6 @@ export default function ArticleContent({
           timepoint: text[selectedSentence as number].begin,
           endTimepoint: endTimepoint,
           ...card,
-          // due: new Date(
-          //   new Date().getFullYear(),
-          //   new Date().getMonth(),
-          //   new Date().getDate(),
-          //   23,
-          //   59,
-          //   59,
-          //   0
-          // ),
         });
 
         toast({
@@ -227,6 +161,7 @@ export default function ArticleContent({
           description: `You have saved "${text[selectedSentence as number].text
             }" to flashcard`,
         });
+
       } catch (error) {
         if (axios.isAxiosError(error)) {
           if (error.response?.data.message === "Sentence already saved") {
@@ -283,10 +218,7 @@ export default function ArticleContent({
         setIsTranslateOpen(!isTranslateOpen);
         setTranslate(res.translation);
         setIsTranslate(true);
-        // toast({
-        //     title: "Success",
-        //     description: "Your sentence was translated.",
-        // });
+
       }
     } catch (error) {
       console.log(error);
@@ -390,19 +322,13 @@ export default function ArticleContent({
               onClick={() => handleSkipToSentence(sentence.begin ?? 0)}
             >
               {
-                sentence.text === 'sen-separate' ?
-                  <span className="text-transparent">{" "}</span>
-                  : sentence.text === 'para-separate' ?
-                    <div className="mt-4">{" "}</div>
-                    : sentence.text + " "
+                sentence.text.split("\n").map((line, index) => (
+                  <span key={index}>
+                    {line + " "}
+                    {index !== sentence.text.split("\n").length - 1 && <br />}
+                  </span>
+                ))
               }
-              {/* {sentence.text === 'para-separate' ?
-                //line break with top margin
-                // <div className="" >
-                // <br />
-                // </div>
-                <div className="h-1">{" "}</div>
-                : sentence.text} */}
             </p>
           ))}
         </ContextMenuTrigger>
