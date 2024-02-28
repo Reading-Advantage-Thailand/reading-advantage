@@ -2,18 +2,16 @@
 // "use client";
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { DragDropContext } from "@hello-pangea/dnd";
+import type { DropResult } from "@hello-pangea/dnd";
 import { useScopedI18n } from "@/locales/client";
-import { v4 as uuidv4 } from "uuid";
-import { Button } from "../ui/button";
 import { Header } from "../header";
+import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
+import { Skeleton } from "../ui/skeleton";
 import { splitToText } from "@/lib/utils";
 import { Article, Quote, Sentence } from "./types";
 import QuoteList from "./quote-list";
-import { DragDropContext } from "@hello-pangea/dnd";
-import type { DropResult } from "@hello-pangea/dnd";
-import { Skeleton } from "@/components/ui/skeleton";
-import reorder from "./reorder";
 
 type Props = {
   userId: string;
@@ -23,6 +21,38 @@ export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
+  const [listArticle, setListArticle] = useState<any>([
+    {
+      title: "The Brave Little Mouse",
+      result: [
+        {
+          id: 1,
+          text: "Milo was small but had a big heart.",
+          title: "The Brave Little Mouse",
+        },
+        {
+          id: 2,
+          text: "He loved his family very much.",
+          title: "The Brave Little Mouse",
+        },
+        {
+          id: 3,
+          text: "One day, a group of mean cats came to the burrow.",
+          title: "The Brave Little Mouse",
+        },
+        {
+          id: 5,
+          text: "He thought of a plan.",
+          title: "The Brave Little Mouse",
+        },
+        {
+          id: 6,
+          text: "Milo sneaked out of the burrow and found a big bowl of milk.",
+          title: "The Brave Little Mouse",
+        },
+      ],
+    },
+  ]);
 
   // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
   const findTextsByIndexes = (objects: Article[], targetIndexes: number[]) => {
@@ -30,7 +60,7 @@ export default function OrderSentences({ userId }: Props) {
       const before =
         index - 1 >= 0
           ? { index: index - 1, text: objects[index - 1]?.text }
-          : null; //index - 1 >= 0 ? objects[index - 1]?.text : "ไม่มีข้อมูล";
+          : null;
       const current = { index: index, text: objects[index]?.text };
       const after =
         index + 1 < objects.length
@@ -59,7 +89,7 @@ export default function OrderSentences({ userId }: Props) {
     return Array.from(uniqueTexts.keys())
       .sort((a, b) => a - b)
       .map((index) => ({
-        index,
+        id: index,
         text: uniqueTexts.get(index),
         title,
       }));
@@ -92,11 +122,13 @@ export default function OrderSentences({ userId }: Props) {
     );
 
     if (resultsProcess.length > 5) {
-       return { title: res.data.article.title, result: resultsProcess.slice(0, 5) };
+      return {
+        title: res.data.article.title,
+        result: resultsProcess.slice(0, 5),
+      };
     } else {
-       return { title: res.data.article.title, result: resultsProcess };
+      return { title: res.data.article.title, result: resultsProcess };
     }
-   
   };
 
   const getUserSentenceSaved = async () => {
@@ -137,14 +169,11 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
-    // const reorder = (list: any, startIndex: number, endIndex: number) => {
-    //   const result = Array.from(list);
-    //   const [removed] = result.splice(startIndex, 1);
-    //   result.splice(endIndex, 0, removed);
+  useEffect(() => {
+    getUserSentenceSaved();
+  }, []);
 
-    //   return result;
-    // };
-
+  // Drag and Drop
   const onDragStart = () => {
     // Add a little vibration if the browser supports it.
     // Add's a nice little physical feedback
@@ -155,16 +184,10 @@ export default function OrderSentences({ userId }: Props) {
   };
 
   const onDragEnd = (result: DropResult) => {
-    // combining item
-    if (result.combine) {
-      // super simple: just removing the dragging item
-      const newQuotes: Quote[] = [...articleRandom];
-      newQuotes.splice(result.source.index, 1);
-      setArticleRandom(newQuotes);
-      return;
-    }
+    console.log("===== onDragEnd ======");
+    console.log("===== result ====== : ", result);
+    console.log("===== listArticle ====== : ", listArticle);
 
-    // dropped outside the list
     if (!result.destination) {
       return;
     }
@@ -173,49 +196,25 @@ export default function OrderSentences({ userId }: Props) {
       return;
     }
 
-    const newQuotes = reorder(
-      articleRandom,
-      result.source.index,
-      result.destination.index
-    );
+    // ตรวจสอบก่อนว่า listArticle มีค่า และ listArticle.result ไม่เป็น undefined
+    const items = listArticle[0]?.result ? Array.from(listArticle[0].result) : [];
 
-    setArticleRandom(newQuotes);
-
-    /*
-    const { source, destination } = result;
-
-    // If dropped outside the list
-    if (!destination) {
-      return;
+    // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
+    if (items.length > 0) {
+      const [removed] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, removed);
+    
+     console.log("removed : ", removed);
+     console.log("items : ", items);
+     console.log("=================");
+     setListArticle((prevState : any) => ([{
+       ...prevState,
+       result: items,
+     }]));
+    } else {
+      console.log("No items to remove");
     }
-
-    // Only proceed if dropped in the same list
-    if (source.droppableId === destination.droppableId) {
-      const sectionIndex = parseInt(
-        source.droppableId.replace("droppable-", ""),
-        10
-      );
-      const reorderedItems = reorder(
-        articleRandom[sectionIndex].result,
-        source.index,
-        destination.index
-      );
-
-      const newData = [...articleRandom];
-      newData[sectionIndex].result = reorderedItems;
-      setArticleRandom(newData);
-    }
-    */
   };
-
-  useEffect(() => {
-    getUserSentenceSaved();
-  }, []);
-
-  // console.log("articleBeforeRandom : ", articleBeforeRandom);
-  // console.log("articleRandom : ", articleRandom);
-
-  // https://dnd.hellopangea.com/?path=/story/examples-complex-vertical-list--grouped
 
   return (
     <>
@@ -234,79 +233,22 @@ export default function OrderSentences({ userId }: Props) {
             </div>
           </div>
         ) : (
-          <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-            <div className="bg-[#2684FFß] flex max-w-screen-lg">
-              <div className="flex flex-col h-screen w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                {/* {articleRandom.map((section, sectionIndex) => (
-                  <div className="font-bold" key={section?.title}>
-                    <h4 className="py-4 pl-5">{section?.title}</h4>
-                    <QuoteList
-                      listId={sectionIndex.toString()}
-                      listType={sectionIndex.toString()}
-                      key={sectionIndex}
-                      quotes={section?.result}
-                    />
-                  </div>
-                ))} */}
-
-                <div className="font-bold" key={articleRandom[0]?.title}>
-                  <h4 className="py-4 pl-5">{articleRandom[0]?.title}</h4>
+          <>
+            <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+              <div className="bg-[#2684FFß] flex max-w-screen-lg">
+                <div className="flex flex-col h-screen w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                  <h4 className="py-4 pl-5">{listArticle[0]?.title}</h4>
                   <QuoteList
-                    listId={"0"}
+                    listId={"list"}
                     listType={"0"}
-                    key={"0"}
-                    quotes={articleRandom[0].result}
+                    quotes={listArticle[0].result}
                   />
                 </div>
               </div>
-            </div>
-          </DragDropContext>
+            </DragDropContext>           
+          </>
         )}
       </div>
     </>
   );
 }
-
-/* 
-        <DragDropContext onDragEnd={onDragEnd}>
-          {articleRandom.map((section, sectionIndex) => (
-            <div key={section.title}>
-              <h2 className="my-5">{section.title}</h2>
-              <Droppable droppableId={`droppable-${sectionIndex}`}>
-                {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef}>
-                    {section.result.map((item: any, index: number) => (
-                      <Draggable
-                        key={item.index}
-                        draggableId={`item-${item.index}`}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            style={{
-                              userSelect: "none",
-                              padding: 16,
-                              margin: "0 0 8px 0",
-                              minHeight: "50px",
-                              backgroundColor: "#fff",
-                              color: "#333",
-                              border: "1px solid #210eef",
-                              ...provided.draggableProps.style,
-                            }}
-                          >
-                            {item.text}
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          ))}
-        </DragDropContext>     
-         */

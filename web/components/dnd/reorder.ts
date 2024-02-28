@@ -1,7 +1,3 @@
-import type { DraggableLocation } from "@hello-pangea/dnd";
-import type { Quote, QuoteMap } from "./types";
-
-
 // a little function to help us with reordering the result
 function reorder<TItem>(
   list: TItem[],

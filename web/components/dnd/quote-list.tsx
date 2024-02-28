@@ -7,8 +7,8 @@ import type {
   DraggableProvided,
   DraggableStateSnapshot,
 } from "@hello-pangea/dnd";
-import QuoteItem from "./quote-item";
 import type { Quote } from "./types";
+import QuoteItem from "./quote-item";
 
 export const getBackgroundColor = (
   isDraggingOver: boolean,
@@ -62,8 +62,7 @@ const ScrollContainer = styled.div`
   max-height: ${scrollContainerHeight}px;
 `;
 
-const Container = styled.div`
-`;
+const Container = styled.div``;
 
 const Title = styled.h4`
   padding: 8px;
@@ -77,6 +76,7 @@ const Title = styled.h4`
     outline-offset: 2px;
   }
 `;
+
 
 interface Props {
   listId?: string;
@@ -98,25 +98,25 @@ interface QuoteListProps {
 }
 
 const InnerQuoteList = (props: QuoteListProps): ReactElement => {
-  console.log("props.quotes : ", props.quotes);
   return (
     <>
       {props.quotes.map((quote: Quote, index: number) => (
-        <Draggable key={quote.index} draggableId={quote.index} index={index}>
+        <Draggable
+          key={quote.id}
+          draggableId={`item-${quote.id}`}
+          index={index}
+        >
           {(
             dragProvided: DraggableProvided,
             dragSnapshot: DraggableStateSnapshot
           ) => (
-            <>
-              <p>{dragSnapshot.isDragging.toString()}</p>
-              <QuoteItem
-                key={quote.index}
-                quote={quote}
-                isDragging={dragSnapshot.isDragging}
-                isGroupedOver={Boolean(dragSnapshot.combineTargetFor)}
-                provided={dragProvided}
-              />
-            </>
+            <QuoteItem
+              key={quote.id}
+              quote={quote}
+              isDragging={dragSnapshot.isDragging}
+              isGroupedOver={Boolean(dragSnapshot.combineTargetFor)}
+              provided={dragProvided}
+            />
           )}
         </Draggable>
       ))}
@@ -132,9 +132,11 @@ interface InnerListProps {
   title: string | undefined | null;
 }
 
-function InnerList(props: InnerListProps) {
+const InnerList = (props: InnerListProps) => {
   const { quotes, dropProvided } = props;
   const title = props.title ? <Title>{props.title}</Title> : null;
+
+  console.log("dropProvided : ", dropProvided);
 
   return (
     <Container>
@@ -164,11 +166,12 @@ export default function QuoteList(props: Props): ReactElement {
 
   return (
     <Droppable
-      droppableId={listId}
+      // droppableId={listId}
+      droppableId={`droppable-0`}
       type={listType}
-      // ignoreContainerClipping={ignoreContainerClipping}
-      // isDropDisabled={isDropDisabled}
-      // isCombineEnabled={isCombineEnabled}
+      ignoreContainerClipping={ignoreContainerClipping}
+      isDropDisabled={isDropDisabled}
+      isCombineEnabled={isCombineEnabled}
       // renderClone={
       //   useClone
       //     ? (provided, snapshot, descriptor) => (
@@ -176,7 +179,7 @@ export default function QuoteList(props: Props): ReactElement {
       //           quote={quotes[descriptor.source.index]}
       //           provided={provided}
       //           isDragging={snapshot.isDragging}
-      //           // isClone
+      //           isClone
       //         />
       //       )
       //     : undefined
@@ -193,6 +196,21 @@ export default function QuoteList(props: Props): ReactElement {
           isDraggingFrom={Boolean(dropSnapshot.draggingFromThisWith)}
           {...dropProvided.droppableProps}
         >
+          {/* {internalScroll ? (
+            <ScrollContainer style={scrollContainerStyle}>
+              <InnerList
+                quotes={quotes}
+                title={title}
+                dropProvided={dropProvided}
+              />
+            </ScrollContainer>
+          ) : (
+            <InnerList
+              quotes={quotes}
+              title={title}
+              dropProvided={dropProvided}
+            />
+          )} */}
           <InnerList
             quotes={quotes}
             title={title}
