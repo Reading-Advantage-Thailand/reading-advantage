@@ -82,6 +82,7 @@ export default {
           flipCard: "พลิกการ์ด",
           nextButton: "ถัดไป",
           yourXp: "คุณได้รับ {xp} XP สำหรับกิจกรรมนี้",
+          saveOrder: "บันทึก & ดำเนินการต่อในภายหลัง",
         },
         //Order Sentences
         OrderSentences: "เรียงประโยค",

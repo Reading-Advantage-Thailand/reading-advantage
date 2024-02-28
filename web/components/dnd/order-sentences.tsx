@@ -21,38 +21,8 @@ export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
-  const [listArticle, setListArticle] = useState<any>([
-    {
-      title: "The Brave Little Mouse",
-      result: [
-        {
-          id: 1,
-          text: "Milo was small but had a big heart.",
-          title: "The Brave Little Mouse",
-        },
-        {
-          id: 2,
-          text: "He loved his family very much.",
-          title: "The Brave Little Mouse",
-        },
-        {
-          id: 3,
-          text: "One day, a group of mean cats came to the burrow.",
-          title: "The Brave Little Mouse",
-        },
-        {
-          id: 5,
-          text: "He thought of a plan.",
-          title: "The Brave Little Mouse",
-        },
-        {
-          id: 6,
-          text: "Milo sneaked out of the burrow and found a big bowl of milk.",
-          title: "The Brave Little Mouse",
-        },
-      ],
-    },
-  ]);
+  const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
 
   // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
   const findTextsByIndexes = (objects: Article[], targetIndexes: number[]) => {
@@ -186,7 +156,7 @@ export default function OrderSentences({ userId }: Props) {
   const onDragEnd = (result: DropResult) => {
     console.log("===== onDragEnd ======");
     console.log("===== result ====== : ", result);
-    console.log("===== listArticle ====== : ", listArticle);
+    console.log("===== articleRandom ====== : ", articleRandom);
 
     if (!result.destination) {
       return;
@@ -197,23 +167,58 @@ export default function OrderSentences({ userId }: Props) {
     }
 
     // ตรวจสอบก่อนว่า listArticle มีค่า และ listArticle.result ไม่เป็น undefined
-    const items = listArticle[0]?.result ? Array.from(listArticle[0].result) : [];
+    const items = articleRandom[currentArticleIndex]?.result
+      ? Array.from(articleRandom[currentArticleIndex].result)
+      : [];
 
     // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
     if (items.length > 0) {
       const [removed] = items.splice(result.source.index, 1);
       items.splice(result.destination.index, 0, removed);
-    
-     console.log("removed : ", removed);
-     console.log("items : ", items);
-     console.log("=================");
-     setListArticle((prevState : any) => ([{
-       ...prevState,
-       result: items,
-     }]));
+
+      console.log("removed : ", removed);
+      console.log("items : ", items);
+      console.log("=================");
+
+      setArticleRandom((prevState: any) =>
+        prevState.map((item: any, index: number) => {
+          if (index === currentArticleIndex) {
+            return {
+              ...item,
+              result: items,
+            };
+          }
+          return item;
+        })
+      );
     } else {
       console.log("No items to remove");
     }
+  };
+
+  const onNextArticle = () => {
+    setCurrentArticleIndex(currentArticleIndex + 1);
+    // check two array is equal
+    console.log("articleBeforeRandom : ", articleBeforeRandom);
+    console.log("articleRandom : ", articleRandom);
+    /*
+     if (arr1.length !== arr2.length) return false;
+
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i].title !== arr2[i].title) return false;
+    if (arr1[i].result.length !== arr2[i].result.length) return false;
+    
+    // สร้าง Map จาก id ของแต่ละ result ใน arr1
+    const resultMapArr1 = new Map(arr1[i].result.map(item => [item.id, item.text]));
+    
+    for (let resultItem of arr2[i].result) {
+      // เช็คว่ามี id เดียวกันใน arr1 และ text เหมือนกันหรือไม่
+      if (resultMapArr1.get(resultItem.id) !== resultItem.text) return false;
+    }
+  }
+
+  return true;
+    */
   };
 
   return (
@@ -223,7 +228,8 @@ export default function OrderSentences({ userId }: Props) {
         text={t("OrderSentencesDescription")}
       />
       <div className="mt-5">
-        {articleRandom.length === 0 ? (
+        {articleRandom.length === 0 ||
+        articleRandom.length === currentArticleIndex ? (
           <div className="grid w-full gap-10">
             <div className="mx-auto w-[800px] space-y-6">
               <Skeleton className="h-[200px] w-full" />
@@ -236,16 +242,31 @@ export default function OrderSentences({ userId }: Props) {
           <>
             <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
               <div className="bg-[#2684FFß] flex max-w-screen-lg">
-                <div className="flex flex-col h-screen w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                  <h4 className="py-4 pl-5">{listArticle[0]?.title}</h4>
+                <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                  <h4 className="py-4 pl-5">
+                    {articleRandom[currentArticleIndex]?.title}
+                  </h4>
                   <QuoteList
                     listId={"list"}
-                    listType={"0"}
-                    quotes={listArticle[0].result}
+                    quotes={articleRandom[currentArticleIndex]?.result}
+                    sectionIndex={currentArticleIndex}
                   />
                 </div>
               </div>
-            </DragDropContext>           
+            </DragDropContext>
+            {articleRandom.length !== currentArticleIndex ? (
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={loading}
+                size="sm"
+                onClick={onNextArticle}
+              >
+                {t("flashcardPractice.saveOrder")}
+              </Button>
+            ) : (
+              <></>
+            )}
           </>
         )}
       </div>

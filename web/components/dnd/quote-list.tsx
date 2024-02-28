@@ -56,12 +56,6 @@ const DropZone = styled.div`
   padding-bottom: 8px;
 `;
 
-const ScrollContainer = styled.div`
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-height: ${scrollContainerHeight}px;
-`;
-
 const Container = styled.div``;
 
 const Title = styled.h4`
@@ -91,6 +85,7 @@ interface Props {
   // may not be provided - and might be null
   ignoreContainerClipping?: boolean;
   useClone?: boolean;
+  sectionIndex?: number;
 }
 
 interface QuoteListProps {
@@ -100,7 +95,7 @@ interface QuoteListProps {
 const InnerQuoteList = (props: QuoteListProps): ReactElement => {
   return (
     <>
-      {props.quotes.map((quote: Quote, index: number) => (
+      {props?.quotes?.map((quote: Quote, index: number) => (
         <Draggable
           key={quote.id}
           draggableId={`item-${quote.id}`}
@@ -134,9 +129,7 @@ interface InnerListProps {
 
 const InnerList = (props: InnerListProps) => {
   const { quotes, dropProvided } = props;
-  const title = props.title ? <Title>{props.title}</Title> : null;
-
-  console.log("dropProvided : ", dropProvided);
+  const title = props.title ? <Title>{props.title}</Title> : null
 
   return (
     <Container>
@@ -152,38 +145,22 @@ const InnerList = (props: InnerListProps) => {
 export default function QuoteList(props: Props): ReactElement {
   const {
     ignoreContainerClipping,
-    internalScroll,
-    scrollContainerStyle,
     isDropDisabled,
     isCombineEnabled,
-    listId = "LIST",
     listType,
     style,
     quotes,
     title,
-    useClone,
+    sectionIndex,
   } = props;
 
   return (
     <Droppable
-      // droppableId={listId}
-      droppableId={`droppable-0`}
-      type={listType}
+      droppableId={`droppable-${sectionIndex}`}
+      // type={listType}
       ignoreContainerClipping={ignoreContainerClipping}
       isDropDisabled={isDropDisabled}
       isCombineEnabled={isCombineEnabled}
-      // renderClone={
-      //   useClone
-      //     ? (provided, snapshot, descriptor) => (
-      //         <QuoteItem
-      //           quote={quotes[descriptor.source.index]}
-      //           provided={provided}
-      //           isDragging={snapshot.isDragging}
-      //           isClone
-      //         />
-      //       )
-      //     : undefined
-      // }
     >
       {(
         dropProvided: DroppableProvided,
@@ -196,21 +173,6 @@ export default function QuoteList(props: Props): ReactElement {
           isDraggingFrom={Boolean(dropSnapshot.draggingFromThisWith)}
           {...dropProvided.droppableProps}
         >
-          {/* {internalScroll ? (
-            <ScrollContainer style={scrollContainerStyle}>
-              <InnerList
-                quotes={quotes}
-                title={title}
-                dropProvided={dropProvided}
-              />
-            </ScrollContainer>
-          ) : (
-            <InnerList
-              quotes={quotes}
-              title={title}
-              dropProvided={dropProvided}
-            />
-          )} */}
           <InnerList
             quotes={quotes}
             title={title}
