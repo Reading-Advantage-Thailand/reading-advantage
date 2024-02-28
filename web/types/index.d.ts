@@ -1,3 +1,5 @@
+// import { EnumValues } from "zod";
+
 export type SiteConfig = {
     name: string;
     description: string;
@@ -40,6 +42,12 @@ export type SidebarNavItem = {
         }
     )
 
+    export enum UserRole {
+        TEACHER = "TEACHER",
+        STUDENT = "STUDENT",
+        ADMIN = "ADMIN",
+    }
+
 export type User = {
     id: string;
     name: string;
@@ -48,7 +56,9 @@ export type User = {
     createAt: Date;
     lastLogin: Date;
     level: number;
+    role: UserRole;
 }
+
 
 // multiple choice question type
 export type Question = {
