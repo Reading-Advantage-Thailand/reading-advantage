@@ -176,10 +176,6 @@ export default function OrderSentences({ userId }: Props) {
       const [removed] = items.splice(result.source.index, 1);
       items.splice(result.destination.index, 0, removed);
 
-      console.log("removed : ", removed);
-      console.log("items : ", items);
-      console.log("=================");
-
       setArticleRandom((prevState: any) =>
         prevState.map((item: any, index: number) => {
           if (index === currentArticleIndex) {
@@ -228,8 +224,7 @@ export default function OrderSentences({ userId }: Props) {
         text={t("OrderSentencesDescription")}
       />
       <div className="mt-5">
-        {articleRandom.length === 0 ||
-        articleRandom.length === currentArticleIndex ? (
+        {articleRandom.length === 0 ? (
           <div className="grid w-full gap-10">
             <div className="mx-auto w-[800px] space-y-6">
               <Skeleton className="h-[200px] w-full" />
@@ -240,20 +235,25 @@ export default function OrderSentences({ userId }: Props) {
           </div>
         ) : (
           <>
-            <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-              <div className="bg-[#2684FFß] flex max-w-screen-lg">
-                <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                  <h4 className="py-4 pl-5">
-                    {articleRandom[currentArticleIndex]?.title}
-                  </h4>
-                  <QuoteList
-                    listId={"list"}
-                    quotes={articleRandom[currentArticleIndex]?.result}
-                    sectionIndex={currentArticleIndex}
-                  />
+            {articleRandom.length !== currentArticleIndex ? (
+              <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+                <div className="bg-[#2684FFß] flex max-w-screen-lg">
+                  <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                    <h4 className="py-4 pl-5">
+                      {articleRandom[currentArticleIndex]?.title}
+                    </h4>
+                    <QuoteList
+                      listId={"list"}
+                      quotes={articleRandom[currentArticleIndex]?.result}
+                      sectionIndex={currentArticleIndex}
+                    />
+                  </div>
                 </div>
-              </div>
-            </DragDropContext>
+              </DragDropContext>
+            ) : (
+              <></>
+            )}
+
             {articleRandom.length !== currentArticleIndex ? (
               <Button
                 className="mt-4"
@@ -265,7 +265,15 @@ export default function OrderSentences({ userId }: Props) {
                 {t("flashcardPractice.saveOrder")}
               </Button>
             ) : (
-              <></>
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={true}
+                size="sm"
+                onClick={onNextArticle}
+              >
+                {t("flashcardPractice.saveOrder")}
+              </Button>
             )}
           </>
         )}
