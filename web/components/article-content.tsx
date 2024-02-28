@@ -2,45 +2,29 @@
 import React from "react";
 import Tokenizer from "sentence-tokenizer";
 import { cn } from "@/lib/utils";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { toast } from "./ui/use-toast";
 import { createEmptyCard, Card } from "ts-fsrs";
-
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Badge } from "./ui/badge";
 import { Icons } from "./icons";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import { ArticleType } from "@/types";
 import { Button } from "./ui/button";
-import { set } from "lodash";
 import { Separator } from "./ui/separator";
-import { Dialog } from "@mui/material";
-import {
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
-import { DialogPortal } from "@radix-ui/react-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { getCurrentLocale } from "@/locales/server";
 
 async function getTranslate(
   sentences: string[],
@@ -72,7 +56,6 @@ export default function ArticleContent({
   className,
 }: Props) {
   const t = useScopedI18n("components.articleContent");
-  //const [rating, setRating] = React.useState<number>(-1);
   const [text, setText] = React.useState<ITextAudio[]>([]);
   const [highlightedWordIndex, setHighlightedWordIndex] = React.useState(-1);
   const [isplaying, setIsPlaying] = React.useState(false);
@@ -84,7 +67,6 @@ export default function ArticleContent({
   const [translate, setTranslate] = React.useState<string[]>([]);
   const [isTranslate, setIsTranslate] = React.useState(false);
   const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
-
   React.useEffect(() => {
     if (!isSplit) {
       splitToText(article);
@@ -126,18 +108,37 @@ export default function ArticleContent({
   };
 
   const splitToText = (article: ArticleType) => {
-    const tokenizer = new Tokenizer("Chuck");
-    tokenizer.setEntry(article.content);
-    const result = tokenizer.getSentences();
+    console.log("article", article.content);
+    const regex = /(\n\n|\n|\\n\\n|\\n)/g;
+    // if contains \n\n or \n or \\n\\n or \\n then replace with ''
+    if (article.content.match(regex)) {
 
-    // Clear the existing content in the 'text' array
-    setText([]);
+      // just replace \n\n and \\n\\n
+      const content = article.content.replace(regex, '~~');
+      // split . but except for Mr. Mrs. Dr. Ms. and other abbreviations
+      const sentences = content.split(/(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./).filter((sentence) => sentence.length > 0);
+      const result = sentences.map((sentence) => sentence.trim());
+      console.log("result", result);
+      setText([]);
 
-    for (let i = 0; i < article.timepoints.length; i++) {
-      setText((prev) => [
-        ...prev,
-        { text: result[i], begin: article.timepoints[i].timeSeconds },
-      ]);
+      for (let i = 0; i < article.timepoints.length; i++) {
+        setText((prev) => [
+          ...prev,
+          { text: result[i], begin: article.timepoints[i].timeSeconds },
+        ]);
+      }
+    } else {
+      // use tokenizer to split sentence
+      const tokenizer = new Tokenizer();
+      tokenizer.setEntry(article.content);
+      const sentences = tokenizer.getSentences();
+      setText([]);
+      for (let i = 0; i < article.timepoints.length; i++) {
+        setText((prev) => [
+          ...prev,
+          { text: sentences[i], begin: article.timepoints[i].timeSeconds },
+        ]);
+      }
     }
   };
 
@@ -171,23 +172,14 @@ export default function ArticleContent({
           timepoint: text[selectedSentence as number].begin,
           endTimepoint: endTimepoint,
           ...card,
-          // due: new Date(
-          //   new Date().getFullYear(),
-          //   new Date().getMonth(),
-          //   new Date().getDate(),
-          //   23,
-          //   59,
-          //   59,
-          //   0
-          // ),
         });
 
         toast({
           title: "Success",
-          description: `You have saved "${
-            text[selectedSentence as number].text
-          }" to flashcard`,
+          description: `You have saved "${text[selectedSentence as number].text
+            }" to flashcard`,
         });
+
       } catch (error) {
         if (axios.isAxiosError(error)) {
           if (error.response?.data.message === "Sentence already saved") {
@@ -212,7 +204,9 @@ export default function ArticleContent({
   async function handleTranslateSentence() {
     setLoading(true);
     try {
-      const sentences = text.map((sentence) => sentence.text);
+      //remove ~~ from text
+      const sentences = text.map((sentence) => sentence.text.replace(/~~/g, ""));
+      // const sentences = text.map((sentence) => sentence.text);
       // get language from local
       if (!locale || locale === "en") {
         return;
@@ -244,10 +238,7 @@ export default function ArticleContent({
         setIsTranslateOpen(!isTranslateOpen);
         setTranslate(res.translation);
         setIsTranslate(true);
-        // toast({
-        //     title: "Success",
-        //     description: "Your sentence was translated.",
-        // });
+
       }
     } catch (error) {
       console.log(error);
@@ -299,8 +290,8 @@ export default function ArticleContent({
             {loading
               ? "Loading"
               : isTranslate && isTranslateOpen
-              ? t("translateฺButton.close")
-              : t("translateฺButton.open")}
+                ? t("translateฺButton.close")
+                : t("translateฺButton.open")}
           </Button>
         )}
       </div>
@@ -341,8 +332,8 @@ export default function ArticleContent({
                     ? "bg-yellow-50"
                     : "bg-transparent"
                   : highlightedWordIndex + 1 === index
-                  ? "bg-yellow-50"
-                  : "bg-transparent"
+                    ? "bg-yellow-50"
+                    : "bg-transparent"
               )}
               onMouseEnter={() => {
                 setSelectedSentence(index);
@@ -350,7 +341,17 @@ export default function ArticleContent({
               }}
               onClick={() => handleSkipToSentence(sentence.begin ?? 0)}
             >
-              {sentence.text}{" "}
+              {
+                // if start with ~~ then add break line
+                sentence.text.split("~~").map((line, index) => (
+                  <span key={index}>
+                    {
+                      line + (index !== sentence.text.split("~~").length - 1 ? " " : line.endsWith(".") ? " " : ". ")
+                    }
+                    {index !== sentence.text.split("~~").length - 1 && <div className="mt-3" />}
+                  </span>
+                ))
+              }
             </p>
           ))}
         </ContextMenuTrigger>

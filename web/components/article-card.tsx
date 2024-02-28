@@ -80,11 +80,11 @@ export default async function ArticleCard({
                             </CardTitle>
                             <CardDescription>
                                 Generating questions for this article. Please wait a moment.
-                                <Skeleton className="h-[80px] w-full my-3" />
-                                <Skeleton className="h-[40px] w-full mb-3" />
-                                <Skeleton className="h-[20px] w-full mb-3" />
-                                <Skeleton className="h-[70px] w-full mb-3" />
                             </CardDescription>
+                            <Skeleton className="h-[80px] w-full my-3" />
+                            <Skeleton className="h-[40px] w-full mb-3" />
+                            <Skeleton className="h-[20px] w-full mb-3" />
+                            <Skeleton className="h-[70px] w-full mb-3" />
                         </CardHeader>
                     </Card>
                 )
