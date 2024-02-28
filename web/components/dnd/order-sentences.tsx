@@ -2,17 +2,16 @@
 // "use client";
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useScopedI18n } from "@/locales/client";
-import { v4 as uuidv4 } from "uuid";
-import { Button } from "../ui/button";
-import { Header } from "../header";
-import { toast } from "../ui/use-toast";
-import { splitToText } from "@/lib/utils";
-import { Article, Sentence } from "./types";
-import QuoteList from './quote-list';
 import { DragDropContext } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useScopedI18n } from "@/locales/client";
+import { Header } from "../header";
+import { Button } from "../ui/button";
+import { toast } from "../ui/use-toast";
+import { Skeleton } from "../ui/skeleton";
+import { splitToText } from "@/lib/utils";
+import { Article, Quote, Sentence } from "./types";
+import QuoteList from "./quote-list";
 
 type Props = {
   userId: string;
@@ -22,6 +21,8 @@ export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
+  const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
 
   // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
   const findTextsByIndexes = (objects: Article[], targetIndexes: number[]) => {
@@ -29,7 +30,7 @@ export default function OrderSentences({ userId }: Props) {
       const before =
         index - 1 >= 0
           ? { index: index - 1, text: objects[index - 1]?.text }
-          : null; //index - 1 >= 0 ? objects[index - 1]?.text : "ไม่มีข้อมูล";
+          : null;
       const current = { index: index, text: objects[index]?.text };
       const after =
         index + 1 < objects.length
@@ -58,7 +59,7 @@ export default function OrderSentences({ userId }: Props) {
     return Array.from(uniqueTexts.keys())
       .sort((a, b) => a - b)
       .map((index) => ({
-        index,
+        id: index,
         text: uniqueTexts.get(index),
         title,
       }));
@@ -89,7 +90,15 @@ export default function OrderSentences({ userId }: Props) {
       resultsFindTexts,
       res.data.article.title
     );
-    return { title: res.data.article.title, result: resultsProcess };
+
+    if (resultsProcess.length > 5) {
+      return {
+        title: res.data.article.title,
+        result: resultsProcess.slice(0, 5),
+      };
+    } else {
+      return { title: res.data.article.title, result: resultsProcess };
+    }
   };
 
   const getUserSentenceSaved = async () => {
@@ -130,85 +139,87 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
-  // Reordering the result list
-  // const reorder = (list: any, startIndex: number, endIndex: number) => {
-  //   const result = Array.from(list);
-  //   const [removed] = result.splice(startIndex, 1);
-  //   result.splice(endIndex, 0, removed);
-
-  //   return result;
-  // };
-  // a little function to help us with reordering the result
-  const reorder = (list: any, startIndex: number, endIndex: number) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-
-    return result;
-  };
-
-
-
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) {
-      return;
-    }
-
-    const { source, destination } = result;
-
-    console.log("source : ", source);
-    console.log("destination : ", destination);
-
-    if (source.droppableId === destination.droppableId) {
-      const sectionIndex = parseInt(
-        source.droppableId.replace("droppable-", ""),
-        10
-      );
-      const reorderedItems = reorder(
-        articleRandom[sectionIndex].result,
-        source.index,
-        destination.index
-      );
-
-      const newData = [...articleRandom];
-      newData[sectionIndex].result = reorderedItems;
-      setArticleRandom(newData);
-    }
-    /*
-    const { source, destination } = result;
-
-    // If dropped outside the list
-    if (!destination) {
-      return;
-    }
-
-    // Only proceed if dropped in the same list
-    if (source.droppableId === destination.droppableId) {
-      const sectionIndex = parseInt(
-        source.droppableId.replace("droppable-", ""),
-        10
-      );
-      const reorderedItems = reorder(
-        articleRandom[sectionIndex].result,
-        source.index,
-        destination.index
-      );
-
-      const newData = [...articleRandom];
-      newData[sectionIndex].result = reorderedItems;
-      setArticleRandom(newData);
-    }
-    */
-  };
-
   useEffect(() => {
     getUserSentenceSaved();
   }, []);
 
-  console.log("articleBeforeRandom : ", articleBeforeRandom);
-  console.log("articleRandom : ", articleRandom);
+  // Drag and Drop
+  const onDragStart = () => {
+    // Add a little vibration if the browser supports it.
+    // Add's a nice little physical feedback
+    console.log("onDragStart");
+    if (window.navigator.vibrate) {
+      window.navigator.vibrate(100);
+    }
+  };
 
-  // https://dnd.hellopangea.com/?path=/story/examples-complex-vertical-list--grouped
+  const onDragEnd = (result: DropResult) => {
+    console.log("===== onDragEnd ======");
+    console.log("===== result ====== : ", result);
+    console.log("===== articleRandom ====== : ", articleRandom);
+
+    if (!result.destination) {
+      return;
+    }
+
+    if (result.destination.index === result.source.index) {
+      return;
+    }
+
+    // ตรวจสอบก่อนว่า listArticle มีค่า และ listArticle.result ไม่เป็น undefined
+    const items = articleRandom[currentArticleIndex]?.result
+      ? Array.from(articleRandom[currentArticleIndex].result)
+      : [];
+
+    // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
+    if (items.length > 0) {
+      const [removed] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, removed);
+
+      console.log("removed : ", removed);
+      console.log("items : ", items);
+      console.log("=================");
+
+      setArticleRandom((prevState: any) =>
+        prevState.map((item: any, index: number) => {
+          if (index === currentArticleIndex) {
+            return {
+              ...item,
+              result: items,
+            };
+          }
+          return item;
+        })
+      );
+    } else {
+      console.log("No items to remove");
+    }
+  };
+
+  const onNextArticle = () => {
+    setCurrentArticleIndex(currentArticleIndex + 1);
+    // check two array is equal
+    console.log("articleBeforeRandom : ", articleBeforeRandom);
+    console.log("articleRandom : ", articleRandom);
+    /*
+     if (arr1.length !== arr2.length) return false;
+
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i].title !== arr2[i].title) return false;
+    if (arr1[i].result.length !== arr2[i].result.length) return false;
+    
+    // สร้าง Map จาก id ของแต่ละ result ใน arr1
+    const resultMapArr1 = new Map(arr1[i].result.map(item => [item.id, item.text]));
+    
+    for (let resultItem of arr2[i].result) {
+      // เช็คว่ามี id เดียวกันใน arr1 และ text เหมือนกันหรือไม่
+      if (resultMapArr1.get(resultItem.id) !== resultItem.text) return false;
+    }
+  }
+
+  return true;
+    */
+  };
 
   return (
     <>
@@ -217,7 +228,8 @@ export default function OrderSentences({ userId }: Props) {
         text={t("OrderSentencesDescription")}
       />
       <div className="mt-5">
-        {articleRandom.length === 0 ? (
+        {articleRandom.length === 0 ||
+        articleRandom.length === currentArticleIndex ? (
           <div className="grid w-full gap-10">
             <div className="mx-auto w-[800px] space-y-6">
               <Skeleton className="h-[200px] w-full" />
@@ -227,71 +239,37 @@ export default function OrderSentences({ userId }: Props) {
             </div>
           </div>
         ) : (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="bg-[#2684FFß] flex">
-              <div className="flex flex-col h-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                {articleRandom.map((section, sectionIndex) => (
-                  <div className="font-bold" key={section?.title}>
-                    <h4 className="py-4 pl-5">{section?.title}</h4>
-                    <QuoteList
-                      listId={sectionIndex.toString()}
-                      listType={sectionIndex.toString()}
-                      key={sectionIndex}
-                      quotes={section?.result}
-                    />
-                  </div>
-                ))}
+          <>
+            <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+              <div className="bg-[#2684FFß] flex max-w-screen-lg">
+                <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                  <h4 className="py-4 pl-5">
+                    {articleRandom[currentArticleIndex]?.title}
+                  </h4>
+                  <QuoteList
+                    listId={"list"}
+                    quotes={articleRandom[currentArticleIndex]?.result}
+                    sectionIndex={currentArticleIndex}
+                  />
+                </div>
               </div>
-            </div>
-          </DragDropContext>
+            </DragDropContext>
+            {articleRandom.length !== currentArticleIndex ? (
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={loading}
+                size="sm"
+                onClick={onNextArticle}
+              >
+                {t("flashcardPractice.saveOrder")}
+              </Button>
+            ) : (
+              <></>
+            )}
+          </>
         )}
       </div>
     </>
   );
 }
-
-
-  /* 
-        <DragDropContext onDragEnd={onDragEnd}>
-          {articleRandom.map((section, sectionIndex) => (
-            <div key={section.title}>
-              <h2 className="my-5">{section.title}</h2>
-              <Droppable droppableId={`droppable-${sectionIndex}`}>
-                {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef}>
-                    {section.result.map((item: any, index: number) => (
-                      <Draggable
-                        key={item.index}
-                        draggableId={`item-${item.index}`}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            style={{
-                              userSelect: "none",
-                              padding: 16,
-                              margin: "0 0 8px 0",
-                              minHeight: "50px",
-                              backgroundColor: "#fff",
-                              color: "#333",
-                              border: "1px solid #210eef",
-                              ...provided.draggableProps.style,
-                            }}
-                          >
-                            {item.text}
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          ))}
-        </DragDropContext>     
-         */
-

@@ -25,7 +25,7 @@ export type Article = {
 export type Id = string;
 
 export interface Quote {
-  index: Id;
+  id: Id;
   text: string;
 }
 

@@ -1,12 +1,13 @@
 import React, { CSSProperties } from "react";
 import styled from "@emotion/styled";
 import type { DraggableProvided } from "@hello-pangea/dnd";
-import { Quote } from "./types";
+import type { Quote } from "./types";
 
 interface Props {
   quote: Quote;
   isDragging: boolean;
   provided: DraggableProvided;
+  isClone?: boolean;
   isGroupedOver?: boolean;
   style?: CSSProperties;
   index?: number;
@@ -17,17 +18,17 @@ const getBackgroundColor = (isDragging: boolean, isGroupedOver: boolean) => {
     return "#EBECF0";
   }
 
-    if (isDragging) {
-      return "#EAE6FF";
-    }
+  if (isDragging) {
+    return "#EAE6FF";
+  }
 
   return "#FFFFFF";
 };
 
-// const getBorderColor = "transparent";
+const getBorderColor = (isDragging: boolean) =>
+  isDragging ? "#6554C0" : "transparent";
 
 const imageSize = 40;
-
 
 interface ContainerProps {
   isDragging: boolean;
@@ -53,7 +54,7 @@ const Container = styled.a<ContainerProps>`
 
   &:hover,
   &:active {
-    color: #091e42;
+    color: rgb(22 101 52);
     text-decoration: none;
   }
 
@@ -107,10 +108,7 @@ const QuoteId = styled.small`
   text-align: right;
 `;
 
-const getStyle = (
-  provided: DraggableProvided,
-  style?: CSSProperties | null
-) => {
+const getStyle=(provided: DraggableProvided, style?: CSSProperties | null) => {
   if (!style) {
     return provided.draggableProps.style;
   }
@@ -119,10 +117,11 @@ const getStyle = (
     ...provided.draggableProps.style,
     ...style,
   };
-};
+}
 
-const QuoteItem = (props: Props) => {
-  const { quote, isDragging, provided, isGroupedOver, style, index } = props;
+const QuoteItem =(props: Props) => {
+  const { quote, isDragging, isGroupedOver, provided, style, index } =
+    props;
 
   return (
     <Container
@@ -133,17 +132,17 @@ const QuoteItem = (props: Props) => {
       {...provided.dragHandleProps}
       style={getStyle(provided, style)}
       data-is-dragging={isDragging}
-      data-testid={quote.index}
+      data-testid={quote.id}
       data-index={index}
     >
       <Content>
         <BlockQuote>{quote.text}</BlockQuote>
         <Footer>
-          <QuoteId>index: {quote.index}</QuoteId>
+          <QuoteId>id:{quote.id}</QuoteId>
         </Footer>
       </Content>
     </Container>
   );
-};
+}
 
 export default React.memo<Props>(QuoteItem);

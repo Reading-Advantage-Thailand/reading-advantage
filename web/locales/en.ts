@@ -87,6 +87,7 @@ export default {
           flipCard: "Flip",
           nextButton: "Next",
           yourXp: "You've received {xp} XP for this activity.",
+          saveOrder: "Save & Continue Later",
         },
         //Order Sentences
         OrderSentences: "Order Sentences",
