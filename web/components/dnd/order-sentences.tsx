@@ -9,8 +9,8 @@ import { Header } from "../header";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { splitToText } from "@/lib/utils";
-import { Article, Quote, Sentence } from "./types";
+import { splitToText, updateScore } from "@/lib/utils";
+import { Article, Sentence } from "./types";
 import QuoteList from "./quote-list";
 
 type Props = {
@@ -23,6 +23,9 @@ export default function OrderSentences({ userId }: Props) {
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
   const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
+  const tUpdateScore = useScopedI18n(
+    "pages.student.practicePage.flashcardPractice"
+  );
 
   // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
   const findTextsByIndexes = (objects: Article[], targetIndexes: number[]) => {
@@ -147,17 +150,12 @@ export default function OrderSentences({ userId }: Props) {
   const onDragStart = () => {
     // Add a little vibration if the browser supports it.
     // Add's a nice little physical feedback
-    console.log("onDragStart");
     if (window.navigator.vibrate) {
       window.navigator.vibrate(100);
     }
   };
 
   const onDragEnd = (result: DropResult) => {
-    console.log("===== onDragEnd ======");
-    console.log("===== result ====== : ", result);
-    console.log("===== articleRandom ====== : ", articleRandom);
-
     if (!result.destination) {
       return;
     }
@@ -192,36 +190,57 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
-  const onNextArticle = () => {
-    setCurrentArticleIndex(currentArticleIndex + 1);
-    // check two array is equal
-    console.log("articleBeforeRandom : ", articleBeforeRandom);
-    console.log("articleRandom : ", articleRandom);
-    /*
-     if (arr1.length !== arr2.length) return false;
+  const onNextArticle = async () => {
+    setLoading(true);
+    let isEqual = true;
 
-  for (let i = 0; i < arr1.length; i++) {
-    if (arr1[i].title !== arr2[i].title) return false;
-    if (arr1[i].result.length !== arr2[i].result.length) return false;
-    
-    // สร้าง Map จาก id ของแต่ละ result ใน arr1
-    const resultMapArr1 = new Map(arr1[i].result.map(item => [item.id, item.text]));
-    
-    for (let resultItem of arr2[i].result) {
-      // เช็คว่ามี id เดียวกันใน arr1 และ text เหมือนกันหรือไม่
-      if (resultMapArr1.get(resultItem.id) !== resultItem.text) return false;
+    for (
+      let i = 0;
+      i < articleBeforeRandom[currentArticleIndex].result.length;
+      i++
+    ) {
+      if (
+        articleBeforeRandom[currentArticleIndex].result[i].text !==
+        articleRandom[currentArticleIndex].result[i].text
+      ) {
+        isEqual = false;
+        break;
+      }
     }
-  }
 
-  return true;
-    */
+    if (isEqual) {
+      try {
+        const updateScrore = await updateScore(15, userId);
+
+        if (updateScrore?.status === 201) {
+          toast({
+            title: t("toast.success"),
+            description: tUpdateScore("yourXp", { xp: 15 }),
+          });
+          setCurrentArticleIndex(currentArticleIndex + 1);
+        }
+      } catch (error) {
+        toast({
+          title: t("toast.error"),
+          description: t("toast.errorDescription"),
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: t("toast.error"),
+        description: t("OrderSentencesPractice.errorOrder"),
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
   };
 
   return (
     <>
       <Header
-        heading={t("OrderSentences")}
-        text={t("OrderSentencesDescription")}
+        heading={t("OrderSentencesPractice.OrderSentences")}
+        text={t("OrderSentencesPractice.OrderSentencesDescription")}
       />
       <div className="mt-5">
         {articleRandom.length === 0 ? (
@@ -262,7 +281,7 @@ export default function OrderSentences({ userId }: Props) {
                 size="sm"
                 onClick={onNextArticle}
               >
-                {t("flashcardPractice.saveOrder")}
+                {t("OrderSentencesPractice.saveOrder")}
               </Button>
             ) : (
               <Button
@@ -272,7 +291,7 @@ export default function OrderSentences({ userId }: Props) {
                 size="sm"
                 onClick={onNextArticle}
               >
-                {t("flashcardPractice.saveOrder")}
+                {t("OrderSentencesPractice.saveOrder")}
               </Button>
             )}
           </>

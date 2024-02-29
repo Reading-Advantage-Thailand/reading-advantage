@@ -72,7 +72,6 @@ export default function FlashCard({ userId }: Props) {
           );
         }
       );
-console.log(filteredData);
       setSentences(filteredData);
 
       // updateScore
