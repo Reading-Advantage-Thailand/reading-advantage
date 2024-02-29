@@ -87,12 +87,15 @@ export default {
           flipCard: "Flip",
           nextButton: "Next",
           yourXp: "You've received {xp} XP for this activity.",
-          saveOrder: "Save & Continue Later",
         },
-        //Order Sentences
-        OrderSentences: "Order Sentences",
-        OrderSentencesDescription:
-          "These are some sentences from one of the passages you've read. Put the sentences in an order that makes sense to you. If the order is the same as the passage, you'll receive 15 XP.",
+        OrderSentencesPractice: {
+          //Order Sentences
+          OrderSentences: "Order Sentences",
+          OrderSentencesDescription:
+            "These are some sentences from one of the passages you've read. Put the sentences in an order that makes sense to you. If the order is the same as the passage, you'll receive 15 XP.",
+          saveOrder: "Save & Continue Later",
+          errorOrder: "Please order correctly",
+        },
       },
     },
   },
