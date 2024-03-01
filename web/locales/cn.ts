@@ -73,10 +73,13 @@ export default {
           nextButton: "下一个",
           yourXp: "您已经获得了 {xp} XP 为这个活动。",
         },
-        //Order Sentences
-        OrderSentences: "排列句子",
-        OrderSentencesDescription:
-          "这些是你读过的某篇文章中的一些句子。请按照对你有意义的顺序排列这些句子。如果顺序与文章中的相同，你将获得15经验值。",
+        OrderSentencesPractice: {
+          OrderSentences: "排列句子",
+          OrderSentencesDescription:
+            "这些是你读过的某篇文章中的一些句子。请按照对你有意义的顺序排列这些句子。如果顺序与文章中的相同，你将获得15经验值。",
+          saveOrder: "保存并稍后继续",
+          errorOrder: "请正确排序",
+        },
       },
     },
   },

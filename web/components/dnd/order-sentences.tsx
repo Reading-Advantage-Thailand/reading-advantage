@@ -12,6 +12,7 @@ import { Skeleton } from "../ui/skeleton";
 import { splitToText, updateScore } from "@/lib/utils";
 import { Article, Sentence } from "./types";
 import QuoteList from "./quote-list";
+import { filter } from 'lodash';
 
 type Props = {
   userId: string;
@@ -19,6 +20,7 @@ type Props = {
 
 export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
+  let rawArticle: Sentence[] = [];
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
   const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
@@ -45,6 +47,8 @@ export default function OrderSentences({ userId }: Props) {
 
   // สร้างฟังก์ชันเพื่อจัดการข้อมูล
   const processDynamicData = (data: any, title: string) => {
+    console.log("processDynamicData data :>> ", data);
+    console.log("rawArticle :>> ", rawArticle);
     // ใช้ Map เพื่อจัดการการซ้ำของข้อมูล
     const uniqueTexts = new Map();
 
@@ -64,15 +68,27 @@ export default function OrderSentences({ userId }: Props) {
       .map((index) => ({
         id: index,
         text: uniqueTexts.get(index),
+        articleId: rawArticle?.filter((data: Sentence) => {
+          return data?.sentence === uniqueTexts?.get(index);
+        })[0]?.articleId,
+        timepoint: rawArticle?.filter((data: Sentence) => {
+          return data?.sentence === uniqueTexts?.get(index);
+        })[0]?.timepoint,
+        endTimepoint: rawArticle?.filter((data: Sentence) => {
+          return data?.sentence === uniqueTexts?.get(index);
+        })[0]?.endTimepoint,
         title,
+        result: rawArticle?.filter((data: Sentence) => {
+          return data?.sentence === uniqueTexts?.get(index);
+        }),
       }));
   };
 
   const shuffleArray = (data: any) => {
-    const raeData = JSON.parse(JSON.stringify(data));
+    const rawData = JSON.parse(JSON.stringify(data));
 
     // Loop through each section in the data
-    raeData.forEach((section: any) => {
+    rawData.forEach((section: any) => {
       // Check if the result array has at least two items to swap
       for (let i = section.result.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -82,7 +98,7 @@ export default function OrderSentences({ userId }: Props) {
         ];
       }
     });
-    return raeData;
+    return rawData;
   };
 
   const getArticle = async (articleId: string, sn: number[]) => {
@@ -107,8 +123,10 @@ export default function OrderSentences({ userId }: Props) {
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
+
       // step 1: get the article id and get sn
       const objectSentence: Sentence[] = res.data.sentences;
+      rawArticle = res.data.sentences;
 
       // step 2 : create map articleId และ Array ของ sn
       const articleIdToSnMap: { [key: string]: number[] } =
@@ -120,6 +138,7 @@ export default function OrderSentences({ userId }: Props) {
           }
           return acc;
         }, {});
+
 
       // step 3 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
       for (const articleId in articleIdToSnMap) {
@@ -135,6 +154,7 @@ export default function OrderSentences({ userId }: Props) {
         );
         newTodos.push(resultList);
       }
+     
       setArticleBeforeRandom(newTodos);
       setArticleRandom(shuffleArray(newTodos));
     } catch (error) {
@@ -148,8 +168,6 @@ export default function OrderSentences({ userId }: Props) {
 
   // Drag and Drop
   const onDragStart = () => {
-    // Add a little vibration if the browser supports it.
-    // Add's a nice little physical feedback
     if (window.navigator.vibrate) {
       window.navigator.vibrate(100);
     }
