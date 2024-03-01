@@ -26,8 +26,30 @@ export type StudentPageConfig = {
     sidebarNav: sidebarNav[];
 }
 
+export type TeacherPageConfig = {
+    mainNav: MainNavItem[];
+    teacherSidebarNav: teacherSidebarNav[];
+}
+
+
 export type SidebarNavItem = {
     title: "read" | "history" | "practice" | "reports",
+    disabled?: boolean
+    external?: boolean
+    icon?: keyof typeof Icons
+} & (
+        | {
+            href: string
+            items?: never
+        }
+        | {
+            href?: string
+            items: NavLink[]
+        }
+    )
+
+export type SidebarTeacherNavItem = {
+    title: "My Classes" | "My Student" | "Class Roster" | "Reports",
     disabled?: boolean
     external?: boolean
     icon?: keyof typeof Icons
