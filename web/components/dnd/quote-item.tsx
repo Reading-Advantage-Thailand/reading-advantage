@@ -137,9 +137,9 @@ const QuoteItem =(props: Props) => {
     >
       <Content>
         <BlockQuote>{quote.text}</BlockQuote>
-        <Footer>
+        {/* <Footer>
           <QuoteId>id:{quote.id}</QuoteId>
-        </Footer>
+        </Footer> */}
       </Content>
     </Container>
   );
