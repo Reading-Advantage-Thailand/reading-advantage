@@ -119,6 +119,12 @@ export default {
       practice: "ฝึก",
       reports: "รายงาน",
     },
+    sidebarTeacherNav: {
+      myClasses: "ชั้นเรียนของฉัน",
+      myStudents: "นักเรียนของฉัน",
+      classRoster: "บัญชีรายชื่อนักเรียน",
+      reports: "รายงาน",
+    },
     articleRecordsTable: {
       title: "ชื่อบทความ",
       date: "วันที่",

@@ -124,6 +124,12 @@ export default {
       practice: "Practice",
       reports: "Reports",
     },
+    sidebarTeacherNav: {
+      myClasses: "My Classes",
+      myStudents: "My Students",
+      classRoster: "Class Roster",
+      reports: "Reports",
+    },
     articleRecordsTable: {
       title: "Title",
       date: "Date",
