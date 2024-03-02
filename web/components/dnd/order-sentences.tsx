@@ -12,7 +12,7 @@ import { Skeleton } from "../ui/skeleton";
 import { splitToText, updateScore } from "@/lib/utils";
 import { Article, Sentence } from "./types";
 import QuoteList from "./quote-list";
-import { filter } from 'lodash';
+import { filter } from "lodash";
 
 type Props = {
   userId: string;
@@ -139,7 +139,6 @@ export default function OrderSentences({ userId }: Props) {
           return acc;
         }, {});
 
-
       // step 3 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
       for (const articleId in articleIdToSnMap) {
         articleIdToSnMap[articleId].sort((a, b) => a - b);
@@ -154,7 +153,7 @@ export default function OrderSentences({ userId }: Props) {
         );
         newTodos.push(resultList);
       }
-     
+
       setArticleBeforeRandom(newTodos);
       setArticleRandom(shuffleArray(newTodos));
     } catch (error) {
@@ -283,6 +282,8 @@ export default function OrderSentences({ userId }: Props) {
                       listId={"list"}
                       quotes={articleRandom[currentArticleIndex]?.result}
                       sectionIndex={currentArticleIndex}
+                      articleBeforeRandom={articleBeforeRandom}
+                      title={articleRandom[currentArticleIndex]?.title}
                     />
                   </div>
                 </div>
