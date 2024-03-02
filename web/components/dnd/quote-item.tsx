@@ -2,6 +2,7 @@ import React, { CSSProperties } from "react";
 import styled from "@emotion/styled";
 import type { DraggableProvided } from "@hello-pangea/dnd";
 import type { Quote } from "./types";
+import AudioButton from "../audio-button";
 
 interface Props {
   quote: Quote;
@@ -137,9 +138,14 @@ const QuoteItem =(props: Props) => {
     >
       <Content>
         <BlockQuote>{quote.text}</BlockQuote>
-        {/* <Footer>
-          <QuoteId>id:{quote.id}</QuoteId>
-        </Footer> */}
+        <Footer>
+          <AudioButton
+            key={new Date().getTime()}
+            audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${quote.articleId}.mp3`}
+            startTimestamp={quote.timepoint}
+            endTimestamp={quote.endTimepoint}
+          />
+        </Footer>
       </Content>
     </Container>
   );
