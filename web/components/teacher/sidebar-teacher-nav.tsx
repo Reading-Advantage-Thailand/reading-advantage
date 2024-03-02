@@ -11,7 +11,7 @@ interface SidebarTeacherNavProps {
 }
 
 export function SidebarTeacherNav({ items }: SidebarTeacherNavProps) {
-    const t = useScopedI18n('components.teacher.sidebarTeacherNav');
+    const t = useScopedI18n('components.sidebarTeacherNav');
     const path = usePathname()
     const pathWithoutLocale = '/' + path.split('/').slice(2).join('/')
     if (!items?.length) {
@@ -33,6 +33,7 @@ export function SidebarTeacherNav({ items }: SidebarTeacherNavProps) {
             }
             <nav className="flex flex-wrap lg:grid items-start gap-2 mb-4 lg:mb-0">
                 {items.map((item, index) => {
+                    
                     const Icon = Icons[item.icon as keyof typeof Icons]
                     return (
                         item.href && (
@@ -52,7 +53,8 @@ export function SidebarTeacherNav({ items }: SidebarTeacherNavProps) {
                                             pathWithoutLocale.startsWith(item.href) ? "text-accent-foreground" : "text-muted-foreground"
                                         )}
                                     >
-                                        {t(item.title)}
+                                        {t(item.title as "myClasses" | "myStudents" | "classRoster" | "reports")}
+                                        {/* {t(item.title)} */}
                                     </span>
                                 </span>
                             </Link>

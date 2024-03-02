@@ -17,22 +17,22 @@ export const teacherPageConfig: TeacherPageConfig = {
     ],
     teacherSidebarNav: [
         {
-            title: "My classes",
+            title: "myClasses",
             href: '/teacher/my-classes',
             icon: "class",
         },
         {
-            title: "My students",
+            title: "myStudents",
             href: '/teacher/my-students',
             icon: "student",
         },
         {
-            title: "Class roster",
+            title: "classRoster",
             href: '/teacher/class-roster',
             icon: "roster",
         },
         {
-            title: "Reports",
+            title: "reports",
             href: '/teacher/reports',
             icon: "report",
         }
