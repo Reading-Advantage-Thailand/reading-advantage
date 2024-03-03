@@ -71,7 +71,6 @@ const Title = styled.h4`
   }
 `;
 
-
 interface Props {
   listId?: string;
   listType?: string;
@@ -90,6 +89,8 @@ interface Props {
 
 interface QuoteListProps {
   quotes: Quote[];
+  title: string;
+  sectionIndex: number;
 }
 
 const InnerQuoteList = (props: QuoteListProps): ReactElement => {
@@ -111,13 +112,14 @@ const InnerQuoteList = (props: QuoteListProps): ReactElement => {
               isDragging={dragSnapshot.isDragging}
               isGroupedOver={Boolean(dragSnapshot.combineTargetFor)}
               provided={dragProvided}
+              index={index}
             />
           )}
         </Draggable>
       ))}
     </>
   );
-}
+};
 
 const InnerQuoteListMemo = React.memo<QuoteListProps>(InnerQuoteList);
 
@@ -125,22 +127,30 @@ interface InnerListProps {
   dropProvided: DroppableProvided;
   quotes: Quote[];
   title: string | undefined | null;
+  sectionIndex: number;
 }
 
 const InnerList = (props: InnerListProps) => {
-  const { quotes, dropProvided } = props;
-  const title = props.title ? <Title>{props.title}</Title> : null
+  const {
+    quotes,
+    dropProvided,
+    sectionIndex,
+  } = props;
+  const title = props.title ?? "";
 
   return (
     <Container>
-      {title}
       <DropZone ref={dropProvided.innerRef}>
-        <InnerQuoteListMemo quotes={quotes} />
+        <InnerQuoteListMemo
+          quotes={quotes}
+          title={title}
+          sectionIndex={sectionIndex}
+        />
         {dropProvided.placeholder}
       </DropZone>
     </Container>
   );
-}
+};
 
 export default function QuoteList(props: Props): ReactElement {
   const {
@@ -177,6 +187,7 @@ export default function QuoteList(props: Props): ReactElement {
             quotes={quotes}
             title={title}
             dropProvided={dropProvided}
+            sectionIndex={sectionIndex as number}
           />
         </Wrapper>
       )}

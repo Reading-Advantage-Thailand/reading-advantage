@@ -1,7 +1,9 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, useState } from "react";
 import styled from "@emotion/styled";
 import type { DraggableProvided } from "@hello-pangea/dnd";
+import Image from "next/image";
 import type { Quote } from "./types";
+import AudioButton from "../audio-button";
 
 interface Props {
   quote: Quote;
@@ -25,11 +27,6 @@ const getBackgroundColor = (isDragging: boolean, isGroupedOver: boolean) => {
   return "#FFFFFF";
 };
 
-const getBorderColor = (isDragging: boolean) =>
-  isDragging ? "#6554C0" : "transparent";
-
-const imageSize = 40;
-
 interface ContainerProps {
   isDragging: boolean;
   isGroupedOver: boolean;
@@ -45,7 +42,7 @@ const Container = styled.a<ContainerProps>`
     isDragging ? `2px 2px 1px #A5ADBA` : "none"};
   box-sizing: border-box;
   padding: 8px;
-  min-height: ${imageSize}px;
+  min-height: 40px;
   margin-bottom: 8px;
   user-select: none;
 
@@ -96,19 +93,17 @@ const BlockQuote = styled.div`
 const Footer = styled.div`
   display: flex;
   margin-top: 8px;
-  align-items: center;
+  justify-content: flex-end;
 `;
 
-const QuoteId = styled.small`
-  flex-grow: 1;
-  flex-shrink: 1;
-  margin: 0;
-  font-weight: normal;
-  text-overflow: ellipsis;
-  text-align: right;
+const Badges = styled.small`
+  margin-right: 10px;
 `;
 
-const getStyle=(provided: DraggableProvided, style?: CSSProperties | null) => {
+const getStyle = (
+  provided: DraggableProvided,
+  style?: CSSProperties | null
+) => {
   if (!style) {
     return provided.draggableProps.style;
   }
@@ -117,11 +112,17 @@ const getStyle=(provided: DraggableProvided, style?: CSSProperties | null) => {
     ...provided.draggableProps.style,
     ...style,
   };
-}
+};
 
-const QuoteItem =(props: Props) => {
-  const { quote, isDragging, isGroupedOver, provided, style, index } =
-    props;
+const QuoteItem = (props: Props) => {
+  const {
+    quote,
+    isDragging,
+    isGroupedOver,
+    provided,
+    style,
+    index,
+  } = props;
 
   return (
     <Container
@@ -137,12 +138,38 @@ const QuoteItem =(props: Props) => {
     >
       <Content>
         <BlockQuote>{quote.text}</BlockQuote>
-        {/* <Footer>
-          <QuoteId>id:{quote.id}</QuoteId>
-        </Footer> */}
+        <Footer>
+          {quote?.correctOrder ? (
+            <Badges>
+              <Image
+                src={"/correct.png"}
+                alt="Malcolm X"
+                width={25}
+                height={25}
+              />
+            </Badges>
+          ) : (
+            <Badges>
+              <Image
+                src={"/wrong.png"}
+                alt="Malcolm X"
+                width={25}
+                height={25}
+              />
+            </Badges>
+          )}
+
+          {/* <p>id:{quote.id}</p> */}
+          <AudioButton
+            key={new Date().getTime()}
+            audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${quote.articleId}.mp3`}
+            startTimestamp={quote?.timepoint || 0}
+            endTimestamp={quote?.endTimepoint || 0}
+          />
+        </Footer>
       </Content>
     </Container>
   );
-}
+};
 
 export default React.memo<Props>(QuoteItem);

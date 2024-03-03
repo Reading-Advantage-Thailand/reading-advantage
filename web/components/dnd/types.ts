@@ -27,6 +27,10 @@ export type Id = string;
 export interface Quote {
   id: Id;
   text: string;
+  timepoint?: number;
+  endTimepoint?: number;
+  articleId?: string;
+  correctOrder?: boolean
 }
 
 export interface Dragging {
