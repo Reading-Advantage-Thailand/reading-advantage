@@ -30,6 +30,7 @@ export interface Quote {
   timepoint?: number;
   endTimepoint?: number;
   articleId?: string;
+  correctOrder?: boolean
 }
 
 export interface Dragging {

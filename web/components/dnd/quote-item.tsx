@@ -13,8 +13,6 @@ interface Props {
   isGroupedOver?: boolean;
   style?: CSSProperties;
   index?: number;
-  articleBeforeRandom: any[];
-  title: string;
 }
 
 const getBackgroundColor = (isDragging: boolean, isGroupedOver: boolean) => {
@@ -28,11 +26,6 @@ const getBackgroundColor = (isDragging: boolean, isGroupedOver: boolean) => {
 
   return "#FFFFFF";
 };
-
-const getBorderColor = (isDragging: boolean) =>
-  isDragging ? "#6554C0" : "transparent";
-
-const imageSize = 40;
 
 interface ContainerProps {
   isDragging: boolean;
@@ -49,7 +42,7 @@ const Container = styled.a<ContainerProps>`
     isDragging ? `2px 2px 1px #A5ADBA` : "none"};
   box-sizing: border-box;
   padding: 8px;
-  min-height: ${imageSize}px;
+  min-height: 40px;
   margin-bottom: 8px;
   user-select: none;
 
@@ -104,13 +97,7 @@ const Footer = styled.div`
 `;
 
 const Badges = styled.small`
-  /* flex-grow: 1;
-  flex-shrink: 1;
-  margin: 0; */
-  padding-right: 10px;
-  /* font-weight: normal;
-  text-overflow: ellipsis;
-  text-align: right; */
+  margin-right: 10px;
 `;
 
 const getStyle = (
@@ -135,21 +122,7 @@ const QuoteItem = (props: Props) => {
     provided,
     style,
     index,
-    articleBeforeRandom,
-    title,
   } = props;
-  const [answer, setAnswer] = useState<boolean>(false);
-  console.log("quote", quote);
-  console.log("index", index);
-  console.log("title", title);
-
-  const handleAnswer = (index: number, id: number) => {
-    console.log("articleBeforeRandom", articleBeforeRandom);
-
-    // console.log("index", index);
-    console.log("id", id);
-    return true;
-  };
 
   return (
     <Container
@@ -166,7 +139,7 @@ const QuoteItem = (props: Props) => {
       <Content>
         <BlockQuote>{quote.text}</BlockQuote>
         <Footer>
-          {handleAnswer(index as number, Number(quote.id)) ? (
+          {quote?.correctOrder ? (
             <Badges>
               <Image
                 src={"/correct.png"}
@@ -186,7 +159,7 @@ const QuoteItem = (props: Props) => {
             </Badges>
           )}
 
-          <p>id:{quote.id}</p>
+          {/* <p>id:{quote.id}</p> */}
           <AudioButton
             key={new Date().getTime()}
             audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${quote.articleId}.mp3`}

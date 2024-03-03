@@ -187,24 +187,51 @@ export default function OrderSentences({ userId }: Props) {
       : [];
 
     // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
-    if (items.length > 0) {
-      const [removed] = items.splice(result.source.index, 1);
-      items.splice(result.destination.index, 0, removed);
+    if (items.length > 0) {     
 
-      setArticleRandom((prevState: any) =>
-        prevState.map((item: any, index: number) => {
-          if (index === currentArticleIndex) {
-            return {
-              ...item,
-              result: items,
-            };
-          }
-          return item;
-        })
-      );
+       const items = [...articleRandom[currentArticleIndex]?.result];
+       const [reorderedItem] = items.splice(result.source.index, 1);
+       items.splice(result.destination.index, 0, reorderedItem);
+
+       // อัปเดตลำดับใหม่หลังจากการดรากและดรอป
+       const updatedArticleRandom = [...articleRandom];
+       updatedArticleRandom[currentArticleIndex].result = items;
+
+       // ตรวจสอบความถูกต้องของลำดับ
+       const isCorrectOrder = checkOrder(
+         updatedArticleRandom[currentArticleIndex].result,
+         articleBeforeRandom[currentArticleIndex].result
+       );
+
+       // อัปเดตสถานะของ articleRandom ด้วยข้อมูลความถูกต้อง
+       setArticleRandom(
+         updatedArticleRandom.map((article, idx) => {
+           if (idx === currentArticleIndex) {
+             return {
+               ...article,
+               result: article.result.map((item : any, itemIdx: number) => ({
+                 ...item,
+                 // ตั้งค่า correctOrder ตามผลลัพธ์ของการตรวจสอบ
+                 correctOrder: isCorrectOrder[itemIdx],
+               })),
+             };
+           }
+           return article;
+         })
+       );   
+
     } else {
       console.log("No items to remove");
     }
+  };
+
+  const checkOrder = (randomOrder: any, originalOrder: any) => {
+    return randomOrder.map(
+      (item: any) =>
+        originalOrder.findIndex(
+          (originalItem: any) => originalItem.id === item.id
+        ) === randomOrder.indexOf(item)
+    );
   };
 
   const onNextArticle = async () => {
@@ -282,7 +309,6 @@ export default function OrderSentences({ userId }: Props) {
                       listId={"list"}
                       quotes={articleRandom[currentArticleIndex]?.result}
                       sectionIndex={currentArticleIndex}
-                      articleBeforeRandom={articleBeforeRandom}
                       title={articleRandom[currentArticleIndex]?.title}
                     />
                   </div>

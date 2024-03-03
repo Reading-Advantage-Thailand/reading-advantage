@@ -85,13 +85,12 @@ interface Props {
   ignoreContainerClipping?: boolean;
   useClone?: boolean;
   sectionIndex?: number;
-  articleBeforeRandom?: any[];
 }
 
 interface QuoteListProps {
   quotes: Quote[];
-  articleBeforeRandom: any[];
   title: string;
+  sectionIndex: number;
 }
 
 const InnerQuoteList = (props: QuoteListProps): ReactElement => {
@@ -114,8 +113,6 @@ const InnerQuoteList = (props: QuoteListProps): ReactElement => {
               isGroupedOver={Boolean(dragSnapshot.combineTargetFor)}
               provided={dragProvided}
               index={index}
-              articleBeforeRandom={props.articleBeforeRandom}
-              title={props.title}
             />
           )}
         </Draggable>
@@ -130,21 +127,24 @@ interface InnerListProps {
   dropProvided: DroppableProvided;
   quotes: Quote[];
   title: string | undefined | null;
-  articleBeforeRandom: any;
+  sectionIndex: number;
 }
 
 const InnerList = (props: InnerListProps) => {
-  const { quotes, dropProvided, articleBeforeRandom } = props;
+  const {
+    quotes,
+    dropProvided,
+    sectionIndex,
+  } = props;
   const title = props.title ?? "";
 
   return (
     <Container>
-      {title}
       <DropZone ref={dropProvided.innerRef}>
         <InnerQuoteListMemo
           quotes={quotes}
-          articleBeforeRandom={articleBeforeRandom}
           title={title}
+          sectionIndex={sectionIndex}
         />
         {dropProvided.placeholder}
       </DropZone>
@@ -162,7 +162,6 @@ export default function QuoteList(props: Props): ReactElement {
     quotes,
     title,
     sectionIndex,
-    articleBeforeRandom,
   } = props;
 
   return (
@@ -188,7 +187,7 @@ export default function QuoteList(props: Props): ReactElement {
             quotes={quotes}
             title={title}
             dropProvided={dropProvided}
-            articleBeforeRandom={articleBeforeRandom}
+            sectionIndex={sectionIndex as number}
           />
         </Wrapper>
       )}
