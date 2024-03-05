@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import type { DraggableProvided } from "@hello-pangea/dnd";
 import Image from "next/image";
 import type { Quote } from "./types";
-import AudioButton from "../audio-button";
+
 
 interface Props {
   quote: Quote;
@@ -158,14 +158,6 @@ const QuoteItem = (props: Props) => {
               />
             </Badges>
           )}
-
-          {/* <p>id:{quote.id}</p> */}
-          <AudioButton
-            key={new Date().getTime()}
-            audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${quote.articleId}.mp3`}
-            startTimestamp={quote?.timepoint || 0}
-            endTimestamp={quote?.endTimepoint || 0}
-          />
         </Footer>
       </Content>
     </Container>
