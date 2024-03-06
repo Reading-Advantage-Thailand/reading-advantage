@@ -12,7 +12,7 @@ import { Skeleton } from "../ui/skeleton";
 import { splitToText, updateScore } from "@/lib/utils";
 import { Article, Sentence } from "./types";
 import QuoteList from "./quote-list";
-import { filter } from "lodash";
+import AudioButton from "../audio-button";
 
 type Props = {
   userId: string;
@@ -47,8 +47,6 @@ export default function OrderSentences({ userId }: Props) {
 
   // สร้างฟังก์ชันเพื่อจัดการข้อมูล
   const processDynamicData = (data: any, title: string) => {
-    console.log("processDynamicData data :>> ", data);
-    console.log("rawArticle :>> ", rawArticle);
     // ใช้ Map เพื่อจัดการการซ้ำของข้อมูล
     const uniqueTexts = new Map();
 
@@ -187,39 +185,37 @@ export default function OrderSentences({ userId }: Props) {
       : [];
 
     // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
-    if (items.length > 0) {     
+    if (items.length > 0) {
+      const items = [...articleRandom[currentArticleIndex]?.result];
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
 
-       const items = [...articleRandom[currentArticleIndex]?.result];
-       const [reorderedItem] = items.splice(result.source.index, 1);
-       items.splice(result.destination.index, 0, reorderedItem);
+      // อัปเดตลำดับใหม่หลังจากการดรากและดรอป
+      const updatedArticleRandom = [...articleRandom];
+      updatedArticleRandom[currentArticleIndex].result = items;
 
-       // อัปเดตลำดับใหม่หลังจากการดรากและดรอป
-       const updatedArticleRandom = [...articleRandom];
-       updatedArticleRandom[currentArticleIndex].result = items;
+      // ตรวจสอบความถูกต้องของลำดับ
+      const isCorrectOrder = checkOrder(
+        updatedArticleRandom[currentArticleIndex].result,
+        articleBeforeRandom[currentArticleIndex].result
+      );
 
-       // ตรวจสอบความถูกต้องของลำดับ
-       const isCorrectOrder = checkOrder(
-         updatedArticleRandom[currentArticleIndex].result,
-         articleBeforeRandom[currentArticleIndex].result
-       );
-
-       // อัปเดตสถานะของ articleRandom ด้วยข้อมูลความถูกต้อง
-       setArticleRandom(
-         updatedArticleRandom.map((article, idx) => {
-           if (idx === currentArticleIndex) {
-             return {
-               ...article,
-               result: article.result.map((item : any, itemIdx: number) => ({
-                 ...item,
-                 // ตั้งค่า correctOrder ตามผลลัพธ์ของการตรวจสอบ
-                 correctOrder: isCorrectOrder[itemIdx],
-               })),
-             };
-           }
-           return article;
-         })
-       );   
-
+      // อัปเดตสถานะของ articleRandom ด้วยข้อมูลความถูกต้อง
+      setArticleRandom(
+        updatedArticleRandom.map((article, idx) => {
+          if (idx === currentArticleIndex) {
+            return {
+              ...article,
+              result: article.result.map((item: any, itemIdx: number) => ({
+                ...item,
+                // ตั้งค่า correctOrder ตามผลลัพธ์ของการตรวจสอบ
+                correctOrder: isCorrectOrder[itemIdx],
+              })),
+            };
+          }
+          return article;
+        })
+      );
     } else {
       console.log("No items to remove");
     }
@@ -279,6 +275,14 @@ export default function OrderSentences({ userId }: Props) {
     }
     setLoading(false);
   };
+  /*
+            <AudioButton
+            key={new Date().getTime()}
+            audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${quote.articleId}.mp3`}
+            startTimestamp={quote?.timepoint || 0}
+            endTimestamp={quote?.endTimepoint || 0}
+          />
+  */
 
   return (
     <>
@@ -302,9 +306,23 @@ export default function OrderSentences({ userId }: Props) {
               <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
                 <div className="bg-[#2684FFß] flex max-w-screen-lg">
                   <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                    <h4 className="py-4 pl-5">
-                      {articleRandom[currentArticleIndex]?.title}
-                    </h4>
+                    <div className="flex justify-between items-center">
+                      <h4 className="py-4 pl-5">
+                        {articleRandom[currentArticleIndex]?.title}
+                      </h4>
+                      <div className="mr-5">                      
+                        <AudioButton
+                          key={new Date().getTime()}
+                          // audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${quote.articleId}.mp3`}
+                          // startTimestamp={quote?.timepoint || 0}
+                          // endTimestamp={quote?.endTimepoint || 0}
+                          audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios.mp3`}
+                          startTimestamp={0}
+                          endTimestamp={0}
+                        />
+                      </div>
+                    </div>
+
                     <QuoteList
                       listId={"list"}
                       quotes={articleRandom[currentArticleIndex]?.result}
