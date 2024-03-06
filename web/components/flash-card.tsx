@@ -67,12 +67,12 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
       const filteredData = await res.data.sentences.filter(
         (record: Sentence) => {
           const dueDate = new Date(record.due);
-          // return (
-          //   record.state === 0 ||
-          //   (record.state === 2 && dueDate < startOfDay) ||
-          //   (record.state === 3 && dueDate < startOfDay)
-          // );
-           return record.state === 0 || record.state === 1 || record.state === 2 || record.state === 3;
+          return (
+            record.state === 0 ||
+            (record.state === 2 && dueDate < startOfDay) ||
+            (record.state === 3 && dueDate < startOfDay)
+          );
+        
         }
       );
       setSentences(filteredData);

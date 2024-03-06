@@ -196,7 +196,8 @@ export default function FlashCardPracticeButton({
       {showButton ? (
         sentences[index].state === 0 ||
         sentences[index].state === 1 ||
-        sentences[index].state === 2 ? (
+        sentences[index].state === 2 ||
+        sentences[index].state === 3 ? (
           <div className="flex space-x-2">
             <button
               className={cn(
@@ -268,10 +269,9 @@ export default function FlashCardPracticeButton({
       ) : (
         <></>
       )}
-      {/*
+
       <div className="pt-4 font-bold">Cards :</div>
       <DataTable data={cards} columns={columnsCards} />
-       */}
     </>
   );
 }
