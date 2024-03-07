@@ -32,6 +32,7 @@ import {
   School,
     Users,
     BarChartBig,
+    Plus,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -68,6 +69,7 @@ export const Icons = {
   student: Users,
   roster: Book,
   report: BarChartBig,
+  add: Plus,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"
