@@ -13,6 +13,7 @@ declare module "next-auth/jwt" {
         verified: boolean
         xp: number,
         cefrLevel: string,
+        role: string
     }
 }
 
@@ -27,6 +28,7 @@ declare module "next-auth" {
             verified: boolean,
             xp: number,
             cefrLevel: string,
+            role: string
         },
     }
 }
