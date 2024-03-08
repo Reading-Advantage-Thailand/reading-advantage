@@ -270,8 +270,8 @@ export default function FlashCardPracticeButton({
         <></>
       )}
 
-      <div className="pt-4 font-bold">Cards :</div>
-      <DataTable data={cards} columns={columnsCards} />
+      {/* <div className="pt-4 font-bold">Cards :</div>
+      <DataTable data={cards} columns={columnsCards} /> */}
     </>
   );
 }
