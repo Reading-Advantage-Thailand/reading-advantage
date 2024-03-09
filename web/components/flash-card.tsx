@@ -75,7 +75,12 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
         
         }
       );
+
       setSentences(filteredData);
+
+      if(filteredData.length === 0) {
+        setShowButton(false);
+      }
 
       // updateScore
       let filterDataUpdateScore = await filter(res.data.sentences, (param) => {
