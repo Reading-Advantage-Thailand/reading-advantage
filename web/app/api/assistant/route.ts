@@ -104,10 +104,15 @@ async function generate(assistantId: string, type: string, userId: string) {
             }
 
             await generateJson(assistantId, userId, type, genre, subgenre);
+            // generate just one subgenre for now
+            break;
         }
     } catch (error: any) {
         // if error, regenerate the assistant
         console.log('Error generating assistant:', error);
+        return new Response(JSON.stringify({
+            error: error
+        }), { status: 500 });
 
         // SyntaxError: Bad control character in string literal in JSON at position 2801
         // Re run /json
@@ -171,17 +176,23 @@ async function generateJson(assistantId: string, userId: string, type: string, g
     // if environment is development,
     // save the article to the local file system
     // and assistant-articles collection
-    if (process.env.NODE_ENV === 'development') {
-        fs.writeFileSync(`${process.cwd()}/data/${subgenre}.json`, JSON.stringify(article, null, 2));
-        await db.collection('assistant-articles').doc(doc.id).set(article);
-        console.log('Article saved to the local file system and database');
-    }
+    // if (process.env.NODE_ENV === 'development') {
+    fs.writeFileSync(`${process.cwd()}/data/${subgenre}.json`, JSON.stringify(article, null, 2));
+    await db.collection('assistant-articles').doc(doc.id).set(article);
+    console.log('Article saved to the local file system and database');
+    // }
 
     await generateImage(parsed.image, doc.id);
     console.log('Image generated');
 
     await generateVoice(article.content, doc.id);
     console.log('Voice generated');
+
+    return new Response(JSON.stringify({
+        messages: 'success',
+        docId: doc.id,
+        threads: threads[userId],
+    }), { status: 200 });
 }
 
 const splitToSentences = (content: string) => {
@@ -234,11 +245,11 @@ async function generateVoice(content: string, id: string) {
 
         // if environment is development,
         // also update timepoints to assistant-articles collection
-        if (process.env.NODE_ENV === 'development') {
-            await db.collection('assistant-articles').doc(id).update({
-                timepoints: response.data.timepoints,
-            });
-        }
+        // if (process.env.NODE_ENV === 'development') {
+        await db.collection('assistant-articles').doc(id).update({
+            timepoints: response.data.timepoints,
+        });
+        // }
 
         // upload the audio to the bucket
         await uploadToBucket(
