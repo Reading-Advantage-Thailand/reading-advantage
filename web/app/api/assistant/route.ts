@@ -111,6 +111,7 @@ async function generate(assistantId: string, type: string, userId: string) {
         // if error, regenerate the assistant
         console.log('Error generating assistant:', error);
         return new Response(JSON.stringify({
+            message: 'Error generating assistant',
             error: error
         }), { status: 500 });
 
@@ -259,7 +260,11 @@ async function generateVoice(content: string, id: string) {
         );
     } catch (error) {
         console.log('Error generating voice:', error);
-        throw error;
+        return new Response(JSON.stringify({
+            message: 'Error generating voice',
+            error: error
+        }), { status: 500 });
+        // throw error;
     }
 }
 
@@ -289,7 +294,11 @@ async function uploadToBucket(localPath: string, docId: string, type: uploadType
         fs.unlinkSync(localPath);
     } catch (error) {
         console.log('Error uploading to the bucket:', error);
-        throw error;
+        // throw error;
+        return new Response(JSON.stringify({
+            message: 'Error uploading to the bucket',
+            error: error
+        }), { status: 500 });
     }
 }
 
@@ -330,7 +339,11 @@ async function assistant(command: string, assistantID: string, userID: string) {
             threads[userID] = newThread.id;
         } catch (error) {
             console.log("Thread creation error", error);
-            throw error;
+            // throw error;
+            return new Response(JSON.stringify({
+                message: 'Thread creation error',
+                error: error
+            }), { status: 500 });
         }
     }
 
@@ -374,6 +387,10 @@ async function assistant(command: string, assistantID: string, userID: string) {
         return response;
     } catch (error) {
         console.log('Message creation error', error);
-        throw error;
+        // throw error;
+        return new Response(JSON.stringify({
+            message: 'Message creation error',
+            error: error,
+        }), { status: 500 });
     }
 }
