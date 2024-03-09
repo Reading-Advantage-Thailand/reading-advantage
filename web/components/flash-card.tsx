@@ -71,8 +71,7 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
             record.state === 0 ||
             (record.state === 2 && dueDate < startOfDay) ||
             (record.state === 3 && dueDate < startOfDay)
-          );
-        
+          );        
         }
       );
 

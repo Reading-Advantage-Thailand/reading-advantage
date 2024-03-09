@@ -153,6 +153,43 @@ export default function ArticleContent({
     if (!isTranslate) {
       await handleTranslateSentence();
     } else {
+      let arr = []
+      // ค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
+      // before
+      const targetIndexes = [selectedSentence as number];
+      const objects = text;
+      const before = targetIndexes.map((index: number) => {
+        return index - 1 >= 0
+          ? { index: index - 1, text: objects[index - 1]?.text }
+          : null;
+      });
+
+      if(before[0] !== null) {
+        arr.push(before[0])
+      }
+      console.log("before => ", before);
+
+      // current
+      const current = { index: selectedSentence, text: objects[selectedSentence as number]?.text };
+      arr.push(current)
+      console.log("current => ", current);
+
+      // after
+      const after = targetIndexes.map((index: number) => {
+        return index + 1 < objects.length
+          ? { index: index + 1, text: objects[index + 1]?.text }
+          : null;
+      });
+      if(after[0] !== null) {
+        arr.push(after[0])
+      }
+      console.log("after => ", after);
+
+      console.log("arr => ", arr);
+
+
+
+      /*
       try {
         let card: Card = createEmptyCard();
         let endTimepoint = 0;
@@ -171,6 +208,7 @@ export default function ArticleContent({
           },
           timepoint: text[selectedSentence as number].begin,
           endTimepoint: endTimepoint,
+          saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
           ...card,
         });
 
@@ -197,6 +235,7 @@ export default function ArticleContent({
           });
         }
       }
+      */
     }
   };
   const locale = useCurrentLocale();
