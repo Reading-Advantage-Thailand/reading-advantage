@@ -77,6 +77,7 @@ export async function POST(req: Request, res: Response) {
     }), { status: 200 });
 }
 
+let subgenreTmp: string;
 async function generate(assistantId: string, type: string, userId: string) {
     const genres: Genre[] = type === 'fiction' ?
         JSON.parse(fs.readFileSync('../data/genres-fiction.json', 'utf-8')).Genres :
@@ -91,6 +92,7 @@ async function generate(assistantId: string, type: string, userId: string) {
     try {
         // queue the assistant to generate all subgenres
         for (const subgenre of genre.Subgenres) {
+            subgenreTmp = subgenre;
             console.log(`Commnad: /about "type": "${type}", "genre": "${genre.Name}", "subgenre": "${subgenre}"`)
             const about = await assistant(`/about "type": "${type}", "genre": "${genre.Name}", "subgenre": "${subgenre}"`, assistantId, userId);
             console.log('about: ', about);
@@ -101,73 +103,85 @@ async function generate(assistantId: string, type: string, userId: string) {
                 console.log(`${command}: `, commandRes);
             }
 
-            console.log('Commnad: /json')
-            const json = await assistant('/json', assistantId, userId);
-            console.log('json: ', (json as any)[0].content[0].text.value);
-            const parsed = JSON.parse((json as any)[0].content[0].text.value);
-            console.log('parsed: ', parsed);
-
-
-            // convert image.description to just image
-            if (parsed.image && parsed.image.description) {
-                console.log('parsed.image.description', parsed.image.description);
-                console.log('parsed.image', parsed.image);
-                parsed.image = parsed.image.description;
-            }
-
-            // calculate the readability score
-            const level = calculateLevel(parsed.passage);
-
-            const article = {
-                type: type,
-                genre: genre.Name,
-                subGenre: subgenre,
-                topic: parsed.topic || '',
-                content: parsed.passage || '',
-                summary: parsed.summary || '',
-                title: parsed.title || '',
-                cefrLevel: level.cefrLevel,
-                raLevel: level.raLevel,
-                threadId: threads,
-                averageRating: 3,
-                createdAt: new Date(),
-            }
-
-            if (!parsed.image && !article.content) {
-                console.log('No content or image. Regenerating...');
-                throw new Error('No content or image');
-            }
-
-            // save the article to the database
-            const doc = await db.collection('articles').add(article);
-            console.log('Article saved to the database');
-
-            await generateImage(parsed.image, doc.id);
-            console.log('Image generated');
-
-            await generateVoice(article.content, doc.id);
-            console.log('Voice generated');
-
-            // if environment is development,
-            // save the article to the local file system
-            // and assistant-articles collection
-            if (process.env.NODE_ENV === 'development') {
-                fs.writeFileSync(`${process.cwd()}/data/${subgenre}.json`, JSON.stringify(article, null, 2));
-                await db.collection('assistant-articles').doc(doc.id).set(article);
-                console.log('Article saved to the local file system and database');
-            }
+            await generateJson(assistantId, userId, type, genre, subgenre);
         }
     } catch (error: any) {
         // if error, regenerate the assistant
         console.log('Error generating assistant:', error);
 
-        if (error.startsWith("Message creation error")) {
-            return new Response(JSON.stringify({
-                error: 'Message creation error'
-            }), { status: 500 });
-        }
+        // SyntaxError: Bad control character in string literal in JSON at position 2801
+        // Re run /json
+        // if (error.startsWith("SyntaxError")) {
+        //     await generateJson(assistantId, userId, type, genre, subgenreTmp);
+        // }
+        // if (error.startsWith("Message creation error")) {
+        //     return new Response(JSON.stringify({
+        //         error: 'Message creation error'
+        //     }), { status: 500 });
+        // }
         // await generate(assistantId, type);
     }
+}
+
+async function generateJson(assistantId: string, userId: string, type: string, genre: Genre, subgenre: string) {
+    console.log('Commnad: /json')
+    const json = await assistant('/json', assistantId, userId);
+    console.log('json: ', (json as any)[0].content[0].text.value);
+    const parsed = JSON.parse((json as any)[0].content[0].text.value);
+    console.log('parsed: ', parsed);
+
+
+    // convert image.description to just image
+    if (parsed.image && parsed.image.description) {
+        console.log('parsed.image.description', parsed.image.description);
+        console.log('parsed.image', parsed.image);
+        parsed.image = parsed.image.description;
+    }
+
+    // calculate the readability score
+    const level = calculateLevel(parsed.passage);
+
+    const article = {
+        type: type,
+        genre: genre.Name,
+        subGenre: subgenre,
+        topic: parsed.topic || '',
+        content: parsed.passage || '',
+        summary: parsed.summary || '',
+        title: parsed.title || '',
+        cefrLevel: level.cefrLevel,
+        raLevel: level.raLevel,
+        threadId: threads[userId],
+        averageRating: 3,
+        readCount: 0,
+        targetWordcount: parsed['target-wordcount'] || 0,
+        targetWordsPerSentence: parsed['target-words-per-sentence'] || 0,
+        createdAt: new Date(),
+    }
+
+    if (!parsed.image && !article.content) {
+        console.log('No content or image. Regenerating...');
+        throw new Error('No content or image');
+    }
+
+    // save the article to the database
+    const doc = await db.collection('articles').add(article);
+    console.log('Article saved to the database');
+
+    // if environment is development,
+    // save the article to the local file system
+    // and assistant-articles collection
+    if (process.env.NODE_ENV === 'development') {
+        fs.writeFileSync(`${process.cwd()}/data/${subgenre}.json`, JSON.stringify(article, null, 2));
+        await db.collection('assistant-articles').doc(doc.id).set(article);
+        console.log('Article saved to the local file system and database');
+    }
+
+    await generateImage(parsed.image, doc.id);
+    console.log('Image generated');
+
+    await generateVoice(article.content, doc.id);
+    console.log('Voice generated');
 }
 
 const splitToSentences = (content: string) => {
@@ -211,7 +225,7 @@ async function generateVoice(content: string, id: string) {
         });
         const json = response.data.audioContent;
         const mp3 = base64.toByteArray(json);
-        fs.writeFileSync(`${process.cwd()}/data/tmp/${id}.mp3`, mp3);
+        fs.writeFileSync(`${process.cwd()}/data/audios/${id}.mp3`, mp3);
 
         // upload timepoints
         await db.collection('articles').doc(id).update({
