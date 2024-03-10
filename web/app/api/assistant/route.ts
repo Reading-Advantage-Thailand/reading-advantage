@@ -46,35 +46,46 @@ const baseVoiceApiUrl = "https://texttospeech.googleapis.com";
 const threads: { [key: string]: any } = {};
 
 export async function POST(req: Request, res: Response) {
-    const { assistantId, type } = await req.json();
-    console.log('assistantId', assistantId);
-    console.log('type', type);
+    try {
 
-    // If the assistantId is not provided, return an error
-    if (!assistantId) {
+
+        const { assistantId, type } = await req.json();
+        console.log('assistantId', assistantId);
+        console.log('type', type);
+
+        // If the assistantId is not provided, return an error
+        if (!assistantId) {
+            return new Response(JSON.stringify({
+                error: 'Assistant ID is required'
+            }), { status: 400 });
+        }
+        if (!type) {
+            return new Response(JSON.stringify({
+                error: 'Article type is required'
+            }), { status: 400 });
+        }
+        if (type !== 'fiction' && type !== 'nonfiction') {
+            return new Response(JSON.stringify({
+                error: 'Article type must be either fiction or nonfiction'
+            }), { status: 400 });
+        }
+
+        const userId = 'assistantId';
+
+        // Generate the article
+        await generate(assistantId, type, userId);
+
         return new Response(JSON.stringify({
-            error: 'Assistant ID is required'
-        }), { status: 400 });
-    }
-    if (!type) {
+            messages: 'success',
+        }), { status: 200 });
+    } catch (error) {
+        console.error(error);
         return new Response(JSON.stringify({
-            error: 'Article type is required'
-        }), { status: 400 });
+            message: 'Error generating article',
+            error: error,
+        }), { status: 500 });
+
     }
-    if (type !== 'fiction' && type !== 'nonfiction') {
-        return new Response(JSON.stringify({
-            error: 'Article type must be either fiction or nonfiction'
-        }), { status: 400 });
-    }
-
-    const userId = 'passakorn';
-
-    // Generate the article
-    await generate(assistantId, type, userId);
-
-    return new Response(JSON.stringify({
-        messages: 'success',
-    }), { status: 200 });
 }
 
 let subgenreTmp: string;
