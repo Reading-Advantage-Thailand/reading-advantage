@@ -36,6 +36,7 @@ export default function OrderSentences({ userId }: Props) {
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
+
   const [text, setText] = React.useState<ITextAudio[]>([]);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [isplaying, setIsPlaying] = React.useState(false);
@@ -109,7 +110,7 @@ export default function OrderSentences({ userId }: Props) {
   };
 
   const splitToText = (article: ArticleType) => {
-    console.log("article", article.content);
+   
     const regex = /(\n\n|\n|\\n\\n|\\n)/g;
     const textArray = [];
     // if contains \n\n or \n or \\n\\n or \\n then replace with ''
@@ -123,14 +124,14 @@ export default function OrderSentences({ userId }: Props) {
         )
         .filter((sentence) => sentence.length > 0);
       const result = sentences.map((sentence) => sentence.trim());
-      console.log("result", result);
+
       setText([]);
 
       for (let i = 0; i < article.timepoints.length; i++) {
-        setText((prev) => [
-          ...prev,
-          { text: result[i], begin: article.timepoints[i].timeSeconds },
-        ]);
+        // setText((prev) => [
+        //   ...prev,
+        //   { text: result[i], begin: article.timepoints[i].timeSeconds },
+        // ]);
         textArray.push({
           text: result[i],
           begin: article.timepoints[i].timeSeconds,
@@ -143,10 +144,10 @@ export default function OrderSentences({ userId }: Props) {
       const sentences = tokenizer.getSentences();
       setText([]);
       for (let i = 0; i < article.timepoints.length; i++) {
-        setText((prev) => [
-          ...prev,
-          { text: sentences[i], begin: article.timepoints[i].timeSeconds },
-        ]);
+        // setText((prev) => [
+        //   ...prev,
+        //   { text: sentences[i], begin: article.timepoints[i].timeSeconds },
+        // ]);
         textArray.push({
           text: sentences[i],
           begin: article.timepoints[i].timeSeconds,
@@ -210,7 +211,6 @@ export default function OrderSentences({ userId }: Props) {
         newTodos.push(resultList);
       }
 
-      console.log("newTodos", newTodos);
       setArticleBeforeRandom(newTodos);
       setArticleRandom(shuffleArray(newTodos));
     } catch (error) {
@@ -287,7 +287,11 @@ export default function OrderSentences({ userId }: Props) {
         })
       );
     } else {
-      console.log("No items to remove");
+      toast({
+          title: t("toast.error"),
+          description: 'No items to remove',
+          variant: "destructive",
+        });
     }
   };
 
