@@ -9,17 +9,25 @@ import { Header } from "../header";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { splitToText, updateScore } from "@/lib/utils";
+import { updateScore } from "@/lib/utils";
 import { Article, Sentence } from "./types";
 import QuoteList from "./quote-list";
-import AudioButton from "../audio-button";
+import { Icons } from "../icons";
+import { ArticleType } from "@/types";
+import Tokenizer from "sentence-tokenizer";
 
 type Props = {
   userId: string;
 };
 
+interface ITextAudio {
+  text: string;
+  begin?: number;
+}
+
 export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
+  const tc = useScopedI18n("components.articleContent");
   let rawArticle: Sentence[] = [];
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
@@ -28,6 +36,9 @@ export default function OrderSentences({ userId }: Props) {
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
+  const [text, setText] = React.useState<ITextAudio[]>([]);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [isplaying, setIsPlaying] = React.useState(false);
 
   // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
   const findTextsByIndexes = (objects: Article[], targetIndexes: number[]) => {
@@ -46,7 +57,7 @@ export default function OrderSentences({ userId }: Props) {
   };
 
   // สร้างฟังก์ชันเพื่อจัดการข้อมูล
-  const processDynamicData = (data: any, title: string) => {
+  const processDynamicData = (data: any, title: string, articleId: string) => {
     // ใช้ Map เพื่อจัดการการซ้ำของข้อมูล
     const uniqueTexts = new Map();
 
@@ -66,9 +77,7 @@ export default function OrderSentences({ userId }: Props) {
       .map((index) => ({
         id: index,
         text: uniqueTexts.get(index),
-        articleId: rawArticle?.filter((data: Sentence) => {
-          return data?.sentence === uniqueTexts?.get(index);
-        })[0]?.articleId,
+        articleId,
         timepoint: rawArticle?.filter((data: Sentence) => {
           return data?.sentence === uniqueTexts?.get(index);
         })[0]?.timepoint,
@@ -99,13 +108,62 @@ export default function OrderSentences({ userId }: Props) {
     return rawData;
   };
 
+  const splitToText = (article: ArticleType) => {
+    console.log("article", article.content);
+    const regex = /(\n\n|\n|\\n\\n|\\n)/g;
+    const textArray = [];
+    // if contains \n\n or \n or \\n\\n or \\n then replace with ''
+    if (article.content.match(regex)) {
+      // just replace \n\n and \\n\\n
+      const content = article.content.replace(regex, "~~");
+      // split . but except for Mr. Mrs. Dr. Ms. and other abbreviations
+      const sentences = content
+        .split(
+          /(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./
+        )
+        .filter((sentence) => sentence.length > 0);
+      const result = sentences.map((sentence) => sentence.trim());
+      console.log("result", result);
+      setText([]);
+
+      for (let i = 0; i < article.timepoints.length; i++) {
+        setText((prev) => [
+          ...prev,
+          { text: result[i], begin: article.timepoints[i].timeSeconds },
+        ]);
+        textArray.push({
+          text: result[i],
+          begin: article.timepoints[i].timeSeconds,
+        });
+      }
+    } else {
+      // use tokenizer to split sentence
+      const tokenizer = new Tokenizer();
+      tokenizer.setEntry(article.content);
+      const sentences = tokenizer.getSentences();
+      setText([]);
+      for (let i = 0; i < article.timepoints.length; i++) {
+        setText((prev) => [
+          ...prev,
+          { text: sentences[i], begin: article.timepoints[i].timeSeconds },
+        ]);
+        textArray.push({
+          text: sentences[i],
+          begin: article.timepoints[i].timeSeconds,
+        });
+      }
+    }
+    return textArray;
+  };
+
   const getArticle = async (articleId: string, sn: number[]) => {
     const res = await axios.get(`/api/articles/${articleId}`);
     const textList = await splitToText(res.data.article);
     const resultsFindTexts = await findTextsByIndexes(textList, sn);
     const resultsProcess = await processDynamicData(
       resultsFindTexts,
-      res.data.article.title
+      res.data.article.title,
+      articleId
     );
 
     if (resultsProcess.length > 5) {
@@ -152,6 +210,7 @@ export default function OrderSentences({ userId }: Props) {
         newTodos.push(resultList);
       }
 
+      console.log("newTodos", newTodos);
       setArticleBeforeRandom(newTodos);
       setArticleRandom(shuffleArray(newTodos));
     } catch (error) {
@@ -159,11 +218,22 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
+  //=====> play audio
+  const handlePause = () => {
+    setIsPlaying(!isplaying);
+    if (audioRef.current === null) return;
+    if (isplaying) {
+      audioRef.current?.pause();
+    } else {
+      audioRef.current?.play();
+    }
+  };
+
   useEffect(() => {
     getUserSentenceSaved();
   }, []);
 
-  // Drag and Drop
+  //====> Drag and Drop
   const onDragStart = () => {
     if (window.navigator.vibrate) {
       window.navigator.vibrate(100);
@@ -258,6 +328,7 @@ export default function OrderSentences({ userId }: Props) {
             description: tUpdateScore("yourXp", { xp: 15 }),
           });
           setCurrentArticleIndex(currentArticleIndex + 1);
+          setIsPlaying(false);
         }
       } catch (error) {
         toast({
@@ -275,14 +346,6 @@ export default function OrderSentences({ userId }: Props) {
     }
     setLoading(false);
   };
-  /*
-            <AudioButton
-            key={new Date().getTime()}
-            audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${quote.articleId}.mp3`}
-            startTimestamp={quote?.timepoint || 0}
-            endTimestamp={quote?.endTimepoint || 0}
-          />
-  */
 
   return (
     <>
@@ -310,16 +373,32 @@ export default function OrderSentences({ userId }: Props) {
                       <h4 className="py-4 pl-5">
                         {articleRandom[currentArticleIndex]?.title}
                       </h4>
-                      <div className="mr-5">                      
-                        <AudioButton
-                          key={new Date().getTime()}
-                          // audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${quote.articleId}.mp3`}
-                          // startTimestamp={quote?.timepoint || 0}
-                          // endTimestamp={quote?.endTimepoint || 0}
-                          audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios.mp3`}
-                          startTimestamp={0}
-                          endTimestamp={0}
-                        />
+                      <div className="mr-5">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={handlePause}
+                        >
+                          {isplaying ? (
+                            <Icons.pause className="mr-1" size={12} />
+                          ) : (
+                            <Icons.play className="mr-1" size={12} />
+                          )}
+                          {isplaying
+                            ? tc("soundButton.pause")
+                            : tc("soundButton.play")}
+                        </Button>
+                        <audio
+                          ref={audioRef}
+                          key={
+                            articleRandom[currentArticleIndex]?.result[0]
+                              ?.articleId
+                          }
+                        >
+                          <source
+                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleRandom[currentArticleIndex]?.result[0]?.articleId}.mp3`}
+                          />
+                        </audio>
                       </div>
                     </div>
 
