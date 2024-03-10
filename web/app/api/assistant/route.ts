@@ -91,8 +91,8 @@ export async function POST(req: Request, res: Response) {
 let subgenreTmp: string;
 async function generate(assistantId: string, type: string, userId: string) {
     const genres: Genre[] = type === 'fiction' ?
-        JSON.parse(fs.readFileSync('../data/genres-fiction.json', 'utf-8')).Genres :
-        JSON.parse(fs.readFileSync('../data/genres-nonfiction.json', 'utf-8')).Genres;
+        JSON.parse(fs.readFileSync(`${process.cwd()}/data/genres-fiction.json`, 'utf-8')).Genres :
+        JSON.parse(fs.readFileSync(`${process.cwd()}/data/genres-nonfiction.json`, 'utf-8')).Genres;
 
     // randomly select a genre
     const genre = genres[Math.floor(Math.random() * genres.length)];
