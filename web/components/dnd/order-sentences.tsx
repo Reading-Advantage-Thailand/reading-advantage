@@ -13,7 +13,6 @@ import { splitToText, updateScore } from "@/lib/utils";
 import { Article, Sentence } from "./types";
 import QuoteList from "./quote-list";
 import AudioButton from "../audio-button";
-import { useRouter } from "next/navigation";
 
 type Props = {
   userId: string;
@@ -29,7 +28,6 @@ export default function OrderSentences({ userId }: Props) {
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
-  const router = useRouter();
 
   // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
   const findTextsByIndexes = (objects: Article[], targetIndexes: number[]) => {
@@ -259,7 +257,6 @@ export default function OrderSentences({ userId }: Props) {
             description: tUpdateScore("yourXp", { xp: 15 }),
           });
           setCurrentArticleIndex(currentArticleIndex + 1);
-          router.refresh();
         }
       } catch (error) {
         toast({

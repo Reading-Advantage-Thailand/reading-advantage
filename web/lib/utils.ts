@@ -147,6 +147,11 @@ export async function updateScore(
         }
       : null;
 
+       // Refresh the page
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+
     return new Response(
       JSON.stringify({
         message: "success",
