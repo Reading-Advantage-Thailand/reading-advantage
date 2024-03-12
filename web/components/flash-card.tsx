@@ -22,6 +22,7 @@ import { useScopedI18n } from "@/locales/client";
 import { v4 as uuidv4 } from "uuid";
 import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
+import { useRouter } from "next/navigation";
 
 type Props = {
   userId: string;
@@ -59,6 +60,7 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
   const controlRef = useRef<any>({});
   const currentCardFlipRef = useRef<any>();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const router = useRouter();
 
   const getUserSentenceSaved = async () => {
     try {
@@ -98,6 +100,7 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
                   title: t("toast.success"),
                   description: tUpdateScore("yourXp", { xp: 15 }),
                 });
+                router.refresh();
               }
             }
           } catch (error) {
