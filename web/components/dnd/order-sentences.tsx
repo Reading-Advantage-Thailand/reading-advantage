@@ -2,26 +2,44 @@
 // "use client";
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useScopedI18n } from "@/locales/client";
-import { v4 as uuidv4 } from "uuid";
-import { Button } from "../ui/button";
-import { Header } from "../header";
-import { toast } from "../ui/use-toast";
-import { splitToText } from "@/lib/utils";
-import { Article, Sentence } from "./types";
-import QuoteList from './quote-list';
 import { DragDropContext } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useScopedI18n } from "@/locales/client";
+import { Header } from "../header";
+import { Button } from "../ui/button";
+import { toast } from "../ui/use-toast";
+import { Skeleton } from "../ui/skeleton";
+import { updateScore } from "@/lib/utils";
+import { Article, Sentence } from "./types";
+import QuoteList from "./quote-list";
+import { Icons } from "../icons";
+import { ArticleType } from "@/types";
+import Tokenizer from "sentence-tokenizer";
 
 type Props = {
   userId: string;
 };
 
+interface ITextAudio {
+  text: string;
+  begin?: number;
+}
+
 export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
+  const tc = useScopedI18n("components.articleContent");
+  let rawArticle: Sentence[] = [];
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
+  const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
+  const tUpdateScore = useScopedI18n(
+    "pages.student.practicePage.flashcardPractice"
+  );
+
+  const [text, setText] = React.useState<ITextAudio[]>([]);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [isplaying, setIsPlaying] = React.useState(false);
 
   // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
   const findTextsByIndexes = (objects: Article[], targetIndexes: number[]) => {
@@ -29,7 +47,7 @@ export default function OrderSentences({ userId }: Props) {
       const before =
         index - 1 >= 0
           ? { index: index - 1, text: objects[index - 1]?.text }
-          : null; //index - 1 >= 0 ? objects[index - 1]?.text : "ไม่มีข้อมูล";
+          : null;
       const current = { index: index, text: objects[index]?.text };
       const after =
         index + 1 < objects.length
@@ -40,7 +58,7 @@ export default function OrderSentences({ userId }: Props) {
   };
 
   // สร้างฟังก์ชันเพื่อจัดการข้อมูล
-  const processDynamicData = (data: any, title: string) => {
+  const processDynamicData = (data: any, title: string, articleId: string) => {
     // ใช้ Map เพื่อจัดการการซ้ำของข้อมูล
     const uniqueTexts = new Map();
 
@@ -58,17 +76,27 @@ export default function OrderSentences({ userId }: Props) {
     return Array.from(uniqueTexts.keys())
       .sort((a, b) => a - b)
       .map((index) => ({
-        index,
+        id: index,
         text: uniqueTexts.get(index),
+        articleId,
+        timepoint: rawArticle?.filter((data: Sentence) => {
+          return data?.sentence === uniqueTexts?.get(index);
+        })[0]?.timepoint,
+        endTimepoint: rawArticle?.filter((data: Sentence) => {
+          return data?.sentence === uniqueTexts?.get(index);
+        })[0]?.endTimepoint,
         title,
+        result: rawArticle?.filter((data: Sentence) => {
+          return data?.sentence === uniqueTexts?.get(index);
+        }),
       }));
   };
 
   const shuffleArray = (data: any) => {
-    const raeData = JSON.parse(JSON.stringify(data));
+    const rawData = JSON.parse(JSON.stringify(data));
 
     // Loop through each section in the data
-    raeData.forEach((section: any) => {
+    rawData.forEach((section: any) => {
       // Check if the result array has at least two items to swap
       for (let i = section.result.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -78,7 +106,55 @@ export default function OrderSentences({ userId }: Props) {
         ];
       }
     });
-    return raeData;
+    return rawData;
+  };
+
+  const splitToText = (article: ArticleType) => {
+   
+    const regex = /(\n\n|\n|\\n\\n|\\n)/g;
+    const textArray = [];
+    // if contains \n\n or \n or \\n\\n or \\n then replace with ''
+    if (article.content.match(regex)) {
+      // just replace \n\n and \\n\\n
+      const content = article.content.replace(regex, "~~");
+      // split . but except for Mr. Mrs. Dr. Ms. and other abbreviations
+      const sentences = content
+        .split(
+          /(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./
+        )
+        .filter((sentence) => sentence.length > 0);
+      const result = sentences.map((sentence) => sentence.trim());
+
+      setText([]);
+
+      for (let i = 0; i < article.timepoints.length; i++) {
+        // setText((prev) => [
+        //   ...prev,
+        //   { text: result[i], begin: article.timepoints[i].timeSeconds },
+        // ]);
+        textArray.push({
+          text: result[i],
+          begin: article.timepoints[i].timeSeconds,
+        });
+      }
+    } else {
+      // use tokenizer to split sentence
+      const tokenizer = new Tokenizer();
+      tokenizer.setEntry(article.content);
+      const sentences = tokenizer.getSentences();
+      setText([]);
+      for (let i = 0; i < article.timepoints.length; i++) {
+        // setText((prev) => [
+        //   ...prev,
+        //   { text: sentences[i], begin: article.timepoints[i].timeSeconds },
+        // ]);
+        textArray.push({
+          text: sentences[i],
+          begin: article.timepoints[i].timeSeconds,
+        });
+      }
+    }
+    return textArray;
   };
 
   const getArticle = async (articleId: string, sn: number[]) => {
@@ -87,16 +163,27 @@ export default function OrderSentences({ userId }: Props) {
     const resultsFindTexts = await findTextsByIndexes(textList, sn);
     const resultsProcess = await processDynamicData(
       resultsFindTexts,
-      res.data.article.title
+      res.data.article.title,
+      articleId
     );
-    return { title: res.data.article.title, result: resultsProcess };
+
+    if (resultsProcess.length > 5) {
+      return {
+        title: res.data.article.title,
+        result: resultsProcess.slice(0, 5),
+      };
+    } else {
+      return { title: res.data.article.title, result: resultsProcess };
+    }
   };
 
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
+
       // step 1: get the article id and get sn
       const objectSentence: Sentence[] = res.data.sentences;
+      rawArticle = res.data.sentences;
 
       // step 2 : create map articleId และ Array ของ sn
       const articleIdToSnMap: { [key: string]: number[] } =
@@ -123,6 +210,7 @@ export default function OrderSentences({ userId }: Props) {
         );
         newTodos.push(resultList);
       }
+
       setArticleBeforeRandom(newTodos);
       setArticleRandom(shuffleArray(newTodos));
     } catch (error) {
@@ -130,91 +218,144 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
-  // Reordering the result list
-  // const reorder = (list: any, startIndex: number, endIndex: number) => {
-  //   const result = Array.from(list);
-  //   const [removed] = result.splice(startIndex, 1);
-  //   result.splice(endIndex, 0, removed);
-
-  //   return result;
-  // };
-  // a little function to help us with reordering the result
-  const reorder = (list: any, startIndex: number, endIndex: number) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-
-    return result;
-  };
-
-
-
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) {
-      return;
+  //=====> play audio
+  const handlePause = () => {
+    setIsPlaying(!isplaying);
+    if (audioRef.current === null) return;
+    if (isplaying) {
+      audioRef.current?.pause();
+    } else {
+      audioRef.current?.play();
     }
-
-    const { source, destination } = result;
-
-    console.log("source : ", source);
-    console.log("destination : ", destination);
-
-    if (source.droppableId === destination.droppableId) {
-      const sectionIndex = parseInt(
-        source.droppableId.replace("droppable-", ""),
-        10
-      );
-      const reorderedItems = reorder(
-        articleRandom[sectionIndex].result,
-        source.index,
-        destination.index
-      );
-
-      const newData = [...articleRandom];
-      newData[sectionIndex].result = reorderedItems;
-      setArticleRandom(newData);
-    }
-    /*
-    const { source, destination } = result;
-
-    // If dropped outside the list
-    if (!destination) {
-      return;
-    }
-
-    // Only proceed if dropped in the same list
-    if (source.droppableId === destination.droppableId) {
-      const sectionIndex = parseInt(
-        source.droppableId.replace("droppable-", ""),
-        10
-      );
-      const reorderedItems = reorder(
-        articleRandom[sectionIndex].result,
-        source.index,
-        destination.index
-      );
-
-      const newData = [...articleRandom];
-      newData[sectionIndex].result = reorderedItems;
-      setArticleRandom(newData);
-    }
-    */
   };
 
   useEffect(() => {
     getUserSentenceSaved();
   }, []);
 
-  console.log("articleBeforeRandom : ", articleBeforeRandom);
-  console.log("articleRandom : ", articleRandom);
+  //====> Drag and Drop
+  const onDragStart = () => {
+    if (window.navigator.vibrate) {
+      window.navigator.vibrate(100);
+    }
+  };
 
-  // https://dnd.hellopangea.com/?path=/story/examples-complex-vertical-list--grouped
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) {
+      return;
+    }
+
+    if (result.destination.index === result.source.index) {
+      return;
+    }
+
+    // ตรวจสอบก่อนว่า listArticle มีค่า และ listArticle.result ไม่เป็น undefined
+    const items = articleRandom[currentArticleIndex]?.result
+      ? Array.from(articleRandom[currentArticleIndex].result)
+      : [];
+
+    // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
+    if (items.length > 0) {
+      const items = [...articleRandom[currentArticleIndex]?.result];
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+
+      // อัปเดตลำดับใหม่หลังจากการดรากและดรอป
+      const updatedArticleRandom = [...articleRandom];
+      updatedArticleRandom[currentArticleIndex].result = items;
+
+      // ตรวจสอบความถูกต้องของลำดับ
+      const isCorrectOrder = checkOrder(
+        updatedArticleRandom[currentArticleIndex].result,
+        articleBeforeRandom[currentArticleIndex].result
+      );
+
+      // อัปเดตสถานะของ articleRandom ด้วยข้อมูลความถูกต้อง
+      setArticleRandom(
+        updatedArticleRandom.map((article, idx) => {
+          if (idx === currentArticleIndex) {
+            return {
+              ...article,
+              result: article.result.map((item: any, itemIdx: number) => ({
+                ...item,
+                // ตั้งค่า correctOrder ตามผลลัพธ์ของการตรวจสอบ
+                correctOrder: isCorrectOrder[itemIdx],
+              })),
+            };
+          }
+          return article;
+        })
+      );
+    } else {
+      toast({
+          title: t("toast.error"),
+          description: 'No items to remove',
+          variant: "destructive",
+        });
+    }
+  };
+
+  const checkOrder = (randomOrder: any, originalOrder: any) => {
+    return randomOrder.map(
+      (item: any) =>
+        originalOrder.findIndex(
+          (originalItem: any) => originalItem.id === item.id
+        ) === randomOrder.indexOf(item)
+    );
+  };
+
+  const onNextArticle = async () => {
+    setLoading(true);
+    let isEqual = true;
+
+    for (
+      let i = 0;
+      i < articleBeforeRandom[currentArticleIndex].result.length;
+      i++
+    ) {
+      if (
+        articleBeforeRandom[currentArticleIndex].result[i].text !==
+        articleRandom[currentArticleIndex].result[i].text
+      ) {
+        isEqual = false;
+        break;
+      }
+    }
+
+    if (isEqual) {
+      try {
+        const updateScrore = await updateScore(15, userId);
+
+        if (updateScrore?.status === 201) {
+          toast({
+            title: t("toast.success"),
+            description: tUpdateScore("yourXp", { xp: 15 }),
+          });
+          setCurrentArticleIndex(currentArticleIndex + 1);
+          setIsPlaying(false);
+        }
+      } catch (error) {
+        toast({
+          title: t("toast.error"),
+          description: t("toast.errorDescription"),
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: t("toast.error"),
+        description: t("OrderSentencesPractice.errorOrder"),
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
 
   return (
     <>
       <Header
-        heading={t("OrderSentences")}
-        text={t("OrderSentencesDescription")}
+        heading={t("OrderSentencesPractice.OrderSentences")}
+        text={t("OrderSentencesPractice.OrderSentencesDescription")}
       />
       <div className="mt-5">
         {articleRandom.length === 0 ? (
@@ -227,71 +368,81 @@ export default function OrderSentences({ userId }: Props) {
             </div>
           </div>
         ) : (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="bg-[#2684FFß] flex">
-              <div className="flex flex-col h-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                {articleRandom.map((section, sectionIndex) => (
-                  <div className="font-bold" key={section?.title}>
-                    <h4 className="py-4 pl-5">{section?.title}</h4>
+          <>
+            {articleRandom.length !== currentArticleIndex ? (
+              <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+                <div className="bg-[#2684FFß] flex max-w-screen-lg">
+                  <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                    <div className="flex justify-between items-center">
+                      <h4 className="py-4 pl-5">
+                        {articleRandom[currentArticleIndex]?.title}
+                      </h4>
+                      <div className="mr-5">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={handlePause}
+                        >
+                          {isplaying ? (
+                            <Icons.pause className="mr-1" size={12} />
+                          ) : (
+                            <Icons.play className="mr-1" size={12} />
+                          )}
+                          {isplaying
+                            ? tc("soundButton.pause")
+                            : tc("soundButton.play")}
+                        </Button>
+                        <audio
+                          ref={audioRef}
+                          key={
+                            articleRandom[currentArticleIndex]?.result[0]
+                              ?.articleId
+                          }
+                        >
+                          <source
+                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleRandom[currentArticleIndex]?.result[0]?.articleId}.mp3`}
+                          />
+                        </audio>
+                      </div>
+                    </div>
+
                     <QuoteList
-                      listId={sectionIndex.toString()}
-                      listType={sectionIndex.toString()}
-                      key={sectionIndex}
-                      quotes={section?.result}
+                      listId={"list"}
+                      quotes={articleRandom[currentArticleIndex]?.result}
+                      sectionIndex={currentArticleIndex}
+                      title={articleRandom[currentArticleIndex]?.title}
                     />
                   </div>
-                ))}
-              </div>
-            </div>
-          </DragDropContext>
+                </div>
+              </DragDropContext>
+            ) : (
+              <></>
+            )}
+
+            {articleRandom.length !== currentArticleIndex ? (
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={loading}
+                size="sm"
+                onClick={onNextArticle}
+              >
+                {t("OrderSentencesPractice.saveOrder")}
+              </Button>
+            ) : (
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={true}
+                size="sm"
+                onClick={onNextArticle}
+              >
+                {t("OrderSentencesPractice.saveOrder")}
+              </Button>
+            )}
+          </>
         )}
       </div>
     </>
   );
 }
-
-
-  /* 
-        <DragDropContext onDragEnd={onDragEnd}>
-          {articleRandom.map((section, sectionIndex) => (
-            <div key={section.title}>
-              <h2 className="my-5">{section.title}</h2>
-              <Droppable droppableId={`droppable-${sectionIndex}`}>
-                {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef}>
-                    {section.result.map((item: any, index: number) => (
-                      <Draggable
-                        key={item.index}
-                        draggableId={`item-${item.index}`}
-                        index={index}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            style={{
-                              userSelect: "none",
-                              padding: 16,
-                              margin: "0 0 8px 0",
-                              minHeight: "50px",
-                              backgroundColor: "#fff",
-                              color: "#333",
-                              border: "1px solid #210eef",
-                              ...provided.draggableProps.style,
-                            }}
-                          >
-                            {item.text}
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          ))}
-        </DragDropContext>     
-         */
-

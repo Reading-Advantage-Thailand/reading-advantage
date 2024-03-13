@@ -27,6 +27,8 @@ type Props = {
   index: number;
   nextCard: Function;
   sentences: Sentence[];
+  showButton: boolean
+  setShowButton: Function
 };
 
 type Logs = {
@@ -42,10 +44,11 @@ export default function FlashCardPracticeButton({
   index,
   nextCard,
   sentences,
+  showButton,
+  setShowButton,
 }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const [cards, setCards] = useState<Sentence[]>(sentences);
-  const [showButton, setShowButton] = useState(true);
   const [logs, setLogs] = useState<Logs[]>([]);
   const params = generatorParameters();
   const fnFsrs: FSRS = fsrs(params);
@@ -78,8 +81,8 @@ export default function FlashCardPracticeButton({
       header: () => <div className="font-bold text-black">Due</div>,
       cell: ({ row }: any) => {
         return typeof row.getValue("due") === "string"
-          ? new Date(row.getValue("due")).toLocaleString()
-          : row.getValue("due").toLocaleString();
+          ? new Date(row.getValue("due"))?.toLocaleString()
+          : row.getValue("due")?.toLocaleString();
       },
     },
     {
@@ -104,7 +107,7 @@ export default function FlashCardPracticeButton({
       cell: ({ row }: any) => {
         return (
           <div className="text-center">
-            {row.getValue("stability").toFixed(2)}
+            {row.getValue("stability")?.toFixed(2)}
           </div>
         );
       },
@@ -155,7 +158,6 @@ export default function FlashCardPracticeButton({
   ];
 
   const handleClickFsrs = async (index: number, rating: Rating) => {
-    
     const preCard = cards[index];
     const scheduling_cards: any = fnFsrs.repeat(preCard, preCard.due);
 
@@ -168,7 +170,6 @@ export default function FlashCardPracticeButton({
     const newLogs = [...logs];
     newLogs[index] = scheduling_cards[rating].log;
     setLogs(newLogs);
-
 
     const response = await axios.post(
       `/api/ts-fsrs-test/${newCards[index].id}/flash-card`,
@@ -184,16 +185,19 @@ export default function FlashCardPracticeButton({
     //     20
     //   )}" to Fsrs`,
     // });
-    
+
     if (index + 1 === sentences.length) {
       setShowButton(false);
     }
   };
-  
+
   return (
     <>
       {showButton ? (
-        sentences[index].state === 0 ? (
+        sentences[index].state === 0 ||
+        sentences[index].state === 1 ||
+        sentences[index].state === 2 ||
+        sentences[index].state === 3 ? (
           <div className="flex space-x-2">
             <button
               className={cn(
@@ -265,6 +269,7 @@ export default function FlashCardPracticeButton({
       ) : (
         <></>
       )}
+
       {/* <div className="pt-4 font-bold">Cards :</div>
       <DataTable data={cards} columns={columnsCards} /> */}
     </>

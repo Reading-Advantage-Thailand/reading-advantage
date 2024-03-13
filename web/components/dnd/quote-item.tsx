@@ -1,12 +1,15 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, useState } from "react";
 import styled from "@emotion/styled";
 import type { DraggableProvided } from "@hello-pangea/dnd";
-import { Quote } from "./types";
+import Image from "next/image";
+import type { Quote } from "./types";
+
 
 interface Props {
   quote: Quote;
   isDragging: boolean;
   provided: DraggableProvided;
+  isClone?: boolean;
   isGroupedOver?: boolean;
   style?: CSSProperties;
   index?: number;
@@ -17,17 +20,12 @@ const getBackgroundColor = (isDragging: boolean, isGroupedOver: boolean) => {
     return "#EBECF0";
   }
 
-    if (isDragging) {
-      return "#EAE6FF";
-    }
+  if (isDragging) {
+    return "#EAE6FF";
+  }
 
   return "#FFFFFF";
 };
-
-// const getBorderColor = "transparent";
-
-const imageSize = 40;
-
 
 interface ContainerProps {
   isDragging: boolean;
@@ -44,7 +42,7 @@ const Container = styled.a<ContainerProps>`
     isDragging ? `2px 2px 1px #A5ADBA` : "none"};
   box-sizing: border-box;
   padding: 8px;
-  min-height: ${imageSize}px;
+  min-height: 40px;
   margin-bottom: 8px;
   user-select: none;
 
@@ -53,7 +51,7 @@ const Container = styled.a<ContainerProps>`
 
   &:hover,
   &:active {
-    color: #091e42;
+    color: rgb(22 101 52);
     text-decoration: none;
   }
 
@@ -95,16 +93,11 @@ const BlockQuote = styled.div`
 const Footer = styled.div`
   display: flex;
   margin-top: 8px;
-  align-items: center;
+  justify-content: flex-end;
 `;
 
-const QuoteId = styled.small`
-  flex-grow: 1;
-  flex-shrink: 1;
-  margin: 0;
-  font-weight: normal;
-  text-overflow: ellipsis;
-  text-align: right;
+const Badges = styled.small`
+  margin-right: 10px;
 `;
 
 const getStyle = (
@@ -122,7 +115,14 @@ const getStyle = (
 };
 
 const QuoteItem = (props: Props) => {
-  const { quote, isDragging, provided, isGroupedOver, style, index } = props;
+  const {
+    quote,
+    isDragging,
+    isGroupedOver,
+    provided,
+    style,
+    index,
+  } = props;
 
   return (
     <Container
@@ -133,13 +133,31 @@ const QuoteItem = (props: Props) => {
       {...provided.dragHandleProps}
       style={getStyle(provided, style)}
       data-is-dragging={isDragging}
-      data-testid={quote.index}
+      data-testid={quote.id}
       data-index={index}
     >
       <Content>
         <BlockQuote>{quote.text}</BlockQuote>
         <Footer>
-          <QuoteId>index: {quote.index}</QuoteId>
+          {quote?.correctOrder ? (
+            <Badges>
+              <Image
+                src={"/correct.png"}
+                alt="Malcolm X"
+                width={25}
+                height={25}
+              />
+            </Badges>
+          ) : (
+            <Badges>
+              <Image
+                src={"/wrong.png"}
+                alt="Malcolm X"
+                width={25}
+                height={25}
+              />
+            </Badges>
+          )}
         </Footer>
       </Content>
     </Container>

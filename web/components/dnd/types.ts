@@ -25,8 +25,12 @@ export type Article = {
 export type Id = string;
 
 export interface Quote {
-  index: Id;
+  id: Id;
   text: string;
+  timepoint?: number;
+  endTimepoint?: number;
+  articleId?: string;
+  correctOrder?: boolean
 }
 
 export interface Dragging {

@@ -84,10 +84,14 @@ export default {
           nextButton: "Tiếp theo",
           yourXp: "Bạn đã nhận được {xp} XP cho hoạt động này",
         },
+        OrderSentencesPractice: {
+          OrderSentences: "Sắp xếp câu",
+          OrderSentencesDescription:
+            "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy xếp các câu theo trật tự có ý nghĩa với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 15 XP.",
+          saveOrder: "Lưu & Tiếp tục sau",
+          errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
+        },
         //Order Sentences
-        OrderSentences: "Sắp xếp câu",
-        OrderSentencesDescription:
-          "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy xếp các câu theo trật tự có ý nghĩa với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 15 XP.",
       },
     },
   },

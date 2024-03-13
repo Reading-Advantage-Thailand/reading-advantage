@@ -25,6 +25,8 @@ import { filter } from "lodash";
 
 type Props = {
   userId: string;
+  showButton: boolean
+  setShowButton: Function
 };
 
 export type Sentence = {
@@ -48,7 +50,7 @@ export type Sentence = {
   last_review?: Date; // The most recent review date, if applicable
 };
 
-export default function FlashCard({ userId }: Props) {
+export default function FlashCard({ userId, showButton, setShowButton }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
@@ -69,18 +71,22 @@ export default function FlashCard({ userId }: Props) {
             record.state === 0 ||
             (record.state === 2 && dueDate < startOfDay) ||
             (record.state === 3 && dueDate < startOfDay)
-          );
+          );        
         }
       );
 
       setSentences(filteredData);
+
+      if(filteredData.length === 0) {
+        setShowButton(false);
+      }
 
       // updateScore
       let filterDataUpdateScore = await filter(res.data.sentences, (param) => {
         const dueDate = new Date(param.due);
         return (param.state === 2 || param.state === 3) && dueDate < startOfDay;
       });
-    
+
       if (filterDataUpdateScore?.length > 0) {
         for (let i = 0; i < filterDataUpdateScore.length; i++) {
           try {
@@ -90,8 +96,8 @@ export default function FlashCard({ userId }: Props) {
                 { ...filterDataUpdateScore[i], update_score: true }
               );
               const updateScrore = await updateScore(15, userId);
-             
-              if(updateScrore?.status === 201){
+
+              if (updateScrore?.status === 201) {
                 toast({
                   title: t("toast.success"),
                   description: tUpdateScore("yourXp", { xp: 15 }),
@@ -195,10 +201,12 @@ export default function FlashCard({ userId }: Props) {
             index={currentCardIndex}
             nextCard={() => controlRef.current.nextCard()}
             sentences={sentences}
+            showButton={showButton}
+            setShowButton={setShowButton}
           />
         )}
       </div>
-    
+
       <Card className="col-span-3 mt-4 mb-10">
         <CardHeader>
           <CardTitle>{t("savedSentences")}</CardTitle>

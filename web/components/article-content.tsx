@@ -67,7 +67,6 @@ export default function ArticleContent({
   const [translate, setTranslate] = React.useState<string[]>([]);
   const [isTranslate, setIsTranslate] = React.useState(false);
   const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
-
   React.useEffect(() => {
     if (!isSplit) {
       splitToText(article);
@@ -109,18 +108,37 @@ export default function ArticleContent({
   };
 
   const splitToText = (article: ArticleType) => {
-    const tokenizer = new Tokenizer("Chuck");
-    tokenizer.setEntry(article.content);
-    const result = tokenizer.getSentences();
+    console.log("article", article.content);
+    const regex = /(\n\n|\n|\\n\\n|\\n)/g;
+    // if contains \n\n or \n or \\n\\n or \\n then replace with ''
+    if (article.content.match(regex)) {
 
-    // Clear the existing content in the 'text' array
-    setText([]);
+      // just replace \n\n and \\n\\n
+      const content = article.content.replace(regex, '~~');
+      // split . but except for Mr. Mrs. Dr. Ms. and other abbreviations
+      const sentences = content.split(/(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./).filter((sentence) => sentence.length > 0);
+      const result = sentences.map((sentence) => sentence.trim());
+      console.log("result", result);
+      setText([]);
 
-    for (let i = 0; i < article.timepoints.length; i++) {
-      setText((prev) => [
-        ...prev,
-        { text: result[i], begin: article.timepoints[i].timeSeconds },
-      ]);
+      for (let i = 0; i < article.timepoints.length; i++) {
+        setText((prev) => [
+          ...prev,
+          { text: result[i], begin: article.timepoints[i].timeSeconds },
+        ]);
+      }
+    } else {
+      // use tokenizer to split sentence
+      const tokenizer = new Tokenizer();
+      tokenizer.setEntry(article.content);
+      const sentences = tokenizer.getSentences();
+      setText([]);
+      for (let i = 0; i < article.timepoints.length; i++) {
+        setText((prev) => [
+          ...prev,
+          { text: sentences[i], begin: article.timepoints[i].timeSeconds },
+        ]);
+      }
     }
   };
 
@@ -135,6 +153,7 @@ export default function ArticleContent({
     if (!isTranslate) {
       await handleTranslateSentence();
     } else {
+     
       try {
         let card: Card = createEmptyCard();
         let endTimepoint = 0;
@@ -153,6 +172,7 @@ export default function ArticleContent({
           },
           timepoint: text[selectedSentence as number].begin,
           endTimepoint: endTimepoint,
+          saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
           ...card,
         });
 
@@ -179,6 +199,7 @@ export default function ArticleContent({
           });
         }
       }
+      
     }
   };
   const locale = useCurrentLocale();
@@ -186,7 +207,9 @@ export default function ArticleContent({
   async function handleTranslateSentence() {
     setLoading(true);
     try {
-      const sentences = text.map((sentence) => sentence.text);
+      //remove ~~ from text
+      const sentences = text.map((sentence) => sentence.text.replace(/~~/g, ""));
+      // const sentences = text.map((sentence) => sentence.text);
       // get language from local
       if (!locale || locale === "en") {
         return;
@@ -322,10 +345,13 @@ export default function ArticleContent({
               onClick={() => handleSkipToSentence(sentence.begin ?? 0)}
             >
               {
-                sentence.text.split("\n").map((line, index) => (
+                // if start with ~~ then add break line
+                sentence.text.split("~~").map((line, index) => (
                   <span key={index}>
-                    {line + " "}
-                    {index !== sentence.text.split("\n").length - 1 && <br />}
+                    {
+                      line + (index !== sentence.text.split("~~").length - 1 ? " " : line.endsWith(".") ? " " : ". ")
+                    }
+                    {index !== sentence.text.split("~~").length - 1 && <div className="mt-3" />}
                   </span>
                 ))
               }
