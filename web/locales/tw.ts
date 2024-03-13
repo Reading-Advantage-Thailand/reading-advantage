@@ -151,6 +151,9 @@ export default {
     progressBarXp: {
       xp: "經驗: ",
       level: "等級 {level}",
+      congratulations: "恭喜！ ", 
+      upLevel: "您已获得新级别!",
+      close: "關閉",  
     },
     select: {
       articleChoose: "請選擇您想閱讀的 {article}",

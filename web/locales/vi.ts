@@ -164,6 +164,9 @@ export default {
     progressBarXp: {
       xp: "kinh nghiệm: ",
       level: "mức độ {level}",
+      congratulations: "Xin chúc mừng!",
+      upLevel: "Bạn đã nhận được một cấp độ mới!",
+      close: "đóng",
     },
     // Sử dụng cho trang chọn bài viết
     // Đây là thành phần chọn

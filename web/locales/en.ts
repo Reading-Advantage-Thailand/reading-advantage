@@ -167,6 +167,9 @@ export default {
     progressBarXp: {
       xp: "XP:",
       level: "Level {level}",
+      congratulations: "Congratulations! ", 
+      upLevel: "You've received a new level!",
+      close: "Close",
     },
     // use this for article selection page
     // this is the select component

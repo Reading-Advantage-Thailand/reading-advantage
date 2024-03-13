@@ -163,6 +163,9 @@ export default {
     progressBarXp: {
       xp: "คะแนนประสบการณ์: ",
       level: "ระดับ {level}",
+      congratulations: "ยินดีด้วย!", 
+      upLevel: "คุณได้รับระดับใหม่แล้ว!",
+      close: "ปิด",
     },
     // use this for article selection page
     // this is the select component
