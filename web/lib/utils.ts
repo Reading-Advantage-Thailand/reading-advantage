@@ -57,6 +57,31 @@ export const splitToText = (article: ArticleType) => {
   return textArray;
 };
 
+/**
+ * Splits the given content into sentences.
+ *
+ * If the content contains newline characters (\n or \\n), it replaces them with an empty string
+ * and then splits the content into sentences. Otherwise, it uses a sentence tokenizer to split
+ * the content into sentences.
+ *
+ * @param {string} content - The content to split into sentences.
+ * @returns {string[]} An array of sentences.
+ */
+export function splitTextIntoSentences(content: string): string[] {
+  // If content contains \n 
+  const regex = /(\n\n|\n|\\n\\n|\\n)/g;
+  if (content.match(regex)) {
+    const replaced = content.replace(regex, '')
+    const sentences = replaced.split(/(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./).filter((sentence) => sentence.length > 0);
+    return sentences;
+  } else {
+    const tokenizer = new Tokenizer();
+    tokenizer.setEntry(content);
+    const sentences = tokenizer.getSentences();
+    return sentences;
+  }
+}
+
 export function levelCalculation(xp: number) {
   const levels = [
     { min: 0, max: 4999, cefrLevel: "A0-", raLevel: 0 },
@@ -138,13 +163,13 @@ export async function updateScore(
     const data = await response.json();
     (await updateSession)
       ? {
-          user: {
-            // ...session?.user,
-            xp: previousXp + newScore,
-            level: levelCalculation(xp).raLevel,
-            cefrLevel: levelCalculation(xp).cefrLevel,
-          },
-        }
+        user: {
+          // ...session?.user,
+          xp: previousXp + newScore,
+          level: levelCalculation(xp).raLevel,
+          cefrLevel: levelCalculation(xp).cefrLevel,
+        },
+      }
       : null;
 
     return new Response(

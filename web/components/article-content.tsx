@@ -153,6 +153,7 @@ export default function ArticleContent({
     if (!isTranslate) {
       await handleTranslateSentence();
     } else {
+     
       try {
         let card: Card = createEmptyCard();
         let endTimepoint = 0;
@@ -171,6 +172,7 @@ export default function ArticleContent({
           },
           timepoint: text[selectedSentence as number].begin,
           endTimepoint: endTimepoint,
+          saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
           ...card,
         });
 
@@ -197,6 +199,7 @@ export default function ArticleContent({
           });
         }
       }
+      
     }
   };
   const locale = useCurrentLocale();
