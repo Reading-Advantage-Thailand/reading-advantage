@@ -57,27 +57,52 @@ export const splitToText = (article: ArticleType) => {
   return textArray;
 };
 
+/**
+ * Splits the given content into sentences.
+ *
+ * If the content contains newline characters (\n or \\n), it replaces them with an empty string
+ * and then splits the content into sentences. Otherwise, it uses a sentence tokenizer to split
+ * the content into sentences.
+ *
+ * @param {string} content - The content to split into sentences.
+ * @returns {string[]} An array of sentences.
+ */
+export function splitTextIntoSentences(content: string): string[] {
+  // If content contains \n 
+  const regex = /(\n\n|\n|\\n\\n|\\n)/g;
+  if (content.match(regex)) {
+    const replaced = content.replace(regex, '')
+    const sentences = replaced.split(/(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./).filter((sentence) => sentence.length > 0);
+    return sentences;
+  } else {
+    const tokenizer = new Tokenizer();
+    tokenizer.setEntry(content);
+    const sentences = tokenizer.getSentences();
+    return sentences;
+  }
+}
+
 export function levelCalculation(xp: number) {
   const levels = [
-    { min: 0, max: 3000, cefrLevel: "A0-", raLevel: 0 },
-    { min: 3001, max: 5000, cefrLevel: "A0", raLevel: 1 },
-    { min: 5001, max: 11000, cefrLevel: "A0+", raLevel: 2 },
-    { min: 11001, max: 18000, cefrLevel: "A1", raLevel: 3 },
-    { min: 18001, max: 26000, cefrLevel: "A1+", raLevel: 4 },
-    { min: 26001, max: 35000, cefrLevel: "A2-", raLevel: 5 },
-    { min: 35001, max: 45000, cefrLevel: "A2", raLevel: 6 },
-    { min: 45001, max: 56000, cefrLevel: "A2+", raLevel: 7 },
-    { min: 56001, max: 68000, cefrLevel: "B1-", raLevel: 8 },
-    { min: 68001, max: 81000, cefrLevel: "B1", raLevel: 9 },
-    { min: 81001, max: 95000, cefrLevel: "B1+", raLevel: 10 },
-    { min: 95001, max: 110000, cefrLevel: "B2-", raLevel: 11 },
-    { min: 110001, max: 126000, cefrLevel: "B2", raLevel: 12 },
-    { min: 126001, max: 143000, cefrLevel: "B2+", raLevel: 13 },
-    { min: 143001, max: 161000, cefrLevel: "C1-", raLevel: 14 },
-    { min: 161001, max: 180000, cefrLevel: "C1", raLevel: 15 },
-    { min: 180001, max: 200000, cefrLevel: "C1+", raLevel: 16 },
-    { min: 200001, max: 221000, cefrLevel: "C2-", raLevel: 17 },
-    { min: 221001, max: 243000, cefrLevel: "C2", raLevel: 18 },
+    { min: 0, max: 4999, cefrLevel: "A0-", raLevel: 0 },
+    { min: 5000, max: 10999, cefrLevel: "A0", raLevel: 1 },
+    { min: 11000, max: 17999, cefrLevel: "A0+", raLevel: 2 },
+    { min: 18000, max: 25999, cefrLevel: "A1", raLevel: 3 },
+    { min: 26000, max: 34999, cefrLevel: "A1+", raLevel: 4 },
+    { min: 35000, max: 44999, cefrLevel: "A2-", raLevel: 5 },
+    { min: 45000, max: 55999, cefrLevel: "A2", raLevel: 6 },
+    { min: 56000, max: 67999, cefrLevel: "A2+", raLevel: 7 },
+    { min: 68000, max: 80999, cefrLevel: "B1-", raLevel: 8 },
+    { min: 81000, max: 94999, cefrLevel: "B1", raLevel: 9 },
+    { min: 95000, max: 109999, cefrLevel: "B1+", raLevel: 10 },
+    { min: 110000, max: 125999, cefrLevel: "B2-", raLevel: 11 },
+    { min: 126000, max: 142999, cefrLevel: "B2", raLevel: 12 },
+    { min: 143000, max: 160999, cefrLevel: "B2+", raLevel: 13 },
+    { min: 161000, max: 179999, cefrLevel: "C1-", raLevel: 14 },
+    { min: 180000, max: 199999, cefrLevel: "C1", raLevel: 15 },
+    { min: 200000, max: 220999, cefrLevel: "C1+", raLevel: 16 },
+    { min: 221000, max: 242999, cefrLevel: "C2-", raLevel: 17 },
+    { min: 243000, max: 243000, cefrLevel: "C2", raLevel: 18 },
   ];
 
   for (let level of levels) {
@@ -93,6 +118,9 @@ export function levelCalculation(xp: number) {
 export async function getPreviousData(userId: string) {
   try {
     const response = await axios.get(`/api/users/${userId}`);
+    if (response.status === 400) {
+      throw new Error("User not found");
+    }
     const data = response.data;
     const cefrLevel = data.data.cefrLevel;
     const previousXp = data.data.xp;
@@ -106,15 +134,15 @@ export async function getPreviousData(userId: string) {
 export async function updateScore(
   xp: number,
   userId: string,
-  updateSession?: Function,
+  updateSession?: Function
 ) {
   try {
     const previousData = await getPreviousData(userId);
-    const cefrLevell = previousData?.cefrLevel;
+    const cefrLevel = previousData?.cefrLevel;
     let previousXp = previousData?.previousXp;
     let newScore = 0;
 
-    if (cefrLevell === "") {
+    if (cefrLevel === "") {
       //increase new xp with 0
       previousXp = 0;
       newScore = previousXp + xp;
@@ -135,28 +163,30 @@ export async function updateScore(
     const data = await response.json();
     (await updateSession)
       ? {
-          user: {
-            // ...session?.user,
-            xp: previousXp + newScore,
-            level: levelCalculation(xp).raLevel,
-            cefrLevel: levelCalculation(xp).cefrLevel,
-          },
-        }
-      : null;
-      
-      return new Response(
-        JSON.stringify({
-          message: "success",
-        }),
-        { status: 201 }
-        );
-      } catch (error) {
-        return new Response(
-          JSON.stringify({
-            message: error,
-          }),
-          { status: 501 }
-          );
-        }
+        user: {
+          // ...session?.user,
+          xp: previousXp + newScore,
+          level: levelCalculation(xp).raLevel,
+          cefrLevel: levelCalculation(xp).cefrLevel,
+        },
       }
+      : null;
+
+    return new Response(
+      JSON.stringify({
+        message: "success",
+      }),
+      { status: 201 }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        message: error,
+      }),
+      { status: 501 }
+    );
+  }
+}
+
+// updateScore(10000, "1234");
 
