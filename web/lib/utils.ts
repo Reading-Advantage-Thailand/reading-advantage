@@ -163,5 +163,5 @@ export async function updateScore(
   }
 }
 
-
+// updateScore(10000, "1234");
 
