@@ -331,7 +331,7 @@ export default function OrderSentences({ userId }: Props) {
         if (updateScrore?.status === 201) {
           toast({
             title: t("toast.success"),
-            description: tUpdateScore("yourXp", { xp: 15 }),
+            description: tUpdateScore("yourXp", { xp: 5 }),
           });
           setCurrentArticleIndex(currentArticleIndex + 1);
           router.refresh();
