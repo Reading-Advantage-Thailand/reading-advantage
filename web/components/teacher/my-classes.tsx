@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -7,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { table } from "console";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,98 +15,87 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
-import { Icons } from "@/components/icons";
-
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { toast } from "../ui/use-toast";
-import axios from "axios";
-import db from "@/configs/firestore-config";
-import { orderBy } from "@firebase/firestore";
-import firebase from "firebase/app";
-import "firebase/firestore";
 import CreateNewClass from "./create-new-class";
-
-// interface Classroom {
-//   Class_name: string;
-//   Class_code: string;
-//   No_of_student: number;
-//   Grade: string;
-//   Co_teachers: string;
-//   Actions: string[];
-//   Class_header: string[];
-// }
-
-// export async function getServerSideProps() {
-//   let classrooms: never[] = [];
-//   let error = '';
-//   const res = await fetch("http://localhost:3000/api/classrooms", {
-//     method: 'GET',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//   })
-//   .then((res) => res.json())
-//   .then(data => {
-//     if (data.message === 'success') {
-//       classrooms = data.data;
-//       console.log('classrooms', classrooms);
-
-//     } else {
-//       error = data.message;
-//       console.error(data.message);
-//     }
-//   })
-//   .catch(error => {
-//     console.error('Network error', error);
-//   })
-
-//   return {
-//     props: {
-//       classrooms,
-//       error
-//     },
-//   };
-// };
+import { Icons } from "@/components/icons";
+// import router from "next/navigation";
+import { useRouter } from "next/navigation";
+import EditClass from "./edit-class";
+import ArchiveClass from "./archive-class";
+// import { useNavigate, useNavigation } from "react-router-dom";
 
 type resClassroom = {
   classroomName: string;
   classCode: string;
-  noOfStudent: number;
+  noOfStudents: number;
   grade: string;
   coTeacher: {
     coTeacherId: string;
     name: string;
   };
+  id: string;
 };
 
 type MyClassesProps = {
+  userId: string;
   classrooms: resClassroom[];
 };
 
-export default async function MyClasses({ classrooms }: MyClassesProps) {
+export default function MyClasses({ classrooms, userId }: MyClassesProps) {
   console.log("classrooms", classrooms);
-
-  const [tableClassroom, setTableClassroom] = useState([]);
+  
+  const router = useRouter();
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   const tableClassroomHeader = [
     "Class Name",
     "Class Code",
     "No.of Students",
+    "Details",
     "Actions",
   ];
-  const actions = ["Edit", "Roster", "Report", "Archive Class"];
- 
+  const actions = ["Roster", "Report", "Edit"];
+  // const router = useRouter();
+
+  const handleOnClickClassroom = () => {
+    console.log("clicked classroom");
+     router.push('/teacher/class-roster')
+  };
+  const handleActionSelect = (action: string) => {
+    switch (action) {
+      case "Roster":
+        router.push("/teacher/class-roster");
+        // handleRosterIconClick();
+        break;
+      case "Report":
+        router.push("/teacher/reports");
+        // handleReportIconClick();
+        break;
+      case "Edit":
+        setShowEditDialog(true);
+        break;
+      default:
+        break;
+    }
+  };
+  const handleReportIconClick = () => {
+    router.push("/teacher/reports");
+  };
+
+  const handleRosterIconClick = () => {
+    router.push("/teacher/class-roster");
+  };
+
   return (
     <>
       <div className="flex justify-between">
         <div className="font-bold text-3xl">My Classroom</div>
-        <CreateNewClass />
+        <CreateNewClass userId={userId} />
       </div>
       <div className="rounded-md border mt-4">
         <Table>
           <TableHeader className="font-bold">
-            <TableRow className="bg-muted/50">
+            <TableRow className="">
               {tableClassroomHeader.map((header, index) => (
                 <TableCell key={index}>{header}</TableCell>
               ))}
@@ -116,21 +104,30 @@ export default async function MyClasses({ classrooms }: MyClassesProps) {
           <TableBody>
             {classrooms.map((classroom, index) => (
               <TableRow key={index}>
-                <TableCell>{classroom.classroomName}</TableCell>
+                <TableCell
+                  onClick={handleOnClickClassroom}
+                  className="cursor-pointer"
+                >
+                  {classroom.classroomName}
+                </TableCell>
                 <TableCell>{classroom.classCode}</TableCell>
-                <TableCell>{classroom.noOfStudent}</TableCell>
+                <TableCell>{classroom.noOfStudents}</TableCell>
                 <TableCell>
                   <div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="default" className="ml-auto">
-                          Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+                          Details <ChevronDownIcon className="ml-2 h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">
                         {actions.map((action, index) => {
                           return (
-                            <DropdownMenuCheckboxItem key={index}>
+                            <DropdownMenuCheckboxItem
+                        
+                              key={index}
+                              onSelect={() => handleActionSelect(action)}
+                            >
                               {action}
                             </DropdownMenuCheckboxItem>
                           );
@@ -138,6 +135,19 @@ export default async function MyClasses({ classrooms }: MyClassesProps) {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
+                </TableCell>
+                <TableCell className="flex gap-4">
+                  <EditClass
+                    userId={userId}
+                    open={showEditDialog}
+                    onClose={() => setShowEditDialog(false)}
+                    classroomData={classroom} // Add the 'id' property here
+                  />
+                  <ArchiveClass
+                    userId={userId}
+                    open={showArchiveDialog}
+                    onClose={() => setShowArchiveDialog(false)}
+                  />
                 </TableCell>
               </TableRow>
             ))}

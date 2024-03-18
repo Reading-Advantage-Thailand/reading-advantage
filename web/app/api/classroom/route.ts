@@ -45,17 +45,32 @@ export async function POST(req: Request, res: Response) {
             }), { status: 403 })
         }
         const json = await req.json();
-        const body = JSON.parse(json.body);
+        const body = json.classroom;
+        console.log('body', body);
+        
+
         const userId = session.user.id;
         const classroom = {
             teacherId: userId,
-            className: body.className,
-            grade: body.grade,
-            coTeachers: body.coTeachers,
             classCode: body.classCode,
+            classroomName: body.classroomName,
+            coTeacher: body.coTeacher.map((coTeacher: any) => {
+                return {
+                    coTeacherId: userId,
+                    name: coTeacher.name,
+                }}),
+            description: body.description,
+            grade: body.grade,
             noOfStudents: body.noOfStudents,
+            student: body.student.map((student: any) => {
+                return {
+                    studentId: student.studentId,
+                    lastActivity: student.lastActivity,
+                }
+            }),
+            title: body.title,
         };
-        await db.collection('classrooms').add(classroom);
+        await db.collection('classroom').add(classroom);
         return new Response(JSON.stringify({
             message: 'success',
         }), { status: 200 })
@@ -66,35 +81,38 @@ export async function POST(req: Request, res: Response) {
     }
 }
 
+
 // add a student to a classroom and update classroom details
-export async function PATCH(req: Request, res: Response) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return new Response(JSON.stringify({
-                message: 'Unauthorized',
-            }), { status: 403 })
-        }
-        const json = await req.json();
-        const body = JSON.parse(json.body);
-        const classroomId = body.classroomId;
-        const classroom = {
-            className: body.className,
-            grade: body.grade,
-            coTeachers: body.coTeachers,
-            classCode: body.classCode,
-            noOfStudents: body.noOfStudents,
-        };
-        await db.collection('classrooms').doc(classroomId).update(classroom);
-        return new Response(JSON.stringify({
-            message: 'success',
-        }), { status: 200 })
-    } catch (error) {
-        return new Response(JSON.stringify({
-            message: error,
-        }), { status: 500 })
-    }
-}
+// export async function PATCH(req: Request, res: Response) {
+//     try {
+//         const session = await getServerSession(authOptions);
+//         if (!session) {
+//             return new Response(JSON.stringify({
+//                 message: 'Unauthorized',
+//             }), { status: 403 })
+//         }
+//         const json = await req.json();
+//         console.log('json', json);
+        
+//         const body = JSON.parse(json.body);
+//         const classroomId = body.classroomId;
+//         const classroom = {
+//             className: body.className,
+//             grade: body.grade,
+//             coTeachers: body.coTeachers,
+//             classCode: body.classCode,
+//             noOfStudents: body.noOfStudents,
+//         };
+//         await db.collection('classrooms').doc(classroomId).update(classroom);
+//         return new Response(JSON.stringify({
+//             message: 'success',
+//         }), { status: 200 })
+//     } catch (error) {
+//         return new Response(JSON.stringify({
+//             message: error,
+//         }), { status: 500 })
+//     }
+// }
 
 // delete classroom
 export async function DELETE(req: Request, res: Response) {

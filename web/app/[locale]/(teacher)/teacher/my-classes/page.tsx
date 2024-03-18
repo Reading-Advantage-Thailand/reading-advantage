@@ -3,6 +3,7 @@ import MyClasses from '@/components/teacher/my-classes'
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 
 export default async function myClassesPage() {
   const user = await getCurrentUser();
@@ -29,10 +30,14 @@ export default async function myClassesPage() {
     }
   }
 const resClassroom = await getClassroomData();
-
   return (
     <div>
-      <MyClasses classrooms={ resClassroom.data }/>
+       <NextAuthSessionProvider session={user}>
+      <MyClasses 
+      userId={user.id}
+      classrooms={ resClassroom.data} 
+      />
+       </NextAuthSessionProvider>
     </div>
   )
 }
