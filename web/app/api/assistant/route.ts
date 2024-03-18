@@ -73,10 +73,14 @@ export async function POST(req: Request, res: Response) {
         const userId = 'assistantId';
 
         // Generate the article
-        await generate(assistantId, type, userId);
+        const response = await generate(assistantId, type, userId) as any;
+
 
         return new Response(JSON.stringify({
             messages: 'success',
+            docId: response.docId,
+            threads: threads[userId],
+            json: response.json,
         }), { status: 200 });
     } catch (error) {
         console.error(error);
@@ -114,7 +118,8 @@ async function generate(assistantId: string, type: string, userId: string) {
                 console.log(`${command}: `, commandRes);
             }
 
-            await generateJson(assistantId, userId, type, genre, subgenre);
+            const response = await generateJson(assistantId, userId, type, genre, subgenre);
+            return response;
             // generate just one subgenre for now
             break;
         }
@@ -144,7 +149,13 @@ async function generateJson(assistantId: string, userId: string, type: string, g
     console.log('Commnad: /json')
     const json = await assistant('/json', assistantId, userId);
     console.log('json: ', (json as any)[0].content[0].text.value);
-    const parsed = JSON.parse((json as any)[0].content[0].text.value);
+    // remove number length from the string 15-20 to 15 only in "target-words-per-sentence": "15-20", field
+    // if it have - in 15-20
+    // not remove - in passage
+    let newJsonStr = (json as any)[0].content[0].text.value.replace(/(\d+)-(\d+)/g, '$1');
+    newJsonStr = newJsonStr.replace(/(\d+)-(\d+)/g, '$1');
+    console.log('newJsonStr: ', newJsonStr);
+    const parsed = JSON.parse(newJsonStr);
     console.log('parsed: ', parsed);
 
 
@@ -200,11 +211,12 @@ async function generateJson(assistantId: string, userId: string, type: string, g
     await generateVoice(article.content, doc.id);
     console.log('Voice generated');
 
-    return new Response(JSON.stringify({
-        messages: 'success',
+    return {
         docId: doc.id,
-        threads: threads[userId],
-    }), { status: 200 });
+        thraedId: threads[userId],
+        json: json,
+    }
+
 }
 
 const splitToSentences = (content: string) => {
@@ -270,6 +282,7 @@ async function generateVoice(content: string, id: string) {
             uploadType.AUDIO
         );
     } catch (error) {
+        console.log((error as any).data.error);
         console.log('Error generating voice:', error);
         return new Response(JSON.stringify({
             message: 'Error generating voice',
