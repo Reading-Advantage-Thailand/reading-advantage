@@ -25,8 +25,6 @@ export default function ResetDialog() {
   };
   
   const resetXP = async (userId: string,) => {
-    console.log('resetXP function called');
-    
     try {
       const response = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
@@ -37,8 +35,6 @@ export default function ResetDialog() {
         }),
       });
     
-      console.log('fetch called');
-      
       return new Response(
         JSON.stringify({
           message: "success",

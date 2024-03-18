@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { DragDropContext } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
@@ -12,6 +12,8 @@ import { Skeleton } from "../ui/skeleton";
 import { updateScore } from "@/lib/utils";
 import { Article, Sentence } from "./types";
 import QuoteList from "./quote-list";
+import AudioButton from "../audio-button";
+import { useRouter } from "next/navigation";
 import { Icons } from "../icons";
 import { ArticleType } from "@/types";
 import Tokenizer from "sentence-tokenizer";
@@ -36,6 +38,7 @@ export default function OrderSentences({ userId }: Props) {
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
+  const router = useRouter();
 
   const [text, setText] = React.useState<ITextAudio[]>([]);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
@@ -325,13 +328,13 @@ export default function OrderSentences({ userId }: Props) {
     if (isEqual) {
       try {
         const updateScrore = await updateScore(15, userId);
-
         if (updateScrore?.status === 201) {
           toast({
             title: t("toast.success"),
             description: tUpdateScore("yourXp", { xp: 15 }),
           });
           setCurrentArticleIndex(currentArticleIndex + 1);
+          router.refresh();
           setIsPlaying(false);
         }
       } catch (error) {

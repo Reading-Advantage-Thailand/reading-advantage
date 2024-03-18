@@ -1,10 +1,67 @@
 "use client";
 import { useScopedI18n } from "@/locales/client";
+import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import Confetti from "react-confetti";
+import React from "react";
+import { levelCalculation } from "@/lib/utils";
 
 function ProgressBar({ progress, level }: { progress: number; level: number }) {
+  const t = useScopedI18n("components.progressBarXp");
+  const [isOpen, setIsOpen] = useState(false);
+  const levelCalResult = levelCalculation(progress);
+
+  const closeDialog = () => {
+    setIsOpen(false);
+  };
+
+  const levels = [
+    { min: 0, max: 4999, cefrLevel: "A0-", raLevel: 0 },
+    { min: 5000, max: 10999, cefrLevel: "A0", raLevel: 1 },
+    { min: 11000, max: 17999, cefrLevel: "A0+", raLevel: 2 },
+    { min: 18000, max: 25999, cefrLevel: "A1", raLevel: 3 },
+    { min: 26000, max: 34999, cefrLevel: "A1+", raLevel: 4 },
+    { min: 35000, max: 44999, cefrLevel: "A2-", raLevel: 5 },
+    { min: 45000, max: 55999, cefrLevel: "A2", raLevel: 6 },
+    { min: 56000, max: 67999, cefrLevel: "A2+", raLevel: 7 },
+    { min: 68000, max: 80999, cefrLevel: "B1-", raLevel: 8 },
+    { min: 81000, max: 94999, cefrLevel: "B1", raLevel: 9 },
+    { min: 95000, max: 109999, cefrLevel: "B1+", raLevel: 10 },
+    { min: 110000, max: 125999, cefrLevel: "B2-", raLevel: 11 },
+    { min: 126000, max: 142999, cefrLevel: "B2", raLevel: 12 },
+    { min: 143000, max: 160999, cefrLevel: "B2+", raLevel: 13 },
+    { min: 161000, max: 179999, cefrLevel: "C1-", raLevel: 14 },
+    { min: 180000, max: 199999, cefrLevel: "C1", raLevel: 15 },
+    { min: 200000, max: 220999, cefrLevel: "C1+", raLevel: 16 },
+    { min: 221000, max: 242999, cefrLevel: "C2-", raLevel: 17 },
+    { min: 243000, max: 243000, cefrLevel: "C2", raLevel: 18 },
+  ];
+
+  const previousLevel = level - 1;
+
+  let percentage = 0;
+
+  for (let level of levels) {
+    if (progress >= level.min && progress <= level.max) {
+      const range = level.max - level.min;
+
+      const progressInlevel = progress - level.min;
+
+      percentage = (progressInlevel * 100) / range;
+    }
+  }
+
   const xp = [
-    5000, 11000, 18000, 26000, 35000, 45000, 56000, 68000, 81000, 95000, 110000,
-    126000, 143000, 161000, 180000, 200000, 221000, 243000,
+    4999, 10999, 17999, 25999, 34999, 44999, 55999, 67999, 80999, 94999, 109999,
+    125999, 142999, 160999, 179999, 199999, 220999, 242999,
   ];
 
   let maxProgress = xp.find((xp) => progress <= xp);
@@ -13,8 +70,11 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
     maxProgress = progress;
   }
 
-  const t = useScopedI18n("components.progressBarXp");
-  const percentage = ((progress * 100) / (maxProgress || 1)).toFixed(0);
+  useEffect(() => {
+    if (level !== previousLevel && percentage === 0) {
+      setIsOpen(true);
+    }
+  }, [level, percentage]);
 
   return (
     <>
@@ -25,7 +85,6 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
               width: 0;
             }
             to {
-             
               width: ${percentage}%;
             }
           }
@@ -43,11 +102,39 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
               animationFillMode: "forwards",
             }}
           >
-       <span className="text-white absolute left-3/4 transform -translate-x-1">{progress}</span>
-       </div>
+            <span
+              className="text-white absolute left-2/4 transform translateX(-50%)"
+              style={{
+                color: percentage < 25 ? "black" : "white",
+              }}
+            >
+              {progress}
+            </span>
+          </div>
         </div>
         <p>{t("level", { level })} </p>
       </div>
+      {isOpen && levelCalResult.cefrLevel !== "" && level !== 0 && progress && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent>
+              <Confetti className="absolute w-[500px] h-[200px]" />
+              <DialogHeader>
+                <DialogTitle className="text-center font-bold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 ">
+                  {t("congratulations")} <br/>
+                  {t("upLevel")}
+                </DialogTitle>
+              </DialogHeader>
+              <DialogDescription className="text-center font-bold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                {t("level", { level })}
+              </DialogDescription>
+              <DialogFooter>
+                <Button onClick={closeDialog}>Close</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
     </>
   );
 }
