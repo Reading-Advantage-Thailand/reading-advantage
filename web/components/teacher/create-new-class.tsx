@@ -38,7 +38,9 @@ function CreateNewClass({ userId }: { userId: string }) {
         noOfStudents: noOfStudents,
         student: [{ studentId: userId, lastActivity: new Date() }],
         title: "title",
+        // createAT: new Date(),
       };
+
       if (!userId || !classCode || !classroomName || !grade || !noOfStudents) {
         toast({
           title: "Attention",
@@ -55,6 +57,7 @@ function CreateNewClass({ userId }: { userId: string }) {
       console.error(error);
     }
     toast({
+        title: "Success",
         description: "Class created successfully",
         });
     location.reload();
@@ -143,7 +146,6 @@ function CreateNewClass({ userId }: { userId: string }) {
               <Button onClick={handleClose}>Cancel</Button>
             </DialogFooter>
           </DialogContent>
-          {/* <ToastContainer /> */}
         </Dialog>
       </div>
     </div>
