@@ -11,9 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import axios from "axios";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
-import { ToastContainer } from "react-toastify";
+import { toast } from '../ui/use-toast';
 
 function CreateNewClass({ userId }: { userId: string }) {
   const [classroomName, setClassroomName] = useState("");
@@ -42,10 +40,11 @@ function CreateNewClass({ userId }: { userId: string }) {
         title: "title",
       };
       if (!userId || !classCode || !classroomName || !grade || !noOfStudents) {
-        // toast({
-        //   title: "Attention",
-        //   description: "All fields must be filled out!",
-        // });
+        toast({
+          title: "Attention",
+          description: "All fields must be filled out!",
+          variant: "destructive"
+        });
         return;
       } else {
         await axios.post(`/api/classroom/`, {
@@ -55,8 +54,9 @@ function CreateNewClass({ userId }: { userId: string }) {
     } catch (error) {
       console.error(error);
     }
-
-    alert("Class created successfully");
+    toast({
+        description: "Class created successfully",
+        });
     location.reload();
     setOpen(false);
   };
