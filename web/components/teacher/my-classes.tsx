@@ -16,12 +16,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import CreateNewClass from "./create-new-class";
-import { Icons } from "@/components/icons";
-// import router from "next/navigation";
 import { useRouter } from "next/navigation";
 import EditClass from "./edit-class";
 import ArchiveClass from "./archive-class";
-// import { useNavigate, useNavigation } from "react-router-dom";
 
 type resClassroom = {
   classroomName: string;
@@ -53,11 +50,10 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
     "Details",
     "Actions",
   ];
-  const actions = ["Roster", "Report", "Edit"];
-  // const router = useRouter();
+  const actions = ["Roster", "Report"];
 
   const handleOnClickClassroom = () => {
-    console.log("clicked classroom");
+    // console.log("clicked classroom");
      router.push('/teacher/class-roster')
   };
   const handleActionSelect = (action: string) => {
@@ -70,20 +66,17 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
         router.push("/teacher/reports");
         // handleReportIconClick();
         break;
-      case "Edit":
-        setShowEditDialog(true);
-        break;
       default:
         break;
     }
   };
-  const handleReportIconClick = () => {
-    router.push("/teacher/reports");
-  };
+  // const handleReportIconClick = () => {
+  //   router.push("/teacher/reports");
+  // };
 
-  const handleRosterIconClick = () => {
-    router.push("/teacher/class-roster");
-  };
+  // const handleRosterIconClick = () => {
+  //   router.push("/teacher/class-roster");
+  // };
 
   return (
     <>
@@ -123,7 +116,6 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
                         {actions.map((action, index) => {
                           return (
                             <DropdownMenuCheckboxItem
-                        
                               key={index}
                               onSelect={() => handleActionSelect(action)}
                             >

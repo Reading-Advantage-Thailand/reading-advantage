@@ -24,6 +24,8 @@ export async function GET(
             classroom.id = doc.id;
             classrooms.push(classroom);
         });
+        classrooms.sort((a, b) => b.createdAt - a.createdAt);
+        
         return new Response(JSON.stringify({
             message: 'success',
             data: classrooms
@@ -69,6 +71,7 @@ export async function POST(req: Request, res: Response) {
                 }
             }),
             title: body.title,
+            createdAt: new Date(),
         };
         await db.collection('classroom').add(classroom);
         return new Response(JSON.stringify({
