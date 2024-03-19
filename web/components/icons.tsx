@@ -33,6 +33,8 @@ import {
     Users,
     BarChartBig,
     Plus,
+    RefreshCw,
+    ArchiveRestore,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -70,6 +72,8 @@ export const Icons = {
   roster: Book,
   report: BarChartBig,
   add: Plus,
+  refresh: RefreshCw,
+  archive: ArchiveRestore, 
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"

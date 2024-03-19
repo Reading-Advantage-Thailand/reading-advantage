@@ -41,7 +41,6 @@ type MyClassesProps = {
 };
 
 export default function MyClasses({ classrooms, userId }: MyClassesProps) {
-  console.log("classrooms", classrooms);
   
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
