@@ -1,44 +1,86 @@
 // route: /api/assistant/questions
-
 import db from "@/configs/firestore-config";
-import { Storage } from '@google-cloud/storage';
 import OpenAI from "openai";
-import fs from 'fs';
-import axios from "axios";
 
 // OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// This route is used to generate questions for an article from assistant
-// /mcquestions command
-// /saquestions command
-// /laquestions command
-// required threadId
 export async function POST(req: Request, res: Response) {
   try {
-    const { threadId, articleId, assistantId } = await req.json();
-
+    console.log('assistant/questions');
+    const { threadId, articleId } = await req.json();
+    const assistantId = 'asst_cmS72OcbZsNT20ndfjhBgQgx';
     const mcq = await assistant('/mcquestions', assistantId, threadId);
 
-    console.log('mcq', mcq);
-    console.log('mcq', (mcq as any)[0].content[0].text.value);
+    console.log('mcq: ', (mcq as any)[0].content[0].text.value);
+    const mcqString = (mcq as any)[0].content[0].text.value;
+    const mcqFormatted = formatQuestions(mcqString);
+    const mcqJson = JSON.parse(mcqFormatted);
+    console.log('mcqJson: ', mcqJson);
 
-    // const saq = await assistant('/saquestions', assistantId, threadId);
-    // console.log('saq: ', saq);
-    // console.log('saq: ', (mcq as any)[0].content[0].text.value);
-    // const tfq = await assistant('/laquestions', assistantId, threadId);
-    // console.log('tfq: ', tfq);
+    const mcqJsonWithAnswers = mcqJson.questions.map((question: any) => {
+      const answers = {
+        answer_a: question.correct_answer,
+        answer_b: question['distractor 1'],
+        answer_c: question['distractor 2'],
+        answer_d: question['distractor 3'],
+      }
+      return {
+        question: question.question,
+        answers: answers,
+      }
+    });
+
+    const saq = await assistant('/saquestions', assistantId, threadId);
+    console.log('saq: ', (saq as any)[0].content[0].text.value);
+    // remove ```json and ``` from the string
+    const saqString = (saq as any)[0].content[0].text.value;
+    const saqFormatted = formatQuestions(saqString);
+    const saqJson = JSON.parse(saqFormatted);
+
+    const saqJsonWithAnswers = saqJson.questions.map((question: any) => {
+      return {
+        question: question.question,
+        suggested_answer: question.suggested_answer,
+      }
+    });
+    const questions = {
+      multiple_choice_questions: mcqJsonWithAnswers,
+      short_answer_question: saqJsonWithAnswers,
+    }
+    console.log('questions: ', questions);
+
+    const articleRef = db.collection('articles').doc(articleId).update({
+      questions: questions,
+    });
+
+    if (process.env.NODE_ENV === 'development') {
+      const article = await db.collection('assistant-articles').doc(articleId).update({
+        questions: questions,
+      });
+    }
+
     return new Response(JSON.stringify({
       messages: 'success',
       assistantId: assistantId,
-      mcq: mcq,
+      questions: questions,
     }), { status: 200 });
 
   } catch (error) {
     console.error(error);
   }
+}
+
+function formatQuestions(questions: string): string {
+  // If the questions is not included in a backet, add it
+  if (!questions.includes('[') && !questions.includes(']')) {
+    questions = `{"questions":[${questions}]}`;
+  }
+  // qusetion have json invalid format replace('```json', '').replace('```', '');
+  questions = questions.replace('```json', '').replace('```', '');
+  return questions;
 }
 
 async function assistant(command: string, assistantID: string, threadId: string) {
