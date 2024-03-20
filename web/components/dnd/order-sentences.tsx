@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { Icons } from "../icons";
 import { ArticleType } from "@/types";
 import Tokenizer from "sentence-tokenizer";
+import { filter } from 'lodash';
 
 type Props = {
   userId: string;
@@ -30,6 +31,80 @@ interface ITextAudio {
 export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
+  const router = useRouter();
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [isplaying, setIsPlaying] = React.useState(false);
+  const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
+  const [articleRandom, setArticleRandom] = useState<any[]>([]);
+  const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
+  const tUpdateScore = useScopedI18n(
+    "pages.student.practicePage.flashcardPractice"
+  );
+
+    useEffect(() => {
+      getUserSentenceSaved();
+    }, []);
+
+  const getUserSentenceSaved = async () => {
+    try {
+      const res = await axios.get(`/api/users/${userId}/sentences`);
+      console.log(res.data);
+
+      // step 1 : find Article sentence: ID and SN due date expired
+      const now = new Date();
+      now.setHours(0, 0, 0, 0); // Remove time part
+
+
+      const closest = res.data.sentences.filter((item: Sentence) => {
+        const itemDate = new Date(item.due);
+        itemDate.setHours(0, 0, 0, 0); // Remove time part
+        return itemDate.getTime() === now.getTime();
+      })
+
+
+      /*
+      // step 1: get the article id and get sn
+      const objectSentence: Sentence[] = res.data.sentences;
+      rawArticle = res.data.sentences;
+
+      // step 2 : create map articleId และ Array ของ sn
+      const articleIdToSnMap: { [key: string]: number[] } =
+        objectSentence.reduce((acc: { [key: string]: number[] }, article) => {
+          if (!acc[article.articleId]) {
+            acc[article.articleId] = [article.sn];
+          } else {
+            acc[article.articleId].push(article.sn);
+          }
+          return acc;
+        }, {});
+
+      // step 3 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
+      for (const articleId in articleIdToSnMap) {
+        articleIdToSnMap[articleId].sort((a, b) => a - b);
+      }
+
+      // step 4 : get sentence from articleId and sn
+      const newTodos = [...articleBeforeRandom];
+      for (const articleId in articleIdToSnMap) {
+        let resultList = await getArticle(
+          articleId,
+          articleIdToSnMap[articleId]
+        );
+        newTodos.push(resultList);
+      }
+
+      setArticleBeforeRandom(newTodos);
+      setArticleRandom(shuffleArray(newTodos));
+      */
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+
+  /*
   let rawArticle: Sentence[] = [];
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
@@ -112,53 +187,7 @@ export default function OrderSentences({ userId }: Props) {
     return rawData;
   };
 
-  const splitToText = (article: ArticleType) => {
-   
-    const regex = /(\n\n|\n|\\n\\n|\\n)/g;
-    const textArray = [];
-    // if contains \n\n or \n or \\n\\n or \\n then replace with ''
-    if (article.content.match(regex)) {
-      // just replace \n\n and \\n\\n
-      const content = article.content.replace(regex, "~~");
-      // split . but except for Mr. Mrs. Dr. Ms. and other abbreviations
-      const sentences = content
-        .split(
-          /(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./
-        )
-        .filter((sentence) => sentence.length > 0);
-      const result = sentences.map((sentence) => sentence.trim());
-
-      setText([]);
-
-      for (let i = 0; i < article.timepoints.length; i++) {
-        // setText((prev) => [
-        //   ...prev,
-        //   { text: result[i], begin: article.timepoints[i].timeSeconds },
-        // ]);
-        textArray.push({
-          text: result[i],
-          begin: article.timepoints[i].timeSeconds,
-        });
-      }
-    } else {
-      // use tokenizer to split sentence
-      const tokenizer = new Tokenizer();
-      tokenizer.setEntry(article.content);
-      const sentences = tokenizer.getSentences();
-      setText([]);
-      for (let i = 0; i < article.timepoints.length; i++) {
-        // setText((prev) => [
-        //   ...prev,
-        //   { text: sentences[i], begin: article.timepoints[i].timeSeconds },
-        // ]);
-        textArray.push({
-          text: sentences[i],
-          begin: article.timepoints[i].timeSeconds,
-        });
-      }
-    }
-    return textArray;
-  };
+  
 
   const getArticle = async (articleId: string, sn: number[]) => {
     const res = await axios.get(`/api/articles/${articleId}`);
@@ -353,6 +382,7 @@ export default function OrderSentences({ userId }: Props) {
     }
     setLoading(false);
   };
+  */
 
   return (
     <>
@@ -360,6 +390,7 @@ export default function OrderSentences({ userId }: Props) {
         heading={t("OrderSentencesPractice.OrderSentences")}
         text={t("OrderSentencesPractice.OrderSentencesDescription")}
       />
+      {/*
       <div className="mt-5">
         {articleRandom.length === 0 ? (
           <div className="grid w-full gap-10">
@@ -446,6 +477,7 @@ export default function OrderSentences({ userId }: Props) {
           </>
         )}
       </div>
+       */}
     </>
   );
 }

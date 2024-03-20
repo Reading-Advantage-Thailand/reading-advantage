@@ -41,22 +41,6 @@ export function camelToSentenceCase(str: string) {
     .replace(/^./, (str) => str.toUpperCase());
 }
 
-export const splitToText = (article: ArticleType) => {
-  const tokenizer = new Tokenizer("Chuck");
-  tokenizer.setEntry(article.content);
-  const result = tokenizer.getSentences();
-  const textArray = [];
-
-  for (let i = 0; i < article.timepoints.length; i++) {
-    textArray.push({
-      text: result[i],
-      begin: article.timepoints[i].timeSeconds,
-    });
-  }
-
-  return textArray;
-};
-
 /**
  * Splits the given content into sentences.
  *
