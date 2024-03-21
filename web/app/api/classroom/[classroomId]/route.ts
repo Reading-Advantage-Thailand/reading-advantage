@@ -73,9 +73,6 @@ export async function DELETE(req: Request, context: z.infer<typeof routeContextS
                 message: 'Unauthorized',
             }), { status: 403 });
         }
-        // const json = await req.json();
-        
-        // const userId = session.user.id;
 
         // Fetch the classroom from the database
         const docRef = db.collection('classroom').doc(classroomId);
@@ -89,8 +86,6 @@ export async function DELETE(req: Request, context: z.infer<typeof routeContextS
                 message: 'Classroom not found or id does not match',
             }), { status: 404 })
         }
-        console.log('ok doc exists');
-        
 
         // Delete the classroom
         await docRef.delete();

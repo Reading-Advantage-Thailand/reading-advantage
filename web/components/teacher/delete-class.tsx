@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,9 +14,6 @@ import axios from "axios";
 import { toast } from '../ui/use-toast';
 
 interface DeleteClassProps { 
-  userId: string;
-  open: boolean;
-  onClose: () => void;
   classroomData: resClassroom;
 }
 
@@ -33,17 +30,12 @@ type resClassroom = {
   id: string;
 };
 
-interface CoTeacher {
-  coteacherId: string;
-  name: string;
-}
 
-function DeleteClass ({ userId, open: isOpen, onClose, classroomData }: DeleteClassProps) {
+function DeleteClass ({ classroomData }: DeleteClassProps) {
   const [open, setOpen] = useState(false);
 
   const handleDeleteClass = async (classroomData: resClassroom) => {
     setOpen(true);
-    // setLoading(true);
     try {
         await axios.delete(`/api/classroom/${classroomData.id}`);
         toast({
@@ -80,10 +72,10 @@ function DeleteClass ({ userId, open: isOpen, onClose, classroomData }: DeleteCl
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Delete Class</DialogTitle>
+              <DialogTitle>Delete Classroom</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Do you want to delete <span className="font-bold">{classroomData.classroomName}</span> class ?
+              Do you want to delete <span className="font-bold">{classroomData.classroomName}</span> classroom ?
             </DialogDescription>
             <DialogFooter>
               <Button variant="destructive" onClick={() => handleDeleteClass(classroomData)}>
