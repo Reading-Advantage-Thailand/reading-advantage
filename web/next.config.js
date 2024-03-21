@@ -22,9 +22,9 @@ const nextConfig = {
     compiler: {
         removeConsole: process.env.NODE_ENV === 'production',
     },
-    future: {
-        webpack5: true,
-    },
+    // future: {
+    //     webpack5: true,
+    // },
 };
 
 module.exports = nextConfig;

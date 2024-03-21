@@ -132,7 +132,7 @@ function CreateNewClass({ userId }: { userId: string }) {
               }
             />
             <input
-              type="text"
+              type="number"
               className="w-full border rounded-md p-2"
               placeholder="No of Students"
               value={noOfStudents}
