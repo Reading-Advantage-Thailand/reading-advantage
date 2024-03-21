@@ -31,6 +31,7 @@ type resClassroom = {
     name: string;
   };
   id: string;
+  archived: boolean;  
 };
 
 type MyClassesProps = {
@@ -39,7 +40,6 @@ type MyClassesProps = {
 };
 
 export default function MyClasses({ classrooms, userId }: MyClassesProps) {
-  console.log("classrooms", classrooms);
 
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -86,7 +86,7 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {classrooms.map((classroom, index) => (
+            {classrooms.filter(classroom => !classroom.archived).map((classroom, index) => (
               <TableRow key={index}>
                 <TableCell
                   onClick={handleOnClickClassroom}
@@ -122,21 +122,13 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
                 <TableCell className="flex gap-4">
                   <EditClass
                     userId={userId}
-                    open={showEditDialog}
-                    onClose={() => setShowEditDialog(false)}
-                    classroomData={classroom} // Add the 'id' property here
+                    classroomData={classroom} 
                   />
                   <ArchiveClass
-                    userId={userId}
-                    open={showArchiveDialog}
-                    onClose={() => setShowArchiveDialog(false)}
-                    classroomData={classroom} // Add the 'id' property here
+                    classroomData={classroom}
                   />
                   <DeleteClass
-                    userId={userId}
-                    open={showArchiveDialog}
-                    onClose={() => setShowArchiveDialog(false)}
-                    classroomData={classroom} // Add the 'id' property here
+                    classroomData={classroom} 
                   />
                 </TableCell>
               </TableRow>
