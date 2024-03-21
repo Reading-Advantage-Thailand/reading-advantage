@@ -19,6 +19,7 @@ import CreateNewClass from "./create-new-class";
 import { useRouter } from "next/navigation";
 import EditClass from "./edit-class";
 import ArchiveClass from "./archive-class";
+import DeleteClass from "./delete-class";
 
 type resClassroom = {
   classroomName: string;
@@ -38,7 +39,8 @@ type MyClassesProps = {
 };
 
 export default function MyClasses({ classrooms, userId }: MyClassesProps) {
-  
+  console.log("classrooms", classrooms);
+
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -50,33 +52,23 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
     "Details",
     "Actions",
   ];
-  const actions = ["Roster", "Report"];
+  const Details = ["Roster", "Report"];
 
   const handleOnClickClassroom = () => {
-    // console.log("clicked classroom");
-     router.push('/teacher/class-roster')
+    router.push("/teacher/class-roster");
   };
-  const handleActionSelect = (action: string) => {
-    switch (action) {
+  const handleActionSelect = (detail: string) => {
+    switch (detail) {
       case "Roster":
         router.push("/teacher/class-roster");
-        // handleRosterIconClick();
         break;
       case "Report":
         router.push("/teacher/reports");
-        // handleReportIconClick();
         break;
       default:
         break;
     }
   };
-  // const handleReportIconClick = () => {
-  //   router.push("/teacher/reports");
-  // };
-
-  // const handleRosterIconClick = () => {
-  //   router.push("/teacher/class-roster");
-  // };
 
   return (
     <>
@@ -113,13 +105,13 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">
-                        {actions.map((action, index) => {
+                        {Details.map((detail, index) => {
                           return (
                             <DropdownMenuCheckboxItem
                               key={index}
-                              onSelect={() => handleActionSelect(action)}
+                              onSelect={() => handleActionSelect(detail)}
                             >
-                              {action}
+                              {detail}
                             </DropdownMenuCheckboxItem>
                           );
                         })}
@@ -138,6 +130,13 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
                     userId={userId}
                     open={showArchiveDialog}
                     onClose={() => setShowArchiveDialog(false)}
+                    classroomData={classroom} // Add the 'id' property here
+                  />
+                  <DeleteClass
+                    userId={userId}
+                    open={showArchiveDialog}
+                    onClose={() => setShowArchiveDialog(false)}
+                    classroomData={classroom} // Add the 'id' property here
                   />
                 </TableCell>
               </TableRow>

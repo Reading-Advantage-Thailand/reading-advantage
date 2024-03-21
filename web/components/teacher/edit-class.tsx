@@ -30,7 +30,6 @@ interface EditClassProps {
   userId: string;
   open: boolean;
   onClose: () => void;
-  // classroomId: string;  
   classroomData: resClassroom;
 }
 

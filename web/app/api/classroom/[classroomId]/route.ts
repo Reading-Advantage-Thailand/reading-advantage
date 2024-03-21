@@ -24,7 +24,7 @@ export async function PATCH(req: Request,  context: z.infer<typeof routeContextS
         }
         const json = await req.json();
         const userId = session.user.id;
-        
+
         const classroom = {
             teacherId: userId,
             classCode: json.classCode,
@@ -62,6 +62,45 @@ export async function PATCH(req: Request,  context: z.infer<typeof routeContextS
 }
 
 // delete classroom
-export async function DELETE(req: Request, res: Response) {
-    
+export async function DELETE(req: Request, context: z.infer<typeof routeContextSchema>) {
+    try {
+        const { params } = routeContextSchema.parse(context);
+        const classroomId = params.classroomId;
+
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return new Response(JSON.stringify({
+                message: 'Unauthorized',
+            }), { status: 403 });
+        }
+        // const json = await req.json();
+        
+        // const userId = session.user.id;
+
+        // Fetch the classroom from the database
+        const docRef = db.collection('classroom').doc(classroomId);
+        console.log('docRef', docRef);
+        
+        const doc = await docRef.get();
+
+        // Check if the classroom exists and the id matches
+        if (!doc.exists || doc.id !== classroomId) {
+            return new Response(JSON.stringify({
+                message: 'Classroom not found or id does not match',
+            }), { status: 404 })
+        }
+        console.log('ok doc exists');
+        
+
+        // Delete the classroom
+        await docRef.delete();
+        
+        return new Response(JSON.stringify({
+            message: 'Classroom deleted',
+        }), { status: 200 })
+    } catch (error) {
+        return new Response(JSON.stringify({
+            message: error,
+        }), { status: 500 })
+    } 
 }
