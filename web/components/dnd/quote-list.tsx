@@ -85,12 +85,14 @@ interface Props {
   ignoreContainerClipping?: boolean;
   useClone?: boolean;
   sectionIndex?: number;
+  articleBeforeRandom: any
 }
 
 interface QuoteListProps {
   quotes: Quote[];
   title: string;
   sectionIndex: number;
+  articleBeforeRandom: any
 }
 
 const InnerQuoteList = (props: QuoteListProps): ReactElement => {
@@ -98,8 +100,8 @@ const InnerQuoteList = (props: QuoteListProps): ReactElement => {
     <>
       {props?.quotes?.map((quote: Quote, index: number) => (
         <Draggable
-          key={quote.id}
-          draggableId={`item-${quote.id}`}
+          key={index}
+          draggableId={`item-${index}`}
           index={index}
         >
           {(
@@ -107,12 +109,13 @@ const InnerQuoteList = (props: QuoteListProps): ReactElement => {
             dragSnapshot: DraggableStateSnapshot
           ) => (
             <QuoteItem
-              key={quote.id}
+              key={index}
               quote={quote}
               isDragging={dragSnapshot.isDragging}
               isGroupedOver={Boolean(dragSnapshot.combineTargetFor)}
               provided={dragProvided}
               index={index}
+              articleBeforeRandom={props.articleBeforeRandom}
             />
           )}
         </Draggable>
@@ -128,14 +131,11 @@ interface InnerListProps {
   quotes: Quote[];
   title: string | undefined | null;
   sectionIndex: number;
+  articleBeforeRandom: any
 }
 
 const InnerList = (props: InnerListProps) => {
-  const {
-    quotes,
-    dropProvided,
-    sectionIndex,
-  } = props;
+  const { quotes, dropProvided, sectionIndex, articleBeforeRandom } = props;
   const title = props.title ?? "";
 
   return (
@@ -145,6 +145,7 @@ const InnerList = (props: InnerListProps) => {
           quotes={quotes}
           title={title}
           sectionIndex={sectionIndex}
+          articleBeforeRandom={articleBeforeRandom}
         />
         {dropProvided.placeholder}
       </DropZone>
@@ -162,6 +163,7 @@ export default function QuoteList(props: Props): ReactElement {
     quotes,
     title,
     sectionIndex,
+    articleBeforeRandom,
   } = props;
 
   return (
@@ -188,6 +190,7 @@ export default function QuoteList(props: Props): ReactElement {
             title={title}
             dropProvided={dropProvided}
             sectionIndex={sectionIndex as number}
+            articleBeforeRandom={articleBeforeRandom}
           />
         </Wrapper>
       )}
