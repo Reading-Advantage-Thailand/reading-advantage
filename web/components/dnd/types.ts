@@ -15,6 +15,7 @@ export type Sentence = {
   translation: { th: string };
   userId: string;
   id: string;
+  due: string
 };
 
 export type Article = {

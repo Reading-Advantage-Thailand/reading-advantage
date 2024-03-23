@@ -4,33 +4,36 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { DragDropContext } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
+import { flatten } from "lodash";
+import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { useScopedI18n } from "@/locales/client";
 import { Header } from "../header";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
 import { updateScore } from "@/lib/utils";
-import { Article, Sentence } from "./types";
+import { Sentence } from "./types";
 import QuoteList from "./quote-list";
-import AudioButton from "../audio-button";
-import { useRouter } from "next/navigation";
 import { Icons } from "../icons";
-import { ArticleType } from "@/types";
-import Tokenizer from "sentence-tokenizer";
+import { splitTextIntoSentences } from "@/lib/utils";
+dayjs.extend(utc);
+dayjs.extend(dayjs_plugin_isSameOrBefore);
+dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
 };
 
-interface ITextAudio {
-  text: string;
-  begin?: number;
-}
-
 export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
-  let rawArticle: Sentence[] = [];
+  const router = useRouter();
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [isplaying, setIsPlaying] = React.useState(false);
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
   const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
@@ -38,166 +41,46 @@ export default function OrderSentences({ userId }: Props) {
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
-  const router = useRouter();
 
-  const [text, setText] = React.useState<ITextAudio[]>([]);
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  const [isplaying, setIsPlaying] = React.useState(false);
-
-  // ฟังก์ชันเพื่อค้นหา text ก่อน, ณ ลำดับนั้น, และหลังลำดับ
-  const findTextsByIndexes = (objects: Article[], targetIndexes: number[]) => {
-    return targetIndexes.map((index: number) => {
-      const before =
-        index - 1 >= 0
-          ? { index: index - 1, text: objects[index - 1]?.text }
-          : null;
-      const current = { index: index, text: objects[index]?.text };
-      const after =
-        index + 1 < objects.length
-          ? { index: index + 1, text: objects[index + 1]?.text }
-          : null;
-      return { before, current, after };
-    });
-  };
-
-  // สร้างฟังก์ชันเพื่อจัดการข้อมูล
-  const processDynamicData = (data: any, title: string, articleId: string) => {
-    // ใช้ Map เพื่อจัดการการซ้ำของข้อมูล
-    const uniqueTexts = new Map();
-
-    // วนลูปเพื่อดึงข้อมูลจากแต่ละส่วน
-    data.forEach((group: any) => {
-      // ดึงข้อมูล before, current, after และเพิ่มลงใน Map
-      [group?.before, group?.current, group?.after].forEach((item) => {
-        if (item !== null) {
-          uniqueTexts.set(item?.index, item?.text);
-        }
-      });
-    });
-
-    // แปลง Map เป็น Array และเรียงลำดับตาม index
-    return Array.from(uniqueTexts.keys())
-      .sort((a, b) => a - b)
-      .map((index) => ({
-        id: index,
-        text: uniqueTexts.get(index),
-        articleId,
-        timepoint: rawArticle?.filter((data: Sentence) => {
-          return data?.sentence === uniqueTexts?.get(index);
-        })[0]?.timepoint,
-        endTimepoint: rawArticle?.filter((data: Sentence) => {
-          return data?.sentence === uniqueTexts?.get(index);
-        })[0]?.endTimepoint,
-        title,
-        result: rawArticle?.filter((data: Sentence) => {
-          return data?.sentence === uniqueTexts?.get(index);
-        }),
-      }));
-  };
-
-  const shuffleArray = (data: any) => {
-    const rawData = JSON.parse(JSON.stringify(data));
-
-    // Loop through each section in the data
-    rawData.forEach((section: any) => {
-      // Check if the result array has at least two items to swap
-      for (let i = section.result.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [section.result[i], section.result[j]] = [
-          section.result[j],
-          section.result[i],
-        ];
-      }
-    });
-    return rawData;
-  };
-
-  const splitToText = (article: ArticleType) => {
-   
-    const regex = /(\n\n|\n|\\n\\n|\\n)/g;
-    const textArray = [];
-    // if contains \n\n or \n or \\n\\n or \\n then replace with ''
-    if (article.content.match(regex)) {
-      // just replace \n\n and \\n\\n
-      const content = article.content.replace(regex, "~~");
-      // split . but except for Mr. Mrs. Dr. Ms. and other abbreviations
-      const sentences = content
-        .split(
-          /(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./
-        )
-        .filter((sentence) => sentence.length > 0);
-      const result = sentences.map((sentence) => sentence.trim());
-
-      setText([]);
-
-      for (let i = 0; i < article.timepoints.length; i++) {
-        // setText((prev) => [
-        //   ...prev,
-        //   { text: result[i], begin: article.timepoints[i].timeSeconds },
-        // ]);
-        textArray.push({
-          text: result[i],
-          begin: article.timepoints[i].timeSeconds,
-        });
-      }
-    } else {
-      // use tokenizer to split sentence
-      const tokenizer = new Tokenizer();
-      tokenizer.setEntry(article.content);
-      const sentences = tokenizer.getSentences();
-      setText([]);
-      for (let i = 0; i < article.timepoints.length; i++) {
-        // setText((prev) => [
-        //   ...prev,
-        //   { text: sentences[i], begin: article.timepoints[i].timeSeconds },
-        // ]);
-        textArray.push({
-          text: sentences[i],
-          begin: article.timepoints[i].timeSeconds,
-        });
-      }
-    }
-    return textArray;
-  };
-
-  const getArticle = async (articleId: string, sn: number[]) => {
-    const res = await axios.get(`/api/articles/${articleId}`);
-    const textList = await splitToText(res.data.article);
-    const resultsFindTexts = await findTextsByIndexes(textList, sn);
-    const resultsProcess = await processDynamicData(
-      resultsFindTexts,
-      res.data.article.title,
-      articleId
-    );
-
-    if (resultsProcess.length > 5) {
-      return {
-        title: res.data.article.title,
-        result: resultsProcess.slice(0, 5),
-      };
-    } else {
-      return { title: res.data.article.title, result: resultsProcess };
-    }
-  };
+  useEffect(() => {
+    getUserSentenceSaved();
+  }, []);
 
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
 
-      // step 1: get the article id and get sn
-      const objectSentence: Sentence[] = res.data.sentences;
-      rawArticle = res.data.sentences;
+      // step 1 : find Article sentence: ID and SN due date expired
+      const closest = res.data.sentences.filter(
+        (item: Sentence, index: number) => {
+          // วันที่ต้องการเปรียบเทียบ
+          const dayjsItemDate = dayjs(item.due).utc();
+          const dayjsNow = dayjs(new Date()).utc();
+
+          // ตรวจสอบว่าเป็นวันเดียวกันหรือไม่
+          const isSameDay = dayjs(dayjsItemDate).isSame(dayjsNow, "day");
+
+          // ตรวจสอบว่าใกล้ถึงวันครบกำหนด (วันที่เปรียบเทียบห่างจากวันปัจจุบันไม่เกินหนึ่งวัน)
+          const isDueSoon =
+            dayjsNow.isSameOrBefore(dayjsItemDate) &&
+            dayjsItemDate.isSameOrBefore(dayjsNow.add(1, "day"));
+
+          return isDueSoon || isSameDay;
+        }
+      );
 
       // step 2 : create map articleId และ Array ของ sn
-      const articleIdToSnMap: { [key: string]: number[] } =
-        objectSentence.reduce((acc: { [key: string]: number[] }, article) => {
+      const articleIdToSnMap: { [key: string]: number[] } = closest.reduce(
+        (acc: { [key: string]: number[] }, article: Sentence) => {
           if (!acc[article.articleId]) {
             acc[article.articleId] = [article.sn];
           } else {
             acc[article.articleId].push(article.sn);
           }
           return acc;
-        }, {});
+        },
+        {}
+      );
 
       // step 3 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
       for (const articleId in articleIdToSnMap) {
@@ -211,14 +94,78 @@ export default function OrderSentences({ userId }: Props) {
           articleId,
           articleIdToSnMap[articleId]
         );
+
         newTodos.push(resultList);
       }
 
-      setArticleBeforeRandom(newTodos);
-      setArticleRandom(shuffleArray(newTodos));
+      setArticleBeforeRandom(flatten(newTodos));
+      setArticleRandom(flatten(shuffleArray(newTodos)));
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const getArticle = async (articleId: string, sn: number[]) => {
+    const res = await axios.get(`/api/articles/${articleId}`);
+    const textList = await splitTextIntoSentences(res.data.article.content);
+
+    const dataSplit = sn.map((index) => {
+      let result: any[] = [];
+
+      // Determine how many sentences can be included above the current index
+      let sentencesAbove = index;
+
+      // Determine how many sentences can be included below the current index
+      let sentencesBelow = textList.length - index - 1;
+
+      // Calculate m based on available sentences above and below
+      let m = Math.min(sentencesAbove, 4);
+      let n = 4 - m;
+
+      // If the current index is at or near the end, adjust m and n accordingly
+      if (sentencesBelow < n) {
+        n = sentencesBelow;
+        m = Math.min(4, sentencesAbove + (4 - n));
+      }
+
+      let from = Math.max(index - m, 0);
+      let to = Math.min(index + n + 1, textList.length);
+
+      // Add the selected range of sentences to the result array
+      result = textList.slice(from, to);
+
+      return {
+        index: index,
+        title: res.data.article.title,
+        surroundingSentences: result,
+        articleId,
+      };
+    });
+
+    return dataSplit;
+  };
+
+  const shuffleArray = (data: any) => {
+    const rawData = JSON.parse(JSON.stringify(data));
+
+    // Loop through each section in the data
+    rawData?.forEach((title: any) => {
+      title.forEach((section: any) => {
+        // Check if the result array has at least two items to swap
+        if (section.surroundingSentences.length > 1) {
+          // Loop through the result array and swap each item with a random item
+          for (let i = section.surroundingSentences.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [section.surroundingSentences[i], section.surroundingSentences[j]] =
+              [
+                section.surroundingSentences[j],
+                section.surroundingSentences[i],
+              ];
+          }
+        }
+      });
+    });
+    return rawData;
   };
 
   //=====> play audio
@@ -232,10 +179,6 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
-  useEffect(() => {
-    getUserSentenceSaved();
-  }, []);
-
   //====> Drag and Drop
   const onDragStart = () => {
     if (window.navigator.vibrate) {
@@ -243,69 +186,51 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) {
-      return;
-    }
+   const onDragEnd = (result: DropResult) => {
+     if (!result.destination) {
+       return;
+     }
 
-    if (result.destination.index === result.source.index) {
-      return;
-    }
+     if (result.destination.index === result.source.index) {
+       return;
+     }
 
-    // ตรวจสอบก่อนว่า listArticle มีค่า และ listArticle.result ไม่เป็น undefined
-    const items = articleRandom[currentArticleIndex]?.result
-      ? Array.from(articleRandom[currentArticleIndex].result)
-      : [];
+     // ตรวจสอบก่อนว่า listArticle มีค่า และ listArticle.result ไม่เป็น undefined
+     const items = articleRandom[currentArticleIndex]?.surroundingSentences
+       ? Array.from(articleRandom[currentArticleIndex].surroundingSentences)
+       : [];
 
-    // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
-    if (items.length > 0) {
-      const items = [...articleRandom[currentArticleIndex]?.result];
-      const [reorderedItem] = items.splice(result.source.index, 1);
-      items.splice(result.destination.index, 0, reorderedItem);
+     // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
+     if (items.length > 0) {
+       const items = [
+         ...articleRandom[currentArticleIndex]?.surroundingSentences,
+       ];
+       const [reorderedItem] = items.splice(result.source.index, 1);
+       items.splice(result.destination.index, 0, reorderedItem);
 
-      // อัปเดตลำดับใหม่หลังจากการดรากและดรอป
-      const updatedArticleRandom = [...articleRandom];
-      updatedArticleRandom[currentArticleIndex].result = items;
+       // อัปเดตลำดับใหม่หลังจากการดรากและดรอป
+       const updatedArticleRandom = [...articleRandom];
+       updatedArticleRandom[currentArticleIndex].surroundingSentences = items;
 
-      // ตรวจสอบความถูกต้องของลำดับ
-      const isCorrectOrder = checkOrder(
-        updatedArticleRandom[currentArticleIndex].result,
-        articleBeforeRandom[currentArticleIndex].result
-      );
+       // ตรวจสอบความถูกต้องของลำดับ
+      //  const isCorrectOrder = checkOrder(
+      //    updatedArticleRandom[currentArticleIndex].surroundingSentences,
+      //    articleBeforeRandom[currentArticleIndex].surroundingSentences
+      //  );
 
-      // อัปเดตสถานะของ articleRandom ด้วยข้อมูลความถูกต้อง
-      setArticleRandom(
-        updatedArticleRandom.map((article, idx) => {
-          if (idx === currentArticleIndex) {
-            return {
-              ...article,
-              result: article.result.map((item: any, itemIdx: number) => ({
-                ...item,
-                // ตั้งค่า correctOrder ตามผลลัพธ์ของการตรวจสอบ
-                correctOrder: isCorrectOrder[itemIdx],
-              })),
-            };
-          }
-          return article;
-        })
-      );
-    } else {
-      toast({
-          title: t("toast.error"),
-          description: 'No items to remove',
-          variant: "destructive",
-        });
-    }
-  };
+       // อัปเดตสถานะของ articleRandom ด้วยข้อมูลความถูกต้อง
+           setArticleRandom(updatedArticleRandom);
+       
+     } else {
+       toast({
+         title: t("toast.error"),
+         description: "No items to remove",
+         variant: "destructive",
+       });
+     }
+   };
 
-  const checkOrder = (randomOrder: any, originalOrder: any) => {
-    return randomOrder.map(
-      (item: any) =>
-        originalOrder.findIndex(
-          (originalItem: any) => originalItem.id === item.id
-        ) === randomOrder.indexOf(item)
-    );
-  };
+
 
   const onNextArticle = async () => {
     setLoading(true);
@@ -313,12 +238,12 @@ export default function OrderSentences({ userId }: Props) {
 
     for (
       let i = 0;
-      i < articleBeforeRandom[currentArticleIndex].result.length;
+      i < articleBeforeRandom[currentArticleIndex].surroundingSentences.length;
       i++
     ) {
       if (
-        articleBeforeRandom[currentArticleIndex].result[i].text !==
-        articleRandom[currentArticleIndex].result[i].text
+        articleBeforeRandom[currentArticleIndex].surroundingSentences[i] !==
+        articleRandom[currentArticleIndex].surroundingSentences[i]
       ) {
         isEqual = false;
         break;
@@ -331,7 +256,7 @@ export default function OrderSentences({ userId }: Props) {
         if (updateScrore?.status === 201) {
           toast({
             title: t("toast.success"),
-            description: tUpdateScore("yourXp", { xp: 15 }),
+            description: tUpdateScore("yourXp", { xp: 5 }),
           });
           setCurrentArticleIndex(currentArticleIndex + 1);
           router.refresh();
@@ -352,6 +277,7 @@ export default function OrderSentences({ userId }: Props) {
       });
     }
     setLoading(false);
+    
   };
 
   return (
@@ -372,77 +298,86 @@ export default function OrderSentences({ userId }: Props) {
           </div>
         ) : (
           <>
-            {articleRandom.length !== currentArticleIndex ? (
-              <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-                <div className="bg-[#2684FFß] flex max-w-screen-lg">
-                  <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                    <div className="flex justify-between items-center">
-                      <h4 className="py-4 pl-5">
-                        {articleRandom[currentArticleIndex]?.title}
-                      </h4>
-                      <div className="mr-5">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={handlePause}
-                        >
-                          {isplaying ? (
-                            <Icons.pause className="mr-1" size={12} />
-                          ) : (
-                            <Icons.play className="mr-1" size={12} />
-                          )}
-                          {isplaying
-                            ? tc("soundButton.pause")
-                            : tc("soundButton.play")}
-                        </Button>
-                        <audio
-                          ref={audioRef}
-                          key={
-                            articleRandom[currentArticleIndex]?.result[0]
-                              ?.articleId
-                          }
-                        >
-                          <source
-                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleRandom[currentArticleIndex]?.result[0]?.articleId}.mp3`}
-                          />
-                        </audio>
+            <>
+              {articleRandom.length !== currentArticleIndex ? (
+                <DragDropContext
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                >
+                  <div className="bg-[#2684FFß] flex max-w-screen-lg">
+                    <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                      <div className="flex justify-between items-center">
+                        <h4 className="py-4 pl-5">
+                          {articleRandom[currentArticleIndex]?.title}
+                        </h4>
+                        <div className="mr-5">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={handlePause}
+                          >
+                            {isplaying ? (
+                              <Icons.pause className="mr-1" size={12} />
+                            ) : (
+                              <Icons.play className="mr-1" size={12} />
+                            )}
+                            {isplaying
+                              ? tc("soundButton.pause")
+                              : tc("soundButton.play")}
+                          </Button>
+                          <audio
+                            ref={audioRef}
+                            key={
+                              articleRandom[currentArticleIndex]
+                                ?.surroundingSentences
+                            }
+                          >
+                            <source
+                              src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleRandom[currentArticleIndex]?.articleId}.mp3`}
+                            />
+                          </audio>
+                        </div>
                       </div>
+
+                      <QuoteList
+                        listId={"list"}
+                        quotes={
+                          articleRandom[currentArticleIndex]
+                            ?.surroundingSentences
+                        }
+                        sectionIndex={currentArticleIndex}
+                        title={articleRandom[currentArticleIndex]?.title}
+                        articleBeforeRandom = {articleBeforeRandom[currentArticleIndex]?.surroundingSentences}
+                      />
                     </div>
-
-                    <QuoteList
-                      listId={"list"}
-                      quotes={articleRandom[currentArticleIndex]?.result}
-                      sectionIndex={currentArticleIndex}
-                      title={articleRandom[currentArticleIndex]?.title}
-                    />
                   </div>
-                </div>
-              </DragDropContext>
-            ) : (
-              <></>
-            )}
+                </DragDropContext>
+              ) : (
+                <></>
+              )}
 
-            {articleRandom.length !== currentArticleIndex ? (
-              <Button
-                className="mt-4"
-                variant="outline"
-                disabled={loading}
-                size="sm"
-                onClick={onNextArticle}
-              >
-                {t("OrderSentencesPractice.saveOrder")}
-              </Button>
-            ) : (
-              <Button
-                className="mt-4"
-                variant="outline"
-                disabled={true}
-                size="sm"
-                onClick={onNextArticle}
-              >
-                {t("OrderSentencesPractice.saveOrder")}
-              </Button>
-            )}
+               {articleRandom.length != currentArticleIndex ? (
+                <Button
+                  className="mt-4"
+                  variant="outline"
+                  disabled={loading}
+                  size="sm"
+                  onClick={onNextArticle}
+                >
+                  {t("OrderSentencesPractice.saveOrder")}
+                </Button>
+              ) : (
+                <Button
+                  className="mt-4"
+                  variant="outline"
+                  disabled={true}
+                  size="sm"
+                  onClick={onNextArticle}
+                >
+                  {t("OrderSentencesPractice.saveOrder")}
+                </Button>
+              )} 
+            </>
           </>
         )}
       </div>
