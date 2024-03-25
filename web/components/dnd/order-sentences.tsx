@@ -51,65 +51,31 @@ export default function OrderSentences({ userId }: Props) {
       const res = await axios.get(`/api/users/${userId}/sentences`);
 
       // step 1 : find Article sentence: ID and SN due date expired
-      const closest = res.data.sentences.filter(
-        (item: Sentence, index: number) => {
-          // วันที่ต้องการเปรียบเทียบ
-          const dayjsItemDate = dayjs(item.due).utc();
-          const dayjsNow = dayjs(new Date()).utc();
+      const closest = res.data.sentences.sort((a: Sentence, b: Sentence) => {
+        return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
+      });
 
-          // ตรวจสอบว่าเป็นวันเดียวกันหรือไม่
-          const isSameDay = dayjs(dayjsItemDate).isSame(dayjsNow, "day");
-
-          // ตรวจสอบว่าใกล้ถึงวันครบกำหนด (วันที่เปรียบเทียบห่างจากวันปัจจุบันไม่เกินหนึ่งวัน)
-          const isDueSoon =
-            dayjsNow.isSameOrBefore(dayjsItemDate) &&
-            dayjsItemDate.isSameOrBefore(dayjsNow.add(1, "day"));
-
-          return isDueSoon || isSameDay;
-        }
-      );
-
-      // step 2 : create map articleId และ Array ของ sn
-      const articleIdToSnMap: { [key: string]: number[] } = closest.reduce(
-        (acc: { [key: string]: number[] }, article: Sentence) => {
-          if (!acc[article.articleId]) {
-            acc[article.articleId] = [article.sn];
-          } else {
-            acc[article.articleId].push(article.sn);
-          }
-          return acc;
-        },
-        {}
-      );
+      const newTodos = [...articleBeforeRandom];
 
       // step 3 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
-      for (const articleId in articleIdToSnMap) {
-        articleIdToSnMap[articleId].sort((a, b) => a - b);
-      }
-
-      // step 4 : get sentence from articleId and sn
-      const newTodos = [...articleBeforeRandom];
-      for (const articleId in articleIdToSnMap) {
-        let resultList = await getArticle(
-          articleId,
-          articleIdToSnMap[articleId]
-        );
-
+      for (const article of closest) {
+        let resultList = await getArticle(article?.articleId, article?.sn);
         newTodos.push(resultList);
       }
 
       setArticleBeforeRandom(flatten(newTodos));
       setArticleRandom(flatten(shuffleArray(newTodos)));
+
     } catch (error) {
       console.log(error);
     }
   };
 
-  const getArticle = async (articleId: string, sn: number[]) => {
+  const getArticle = async (articleId: string, sn: number) => {
     const res = await axios.get(`/api/articles/${articleId}`);
     const textList = await splitTextIntoSentences(res.data.article.content);
 
-    const dataSplit = sn.map((index) => {
+    const dataSplit = [sn].map((index) => {
       let result: any[] = [];
 
       // Determine how many sentences can be included above the current index
@@ -186,51 +152,42 @@ export default function OrderSentences({ userId }: Props) {
     }
   };
 
-   const onDragEnd = (result: DropResult) => {
-     if (!result.destination) {
-       return;
-     }
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) {
+      return;
+    }
 
-     if (result.destination.index === result.source.index) {
-       return;
-     }
+    if (result.destination.index === result.source.index) {
+      return;
+    }
 
-     // ตรวจสอบก่อนว่า listArticle มีค่า และ listArticle.result ไม่เป็น undefined
-     const items = articleRandom[currentArticleIndex]?.surroundingSentences
-       ? Array.from(articleRandom[currentArticleIndex].surroundingSentences)
-       : [];
+    // ตรวจสอบก่อนว่า listArticle มีค่า และ listArticle.result ไม่เป็น undefined
+    const items = articleRandom[currentArticleIndex]?.surroundingSentences
+      ? Array.from(articleRandom[currentArticleIndex].surroundingSentences)
+      : [];
 
-     // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
-     if (items.length > 0) {
-       const items = [
-         ...articleRandom[currentArticleIndex]?.surroundingSentences,
-       ];
-       const [reorderedItem] = items.splice(result.source.index, 1);
-       items.splice(result.destination.index, 0, reorderedItem);
+    // ต่อไปนี้คือการใช้งาน splice โดยตรวจสอบก่อนว่า items ไม่เป็น undefined
+    if (items.length > 0) {
+      const items = [
+        ...articleRandom[currentArticleIndex]?.surroundingSentences,
+      ];
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
 
-       // อัปเดตลำดับใหม่หลังจากการดรากและดรอป
-       const updatedArticleRandom = [...articleRandom];
-       updatedArticleRandom[currentArticleIndex].surroundingSentences = items;
+      // อัปเดตลำดับใหม่หลังจากการดรากและดรอป
+      const updatedArticleRandom = [...articleRandom];
+      updatedArticleRandom[currentArticleIndex].surroundingSentences = items;
 
-       // ตรวจสอบความถูกต้องของลำดับ
-      //  const isCorrectOrder = checkOrder(
-      //    updatedArticleRandom[currentArticleIndex].surroundingSentences,
-      //    articleBeforeRandom[currentArticleIndex].surroundingSentences
-      //  );
-
-       // อัปเดตสถานะของ articleRandom ด้วยข้อมูลความถูกต้อง
-           setArticleRandom(updatedArticleRandom);
-       
-     } else {
-       toast({
-         title: t("toast.error"),
-         description: "No items to remove",
-         variant: "destructive",
-       });
-     }
-   };
-
-
+      // อัปเดตสถานะของ articleRandom ด้วยข้อมูลความถูกต้อง
+      setArticleRandom(updatedArticleRandom);
+    } else {
+      toast({
+        title: t("toast.error"),
+        description: "No items to remove",
+        variant: "destructive",
+      });
+    }
+  };
 
   const onNextArticle = async () => {
     setLoading(true);
@@ -277,8 +234,10 @@ export default function OrderSentences({ userId }: Props) {
       });
     }
     setLoading(false);
-    
   };
+
+  console.log("articleBeforeRandom", articleBeforeRandom);
+  console.log("articleRandom", articleRandom);
 
   return (
     <>
@@ -347,7 +306,10 @@ export default function OrderSentences({ userId }: Props) {
                         }
                         sectionIndex={currentArticleIndex}
                         title={articleRandom[currentArticleIndex]?.title}
-                        articleBeforeRandom = {articleBeforeRandom[currentArticleIndex]?.surroundingSentences}
+                        articleBeforeRandom={
+                          articleBeforeRandom[currentArticleIndex]
+                            ?.surroundingSentences
+                        }
                       />
                     </div>
                   </div>
@@ -356,7 +318,7 @@ export default function OrderSentences({ userId }: Props) {
                 <></>
               )}
 
-               {articleRandom.length != currentArticleIndex ? (
+              {articleRandom.length != currentArticleIndex ? (
                 <Button
                   className="mt-4"
                   variant="outline"
@@ -376,7 +338,7 @@ export default function OrderSentences({ userId }: Props) {
                 >
                   {t("OrderSentencesPractice.saveOrder")}
                 </Button>
-              )} 
+              )}
             </>
           </>
         )}
