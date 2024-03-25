@@ -28,7 +28,7 @@ export default function TabsPractice({ userId }: Props) {
           value="tab3"
           disabled={showButton}
         >
-          Close Test
+          Cloze Test
         </Tabs.Trigger>
         <Tabs.Trigger
           className="TabsTrigger"
