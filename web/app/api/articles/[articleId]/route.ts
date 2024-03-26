@@ -30,21 +30,6 @@ export async function GET(
         // Use the articleId as the document ID to fetch the article
         const articleSnapshot = await db.collection('articles').doc(articleId).get();
 
-        const articleLevel = articleSnapshot.data()?.raLevel;
-
-        const articleRecord = db.collection('user-article-records').doc(`${session.user.id}-${articleId}`);
-        const articleRecordSnapshot = await articleRecord.get();
-        // Check if the article exists
-        // If exists, return user unable to reread the article and insufficient level
-        // example
-        // user level = 51
-        // article level = 53
-        // This article can read only user level 51 - 55
-        console.log('userLevel', userLevel);
-        console.log('articleLevel', articleLevel);
-        // const isUserAbleToRead = userLevel >= articleLevel - 1 && userLevel <= articleLevel + 1;
-        // console.log('isUserAbleToRead', isUserAbleToRead);
-        console.log('articleRecordSnapshot.exists', articleRecordSnapshot.exists);
         if (!articleSnapshot.exists) {
             return new Response(JSON.stringify({
                 message: 'Article not found',
@@ -52,6 +37,7 @@ export async function GET(
         }
 
         const article = articleSnapshot.data();
+        console.log('article', article);
 
         // If the article does not have questions, return the article as is
         if (!article?.questions) {
@@ -62,11 +48,12 @@ export async function GET(
                 },
             }), { status: 200 });
         }
+
         // remove suggested_answer from answers of all questions
         article?.questions.multiple_choice_questions.forEach((question: { answers: { suggested_answer: any; }; }) => {
             delete question.answers.suggested_answer;
         });
-        // console.log('multiple_choice_questions', article?.questions.multiple_choice_questions);
+
         // switch answer choices in each question 
         const switchChoices = (choices: any) => {
             let currentIndex = choices.length, randomIndex;
@@ -78,6 +65,16 @@ export async function GET(
                     choices[randomIndex], choices[currentIndex]];
             }
             return choices;
+        }
+
+        // If shortAnser is array of questions random select one question
+        if (Array.isArray(article?.questions.short_answer_question)) {
+            article.questions.short_answer_question = article.questions.short_answer_question[Math.floor(Math.random() * article.questions.short_answer_question.length)];
+        }
+
+        // If mcq have more than 5 questions random select 5 questions
+        if (article?.questions.multiple_choice_questions.length > 5) {
+            article.questions.multiple_choice_questions = article.questions.multiple_choice_questions.sort(() => 0.5 - Math.random()).slice(0, 5);
         }
 
         return new Response(JSON.stringify({

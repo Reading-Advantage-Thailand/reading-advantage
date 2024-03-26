@@ -12,7 +12,8 @@ interface Props {
   isClone?: boolean;
   isGroupedOver?: boolean;
   style?: CSSProperties;
-  index?: number;
+  index?: number ;
+  articleBeforeRandom: any
 }
 
 const getBackgroundColor = (isDragging: boolean, isGroupedOver: boolean) => {
@@ -122,7 +123,19 @@ const QuoteItem = (props: Props) => {
     provided,
     style,
     index,
+    articleBeforeRandom,
   } = props;
+
+
+  const checkOrder = (randomText: any, dataIndex: any) => {
+    let correctOrder = false;
+   if (articleBeforeRandom[dataIndex] === randomText) {
+      correctOrder = true;
+    }
+       
+    return correctOrder;
+  };
+
 
   return (
     <Container
@@ -133,13 +146,13 @@ const QuoteItem = (props: Props) => {
       {...provided.dragHandleProps}
       style={getStyle(provided, style)}
       data-is-dragging={isDragging}
-      data-testid={quote.id}
+      data-testid={quote}
       data-index={index}
     >
       <Content>
-        <BlockQuote>{quote.text}</BlockQuote>
+        <p>{String(quote)}</p>
         <Footer>
-          {quote?.correctOrder ? (
+          {checkOrder(quote, index) ? (
             <Badges>
               <Image
                 src={"/correct.png"}
