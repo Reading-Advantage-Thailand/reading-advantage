@@ -113,6 +113,12 @@ export default {
       practice: "練習",
       reports: "報告",
     },
+    sidebarTeacherNav: {
+      myClasses: "我的課程",
+      myStudents: "我的學生",
+      classRoster: "班級名單",
+      reports: "報告",
+    },
     articleRecordsTable: {
       title: "標題",
       date: "日期",

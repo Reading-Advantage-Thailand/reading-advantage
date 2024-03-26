@@ -57,12 +57,12 @@ export const metadata: Metadata = {
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
-  manifest: `${siteConfig.url}/site.webmanifest`,
-  // manifest: `http://localhost:3000/site.webmanifest`,
+  // manifest: `${siteConfig.url}/site.webmanifest`,
+  manifest: `http://localhost:3000/site.webmanifest`,
 }
 export default function RootLayout({ params: { locale }, children }: { params: { locale: string }; children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning={true}>
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",

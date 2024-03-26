@@ -112,6 +112,12 @@ export default {
       practice: "练习",
       reports: "报告",
     },
+    sidebarTeacherNav: {
+      myClasses: "我的课程",
+      myStudents: "我的学生",
+      classRoster: "班级名单",
+      reports: "报告",
+    },
     articleRecordsTable: {
       title: "标题",
       date: "日期",

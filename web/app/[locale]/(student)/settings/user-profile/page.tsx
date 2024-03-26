@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/session";
 import { CardContent } from "@mui/material";
 import { redirect } from "next/navigation";
 import ResetDialog from "@/components/reset-xp-dialog";
+import RoleSelected from "@/components/teacher/role-selected";
 
 type Props = {};
 
@@ -73,6 +74,12 @@ export default async function UserProfileSettingsPage({}: Props) {
             title="Reset all XP progress"
             description="Reset your progress and take the level test again."
             data={<ResetDialog />}
+            isEdit={false}
+          />
+          <SettingInfo
+            title="Select role"
+            description="Select your role as teacher, student or administrator."
+            data={<RoleSelected userId={user.id}/>}
             isEdit={false}
           />
         </div>
