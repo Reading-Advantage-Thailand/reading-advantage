@@ -16,6 +16,7 @@ import { set } from "lodash";
 
 interface ArchiveClassProps { 
   classroomData: resClassroom;
+  title: string;
 }
 
 type resClassroom = {
@@ -74,9 +75,12 @@ function ArchiveClass({ classroomData }: ArchiveClassProps) {
       <div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
+            <span title="archive class">
           <Icons.archive
-                    className="h-4 w-4"
+                    className="h-4 w-4 cursor-pointer"
+                    aria-label="archive class"
                   />
+            </span>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>

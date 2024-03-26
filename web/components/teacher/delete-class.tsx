@@ -15,6 +15,7 @@ import { toast } from '../ui/use-toast';
 
 interface DeleteClassProps { 
   classroomData: resClassroom;
+  title: string;
 }
 
 type resClassroom = {
@@ -66,9 +67,12 @@ function DeleteClass ({ classroomData }: DeleteClassProps) {
       <div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
+            <span title="delete class">
           <Icons.delete
                     className="h-4 w-4 cursor-pointer"
+                    aria-label="delete class"
                   />
+            </span>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>

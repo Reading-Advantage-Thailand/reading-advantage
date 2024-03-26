@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import axios from "axios";
-import { toast } from '../ui/use-toast';
+import { toast } from "../ui/use-toast";
 
 function CreateNewClass({ userId }: { userId: string }) {
   const [classroomName, setClassroomName] = useState("");
@@ -23,7 +23,6 @@ function CreateNewClass({ userId }: { userId: string }) {
   const [classCode, setClassCode] = useState("");
   const [noOfStudents, setNoOfStudents] = useState(0);
   const [open, setOpen] = useState(false);
-  //   const toast = require("react-toastify").toast;
 
   const handleCreateClass = async () => {
     setOpen(true);
@@ -45,7 +44,7 @@ function CreateNewClass({ userId }: { userId: string }) {
         toast({
           title: "Attention",
           description: "All fields must be filled out!",
-          variant: "destructive"
+          variant: "destructive",
         });
         return;
       } else {
@@ -57,9 +56,9 @@ function CreateNewClass({ userId }: { userId: string }) {
       console.error(error);
     }
     toast({
-        title: "Success",
-        description: "Class created successfully",
-        });
+      title: "Success",
+      description: "Class created successfully",
+    });
     location.reload();
     setOpen(false);
   };
@@ -84,10 +83,10 @@ function CreateNewClass({ userId }: { userId: string }) {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create a New Class</DialogTitle>
+              <DialogTitle>Create a new class</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-                Fill in the details to create a new class
+              Fill in the details to create a new class
             </DialogDescription>
             <input
               type="text"
@@ -115,9 +114,10 @@ function CreateNewClass({ userId }: { userId: string }) {
               name="grade"
               id="grade"
               value={grade}
+              placeholder="grade"
               onChange={(e) => setGrade(e.target.value)}
             >
-              <option value="0">Select Grade</option>
+              <option value="select">Select Grade</option>
               <option value="1">grade 1</option>
               <option value="2">grade 2</option>
               <option value="3">grade 3</option>

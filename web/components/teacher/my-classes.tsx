@@ -37,13 +37,12 @@ type resClassroom = {
 type MyClassesProps = {
   userId: string;
   classrooms: resClassroom[];
+  handleOnClickClassroom?: () => void;
 };
 
 export default function MyClasses({ classrooms, userId }: MyClassesProps) {
 
   const router = useRouter();
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   const tableClassroomHeader = [
     "Class Name",
@@ -55,8 +54,11 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
   const Details = ["Roster", "Report"];
 
   const handleOnClickClassroom = () => {
+    console.log("clicked");
+    
     router.push("/teacher/class-roster");
   };
+
   const handleActionSelect = (detail: string) => {
     switch (detail) {
       case "Roster":
@@ -79,7 +81,7 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
       <div className="rounded-md border mt-4">
         <Table>
           <TableHeader className="font-bold">
-            <TableRow className="">
+            <TableRow>
               {tableClassroomHeader.map((header, index) => (
                 <TableCell key={index}>{header}</TableCell>
               ))}
@@ -122,13 +124,16 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
                 <TableCell className="flex gap-4">
                   <EditClass
                     userId={userId}
-                    classroomData={classroom} 
+                    classroomData={classroom}
+                    title="edit class" 
                   />
                   <ArchiveClass
                     classroomData={classroom}
+                    title="archive class"
                   />
                   <DeleteClass
                     classroomData={classroom} 
+                    title="delete class"
                   />
                 </TableCell>
               </TableRow>

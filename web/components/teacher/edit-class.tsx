@@ -29,6 +29,7 @@ type resClassroom = {
 interface EditClassProps {
   userId: string;
   classroomData: resClassroom;
+  title: string;
 }
 
 interface CoTeacher {
@@ -98,11 +99,12 @@ function EditClass({ userId, classroomData }: EditClassProps) {
       <div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
+            <span title="edit class">
             <Icons.edit
-              className="ml-2 h-4 w-4"
-              key={classroomData.id}
-              onClick={() => handleEditClass}
+              className="ml-2 h-4 w-4 cursor-pointer"
+              aria-label="edit class"
             />
+            </span>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
