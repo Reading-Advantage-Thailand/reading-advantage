@@ -58,6 +58,14 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
+                    <Link href="/teacher/my-classes">{'Teacher dashboard'}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/student/read">{'Student dashboard'}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
                     <Link href="/settings/user-profile">{t('settings')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
