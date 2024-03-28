@@ -124,6 +124,12 @@ export default {
       practice: "Luyện tập",
       reports: "Báo cáo",
     },
+    sidebarTeacherNav: {
+      myClasses: "Lớp học của tôi",
+      myStudents: "học sinh của tôi",
+      classRoster: "Danh sách lớp",
+      reports: "báo cáo",
+    },
     articleRecordsTable: {
       title: "Tiêu đề",
       date: "Ngày",

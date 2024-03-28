@@ -136,7 +136,7 @@ export async function PATCH(req: Request, res: Response) {
     }
 
     const json = await req.json();
-    console.log("json", json);
+    // console.log("json", json);
     const cachedCEFR = json.cefrLevel;
     const xp = JSON.parse(json.xp);
     const level = JSON.parse(json.level);
@@ -172,3 +172,4 @@ export async function PATCH(req: Request, res: Response) {
     );
   }
 }
+

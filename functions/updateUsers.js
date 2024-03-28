@@ -13,6 +13,7 @@ const new_data = {
   cefrLevel: '',
   level: 0,
   xp: 0,
+  // role: 'STUDENT',
 };
 
 const collectionRef = db.collection('users');

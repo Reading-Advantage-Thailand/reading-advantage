@@ -64,6 +64,7 @@ export const authOptions: NextAuthOptions = {
           token.verified = userData.verified;
           token.xp = userData.xp;
           token.cefrLevel = userData.cefrLevel;
+          token.role = userData.role;
         }
         // create account if it doesn't exist
         else {
@@ -80,6 +81,7 @@ export const authOptions: NextAuthOptions = {
               verified: user.verified,
               xp: 0,
               cefrLevel: "",
+              role: "STUDENT",
             });
         }
         return token;
@@ -98,6 +100,7 @@ export const authOptions: NextAuthOptions = {
         session.user.verified = token.verified;
         session.user.xp = token.xp;
         session.user.cefrLevel = token.cefrLevel;
+        session.user.role = token.role;
       }
       // console.log("session callback");
       console.log("session", session);

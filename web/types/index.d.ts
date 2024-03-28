@@ -1,3 +1,5 @@
+// import { EnumValues } from "zod";
+
 export type SiteConfig = {
     name: string;
     description: string;
@@ -24,6 +26,12 @@ export type StudentPageConfig = {
     sidebarNav: sidebarNav[];
 }
 
+export type TeacherPageConfig = {
+    mainNav: MainNavItem[];
+    teacherSidebarNav: teacherSidebarNav[];
+}
+
+
 export type SidebarNavItem = {
     title: "read" | "history" | "practice" | "reports",
     disabled?: boolean
@@ -40,6 +48,29 @@ export type SidebarNavItem = {
         }
     )
 
+export type SidebarTeacherNavItem = {
+    title: "myClasses" | "myStudent" | "classRoster" | "reports",
+    disabled?: boolean
+    external?: boolean
+    icon?: keyof typeof Icons
+} & (
+        | {
+            href: string
+            items?: never
+        }
+        | {
+            href?: string
+            items: NavLink[]
+        }
+    )
+
+
+export enum UserRole {
+    TEACHER = "TEACHER",
+    STUDENT = "STUDENT",
+    ADMIN = "ADMINISTRATOR",
+}
+
 export type User = {
     id: string;
     name: string;
@@ -48,7 +79,9 @@ export type User = {
     createAt: Date;
     lastLogin: Date;
     level: number;
+    role: UserRole;
 }
+
 
 // multiple choice question type
 export type Question = {
