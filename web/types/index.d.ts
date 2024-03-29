@@ -69,6 +69,7 @@ export enum UserRole {
     TEACHER = "TEACHER",
     STUDENT = "STUDENT",
     ADMIN = "ADMINISTRATOR",
+    SYSTEM = "SYSTEM",
 }
 
 export type User = {
