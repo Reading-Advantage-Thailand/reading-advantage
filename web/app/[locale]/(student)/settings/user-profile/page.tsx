@@ -79,7 +79,7 @@ export default async function UserProfileSettingsPage({}: Props) {
           <SettingInfo
             title="Select role"
             description="Select your role as teacher, student or administrator."
-            data={<RoleSelected userId={user.id}/>}
+            data={<RoleSelected userId={user.id} role={""}/>}
             isEdit={false}
           />
         </div>

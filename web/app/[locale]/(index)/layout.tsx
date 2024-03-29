@@ -9,10 +9,16 @@ import { ReactNode } from 'react';
 import ProgressBar from '@/components/progress-bar-xp';
 import { getCurrentUser } from '@/lib/session';
 import { UserAccountNav } from '@/components/user-account-nav';
+import axios from 'axios';
 
 export default async function Layout({ children }: { children: ReactNode }) {
     const t = await getScopedI18n('components')
     const user = await getCurrentUser()
+
+    // async function getUserRole() {
+    //     const selectedRole = await axios.get(`/api/users/${user.id}/roles`);
+    //     return selectedRole;
+    // }
 
     if (!user) {
         return (
@@ -51,8 +57,10 @@ export default async function Layout({ children }: { children: ReactNode }) {
                                 image: user.image || "",
                                 email: user.email || "",
                                 level: user.level || 0,
-                                verified: user.verified || false
+                                verified: user.verified || false,
+                                role: user.role || "",
                             }}
+                            
                         />
                         </nav>
                     </div>
@@ -75,7 +83,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
                                 image: user.image || "",
                                 email: user.email || "",
                                 level: user.level || 0,
-                                verified: user.verified || false
+                                verified: user.verified || false,
+                                role: user.role || "",
                             }}
                         />
                         </nav>
