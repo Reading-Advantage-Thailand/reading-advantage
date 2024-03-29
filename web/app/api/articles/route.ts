@@ -16,8 +16,7 @@ export async function GET(req: Request, res: Response) {
   function replaceSpaces(str: string) {
     return str.replace(/-/g, " ");
   }
-  console.log("level", level);
-  console.log("type", type);
+  
   if (genre) console.log("genre", replaceSpaces(genre as string));
   if (subgenre) console.log("subgenre", replaceSpaces(subgenre as string));
   try {
