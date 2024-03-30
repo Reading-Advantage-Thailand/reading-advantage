@@ -4,6 +4,10 @@ import { createI18nMiddleware } from 'next-international/middleware';
 import local from 'next/font/local';
 import { NextRequest, NextResponse } from 'next/server';
 import { localeConfig } from './configs/locale-config';
+import { NextPage, NextPageContext } from 'next';
+import { useRouter } from 'next/router';
+import React from 'react';
+import RoleSelected from './components/teacher/role-selected';
 
 const I18nMiddleware = createI18nMiddleware(localeConfig);
 
@@ -58,3 +62,17 @@ export default withAuth(async function onSuccess(req) {
 export const config = {
     matcher: ['/((?!api|static|.*\\..*|_next|favicon.ico|robots.txt).*)'],
 };
+
+
+// export function withTeacherAuth(req: { cookies: { get: (arg0: string) => any; }; url: any; }) {
+//     let verify = req.cookies.get('verify');
+//     let url = req.url;
+
+//     if (!verify && url.includes('teacher')) {
+//         return NextResponse.redirect('/auth/signin');
+//     }
+
+//     if (verify && url === "/teacher/my-classes") {
+//         return NextResponse.redirect('/teacher/my-classes');
+//     }
+//   }
