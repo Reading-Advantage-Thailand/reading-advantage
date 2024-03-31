@@ -80,6 +80,13 @@ export default {
           saveOrder: "保存并稍后继续",
           errorOrder: "请正确排序",
         },
+        ClozeTestPractice: {
+          ClozeTest: "填空测试",
+          ClozeTestDescription:
+            "这是你读过的一篇文章中的几个句子，请填写缺失的单词以完成它们。如果你回答正确，你将获得5经验值。",
+          submitButton: "提交",
+          errorCloze: "请填写所有空白处",
+        },
       },
     },
   },

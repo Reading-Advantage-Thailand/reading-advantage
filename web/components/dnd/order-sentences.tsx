@@ -65,7 +65,6 @@ export default function OrderSentences({ userId }: Props) {
 
       setArticleBeforeRandom(flatten(newTodos));
       setArticleRandom(flatten(shuffleArray(newTodos)));
-
     } catch (error) {
       console.log(error);
     }
@@ -257,7 +256,6 @@ export default function OrderSentences({ userId }: Props) {
           </div>
         ) : (
           <>
-            <>
               {articleRandom.length !== currentArticleIndex ? (
                 <DragDropContext
                   onDragStart={onDragStart}
@@ -339,7 +337,6 @@ export default function OrderSentences({ userId }: Props) {
                   {t("OrderSentencesPractice.saveOrder")}
                 </Button>
               )}
-            </>
           </>
         )}
       </div>

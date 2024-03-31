@@ -96,6 +96,14 @@ export default {
           saveOrder: "Save & Continue Later",
           errorOrder: "Please order correctly",
         },
+        ClozeTestPractice: {
+          //Cloze Test
+          ClozeTest: "Cloze Test",
+          ClozeTestDescription:
+            "Fill in the blanks with the correct word to complete the passage. If you get all the answers correct, you'll receive 5 XP.",
+          saveAnswer: "Save & Continue Later",
+          errorAnswer: "Please answer correctly",
+        },
       },
     },
   },
