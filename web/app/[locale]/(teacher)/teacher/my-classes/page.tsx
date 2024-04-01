@@ -10,7 +10,7 @@ export default async function myClassesPage() {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.role !== "STUDENT") {
+  if (user.role === "TEACHER") {
     return redirect("/teacher/my-classes");
   }
 
