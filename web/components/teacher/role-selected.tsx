@@ -14,6 +14,7 @@ import { useContext } from "react";
 
 type Props = {
   userId: string;
+  role: string;
 };
 
 const RoleSelected: React.FC<Props> = ({ userId }) => {

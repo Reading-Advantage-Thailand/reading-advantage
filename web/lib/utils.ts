@@ -172,5 +172,5 @@ export async function updateScore(
   }
 }
 
-// updateScore(10000, "1234");
+// updateScore(15, "USDaWeLC3vdvDA8lUPXncygoDOp2");
 

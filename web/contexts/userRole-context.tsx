@@ -1,5 +1,5 @@
 'use client';
-import { UserRole } from '@/types';
+import { UserRole } from '@/types/constants';
 import React from 'react';
 
 export const SelectedRoleContext = React.createContext([] as any);
