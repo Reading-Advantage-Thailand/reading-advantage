@@ -38,8 +38,8 @@ export default async function TeacherHomeLayout({
                                 image: user.image || "",
                                 email: user.email || "",
                                 level: user.level || 0,
-                                verified: user.verified || false
-                                
+                                verified: user.verified || false,
+                                role: user.role || "",
                             }}
                         />
                     </div>

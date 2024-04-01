@@ -19,3 +19,10 @@ export enum ScoreRange {
  "C1+" = "79-85",
   C2 = "86-90",
 }
+
+export enum UserRole {
+  STUDENT = "STUDENT",
+  TEACHER = "TEACHER",
+  ADMINISTRATOR = "ADMINISTRATOR",
+  SYSTEM = "SYSTEM",
+}

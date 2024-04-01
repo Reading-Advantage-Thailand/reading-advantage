@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "./ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -54,25 +54,25 @@ export default function FirstRunLevelTest({
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[][]>([]);
   const [xp, setXp] = useState(0);
   const [correctAnswer, setCorrectAnswer] = React.useState<string[]>([]);
-  const [checked, setChecked] = useState(false);
+  // const [checked, setChecked] = useState(false);
   const [formkey, setFormKey] = useState(0);
   const [countOfRightAnswers, setCountOfRightAnswers] = useState(0);
-  const [hasAnsweredCorrectly, setHasAnsweredCorrectly] = useState(false);
+  // const [hasAnsweredCorrectly, setHasAnsweredCorrectly] = useState(false);
   const [isQuestionAnswered, setIsQuestionAnswered] = useState(
     new Array(
       language_placement_test[currentSectionIndex].questions.length
     ).fill(false)
   );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [rightAnswersCounts, setRightAnswersCounts] = useState<number[]>([]);
-  const [sectionAnswerCount, setSectionAnswerCount] = useState(0);
+  // const [rightAnswersCounts, setRightAnswersCounts] = useState<number[]>([]);
+  // const [sectionAnswerCount, setSectionAnswerCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const answerOptionIndexArray: number[] = [];
   const answerValueArray: any[] = [];
   const questionIndexArray: number[] = [];
 
-  const getCorrectAnswer = () => {
+  const getCorrectAnswer = useCallback(async () => {
     let allCorrectAnswers: string[] = [];
     for (let i = language_placement_test.length - 1; i >= 0; i--) {
       for (
@@ -85,7 +85,7 @@ export default function FirstRunLevelTest({
       }
       setCorrectAnswer(allCorrectAnswers);
     }
-  };
+  },[language_placement_test]);
 
   const onAnswerSelected = (optionId: number, answer: string, index: any) => {
     if (!answerOptionIndexArray.includes(optionId)) {
@@ -107,7 +107,7 @@ export default function FirstRunLevelTest({
     return array;
   }
 
-  const handleQuestions = () => {
+  const handleQuestions = useCallback(async () => {
     let optionId = 0; // Initialize a counter for option IDs
 
     let initialShuffledQuestions = [...language_placement_test]; // Copy the initial questions
@@ -132,7 +132,7 @@ export default function FirstRunLevelTest({
     });
 
     setShuffledQuestions(updatedShuffledQuestions); // Set the state with the new array
-  };
+  },[language_placement_test]);
 
   const handleNext = () => {
     if (answerOptionIndexArray.length < 3) {
@@ -152,9 +152,9 @@ export default function FirstRunLevelTest({
             newIsQuestionAnswered[questionIndexArray[i]] = true;
             setIsQuestionAnswered(newIsQuestionAnswered);
           }
-          setHasAnsweredCorrectly(true);
+          // setHasAnsweredCorrectly(true);
         } else {
-          setHasAnsweredCorrectly(false);
+          // setHasAnsweredCorrectly(false);
         }
       }
       setXp(
@@ -166,18 +166,18 @@ export default function FirstRunLevelTest({
       if (correctSelectedAnswer.length >= 2) {
         if (currentPage < shuffledQuestions.length - 1) {
           // Save the count of correct answers for the current section
-          setRightAnswersCounts((prevCounts) => [
-            ...prevCounts,
-            correctSelectedAnswer.length,
-          ]);
+          // setRightAnswersCounts((prevCounts) => [
+          //   ...prevCounts,
+          //   correctSelectedAnswer.length,
+          // ]);
           // Proceed to the next page
           setCurrentPage(currentPage + 1);
           setCurrentSectionIndex(currentSectionIndex + 1);
           setFormKey(formkey + 1);
-          setChecked(false);
+          // setChecked(false);
           setCurrentQuestionIndex(currentQuestionIndex + 1);
           setCountOfRightAnswers(0);
-          setSectionAnswerCount(0); // Reset sectionAnswerCount to 0 for the new section
+          // setSectionAnswerCount(0); // Reset sectionAnswerCount to 0 for the new section
         } else {
           onFinishTest();
         }
@@ -205,7 +205,7 @@ export default function FirstRunLevelTest({
       }
     };
     fetchData();
-  }, []);
+  }, [getCorrectAnswer, handleQuestions]);
 
   if (testFinished) {
     return (

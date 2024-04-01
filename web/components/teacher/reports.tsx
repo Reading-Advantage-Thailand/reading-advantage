@@ -69,7 +69,7 @@ export default function Reports() {
                       <DropdownMenuContent align="start">
                         {body.Actions.map((action, index) => {
                           return (
-                            <DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem key={index}>
                               {action}
                             </DropdownMenuCheckboxItem>
                           );

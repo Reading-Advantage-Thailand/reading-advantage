@@ -64,13 +64,6 @@ export type SidebarTeacherNavItem = {
         }
     )
 
-
-export enum UserRole {
-    TEACHER = "TEACHER",
-    STUDENT = "STUDENT",
-    ADMIN = "ADMINISTRATOR",
-}
-
 export type User = {
     id: string;
     name: string;

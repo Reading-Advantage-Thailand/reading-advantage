@@ -45,32 +45,33 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
     { min: 243000, max: 243000, cefrLevel: "C2", raLevel: 18 },
   ];
 
-  const previousLevel = level - 1;
-
+  
   let percentage = 0;
-
+  
   for (let level of levels) {
     if (progress >= level.min && progress <= level.max) {
       const range = level.max - level.min;
-
+      
       const progressInlevel = progress - level.min;
-
+      
       percentage = (progressInlevel * 100) / range;
     }
   }
-
+  
   const xp = [
     4999, 10999, 17999, 25999, 34999, 44999, 55999, 67999, 80999, 94999, 109999,
     125999, 142999, 160999, 179999, 199999, 220999, 242999,
   ];
-
+  
   let maxProgress = xp.find((xp) => progress <= xp);
-
+  
   if (!maxProgress) {
     maxProgress = progress;
   }
-
+  
   useEffect(() => {
+    const previousLevel = level - 1;
+    
     if (level !== previousLevel && percentage === 0) {
       setIsOpen(true);
     }

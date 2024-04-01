@@ -34,6 +34,7 @@ export default async function StudentHomeLayout({
                             email: user.email || "",
                             level: user.level || 0,
                             verified: user.verified || false,
+                            role: user.role || "",
                         }}
                     />
                     </div>
