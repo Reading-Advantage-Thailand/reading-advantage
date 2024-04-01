@@ -13,12 +13,7 @@ import axios from 'axios';
 
 export default async function Layout({ children }: { children: ReactNode }) {
     const t = await getScopedI18n('components')
-    const user = await getCurrentUser()
-
-    // async function getUserRole() {
-    //     const selectedRole = await axios.get(`/api/users/${user.id}/roles`);
-    //     return selectedRole;
-    // }
+    const user = await getCurrentUser();
 
     if (!user) {
         return (

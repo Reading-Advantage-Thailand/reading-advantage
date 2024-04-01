@@ -1,14 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { UserRole } from "@/types/constants";
-import router from "next/router";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import axios from "axios";
-import { Checkbox } from "@/components/ui/checkbox";
-import { set } from "lodash";
-import { User } from "lucide-react";
-import { UserAccountNav } from "../user-account-nav.jsx";
 import { SelectedRoleContext } from "../../contexts/userRole-context";
 import { useContext } from "react";
 
@@ -26,10 +19,8 @@ const RoleSelected: React.FC<Props> = ({ userId }) => {
     setSelectedRole((selectedRole: UserRole[]) => {
       if (selectedRole.includes(role)) {
         updatedRoles = selectedRole.filter((prevRole) => prevRole !== role);
-        // return selectedRole.filter((prevRole) => prevRole !== role);
       } else {
         updatedRoles = [...selectedRole, role]; 
-        // return [...selectedRole, role];
       }
       return updatedRoles;
     });
