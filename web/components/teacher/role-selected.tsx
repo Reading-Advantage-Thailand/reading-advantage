@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { UserRole } from "../../types/index.d.ts";
+import { UserRole } from "@/types/constants";
 import router from "next/router";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -40,14 +40,12 @@ const RoleSelected: React.FC<Props> = ({ userId }) => {
       }
 
       const response = await axios.patch(`/api/users/${userId}/roles`, {
-        // method: "PATCH",
         selectedRole: updatedRoles,
         userId,
         
         headers: {
           "Content-Type": "application/json",
         },
-        // body: JSON.stringify({ selectedRole, userId }),
       });
 
       if (response.status !== 200) {
