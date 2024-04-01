@@ -22,13 +22,11 @@ interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
     verified: boolean;
     role: string;
   };
-  //   selectedRole?: string;
 }
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
   const [ selectedRole ] = useContext(SelectedRoleContext);
   const t = useScopedI18n("components.userAccountNav");
-console.log('user', user);
 
   return (
     <DropdownMenu>
@@ -67,9 +65,15 @@ console.log('user', user);
         </div>
 
         <DropdownMenuSeparator />
-        {Array.isArray(user.role) && user.role.filter((role: string) => role === "TEACHER").length > 0 && (
+        {/* {Array.isArray(user.role) && user.role.filter((role: string) => role === "TEACHER").length > 0 && (
           <DropdownMenuItem asChild>
             <Link href="/teacher/my-classes">{"Teacher dashboard"}</Link>
+          </DropdownMenuItem>
+        )} */}
+        {selectedRole.filter((role: string) => role === "TEACHER").length >
+          0 && (
+          <DropdownMenuItem asChild>
+            <Link href="/">{"Teacher dashboard"}</Link>
           </DropdownMenuItem>
         )}
         {selectedRole.filter((role: string) => role === "STUDENT").length >
