@@ -80,7 +80,13 @@ export default {
           saveOrder: "儲存 & 稍後繼續",
           errorOrder: "請正確排序",
         },
-        //Order Sentences
+        ClozeTestPractice: {
+          ClozeTest: "填空測試",
+          ClozeTestDescription:
+            "這是你讀過的一篇文章中的幾個句子，請填入遺失的單詞以完成它們。如果你答對了，你將獲得5經驗值。",
+          saveOrder: "儲存 & 稍後繼續",
+          errorOrder: "請正確排序",
+        },
       },
     },
   },
@@ -151,9 +157,9 @@ export default {
     progressBarXp: {
       xp: "經驗: ",
       level: "等級 {level}",
-      congratulations: "恭喜！ ", 
+      congratulations: "恭喜！ ",
       upLevel: "您已获得新级别!",
-      close: "關閉",  
+      close: "關閉",
     },
     select: {
       articleChoose: "請選擇您想閱讀的 {article}",

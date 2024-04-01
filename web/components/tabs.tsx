@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import FlashCard from "@/components/flash-card";
 import OrderSentences from "@/components/dnd/order-sentences";
+import ClozeTest from "@/components/cloze-test";
 
 type Props = {
   userId: string;
@@ -56,7 +57,7 @@ export default function TabsPractice({ userId }: Props) {
         <OrderSentences userId={userId} />
       </Tabs.Content>
       <Tabs.Content className="TabsContent" value="tab3">
-        Close Test
+        <ClozeTest userId={userId} />
       </Tabs.Content>
       <Tabs.Content className="TabsContent" value="tab4">
         Order Words
