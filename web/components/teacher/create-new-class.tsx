@@ -138,7 +138,6 @@ function CreateNewClass({ userId }: { userId: string }) {
               value={noOfStudents}
               onChange={(e) => setNoOfStudents(Number(e.target.value))}
             />
-
             <DialogFooter>
               <Button variant="outline" onClick={() => handleCreateClass()}>
                 Create Class

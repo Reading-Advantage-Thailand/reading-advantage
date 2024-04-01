@@ -9,6 +9,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { TailwindIndicator } from '@/components/helpers/tailwind-indicator'
 import { LocaleProvider } from '@/components/providers/locale-provider'
+import { SelectedRoleProvider } from '@/contexts/userRole-context'
 
 const cabinSketch = localFont({
   src: '../../assets/fonts/CabinSketch-Regular.ttf',
@@ -62,6 +63,7 @@ export const metadata: Metadata = {
 }
 export default function RootLayout({ params: { locale }, children }: { params: { locale: string }; children: ReactNode }) {
   return (
+    <SelectedRoleProvider>
     <html lang="en" suppressHydrationWarning={true}>
       <body
         className={cn(
@@ -80,6 +82,7 @@ export default function RootLayout({ params: { locale }, children }: { params: {
         </ThemeProvider>
       </body>
     </html>
+    </SelectedRoleProvider>
   );
 }
 

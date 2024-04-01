@@ -1,93 +1,79 @@
 "use client";
-import React, { useEffect, useContext } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
-import { UserRole } from "../../types/index.d.ts";
+import React, { useState, useEffect } from "react";
+import { UserRole } from "@/types/constants";
 import router from "next/router";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-// import { getCurrentUser } from "@/lib/session";
-import { set } from "lodash";
 import axios from "axios";
+import { Checkbox } from "@/components/ui/checkbox";
+import { set } from "lodash";
+import { User } from "lucide-react";
+import { UserAccountNav } from "../user-account-nav.jsx";
+import { SelectedRoleContext } from "../../contexts/userRole-context";
+import { useContext } from "react";
 
 type Props = {
-    userId: string;
+  userId: string;
+  role: string;
 };
 
-const RoleSelected: React.FC<Props>= ({ userId }) => {
-  const [selectedRole, setSelectedRole] = React.useState<UserRole | "">("");
-  const router = useRouter();
+const RoleSelected: React.FC<Props> = ({ userId }) => {
+  // const [selectedRole, setSelectedRole] = React.useState<UserRole[]>([]);
+  const [selectedRole, setSelectedRole] = useContext(SelectedRoleContext);
+  let updatedRoles: UserRole[] = [];
 
-  const handleRoleChange = async (role: UserRole ) => {
-    setSelectedRole(role);
-    if (role === UserRole.TEACHER) {
-        router.push("/teacher/my-classes");
+  const handleRoleChange = async (role: UserRole) => {
+    setSelectedRole((selectedRole: UserRole[]) => {
+      if (selectedRole.includes(role)) {
+        updatedRoles = selectedRole.filter((prevRole) => prevRole !== role);
+        // return selectedRole.filter((prevRole) => prevRole !== role);
+      } else {
+        updatedRoles = [...selectedRole, role]; 
+        // return [...selectedRole, role];
+      }
+      return updatedRoles;
+    });
+
+    try {
+      if (!userId) {
+        console.error("User id is not undefined");
+        return;
+      }
+
+      const response = await axios.patch(`/api/users/${userId}/roles`, {
+        selectedRole: updatedRoles,
+        userId,
+        
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status !== 200) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = response.data;
+    } catch (error) {
+      console.error("Failed to update user role", error);
     }
-    
-    if (role === UserRole.STUDENT) {
-        router.push("/student/read");
-    }    
-        try {
-//   const user = await getCurrentUser();    
-  // update user role to the database
-  if (!userId) {
-    console.error("User id is not undefined");
-    return;
-  }
-
-const response = await axios.patch(`/api/user/${userId}/roles`, {
-    method: "PATCH",
-    headers: {
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ role, userId }),
-});
-
-if (response.status !== 200) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-}
-
-const data = response.data;
-console.log(data);
-} catch (error) {
-  console.error("Failed to update user role", error);
-}
-
- 
-   
-
   };
 
   return (
     <div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full">
-            {selectedRole || "Selected role"}{" "}
-            <ChevronDownIcon className="ml-2 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent align="end" className="w-full">
-            {Object.values(UserRole).map((role, index) => (
-                <DropdownMenuCheckboxItem
-                    key={index}
-                    checked={selectedRole === role}
-                    onCheckedChange={() => {
-                        handleRoleChange(role);
-                    }}
-                >
-                    {role}
-                </DropdownMenuCheckboxItem>
-            ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="w-full">
+        {Object.values(UserRole).map((role, index) => (
+          <div key={index}>
+            <input
+              type="checkbox"
+              checked={selectedRole.includes(role)}
+              onChange={() => handleRoleChange(role)}
+              className="mr-2 my-2"
+            />
+            <label>{role}</label>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

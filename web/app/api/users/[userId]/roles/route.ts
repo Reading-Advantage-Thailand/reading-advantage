@@ -1,7 +1,6 @@
 // user roles update
 import db from "@/configs/firestore-config";
 import { authOptions } from "@/lib/auth";
-import { UserRole } from "@/types";
 import { getServerSession } from "next-auth";
 
 export async function PATCH(req: Request, res: Response) {
@@ -18,29 +17,19 @@ export async function PATCH(req: Request, res: Response) {
     
         const userId = session.user.id;
         const  reqData  = await req.json();
-        const { role } = reqData;
+        console.log('reqData', reqData);
+        
+        const role  = reqData.selectedRole;
+        console.log('role', role);
 
-        // Check if role is valid
-        if (!Object.values(UserRole).includes(role)) {
-            return new Response(
-            JSON.stringify({
-                message: "Invalid role",
-            }),
-            { status: 400 }
-            );
-        }
-    
-        const userDoc = db.collection("users").doc(userId);
-        if (!(await userDoc.get()).exists) {
-            return new Response(
-            JSON.stringify({
-                message: "User not found",
-            }),
-            { status: 404 }
-            );
-        }
-
-        await userDoc.update({ role }); 
+        try {
+            const userRef = db.collection('users').doc(userId);
+            await userRef.update({ role: role });
+          
+            console.log('User role updated');
+          } catch (error) {
+            console.error('Failed to update user role', error);
+          }
     
         // update user session
         session.user.role = role;
@@ -60,4 +49,40 @@ export async function PATCH(req: Request, res: Response) {
         );
     }
     }
+
+// user roles get
+export async function GET(req: Request, res: Response) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+        return new Response(
+            JSON.stringify({
+            message: "Unauthorized",
+            }),
+            { status: 403 }
+        );
+        }
+    
+        const userId = session.user.id;
+        const userRef = db.collection('users').doc(userId);
+        const userDoc = await userRef.get();
+        const userData = userDoc.data();
+    console.log('userData', userData);
+    
+        return new Response(
+        JSON.stringify({
+            // role: userData.role,
+        }),
+        { status: 200 }
+        );
+    } catch (error) {
+        return new Response(
+        JSON.stringify({
+            message: error,
+        }),
+        { status: 500 }
+        );
+    }
+    }
+
 
