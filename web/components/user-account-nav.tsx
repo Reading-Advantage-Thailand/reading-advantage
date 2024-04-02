@@ -14,18 +14,20 @@ import { UserAvatar } from "@/components/user-avatar";
 import { useScopedI18n } from "@/locales/client";
 import { Icons } from "./icons";
 import { SelectedRoleContext } from "../contexts/userRole-context";
-import { use, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
   user: Pick<User, "name" | "image" | "email"> & {
     level: number;
     verified: boolean;
     role: string;
+    cefrLevel: string;
   };
 }
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
-  const [ selectedRole ] = useContext(SelectedRoleContext);
+  const [selectedRole] = useContext(SelectedRoleContext);
+
   const t = useScopedI18n("components.userAccountNav");
 
   return (
@@ -73,15 +75,21 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         {selectedRole.filter((role: string) => role === "TEACHER").length >
           0 && (
           <DropdownMenuItem asChild>
-            <Link href="/">{"Teacher dashboard"}</Link>
+            <Link href="/teacher/my-classes">{"Teacher dashboard"}</Link>
           </DropdownMenuItem>
         )}
-        {selectedRole.filter((role: string) => role === "STUDENT").length >
-          0 && (
-          <DropdownMenuItem asChild>
-            <Link href="/">{"Student dashboard"}</Link>
-          </DropdownMenuItem>
-        )}
+
+        {selectedRole.filter((role: string) => role === "STUDENT").length > 0 &&
+          (user.cefrLevel !== "" ? (
+            <DropdownMenuItem asChild>
+              <Link href="/student/read">{"Student dashboard"}</Link>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem asChild>
+              <Link href="/level">{"Student level test"}</Link>
+            </DropdownMenuItem>
+          ))}
+
         {selectedRole.filter((role: string) => role === "ADMINISTRATOR")
           .length > 0 && (
           <DropdownMenuItem asChild>
