@@ -20,28 +20,28 @@ export default function TabsPractice({ userId }: Props) {
         <Tabs.Trigger
           className="TabsTrigger"
           value="tab2"
-          disabled={showButton}
+          // disabled={showButton}
         >
           Order Sentences
         </Tabs.Trigger>
         <Tabs.Trigger
           className="TabsTrigger"
           value="tab3"
-          disabled={showButton}
+          // disabled={showButton}
         >
           Cloze Test
         </Tabs.Trigger>
         <Tabs.Trigger
           className="TabsTrigger"
           value="tab4"
-          disabled={showButton}
+          // disabled={showButton}
         >
           Order Words
         </Tabs.Trigger>
         <Tabs.Trigger
           className="TabsTrigger"
           value="tab5"
-          disabled={showButton}
+          // disabled={showButton}
         >
           Matching
         </Tabs.Trigger>
