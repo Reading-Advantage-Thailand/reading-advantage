@@ -31,6 +31,7 @@ export default function ClozeTest({ userId }: Props) {
   const router = useRouter();
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [isplaying, setIsPlaying] = React.useState(false);
+  const [articleBeforeSelect, setArticleBeforeSelect] = useState<any[]>([]);
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
   const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
@@ -165,6 +166,37 @@ export default function ClozeTest({ userId }: Props) {
   }
 
   console.log("articleBeforeRandom", articleBeforeRandom);
+  const [text, setText] = useState(
+    "React is a JavaScript library for building user interfaces."
+  );
+  const [answers, setAnswers] = useState(
+    Array(text.split(" ").length).fill("")
+  );
+
+  const handleChange = (index, event) => {
+    const newAnswers = [...answers];
+    newAnswers[index] = event.target.value;
+    setAnswers(newAnswers);
+  };
+
+   const handleSubmit = (event) => {
+     event.preventDefault();
+     // Logic to check answers or perform further actions
+     console.log("Submitted Answers:", answers);
+   };
+
+   const generateClozeText = () => {
+     return text.split(" ").map((word, index) => (
+       <span key={index}>
+         {answers[index] ? answers[index] : "_____"}{" "}
+         <input
+           type="text"
+           value={answers[index]}
+           onChange={(e) => handleChange(index, e)}
+         />
+       </span>
+     ));
+   };
 
   return (
     <>
@@ -172,7 +204,14 @@ export default function ClozeTest({ userId }: Props) {
         heading={t("ClozeTestPractice.ClozeTest")}
         text={t("ClozeTestPractice.ClozeTestDescription")}
       />
-      <div className="mt-5">
+      {/* <div>
+        <h2>Cloze Activity</h2>
+        <form onSubmit={handleSubmit}>
+          <p>{generateClozeText()}</p>
+          <button type="submit">Submit</button>
+        </form>
+      </div> */}
+      {/* <div className="mt-5">
         {articleBeforeRandom.length === 0 ? (
           <div className="grid w-full gap-10">
             <div className="mx-auto w-[800px] space-y-6">
@@ -219,7 +258,7 @@ export default function ClozeTest({ userId }: Props) {
                       </audio>
                     </div>
                   </div>
-                  {/* edit content */}
+
                   <div className="p-5 bg-[#EBECF0]">
                     {articleBeforeRandom[
                       currentArticleIndex
@@ -263,7 +302,7 @@ export default function ClozeTest({ userId }: Props) {
             )}
           </>
         )}
-      </div>
+      </div> */}
     </>
   );
 }
