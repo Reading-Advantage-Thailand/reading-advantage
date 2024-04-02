@@ -13,8 +13,9 @@ export default async function UserProfileSettingsPage({}: Props) {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.cefrLevel === "") {
-    return redirect("/level");
+  if (user.cefrLevel === "" && user.role === 'STUDENT') {
+    // return redirect("/level");
+    return redirect("/role-selection");
   }
 
   return (
