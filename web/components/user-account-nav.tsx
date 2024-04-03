@@ -67,19 +67,22 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         </div>
 
         <DropdownMenuSeparator />
-        {/* {Array.isArray(user.role) && user.role.filter((role: string) => role === "TEACHER").length > 0 && (
-          <DropdownMenuItem asChild>
-            <Link href="/teacher/my-classes">{"Teacher dashboard"}</Link>
-          </DropdownMenuItem>
-        )} */}
-        {selectedRole.filter((role: string) => role === "TEACHER").length >
+        {/* {Array.isArray(user.role) &&
+          user.role.filter((role: string) => role === "TEACHER").length > 0 && (
+            <DropdownMenuItem asChild>
+              <Link href="/teacher/my-classes">{"Teacher from user.role"}</Link>
+            </DropdownMenuItem>
+          )} */}
+        {selectedRole && selectedRole.filter((role: string) => role === "TEACHER").length >
           0 && (
           <DropdownMenuItem asChild>
             <Link href="/teacher/my-classes">{"Teacher dashboard"}</Link>
           </DropdownMenuItem>
         )}
 
-        {selectedRole.filter((role: string) => role === "STUDENT").length > 0 &&
+        {selectedRole &&
+          selectedRole.filter((role: string) => role === "STUDENT").length >
+            0 &&
           (user.cefrLevel !== "" ? (
             <DropdownMenuItem asChild>
               <Link href="/student/read">{"Student dashboard"}</Link>
@@ -90,18 +93,20 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
             </DropdownMenuItem>
           ))}
 
-        {selectedRole.filter((role: string) => role === "ADMINISTRATOR")
-          .length > 0 && (
-          <DropdownMenuItem asChild>
-            <Link href="/admin/">{"Admin dashboard"}</Link>
-          </DropdownMenuItem>
-        )}
-        {selectedRole.filter((role: string) => role === "SYSTEM").length >
-          0 && (
-          <DropdownMenuItem asChild>
-            <Link href="/system">{"System dashboard"}</Link>
-          </DropdownMenuItem>
-        )}
+        {selectedRole &&
+          selectedRole.filter((role: string) => role === "ADMINISTRATOR")
+            .length > 0 && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin">{"Admin dashboard"}</Link>
+            </DropdownMenuItem>
+          )}
+        {selectedRole &&
+          selectedRole.filter((role: string) => role === "SYSTEM").length >
+            0 && (
+            <DropdownMenuItem asChild>
+              <Link href="/system">{"System dashboard"}</Link>
+            </DropdownMenuItem>
+          )}
 
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
