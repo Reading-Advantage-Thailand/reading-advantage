@@ -13,9 +13,6 @@ async function FirstRoleSelectionPage() {
     if (user.cefrLevel !== "" && user.level >= 0) {
         return redirect("/student/read");
     }
-    // if (user.role.includes('STUDENT')) {
-    //     return redirect("/level");
-    // }
 
     return (
             <div>
