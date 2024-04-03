@@ -23,7 +23,9 @@ export default withAuth(async function onSuccess(req) {
     const authLocales = localeConfig.locales;
     const locale = authLocales.find((loc) => req.nextUrl.pathname.startsWith(`/${loc}/auth`)) || '/en';
     const isAuth = !!token;
-    const isNoLevel = token?.level === 0;
+    // const isNoLevel = token?.level === 0;
+    const isNoLevel = token?.cefrLevel === "";
+    const isTeacher = token?.role.includes('TEACHER');
 
     if (req.nextUrl.pathname.startsWith('/api')) {
         if (true) return NextResponse.next();
@@ -39,8 +41,9 @@ export default withAuth(async function onSuccess(req) {
 
     if (authLocales.includes(locale)) {
         if (isAuth) {
-            // if (isNoLevel) return NextResponse.redirect(new URL(`/level`, req.url));
+            if (isNoLevel && !isTeacher) return NextResponse.redirect(new URL(`/level`, req.url));
             if (isNoLevel) return NextResponse.redirect(new URL(`/role-selection`, req.url));
+            if (isTeacher) return NextResponse.redirect(new URL(`/teacher/my-classes`, req.url));
             return NextResponse.redirect(new URL(`/student/read`, req.url));
         }
         return null;
@@ -65,15 +68,3 @@ export const config = {
 };
 
 
-export function withTeacherAuth(req: { cookies: { get: (arg0: string) => any; }; url: any; }) {
-    let verify = req.cookies.get('verify');
-    let url = req.url;
-
-    if (!verify && url.includes('teacher')) {
-        return NextResponse.redirect('/auth/signin');
-    }
-
-    if (verify && url === "/teacher/my-classes") {
-        return NextResponse.redirect('/teacher/my-classes');
-    }
-  }
