@@ -4,16 +4,17 @@ import { UserRole } from "@/types/constants";
 import axios from "axios";
 import { SelectedRoleContext } from "../contexts/userRole-context";
 import { useContext } from "react";
-import {  FormControlLabel, Radio, RadioGroup } from "@mui/material";
 import {
     Card,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
   } from "../components/ui/card";
-  import { Button } from "../components/ui/button";
+  import { Button, buttonVariants } from "../components/ui/button";
   import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 type Props = {
   userId: string;
@@ -29,7 +30,6 @@ const onSelectRole = (role: UserRole) => {
   }
 
   const handleRoleChange = async (role: UserRole) => {
-    // setSelectedRole([role]);
 
     try {
       if (!userId) {
@@ -58,7 +58,7 @@ const onSelectRole = (role: UserRole) => {
         router.push("/teacher/my-classes");
     } else if (selectedRole.includes("ADMIN")){
         router.push("/");
-    } else if (selectedRole.includes("STYTEM")){
+    } else if (selectedRole.includes("SYSTEM")){
         router.push("/");
     }
     } catch (error) {
@@ -69,7 +69,7 @@ const onSelectRole = (role: UserRole) => {
   return (
     <div>
     <div className="w-full">
-        <Card>
+        {/* <Card>
             <CardHeader>    
                 <CardTitle className="font-bold text-2xl md:text-2xl">
                     Role Selection
@@ -101,7 +101,45 @@ const onSelectRole = (role: UserRole) => {
                     Save
                 </Button>
             </CardContent>
-    </Card>    
+    </Card>     */}
+
+<Card className="flex flex-col items-center">
+            <CardHeader className="text-center">    
+                <CardTitle className="font-bold text-2xl md:text-2xl ">
+                   What do you want to do?
+                </CardTitle>
+                <CardDescription>
+                    Please select the role
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                className={cn(buttonVariants({ variant: "secondary" }), "mt-4 mr-4")} 
+                size='lg'
+                onClick={() => onSelectRole(UserRole.STUDENT)}
+              >
+                I want to learn
+              </Button>
+              <Button
+               className={cn(buttonVariants({ variant: "secondary" }), "mt-4")}
+                size='lg'
+                onClick={() => onSelectRole(UserRole.TEACHER)}
+                >
+                    I want to teach
+                </Button>
+                </CardContent>
+                <CardFooter>
+                <Button
+                variant='default'
+                size='lg'
+                className="mt-4"
+                onClick={() => handleRoleChange(selectedRole)}
+                >
+                    Save
+                </Button>
+                </CardFooter>
+           
+    </Card> 
     </div>
   </div>
   );
