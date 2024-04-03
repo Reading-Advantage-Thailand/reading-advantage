@@ -35,6 +35,7 @@ export default async function StudentHomeLayout({
                             level: user.level || 0,
                             verified: user.verified || false,
                             role: user.role || "",
+                            cefrLevel: user.cefrLevel || "",
                         }}
                     />
                     </div>

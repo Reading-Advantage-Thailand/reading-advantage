@@ -54,6 +54,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
                                 level: user.level || 0,
                                 verified: user.verified || false,
                                 role: user.role || "",
+                                cefrLevel: user.cefrLevel || "",
                             }}
                             
                         />
@@ -80,6 +81,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
                                 level: user.level || 0,
                                 verified: user.verified || false,
                                 role: user.role || "",
+                                cefrLevel: user.cefrLevel || "",
                             }}
                         />
                         </nav>
