@@ -93,7 +93,7 @@ export default {
           OrderSentences: "Order Sentences",
           OrderSentencesDescription:
             "These are some sentences from one of the passages you've read. Put the sentences in an order that makes sense to you. If the order is the same as the passage, you'll receive 5 XP.",
-          saveOrder: "Save & Continue Later",
+          saveOrder: "Continue",
           errorOrder: "Please order correctly",
         },
         ClozeTestPractice: {
@@ -101,7 +101,7 @@ export default {
           ClozeTest: "Cloze Test",
           ClozeTestDescription:
             "Fill in the blanks with the correct word to complete the passage. If you get all the answers correct, you'll receive 5 XP.",
-          saveAnswer: "Save & Continue Later",
+          saveAnswer: "Continue",
           errorAnswer: "Please answer correctly",
         },
       },
