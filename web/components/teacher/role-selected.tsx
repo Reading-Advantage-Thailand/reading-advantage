@@ -4,6 +4,7 @@ import { UserRole } from "@/types/constants";
 import axios from "axios";
 import { SelectedRoleContext } from "../../contexts/userRole-context";
 import { useContext } from "react";
+import { Button, buttonVariants } from "../../components/ui/button";
 
 type Props = {
   userId: string;
@@ -11,11 +12,10 @@ type Props = {
 };
 
 const RoleSelected: React.FC<Props> = ({ userId }) => {
-  // const [selectedRole, setSelectedRole] = React.useState<UserRole[]>([]);
   const [selectedRole, setSelectedRole] = useContext(SelectedRoleContext);
   let updatedRoles: UserRole[] = [];
 
-  const handleRoleChange = async (role: UserRole) => {
+  const onSelectRole = (role: UserRole) => {
     setSelectedRole((selectedRole: UserRole[]) => {
       if (selectedRole.includes(role)) {
         updatedRoles = selectedRole.filter((prevRole) => prevRole !== role);
@@ -24,6 +24,9 @@ const RoleSelected: React.FC<Props> = ({ userId }) => {
       }
       return updatedRoles;
     });
+  }
+  
+  const handleRoleChange = async (updatedRoles:UserRole) => {
 
     try {
       if (!userId) {
@@ -52,19 +55,28 @@ const RoleSelected: React.FC<Props> = ({ userId }) => {
 
   return (
     <div>
+    
       <div className="w-full">
         {Object.values(UserRole).map((role, index) => (
           <div key={index}>
             <input
               type="checkbox"
-              checked={selectedRole.includes(role)}
-              onChange={() => handleRoleChange(role)}
+              checked={selectedRole ? selectedRole.includes(role) : false}
+              onChange={() => onSelectRole(role)}
               className="mr-2 my-2"
             />
             <label>{role}</label>
           </div>
         ))}
       </div>
+      <Button
+                variant='default'
+                size='lg'
+                className="mt-4"
+                onClick={() => handleRoleChange(selectedRole)}
+                >
+                    Save
+                </Button>
     </div>
   );
 };
