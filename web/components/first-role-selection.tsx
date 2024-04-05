@@ -30,7 +30,6 @@ const onSelectRole = (role: UserRole) => {
   }
 
   const handleRoleChange = async (role: UserRole) => {
-
     try {
       if (!userId) {
         console.error("User id is not undefined");

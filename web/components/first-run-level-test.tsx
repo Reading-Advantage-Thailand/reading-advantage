@@ -14,14 +14,6 @@ import { useSession } from "next-auth/react";
 import Confetti from "react-confetti";
 import { useScopedI18n } from "../locales/client";
 import { levelCalculation, updateScore } from "../lib/utils";
-import {
-  FormControl,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-} from "@mui/material";
-import FirstRoleSelection from "./first-role-selection";
-import RoleSelected from "./teacher/role-selected";
 
 type Props = {
   userId: string;
