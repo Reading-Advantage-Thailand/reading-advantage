@@ -20,6 +20,7 @@ import { Sentence } from "./dnd/types";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
+import subtlex from "subtlex-word-frequencies"
 
 type Props = {
   userId: string;
@@ -61,6 +62,50 @@ export default function ClozeTest({ userId }: Props) {
         newTodos.push(resultList);
       }
 
+      console.log("🚀 ~ getUserSentenceSaved ~ newTodos:", newTodos);
+      console.log(
+        "🚀 ~ getUserSentenceSaved ~ flatten(newTodos):",
+        flatten(newTodos)
+      );
+
+      /**
+       const splitText = text.replace(/["",.]/g, '').split(' ');
+console.log(splitText);
+       */
+      let arr = [
+        "On",
+        "his",
+        "way",
+        "to",
+        "the",
+        "market",
+        "the",
+        "boy",
+        "met",
+        "an",
+        "old",
+        "man",
+        "who",
+        "asked",
+        "him",
+        "what",
+        "he",
+        "was",
+        "carrying",
+      ];
+
+      //   const result = arr.map((word) => {
+      //     return {
+      //       word: word,
+      //       difficulty: difficulty.getLevel(word),
+      //     };
+      //   });
+      // console.log("🚀 ~ getUserSentenceSaved ~ result:", result);
+      subtlex.forEach(function (d) {
+        if (d.word === "carrying") {
+          console.log("🚀 ~ getUserSentenceSaved ~ d:", d);
+        }
+      });
       setArticleBeforeRandom(flatten(newTodos));
     } catch (error) {
       console.log(error);
@@ -95,6 +140,7 @@ export default function ClozeTest({ userId }: Props) {
 
       // Add the selected range of sentences to the result array
       result = textList.slice(from, to);
+      console.log("🚀 ~ dataSplit ~ result:", result)
 
       return {
         index: index,
@@ -165,10 +211,11 @@ export default function ClozeTest({ userId }: Props) {
     setLoading(false);
   }
 
-  console.log("articleBeforeRandom", articleBeforeRandom);
+  /*
   const [text, setText] = useState(
     "React is a JavaScript library for building user interfaces."
   );
+  
   const [answers, setAnswers] = useState(
     Array(text.split(" ").length).fill("")
   );
@@ -197,6 +244,7 @@ export default function ClozeTest({ userId }: Props) {
        </span>
      ));
    };
+   */
 
   return (
     <>
@@ -204,6 +252,98 @@ export default function ClozeTest({ userId }: Props) {
         heading={t("ClozeTestPractice.ClozeTest")}
         text={t("ClozeTestPractice.ClozeTestDescription")}
       />
+      <div className="mt-5">
+        {articleBeforeRandom.length === 0 ? (
+          <div className="grid w-full gap-10">
+            <div className="mx-auto w-[800px] space-y-6">
+              <Skeleton className="h-[200px] w-full" />
+              <Skeleton className="h-[20px] w-2/3" />
+              <Skeleton className="h-[20px] w-full" />
+              <Skeleton className="h-[20px] w-full" />
+            </div>
+          </div>
+        ) : (
+          <>
+            {articleBeforeRandom.length !== currentArticleIndex ? (
+              <div className="bg-[#2684FFß] flex max-w-screen-lg">
+                <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                  <div className="flex justify-between items-center">
+                    <h4 className="py-4 pl-5 font-bold">
+                      {articleBeforeRandom[currentArticleIndex]?.title}
+                    </h4>
+                    <div className="mr-5">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={handlePause}
+                      >
+                        {isplaying ? (
+                          <Icons.pause className="mr-1" size={12} />
+                        ) : (
+                          <Icons.play className="mr-1" size={12} />
+                        )}
+                        {isplaying
+                          ? tc("soundButton.pause")
+                          : tc("soundButton.play")}
+                      </Button>
+                      <audio
+                        ref={audioRef}
+                        key={
+                          articleBeforeRandom[currentArticleIndex]
+                            ?.surroundingSentences
+                        }
+                      >
+                        <source
+                          src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleBeforeRandom[currentArticleIndex]?.articleId}.mp3`}
+                        />
+                      </audio>
+                    </div>
+                  </div>
+
+                  <div className="p-5 bg-[#EBECF0]">
+                    {articleBeforeRandom[
+                      currentArticleIndex
+                    ]?.surroundingSentences.map(
+                      (sentence: string, index: number) => (
+                        <div
+                          key={index}
+                          className="bg-white rounded-lg border-solid shadow-transparent box-border p-8 min-h-10 mb-8  select-none color-[#091e42]"
+                        >
+                          {sentence}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <></>
+            )}
+
+            {articleBeforeRandom.length != currentArticleIndex ? (
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={loading}
+                size="sm"
+                onClick={onNextArticle}
+              >
+                {t("OrderSentencesPractice.saveOrder")}
+              </Button>
+            ) : (
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={true}
+                size="sm"
+                onClick={onNextArticle}
+              >
+                {t("OrderSentencesPractice.saveOrder")}
+              </Button>
+            )}
+          </>
+        )}
+      </div>
       {/* <div>
         <h2>Cloze Activity</h2>
         <form onSubmit={handleSubmit}>
