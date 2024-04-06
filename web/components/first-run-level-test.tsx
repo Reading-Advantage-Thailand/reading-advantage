@@ -39,8 +39,6 @@ type Question = {
   options: Record<string, Option>;
 };
 
-
-
 export default function FirstRunLevelTest({
   userId,
   language_placement_test,
@@ -85,7 +83,7 @@ export default function FirstRunLevelTest({
       }
       setCorrectAnswer(allCorrectAnswers);
     }
-  },[language_placement_test]);
+  }, [language_placement_test]);
 
   const onAnswerSelected = (optionId: number, answer: string, index: any) => {
     if (!answerOptionIndexArray.includes(optionId)) {
@@ -108,12 +106,12 @@ export default function FirstRunLevelTest({
   }
 
   const handleQuestions = useCallback(async () => {
-    let optionId = 0; // Initialize a counter for option IDs
+    let optionId = 0;
 
-    let initialShuffledQuestions = [...language_placement_test]; // Copy the initial questions
+    let initialShuffledQuestions = [...language_placement_test];
 
     let updatedShuffledQuestions = initialShuffledQuestions.map((section) => {
-      let shuffledSection = shuffleArray(section.questions).slice(0, 3); // Shuffle and slice the questions in each section
+      let shuffledSection = shuffleArray(section.questions).slice(0, 3);
 
       return shuffledSection.map((question) => {
         let choices = Object.entries(question.options);
@@ -127,18 +125,19 @@ export default function FirstRunLevelTest({
           choices.map(([key, value]) => [key, { id: optionId++, text: value }])
         );
 
-        return { ...question, options: updatedOptions }; // Return a new question object with the updated options
+        return { ...question, options: updatedOptions };
       });
     });
 
-    setShuffledQuestions(updatedShuffledQuestions); // Set the state with the new array
-  },[language_placement_test]);
+    setShuffledQuestions(updatedShuffledQuestions);
+  }, [language_placement_test]);
 
   const handleNext = () => {
     if (answerOptionIndexArray.length < 3) {
       toast({
         title: t("toast.attention"),
         description: t("toast.attentionDescription"),
+        variant: "destructive",
       });
     } else {
       const correctSelectedAnswer: string[] = [];
@@ -191,7 +190,6 @@ export default function FirstRunLevelTest({
     setTestFinished(true);
   };
 
-
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -225,9 +223,7 @@ export default function FirstRunLevelTest({
                 cefrLevel: levelCalculation(xp).cefrLevel,
               })}
             </p>
-            <p>
-              {t("yourRaLevel", { raLevel: levelCalculation(xp).raLevel })}
-            </p>
+            <p>{t("yourRaLevel", { raLevel: levelCalculation(xp).raLevel })}</p>
             <br />
 
             <Button
@@ -245,7 +241,7 @@ export default function FirstRunLevelTest({
                     console.log("Update Failed");
                   }
                 } catch (error) {
-                  console.error(error); 
+                  console.error(error);
                   toast({
                     title: t("toast.errorTitle"),
                     description: t("toast.errorDescription"),

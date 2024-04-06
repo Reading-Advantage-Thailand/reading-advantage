@@ -14,21 +14,21 @@ import { UserAvatar } from "@/components/user-avatar";
 import { useScopedI18n } from "@/locales/client";
 import { Icons } from "./icons";
 import { SelectedRoleContext } from "../contexts/userRole-context";
-import { use, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
   user: Pick<User, "name" | "image" | "email"> & {
     level: number;
     verified: boolean;
     role: string;
+    cefrLevel: string;
   };
-  //   selectedRole?: string;
 }
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
-  const [ selectedRole ] = useContext(SelectedRoleContext);
+  const [selectedRole] = useContext(SelectedRoleContext);
+
   const t = useScopedI18n("components.userAccountNav");
-console.log('user', user);
 
   return (
     <DropdownMenu>
@@ -67,29 +67,40 @@ console.log('user', user);
         </div>
 
         <DropdownMenuSeparator />
-        {Array.isArray(user.role) && user.role.filter((role: string) => role === "TEACHER").length > 0 && (
+        {selectedRole && selectedRole.filter((role: string) => role === "TEACHER").length >
+          0 && (
           <DropdownMenuItem asChild>
             <Link href="/teacher/my-classes">{"Teacher dashboard"}</Link>
           </DropdownMenuItem>
         )}
-        {selectedRole.filter((role: string) => role === "STUDENT").length >
-          0 && (
-          <DropdownMenuItem asChild>
-            <Link href="/">{"Student dashboard"}</Link>
-          </DropdownMenuItem>
-        )}
-        {selectedRole.filter((role: string) => role === "ADMINISTRATOR")
-          .length > 0 && (
-          <DropdownMenuItem asChild>
-            <Link href="/admin/">{"Admin dashboard"}</Link>
-          </DropdownMenuItem>
-        )}
-        {selectedRole.filter((role: string) => role === "SYSTEM").length >
-          0 && (
-          <DropdownMenuItem asChild>
-            <Link href="/system">{"System dashboard"}</Link>
-          </DropdownMenuItem>
-        )}
+
+        {selectedRole &&
+          selectedRole.filter((role: string) => role === "STUDENT").length >
+            0 &&
+          (user.cefrLevel !== "" ? (
+            <DropdownMenuItem asChild>
+              <Link href="/student/read">{"Student dashboard"}</Link>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem asChild>
+              <Link href="/level">{"Student level test"}</Link>
+            </DropdownMenuItem>
+          ))}
+
+        {selectedRole &&
+          selectedRole.filter((role: string) => role === "ADMIN")
+            .length > 0 && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin">{"Admin dashboard"}</Link>
+            </DropdownMenuItem>
+          )}
+        {selectedRole &&
+          selectedRole.filter((role: string) => role === "SYSTEM").length >
+            0 && (
+            <DropdownMenuItem asChild>
+              <Link href="/system">{"System dashboard"}</Link>
+            </DropdownMenuItem>
+          )}
 
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

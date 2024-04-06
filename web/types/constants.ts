@@ -23,6 +23,6 @@ export enum ScoreRange {
 export enum UserRole {
   STUDENT = "STUDENT",
   TEACHER = "TEACHER",
-  ADMINISTRATOR = "ADMINISTRATOR",
+  ADMIN = "ADMINISTRATOR",
   SYSTEM = "SYSTEM",
 }
