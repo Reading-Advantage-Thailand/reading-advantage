@@ -67,12 +67,6 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         </div>
 
         <DropdownMenuSeparator />
-        {/* {Array.isArray(user.role) &&
-          user.role.filter((role: string) => role === "TEACHER").length > 0 && (
-            <DropdownMenuItem asChild>
-              <Link href="/teacher/my-classes">{"Teacher from user.role"}</Link>
-            </DropdownMenuItem>
-          )} */}
         {selectedRole && selectedRole.filter((role: string) => role === "TEACHER").length >
           0 && (
           <DropdownMenuItem asChild>
@@ -94,7 +88,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
           ))}
 
         {selectedRole &&
-          selectedRole.filter((role: string) => role === "ADMINISTRATOR")
+          selectedRole.filter((role: string) => role === "ADMIN")
             .length > 0 && (
             <DropdownMenuItem asChild>
               <Link href="/admin">{"Admin dashboard"}</Link>

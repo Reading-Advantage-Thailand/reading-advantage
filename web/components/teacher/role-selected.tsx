@@ -13,6 +13,8 @@ type Props = {
 
 const RoleSelected: React.FC<Props> = ({ userId }) => {
   const [selectedRole, setSelectedRole] = useContext(SelectedRoleContext);
+  console.log("selectedRole", selectedRole);
+  
   let updatedRoles: UserRole[] = [];
 
   const onSelectRole = (role: UserRole) => {
@@ -60,12 +62,14 @@ const RoleSelected: React.FC<Props> = ({ userId }) => {
         {Object.values(UserRole).map((role, index) => (
           <div key={index}>
             <input
+            id={role}
+            name="role"
               type="checkbox"
               checked={selectedRole ? selectedRole.includes(role) : false}
               onChange={() => onSelectRole(role)}
               className="mr-2 my-2"
             />
-            <label>{role}</label>
+            <label htmlFor={role}>{role}</label>
           </div>
         ))}
       </div>
