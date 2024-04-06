@@ -3,6 +3,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FlashcardArray } from "react-quizlet-flashcard";
 import axios from "axios";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import { v4 as uuidv4 } from "uuid";
+import { date_scheduler, State } from "ts-fsrs";
+import { filter } from "lodash";
+import { useRouter } from "next/navigation";
 import AudioButton from "./audio-button";
 import FlashCardPracticeButton from "./flash-card-practice-button";
 import FlipCardPracticeButton from "./flip-card-button";
@@ -19,10 +27,9 @@ import { formatDate, updateScore } from "@/lib/utils";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
-import { v4 as uuidv4 } from "uuid";
-import { date_scheduler, State } from "ts-fsrs";
-import { filter } from "lodash";
-import { useRouter } from "next/navigation";
+dayjs.extend(utc);
+dayjs.extend(dayjs_plugin_isSameOrBefore);
+dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
@@ -65,22 +72,19 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
-
-      const startOfDay = date_scheduler(new Date(), 0, true);
-      const filteredData = await res.data.sentences.filter(
-        (record: Sentence) => {
+      const startOfDay = date_scheduler(new Date(), 0, true);     
+      const filteredData = await res.data.sentences
+        .filter((record: Sentence) => {
           const dueDate = new Date(record.due);
-          return (
-            record.state === 0 ||
-            (record.state === 2 && dueDate < startOfDay) ||
-            (record.state === 3 && dueDate < startOfDay)
-          );        
-        }
-      );
-
+          return record.state === 0 || dueDate < startOfDay;
+        })
+        .sort((a: Sentence, b: Sentence) => {
+          return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
+        });
+       
       setSentences(filteredData);
 
-      if(filteredData.length === 0) {
+      if (filteredData.length === 0) {
         setShowButton(false);
       }
 
@@ -115,6 +119,7 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
     } catch (error) {
       console.log(error);
     }
+     
   };
 
   useEffect(() => {
