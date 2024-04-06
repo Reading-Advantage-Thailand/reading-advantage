@@ -6,13 +6,13 @@ import { UserAccountNav } from "@/components/user-account-nav"
 import ProgressBar from "@/components/progress-bar-xp"
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher"
 
-interface LevelLayoutProps {
+interface RoleLayoutProps {
     children?: React.ReactNode
 }
 
 export default async function StudentHomeLayout({
     children,
-}: LevelLayoutProps) {
+}: RoleLayoutProps) {
     const user = await getCurrentUser()
 
     if (!user) {
@@ -24,7 +24,6 @@ export default async function StudentHomeLayout({
             <header className="sticky top-0 z-40 border-b bg-background">
                 <div className="container flex h-16 items-center space-x-2 py-4 justify-between">
                     <MainNav items={studentPageConfig.mainNav} />
-                    <ProgressBar progress={user.xp} level={user.level}/>
                     <div className="space-x-2 flex">
                     <LocaleSwitcher />
                     <UserAccountNav

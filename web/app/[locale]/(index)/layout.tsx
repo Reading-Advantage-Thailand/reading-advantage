@@ -13,12 +13,7 @@ import axios from 'axios';
 
 export default async function Layout({ children }: { children: ReactNode }) {
     const t = await getScopedI18n('components')
-    const user = await getCurrentUser()
-
-    // async function getUserRole() {
-    //     const selectedRole = await axios.get(`/api/users/${user.id}/roles`);
-    //     return selectedRole;
-    // }
+    const user = await getCurrentUser();
 
     if (!user) {
         return (
@@ -59,6 +54,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
                                 level: user.level || 0,
                                 verified: user.verified || false,
                                 role: user.role || "",
+                                cefrLevel: user.cefrLevel || "",
                             }}
                             
                         />
@@ -85,6 +81,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
                                 level: user.level || 0,
                                 verified: user.verified || false,
                                 role: user.role || "",
+                                cefrLevel: user.cefrLevel || "",
                             }}
                         />
                         </nav>

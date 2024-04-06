@@ -38,6 +38,7 @@ export default async function SettingsPageLayout({
                                 level: user.level || 0,
                                 verified: user.verified || false,
                                 role: user.role || "",
+                                cefrLevel: user.cefrLevel || "",
                             }}
                         />
                     </div>
