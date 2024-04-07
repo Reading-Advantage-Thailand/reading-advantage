@@ -25,7 +25,8 @@ export default withAuth(async function onSuccess(req) {
     const isAuth = !!token;
     // const isNoLevel = token?.level === 0;
     const isNoLevel = token?.cefrLevel === "";
-    const isTeacher = token?.role.includes('TEACHER');
+    const teacherRole = token?.role?.includes('TEACHER') || 'STUDENT';
+    const isTeacher = token && token.role ? teacherRole : false;
 
     if (req.nextUrl.pathname.startsWith('/api')) {
         if (true) return NextResponse.next();
