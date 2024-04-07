@@ -165,50 +165,51 @@ console.log(splitText);
   };
 
   const onNextArticle = async () => {
-    setLoading(true);
-    let isEqual = true;
+    setCurrentArticleIndex(currentArticleIndex + 1);
+    // setLoading(true);
+    // let isEqual = true;
 
-    for (
-      let i = 0;
-      i < articleBeforeRandom[currentArticleIndex].surroundingSentences.length;
-      i++
-    ) {
-      if (
-        articleBeforeRandom[currentArticleIndex].surroundingSentences[i] !==
-        articleRandom[currentArticleIndex].surroundingSentences[i]
-      ) {
-        isEqual = false;
-        break;
-      }
-    }
+    // for (
+    //   let i = 0;
+    //   i < articleBeforeRandom[currentArticleIndex].surroundingSentences.length;
+    //   i++
+    // ) {
+    //   if (
+    //     articleBeforeRandom[currentArticleIndex].surroundingSentences[i] !==
+    //     articleRandom[currentArticleIndex].surroundingSentences[i]
+    //   ) {
+    //     isEqual = false;
+    //     break;
+    //   }
+    // }
 
-    if (isEqual) {
-      try {
-        const updateScrore = await updateScore(15, userId);
-        if (updateScrore?.status === 201) {
-          toast({
-            title: t("toast.success"),
-            description: tUpdateScore("yourXp", { xp: 5 }),
-          });
-          setCurrentArticleIndex(currentArticleIndex + 1);
-          router.refresh();
-          setIsPlaying(false);
-        }
-      } catch (error) {
-        toast({
-          title: t("toast.error"),
-          description: t("toast.errorDescription"),
-          variant: "destructive",
-        });
-      }
-    } else {
-      toast({
-        title: t("toast.error"),
-        description: t("OrderSentencesPractice.errorOrder"),
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
+    // if (isEqual) {
+    //   try {
+    //     const updateScrore = await updateScore(15, userId);
+    //     if (updateScrore?.status === 201) {
+    //       toast({
+    //         title: t("toast.success"),
+    //         description: tUpdateScore("yourXp", { xp: 5 }),
+    //       });
+    //       setCurrentArticleIndex(currentArticleIndex + 1);
+    //       router.refresh();
+    //       setIsPlaying(false);
+    //     }
+    //   } catch (error) {
+    //     toast({
+    //       title: t("toast.error"),
+    //       description: t("toast.errorDescription"),
+    //       variant: "destructive",
+    //     });
+    //   }
+    // } else {
+    //   toast({
+    //     title: t("toast.error"),
+    //     description: t("OrderSentencesPractice.errorOrder"),
+    //     variant: "destructive",
+    //   });
+    // }
+    // setLoading(false);
   }
 
   /*

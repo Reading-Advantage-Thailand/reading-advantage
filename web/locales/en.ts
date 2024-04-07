@@ -100,7 +100,7 @@ export default {
           //Cloze Test
           ClozeTest: "Cloze Test",
           ClozeTestDescription:
-            "Fill in the blanks with the correct word to complete the passage. If you get all the answers correct, you'll receive 5 XP.",
+            "Fill in the blanks with the correct word to complete the passage. If you get all the answers correct, you'll receive 2 XP.",
           saveAnswer: "Continue",
           errorAnswer: "Please answer correctly",
         },
