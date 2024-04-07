@@ -94,7 +94,7 @@ export default {
         ClozeTestPractice: {
           ClozeTest: "Bài kiểm tra lỗ hổng",
           ClozeTestDescription:
-            "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy điền từ còn thiếu vào để hoàn thành chúng. Nếu bạn trả lời đúng, bạn sẽ nhận được 5 XP.",
+            "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy điền từ còn thiếu vào để hoàn thành chúng. Nếu bạn trả lời đúng, bạn sẽ nhận được 2 XP.",
           saveOrder: "Lưu & Tiếp tục sau",
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
         },
