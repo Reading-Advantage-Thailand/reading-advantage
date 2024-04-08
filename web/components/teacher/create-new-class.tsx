@@ -114,7 +114,6 @@ function CreateNewClass({ userId }: { userId: string }) {
               name="grade"
               id="grade"
               value={grade}
-              placeholder="grade"
               onChange={(e) => setGrade(e.target.value)}
             >
               <option value="select">Select Grade</option>
