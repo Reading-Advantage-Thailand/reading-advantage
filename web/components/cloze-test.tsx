@@ -20,7 +20,8 @@ import { Sentence } from "./dnd/types";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
-import subtlex from "subtlex-word-frequencies"
+import subtlex from "subtlex-word-frequencies";
+import { wordFrequenciesConfig } from "@/configs/word-frequencies-config";
 
 type Props = {
   userId: string;
@@ -62,51 +63,18 @@ export default function ClozeTest({ userId }: Props) {
         newTodos.push(resultList);
       }
 
+      // [[xx],[xx]]
       console.log("🚀 ~ getUserSentenceSaved ~ newTodos:", newTodos);
+
+      // convert [[xx],[xx]] to [{xx},{xx}]
       console.log(
         "🚀 ~ getUserSentenceSaved ~ flatten(newTodos):",
         flatten(newTodos)
       );
 
-      /**
-       const splitText = text.replace(/["",.]/g, '').split(' ');
-console.log(splitText);
-       */
-      let arr = [
-        "On",
-        "his",
-        "way",
-        "to",
-        "the",
-        "market",
-        "the",
-        "boy",
-        "met",
-        "an",
-        "old",
-        "man",
-        "who",
-        "asked",
-        "him",
-        "what",
-        "he",
-        "was",
-        "carrying",
-      ];
-
-      //   const result = arr.map((word) => {
-      //     return {
-      //       word: word,
-      //       difficulty: difficulty.getLevel(word),
-      //     };
-      //   });
-      // console.log("🚀 ~ getUserSentenceSaved ~ result:", result);
-      subtlex.forEach(function (d) {
-        if (d.word === "carrying") {
-          console.log("🚀 ~ getUserSentenceSaved ~ d:", d);
-        }
-      });
       setArticleBeforeRandom(flatten(newTodos));
+
+      // find subtlex
     } catch (error) {
       console.log(error);
     }
@@ -140,7 +108,7 @@ console.log(splitText);
 
       // Add the selected range of sentences to the result array
       result = textList.slice(from, to);
-      console.log("🚀 ~ dataSplit ~ result:", result)
+      console.log("🚀 ~ dataSplit ~ result:", result);
 
       return {
         index: index,
@@ -210,7 +178,7 @@ console.log(splitText);
     //   });
     // }
     // setLoading(false);
-  }
+  };
 
   /*
   const [text, setText] = useState(
@@ -447,3 +415,42 @@ console.log(splitText);
     </>
   );
 }
+
+/**
+       const splitText = text.replace(/["",.]/g, '').split(' ');
+console.log(splitText);
+       */
+// let arr = [
+//   "On",
+//   "his",
+//   "way",
+//   "to",
+//   "the",
+//   "market",
+//   "the",
+//   "boy",
+//   "met",
+//   "an",
+//   "old",
+//   "man",
+//   "who",
+//   "asked",
+//   "him",
+//   "what",
+//   "he",
+//   "was",
+//   "carrying",
+// ];
+
+//   const result = arr.map((word) => {
+//     return {
+//       word: word,
+//       difficulty: difficulty.getLevel(word),
+//     };
+//   });
+// console.log("🚀 ~ getUserSentenceSaved ~ result:", result);
+// subtlex.forEach(function (d) {
+//   if (d.word === "carrying") {
+//     console.log("🚀 ~ getUserSentenceSaved ~ d:", d);
+//   }
+// });
