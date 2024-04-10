@@ -20,30 +20,41 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
+import CreateNewStudent from "./create-new-student";
+import { getCurrentUser } from "@/lib/session";
 
-export default function MyStudents() {
+type Student = {
+  id: string;
+email: string;
+  name: string;
+};
+
+type Classroom = {
+  teacherId: string;
+  classroomName: string;
+  student: {
+    studentId: string;
+  }[];
+}
+
+type MyStudentProps = {
+  userId: string;
+  allStudent: Student[];
+  allClassroom: Classroom[];
+};
+
+export default function MyStudents({userId, allStudent, allClassroom}: MyStudentProps) {
+console.log('all student: ', allStudent);
+console.log('all classroom :', allClassroom);
+
   const tableHeader = ["Name", "Email", "Actions"];
-  const tableBody = [
-    {
-      Name: "Student 1",
-      Email: "email_1@domain",
-      Actions: ["Report", "Enroll", "Unenroll", "Reset Progress"],
-    },
-    {
-      Name: "Student 2",
-      Email: "email_2@domain",
-      Actions: ["Report", "Enroll", "Unenroll", "Reset Progress"],
-    },
-    {
-      Name: "Student 3",
-      Email: "email_3@domain",
-      Actions: ["Report", "Enroll", "Unenroll", "Reset Progress"],
-    },
-  ];
+  const actions = ['Progress', 'Report']
 
+  
   return (
     <>
       <div className="font-bold text-3xl">My Students Page</div>
+      {/* <CreateNewStudent userId={userId}/> */}
       <div className="rounded-md border mt-4">
         <Table>
           <TableHeader className="font-bold">
@@ -54,10 +65,20 @@ export default function MyStudents() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tableBody.map((body, index) => (
+            {allClassroom.map((classroom, index) => {
+              const studentsInClass = student.filter(student => student.teacherId === classroom.teacherId);
+              return (
+                <div key={index}>
+                  <p>{classroom.teacherId}</p>
+                </div>
+              );
+              
+})}
+
+            {allStudent.map((student: Student, index: number) => (
               <TableRow key={index}>
-                <TableCell>{body.Name}</TableCell>
-                <TableCell>{body.Email}</TableCell>
+                <TableCell>{student.name}</TableCell>
+                <TableCell>{student.email}</TableCell>
                 <TableCell>
                   <div>
                     <DropdownMenu>
@@ -67,7 +88,7 @@ export default function MyStudents() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">
-                        {body.Actions.map((action, index) => {
+                        {actions.map((action, index) => {
                           return (
                             <DropdownMenuCheckboxItem key={index}>
                               {action}
