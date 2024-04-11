@@ -14,6 +14,10 @@ export const teacherPageConfig: TeacherPageConfig = {
             title: "contact",
             href: "/contact",
         },
+        {
+            title: "authors",
+            href: "/authors"
+        }
     ],
     teacherSidebarNav: [
         {
