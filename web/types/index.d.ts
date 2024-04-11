@@ -12,7 +12,7 @@ export type SiteConfig = {
 export type MainNavItem = NavItem
 
 export type NavItem = {
-    title: "home" | "about" | "contact",
+    title: "home" | "about" | "contact" | "authors",
     href: string;
     disabled?: boolean;
 }

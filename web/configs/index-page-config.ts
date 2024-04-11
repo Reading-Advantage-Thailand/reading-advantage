@@ -14,5 +14,9 @@ export const indexPageConfig: IndexPageConfig = {
             title: "contact",
             href: "/contact",
         },
+        {
+            title: "authors",
+            href: "/authors"
+        }
     ],
 };

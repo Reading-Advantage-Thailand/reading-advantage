@@ -112,6 +112,7 @@ export default {
       home: "Home",
       about: "About",
       contact: "Contact",
+      authors: "Authors",
     },
     userAccountNav: {
       level: "Level {level}",

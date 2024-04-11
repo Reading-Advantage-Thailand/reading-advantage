@@ -106,6 +106,7 @@ export default {
       home: "Trang chủ",
       about: "Về chúng tôi",
       contact: "Liên hệ",
+      authors: "tác giả",
     },
     userAccountNav: {
       level: "Trình độ {level}",
