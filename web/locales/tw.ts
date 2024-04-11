@@ -95,6 +95,7 @@ export default {
       home: "主頁",
       about: "關於",
       contact: "聯繫",
+      authors: "作者",
     },
     userAccountNav: {
       level: "等級 {level}",
