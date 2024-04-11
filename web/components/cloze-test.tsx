@@ -9,6 +9,7 @@ import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { flatten } from "lodash";
+import subtlex from "subtlex-word-frequencies";
 import { Header } from "./header";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
@@ -17,11 +18,12 @@ import { updateScore } from "@/lib/utils";
 import { Icons } from "./icons";
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
+import { wordFrequenciesConfig } from "@/constants/word-frequencies";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
-import subtlex from "subtlex-word-frequencies";
-import { wordFrequenciesConfig } from "@/configs/word-frequencies-config";
+
+
 
 type Props = {
   userId: string;
