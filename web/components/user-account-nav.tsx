@@ -79,11 +79,11 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
             0 &&
           (user.cefrLevel !== "" ? (
             <DropdownMenuItem asChild>
-              <Link href="/student/read">{"Student dashboard"}</Link>
+              <Link href="/student/read">{"Learner Home"}</Link>
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem asChild>
-              <Link href="/level">{"Student level test"}</Link>
+              <Link href="/level">{"Level Test"}</Link>
             </DropdownMenuItem>
           ))}
 
