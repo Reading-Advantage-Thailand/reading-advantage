@@ -105,6 +105,7 @@ export default {
       home: "หน้าหลัก",
       about: "เกี่ยวกับ",
       contact: "ติดต่อ",
+      authors: "ผู้เขียน",
     },
     userAccountNav: {
       level: "ระดับ {level}",
