@@ -23,8 +23,6 @@ dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 
-
-
 type Props = {
   userId: string;
 };
@@ -44,9 +42,18 @@ export default function ClozeTest({ userId }: Props) {
     "pages.student.practicePage.flashcardPractice"
   );
 
+
+  const [sentenceArrayBeforeRandom, setSentenceArrayBeforeRandom] = useState<
+    any[]
+  >([]);
+  const [sentenceArrayRandom, setSentenceArrayRandom] = useState<any[]>([]);
+
   useEffect(() => {
     getUserSentenceSaved();
   }, []);
+
+
+
 
   const getUserSentenceSaved = async () => {
     try {
@@ -110,12 +117,43 @@ export default function ClozeTest({ userId }: Props) {
 
       // Add the selected range of sentences to the result array
       result = textList.slice(from, to);
-      console.log("🚀 ~ dataSplit ~ result:", result);
+      console.log("***********************");
+
+      // forEach word in the sentence by using split result
+      const wordResultBySentence = [];
+      result.forEach((sentence, index) => {
+        console.log("🚀 ~ result.forEach ~ sentence:", sentence);
+        console.log(
+          "🚀 ~ result.forEach ~ words sentence:",
+          sentence.replace(/(?<!\w)'|'(?!\w)|[?.",]+/g, "").split(/\s+/)
+        );
+
+        const words = sentence
+          .replace(/(?<!\w)'|'(?!\w)|[?.",]+/g, "")
+          .split(/\s+/);
+        words.forEach((data: string, indexWords: number) => {         
+          subtlex.forEach(({ word, count }) => {
+            if (word === data.toLowerCase()) { 
+               console.log("🚀 ~ words.forEach ~ indexWords:", indexWords);
+               console.log("🚀 ~ subtlex.forEach ~ data, word count:", data ,word, count);
+            }
+          });
+        });
+
+        /*
+        {
+          index: index,
+          position: position,
+          word: word,
+        }
+        */
+      });
 
       return {
         index: index,
         title: res.data.article.title,
         surroundingSentences: result,
+        wordSentences: [],
         articleId,
       };
     });
@@ -321,98 +359,6 @@ export default function ClozeTest({ userId }: Props) {
           <p>{generateClozeText()}</p>
           <button type="submit">Submit</button>
         </form>
-      </div> */}
-      {/* <div className="mt-5">
-        {articleBeforeRandom.length === 0 ? (
-          <div className="grid w-full gap-10">
-            <div className="mx-auto w-[800px] space-y-6">
-              <Skeleton className="h-[200px] w-full" />
-              <Skeleton className="h-[20px] w-2/3" />
-              <Skeleton className="h-[20px] w-full" />
-              <Skeleton className="h-[20px] w-full" />
-            </div>
-          </div>
-        ) : (
-          <>
-            {articleBeforeRandom.length !== currentArticleIndex ? (
-              <div className="bg-[#2684FFß] flex max-w-screen-lg">
-                <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                  <div className="flex justify-between items-center">
-                    <h4 className="py-4 pl-5 font-bold">
-                      {articleBeforeRandom[currentArticleIndex]?.title}
-                    </h4>
-                    <div className="mr-5">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={handlePause}
-                      >
-                        {isplaying ? (
-                          <Icons.pause className="mr-1" size={12} />
-                        ) : (
-                          <Icons.play className="mr-1" size={12} />
-                        )}
-                        {isplaying
-                          ? tc("soundButton.pause")
-                          : tc("soundButton.play")}
-                      </Button>
-                      <audio
-                        ref={audioRef}
-                        key={
-                          articleBeforeRandom[currentArticleIndex]
-                            ?.surroundingSentences
-                        }
-                      >
-                        <source
-                          src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleBeforeRandom[currentArticleIndex]?.articleId}.mp3`}
-                        />
-                      </audio>
-                    </div>
-                  </div>
-
-                  <div className="p-5 bg-[#EBECF0]">
-                    {articleBeforeRandom[
-                      currentArticleIndex
-                    ]?.surroundingSentences.map(
-                      (sentence: string, index: number) => (
-                        <div
-                          key={index}
-                          className="bg-white rounded-lg border-solid shadow-transparent box-border p-8 min-h-10 mb-8  select-none color-[#091e42]"
-                        >
-                          {sentence}
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <></>
-            )}
-
-            {articleBeforeRandom.length != currentArticleIndex ? (
-              <Button
-                className="mt-4"
-                variant="outline"
-                disabled={loading}
-                size="sm"
-                onClick={onNextArticle}
-              >
-                {t("OrderSentencesPractice.saveOrder")}
-              </Button>
-            ) : (
-              <Button
-                className="mt-4"
-                variant="outline"
-                disabled={true}
-                size="sm"
-                onClick={onNextArticle}
-              >
-                {t("OrderSentencesPractice.saveOrder")}
-              </Button>
-            )}
-          </>
-        )}
       </div> */}
     </>
   );
