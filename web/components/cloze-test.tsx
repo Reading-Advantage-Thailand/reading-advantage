@@ -27,63 +27,50 @@ type Props = {
   userId: string;
 };
 
+type RootObject = {
+  textArrayId: number;
+  resultTextArray?: ResultTextArray[] | null;
+};
+type SubtlexResult = {
+  word: string;
+  count: number;
+};
+type ResultTextArray = {
+  subtlexResult: SubtlexResult;
+  indexWord: number;
+};
+
 export default function ClozeTest({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const router = useRouter();
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [isplaying, setIsPlaying] = React.useState(false);
-  const [articleBeforeSelect, setArticleBeforeSelect] = useState<any[]>([]);
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
-  const [articleRandom, setArticleRandom] = useState<any[]>([]);
-  const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
-  const [loading, setLoading] = React.useState(false);
-  const tUpdateScore = useScopedI18n(
-    "pages.student.practicePage.flashcardPractice"
-  );
-
-
-  const [sentenceArrayBeforeRandom, setSentenceArrayBeforeRandom] = useState<
-    any[]
-  >([]);
-  const [sentenceArrayRandom, setSentenceArrayRandom] = useState<any[]>([]);
 
   useEffect(() => {
     getUserSentenceSaved();
   }, []);
 
-
-
-
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
 
-      // step 1 : find Article sentence: ID and SN due date expired
+      // step 1 : sort Article sentence: ID and SN due date expired
       const closest = res.data.sentences.sort((a: Sentence, b: Sentence) => {
         return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
       });
 
       const newTodos = [...articleBeforeRandom];
 
-      // step 3 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
+      // step 2 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
       for (const article of closest) {
         let resultList = await getArticle(article?.articleId, article?.sn);
+        console.log("🚀 ~ getUserSentenceSaved ~ resultList:", resultList);
         newTodos.push(resultList);
       }
 
-      // [[xx],[xx]]
-      console.log("🚀 ~ getUserSentenceSaved ~ newTodos:", newTodos);
-
-      // convert [[xx],[xx]] to [{xx},{xx}]
-      console.log(
-        "🚀 ~ getUserSentenceSaved ~ flatten(newTodos):",
-        flatten(newTodos)
-      );
-
       setArticleBeforeRandom(flatten(newTodos));
-
-      // find subtlex
     } catch (error) {
       console.log(error);
     }
@@ -93,20 +80,21 @@ export default function ClozeTest({ userId }: Props) {
     const res = await axios.get(`/api/articles/${articleId}`);
     const textList = await splitTextIntoSentences(res.data.article.content);
 
+    // step 3 : find data split text, text count max level, position text max level, position text for show and replace dropdown
     const dataSplit = [sn].map((index) => {
-      let result: any[] = [];
+      let result: string[] = [];
 
-      // Determine how many sentences can be included above the current index
+      // กำหนดว่าสามารถรวมประโยคได้กี่ประโยคเหนือ index ปัจจุบัน;
       let sentencesAbove = index;
 
-      // Determine how many sentences can be included below the current index
+      // กำหนดว่าสามารถรวมประโยคได้กี่ประโยคใต้ index ปัจจุบัน;
       let sentencesBelow = textList.length - index - 1;
 
-      // Calculate m based on available sentences above and below
+      // คำนวณ m ตามจำนวนประโยคที่มีอยู่ด้านบนและด้านล่าง
       let m = Math.min(sentencesAbove, 4);
       let n = 4 - m;
 
-      // If the current index is at or near the end, adjust m and n accordingly
+      // ถ้าดัชนีปัจจุบันอยู่ที่หรือใกล้กับตอนท้ายแล้ว ให้ปรับ m และ n ตามที่เหมาะสม
       if (sentencesBelow < n) {
         n = sentencesBelow;
         m = Math.min(4, sentencesAbove + (4 - n));
@@ -115,145 +103,88 @@ export default function ClozeTest({ userId }: Props) {
       let from = Math.max(index - m, 0);
       let to = Math.min(index + n + 1, textList.length);
 
-      // Add the selected range of sentences to the result array
+      // เพิ่มช่วงของประโยคที่เลือกไปยังอาร์เรย์ผลลัพธ์
       result = textList.slice(from, to);
-      console.log("***********************");
+      // console.log("🚀 ~ dataSplit ~ result:", result);
 
-      // forEach word in the sentence by using split result
-      const wordResultBySentence = [];
-      result.forEach((sentence, index) => {
-        console.log("🚀 ~ result.forEach ~ sentence:", sentence);
-        console.log(
-          "🚀 ~ result.forEach ~ words sentence:",
-          sentence.replace(/(?<!\w)'|'(?!\w)|[?.",]+/g, "").split(/\s+/)
-        );
-
-        const words = sentence
-          .replace(/(?<!\w)'|'(?!\w)|[?.",]+/g, "")
-          .split(/\s+/);
-        words.forEach((data: string, indexWords: number) => {         
-          subtlex.forEach(({ word, count }) => {
-            if (word === data.toLowerCase()) { 
-               console.log("🚀 ~ words.forEach ~ indexWords:", indexWords);
-               console.log("🚀 ~ subtlex.forEach ~ data, word count:", data ,word, count);
-            }
-          });
-        });
-
-        /*
-        {
-          index: index,
-          position: position,
-          word: word,
-        }
-        */
+      // แบ่งประโยคออกเป็นคำ
+      const textArraySplit = result.map((text, index) => {
+        return {
+          id: index,
+          textSplit: text.split(" "),
+        };
       });
 
+      // สร้างอาร์เรย์ของคำที่จะใช้แทนที่ โดยเลือกคำที่มีความถี่สูงสุด
+      const textCountSplit = textArraySplit?.map((textArray) => {
+        // ใช้ map ที่นี่เพื่อ return อาร์เรย์ของผลลัพธ์จากการประมวลผลแต่ละคำ
+        const resultTextArray = textArray?.textSplit?.map(
+          (word: string, index) => {
+            let wordReplace = word.replace(/(?<!\w)'|'(?!\w)|[?.",!]+/g, "");
+
+            // คำนวณความถี่ของคำ
+            const result: any = subtlex?.filter(
+              ({ word }) => word === wordReplace.toLowerCase()
+            )[0];
+
+            return {
+              subtlexResult: result,
+              indexWord: index,
+            };
+          }
+        );
+        return { textArrayId: textArray.id, resultTextArray };
+      });
+      const minCountByList = textCountSplit && findMinimumCount(textCountSplit);
+      // console.log(
+      //   "🚀 ~ getArticle ~ swapWordPositions minCountByList:",
+      //   swapWordPositions(minCountByList)
+      // );
+
       return {
-        index: index,
         title: res.data.article.title,
         surroundingSentences: result,
-        wordSentences: [],
+        index,
         articleId,
+        textCountSplit, // คำในแต่ละประโยคที่มีการแยกออกมา
+        minCountByList, // คำในแต่ละประโยคที่มีความถี่ต่ำสุด
       };
     });
 
     return dataSplit;
   };
 
-  //=====> play audio
-  const handlePause = () => {
-    setIsPlaying(!isplaying);
-    if (audioRef.current === null) return;
-    if (isplaying) {
-      audioRef.current?.pause();
+  const findMinimumCount = (data: any) => {
+    const results = data?.map((group: RootObject) => {
+      let minCount = Number.MAX_SAFE_INTEGER; // Initialize minCount as the highest possible number for comparison
+      let minWord = {};
+      group?.resultTextArray?.forEach((wordInfo: ResultTextArray) => {
+        const count = wordInfo?.subtlexResult?.count;
+        if (count < minCount) {
+          minCount = count; // Update minCount if the current count is less than the stored minCount
+          minWord = wordInfo;
+        }
+      });
+
+      // Return undefined for this group if found, otherwise return the minCount found
+      return minWord; //minCount;
+    });
+
+    return results;
+  };
+
+  const swapWordPositions = (words: any, index1: any, index2: any) => {
+    console.log("🚀 ~ swapWordPositions ~ words, index1, index2 :", words, index1, index2)
+    if (index1 < words.length && index2 < words.length) {
+      let temp = words[index1];
+      words[index1] = words[index2];
+      words[index2] = temp;
     } else {
-      audioRef.current?.play();
+      console.log("Indices are out of the array's bounds");
     }
-  };
+  }
 
-  const onNextArticle = async () => {
-    setCurrentArticleIndex(currentArticleIndex + 1);
-    // setLoading(true);
-    // let isEqual = true;
-
-    // for (
-    //   let i = 0;
-    //   i < articleBeforeRandom[currentArticleIndex].surroundingSentences.length;
-    //   i++
-    // ) {
-    //   if (
-    //     articleBeforeRandom[currentArticleIndex].surroundingSentences[i] !==
-    //     articleRandom[currentArticleIndex].surroundingSentences[i]
-    //   ) {
-    //     isEqual = false;
-    //     break;
-    //   }
-    // }
-
-    // if (isEqual) {
-    //   try {
-    //     const updateScrore = await updateScore(15, userId);
-    //     if (updateScrore?.status === 201) {
-    //       toast({
-    //         title: t("toast.success"),
-    //         description: tUpdateScore("yourXp", { xp: 5 }),
-    //       });
-    //       setCurrentArticleIndex(currentArticleIndex + 1);
-    //       router.refresh();
-    //       setIsPlaying(false);
-    //     }
-    //   } catch (error) {
-    //     toast({
-    //       title: t("toast.error"),
-    //       description: t("toast.errorDescription"),
-    //       variant: "destructive",
-    //     });
-    //   }
-    // } else {
-    //   toast({
-    //     title: t("toast.error"),
-    //     description: t("OrderSentencesPractice.errorOrder"),
-    //     variant: "destructive",
-    //   });
-    // }
-    // setLoading(false);
-  };
-
-  /*
-  const [text, setText] = useState(
-    "React is a JavaScript library for building user interfaces."
-  );
-  
-  const [answers, setAnswers] = useState(
-    Array(text.split(" ").length).fill("")
-  );
-
-  const handleChange = (index, event) => {
-    const newAnswers = [...answers];
-    newAnswers[index] = event.target.value;
-    setAnswers(newAnswers);
-  };
-
-   const handleSubmit = (event) => {
-     event.preventDefault();
-     // Logic to check answers or perform further actions
-     console.log("Submitted Answers:", answers);
-   };
-
-   const generateClozeText = () => {
-     return text.split(" ").map((word, index) => (
-       <span key={index}>
-         {answers[index] ? answers[index] : "_____"}{" "}
-         <input
-           type="text"
-           value={answers[index]}
-           onChange={(e) => handleChange(index, e)}
-         />
-       </span>
-     ));
-   };
-   */
+  console.log("🚀 ~ ClozeTest ~ articleBeforeRandom:", articleBeforeRandom);
 
   return (
     <>
@@ -261,144 +192,7 @@ export default function ClozeTest({ userId }: Props) {
         heading={t("ClozeTestPractice.ClozeTest")}
         text={t("ClozeTestPractice.ClozeTestDescription")}
       />
-      <div className="mt-5">
-        {articleBeforeRandom.length === 0 ? (
-          <div className="grid w-full gap-10">
-            <div className="mx-auto w-[800px] space-y-6">
-              <Skeleton className="h-[200px] w-full" />
-              <Skeleton className="h-[20px] w-2/3" />
-              <Skeleton className="h-[20px] w-full" />
-              <Skeleton className="h-[20px] w-full" />
-            </div>
-          </div>
-        ) : (
-          <>
-            {articleBeforeRandom.length !== currentArticleIndex ? (
-              <div className="bg-[#2684FFß] flex max-w-screen-lg">
-                <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                  <div className="flex justify-between items-center">
-                    <h4 className="py-4 pl-5 font-bold">
-                      {articleBeforeRandom[currentArticleIndex]?.title}
-                    </h4>
-                    <div className="mr-5">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={handlePause}
-                      >
-                        {isplaying ? (
-                          <Icons.pause className="mr-1" size={12} />
-                        ) : (
-                          <Icons.play className="mr-1" size={12} />
-                        )}
-                        {isplaying
-                          ? tc("soundButton.pause")
-                          : tc("soundButton.play")}
-                      </Button>
-                      <audio
-                        ref={audioRef}
-                        key={
-                          articleBeforeRandom[currentArticleIndex]
-                            ?.surroundingSentences
-                        }
-                      >
-                        <source
-                          src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleBeforeRandom[currentArticleIndex]?.articleId}.mp3`}
-                        />
-                      </audio>
-                    </div>
-                  </div>
-
-                  <div className="p-5 bg-[#EBECF0]">
-                    {articleBeforeRandom[
-                      currentArticleIndex
-                    ]?.surroundingSentences.map(
-                      (sentence: string, index: number) => (
-                        <div
-                          key={index}
-                          className="bg-white rounded-lg border-solid shadow-transparent box-border p-8 min-h-10 mb-8  select-none color-[#091e42]"
-                        >
-                          {sentence}
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <></>
-            )}
-
-            {articleBeforeRandom.length != currentArticleIndex ? (
-              <Button
-                className="mt-4"
-                variant="outline"
-                disabled={loading}
-                size="sm"
-                onClick={onNextArticle}
-              >
-                {t("OrderSentencesPractice.saveOrder")}
-              </Button>
-            ) : (
-              <Button
-                className="mt-4"
-                variant="outline"
-                disabled={true}
-                size="sm"
-                onClick={onNextArticle}
-              >
-                {t("OrderSentencesPractice.saveOrder")}
-              </Button>
-            )}
-          </>
-        )}
-      </div>
-      {/* <div>
-        <h2>Cloze Activity</h2>
-        <form onSubmit={handleSubmit}>
-          <p>{generateClozeText()}</p>
-          <button type="submit">Submit</button>
-        </form>
-      </div> */}
+      <div className="mt-5"></div>
     </>
   );
 }
-
-/**
-       const splitText = text.replace(/["",.]/g, '').split(' ');
-console.log(splitText);
-       */
-// let arr = [
-//   "On",
-//   "his",
-//   "way",
-//   "to",
-//   "the",
-//   "market",
-//   "the",
-//   "boy",
-//   "met",
-//   "an",
-//   "old",
-//   "man",
-//   "who",
-//   "asked",
-//   "him",
-//   "what",
-//   "he",
-//   "was",
-//   "carrying",
-// ];
-
-//   const result = arr.map((word) => {
-//     return {
-//       word: word,
-//       difficulty: difficulty.getLevel(word),
-//     };
-//   });
-// console.log("🚀 ~ getUserSentenceSaved ~ result:", result);
-// subtlex.forEach(function (d) {
-//   if (d.word === "carrying") {
-//     console.log("🚀 ~ getUserSentenceSaved ~ d:", d);
-//   }
-// });
