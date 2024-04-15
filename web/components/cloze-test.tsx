@@ -174,6 +174,7 @@ export default function ClozeTest({ userId }: Props) {
   };
 
   const swapWordPositions = (words: any, index1: any, index2: any) => {
+    /*
     console.log("🚀 ~ swapWordPositions ~ words, index1, index2 :", words, index1, index2)
     if (index1 < words.length && index2 < words.length) {
       let temp = words[index1];
@@ -182,6 +183,29 @@ export default function ClozeTest({ userId }: Props) {
     } else {
       console.log("Indices are out of the array's bounds");
     }
+  */
+    /*
+    const rawData = JSON.parse(JSON.stringify(data));
+
+    // Loop through each section in the data
+    rawData?.forEach((title: any) => {
+      title.forEach((section: any) => {
+        // Check if the result array has at least two items to swap
+        if (section.surroundingSentences.length > 1) {
+          // Loop through the result array and swap each item with a random item
+          for (let i = section.surroundingSentences.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [section.surroundingSentences[i], section.surroundingSentences[j]] =
+              [
+                section.surroundingSentences[j],
+                section.surroundingSentences[i],
+              ];
+          }
+        }
+      });
+    });
+    return rawData;
+    */
   }
 
   console.log("🚀 ~ ClozeTest ~ articleBeforeRandom:", articleBeforeRandom);
