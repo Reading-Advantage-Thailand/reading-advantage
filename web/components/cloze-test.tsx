@@ -8,14 +8,22 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import { before, flatten, random } from "lodash";
+import { before, flatten, random, join } from "lodash";
 import subtlex from "subtlex-word-frequencies";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import { Header } from "./header";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
 import { Skeleton } from "./ui/skeleton";
 import { updateScore } from "@/lib/utils";
 import { Icons } from "./icons";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
 import { wordFrequenciesConfig } from "@/constants/word-frequencies";
@@ -40,17 +48,30 @@ type ResultTextArray = {
   indexWord: number;
 };
 
+type TextArraySplit = {
+  id: number;
+  textSplit: string[];
+};
+
 export default function ClozeTest({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const router = useRouter();
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [isplaying, setIsPlaying] = React.useState(false);
-  const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [articleClozeTest, setArticleClozeTest] = useState<any[]>([]);
+  const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
 
   useEffect(() => {
     getUserSentenceSaved();
   }, []);
+
+  useEffect(() => {
+    if (articleClozeTest.length > 0) {
+      setLoading(false);
+    }
+  }, [articleClozeTest]);
 
   const getUserSentenceSaved = async () => {
     try {
@@ -61,7 +82,7 @@ export default function ClozeTest({ userId }: Props) {
         return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
       });
 
-      const newTodos = [...articleBeforeRandom];
+      const newTodos = [...articleClozeTest];
 
       // step 2 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
       for (const article of closest) {
@@ -69,7 +90,7 @@ export default function ClozeTest({ userId }: Props) {
         newTodos.push(resultList);
       }
 
-      setArticleBeforeRandom(flatten(newTodos));
+      setArticleClozeTest(flatten(newTodos));
     } catch (error) {
       console.log(error);
     }
@@ -140,7 +161,7 @@ export default function ClozeTest({ userId }: Props) {
         surroundingSentences: result,
         index,
         articleId,
-        textCountSplit, // คำในแต่ละประโยคที่มีการแยกออกมา
+        textArraySplit, // คำในแต่ละประโยคที่มีการแยกออกมา
         beforeRandomWords: minCountByList, // คำในแต่ละประโยคที่มีความถี่ต่ำสุด
         randomWords: swapWordPositions(minCountByList), // คำในแต่ละประโยคที่มีการสลับตำแหน่ง
       };
@@ -149,7 +170,7 @@ export default function ClozeTest({ userId }: Props) {
   };
 
   const findMinimumCount = (data: any) => {
-    const results : any= [];
+    const results: any = [];
     data?.forEach((group: RootObject) => {
       let minCount = Number.MAX_SAFE_INTEGER;
       let secondMinCount = Number.MAX_SAFE_INTEGER;
@@ -176,20 +197,22 @@ export default function ClozeTest({ userId }: Props) {
       });
 
       // Check for duplicates results words
-     const countDuplicates = results && results.filter(
-      (wordInfo: any) =>
-        wordInfo?.subtlexResult &&
-        wordInfo.subtlexResult.hasOwnProperty("count") &&
-        wordInfo.subtlexResult.count === minCount
-     ).length;
-     
+      const countDuplicates =
+        results &&
+        results.filter(
+          (wordInfo: any) =>
+            wordInfo?.subtlexResult &&
+            wordInfo.subtlexResult.hasOwnProperty("count") &&
+            wordInfo.subtlexResult.count === minCount
+        ).length;
+
       if (countDuplicates && countDuplicates > 0 && secondMinWord) {
         results.push(secondMinWord); // Use the second minimum if the first is duplicated
       } else if (minWord) {
         results.push(minWord); // Otherwise, use the first minimum
       }
     });
-   
+
     return results;
   };
 
@@ -205,7 +228,18 @@ export default function ClozeTest({ userId }: Props) {
     return rawData;
   };
 
-  console.log("🚀 ~ ClozeTest ~ articleBeforeRandom:", articleBeforeRandom);
+  console.log("🚀 ~ ClozeTest ~ articleClozeTest:", articleClozeTest);
+
+  //=====> play audio
+  const handlePause = () => {
+    setIsPlaying(!isplaying);
+    if (audioRef.current === null) return;
+    if (isplaying) {
+      audioRef.current?.pause();
+    } else {
+      audioRef.current?.play();
+    }
+  };
 
   return (
     <>
@@ -214,7 +248,7 @@ export default function ClozeTest({ userId }: Props) {
         text={t("ClozeTestPractice.ClozeTestDescription")}
       />
       <div className="mt-5">
-        {articleBeforeRandom.length === 0 ? (
+        {articleClozeTest.length === 0 ? (
           <div className="grid w-full gap-10">
             <div className="mx-auto w-[800px] space-y-6">
               <Skeleton className="h-[200px] w-full" />
@@ -224,7 +258,106 @@ export default function ClozeTest({ userId }: Props) {
             </div>
           </div>
         ) : (
-          <></>
+          <>
+            {/* <Button disabled>
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              Please wait
+            </Button> */}
+            {articleClozeTest.length !== currentArticleIndex ? (
+              <>
+                <div className="bg-[#2684FFß] flex max-w-screen-lg">
+                  <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                    <div className="flex justify-between items-center">
+                      <h4 className="py-4 pl-5 font-bold">
+                        {articleClozeTest[currentArticleIndex]?.title}
+                      </h4>
+                      <div className="mr-5">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={handlePause}
+                        >
+                          {isplaying ? (
+                            <Icons.pause className="mr-1" size={12} />
+                          ) : (
+                            <Icons.play className="mr-1" size={12} />
+                          )}
+                          {isplaying
+                            ? tc("soundButton.pause")
+                            : tc("soundButton.play")}
+                        </Button>
+                        <audio
+                          ref={audioRef}
+                          key={
+                            articleClozeTest[currentArticleIndex]
+                              ?.surroundingSentences
+                          }
+                        >
+                          <source
+                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleClozeTest[currentArticleIndex]?.articleId}.mp3`}
+                          />
+                        </audio>
+                      </div>
+                    </div>
+                    {/* <Select>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Theme" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="system">System</SelectItem>
+                      </SelectContent>
+                    </Select> */}
+                    {/* show sentences */}
+                    <div className="p-5 bg-[#EBECF0]">
+                      {articleClozeTest[
+                        currentArticleIndex
+                      ]?.textArraySplit.map(
+                        (
+                          element: TextArraySplit,
+                          indexTextArraySplit: number
+                        ) => {
+                          return (
+                            <div
+                              key={indexTextArraySplit}
+                              className="bg-white rounded-lg border-solid shadow-transparent box-border p-8 min-h-10 mb-8  select-none color-[#091e42]"
+                            >
+                              <p>
+                                {element.textSplit.map(
+                                  (word: string, index: number) => {
+                                    // Check if the current word's index matches any indexWord from beforeRandomWords
+                                    const shouldReplace =
+                                      articleClozeTest[currentArticleIndex]
+                                        .beforeRandomWords[element.id]
+                                        .indexWord === index;
+
+                                    // If it matches, replace with 'XXX', otherwise keep the original word
+                                    return (
+                                      <span
+                                        key={index}
+                                        className={
+                                          shouldReplace ? "text-blue-500" : ""
+                                        }
+                                      >
+                                        {shouldReplace ? "XXX" : word}{" "}
+                                      </span>
+                                    );
+                                  }
+                                )}
+                              </p>
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <></>
+            )}
+          </>
         )}
       </div>
     </>
