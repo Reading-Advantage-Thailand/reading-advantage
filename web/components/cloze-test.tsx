@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import { flatten } from "lodash";
+import { before, flatten, random } from "lodash";
 import subtlex from "subtlex-word-frequencies";
 import { Header } from "./header";
 import { Button } from "./ui/button";
@@ -66,7 +66,6 @@ export default function ClozeTest({ userId }: Props) {
       // step 2 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
       for (const article of closest) {
         let resultList = await getArticle(article?.articleId, article?.sn);
-        console.log("🚀 ~ getUserSentenceSaved ~ resultList:", resultList);
         newTodos.push(resultList);
       }
 
@@ -105,7 +104,6 @@ export default function ClozeTest({ userId }: Props) {
 
       // เพิ่มช่วงของประโยคที่เลือกไปยังอาร์เรย์ผลลัพธ์
       result = textList.slice(from, to);
-      // console.log("🚀 ~ dataSplit ~ result:", result);
 
       // แบ่งประโยคออกเป็นคำ
       const textArraySplit = result.map((text, index) => {
@@ -136,10 +134,6 @@ export default function ClozeTest({ userId }: Props) {
         return { textArrayId: textArray.id, resultTextArray };
       });
       const minCountByList = textCountSplit && findMinimumCount(textCountSplit);
-      // console.log(
-      //   "🚀 ~ getArticle ~ swapWordPositions minCountByList:",
-      //   swapWordPositions(minCountByList)
-      // );
 
       return {
         title: res.data.article.title,
@@ -147,66 +141,69 @@ export default function ClozeTest({ userId }: Props) {
         index,
         articleId,
         textCountSplit, // คำในแต่ละประโยคที่มีการแยกออกมา
-        minCountByList, // คำในแต่ละประโยคที่มีความถี่ต่ำสุด
+        beforeRandomWords: minCountByList, // คำในแต่ละประโยคที่มีความถี่ต่ำสุด
+        randomWords: swapWordPositions(minCountByList), // คำในแต่ละประโยคที่มีการสลับตำแหน่ง
       };
     });
-
     return dataSplit;
   };
 
   const findMinimumCount = (data: any) => {
-    const results = data?.map((group: RootObject) => {
-      let minCount = Number.MAX_SAFE_INTEGER; // Initialize minCount as the highest possible number for comparison
+    const results : any= [];
+    data?.forEach((group: RootObject) => {
+      let minCount = Number.MAX_SAFE_INTEGER;
+      let secondMinCount = Number.MAX_SAFE_INTEGER;
       let minWord = {};
+      let secondMinWord = {};
+
       group?.resultTextArray?.forEach((wordInfo: ResultTextArray) => {
-        const count = wordInfo?.subtlexResult?.count;
-        if (count < minCount) {
-          minCount = count; // Update minCount if the current count is less than the stored minCount
-          minWord = wordInfo;
-        }
-      });
-
-      // Return undefined for this group if found, otherwise return the minCount found
-      return minWord; //minCount;
-    });
-
-    return results;
-  };
-
-  const swapWordPositions = (words: any, index1: any, index2: any) => {
-    /*
-    console.log("🚀 ~ swapWordPositions ~ words, index1, index2 :", words, index1, index2)
-    if (index1 < words.length && index2 < words.length) {
-      let temp = words[index1];
-      words[index1] = words[index2];
-      words[index2] = temp;
-    } else {
-      console.log("Indices are out of the array's bounds");
-    }
-  */
-    /*
-    const rawData = JSON.parse(JSON.stringify(data));
-
-    // Loop through each section in the data
-    rawData?.forEach((title: any) => {
-      title.forEach((section: any) => {
-        // Check if the result array has at least two items to swap
-        if (section.surroundingSentences.length > 1) {
-          // Loop through the result array and swap each item with a random item
-          for (let i = section.surroundingSentences.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [section.surroundingSentences[i], section.surroundingSentences[j]] =
-              [
-                section.surroundingSentences[j],
-                section.surroundingSentences[i],
-              ];
+        // Ensure subtlexResult and count are defined before using them
+        if (
+          wordInfo?.subtlexResult &&
+          wordInfo.subtlexResult.hasOwnProperty("count")
+        ) {
+          const count = wordInfo.subtlexResult.count;
+          if (count < minCount) {
+            secondMinCount = minCount;
+            secondMinWord = minWord;
+            minCount = count;
+            minWord = wordInfo;
+          } else if (count < secondMinCount && count !== minCount) {
+            secondMinCount = count;
+            secondMinWord = wordInfo;
           }
         }
       });
+
+      // Check for duplicates results words
+     const countDuplicates = results && results.filter(
+      (wordInfo: any) =>
+        wordInfo?.subtlexResult &&
+        wordInfo.subtlexResult.hasOwnProperty("count") &&
+        wordInfo.subtlexResult.count === minCount
+     ).length;
+     
+      if (countDuplicates && countDuplicates > 0 && secondMinWord) {
+        results.push(secondMinWord); // Use the second minimum if the first is duplicated
+      } else if (minWord) {
+        results.push(minWord); // Otherwise, use the first minimum
+      }
     });
+   
+    return results;
+  };
+
+  const swapWordPositions = (words: any) => {
+    const rawData = JSON.parse(JSON.stringify(words));
+    if (rawData.length > 1) {
+      rawData.forEach((_element: ResultTextArray, index: number) => {
+        const j = Math.floor(Math.random() * (index + 1));
+        [rawData[index], rawData[j]] = [rawData[j], rawData[index]];
+      });
+    }
+
     return rawData;
-    */
-  }
+  };
 
   console.log("🚀 ~ ClozeTest ~ articleBeforeRandom:", articleBeforeRandom);
 
@@ -216,7 +213,20 @@ export default function ClozeTest({ userId }: Props) {
         heading={t("ClozeTestPractice.ClozeTest")}
         text={t("ClozeTestPractice.ClozeTestDescription")}
       />
-      <div className="mt-5"></div>
+      <div className="mt-5">
+        {articleBeforeRandom.length === 0 ? (
+          <div className="grid w-full gap-10">
+            <div className="mx-auto w-[800px] space-y-6">
+              <Skeleton className="h-[200px] w-full" />
+              <Skeleton className="h-[20px] w-2/3" />
+              <Skeleton className="h-[20px] w-full" />
+              <Skeleton className="h-[20px] w-full" />
+            </div>
+          </div>
+        ) : (
+          <></>
+        )}
+      </div>
     </>
   );
 }
