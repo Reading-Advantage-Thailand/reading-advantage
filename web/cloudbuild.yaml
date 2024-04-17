@@ -62,7 +62,7 @@ steps:
         "reading-advantage-web",
         "--image",
         "gcr.io/$PROJECT_ID/reading-advantage-web",
-        "--timeout=[60m]",
+        "--timeout=60m",
         "--region",
         "asia-southeast1",
         "--platform",
