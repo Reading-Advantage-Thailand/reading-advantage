@@ -582,9 +582,9 @@ async function voiceGenerator(
         });
 
         await uploadToBucket(localPath, `${AUDIO_URL}/${articleId}.mp3`);
-    } catch (error) {
+    } catch (error: any) {
         console.error("VOICE GENERATING ERROR: ", error);
-        throw "Error generating voice: " + error;
+        throw "Error generating voice: " + error + error.response.data.error + error.response.data.error.message + error.message;
     }
 }
 
