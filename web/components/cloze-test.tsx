@@ -245,7 +245,45 @@ export default function ClozeTest({ userId }: Props) {
     margin-right: 10px;
   `;
 
-  const dropdownWords = (indexTextArraySplit: number) => {
+/*
+const dropdownWords = (indexTextArraySplit: number) => {
+  // Retrieve the initial word to display in the dropdown
+  const initialWord = articleClozeTest[currentArticleIndex].beforeRandomWords[indexTextArraySplit].subtlexResult.word;
+
+  const [selectedWord, setSelectedWord] = useState(initialWord); // State to hold the selected word
+
+  const handleValueChange = (e) => {
+    const value = JSON.parse(e);
+    const selectedWord = value.word;
+    setSelectedWord(selectedWord); // Update the selected word state
+
+    // Check correctness
+    const isCorrect = articleClozeTest[currentArticleIndex].beforeRandomWords[indexTextArraySplit].subtlexResult.word === selectedWord;
+
+    // Update the main state array with the new correctness value
+    const updatedClozeTests = [...articleClozeTest];
+    updatedClozeTests[currentArticleIndex].randomWords[indexTextArraySplit].correctWords = isCorrect;
+    setArticleClozeTest(updatedClozeTests);
+  };
+
+  return (
+    <Select onValueChange={handleValueChange}>
+      <SelectTrigger className="w-[150px] my-2">
+        <SelectValue>{selectedWord}</SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {articleClozeTest[currentArticleIndex].randomWords.map((obj, index) => (
+          <SelectItem key={index} value={JSON.stringify(obj.subtlexResult.word)}>
+            {obj.subtlexResult.word}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+*/
+  const dropdownWords = (indexTextArraySplit: number) => {   
     const listRandomWords = JSON.parse(JSON.stringify(articleClozeTest));
     return (
       <Select
@@ -269,7 +307,7 @@ export default function ClozeTest({ userId }: Props) {
             updatedArticleClozeTest
           );
 
-          // setArticleClozeTest(updatedArticleClozeTest);
+          setArticleClozeTest(updatedArticleClozeTest);
         }}
       >
         <SelectTrigger className="w-[150px] my-2">
