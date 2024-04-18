@@ -11,6 +11,8 @@ import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { before, flatten, random, join } from "lodash";
 import subtlex from "subtlex-word-frequencies";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import Image from "next/image";
+import styled from "@emotion/styled";
 import { Header } from "./header";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
@@ -66,12 +68,6 @@ export default function ClozeTest({ userId }: Props) {
   useEffect(() => {
     getUserSentenceSaved();
   }, []);
-
-  useEffect(() => {
-    if (articleClozeTest.length > 0) {
-      setLoading(false);
-    }
-  }, [articleClozeTest]);
 
   const getUserSentenceSaved = async () => {
     try {
@@ -207,9 +203,9 @@ export default function ClozeTest({ userId }: Props) {
         ).length;
 
       if (countDuplicates && countDuplicates > 0 && secondMinWord) {
-        results.push(secondMinWord); // Use the second minimum if the first is duplicated
+        results.push({ ...secondMinWord, correctWords: false }); // Use the second minimum if the first is duplicated
       } else if (minWord) {
-        results.push(minWord); // Otherwise, use the first minimum
+        results.push({ ...minWord, correctWords: false }); // Otherwise, use the first minimum
       }
     });
 
@@ -228,6 +224,78 @@ export default function ClozeTest({ userId }: Props) {
     return rawData;
   };
 
+  const Content = styled.div`
+    /* flex child */
+    flex-grow: 1;
+
+    flex-basis: 100%;
+
+    /* flex parent */
+    display: flex;
+    flex-direction: column;
+  `;
+
+  const Footer = styled.div`
+    display: flex;
+    margin-top: 8px;
+    justify-content: flex-end;
+  `;
+
+  const Badges = styled.small`
+    margin-right: 10px;
+  `;
+
+  const dropdownWords = (indexTextArraySplit: number) => {
+    const listRandomWords = JSON.parse(JSON.stringify(articleClozeTest));
+    return (
+      <Select
+        onValueChange={(e) => {
+          let value: any = JSON.parse(e);
+
+          console.log("value : ", value);
+
+          const isCorrect =
+            articleClozeTest[currentArticleIndex].beforeRandomWords[
+              indexTextArraySplit
+            ].subtlexResult.word === value.obj.subtlexResult.word;
+
+          console.log("🚀 ~ dropdownWords ~ isCorrect:", isCorrect);
+          let updatedArticleClozeTest = [...articleClozeTest];
+          updatedArticleClozeTest[currentArticleIndex].randomWords[
+            indexTextArraySplit
+          ].correctWords = isCorrect;
+          console.log(
+            "🚀 ~ dropdownWords ~ updatedArticleClozeTest:",
+            updatedArticleClozeTest
+          );
+
+          // setArticleClozeTest(updatedArticleClozeTest);
+        }}
+      >
+        <SelectTrigger className="w-[150px] my-2">
+          <SelectValue placeholder="" />
+        </SelectTrigger>
+        <SelectContent>
+          {listRandomWords[currentArticleIndex]?.randomWords?.map(
+            (obj: ResultTextArray, index: number) => {
+              return (
+                <SelectItem
+                  key={index}
+                  value={JSON.stringify({
+                    obj: obj,
+                    indexRow: indexTextArraySplit,
+                  })}
+                >
+                  {obj.subtlexResult.word}
+                </SelectItem>
+              );
+            }
+          )}
+        </SelectContent>
+      </Select>
+    );
+  };
+
   console.log("🚀 ~ ClozeTest ~ articleClozeTest:", articleClozeTest);
 
   //=====> play audio
@@ -239,6 +307,14 @@ export default function ClozeTest({ userId }: Props) {
     } else {
       audioRef.current?.play();
     }
+  };
+
+  const onNextArticle = async () => {
+    setLoading(true);
+    setCurrentArticleIndex((prev) => prev + 1);
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
   };
 
   return (
@@ -259,10 +335,6 @@ export default function ClozeTest({ userId }: Props) {
           </div>
         ) : (
           <>
-            {/* <Button disabled>
-              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-              Please wait
-            </Button> */}
             {articleClozeTest.length !== currentArticleIndex ? (
               <>
                 <div className="bg-[#2684FFß] flex max-w-screen-lg">
@@ -299,16 +371,7 @@ export default function ClozeTest({ userId }: Props) {
                         </audio>
                       </div>
                     </div>
-                    {/* <Select>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Theme" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="light">Light</SelectItem>
-                        <SelectItem value="dark">Dark</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
-                      </SelectContent>
-                    </Select> */}
+
                     {/* show sentences */}
                     <div className="p-5 bg-[#EBECF0]">
                       {articleClozeTest[
@@ -323,29 +386,56 @@ export default function ClozeTest({ userId }: Props) {
                               key={indexTextArraySplit}
                               className="bg-white rounded-lg border-solid shadow-transparent box-border p-8 min-h-10 mb-8  select-none color-[#091e42]"
                             >
-                              <p>
-                                {element.textSplit.map(
-                                  (word: string, index: number) => {
-                                    // Check if the current word's index matches any indexWord from beforeRandomWords
-                                    const shouldReplace =
-                                      articleClozeTest[currentArticleIndex]
-                                        .beforeRandomWords[element.id]
-                                        .indexWord === index;
+                              <Content>
+                                <p>
+                                  {element.textSplit.map(
+                                    (word: string, index: number) => {
+                                      // Check if the current word's index matches any indexWord from beforeRandomWords
+                                      const shouldReplace =
+                                        articleClozeTest[currentArticleIndex]
+                                          .beforeRandomWords[element.id]
+                                          .indexWord === index;
 
-                                    // If it matches, replace with 'XXX', otherwise keep the original word
-                                    return (
-                                      <span
-                                        key={index}
-                                        className={
-                                          shouldReplace ? "text-blue-500" : ""
-                                        }
-                                      >
-                                        {shouldReplace ? "XXX" : word}{" "}
-                                      </span>
-                                    );
-                                  }
-                                )}
-                              </p>
+                                      // If it matches, replace with 'XXX', otherwise keep the original word
+                                      return (
+                                        <span
+                                          key={index}
+                                          className={
+                                            shouldReplace ? "text-blue-500" : ""
+                                          }
+                                        >
+                                          {/* {shouldReplace ? "XXX" : word}{" "} */}
+                                          {shouldReplace
+                                            ? dropdownWords(indexTextArraySplit)
+                                            : word}{" "}
+                                        </span>
+                                      );
+                                    }
+                                  )}
+                                </p>
+                                <Footer>
+                                  {articleClozeTest[currentArticleIndex]
+                                    .randomWords[element.id].correctWords ? (
+                                    <Badges>
+                                      <Image
+                                        src={"/correct.png"}
+                                        alt="Malcolm X"
+                                        width={25}
+                                        height={25}
+                                      />
+                                    </Badges>
+                                  ) : (
+                                    <Badges>
+                                      <Image
+                                        src={"/wrong.png"}
+                                        alt="Malcolm X"
+                                        width={25}
+                                        height={25}
+                                      />
+                                    </Badges>
+                                  )}
+                                </Footer>
+                              </Content>
                             </div>
                           );
                         }
@@ -353,6 +443,30 @@ export default function ClozeTest({ userId }: Props) {
                     </div>
                   </div>
                 </div>
+              </>
+            ) : (
+              <></>
+            )}
+            {articleClozeTest.length !== currentArticleIndex ? (
+              <>
+                {loading ? (
+                  <Button className="mt-4" disabled>
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    {t("OrderSentencesPractice.saveOrder")}
+                  </Button>
+                ) : (
+                  <Button
+                    className="mt-4"
+                    variant="outline"
+                    disabled={loading}
+                    size="sm"
+                    onClick={onNextArticle}
+                  >
+                    {t("OrderSentencesPractice.saveOrder")}
+                  </Button>
+                )}
+
+                {/* loading button for update xp */}
               </>
             ) : (
               <></>
