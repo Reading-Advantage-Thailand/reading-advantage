@@ -101,15 +101,31 @@ export async function POST(req: Request, res: Response) {
         let nonfictionResults = [];
         let index = 0;
 
-        for (const subgenre of fictionGenre.subgenres) {
-            const response = await fictionArticleGenerator(fictionGenre.name, subgenre, assistantIds['fiction'][index++ % assistantIds['fiction'].length]);
-            fictionResults.push(response);
-        }
+        // for (const subgenre of fictionGenre.subgenres) {
+        //     const response = await fictionArticleGenerator(fictionGenre.name, subgenre, assistantIds['fiction'][index++ % assistantIds['fiction'].length]);
+        //     fictionResults.push(response);
+        // }
 
-        for (const subgenre of nonfictionGenre.subgenres) {
-            const response = await nonfictionArticleGenerator('nonfiction', nonfictionGenre.name, subgenre, nonfictionGenre.subgenres, assistantIds['nonfiction'][index++ % assistantIds['nonfiction'].length].id);
-            nonfictionResults.push(response);
-        }
+        // for (const subgenre of nonfictionGenre.subgenres) {
+        //     const response = await nonfictionArticleGenerator('nonfiction', nonfictionGenre.name, subgenre, nonfictionGenre.subgenres, assistantIds['nonfiction'][index++ % assistantIds['nonfiction'].length].id);
+        //     nonfictionResults.push(response);
+        // }
+
+        // Run onlt 1 subgenre for each genre
+        const response = await fictionArticleGenerator(fictionGenre.name, fictionGenre.subgenres[0], assistantIds['fiction'][index++ % assistantIds['fiction'].length]);
+        fictionResults.push(response);
+
+        const response2 = await nonfictionArticleGenerator('nonfiction', nonfictionGenre.name, nonfictionGenre.subgenres[0], nonfictionGenre.subgenres, assistantIds['nonfiction'][index++ % assistantIds['nonfiction'].length].id);
+        nonfictionResults.push(response2);
+
+        // // Remove subgenre in db if it's already generated (check the status)
+        // const failedFiction = fictionResults.filter((result) => result.status === "failed");
+        // const failedNonfiction = nonfictionResults.filter((result) => result?.status === "failed");
+
+        // // Remove failed articles
+        // for (const failed of failedFiction) {
+        //     await db.collection("articles").doc(failed?.articleId).delete();
+        // }
 
         const log = {
             selected: {
@@ -242,12 +258,6 @@ async function nonfictionArticleGenerator(
                     article.id,
                     assistantId
                 );
-
-                // Remove subgenre in db
-                // subgenres = subgenres.filter((sub) => sub !== subgenre);
-                // await db.collection("fiction-genres").doc(genre).update({
-                //     subgenres,
-                // });
 
                 return {
                     articleId: article.id,
