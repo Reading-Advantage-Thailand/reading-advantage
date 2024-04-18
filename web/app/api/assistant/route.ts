@@ -584,7 +584,7 @@ async function voiceGenerator(
         await uploadToBucket(localPath, `${AUDIO_URL}/${articleId}.mp3`);
     } catch (error) {
         console.error("VOICE GENERATING ERROR: ", error);
-        throw "Error generating voice";
+        throw "Error generating voice: " + error;
     }
 }
 
@@ -611,6 +611,6 @@ async function imageGenerator(
         await uploadToBucket(localPath, `${IMAGE_URL}/${articleId}.png`);
     } catch (error) {
         console.log("IMAGE GENERATING ERROR: ", error);
-        throw "Error generating image";
+        throw "Error generating image: " + error;
     }
 }
