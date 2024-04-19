@@ -29,6 +29,7 @@ import {
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
 import { wordFrequenciesConfig } from "@/constants/word-frequencies";
+import { Value } from "@radix-ui/react-select";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -245,7 +246,7 @@ export default function ClozeTest({ userId }: Props) {
     margin-right: 10px;
   `;
 
-/*
+  /*
 const dropdownWords = (indexTextArraySplit: number) => {
   // Retrieve the initial word to display in the dropdown
   const initialWord = articleClozeTest[currentArticleIndex].beforeRandomWords[indexTextArraySplit].subtlexResult.word;
@@ -281,37 +282,54 @@ const dropdownWords = (indexTextArraySplit: number) => {
     </Select>
   );
 };
-
 */
-  const dropdownWords = (indexTextArraySplit: number) => {   
+  const [selectedWord, setSelectedWord] = useState<any>({});
+  console.log("🚀 ~ ClozeTest ~ selectedWord:", selectedWord);
+
+  const dropdownWords = (indexTextArraySplit: number) => {
     const listRandomWords = JSON.parse(JSON.stringify(articleClozeTest));
     return (
       <Select
         onValueChange={(e) => {
           let value: any = JSON.parse(e);
 
-          console.log("value : ", value);
-
-          const isCorrect =
-            articleClozeTest[currentArticleIndex].beforeRandomWords[
-              indexTextArraySplit
-            ].subtlexResult.word === value.obj.subtlexResult.word;
-
-          console.log("🚀 ~ dropdownWords ~ isCorrect:", isCorrect);
-          let updatedArticleClozeTest = [...articleClozeTest];
-          updatedArticleClozeTest[currentArticleIndex].randomWords[
-            indexTextArraySplit
-          ].correctWords = isCorrect;
           console.log(
-            "🚀 ~ dropdownWords ~ updatedArticleClozeTest:",
-            updatedArticleClozeTest
+            "value indexTextArraySplit : ",
+            value,
+            indexTextArraySplit
           );
+          setSelectedWord((prev: any) => {
+            return {
+              ...prev,
+              [indexTextArraySplit]: value,
+            };
+          });
 
-          setArticleClozeTest(updatedArticleClozeTest);
+          // const isCorrect =
+          //   articleClozeTest[currentArticleIndex].beforeRandomWords[
+          //     indexTextArraySplit
+          //   ].subtlexResult.word === value.obj.subtlexResult.word;
+
+          // console.log("🚀 ~ dropdownWords ~ isCorrect:", isCorrect);
+          // let updatedArticleClozeTest = [...articleClozeTest];
+          // updatedArticleClozeTest[currentArticleIndex].randomWords[
+          //   indexTextArraySplit
+          // ].correctWords = isCorrect;
+          // console.log(
+          //   "🚀 ~ dropdownWords ~ updatedArticleClozeTest:",
+          //   updatedArticleClozeTest
+          // );
+
+          // setArticleClozeTest(updatedArticleClozeTest);
         }}
       >
         <SelectTrigger className="w-[150px] my-2">
-          <SelectValue placeholder="" />
+          <SelectValue
+            placeholder={
+              selectedWord[indexTextArraySplit]?.obj?.subtlexResult.word ||
+              "Select a word"
+            }
+          />
         </SelectTrigger>
         <SelectContent>
           {listRandomWords[currentArticleIndex]?.randomWords?.map(
