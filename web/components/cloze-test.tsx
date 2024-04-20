@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import { before, flatten, random, join } from "lodash";
+import { before, flatten, random, join, every } from "lodash";
 import subtlex from "subtlex-word-frequencies";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
@@ -28,8 +28,6 @@ import {
 } from "./ui/select";
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
-import { wordFrequenciesConfig } from "@/constants/word-frequencies";
-import { Value } from "@radix-ui/react-select";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -65,6 +63,9 @@ export default function ClozeTest({ userId }: Props) {
   const [loading, setLoading] = React.useState(false);
   const [articleClozeTest, setArticleClozeTest] = useState<any[]>([]);
   const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
+  const [selectedWord, setSelectedWord] = useState<any>({}); // for set placeholder in dropdown
+  const [showBadges, setShowBadges] = useState(false);
+  const [showButtonNextPassage, setShowButtonNextPassage] = useState(false);
 
   useEffect(() => {
     getUserSentenceSaved();
@@ -204,7 +205,11 @@ export default function ClozeTest({ userId }: Props) {
         ).length;
 
       if (countDuplicates && countDuplicates > 0 && secondMinWord) {
-        results.push({ ...secondMinWord, correctWords: false, showBadges :false }); // Use the second minimum if the first is duplicated
+        results.push({
+          ...secondMinWord,
+          correctWords: false,
+          showBadges: false,
+        }); // Use the second minimum if the first is duplicated
       } else if (minWord) {
         results.push({ ...minWord, correctWords: false, showBadges: false }); // Otherwise, use the first minimum
       }
@@ -246,45 +251,7 @@ export default function ClozeTest({ userId }: Props) {
     margin-right: 10px;
   `;
 
-  /*
-const dropdownWords = (indexTextArraySplit: number) => {
-  // Retrieve the initial word to display in the dropdown
-  const initialWord = articleClozeTest[currentArticleIndex].beforeRandomWords[indexTextArraySplit].subtlexResult.word;
 
-  const [selectedWord, setSelectedWord] = useState(initialWord); // State to hold the selected word
-
-  const handleValueChange = (e) => {
-    const value = JSON.parse(e);
-    const selectedWord = value.word;
-    setSelectedWord(selectedWord); // Update the selected word state
-
-    // Check correctness
-    const isCorrect = articleClozeTest[currentArticleIndex].beforeRandomWords[indexTextArraySplit].subtlexResult.word === selectedWord;
-
-    // Update the main state array with the new correctness value
-    const updatedClozeTests = [...articleClozeTest];
-    updatedClozeTests[currentArticleIndex].randomWords[indexTextArraySplit].correctWords = isCorrect;
-    setArticleClozeTest(updatedClozeTests);
-  };
-
-  return (
-    <Select onValueChange={handleValueChange}>
-      <SelectTrigger className="w-[150px] my-2">
-        <SelectValue>{selectedWord}</SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        {articleClozeTest[currentArticleIndex].randomWords.map((obj, index) => (
-          <SelectItem key={index} value={JSON.stringify(obj.subtlexResult.word)}>
-            {obj.subtlexResult.word}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-};
-*/
-  const [selectedWord, setSelectedWord] = useState<any>({});
-  console.log("🚀 ~ ClozeTest ~ selectedWord:", selectedWord);
 
   const dropdownWords = (indexTextArraySplit: number) => {
     const listRandomWords = JSON.parse(JSON.stringify(articleClozeTest));
@@ -299,22 +266,19 @@ const dropdownWords = (indexTextArraySplit: number) => {
             };
           });
 
-          // const isCorrect =
-          //   articleClozeTest[currentArticleIndex].beforeRandomWords[
-          //     indexTextArraySplit
-          //   ].subtlexResult.word === value.obj.subtlexResult.word;
+          const isCorrect =
+            articleClozeTest[currentArticleIndex].beforeRandomWords[
+              indexTextArraySplit
+            ].subtlexResult.word === value.obj.subtlexResult.word;
 
-          // console.log("🚀 ~ dropdownWords ~ isCorrect:", isCorrect);
-          // let updatedArticleClozeTest = [...articleClozeTest];
-          // updatedArticleClozeTest[currentArticleIndex].randomWords[
-          //   indexTextArraySplit
-          // ].correctWords = isCorrect;
-          // console.log(
-          //   "🚀 ~ dropdownWords ~ updatedArticleClozeTest:",
-          //   updatedArticleClozeTest
-          // );
+          let updatedArticleClozeTest = [...articleClozeTest];
+          updatedArticleClozeTest[currentArticleIndex].randomWords[
+            indexTextArraySplit
+          ].correctWords = isCorrect;
 
-          // setArticleClozeTest(updatedArticleClozeTest);
+          setArticleClozeTest(updatedArticleClozeTest);
+          setShowButtonNextPassage(false)
+          setShowBadges(false)
         }}
       >
         <SelectTrigger className="w-[150px] my-2">
@@ -346,8 +310,7 @@ const dropdownWords = (indexTextArraySplit: number) => {
     );
   };
 
-  console.log("🚀 ~ ClozeTest ~ articleClozeTest:", articleClozeTest);
-
+  
   //=====> play audio
   const handlePause = () => {
     setIsPlaying(!isplaying);
@@ -359,13 +322,47 @@ const dropdownWords = (indexTextArraySplit: number) => {
     }
   };
 
-  const onNextArticle = async () => {
+  const onSubmitArticle = async () => {
+
     setLoading(true);
-    setCurrentArticleIndex((prev) => prev + 1);
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    const areAllCorrect = every(
+      articleClozeTest[currentArticleIndex].randomWords,
+      (item) => item.correctWords
+    );
+
+    // update score
+    
+
+
+
+
+
+
+    
+    setShowBadges(true)
+
+    
+
+    if (areAllCorrect) {
+      setShowButtonNextPassage(true);
+    } else {
+      setShowButtonNextPassage(false);
+    }
+
+    setLoading(false);
+
   };
+
+  const onNextPassage = async () => {
+    setLoading(false);
+    setSelectedWord({});
+    setShowBadges(false);
+    setCurrentArticleIndex((prev) => prev + 1);
+    setShowButtonNextPassage(false);
+  };
+
+  console.log("🚀 ~ ClozeTest ~ articleClozeTest:", articleClozeTest);
+  console.log("🚀 ~ ClozeTest ~ selectedWord:", selectedWord);
 
   return (
     <>
@@ -453,8 +450,7 @@ const dropdownWords = (indexTextArraySplit: number) => {
                                           className={
                                             shouldReplace ? "text-blue-500" : ""
                                           }
-                                        >
-                                          {/* {shouldReplace ? "XXX" : word}{" "} */}
+                                        >                                          
                                           {shouldReplace
                                             ? dropdownWords(indexTextArraySplit)
                                             : word}{" "}
@@ -464,25 +460,32 @@ const dropdownWords = (indexTextArraySplit: number) => {
                                   )}
                                 </p>
                                 <Footer>
-                                  {articleClozeTest[currentArticleIndex]
-                                    .randomWords[element.id].correctWords ? (
-                                    <Badges>
-                                      <Image
-                                        src={"/correct.png"}
-                                        alt="Malcolm X"
-                                        width={25}
-                                        height={25}
-                                      />
-                                    </Badges>
+                                  {showBadges ? (
+                                    <>
+                                      {articleClozeTest[currentArticleIndex]
+                                        .randomWords[element.id]
+                                        .correctWords ? (
+                                        <Badges>
+                                          <Image
+                                            src={"/correct.png"}
+                                            alt="Malcolm X"
+                                            width={25}
+                                            height={25}
+                                          />
+                                        </Badges>
+                                      ) : (
+                                        <Badges>
+                                          <Image
+                                            src={"/wrong.png"}
+                                            alt="Malcolm X"
+                                            width={25}
+                                            height={25}
+                                          />
+                                        </Badges>
+                                      )}
+                                    </>
                                   ) : (
-                                    <Badges>
-                                      <Image
-                                        src={"/wrong.png"}
-                                        alt="Malcolm X"
-                                        width={25}
-                                        height={25}
-                                      />
-                                    </Badges>
+                                    <></>
                                   )}
                                 </Footer>
                               </Content>
@@ -505,18 +508,28 @@ const dropdownWords = (indexTextArraySplit: number) => {
                     {t("OrderSentencesPractice.saveOrder")}
                   </Button>
                 ) : (
-                  <Button
-                    className="mt-4"
-                    variant="outline"
-                    disabled={loading}
-                    size="sm"
-                    onClick={onNextArticle}
-                  >
-                    {t("OrderSentencesPractice.saveOrder")}
-                  </Button>
+                  <>
+                    <Button
+                      className="mt-4"
+                      variant="outline"
+                      disabled={loading}
+                      size="sm"
+                      onClick={onSubmitArticle}
+                    >
+                      {t("ClozeTestPractice.submitArticle")}
+                    </Button>
+                    {showButtonNextPassage && (
+                      <Button
+                        className="mt-4 ml-4"
+                        variant="secondary"
+                        size="sm"
+                        onClick={onNextPassage}
+                      >
+                        {t("ClozeTestPractice.nextPassage")}
+                      </Button>
+                    )}
+                  </>
                 )}
-
-                {/* loading button for update xp */}
               </>
             ) : (
               <></>

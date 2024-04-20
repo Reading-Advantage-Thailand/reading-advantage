@@ -103,6 +103,8 @@ export default {
             "Fill in the blanks with the correct word to complete the passage. If you get all the answers correct, you'll receive 2 XP.",
           saveAnswer: "Continue",
           errorAnswer: "Please answer correctly",
+          submitArticle: "Check your answers",
+          nextPassage: "Next Passage",
         },
       },
     },
@@ -176,7 +178,7 @@ export default {
     progressBarXp: {
       xp: "XP:",
       level: "Level {level}",
-      congratulations: "Congratulations! ", 
+      congratulations: "Congratulations! ",
       upLevel: "You've received a new level!",
       close: "Close",
     },
