@@ -204,9 +204,9 @@ export default function ClozeTest({ userId }: Props) {
         ).length;
 
       if (countDuplicates && countDuplicates > 0 && secondMinWord) {
-        results.push({ ...secondMinWord, correctWords: false }); // Use the second minimum if the first is duplicated
+        results.push({ ...secondMinWord, correctWords: false, showBadges :false }); // Use the second minimum if the first is duplicated
       } else if (minWord) {
-        results.push({ ...minWord, correctWords: false }); // Otherwise, use the first minimum
+        results.push({ ...minWord, correctWords: false, showBadges: false }); // Otherwise, use the first minimum
       }
     });
 
@@ -292,12 +292,6 @@ const dropdownWords = (indexTextArraySplit: number) => {
       <Select
         onValueChange={(e) => {
           let value: any = JSON.parse(e);
-
-          console.log(
-            "value indexTextArraySplit : ",
-            value,
-            indexTextArraySplit
-          );
           setSelectedWord((prev: any) => {
             return {
               ...prev,
