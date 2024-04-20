@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import { before, flatten, random, join, every } from "lodash";
+import { flatten, every } from "lodash";
 import subtlex from "subtlex-word-frequencies";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
@@ -47,6 +47,8 @@ type SubtlexResult = {
 type ResultTextArray = {
   subtlexResult: SubtlexResult;
   indexWord: number;
+  showBadges?: boolean;
+  correctWords?: boolean;
 };
 
 type TextArraySplit = {
@@ -57,6 +59,9 @@ type TextArraySplit = {
 export default function ClozeTest({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
+  const tUpdateScore = useScopedI18n(
+    "pages.student.practicePage.flashcardPractice"
+  );
   const router = useRouter();
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [isplaying, setIsPlaying] = React.useState(false);
@@ -251,8 +256,6 @@ export default function ClozeTest({ userId }: Props) {
     margin-right: 10px;
   `;
 
-
-
   const dropdownWords = (indexTextArraySplit: number) => {
     const listRandomWords = JSON.parse(JSON.stringify(articleClozeTest));
     return (
@@ -277,8 +280,8 @@ export default function ClozeTest({ userId }: Props) {
           ].correctWords = isCorrect;
 
           setArticleClozeTest(updatedArticleClozeTest);
-          setShowButtonNextPassage(false)
-          setShowBadges(false)
+          setShowButtonNextPassage(false);
+          setShowBadges(false);
         }}
       >
         <SelectTrigger className="w-[150px] my-2">
@@ -310,7 +313,6 @@ export default function ClozeTest({ userId }: Props) {
     );
   };
 
-  
   //=====> play audio
   const handlePause = () => {
     setIsPlaying(!isplaying);
@@ -323,34 +325,45 @@ export default function ClozeTest({ userId }: Props) {
   };
 
   const onSubmitArticle = async () => {
-
     setLoading(true);
     const areAllCorrect = every(
       articleClozeTest[currentArticleIndex].randomWords,
       (item) => item.correctWords
     );
 
-    // update score
-    
+    // update score by words
+    articleClozeTest[currentArticleIndex].randomWords.forEach(
+      async (item: ResultTextArray) => {
+        if (item.correctWords) {
+          try {
+            const updateScrore = await updateScore(2, userId);
+            if (updateScrore?.status === 201) {
+              toast({
+                title: t("toast.success"),
+                description: tUpdateScore("yourXp", { xp: 2 }),
+              });
+            }
+          } catch (error) {
+            toast({
+              title: t("toast.error"),
+              description: t("toast.errorDescription"),
+              variant: "destructive",
+            });
+          }
+        }
+      }
+    );
 
-
-
-
-
-
-    
-    setShowBadges(true)
-
-    
-
+    setShowBadges(true);
     if (areAllCorrect) {
       setShowButtonNextPassage(true);
     } else {
       setShowButtonNextPassage(false);
     }
 
-    setLoading(false);
-
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
   };
 
   const onNextPassage = async () => {
@@ -359,6 +372,7 @@ export default function ClozeTest({ userId }: Props) {
     setShowBadges(false);
     setCurrentArticleIndex((prev) => prev + 1);
     setShowButtonNextPassage(false);
+    setIsPlaying(false);
   };
 
   console.log("🚀 ~ ClozeTest ~ articleClozeTest:", articleClozeTest);
@@ -450,7 +464,7 @@ export default function ClozeTest({ userId }: Props) {
                                           className={
                                             shouldReplace ? "text-blue-500" : ""
                                           }
-                                        >                                          
+                                        >
                                           {shouldReplace
                                             ? dropdownWords(indexTextArraySplit)
                                             : word}{" "}
