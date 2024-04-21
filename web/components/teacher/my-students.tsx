@@ -20,8 +20,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
-import CreateNewStudent from "./create-new-student";
-import { getCurrentUser } from "@/lib/session";
 
 type Student = {
   id: string;
@@ -50,6 +48,20 @@ console.log('all classroom :', allClassroom);
   const tableHeader = ["Name", "Email", "Actions"];
   const actions = ['Progress', 'Report']
 
+  const studentFromAllStudent = allStudent.map((student) => {
+    return student.id;
+  });
+
+  const studentFromAllClassroom = allClassroom.flatMap((classroom) => {
+    return classroom.student.map((student) => {
+      console.log('student id: ', student.studentId);
+      
+      return student.studentId;
+    })
+  });
+
+  const matchedStudents = studentFromAllStudent.filter(student => studentFromAllClassroom.includes(student));
+
   
   return (
     <>
@@ -65,20 +77,12 @@ console.log('all classroom :', allClassroom);
             </TableRow>
           </TableHeader>
           <TableBody>
-            {allClassroom.map((classroom, index) => {
-              const studentsInClass = student.filter(student => student.teacherId === classroom.teacherId);
+            {matchedStudents.map((studentId, index) => {
+              const student = allStudent.find(student => student.id === studentId);
               return (
-                <div key={index}>
-                  <p>{classroom.teacherId}</p>
-                </div>
-              );
-              
-})}
-
-            {allStudent.map((student: Student, index: number) => (
-              <TableRow key={index}>
-                <TableCell>{student.name}</TableCell>
-                <TableCell>{student.email}</TableCell>
+                <TableRow key={index}>
+                  <TableCell>{student?.name}</TableCell>
+                <TableCell>{student?.email}</TableCell>
                 <TableCell>
                   <div>
                     <DropdownMenu>
@@ -99,8 +103,9 @@ console.log('all classroom :', allClassroom);
                     </DropdownMenu>
                   </div>
                 </TableCell>
-              </TableRow>
-            ))}
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
