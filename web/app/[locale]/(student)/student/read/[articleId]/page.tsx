@@ -73,32 +73,32 @@ export default async function ArticleQuizPage({
   const isRequiz = articleRecord.message === "Record not found" ? false : true;
 
   // check that article has questions
-  if (!articleResult.article.questions) {
-    console.log("article has no questions");
-    // console.log("articleResult", articleResult);
-    try {
-      const generateQuestions = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/assistant/questions`,
-        {
-          method: "POST",
-          headers: headers(),
-          body: JSON.stringify({
-            articleId: params.articleId,
-            threadId: articleResult.article.threadId,
-          }),
-        },
-      );
-      if (generateQuestions.status === 200) {
-        // recall getArticle to get the updated article
-        console.log('recall getArticle')
-        articleResult = await getArticle(params.articleId);
-        // refresh the page
-        return;
-      }
-    } catch (error) {
-      console.log("error", error);
-    }
-  }
+  // if (!articleResult.article.questions) {
+  // console.log("article has no questions");
+  // console.log("articleResult", articleResult);
+  // try {
+  //   const generateQuestions = await fetch(
+  //     `${process.env.NEXT_PUBLIC_BASE_URL}/api/assistant/questions`,
+  //     {
+  //       method: "POST",
+  //       headers: headers(),
+  //       body: JSON.stringify({
+  //         articleId: params.articleId,
+  //         threadId: articleResult.article.threadId,
+  //       }),
+  //     },
+  //   );
+  //   if (generateQuestions.status === 200) {
+  //     // recall getArticle to get the updated article
+  //     console.log('recall getArticle')
+  //     articleResult = await getArticle(params.articleId);
+  //     // refresh the page
+  //     return;
+  //   }
+  // } catch (error) {
+  //   console.log("error", error);
+  // }
+  // }
 
   return (
     <>
