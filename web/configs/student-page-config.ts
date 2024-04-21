@@ -14,6 +14,10 @@ export const studentPageConfig: StudentPageConfig = {
             title: "contact",
             href: "/contact",
         },
+        {
+            title: "authors",
+            href: "/authors"
+        }
     ],
     sidebarNav: [
         {
