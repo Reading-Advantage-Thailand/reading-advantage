@@ -375,8 +375,6 @@ export default function ClozeTest({ userId }: Props) {
     setIsPlaying(false);
   };
 
-  console.log("🚀 ~ ClozeTest ~ articleClozeTest:", articleClozeTest);
-  console.log("🚀 ~ ClozeTest ~ selectedWord:", selectedWord);
 
   return (
     <>

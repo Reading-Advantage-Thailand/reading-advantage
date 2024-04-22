@@ -72,6 +72,7 @@ export default {
         savedSentencesDescription: "Your have {total} saved sentences.",
         added: "Added {date}",
         deleteButton: "Delete",
+        neverPracticeButton: "Never practice this sentence again",
         toast: {
           success: "Success",
           successDescription: "Delete saved sentence successfully",

@@ -217,14 +217,27 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
 
       <Card className="col-span-3 mt-4 mb-10">
         <CardHeader>
-          <CardTitle>{t("savedSentences")}</CardTitle>
-          <CardDescription>
-            {sentences.length == 0
-              ? t("noSavedSentences")
-              : t("savedSentencesDescription", {
-                  total: sentences.length,
-                })}
-          </CardDescription>
+          <div className="flex flex-row -mx-4 p-2">
+            <div>
+              <CardTitle>{t("savedSentences")}</CardTitle>
+              <CardDescription>
+                {sentences.length == 0
+                  ? t("noSavedSentences")
+                  : t("savedSentencesDescription", {
+                      total: sentences.length,
+                    })}
+              </CardDescription>
+            </div>
+
+            <Button
+              className="ml-auto font-medium"
+              size="sm"
+              variant="destructive"
+              onClick={() => {}}
+            >
+              {t("neverPracticeButton")}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {sentences.length != 0 &&
