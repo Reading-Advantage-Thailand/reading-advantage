@@ -1,0 +1,247 @@
+Individual File Metrics:
+Anita-adv.txt: Word Count = 1027, Average Words per Sentence = 23.88, Average Characters per Word = 4.37
+an_email_explaining_an_incident.txt: Word Count = 318, Average Words per Sentence = 17.67, Average Characters per Word = 4.56
+an_email_request.txt: Word Count = 161, Average Words per Sentence = 17.89, Average Characters per Word = 4.04
+an_email_to_a_friend.txt: Word Count = 262, Average Words per Sentence = 16.38, Average Characters per Word = 3.49
+an_essay_about_women_in_science.txt: Word Count = 412, Average Words per Sentence = 21.68, Average Characters per Word = 4.63
+an_opinion_essay.txt: Word Count = 404, Average Words per Sentence = 23.76, Average Characters per Word = 4.66
+apartment_pets.txt: Word Count = 331, Average Words per Sentence = 18.39, Average Characters per Word = 4.47
+a_biography_of_kilian_jornet.txt: Word Count = 640, Average Words per Sentence = 24.62, Average Characters per Word = 4.31
+a_music_review.txt: Word Count = 343, Average Words per Sentence = 19.06, Average Characters per Word = 4.27
+a_proposal_for_a_digital_newspaper.txt: Word Count = 427, Average Words per Sentence = 15.81, Average Characters per Word = 4.96
+a_report_on_a_research_study.txt: Word Count = 468, Average Words per Sentence = 24.63, Average Characters per Word = 4.97
+a_response_to_a_complaint.txt: Word Count = 291, Average Words per Sentence = 20.79, Average Characters per Word = 4.51
+a_threat_to_bananas.txt: Word Count = 553, Average Words per Sentence = 22.12, Average Characters per Word = 4.74
+Banksy-adv.txt: Word Count = 828, Average Words per Sentence = 31.85, Average Characters per Word = 4.31
+Billionaires-adv.txt: Word Count = 630, Average Words per Sentence = 31.50, Average Characters per Word = 4.58
+Bonus pay-adv.txt: Word Count = 696, Average Words per Sentence = 38.67, Average Characters per Word = 4.61
+camping.txt: Word Count = 313, Average Words per Sentence = 19.56, Average Characters per Word = 4.37
+cesar_chavez.txt: Word Count = 299, Average Words per Sentence = 19.93, Average Characters per Word = 4.95
+charles_darwin.txt: Word Count = 317, Average Words per Sentence = 19.81, Average Characters per Word = 4.76
+cnn_120.txt: Word Count = 869, Average Words per Sentence = 23.49, Average Characters per Word = 4.63
+cnn_124.txt: Word Count = 498, Average Words per Sentence = 21.65, Average Characters per Word = 5.02
+cnn_126.txt: Word Count = 994, Average Words per Sentence = 23.12, Average Characters per Word = 4.88
+cnn_137.txt: Word Count = 830, Average Words per Sentence = 20.24, Average Characters per Word = 4.86
+cnn_138.txt: Word Count = 813, Average Words per Sentence = 24.64, Average Characters per Word = 4.91
+cnn_146.txt: Word Count = 774, Average Words per Sentence = 22.76, Average Characters per Word = 4.74
+cnn_153.txt: Word Count = 620, Average Words per Sentence = 28.18, Average Characters per Word = 5.09
+cnn_157.txt: Word Count = 240, Average Words per Sentence = 18.46, Average Characters per Word = 5.06
+cnn_164.txt: Word Count = 547, Average Words per Sentence = 22.79, Average Characters per Word = 5.03
+cnn_166.txt: Word Count = 727, Average Words per Sentence = 25.07, Average Characters per Word = 4.47
+cnn_172.txt: Word Count = 436, Average Words per Sentence = 24.22, Average Characters per Word = 4.72
+cnn_174.txt: Word Count = 1589, Average Words per Sentence = 24.08, Average Characters per Word = 4.44
+cnn_175.txt: Word Count = 357, Average Words per Sentence = 21.00, Average Characters per Word = 5.29
+cnn_183.txt: Word Count = 733, Average Words per Sentence = 22.21, Average Characters per Word = 4.55
+cnn_195.txt: Word Count = 1551, Average Words per Sentence = 25.43, Average Characters per Word = 4.52
+cnn_2.txt: Word Count = 580, Average Words per Sentence = 23.20, Average Characters per Word = 4.63
+cnn_200.txt: Word Count = 470, Average Words per Sentence = 23.50, Average Characters per Word = 4.75
+cnn_206.txt: Word Count = 818, Average Words per Sentence = 19.95, Average Characters per Word = 4.71
+cnn_207.txt: Word Count = 1331, Average Words per Sentence = 26.62, Average Characters per Word = 4.89
+cnn_225.txt: Word Count = 750, Average Words per Sentence = 31.25, Average Characters per Word = 4.86
+cnn_229.txt: Word Count = 282, Average Words per Sentence = 20.14, Average Characters per Word = 4.80
+cnn_233.txt: Word Count = 265, Average Words per Sentence = 26.50, Average Characters per Word = 4.65
+cnn_26.txt: Word Count = 621, Average Words per Sentence = 23.88, Average Characters per Word = 4.94
+cnn_260.txt: Word Count = 602, Average Words per Sentence = 30.10, Average Characters per Word = 4.63
+cnn_264.txt: Word Count = 480, Average Words per Sentence = 22.86, Average Characters per Word = 4.46
+cnn_271.txt: Word Count = 435, Average Words per Sentence = 25.59, Average Characters per Word = 5.10
+cnn_273.txt: Word Count = 1357, Average Words per Sentence = 22.62, Average Characters per Word = 4.66
+cnn_274.txt: Word Count = 1042, Average Words per Sentence = 20.04, Average Characters per Word = 4.90
+cnn_277.txt: Word Count = 1005, Average Words per Sentence = 27.16, Average Characters per Word = 4.64
+cnn_279.txt: Word Count = 1388, Average Words per Sentence = 22.03, Average Characters per Word = 4.69
+cnn_281.txt: Word Count = 516, Average Words per Sentence = 20.64, Average Characters per Word = 4.98
+cnn_284.txt: Word Count = 678, Average Words per Sentence = 22.60, Average Characters per Word = 4.86
+cnn_287.txt: Word Count = 628, Average Words per Sentence = 24.15, Average Characters per Word = 4.60
+cnn_302.txt: Word Count = 532, Average Words per Sentence = 23.13, Average Characters per Word = 4.91
+cnn_305.txt: Word Count = 883, Average Words per Sentence = 22.64, Average Characters per Word = 4.33
+cnn_306.txt: Word Count = 510, Average Words per Sentence = 23.18, Average Characters per Word = 4.82
+cnn_307.txt: Word Count = 348, Average Words per Sentence = 24.86, Average Characters per Word = 4.98
+cnn_31.txt: Word Count = 318, Average Words per Sentence = 24.46, Average Characters per Word = 4.81
+cnn_313.txt: Word Count = 596, Average Words per Sentence = 22.07, Average Characters per Word = 4.95
+cnn_315.txt: Word Count = 450, Average Words per Sentence = 22.50, Average Characters per Word = 4.58
+cnn_317.txt: Word Count = 298, Average Words per Sentence = 27.09, Average Characters per Word = 4.91
+cnn_320.txt: Word Count = 797, Average Words per Sentence = 20.97, Average Characters per Word = 4.45
+cnn_327.txt: Word Count = 672, Average Words per Sentence = 25.85, Average Characters per Word = 4.81
+cnn_332.txt: Word Count = 326, Average Words per Sentence = 21.73, Average Characters per Word = 4.52
+cnn_337.txt: Word Count = 640, Average Words per Sentence = 20.65, Average Characters per Word = 4.95
+cnn_350.txt: Word Count = 415, Average Words per Sentence = 27.67, Average Characters per Word = 4.53
+cnn_353.txt: Word Count = 314, Average Words per Sentence = 19.62, Average Characters per Word = 5.03
+cnn_364.txt: Word Count = 960, Average Words per Sentence = 25.26, Average Characters per Word = 4.65
+cnn_368.txt: Word Count = 1416, Average Words per Sentence = 22.48, Average Characters per Word = 4.62
+cnn_37.txt: Word Count = 385, Average Words per Sentence = 35.00, Average Characters per Word = 4.96
+cnn_372.txt: Word Count = 660, Average Words per Sentence = 22.00, Average Characters per Word = 4.58
+cnn_376.txt: Word Count = 988, Average Words per Sentence = 22.98, Average Characters per Word = 4.45
+cnn_377.txt: Word Count = 1497, Average Words per Sentence = 21.08, Average Characters per Word = 4.55
+cnn_380.txt: Word Count = 638, Average Words per Sentence = 25.52, Average Characters per Word = 5.13
+cnn_382.txt: Word Count = 619, Average Words per Sentence = 20.63, Average Characters per Word = 4.46
+cnn_40.txt: Word Count = 669, Average Words per Sentence = 22.30, Average Characters per Word = 4.91
+cnn_41.txt: Word Count = 571, Average Words per Sentence = 19.69, Average Characters per Word = 4.80
+cnn_415.txt: Word Count = 293, Average Words per Sentence = 20.93, Average Characters per Word = 4.60
+cnn_42.txt: Word Count = 504, Average Words per Sentence = 21.00, Average Characters per Word = 4.54
+cnn_426.txt: Word Count = 532, Average Words per Sentence = 25.33, Average Characters per Word = 4.53
+cnn_432.txt: Word Count = 869, Average Words per Sentence = 23.49, Average Characters per Word = 4.86
+cnn_44.txt: Word Count = 1063, Average Words per Sentence = 23.62, Average Characters per Word = 4.91
+cnn_443.txt: Word Count = 179, Average Words per Sentence = 22.38, Average Characters per Word = 4.89
+cnn_460.txt: Word Count = 553, Average Words per Sentence = 27.65, Average Characters per Word = 4.63
+cnn_465.txt: Word Count = 921, Average Words per Sentence = 24.89, Average Characters per Word = 4.95
+cnn_472.txt: Word Count = 259, Average Words per Sentence = 21.58, Average Characters per Word = 4.77
+cnn_478.txt: Word Count = 1719, Average Words per Sentence = 27.29, Average Characters per Word = 4.84
+cnn_486.txt: Word Count = 1016, Average Words per Sentence = 20.32, Average Characters per Word = 4.58
+cnn_491.txt: Word Count = 778, Average Words per Sentence = 21.61, Average Characters per Word = 4.59
+cnn_496.txt: Word Count = 1292, Average Words per Sentence = 25.33, Average Characters per Word = 4.88
+cnn_5.txt: Word Count = 1272, Average Words per Sentence = 28.27, Average Characters per Word = 4.81
+cnn_520.txt: Word Count = 600, Average Words per Sentence = 20.69, Average Characters per Word = 4.75
+cnn_522.txt: Word Count = 805, Average Words per Sentence = 23.00, Average Characters per Word = 4.77
+cnn_527.txt: Word Count = 553, Average Words per Sentence = 22.12, Average Characters per Word = 4.84
+cnn_536.txt: Word Count = 900, Average Words per Sentence = 18.37, Average Characters per Word = 4.70
+cnn_537.txt: Word Count = 1457, Average Words per Sentence = 20.81, Average Characters per Word = 4.89
+cnn_555.txt: Word Count = 1029, Average Words per Sentence = 22.87, Average Characters per Word = 4.52
+cnn_560.txt: Word Count = 648, Average Words per Sentence = 19.06, Average Characters per Word = 4.96
+cnn_571.txt: Word Count = 618, Average Words per Sentence = 25.75, Average Characters per Word = 4.67
+cnn_583.txt: Word Count = 373, Average Words per Sentence = 28.69, Average Characters per Word = 4.80
+cnn_587.txt: Word Count = 1002, Average Words per Sentence = 22.77, Average Characters per Word = 4.66
+cnn_591.txt: Word Count = 1304, Average Words per Sentence = 23.71, Average Characters per Word = 4.85
+cnn_592.txt: Word Count = 1208, Average Words per Sentence = 22.79, Average Characters per Word = 4.78
+cnn_6.txt: Word Count = 495, Average Words per Sentence = 24.75, Average Characters per Word = 4.37
+cnn_60.txt: Word Count = 276, Average Words per Sentence = 23.00, Average Characters per Word = 4.70
+cnn_601.txt: Word Count = 697, Average Words per Sentence = 26.81, Average Characters per Word = 4.58
+cnn_612.txt: Word Count = 962, Average Words per Sentence = 25.32, Average Characters per Word = 4.72
+cnn_614.txt: Word Count = 363, Average Words per Sentence = 40.33, Average Characters per Word = 4.84
+cnn_620.txt: Word Count = 294, Average Words per Sentence = 19.60, Average Characters per Word = 4.97
+cnn_627.txt: Word Count = 943, Average Words per Sentence = 24.18, Average Characters per Word = 4.56
+cnn_629.txt: Word Count = 305, Average Words per Sentence = 25.42, Average Characters per Word = 4.70
+cnn_637.txt: Word Count = 400, Average Words per Sentence = 22.22, Average Characters per Word = 4.67
+cnn_639.txt: Word Count = 742, Average Words per Sentence = 28.54, Average Characters per Word = 4.57
+cnn_641.txt: Word Count = 593, Average Words per Sentence = 32.94, Average Characters per Word = 4.72
+cnn_643.txt: Word Count = 647, Average Words per Sentence = 25.88, Average Characters per Word = 4.75
+cnn_649.txt: Word Count = 1344, Average Words per Sentence = 22.40, Average Characters per Word = 4.57
+cnn_655.txt: Word Count = 222, Average Words per Sentence = 27.75, Average Characters per Word = 4.71
+cnn_659.txt: Word Count = 302, Average Words per Sentence = 27.45, Average Characters per Word = 4.77
+cnn_660.txt: Word Count = 883, Average Words per Sentence = 23.86, Average Characters per Word = 4.37
+cnn_673.txt: Word Count = 1094, Average Words per Sentence = 23.28, Average Characters per Word = 4.77
+cnn_70.txt: Word Count = 1055, Average Words per Sentence = 19.54, Average Characters per Word = 4.70
+cnn_72.txt: Word Count = 995, Average Words per Sentence = 28.43, Average Characters per Word = 4.74
+cnn_85.txt: Word Count = 649, Average Words per Sentence = 24.04, Average Characters per Word = 4.66
+cnn_86.txt: Word Count = 848, Average Words per Sentence = 21.20, Average Characters per Word = 4.89
+cnn_90.txt: Word Count = 530, Average Words per Sentence = 23.04, Average Characters per Word = 4.78
+cnn_99.txt: Word Count = 820, Average Words per Sentence = 22.16, Average Characters per Word = 4.49
+conference_bios.txt: Word Count = 233, Average Words per Sentence = 25.89, Average Characters per Word = 4.57
+Crowdfunding-adv.txt: Word Count = 1031, Average Words per Sentence = 25.77, Average Characters per Word = 4.18
+cultural_behaviour_in_business.txt: Word Count = 680, Average Words per Sentence = 34.00, Average Characters per Word = 4.91
+days_of_the_week.txt: Word Count = 431, Average Words per Sentence = 28.73, Average Characters per Word = 4.29
+describing_a_table.txt: Word Count = 313, Average Words per Sentence = 24.08, Average Characters per Word = 4.78
+Everest-adv.txt: Word Count = 1028, Average Words per Sentence = 22.84, Average Characters per Word = 4.32
+Exercise-adv.txt: Word Count = 995, Average Words per Sentence = 27.64, Average Characters per Word = 4.32
+forrest_gump.txt: Word Count = 298, Average Words per Sentence = 21.29, Average Characters per Word = 4.67
+four_book_summaries.txt: Word Count = 743, Average Words per Sentence = 16.51, Average Characters per Word = 4.66
+funerals_in_the_us.txt: Word Count = 334, Average Words per Sentence = 19.65, Average Characters per Word = 4.56
+giving_and_receiving_positive_feedback.txt: Word Count = 472, Average Words per Sentence = 23.60, Average Characters per Word = 4.82
+going_freelance.txt: Word Count = 959, Average Words per Sentence = 25.92, Average Characters per Word = 4.27
+Gorillas and oil-adv.txt: Word Count = 859, Average Words per Sentence = 23.22, Average Characters per Word = 4.52
+helen_keller.txt: Word Count = 326, Average Words per Sentence = 20.38, Average Characters per Word = 4.71
+henry_ford.txt: Word Count = 312, Average Words per Sentence = 19.50, Average Characters per Word = 4.69
+horror_film_cliches.txt: Word Count = 480, Average Words per Sentence = 13.33, Average Characters per Word = 4.13
+how_humans_evolved_language.txt: Word Count = 667, Average Words per Sentence = 21.52, Average Characters per Word = 4.51
+immigration.txt: Word Count = 310, Average Words per Sentence = 22.14, Average Characters per Word = 4.66
+Insects-adv.txt: Word Count = 849, Average Words per Sentence = 28.30, Average Characters per Word = 4.41
+jack_kevorkian.txt: Word Count = 344, Average Words per Sentence = 18.11, Average Characters per Word = 4.66
+jerry_springer.txt: Word Count = 333, Average Words per Sentence = 18.50, Average Characters per Word = 4.68
+Kenya-adv.txt: Word Count = 910, Average Words per Sentence = 36.40, Average Characters per Word = 4.67
+Liberia-adv.txt: Word Count = 1078, Average Words per Sentence = 26.95, Average Characters per Word = 4.25
+Life expectancy-adv.txt: Word Count = 925, Average Words per Sentence = 31.90, Average Characters per Word = 4.41
+Life on Mars-adv.txt: Word Count = 1030, Average Words per Sentence = 30.29, Average Characters per Word = 4.30
+life_on_mars.txt: Word Count = 554, Average Words per Sentence = 17.31, Average Characters per Word = 4.65
+london.txt: Word Count = 364, Average Words per Sentence = 15.83, Average Characters per Word = 4.49
+Malala-adv.txt: Word Count = 868, Average Words per Sentence = 27.12, Average Characters per Word = 4.32
+malaysian_whole_fish.txt: Word Count = 644, Average Words per Sentence = 26.83, Average Characters per Word = 4.13
+managing_a_problem.txt: Word Count = 484, Average Words per Sentence = 32.27, Average Characters per Word = 4.35
+Meteorite-adv.txt: Word Count = 837, Average Words per Sentence = 22.62, Average Characters per Word = 4.49
+Nelson Mandela-adv.txt: Word Count = 1053, Average Words per Sentence = 24.49, Average Characters per Word = 4.35
+Nepal-adv.txt: Word Count = 607, Average Words per Sentence = 26.39, Average Characters per Word = 4.66
+Old age-adv.txt: Word Count = 860, Average Words per Sentence = 27.74, Average Characters per Word = 4.88
+Organs-adv.txt: Word Count = 849, Average Words per Sentence = 24.97, Average Characters per Word = 4.35
+over_the_counter.txt: Word Count = 331, Average Words per Sentence = 12.73, Average Characters per Word = 4.43
+political_manifestos.txt: Word Count = 446, Average Words per Sentence = 14.87, Average Characters per Word = 4.48
+russel_crowe.txt: Word Count = 328, Average Words per Sentence = 18.22, Average Characters per Word = 4.53
+Skydiver-adv.txt: Word Count = 1005, Average Words per Sentence = 32.42, Average Characters per Word = 4.37
+Starbucks-adv.txt: Word Count = 809, Average Words per Sentence = 29.96, Average Characters per Word = 4.66
+Superbugs-adv.txt: Word Count = 970, Average Words per Sentence = 18.30, Average Characters per Word = 4.91
+sustainable_supermarkets.txt: Word Count = 382, Average Words per Sentence = 29.38, Average Characters per Word = 5.00
+Swedish prisons-adv.txt: Word Count = 989, Average Words per Sentence = 26.73, Average Characters per Word = 4.47
+the_changing_workplace.txt: Word Count = 342, Average Words per Sentence = 31.09, Average Characters per Word = 5.12
+the_empire_state_building.txt: Word Count = 262, Average Words per Sentence = 20.15, Average Characters per Word = 4.73
+the_federal_government.txt: Word Count = 269, Average Words per Sentence = 17.93, Average Characters per Word = 4.62
+the_golden_gate_bridge.txt: Word Count = 243, Average Words per Sentence = 24.30, Average Characters per Word = 4.53
+the_marlboro_man.txt: Word Count = 317, Average Words per Sentence = 16.68, Average Characters per Word = 4.84
+the_state_of_the_world.txt: Word Count = 578, Average Words per Sentence = 22.23, Average Characters per Word = 4.50
+the_statue_of_liberty.txt: Word Count = 269, Average Words per Sentence = 24.45, Average Characters per Word = 4.27
+the_veterans_administration.txt: Word Count = 300, Average Words per Sentence = 25.00, Average Characters per Word = 5.29
+Violence-adv.txt: Word Count = 814, Average Words per Sentence = 30.15, Average Characters per Word = 4.55
+WNL Apple-adv.txt: Word Count = 810, Average Words per Sentence = 30.00, Average Characters per Word = 4.44
+WNL Are MOOCs the future-adv.txt: Word Count = 1029, Average Words per Sentence = 32.16, Average Characters per Word = 4.66
+WNL Bangladesh factory owners-adv.txt: Word Count = 656, Average Words per Sentence = 31.24, Average Characters per Word = 4.71
+WNL Barack Obama-adv.txt: Word Count = 852, Average Words per Sentence = 50.12, Average Characters per Word = 4.35
+WNL Billionaires-adv.txt: Word Count = 1020, Average Words per Sentence = 23.18, Average Characters per Word = 4.43
+WNL Bright Future-adv.txt: Word Count = 968, Average Words per Sentence = 21.04, Average Characters per Word = 4.48
+WNL Castaway-adv.txt: Word Count = 925, Average Words per Sentence = 28.03, Average Characters per Word = 4.28
+WNL Coloring Books-adv.txt: Word Count = 873, Average Words per Sentence = 24.94, Average Characters per Word = 4.19
+WNL Criminal Links-adv.txt: Word Count = 1105, Average Words per Sentence = 25.11, Average Characters per Word = 4.55
+WNL David Bowie-adv.txt: Word Count = 1271, Average Words per Sentence = 24.44, Average Characters per Word = 4.52
+WNL David Mitchell-adv.txt: Word Count = 795, Average Words per Sentence = 39.75, Average Characters per Word = 4.11
+WNL Drowning in rubbish-adv.txt: Word Count = 700, Average Words per Sentence = 22.58, Average Characters per Word = 4.56
+WNL First high resolution images-adv.txt: Word Count = 1132, Average Words per Sentence = 26.95, Average Characters per Word = 4.43
+WNL Four new elements-adv.txt: Word Count = 754, Average Words per Sentence = 32.78, Average Characters per Word = 4.83
+WNL Google car-adv.txt: Word Count = 796, Average Words per Sentence = 27.45, Average Characters per Word = 4.36
+WNL I confused my numbers-adv.txt: Word Count = 683, Average Words per Sentence = 28.46, Average Characters per Word = 4.33
+WNL Icelandic names-adv.txt: Word Count = 632, Average Words per Sentence = 28.73, Average Characters per Word = 4.40
+WNL India's rich-adv.txt: Word Count = 808, Average Words per Sentence = 21.84, Average Characters per Word = 4.57
+WNL Inventions-adv.txt: Word Count = 574, Average Words per Sentence = 31.89, Average Characters per Word = 4.21
+WNL Japan-adv.txt: Word Count = 726, Average Words per Sentence = 27.92, Average Characters per Word = 4.52
+WNL JMW Turner-adv.txt: Word Count = 553, Average Words per Sentence = 34.56, Average Characters per Word = 4.39
+WNL John Lewis-adv.txt: Word Count = 901, Average Words per Sentence = 33.37, Average Characters per Word = 4.29
+WNL Lego movie-adv.txt: Word Count = 374, Average Words per Sentence = 37.40, Average Characters per Word = 4.22
+WNL Love hormonw-adv.txt: Word Count = 768, Average Words per Sentence = 25.60, Average Characters per Word = 4.78
+WNL Man falls-adv.txt: Word Count = 1002, Average Words per Sentence = 27.08, Average Characters per Word = 4.38
+WNL Mars-adv.txt: Word Count = 762, Average Words per Sentence = 42.33, Average Characters per Word = 4.53
+WNL Mirrors-adv.txt: Word Count = 784, Average Words per Sentence = 21.19, Average Characters per Word = 4.50
+WNL Morocco-adv.txt: Word Count = 1247, Average Words per Sentence = 28.34, Average Characters per Word = 4.50
+WNL Music-adv.txt: Word Count = 515, Average Words per Sentence = 36.79, Average Characters per Word = 4.82
+WNL Mystery Shopper-adv.txt: Word Count = 1156, Average Words per Sentence = 30.42, Average Characters per Word = 4.15
+WNL NASA Astronaut-adv.txt: Word Count = 1076, Average Words per Sentence = 31.65, Average Characters per Word = 4.09
+WNL Neuroscientists-adv.txt: Word Count = 990, Average Words per Sentence = 21.52, Average Characters per Word = 4.46
+WNL New Orleans-adv.txt: Word Count = 1160, Average Words per Sentence = 31.35, Average Characters per Word = 4.15
+WNL Noise pollution -adv.txt: Word Count = 845, Average Words per Sentence = 32.50, Average Characters per Word = 4.54
+WNL Organic Food-adv.txt: Word Count = 943, Average Words per Sentence = 24.82, Average Characters per Word = 4.85
+WNL Pacific Islanders-adv.txt: Word Count = 1035, Average Words per Sentence = 29.57, Average Characters per Word = 4.49
+WNL Satnav-adv.txt: Word Count = 703, Average Words per Sentence = 29.29, Average Characters per Word = 4.50
+WNL School Sports-adv.txt: Word Count = 784, Average Words per Sentence = 30.15, Average Characters per Word = 4.58
+WNL School-adv.txt: Word Count = 840, Average Words per Sentence = 30.00, Average Characters per Word = 4.32
+WNL Scottish referendum-adv.txt: Word Count = 999, Average Words per Sentence = 29.38, Average Characters per Word = 4.42
+WNL Shakespeare-adv.txt: Word Count = 957, Average Words per Sentence = 30.87, Average Characters per Word = 4.71
+WNL Ships noise-adv.txt: Word Count = 797, Average Words per Sentence = 26.57, Average Characters per Word = 4.66
+WNL Shops-adv.txt: Word Count = 1098, Average Words per Sentence = 24.40, Average Characters per Word = 4.38
+WNL six well paid jobs-adv.txt: Word Count = 943, Average Words per Sentence = 23.00, Average Characters per Word = 4.70
+WNL Spain Wetlands-adv.txt: Word Count = 1100, Average Words per Sentence = 22.45, Average Characters per Word = 4.36
+WNL Swarthy caveman-adv.txt: Word Count = 775, Average Words per Sentence = 25.00, Average Characters per Word = 4.68
+WNL Ten ideas-adv.txt: Word Count = 1022, Average Words per Sentence = 18.25, Average Characters per Word = 4.66
+WNL The Greek island-adv.txt: Word Count = 1060, Average Words per Sentence = 33.12, Average Characters per Word = 4.21
+WNL The last-adv.txt: Word Count = 793, Average Words per Sentence = 19.82, Average Characters per Word = 4.29
+WNL The lightweight-adv.txt: Word Count = 939, Average Words per Sentence = 24.71, Average Characters per Word = 4.14
+WNL Tributes-adv.txt: Word Count = 804, Average Words per Sentence = 30.92, Average Characters per Word = 4.67
+WNL Use of e-cig-adv.txt: Word Count = 1065, Average Words per Sentence = 30.43, Average Characters per Word = 4.26
+WNL Vienna-adv.txt: Word Count = 928, Average Words per Sentence = 28.12, Average Characters per Word = 4.56
+WNL Ways Facebook changed-adv.txt: Word Count = 1361, Average Words per Sentence = 24.30, Average Characters per Word = 4.37
+WNL We must-adv.txt: Word Count = 1016, Average Words per Sentence = 29.88, Average Characters per Word = 4.48
+WNL What's the secret-adv.txt: Word Count = 990, Average Words per Sentence = 21.06, Average Characters per Word = 4.24
+WNL Who can stop Trump-adv.txt: Word Count = 1059, Average Words per Sentence = 26.48, Average Characters per Word = 4.40
+WNL Who invented-adv.txt: Word Count = 1116, Average Words per Sentence = 33.82, Average Characters per Word = 4.24
+WNL Why are people so wrong-adv.txt: Word Count = 774, Average Words per Sentence = 30.96, Average Characters per Word = 4.46
+WNL Why we should -adv.txt: Word Count = 642, Average Words per Sentence = 26.75, Average Characters per Word = 4.56
+WNL Will drones-adv.txt: Word Count = 1081, Average Words per Sentence = 30.89, Average Characters per Word = 4.18
+WNL Young Americans-adv.txt: Word Count = 1093, Average Words per Sentence = 24.84, Average Characters per Word = 4.31
+yellowstone_national_park.txt: Word Count = 295, Average Words per Sentence = 17.35, Average Characters per Word = 4.54
+Zero Hours-adv.txt: Word Count = 846, Average Words per Sentence = 38.45, Average Characters per Word = 4.72
+
+Combined Average Metrics Across All Files:
+Average Word Count: 726.4232365145228
+Average Words per Sentence: 25.03
+Average Characters per Word: 4.61
