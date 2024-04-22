@@ -1,0 +1,9 @@
+{
+  "type": "nonfiction",
+  "genre": "Finance",
+  "subgenre": "Customer Service",
+  "title": "Managing Credit Card Balances: A Customer Service Interaction",
+  "summary": "A customer inquires about his credit card balance and learns that he has paid off his dues, leading to a discussion about changing account status.",
+  "image_description": "An image of a customer service representative assisting a client with a computer displaying a credit card account information.",
+  "passage": "Hi, I would like to know my credit balance.\nOf course. May I have your credit card number?\nYes, it's 512879346. My name is John.\nAlright, John. You currently have no dues on your credit card.\nReally? I finally paid it off?\nYes, sir. Your balance is officially zero.\nI must admit I am proud of myself!\nIs there anything else you'd like me to check, sir?\nYes, can you change my card status from a college to normal account?\nOf course, but you'll have to come to the bank to do that.\nAlright, I'll be down first thing tomorrow.\nSounds good, sir. Have a good day."
+}
