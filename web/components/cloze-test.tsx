@@ -336,8 +336,8 @@ export default function ClozeTest({ userId }: Props) {
       async (item: ResultTextArray) => {
         if (item.correctWords) {
           try {
-            const updateScore = await updateScore(2, userId);
-            if (updateScore?.status === 201) {
+            const result = await updateScore(2, userId);
+            if (result?.status === 201) {
               router.refresh();
               toast({
                 title: t("toast.success"),
