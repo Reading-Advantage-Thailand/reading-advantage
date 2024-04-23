@@ -1,0 +1,1 @@
+Write a {wordcount}-word nonfiction article in the {genre} genre and the {subgenre} subgenre on the topic of {topic}. This article is meant for readers at the A2 CEFR language proficiency level.
