@@ -336,8 +336,9 @@ export default function ClozeTest({ userId }: Props) {
       async (item: ResultTextArray) => {
         if (item.correctWords) {
           try {
-            const updateScrore = await updateScore(2, userId);
-            if (updateScrore?.status === 201) {
+            const updateScore = await updateScore(2, userId);
+            if (updateScore?.status === 201) {
+              router.refresh();
               toast({
                 title: t("toast.success"),
                 description: tUpdateScore("yourXp", { xp: 2 }),
@@ -371,7 +372,7 @@ export default function ClozeTest({ userId }: Props) {
     setSelectedWord({});
     setShowBadges(false);
     setCurrentArticleIndex((prev) => prev + 1);
-    setShowButtonNextPassage(false);
+    setShowButtonNextPassage(false);  
     setIsPlaying(false);
   };
 
@@ -464,13 +465,14 @@ export default function ClozeTest({ userId }: Props) {
                                           }
                                         >
                                           {shouldReplace
-                                            ? dropdownWords(indexTextArraySplit)
+                                            ? "___________"
                                             : word}{" "}
                                         </span>
                                       );
                                     }
                                   )}
                                 </p>
+                                {dropdownWords(indexTextArraySplit)}
                                 <Footer>
                                   {showBadges ? (
                                     <>
