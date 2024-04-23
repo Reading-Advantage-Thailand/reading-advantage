@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { Article } from "../types";
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -7,15 +8,7 @@ const openai = new OpenAI({
 export async function synthetic_data_generator(
     story: string
 ): Promise<
-    | {
-        type: string;
-        genre: string;
-        subgenre: string;
-        title: string;
-        summary: string;
-        image_description: string;
-        passage: string;
-    }
+    | Article
     | undefined
 > {
     const prompt = `For the following content, please determine type (fiction/nonfiction), genre, and subgenre. Then create a title, a description of an image suitable to be displayed alongside and write a one-sentence summary with no spoilers.\ncontent: ${story}`;
