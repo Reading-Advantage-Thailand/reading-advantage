@@ -14,13 +14,15 @@ type Props = {
 export default function TabsPractice({ userId }: Props) {
    const [showButton, setShowButton] = useState(true);
    return (
-     <Tabs defaultValue="tab1" className="w-full">
-       <TabsList className="grid w-full grid-cols-1 md:grid-cols-6 gap-4">
-         <TabsTrigger value="tab1">Flashcard Practice</TabsTrigger>
-         <TabsTrigger value="tab2">Order Sentences</TabsTrigger>
-         <TabsTrigger value="tab3">Cloze Test</TabsTrigger>
-         <TabsTrigger value="tab4">Order Words</TabsTrigger>
-         <TabsTrigger value="tab5">Matching</TabsTrigger>
+     <Tabs defaultValue="tab1" className="w-full flex flex-col">
+       <TabsList className="flex shrink">
+         <TabsTrigger value="tab1" className="w-full">
+           Flashcard Practice
+         </TabsTrigger>
+         <TabsTrigger value="tab2" className="w-full">Order Sentences</TabsTrigger>
+         <TabsTrigger value="tab3" className="w-full">Cloze Test</TabsTrigger>
+         <TabsTrigger value="tab4" className="w-full">Order Words</TabsTrigger>
+         <TabsTrigger value="tab5" className="w-full">Matching</TabsTrigger>
        </TabsList>
        <TabsContent className="space-y-2" value="tab1">
          <FlashCard
