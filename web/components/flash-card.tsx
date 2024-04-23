@@ -33,8 +33,8 @@ dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
-  showButton: boolean
-  setShowButton: Function
+  showButton: boolean;
+  setShowButton: Function;
 };
 
 export type Sentence = {
@@ -58,12 +58,17 @@ export type Sentence = {
   last_review?: Date; // The most recent review date, if applicable
 };
 
-export default function FlashCard({ userId, showButton, setShowButton }: Props) {
+export default function FlashCard({
+  userId,
+  showButton,
+  setShowButton,
+}: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
   const [sentences, setSentences] = useState<Sentence[]>([]);
+
   const controlRef = useRef<any>({});
   const currentCardFlipRef = useRef<any>();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -72,7 +77,7 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
-      const startOfDay = date_scheduler(new Date(), 0, true);     
+      const startOfDay = date_scheduler(new Date(), 0, true);
       const filteredData = await res.data.sentences
         .filter((record: Sentence) => {
           const dueDate = new Date(record.due);
@@ -81,7 +86,7 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
         .sort((a: Sentence, b: Sentence) => {
           return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
         });
-       
+
       setSentences(filteredData);
 
       if (filteredData.length === 0) {
@@ -119,7 +124,6 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
     } catch (error) {
       console.log(error);
     }
-     
   };
 
   useEffect(() => {
@@ -163,6 +167,35 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
       ),
     };
   });
+
+  const handleDeleteAll = async () => {
+    let idSentences = sentences.map((sentence) => sentence.id);
+    try {
+      // loop for delete all sentences
+      for (let i = 0; i < idSentences.length; i++) {
+        const res = await axios.delete(`/api/users/${userId}/sentences`, {
+          data: {
+            sentenceId: idSentences[i],
+          },
+        });
+
+        if (i === idSentences.length - 1) {
+          getUserSentenceSaved();
+          toast({
+            title: t("toast.success"),
+            description: t("toast.successDescription"),
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: t("toast.error"),
+        description: t("toast.errorDescription"),
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <>
@@ -229,14 +262,16 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
               </CardDescription>
             </div>
 
-            <Button
-              className="ml-auto font-medium"
-              size="sm"
-              variant="destructive"
-              onClick={() => {}}
-            >
-              {t("neverPracticeButton")}
-            </Button>
+            {sentences.length != 0 && (
+              <Button
+                className="ml-auto font-medium"
+                size="sm"
+                variant="destructive"
+                onClick={() => handleDeleteAll()}
+              >
+                {t("neverPracticeButton")}
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
