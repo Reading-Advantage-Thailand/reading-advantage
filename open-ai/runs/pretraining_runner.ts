@@ -89,6 +89,12 @@ async function run() {
         ) as Article;
 
         const stats = fileMetrics[`${fileNameWithoutExtension}.txt`];
+        const content = {
+            title: article.title,
+            content: article.passage,
+            summary: article.summary,
+            image_description: article.image_description,
+        }
         const message: { messages: Message[] } = {
             messages: [
                 {
@@ -101,19 +107,13 @@ async function run() {
                 },
                 {
                     role: "assistant",
-                    content: {
-                        title: article.title,
-                        content: article.passage,
-                        summary: article.summary,
-                        image_description: article.image_description,
-                    }
+                    content: JSON.stringify(content),
                 }
             ]
         }
 
         messages.push(message);
     }
-
     // Write the combined articles to a JSONL file
     fs.writeFileSync(
         `${process.cwd()}/data/${level}_nonfiction_combined.jsonl`,
