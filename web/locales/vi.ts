@@ -68,6 +68,7 @@ export default {
         savedSentencesDescription: "Bạn đã lưu {total} câu đoạn.",
         added: "Thêm vào {date}",
         deleteButton: "Xóa",
+        neverPracticeButton: "Không cần luyện tập câu này nữa.",
         toast: {
           success: "Thành công",
           successDescription: "Xóa câu đoạn đã lưu thành công",

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
@@ -63,11 +63,11 @@ export default function ClozeTest({ userId }: Props) {
     "pages.student.practicePage.flashcardPractice"
   );
   const router = useRouter();
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  const [isplaying, setIsPlaying] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isplaying, setIsPlaying] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [articleClozeTest, setArticleClozeTest] = useState<any[]>([]);
-  const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
+  const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
   const [selectedWord, setSelectedWord] = useState<any>({}); // for set placeholder in dropdown
   const [showBadges, setShowBadges] = useState(false);
   const [showButtonNextPassage, setShowButtonNextPassage] = useState(false);
@@ -375,8 +375,6 @@ export default function ClozeTest({ userId }: Props) {
     setIsPlaying(false);
   };
 
-  console.log("🚀 ~ ClozeTest ~ articleClozeTest:", articleClozeTest);
-  console.log("🚀 ~ ClozeTest ~ selectedWord:", selectedWord);
 
   return (
     <>

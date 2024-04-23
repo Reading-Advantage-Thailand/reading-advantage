@@ -68,6 +68,7 @@ export default {
         savedSentencesDescription: "คุณมีประโยคที่บันทึกไว้ {total} ประโยค",
         added: "เพิ่มเมื่อ {date}",
         deleteButton: "ลบ",
+        neverPracticeButton: "ไม่ต้องฝึกประโยคนี้อีก",
         toast: {
           success: "สำเร็จ",
           successDescription: "ลบประโยคที่บันทึกไว้สำเร็จ",
