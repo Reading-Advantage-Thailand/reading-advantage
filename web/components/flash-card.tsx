@@ -11,10 +11,11 @@ import { v4 as uuidv4 } from "uuid";
 import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import AudioButton from "./audio-button";
 import FlashCardPracticeButton from "./flash-card-practice-button";
 import FlipCardPracticeButton from "./flip-card-button";
-import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -67,13 +68,13 @@ export default function FlashCard({
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
-  const [sentences, setSentences] = useState<Sentence[]>([]);
-
+  const router = useRouter();
   const controlRef = useRef<any>({});
   const currentCardFlipRef = useRef<any>();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const router = useRouter();
-
+  const [loading, setLoading] = useState(false);
+  const [sentences, setSentences] = useState<Sentence[]>([]);
+  
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
@@ -171,6 +172,7 @@ export default function FlashCard({
   const handleDeleteAll = async () => {
     let idSentences = sentences.map((sentence) => sentence.id);
     try {
+      setLoading(true)
       // loop for delete all sentences
       for (let i = 0; i < idSentences.length; i++) {
         const res = await axios.delete(`/api/users/${userId}/sentences`, {
@@ -180,6 +182,7 @@ export default function FlashCard({
         });
 
         if (i === idSentences.length - 1) {
+          setLoading(false)
           getUserSentenceSaved();
           toast({
             title: t("toast.success"),
@@ -189,6 +192,7 @@ export default function FlashCard({
       }
     } catch (error) {
       console.log(error);
+      setLoading(false);
       toast({
         title: t("toast.error"),
         description: t("toast.errorDescription"),
@@ -263,14 +267,20 @@ export default function FlashCard({
             </div>
 
             {sentences.length != 0 && (
-              <Button
+              <>
+               {loading ? <Button className="ml-auto font-medium" disabled>
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    {t("neverPracticeButton")}
+                  </Button> : <Button
                 className="ml-auto font-medium"
                 size="sm"
                 variant="destructive"
                 onClick={() => handleDeleteAll()}
               >
                 {t("neverPracticeButton")}
-              </Button>
+              </Button>}
+              </>
+              
             )}
           </div>
         </CardHeader>
