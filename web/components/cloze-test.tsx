@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
@@ -63,11 +63,11 @@ export default function ClozeTest({ userId }: Props) {
     "pages.student.practicePage.flashcardPractice"
   );
   const router = useRouter();
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  const [isplaying, setIsPlaying] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isplaying, setIsPlaying] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [articleClozeTest, setArticleClozeTest] = useState<any[]>([]);
-  const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
+  const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
   const [selectedWord, setSelectedWord] = useState<any>({}); // for set placeholder in dropdown
   const [showBadges, setShowBadges] = useState(false);
   const [showButtonNextPassage, setShowButtonNextPassage] = useState(false);
@@ -336,8 +336,9 @@ export default function ClozeTest({ userId }: Props) {
       async (item: ResultTextArray) => {
         if (item.correctWords) {
           try {
-            const updateScrore = await updateScore(2, userId);
-            if (updateScrore?.status === 201) {
+            const result = await updateScore(2, userId);
+            if (result?.status === 201) {
+              router.refresh();
               toast({
                 title: t("toast.success"),
                 description: tUpdateScore("yourXp", { xp: 2 }),
@@ -371,12 +372,10 @@ export default function ClozeTest({ userId }: Props) {
     setSelectedWord({});
     setShowBadges(false);
     setCurrentArticleIndex((prev) => prev + 1);
-    setShowButtonNextPassage(false);
+    setShowButtonNextPassage(false);  
     setIsPlaying(false);
   };
 
-  console.log("🚀 ~ ClozeTest ~ articleClozeTest:", articleClozeTest);
-  console.log("🚀 ~ ClozeTest ~ selectedWord:", selectedWord);
 
   return (
     <>
@@ -466,13 +465,14 @@ export default function ClozeTest({ userId }: Props) {
                                           }
                                         >
                                           {shouldReplace
-                                            ? dropdownWords(indexTextArraySplit)
+                                            ? "___________"
                                             : word}{" "}
                                         </span>
                                       );
                                     }
                                   )}
                                 </p>
+                                {dropdownWords(indexTextArraySplit)}
                                 <Footer>
                                   {showBadges ? (
                                     <>

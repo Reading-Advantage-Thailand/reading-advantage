@@ -58,6 +58,7 @@ export default {
         savedSentencesDescription: "您有 {total} 個保存的句子。",
         added: "添加於 {date}",
         deleteButton: "刪除",
+        neverPracticeButton: "不用再练习这个句子了",
         toast: {
           success: "成功",
           successDescription: "成功刪除保存的句子",
