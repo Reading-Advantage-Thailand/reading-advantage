@@ -64,8 +64,8 @@ interface Message {
 
 async function run() {
     // Read from the folder
-    const level = "A2";
-    const statsFilePath = `/Users/passakorn/Coding/reading-advantage/data/A2-NLPstats.txt`;
+    const level = "B1";
+    const statsFilePath = `/Users/passakorn/Coding/reading-advantage/data/${level}-NLPstats.txt`;
     const articlesFolderPath = `${process.cwd()}/data/${level}_nonfiction`;
     const articleJSONfiles = fs.readdirSync(articlesFolderPath);
     const fileMetrics = parseFileMetrics(statsFilePath);
@@ -116,7 +116,7 @@ async function run() {
     }
     // Write the combined articles to a JSONL file
     fs.writeFileSync(
-        `${process.cwd()}/data/${level}_nonfiction_combined.jsonl`,
+        `${process.cwd()}/data/pretraining_data/${level}_nonfiction_combined.jsonl`,
         messages.map((message) => JSON.stringify(message)).join("\n")
     );
 }
