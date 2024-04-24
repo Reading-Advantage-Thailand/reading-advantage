@@ -74,7 +74,7 @@ export default function FlashCard({
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [sentences, setSentences] = useState<Sentence[]>([]);
-  
+
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
@@ -172,7 +172,7 @@ export default function FlashCard({
   const handleDeleteAll = async () => {
     let idSentences = sentences.map((sentence) => sentence.id);
     try {
-      setLoading(true)
+      setLoading(true);
       // loop for delete all sentences
       for (let i = 0; i < idSentences.length; i++) {
         const res = await axios.delete(`/api/users/${userId}/sentences`, {
@@ -182,7 +182,7 @@ export default function FlashCard({
         });
 
         if (i === idSentences.length - 1) {
-          setLoading(false)
+          setLoading(false);
           getUserSentenceSaved();
           toast({
             title: t("toast.success"),
@@ -242,13 +242,32 @@ export default function FlashCard({
           </>
         )}
         {sentences.length != 0 && (
-          <FlashCardPracticeButton
-            index={currentCardIndex}
-            nextCard={() => controlRef.current.nextCard()}
-            sentences={sentences}
-            showButton={showButton}
-            setShowButton={setShowButton}
-          />
+          <>
+            <FlashCardPracticeButton
+              index={currentCardIndex}
+              nextCard={() => controlRef.current.nextCard()}
+              sentences={sentences}
+              showButton={showButton}
+              setShowButton={setShowButton}
+            />
+            <div>
+              {loading ? (
+                <Button className="ml-auto font-medium" disabled>
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  {t("neverPracticeButton")}
+                </Button>
+              ) : (
+                <Button
+                  className="ml-auto font-medium"
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDeleteAll()}
+                >
+                  {t("neverPracticeButton")}
+                </Button>
+              )}
+            </div>
+          </>
         )}
       </div>
 
@@ -266,22 +285,25 @@ export default function FlashCard({
               </CardDescription>
             </div>
 
-            {sentences.length != 0 && (
+            {/* {sentences.length != 0 && (
               <>
-               {loading ? <Button className="ml-auto font-medium" disabled>
+                {loading ? (
+                  <Button className="ml-auto font-medium" disabled>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                     {t("neverPracticeButton")}
-                  </Button> : <Button
-                className="ml-auto font-medium"
-                size="sm"
-                variant="destructive"
-                onClick={() => handleDeleteAll()}
-              >
-                {t("neverPracticeButton")}
-              </Button>}
+                  </Button>
+                ) : (
+                  <Button
+                    className="ml-auto font-medium"
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDeleteAll()}
+                  >
+                    {t("neverPracticeButton")}
+                  </Button>
+                )}
               </>
-              
-            )}
+            )} */}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
