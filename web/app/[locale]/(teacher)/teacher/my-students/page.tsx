@@ -5,7 +5,6 @@ import React from 'react'
 import { headers } from "next/headers";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 
-
 export default async function myStudentPage() {
   const user = await getCurrentUser();
   if (!user) {
@@ -51,14 +50,34 @@ export default async function myStudentPage() {
     }
     const allClassroom = await getAllClassroom();
 
+    function getMatchedStudents() {
+        let matchedStudents: any[] = [];
+        const teacherId = (user as { id: string }).id;
+
+        allStudent.students.forEach((student: { id: string; }) => {
+          allClassroom.data.forEach((classroom: { student: any; archived: boolean; teacherId: string; }) => {
+            if (!classroom.archived && classroom.teacherId === teacherId) {
+              classroom.student.forEach((students: { studentId: string; }) => {
+                if (students.studentId === student.id) {
+                  matchedStudents.push(student);
+                }
+              });
+            }
+          });
+        });
+  
+      return matchedStudents;
+    }
+  
+    const matchedStudents = getMatchedStudents();
+
     return (
       <div>
       <NextAuthSessionProvider session={user}>
      <MyStudents 
-     userId={user.id}
-     allStudent={allStudent.students}
-     allClassroom={allClassroom.data}
-     />
+            userId={user.id}
+            matchedStudents={matchedStudents}
+            />
       </NextAuthSessionProvider>
    </div>
     )
