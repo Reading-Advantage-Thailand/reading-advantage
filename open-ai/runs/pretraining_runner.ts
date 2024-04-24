@@ -64,7 +64,7 @@ interface Message {
 
 async function run() {
     // Read from the folder
-    const level = "B1";
+    const level = "B2";
     const statsFilePath = `/Users/passakorn/Coding/reading-advantage/data/${level}-NLPstats.txt`;
     const articlesFolderPath = `${process.cwd()}/data/${level}_nonfiction`;
     const articleJSONfiles = fs.readdirSync(articlesFolderPath);
@@ -73,7 +73,6 @@ async function run() {
 
     const startIndex = 0;
     const endIndex = articleJSONfiles.length;
-    // const endIndex = 2;
 
     const messages: { messages: Message[] }[] = [];
     // Combine all articles
@@ -103,7 +102,7 @@ async function run() {
                 },
                 {
                     role: "user",
-                    content: `Write a ${stats.wordCount}-word nonfiction article in the ${article.genre} genre and the ${article.subgenre} subgenre on the topic of ${article.title}. This article is meant for readers at the A2 CEFR language proficiency level.`,
+                    content: `Write a ${stats.wordCount}-word nonfiction article in the ${article.genre} genre and the ${article.subgenre} subgenre on the topic of ${article.title}. This article is meant for readers at the ${level} CEFR language proficiency level.`,
                 },
                 {
                     role: "assistant",
