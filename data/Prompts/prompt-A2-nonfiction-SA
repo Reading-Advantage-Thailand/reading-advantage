@@ -1,5 +1,8 @@
-/saquestions
+user:
 Develop 5 basic, easy-to-understand short-answer questions from the {nonfiction article text}, suitable for readers at the A2 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Develop questions that not only assess the direct recall of facts from the text but also basic comprehension, including simple cause and effect or understanding of motives, suitable for A2 level learners.
 
 Key Guidelines:
 1. **Question Simplicity:** The question should be very basic, focusing on straightforward facts or ideas in the article. It should avoid any complexity and be easy for A2-level learners to comprehend.
