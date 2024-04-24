@@ -1,5 +1,8 @@
-/mcquestions
+user:
 Construct a series of 10 multiple-choice questions based on the specified {nonfiction article text}, aimed at readers at the B2 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Develop questions that encourage B2 level learners to engage with the text at a deeper level, understanding not only what is directly stated but also what is implied or suggested.
 
 Key Guidelines:
 1. **Question Style:** Craft questions that probe into understanding of main ideas, details, implications, and author's attitudes. Questions can also address the structure and argumentation within the text.
@@ -8,7 +11,6 @@ Key Guidelines:
 4. **Answers:** Provide four answer options, with one correct answer and three distractors that are plausible but can be discerned through careful reading and analysis.
 5. **Engagement:** Ensure questions engage the reader in critical thinking and deep analysis of the text, including assessing the logic of arguments and the effectiveness of evidence used.
 
-Develop questions that encourage B2 level learners to engage with the text at a deeper level, understanding not only what is directly stated but also what is implied or suggested.
 
 Output as JSON following this example:
 {
