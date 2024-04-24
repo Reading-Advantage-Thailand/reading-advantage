@@ -1,5 +1,7 @@
-/saquestions
-Craft 5 extremely simple and direct short-answer questions based on the {fiction story text}, tailored for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
+user: Craft 5 extremely simple and direct short-answer questions based on the {fiction story text}, tailored for readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Write questions designed to verify a beginner (CEFR A1) learner's ability to identify and understand the simplest and most direct information from the story.
 
 Key Guidelines:
 1. **Question Simplicity:** Formulate a question that deals with the most basic elements of the story, such as naming characters, identifying a simple action, or recognizing the setting.
@@ -7,8 +9,6 @@ Key Guidelines:
 3. **Response Content:** The answer should be about recognizing or naming something very simple and concrete from the story.
 4. **Focus Areas:** Focus on basic facts and direct observations from the story, such as 'Who is in the story?' or 'What does the character see?'
 5. **Expected Answer:** Answers should be very short, one-word or phrase responses that require minimal language production and understanding.
-
-These questions are designed to verify a beginner (A1) learner's ability to identify and understand the simplest and most direct information from the story.
 
 Output as JSON following this example:
 {
