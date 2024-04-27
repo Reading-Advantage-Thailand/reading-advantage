@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import FlashCard from "@/components/flash-card";
 import OrderSentences from "@/components/dnd/order-sentences";
 import ClozeTest from "@/components/cloze-test";
+import OrderWords from "@/components/order-words";
 
 
 type Props = {
@@ -16,9 +17,10 @@ export default function TabsPractice({ userId }: Props) {
    return (
      <Tabs
        defaultValue="tab1"
-       className="flex flex-wrap lg:grid items-start gap-2 mb-4 lg:mb-0 overflow-auto"
+       //  className="flex flex-wrap lg:grid items-start gap-2 mb-4 lg:mb-0"
+       className="flex flex-wrap items-start mb-4 gap-2"
      >
-       <TabsList className="flex shrink">
+       <TabsList className="flex">
          <TabsTrigger value="tab1" className="w-full">
            Flashcard Practice
          </TabsTrigger>
@@ -49,7 +51,7 @@ export default function TabsPractice({ userId }: Props) {
          <ClozeTest userId={userId} />
        </TabsContent>
        <TabsContent className="space-y-2" value="tab4">
-         Order Words
+         <OrderWords userId={userId} />
        </TabsContent>
        <TabsContent className="space-y-2" value="tab5">
          Matching
