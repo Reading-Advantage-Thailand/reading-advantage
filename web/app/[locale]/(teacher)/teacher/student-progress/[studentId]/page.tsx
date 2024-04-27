@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getCurrentUser } from "@/lib/session";
 import { headers } from "next/headers";
 import React from "react";
 
@@ -24,11 +25,18 @@ async function getStudentProgress(studentId: string) {
     }
 
 export default async function ProgressPage({params}: {params: {studentId: string}}) {
+  const user = await getCurrentUser();
   const resStudentProgress = await getStudentProgress(params.studentId);
+  const userId = user?.id ?? '';  
+  let nameOfStudent = '';
+  
+  if (userId === resStudentProgress.articles[0]?.userId) {
+    nameOfStudent = user?.name?? 'Unknown';
+  }
 
   return (
     <>
-      <Header heading="Progress" />
+      <Header heading={`Progress of ${nameOfStudent}`} />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4 mb-10">
         <Card className="md:col-span-4">
           <CardHeader>
