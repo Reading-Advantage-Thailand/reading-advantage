@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import React from 'react'
 import { headers } from "next/headers";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
+import { matchedStudent } from '@/lib/matchedStudent';
 
 export default async function myStudentPage() {
   const user = await getCurrentUser();
@@ -70,6 +71,7 @@ export default async function myStudentPage() {
     }
   
     const matchedStudents = getMatchedStudents();
+    
 
     return (
       <div>
@@ -82,5 +84,3 @@ export default async function myStudentPage() {
    </div>
     )
 }
-
-

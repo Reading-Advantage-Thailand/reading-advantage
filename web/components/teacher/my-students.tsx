@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -31,6 +31,8 @@ import { TableHead } from "@mui/material";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
+// import { Link } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 type Student = {
   id: string;
@@ -43,53 +45,62 @@ type MyStudentProps = {
  matchedStudents: Student[];
 };
 
-export const columns: ColumnDef<Student>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="captoliza">{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return <Button variant="ghost">Email</Button>;
-    },
-    cell: ({ row }) => <div className="captoliza">{row.getValue("email")}</div>,
-  },
-  {
-    accessorKey: "action",
-    header: ({ column }) => {
-      return <Button variant="ghost">Action</Button>;
-    },
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="default" className="ml-auto">
-            Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuCheckboxItem >
-            <Link href={`/progress/${row.id}`}>Progress</Link>
-            </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem >
-          <Link href={`/teacher/report/`}>Report</Link>
-            </DropdownMenuCheckboxItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
+
+
+// export const columns: ColumnDef<Student>[] = [
+
+//   {
+//     accessorKey: "name",
+//     header: ({ column }) => {
+//       return (
+//         <Button
+//           variant="ghost"
+//           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+//         >
+//           Name
+//           <CaretSortIcon className="ml-2 h-4 w-4" />
+//         </Button>
+//       );
+//     },
+//     cell: ({ row }) => <div className="captoliza" onClick={() => row.toggleSelected}>{row.getValue("name")}</div>,
+//   },
+//   {
+//     accessorKey: "email",
+//     header: ({ column }) => {
+//       return <Button variant="ghost">Email</Button>;
+//     },
+//     cell: ({ row }) => <div className="captoliza">{row.getValue("email")}</div>,
+//   },
+//   {
+//     accessorKey: "action",
+//     header: ({ column }) => {
+//       return <Button variant="ghost">Action</Button>;
+//     },
+//     cell: ({ row }) => (
+//       <DropdownMenu>
+//         <DropdownMenuTrigger asChild>
+//           <Button variant="default" className="ml-auto">
+//             Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+//           </Button>
+//         </DropdownMenuTrigger>
+//         <DropdownMenuContent align="start">
+//           <DropdownMenuCheckboxItem >
+//             <Link href={`/teacher/student-progress?studenId=${selectedStudentId}`}>Progress</Link>
+//             </DropdownMenuCheckboxItem>
+//           <DropdownMenuCheckboxItem >
+//           <Link href=''>Enroll</Link>
+//             </DropdownMenuCheckboxItem>
+//           <DropdownMenuCheckboxItem >
+//           <Link href=''>Unenroll</Link>
+//             </DropdownMenuCheckboxItem>
+//           <DropdownMenuCheckboxItem >
+//           Reset Progress
+//             </DropdownMenuCheckboxItem>
+//         </DropdownMenuContent>
+//       </DropdownMenu>
+//     ),
+//   },
+// ];
 
 export default function MyStudents({
   userId,
@@ -103,6 +114,78 @@ export default function MyStudents({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
+  const [selectedStudentId, setSelectedStudentId] = useState( null );  
+console.log('selectedStudentId', selectedStudentId);
+const router = useRouter(); 
+
+useEffect(() => {
+  if (selectedStudentId) {
+    router.push(`/teacher/student-progress/${selectedStudentId}`);
+  }
+}, [selectedStudentId]);
+
+  const columns: ColumnDef<Student>[] = [
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Name
+            <CaretSortIcon className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="captoliza" onClick={() => row.toggleSelected}>{row.getValue("name")}</div>,
+    },
+    {
+      accessorKey: "email",
+      header: ({ column }) => {
+        return <Button variant="ghost">Email</Button>;
+      },
+      cell: ({ row }) => <div className="captoliza">{row.getValue("email")}</div>,
+    },
+    {
+      accessorKey: "id",
+      header: ({ column }) => {
+        return null;
+      },
+      cell: ({ row }) => null,
+    },
+    {
+      accessorKey: "action",
+      header: ({ column }) => {
+        return <Button variant="ghost">Action</Button>;
+      },
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="default" className="ml-auto">
+              Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuCheckboxItem>
+              <Link href={`/teacher/student-progress/${selectedStudentId}`}>Progress</Link>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem >
+              <Link href=''>Enroll</Link>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem >
+              <Link href=''>Unenroll</Link>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem >
+              Reset Progress
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
+ 
 
   const table = useReactTable({
     data: matchedStudents,
@@ -122,6 +205,7 @@ export default function MyStudents({
       rowSelection,
     },
   });
+  
   return (
     <>
       <div className="font-bold text-3xl">My Students Page</div>
@@ -138,7 +222,7 @@ export default function MyStudents({
         <Table>
           <TableHeader className="font-bold">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} >
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableCell>
@@ -163,9 +247,12 @@ export default function MyStudents({
                   className="cursor-pointer"
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  // onClick={() => setSelectedStudentId(row.getValue('id'))}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id}
+                    onClick={() => setSelectedStudentId(cell.getContext().cell.row.getValue('id'))}
+                   >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
