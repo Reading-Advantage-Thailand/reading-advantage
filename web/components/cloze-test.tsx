@@ -284,7 +284,7 @@ export default function ClozeTest({ userId }: Props) {
           setShowBadges(false);
         }}
       >
-        <SelectTrigger className="w-[150px] my-2">
+        <SelectTrigger className="w-[150px] my-2 text-[#091e42]">
           <SelectValue
             placeholder={
               selectedWord[indexTextArraySplit]?.obj?.subtlexResult.word ||
