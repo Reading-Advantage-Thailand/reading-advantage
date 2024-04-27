@@ -74,16 +74,16 @@ export default {
           nextButton: "下一个",
           yourXp: "您已经获得了 {xp} XP 为这个活动。",
         },
-        OrderSentencesPractice: {
-          OrderSentences: "排列句子",
-          OrderSentencesDescription:
+        orderSentencesPractice: {
+          orderSentences: "排列句子",
+          orderSentencesDescription:
             "这些是你读过的某篇文章中的一些句子。请按照对你有意义的顺序排列这些句子。如果顺序与文章中的相同，你将获得5经验值。",
           saveOrder: "保存并稍后继续",
           errorOrder: "请正确排序",
         },
-        ClozeTestPractice: {
-          ClozeTest: "填空测试",
-          ClozeTestDescription:
+        clozeTestPractice: {
+          clozeTest: "填空测试",
+          clozeTestDescription:
             "这是你读过的一篇文章中的几个句子，请填写缺失的单词以完成它们。如果你回答正确，你将获得5经验值。",
           submitButton: "提交",
           errorCloze: "请填写所有空白处",
