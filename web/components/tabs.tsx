@@ -17,23 +17,22 @@ export default function TabsPractice({ userId }: Props) {
    
    return (
      <Tabs
-       defaultValue="tab1"
-       className="flex flex-wrap items-start mb-4 gap-2"
+       defaultValue="tab1"      
      >
-       <TabsList className="flex">
-         <TabsTrigger value="tab1" className="w-full">
+       <TabsList>
+         <TabsTrigger value="tab1">
            Flashcard Practice
          </TabsTrigger>
-         <TabsTrigger value="tab2" className="w-full">
+         <TabsTrigger value="tab2">
            Order Sentences
          </TabsTrigger>
-         <TabsTrigger value="tab3" className="w-full">
+         <TabsTrigger value="tab3">
            Cloze Test
          </TabsTrigger>
-         <TabsTrigger value="tab4" className="w-full">
+         <TabsTrigger value="tab4">
            Order Words
          </TabsTrigger>
-         <TabsTrigger value="tab5" className="w-full">
+         <TabsTrigger value="tab5">
            Matching
          </TabsTrigger>
        </TabsList>
