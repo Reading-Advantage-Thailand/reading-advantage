@@ -42,9 +42,10 @@ export default function OrderWords({ userId }: Props) {
   return (
     <>
       <Header
-        heading={t("clozeTestPractice.clozeTest")}
-        text={t("clozeTestPractice.clozeTestDescription")}
+        heading={t("orderWordsPractice.orderWords")}
+        text={t("orderWordsPractice.orderWordsDescription")}
       />
+      <div className="mt-5"></div>
     </>
   );
 }

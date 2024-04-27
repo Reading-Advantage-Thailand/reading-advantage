@@ -1,3 +1,5 @@
+import OrderWords from "@/components/order-words";
+
 export default {
   pages: {
     indexPage: {
@@ -95,6 +97,15 @@ export default {
           clozeTest: "ทดสอบเติมคำในช่องว่าง",
           clozeTestDescription:
             "นี่คือบางประโยคจากหนึ่งในบทความที่คุณได้อ่าน ใส่คำที่ขาดหายไปให้ถูกต้อง หากคุณตอบถูก คุณจะได้รับ 2 XP.",
+          saveOrder: "บันทึก & ดำเนินการต่อในภายหลัง",
+          errorOrder: "กรุณาเรียงลำดับให้ถูกต้อง",
+          submitArticle: "ตรวจสอบคำตอบของคุณ",
+          nextPassage: "ตอนต่อไป",
+        },
+        orderWordsPractice: {
+          orderWords: "เรียงคำ",
+          orderWordsDescription:
+            "นี่คือบางประโยคจากหนึ่งในบทความที่คุณได้อ่าน จัดเรียงคำให้มีลำดับที่ดูมีเหตุผลสำหรับคุณ หากลำดับเดียวกันกับในบทความ คุณจะได้รับ 5 XP.",
           saveOrder: "บันทึก & ดำเนินการต่อในภายหลัง",
           errorOrder: "กรุณาเรียงลำดับให้ถูกต้อง",
           submitArticle: "ตรวจสอบคำตอบของคุณ",
