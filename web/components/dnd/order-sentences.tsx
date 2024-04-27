@@ -243,7 +243,7 @@ export default function OrderSentences({ userId }: Props) {
         heading={t("orderSentencesPractice.orderSentences")}
         text={t("orderSentencesPractice.orderSentencesDescription")}
       />
-      <div className="mt-5">
+      <div className="flex flex-col items-center justify-center space-y-2 mt-4">
         {articleRandom.length === 0 ? (
           <div className="grid w-full gap-10">
             <div className="mx-auto w-[800px] space-y-6">
@@ -255,87 +255,83 @@ export default function OrderSentences({ userId }: Props) {
           </div>
         ) : (
           <>
-              {articleRandom.length !== currentArticleIndex ? (
-                <DragDropContext
-                  onDragStart={onDragStart}
-                  onDragEnd={onDragEnd}
-                >
-                  <div className="bg-[#2684FFß] flex max-w-screen-lg">
-                    <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                      <div className="flex justify-between items-center">
-                        <h4 className="py-4 pl-5">
-                          {articleRandom[currentArticleIndex]?.title}
-                        </h4>
-                        <div className="mr-5">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={handlePause}
-                          >
-                            {isplaying ? (
-                              <Icons.pause className="mr-1" size={12} />
-                            ) : (
-                              <Icons.play className="mr-1" size={12} />
-                            )}
-                            {isplaying
-                              ? tc("soundButton.pause")
-                              : tc("soundButton.play")}
-                          </Button>
-                          <audio
-                            ref={audioRef}
-                            key={
-                              articleRandom[currentArticleIndex]
-                                ?.surroundingSentences
-                            }
-                          >
-                            <source
-                              src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleRandom[currentArticleIndex]?.articleId}.mp3`}
-                            />
-                          </audio>
-                        </div>
+            {articleRandom.length !== currentArticleIndex ? (
+              <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+                <div className="bg-[#2684FFß] flex max-w-screen-lg">
+                  <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                    <div className="flex justify-between items-center">
+                      <h4 className="py-4 pl-5">
+                        {articleRandom[currentArticleIndex]?.title}
+                      </h4>
+                      <div className="mr-5">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={handlePause}
+                        >
+                          {isplaying ? (
+                            <Icons.pause className="mr-1" size={12} />
+                          ) : (
+                            <Icons.play className="mr-1" size={12} />
+                          )}
+                          {isplaying
+                            ? tc("soundButton.pause")
+                            : tc("soundButton.play")}
+                        </Button>
+                        <audio
+                          ref={audioRef}
+                          key={
+                            articleRandom[currentArticleIndex]
+                              ?.surroundingSentences
+                          }
+                        >
+                          <source
+                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleRandom[currentArticleIndex]?.articleId}.mp3`}
+                          />
+                        </audio>
                       </div>
-
-                      <QuoteList
-                        listId={"list"}
-                        quotes={
-                          articleRandom[currentArticleIndex]
-                            ?.surroundingSentences
-                        }
-                        sectionIndex={currentArticleIndex}
-                        title={articleRandom[currentArticleIndex]?.title}
-                        articleBeforeRandom={
-                          articleBeforeRandom[currentArticleIndex]
-                            ?.surroundingSentences
-                        }
-                      />
                     </div>
-                  </div>
-                </DragDropContext>
-              ) : (
-                <></>
-              )}
 
-              {articleRandom.length != currentArticleIndex ? (
-                <Button
-                  className="mt-4"
-                  variant="outline"
-                  disabled={loading}
-                  size="sm"
-                  onClick={onNextArticle}
-                >
-                  {t("orderSentencesPractice.saveOrder")}
-                </Button>
-              ) : (
-                <Button
-                  className="mt-4"
-                  variant="outline"
-                  disabled={true}
-                  size="sm"
-                  onClick={onNextArticle}
-                >
-                  {t("orderSentencesPractice.saveOrder")}
-                </Button>
-              )}
+                    <QuoteList
+                      listId={"list"}
+                      quotes={
+                        articleRandom[currentArticleIndex]?.surroundingSentences
+                      }
+                      sectionIndex={currentArticleIndex}
+                      title={articleRandom[currentArticleIndex]?.title}
+                      articleBeforeRandom={
+                        articleBeforeRandom[currentArticleIndex]
+                          ?.surroundingSentences
+                      }
+                    />
+                  </div>
+                </div>
+              </DragDropContext>
+            ) : (
+              <></>
+            )}
+
+            {articleRandom.length != currentArticleIndex ? (
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={loading}
+                size="sm"
+                onClick={onNextArticle}
+              >
+                {t("orderSentencesPractice.saveOrder")}
+              </Button>
+            ) : (
+              <Button
+                className="mt-4"
+                variant="outline"
+                disabled={true}
+                size="sm"
+                onClick={onNextArticle}
+              >
+                {t("orderSentencesPractice.saveOrder")}
+              </Button>
+            )}
           </>
         )}
       </div>

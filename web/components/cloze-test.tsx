@@ -461,12 +461,12 @@ export default function ClozeTest({ userId }: Props) {
                                         <span
                                           key={index}
                                           className={
-                                            shouldReplace ? "text-blue-500" : ""
+                                            shouldReplace
+                                              ? "text-blue-500"
+                                              : "text-[#091e42]"
                                           }
                                         >
-                                          {shouldReplace
-                                            ? "___________"
-                                            : word}{" "}
+                                          {shouldReplace ? "___________" : word}{" "}
                                         </span>
                                       );
                                     }
