@@ -136,9 +136,9 @@ export default {
     },
     sidebarNav: {
       read: "Read",
-      history: "History",
-      practice: "Practice",
+      sentences: "Sentences",
       reports: "Reports",
+      history: "History",
     },
     sidebarTeacherNav: {
       myClasses: "My Classes",
@@ -180,7 +180,7 @@ export default {
       xp: "XP:",
       level: "Level {level}",
       congratulations: "Congratulations! ",
-      upLevel: "You've received a new level!",
+      upLevel: "You've achieved a new level.",
       close: "Close",
     },
     // use this for article selection page
