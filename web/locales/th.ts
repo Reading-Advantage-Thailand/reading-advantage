@@ -141,7 +141,7 @@ export default {
     sidebarNav: {
       read: "อ่าน",
       history: "ประวัติ",
-      practice: "ฝึก",
+      sentences: "ประโยค",
       reports: "รายงาน",
     },
     sidebarTeacherNav: {

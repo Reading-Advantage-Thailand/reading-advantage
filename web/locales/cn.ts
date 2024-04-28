@@ -127,7 +127,7 @@ export default {
     sidebarNav: {
       read: "阅读",
       history: "历史",
-      practice: "练习",
+      sentences: "句子",
       reports: "报告",
     },
     sidebarTeacherNav: {
