@@ -84,16 +84,16 @@ export default {
           nextButton: "ถัดไป",
           yourXp: "คุณได้รับ {xp} XP สำหรับกิจกรรมนี้",
         },
-        OrderSentencesPractice: {
-          OrderSentences: "เรียงประโยค",
-          OrderSentencesDescription:
+        orderSentencesPractice: {
+          orderSentences: "เรียงประโยค",
+          orderSentencesDescription:
             "นี่คือบางประโยคจากหนึ่งในบทความที่คุณได้อ่าน จัดเรียงประโยคให้มีลำดับที่ดูมีเหตุผลสำหรับคุณ หากลำดับเดียวกันกับในบทความ คุณจะได้รับ 5 XP.",
           saveOrder: "บันทึก & ดำเนินการต่อในภายหลัง",
           errorOrder: "กรุณาเรียงลำดับให้ถูกต้อง",
         },
-        ClozeTestPractice: {
-          ClozeTest: "ทดสอบเติมคำในช่องว่าง",
-          ClozeTestDescription:
+        clozeTestPractice: {
+          clozeTest: "ทดสอบเติมคำในช่องว่าง",
+          clozeTestDescription:
             "นี่คือบางประโยคจากหนึ่งในบทความที่คุณได้อ่าน ใส่คำที่ขาดหายไปให้ถูกต้อง หากคุณตอบถูก คุณจะได้รับ 2 XP.",
           saveOrder: "บันทึก & ดำเนินการต่อในภายหลัง",
           errorOrder: "กรุณาเรียงลำดับให้ถูกต้อง",

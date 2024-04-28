@@ -89,18 +89,17 @@ export default {
           nextButton: "Next",
           yourXp: "You've received {xp} XP for this activity.",
         },
-        OrderSentencesPractice: {
+        orderSentencesPractice: {
           //Order Sentences
-          OrderSentences: "Order Sentences",
-          OrderSentencesDescription:
+          orderSentences: "Order Sentences",
+          orderSentencesDescription:
             "These are some sentences from one of the passages you've read. Put the sentences in an order that makes sense to you. If the order is the same as the passage, you'll receive 5 XP.",
           saveOrder: "Continue",
           errorOrder: "Please order correctly",
         },
-        ClozeTestPractice: {
-          //Cloze Test
-          ClozeTest: "Cloze Test",
-          ClozeTestDescription:
+        clozeTestPractice: {
+          clozeTest: "Cloze Test",
+          clozeTestDescription:
             "Fill in the blanks with the correct word to complete the passage. If you get all the answers correct, you'll receive 2 XP.",
           saveAnswer: "Continue",
           errorAnswer: "Please answer correctly",

@@ -42,9 +42,6 @@ export default function OrderSentences({ userId }: Props) {
     "pages.student.practicePage.flashcardPractice"
   );
 
-  useEffect(() => {
-    getUserSentenceSaved();
-  }, []);
 
   const getUserSentenceSaved = async () => {
     try {
@@ -228,21 +225,23 @@ export default function OrderSentences({ userId }: Props) {
     } else {
       toast({
         title: t("toast.error"),
-        description: t("OrderSentencesPractice.errorOrder"),
+        description: t("orderSentencesPractice.errorOrder"),
         variant: "destructive",
       });
     }
     setLoading(false);
   };
 
-  console.log("articleBeforeRandom", articleBeforeRandom);
-  console.log("articleRandom", articleRandom);
+  useEffect(() => {
+    getUserSentenceSaved();
+  }, []);
+
 
   return (
     <>
       <Header
-        heading={t("OrderSentencesPractice.OrderSentences")}
-        text={t("OrderSentencesPractice.OrderSentencesDescription")}
+        heading={t("orderSentencesPractice.orderSentences")}
+        text={t("orderSentencesPractice.orderSentencesDescription")}
       />
       <div className="mt-5">
         {articleRandom.length === 0 ? (
@@ -324,7 +323,7 @@ export default function OrderSentences({ userId }: Props) {
                   size="sm"
                   onClick={onNextArticle}
                 >
-                  {t("OrderSentencesPractice.saveOrder")}
+                  {t("orderSentencesPractice.saveOrder")}
                 </Button>
               ) : (
                 <Button
@@ -334,7 +333,7 @@ export default function OrderSentences({ userId }: Props) {
                   size="sm"
                   onClick={onNextArticle}
                 >
-                  {t("OrderSentencesPractice.saveOrder")}
+                  {t("orderSentencesPractice.saveOrder")}
                 </Button>
               )}
           </>
