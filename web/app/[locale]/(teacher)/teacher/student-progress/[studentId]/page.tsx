@@ -66,10 +66,9 @@ export default async function ProgressPage({params}: {params: {studentId: string
       </CardContent>
     </Card>
   </div>
-  {/* <ResetDialog /> */}
   </div>
 ) : (
-  <p className="text-center">No user progress available.</p>
+  <p className="text-center">No user progress available due to the student has never been read article or other activity.</p>
 )}
     </>
   );
