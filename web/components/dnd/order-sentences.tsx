@@ -42,7 +42,6 @@ export default function OrderSentences({ userId }: Props) {
     "pages.student.practicePage.flashcardPractice"
   );
 
-
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
@@ -236,7 +235,6 @@ export default function OrderSentences({ userId }: Props) {
     getUserSentenceSaved();
   }, []);
 
-
   return (
     <>
       <Header
@@ -258,7 +256,7 @@ export default function OrderSentences({ userId }: Props) {
             {articleRandom.length !== currentArticleIndex ? (
               <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
                 <div className="bg-[#2684FFß] flex max-w-screen-lg">
-                  <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
+                  <div className="flex flex-col h-full overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
                     <div className="flex justify-between items-center">
                       <h4 className="py-4 pl-5">
                         {articleRandom[currentArticleIndex]?.title}
