@@ -24,21 +24,21 @@ export const studentPageConfig: StudentPageConfig = {
             title: "read",
             href: '/student/read',
             icon: "book",
-        },
+        },      
         {
-            title: "history",
-            href: '/student/history',
-            icon: "record",
-        },
-        {
-            title: "practice",
-            href: '/student/practice',
+            title: "sentences",
+            href: '/student/sentences',
             icon: "flashcard",
         },
         {
             title: "reports",
             href: '/student/reports',
             icon: "dashboard",
-        }
+        },
+        {
+            title: "history",
+            href: '/student/history',
+            icon: "record",
+        },
     ],
 };
