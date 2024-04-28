@@ -88,6 +88,15 @@ export default {
           saveOrder: "儲存 & 稍後繼續",
           errorOrder: "請正確排序",
         },
+        orderWordsPractice: {
+          orderWords: "排序單詞",
+          orderWordsDescription:
+            "這些是您讀過的其中一篇文章的一些句子。將這些單詞按對您有意義的順序排列。如果順序與文章相同，您將獲得5 XP。",
+          saveOrder: "繼續",
+          errorOrder: "請正確排序",
+          submitArticle: "檢查您的答案",
+          nextPassage: "下一段",
+        },
       },
     },
   },

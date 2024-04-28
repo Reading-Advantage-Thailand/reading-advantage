@@ -99,6 +99,15 @@ export default {
           saveOrder: "Lưu & Tiếp tục sau",
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
         },
+        orderWordsPractice: {
+          orderWords: "Sắp xếp từ",
+          orderWordsDescription:
+            "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy sắp xếp các từ theo trật tự có ý nghĩa đối với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 5 XP.",
+          saveOrder: "Tiếp tục",
+          errorOrder: "Vui lòng sắp xếp đúng",
+          submitArticle: "Kiểm tra câu trả lời của bạn",
+          nextPassage: "Đoạn tiếp theo",
+        },
       },
     },
   },

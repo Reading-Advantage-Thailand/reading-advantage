@@ -88,6 +88,15 @@ export default {
           submitButton: "提交",
           errorCloze: "请填写所有空白处",
         },
+        orderWordsPractice: {
+          orderWords: "排序单词",
+          orderWordsDescription:
+            "这些是您读过的文章中的一些句子。按照对您有意义的顺序排列这些单词。如果顺序与文章相同，您将获得5 XP。",
+          saveOrder: "继续",
+          errorOrder: "请正确排序",
+          submitArticle: "检查你的答案",
+          nextPassage: "下一段落",
+        },
       },
     },
   },
@@ -159,7 +168,7 @@ export default {
     progressBarXp: {
       xp: "经验: ",
       level: "等级 {level}",
-      congratulations: "恭喜!", 
+      congratulations: "恭喜!",
       upLevel: "您已獲得新等級！",
       close: "关闭",
     },
