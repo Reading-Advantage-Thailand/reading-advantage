@@ -138,7 +138,7 @@ export default {
     sidebarNav: {
       read: "Đọc",
       history: "Lịch sử",
-      practice: "Luyện tập",
+      sentences: "Câu",
       reports: "Báo cáo",
     },
     sidebarTeacherNav: {
