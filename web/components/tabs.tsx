@@ -14,10 +14,10 @@ type Props = {
 
 export default function TabsPractice({ userId }: Props) {
    const [showButton, setShowButton] = useState(true);
+   
    return (
      <Tabs
        defaultValue="tab1"
-       //  className="flex flex-wrap lg:grid items-start gap-2 mb-4 lg:mb-0"
        className="flex flex-wrap items-start mb-4 gap-2"
      >
        <TabsList className="flex">
