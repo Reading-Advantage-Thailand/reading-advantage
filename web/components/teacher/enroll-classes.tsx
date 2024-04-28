@@ -27,6 +27,12 @@ import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
+type Student = {
+    id: string;
+    email: string;
+    name: string;
+    };
+
 type Classroom = {
   id: string;
   classroomName: string;
@@ -43,12 +49,16 @@ type Classroom = {
 type MyEnrollProps = {
   enrolledClasses: Classroom[];
   studentId: string;
+    matchedStudents: Student[];
 };
 
 export default function MyEnrollClasses({
   enrolledClasses,
   studentId,
+  matchedStudents,
 }: MyEnrollProps) {
+    console.log('matchedStudents', matchedStudents);
+    
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -157,7 +167,7 @@ export default function MyEnrollClasses({
 
   return (
     <>
-      <div className="font-bold text-3xl">Enrolled Classes for {}</div>
+      <div className="font-bold text-3xl">Enrolled Classes for {matchedStudents[0].name}</div>
       <div className="flex items-center justify-between">
         <Input
           placeholder={"Search..."}

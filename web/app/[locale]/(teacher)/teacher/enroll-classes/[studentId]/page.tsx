@@ -62,7 +62,7 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
           allClassroom.data.forEach((classroom: { student: any; archived: boolean; teacherId: string; }) => {
             if (!classroom.archived && classroom.teacherId === teacherId) {
               classroom.student.forEach((students: { studentId: string; }) => {
-                if (students.studentId === student.id) {
+                if (students.studentId === studentId) {
                   if (!matchedClassrooms.includes(classroom)) {
                     matchedClassrooms.push(classroom);
                   }
@@ -74,6 +74,7 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
       return matchedClassrooms;
     }
     const matchedClassrooms = getMatchedClassrooms(params.studentId);
+
 
     // get teacher classroom
     function getTeacherClassroom() {
@@ -93,13 +94,27 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
       return arrayA.filter(item => !arrayB.includes(item))
                   .concat(arrayB.filter(item => !arrayA.includes(item)));
   } 
-  const differentItems = getDifferentItems(teacherClassrooms, matchedClassrooms);
-  console.log('differentItems: ', differentItems);
+  const differentClasses = getDifferentItems(teacherClassrooms, matchedClassrooms);
+  // console.log('differentItems: ', differentClasses);
+
+   // get matched students
+   function getMatchedStudents(studentId: string) {
+    let matchedStudents: any[] = [];
+
+    allStudent.students.forEach((student: { id: string; }) => {
+      if (student.id === studentId) {
+        matchedStudents.push(student);
+      }
+    });
+
+  return matchedStudents;
+}
+const matchedStudents = getMatchedStudents(params.studentId);
 
     return (
       <div>
       <NextAuthSessionProvider session={user}>
-     <MyEnrollClasses enrolledClasses={differentItems} studentId={params.studentId} />
+     <MyEnrollClasses enrolledClasses={differentClasses} studentId={params.studentId} matchedStudents={matchedStudents} />
       </NextAuthSessionProvider>
    </div>
     )

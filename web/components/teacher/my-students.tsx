@@ -82,7 +82,6 @@ useEffect(() => {
 }, [selectedStudentId, action]);
 
 const handleActionSelected = (action: string, id: string) => {
-  console.log('action: ', action);
   switch (action) { 
     case 'progress':
       setRedirectUrl(`/teacher/student-progress/${id}`);
