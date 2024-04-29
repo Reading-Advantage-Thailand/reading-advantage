@@ -12,11 +12,13 @@ const routeContextSchema = z.object({
 })
 
 export async function PATCH(req: Request,  context: z.infer<typeof routeContextSchema>) {
+    
     try {
         const { params } = routeContextSchema.parse(context);
         const classroomId = params.classroomId;
 
         const session = await getServerSession(authOptions);
+        
         if (!session) {
             return new Response(JSON.stringify({
                 message: 'Unauthorized',
@@ -33,7 +35,8 @@ export async function PATCH(req: Request,  context: z.infer<typeof routeContextS
             description: json.description,
             grade: json.grade,
             noOfStudents: json.noOfStudents,
-            student: json.student,
+            student: json.student.map((student: { studentId: string; }) => ({ studentId: student.studentId, lastActivity:
+                new Date()})),
             title: json.title,
         };
 
@@ -76,7 +79,7 @@ export async function DELETE(req: Request, context: z.infer<typeof routeContextS
 
         // Fetch the classroom from the database
         const docRef = db.collection('classroom').doc(classroomId);
-        console.log('docRef', docRef);
+        // console.log('docRef', docRef);
         
         const doc = await docRef.get();
 
@@ -99,3 +102,4 @@ export async function DELETE(req: Request, context: z.infer<typeof routeContextS
         }), { status: 500 })
     } 
 }
+

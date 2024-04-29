@@ -54,8 +54,6 @@ export default function MyClasses({ classrooms, userId }: MyClassesProps) {
   const Details = ["Roster", "Report"];
 
   const handleOnClickClassroom = () => {
-    console.log("clicked");
-    
     router.push("/teacher/class-roster");
   };
 
