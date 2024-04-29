@@ -96,6 +96,7 @@ export default {
           errorOrder: "請正確排序",
           submitArticle: "檢查您的答案",
           nextPassage: "下一段",
+          tryToSortThisSentence: "試著排序這句話",
         },
       },
     },

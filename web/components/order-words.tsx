@@ -135,7 +135,10 @@ export default function OrderWords({ userId }: Props) {
               <>
                 <div className="bg-[#2684FFß] flex max-w-screen-lg">
                   <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                    <div className="flex justify-end">
+                    <div className="flex justify-between">
+                      <h4 className="py-4 pl-5 font-bold">
+                        {t("orderWordsPractice.tryToSortThisSentence")}
+                      </h4>
                       <div className="p-3">
                         <Button
                           size="sm"
