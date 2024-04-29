@@ -18,6 +18,7 @@ import { Skeleton } from "./ui/skeleton";
 import { updateScore } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
 import { Icons } from "./icons";
+import AudioButton from "./audio-button";
 import { splitTextIntoSentences } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
@@ -62,7 +63,11 @@ export default function OrderWords({ userId }: Props) {
           article?.sentence,
           article?.translation?.th
         );
-        newTodos.push(resultList);
+        newTodos.push({
+          ...resultList,
+          timepoint: article?.timepoint,
+          endTimepoint: article?.endTimepoint,
+        });
       }
       console.log("🚀 ~ getUserSentenceSaved ~ newTodos:", newTodos);
       setArticleOrderWords(newTodos);
@@ -140,31 +145,17 @@ export default function OrderWords({ userId }: Props) {
                         {t("orderWordsPractice.tryToSortThisSentence")}
                       </h4>
                       <div className="p-3">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={handlePause}
-                        >
-                          {isplaying ? (
-                            <Icons.pause className="mr-1" size={12} />
-                          ) : (
-                            <Icons.play className="mr-1" size={12} />
-                          )}
-                          {isplaying
-                            ? tc("soundButton.pause")
-                            : tc("soundButton.play")}
-                        </Button>
-                        <audio
-                          ref={audioRef}
-                          key={
-                            articleOrderWords[currentArticleIndex]
-                              ?.surroundingSentences
+                        <AudioButton
+                          key={currentArticleIndex}
+                          audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleOrderWords[currentArticleIndex]?.articleId}.mp3`}
+                          startTimestamp={
+                            articleOrderWords[currentArticleIndex]?.timepoint
                           }
-                        >
-                          <source
-                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleOrderWords[currentArticleIndex]?.articleId}.mp3`}
-                          />
-                        </audio>
+                          endTimestamp={
+                            articleOrderWords[currentArticleIndex]?.endTimepoint
+                          }
+                        />
+                       
                       </div>
                     </div>
                   </div>
@@ -175,7 +166,7 @@ export default function OrderWords({ userId }: Props) {
             )}
           </>
         )}
-      </div>
+      </div>{" "}
     </>
   );
 }

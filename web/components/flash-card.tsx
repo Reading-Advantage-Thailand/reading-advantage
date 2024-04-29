@@ -284,26 +284,6 @@ export default function FlashCard({
                     })}
               </CardDescription>
             </div>
-
-            {/* {sentences.length != 0 && (
-              <>
-                {loading ? (
-                  <Button className="ml-auto font-medium" disabled>
-                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                    {t("neverPracticeButton")}
-                  </Button>
-                ) : (
-                  <Button
-                    className="ml-auto font-medium"
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDeleteAll()}
-                  >
-                    {t("neverPracticeButton")}
-                  </Button>
-                )}
-              </>
-            )} */}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
