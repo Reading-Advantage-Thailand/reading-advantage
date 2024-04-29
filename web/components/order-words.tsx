@@ -118,6 +118,15 @@ export default function OrderWords({ userId }: Props) {
     }
   };
 
+    const onNextPassage = async () => {
+      // setLoading(false);
+      // setSelectedWord({});
+      // setShowBadges(false);
+      setCurrentArticleIndex((prev) => prev + 1);
+      // setShowButtonNextPassage(false);
+      // setIsPlaying(false);
+    };
+
   return (
     <>
       <Header
@@ -155,7 +164,6 @@ export default function OrderWords({ userId }: Props) {
                             articleOrderWords[currentArticleIndex]?.endTimepoint
                           }
                         />
-                       
                       </div>
                     </div>
                   </div>
@@ -164,9 +172,19 @@ export default function OrderWords({ userId }: Props) {
             ) : (
               <></>
             )}
+            <>
+              <Button
+                className="mt-4 ml-4"
+                variant="secondary"
+                size="sm"
+                onClick={onNextPassage}
+              >
+                {t("clozeTestPractice.nextPassage")}
+              </Button>
+            </>
           </>
         )}
-      </div>{" "}
+      </div>
     </>
   );
 }
