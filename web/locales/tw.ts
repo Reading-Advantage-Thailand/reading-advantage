@@ -58,6 +58,7 @@ export default {
         savedSentencesDescription: "您有 {total} 個保存的句子。",
         added: "添加於 {date}",
         deleteButton: "刪除",
+        neverPracticeButton: "不用再练习这个句子了",
         toast: {
           success: "成功",
           successDescription: "成功刪除保存的句子",
@@ -73,19 +74,29 @@ export default {
           nextButton: "下一個",
           yourXp: "您已經獲得了 {xp} XP 為這項活動。",
         },
-        OrderSentencesPractice: {
-          OrderSentences: "排列句子",
-          OrderSentencesDescription:
+        orderSentencesPractice: {
+          orderSentences: "排列句子",
+          orderSentencesDescription:
             "这是你读过的一篇文章中的一些句子。请将这些句子排列成对你有意义的顺序。如果顺序与文章中的相同，你将获得5经验值。",
           saveOrder: "儲存 & 稍後繼續",
           errorOrder: "請正確排序",
         },
-        ClozeTestPractice: {
-          ClozeTest: "填空測試",
-          ClozeTestDescription:
+        clozeTestPractice: {
+          clozeTest: "填空測試",
+          clozeTestDescription:
             "這是你讀過的一篇文章中的幾個句子，請填入遺失的單詞以完成它們。如果你答對了，你將獲得5經驗值。",
           saveOrder: "儲存 & 稍後繼續",
           errorOrder: "請正確排序",
+        },
+        orderWordsPractice: {
+          orderWords: "排序單詞",
+          orderWordsDescription:
+            "這些是您讀過的其中一篇文章的一些句子。將這些單詞按對您有意義的順序排列。如果順序與文章相同，您將獲得5 XP。",
+          saveOrder: "繼續",
+          errorOrder: "請正確排序",
+          submitArticle: "檢查您的答案",
+          nextPassage: "下一段",
+          tryToSortThisSentence: "試著排序這句話",
         },
       },
     },
@@ -117,7 +128,7 @@ export default {
     sidebarNav: {
       read: "閱讀",
       history: "歷史",
-      practice: "練習",
+      sentences: "句子",
       reports: "報告",
     },
     sidebarTeacherNav: {

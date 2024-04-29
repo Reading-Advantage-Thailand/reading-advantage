@@ -11,10 +11,11 @@ import { v4 as uuidv4 } from "uuid";
 import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import AudioButton from "./audio-button";
 import FlashCardPracticeButton from "./flash-card-practice-button";
 import FlipCardPracticeButton from "./flip-card-button";
-import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -33,8 +34,8 @@ dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
-  showButton: boolean
-  setShowButton: Function
+  showButton: boolean;
+  setShowButton: Function;
 };
 
 export type Sentence = {
@@ -58,21 +59,26 @@ export type Sentence = {
   last_review?: Date; // The most recent review date, if applicable
 };
 
-export default function FlashCard({ userId, showButton, setShowButton }: Props) {
+export default function FlashCard({
+  userId,
+  showButton,
+  setShowButton,
+}: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
-  const [sentences, setSentences] = useState<Sentence[]>([]);
+  const router = useRouter();
   const controlRef = useRef<any>({});
   const currentCardFlipRef = useRef<any>();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [sentences, setSentences] = useState<Sentence[]>([]);
 
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
-      const startOfDay = date_scheduler(new Date(), 0, true);     
+      const startOfDay = date_scheduler(new Date(), 0, true);
       const filteredData = await res.data.sentences
         .filter((record: Sentence) => {
           const dueDate = new Date(record.due);
@@ -81,7 +87,7 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
         .sort((a: Sentence, b: Sentence) => {
           return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
         });
-       
+
       setSentences(filteredData);
 
       if (filteredData.length === 0) {
@@ -119,7 +125,6 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
     } catch (error) {
       console.log(error);
     }
-     
   };
 
   useEffect(() => {
@@ -164,6 +169,38 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
     };
   });
 
+  const handleDeleteAll = async () => {
+    let idSentences = sentences.map((sentence) => sentence.id);
+    try {
+      setLoading(true);
+      // loop for delete all sentences
+      for (let i = 0; i < idSentences.length; i++) {
+        const res = await axios.delete(`/api/users/${userId}/sentences`, {
+          data: {
+            sentenceId: idSentences[i],
+          },
+        });
+
+        if (i === idSentences.length - 1) {
+          setLoading(false);
+          getUserSentenceSaved();
+          toast({
+            title: t("toast.success"),
+            description: t("toast.successDescription"),
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+      toast({
+        title: t("toast.error"),
+        description: t("toast.errorDescription"),
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <>
       <Header heading={t("flashcard")} text={t("flashcardDescription")} />
@@ -205,26 +242,69 @@ export default function FlashCard({ userId, showButton, setShowButton }: Props) 
           </>
         )}
         {sentences.length != 0 && (
-          <FlashCardPracticeButton
-            index={currentCardIndex}
-            nextCard={() => controlRef.current.nextCard()}
-            sentences={sentences}
-            showButton={showButton}
-            setShowButton={setShowButton}
-          />
+          <>
+            <FlashCardPracticeButton
+              index={currentCardIndex}
+              nextCard={() => controlRef.current.nextCard()}
+              sentences={sentences}
+              showButton={showButton}
+              setShowButton={setShowButton}
+            />
+            <div>
+              {loading ? (
+                <Button className="ml-auto font-medium" disabled>
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  {t("neverPracticeButton")}
+                </Button>
+              ) : (
+                <Button
+                  className="ml-auto font-medium"
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDeleteAll()}
+                >
+                  {t("neverPracticeButton")}
+                </Button>
+              )}
+            </div>
+          </>
         )}
       </div>
 
       <Card className="col-span-3 mt-4 mb-10">
         <CardHeader>
-          <CardTitle>{t("savedSentences")}</CardTitle>
-          <CardDescription>
-            {sentences.length == 0
-              ? t("noSavedSentences")
-              : t("savedSentencesDescription", {
-                  total: sentences.length,
-                })}
-          </CardDescription>
+          <div className="flex flex-row -mx-4 p-2">
+            <div>
+              <CardTitle>{t("savedSentences")}</CardTitle>
+              <CardDescription>
+                {sentences.length == 0
+                  ? t("noSavedSentences")
+                  : t("savedSentencesDescription", {
+                      total: sentences.length,
+                    })}
+              </CardDescription>
+            </div>
+
+            {/* {sentences.length != 0 && (
+              <>
+                {loading ? (
+                  <Button className="ml-auto font-medium" disabled>
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    {t("neverPracticeButton")}
+                  </Button>
+                ) : (
+                  <Button
+                    className="ml-auto font-medium"
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDeleteAll()}
+                  >
+                    {t("neverPracticeButton")}
+                  </Button>
+                )}
+              </>
+            )} */}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {sentences.length != 0 &&

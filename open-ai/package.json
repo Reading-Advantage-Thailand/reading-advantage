@@ -1,0 +1,29 @@
+{
+  "name": "open-ai",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start": "node -r esm index.js",
+    "file": "ts-node ./src/index.ts",
+    "build": "tsup",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "esm": "^3.2.25",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "octokit": "^3.2.0",
+    "openai": "^4.38.2"
+  }
+}

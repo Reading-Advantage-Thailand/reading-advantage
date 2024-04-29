@@ -58,6 +58,7 @@ export default {
         savedSentencesDescription: "您有 {total} 个保存的句子。",
         added: "添加于 {date}",
         deleteButton: "删除",
+        neverPracticeButton: "不用再练习这个句子了",
         toast: {
           success: "成功",
           successDescription: "成功删除保存的句子",
@@ -73,19 +74,29 @@ export default {
           nextButton: "下一个",
           yourXp: "您已经获得了 {xp} XP 为这个活动。",
         },
-        OrderSentencesPractice: {
-          OrderSentences: "排列句子",
-          OrderSentencesDescription:
+        orderSentencesPractice: {
+          orderSentences: "排列句子",
+          orderSentencesDescription:
             "这些是你读过的某篇文章中的一些句子。请按照对你有意义的顺序排列这些句子。如果顺序与文章中的相同，你将获得5经验值。",
           saveOrder: "保存并稍后继续",
           errorOrder: "请正确排序",
         },
-        ClozeTestPractice: {
-          ClozeTest: "填空测试",
-          ClozeTestDescription:
+        clozeTestPractice: {
+          clozeTest: "填空测试",
+          clozeTestDescription:
             "这是你读过的一篇文章中的几个句子，请填写缺失的单词以完成它们。如果你回答正确，你将获得5经验值。",
           submitButton: "提交",
           errorCloze: "请填写所有空白处",
+        },
+        orderWordsPractice: {
+          orderWords: "排序单词",
+          orderWordsDescription:
+            "这些是您读过的文章中的一些句子。按照对您有意义的顺序排列这些单词。如果顺序与文章相同，您将获得5 XP。",
+          saveOrder: "继续",
+          errorOrder: "请正确排序",
+          submitArticle: "检查你的答案",
+          nextPassage: "下一段落",
+          tryToSortThisSentence: "尝试排序这个句子",
         },
       },
     },
@@ -117,7 +128,7 @@ export default {
     sidebarNav: {
       read: "阅读",
       history: "历史",
-      practice: "练习",
+      sentences: "句子",
       reports: "报告",
     },
     sidebarTeacherNav: {
@@ -158,7 +169,7 @@ export default {
     progressBarXp: {
       xp: "经验: ",
       level: "等级 {level}",
-      congratulations: "恭喜!", 
+      congratulations: "恭喜!",
       upLevel: "您已獲得新等級！",
       close: "关闭",
     },

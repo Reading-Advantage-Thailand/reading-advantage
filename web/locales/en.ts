@@ -72,6 +72,7 @@ export default {
         savedSentencesDescription: "Your have {total} saved sentences.",
         added: "Added {date}",
         deleteButton: "Delete",
+        neverPracticeButton: "Never practice this sentence again",
         toast: {
           success: "Success",
           successDescription: "Delete saved sentence successfully",
@@ -88,23 +89,32 @@ export default {
           nextButton: "Next",
           yourXp: "You've received {xp} XP for this activity.",
         },
-        OrderSentencesPractice: {
+        orderSentencesPractice: {
           //Order Sentences
-          OrderSentences: "Order Sentences",
-          OrderSentencesDescription:
+          orderSentences: "Order Sentences",
+          orderSentencesDescription:
             "These are some sentences from one of the passages you've read. Put the sentences in an order that makes sense to you. If the order is the same as the passage, you'll receive 5 XP.",
           saveOrder: "Continue",
           errorOrder: "Please order correctly",
         },
-        ClozeTestPractice: {
-          //Cloze Test
-          ClozeTest: "Cloze Test",
-          ClozeTestDescription:
+        clozeTestPractice: {
+          clozeTest: "Cloze Test",
+          clozeTestDescription:
             "Fill in the blanks with the correct word to complete the passage. If you get all the answers correct, you'll receive 2 XP.",
           saveAnswer: "Continue",
           errorAnswer: "Please answer correctly",
           submitArticle: "Check your answers",
           nextPassage: "Next Passage",
+        },
+        orderWordsPractice: {
+          orderWords: "Order Words",
+          orderWordsDescription:
+            "These are some sentences from one of the passages you've read. Put the words in an order that makes sense to you. If the order is the same as the passage, you'll receive 5 XP.",
+          saveOrder: "Continue",
+          errorOrder: "Please order correctly",
+          submitArticle: "Check your answers",
+          nextPassage: "Next Passage",
+          tryToSortThisSentence: "Try to sort this sentence",          
         },
       },
     },
@@ -135,9 +145,9 @@ export default {
     },
     sidebarNav: {
       read: "Read",
-      history: "History",
-      practice: "Practice",
+      sentences: "Sentences",
       reports: "Reports",
+      history: "History",
     },
     sidebarTeacherNav: {
       myClasses: "My Classes",
@@ -179,7 +189,7 @@ export default {
       xp: "XP:",
       level: "Level {level}",
       congratulations: "Congratulations! ",
-      upLevel: "You've received a new level!",
+      upLevel: "You've achieved a new level.",
       close: "Close",
     },
     // use this for article selection page

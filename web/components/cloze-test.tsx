@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
@@ -63,11 +63,11 @@ export default function ClozeTest({ userId }: Props) {
     "pages.student.practicePage.flashcardPractice"
   );
   const router = useRouter();
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  const [isplaying, setIsPlaying] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isplaying, setIsPlaying] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [articleClozeTest, setArticleClozeTest] = useState<any[]>([]);
-  const [currentArticleIndex, setCurrentArticleIndex] = React.useState(0);
+  const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
   const [selectedWord, setSelectedWord] = useState<any>({}); // for set placeholder in dropdown
   const [showBadges, setShowBadges] = useState(false);
   const [showButtonNextPassage, setShowButtonNextPassage] = useState(false);
@@ -284,7 +284,7 @@ export default function ClozeTest({ userId }: Props) {
           setShowBadges(false);
         }}
       >
-        <SelectTrigger className="w-[150px] my-2">
+        <SelectTrigger className="w-[150px] my-2 text-[#091e42]">
           <SelectValue
             placeholder={
               selectedWord[indexTextArraySplit]?.obj?.subtlexResult.word ||
@@ -336,8 +336,9 @@ export default function ClozeTest({ userId }: Props) {
       async (item: ResultTextArray) => {
         if (item.correctWords) {
           try {
-            const updateScrore = await updateScore(2, userId);
-            if (updateScrore?.status === 201) {
+            const result = await updateScore(2, userId);
+            if (result?.status === 201) {
+              router.refresh();
               toast({
                 title: t("toast.success"),
                 description: tUpdateScore("yourXp", { xp: 2 }),
@@ -371,18 +372,16 @@ export default function ClozeTest({ userId }: Props) {
     setSelectedWord({});
     setShowBadges(false);
     setCurrentArticleIndex((prev) => prev + 1);
-    setShowButtonNextPassage(false);
+    setShowButtonNextPassage(false);  
     setIsPlaying(false);
   };
 
-  console.log("🚀 ~ ClozeTest ~ articleClozeTest:", articleClozeTest);
-  console.log("🚀 ~ ClozeTest ~ selectedWord:", selectedWord);
 
   return (
     <>
       <Header
-        heading={t("ClozeTestPractice.ClozeTest")}
-        text={t("ClozeTestPractice.ClozeTestDescription")}
+        heading={t("clozeTestPractice.clozeTest")}
+        text={t("clozeTestPractice.clozeTestDescription")}
       />
       <div className="mt-5">
         {articleClozeTest.length === 0 ? (
@@ -462,17 +461,18 @@ export default function ClozeTest({ userId }: Props) {
                                         <span
                                           key={index}
                                           className={
-                                            shouldReplace ? "text-blue-500" : ""
+                                            shouldReplace
+                                              ? "text-blue-500"
+                                              : "text-[#091e42]"
                                           }
                                         >
-                                          {shouldReplace
-                                            ? dropdownWords(indexTextArraySplit)
-                                            : word}{" "}
+                                          {shouldReplace ? "___________" : word}{" "}
                                         </span>
                                       );
                                     }
                                   )}
                                 </p>
+                                {dropdownWords(indexTextArraySplit)}
                                 <Footer>
                                   {showBadges ? (
                                     <>
@@ -519,7 +519,7 @@ export default function ClozeTest({ userId }: Props) {
                 {loading ? (
                   <Button className="mt-4" disabled>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                    {t("OrderSentencesPractice.saveOrder")}
+                    {t("orderSentencesPractice.saveOrder")}
                   </Button>
                 ) : (
                   <>
@@ -530,7 +530,7 @@ export default function ClozeTest({ userId }: Props) {
                       size="sm"
                       onClick={onSubmitArticle}
                     >
-                      {t("ClozeTestPractice.submitArticle")}
+                      {t("clozeTestPractice.submitArticle")}
                     </Button>
                     {showButtonNextPassage && (
                       <Button
@@ -539,7 +539,7 @@ export default function ClozeTest({ userId }: Props) {
                         size="sm"
                         onClick={onNextPassage}
                       >
-                        {t("ClozeTestPractice.nextPassage")}
+                        {t("clozeTestPractice.nextPassage")}
                       </Button>
                     )}
                   </>
