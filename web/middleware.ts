@@ -44,7 +44,7 @@ export default withAuth(async function onSuccess(req) {
         if (isAuth) {
             if (isNoLevel && !isTeacher) return NextResponse.redirect(new URL(`/level`, req.url));
             if (isNoLevel) return NextResponse.redirect(new URL(`/role-selection`, req.url));
-            if (isTeacher) return NextResponse.redirect(new URL(`/teacher/my-classes`, req.url));
+            // if (isTeacher) return NextResponse.redirect(new URL(`/teacher/my-classes`, req.url));
             return NextResponse.redirect(new URL(`/student/read`, req.url));
         }
         return null;
