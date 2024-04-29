@@ -85,19 +85,29 @@ export default {
           nextButton: "Tiếp theo",
           yourXp: "Bạn đã nhận được {xp} XP cho hoạt động này",
         },
-        OrderSentencesPractice: {
-          OrderSentences: "Sắp xếp câu",
-          OrderSentencesDescription:
+        orderSentencesPractice: {
+          orderSentences: "Sắp xếp câu",
+          orderSentencesDescription:
             "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy xếp các câu theo trật tự có ý nghĩa với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 5 XP.",
           saveOrder: "Lưu & Tiếp tục sau",
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
         },
-        ClozeTestPractice: {
-          ClozeTest: "Bài kiểm tra lỗ hổng",
-          ClozeTestDescription:
+        clozeTestPractice: {
+          clozeTest: "Bài kiểm tra lỗ hổng",
+          clozeTestDescription:
             "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy điền từ còn thiếu vào để hoàn thành chúng. Nếu bạn trả lời đúng, bạn sẽ nhận được 2 XP.",
           saveOrder: "Lưu & Tiếp tục sau",
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
+        },
+        orderWordsPractice: {
+          orderWords: "Sắp xếp từ",
+          orderWordsDescription:
+            "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy sắp xếp các từ theo trật tự có ý nghĩa đối với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 5 XP.",
+          saveOrder: "Tiếp tục",
+          errorOrder: "Vui lòng sắp xếp đúng",
+          submitArticle: "Kiểm tra câu trả lời của bạn",
+          nextPassage: "Đoạn tiếp theo",
+          tryToSortThisSentence: "Hãy sắp xếp câu này.",
         },
       },
     },
@@ -129,7 +139,7 @@ export default {
     sidebarNav: {
       read: "Đọc",
       history: "Lịch sử",
-      practice: "Luyện tập",
+      sentences: "Câu",
       reports: "Báo cáo",
     },
     sidebarTeacherNav: {

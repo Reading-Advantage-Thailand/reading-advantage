@@ -284,7 +284,7 @@ export default function ClozeTest({ userId }: Props) {
           setShowBadges(false);
         }}
       >
-        <SelectTrigger className="w-[150px] my-2">
+        <SelectTrigger className="w-[150px] my-2 text-[#091e42]">
           <SelectValue
             placeholder={
               selectedWord[indexTextArraySplit]?.obj?.subtlexResult.word ||
@@ -380,8 +380,8 @@ export default function ClozeTest({ userId }: Props) {
   return (
     <>
       <Header
-        heading={t("ClozeTestPractice.ClozeTest")}
-        text={t("ClozeTestPractice.ClozeTestDescription")}
+        heading={t("clozeTestPractice.clozeTest")}
+        text={t("clozeTestPractice.clozeTestDescription")}
       />
       <div className="mt-5">
         {articleClozeTest.length === 0 ? (
@@ -461,12 +461,12 @@ export default function ClozeTest({ userId }: Props) {
                                         <span
                                           key={index}
                                           className={
-                                            shouldReplace ? "text-blue-500" : ""
+                                            shouldReplace
+                                              ? "text-blue-500"
+                                              : "text-[#091e42]"
                                           }
                                         >
-                                          {shouldReplace
-                                            ? "___________"
-                                            : word}{" "}
+                                          {shouldReplace ? "___________" : word}{" "}
                                         </span>
                                       );
                                     }
@@ -519,7 +519,7 @@ export default function ClozeTest({ userId }: Props) {
                 {loading ? (
                   <Button className="mt-4" disabled>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                    {t("OrderSentencesPractice.saveOrder")}
+                    {t("orderSentencesPractice.saveOrder")}
                   </Button>
                 ) : (
                   <>
@@ -530,7 +530,7 @@ export default function ClozeTest({ userId }: Props) {
                       size="sm"
                       onClick={onSubmitArticle}
                     >
-                      {t("ClozeTestPractice.submitArticle")}
+                      {t("clozeTestPractice.submitArticle")}
                     </Button>
                     {showButtonNextPassage && (
                       <Button
@@ -539,7 +539,7 @@ export default function ClozeTest({ userId }: Props) {
                         size="sm"
                         onClick={onNextPassage}
                       >
-                        {t("ClozeTestPractice.nextPassage")}
+                        {t("clozeTestPractice.nextPassage")}
                       </Button>
                     )}
                   </>
