@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -31,6 +31,15 @@ import { TableHead } from "@mui/material";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
 type Student = {
   id: string;
@@ -43,56 +52,7 @@ type MyStudentProps = {
  matchedStudents: Student[];
 };
 
-export const columns: ColumnDef<Student>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="captoliza">{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return <Button variant="ghost">Email</Button>;
-    },
-    cell: ({ row }) => <div className="captoliza">{row.getValue("email")}</div>,
-  },
-  {
-    accessorKey: "action",
-    header: ({ column }) => {
-      return <Button variant="ghost">Action</Button>;
-    },
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="default" className="ml-auto">
-            Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuCheckboxItem >
-            <Link href={`/progress/${row.id}`}>Progress</Link>
-            </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem >
-          <Link href={`/teacher/report/`}>Report</Link>
-            </DropdownMenuCheckboxItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
-
 export default function MyStudents({
-  userId,
   matchedStudents,
 }: MyStudentProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -103,6 +63,142 @@ export default function MyStudents({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
+  const [selectedStudentId, setSelectedStudentId] = useState(null);  
+const router = useRouter(); 
+const [isOpen, setIsOpen] = useState(false);
+const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+const [redirectUrl, setRedirectUrl] = useState('');
+
+let action = '';  
+
+const closeDialog = () => {
+  setIsOpen(false);
+};
+
+useEffect(() => {
+  if (redirectUrl) {
+    router.push(redirectUrl);
+  }
+}, [selectedStudentId, action]);
+
+const handleActionSelected = (action: string, id: string) => {
+  switch (action) { 
+    case 'progress':
+      setRedirectUrl(`/teacher/student-progress/${id}`);
+      break;
+    case 'enroll':
+      setRedirectUrl(`/teacher/enroll-classes/${id}`);
+      break;
+    case 'unenroll':
+      setRedirectUrl(`/teacher/unenroll-classes/${id}`)
+      break;
+    default:
+      console.log('default');
+      break;
+  }
+};
+
+const openResetModal = (selectedStudentId: null) => {
+    setIsResetModalOpen(true);
+    setSelectedStudentId(selectedStudentId);
+};
+
+const closeResetModal = () => {
+  setIsResetModalOpen(false);
+};
+
+const handleResetProgress = async (selectedStudentId: string) => {
+  closeResetModal();
+  try {
+    const response = await fetch(`/api/users/${selectedStudentId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        xp: 0,
+        level: 0,
+        cefrLevel: "",
+      }),
+    });
+  
+    return new Response(
+      JSON.stringify({
+        message: "success",
+      }),
+      { status: 200 }
+      );
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          message: error,
+        }),
+        { status: 500 }
+        );
+      }
+  finally {
+    closeDialog();
+    router.refresh();
+  }
+};
+
+  const columns: ColumnDef<Student>[] = [
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Name
+            <CaretSortIcon className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => <div className="captoliza" onClick={() => row.toggleSelected}>{row.getValue("name")}</div>,
+    },
+    {
+      accessorKey: "email",
+      header: ({ column }) => {
+        return <Button variant="ghost">Email</Button>;
+      },
+      cell: ({ row }) => <div className="captoliza">{row.getValue("email")}</div>,
+    },
+    {
+      accessorKey: "id",
+      header: ({ column }) => {
+        return null;
+      },
+      cell: ({ row }) => null,
+    },
+    {
+      accessorKey: "action",
+      header: ({ column }) => {
+        return <Button variant="ghost">Action</Button>;
+      },
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="default" className="ml-auto">
+              Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuCheckboxItem onClick={() => handleActionSelected('progress', row.getValue('id') )}>
+              <Link href={redirectUrl}>Progress</Link>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem >
+              <Link href={redirectUrl} onClick={() => handleActionSelected('enroll', row.getValue('id'))}>Enroll</Link>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem>
+              <Link href={redirectUrl} onClick={() => handleActionSelected('unenroll', row.getValue('id'))}>Unenroll</Link>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem onClick={() => openResetModal(row.getValue('id'))}>
+              Reset Progress
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   const table = useReactTable({
     data: matchedStudents,
@@ -122,10 +218,36 @@ export default function MyStudents({
       rowSelection,
     },
   });
+  
   return (
     <>
+    {isResetModalOpen && (
+      <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset all XP progress</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            Are you sure you want to reset all progress?
+          </DialogDescription>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => closeResetModal()}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleResetProgress(selectedStudentId ?? "")}
+            >
+              Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>  
+      </Dialog>
+    )}
       <div className="font-bold text-3xl">My Students Page</div>
-      {/* <CreateNewStudent userId={userId}/> */}
       <Input
         placeholder={"Search..."}
         value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
@@ -138,7 +260,7 @@ export default function MyStudents({
         <Table>
           <TableHeader className="font-bold">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} >
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableCell>
@@ -165,7 +287,9 @@ export default function MyStudents({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id}
+                    onClick={() => setSelectedStudentId(cell.getContext().cell.row.getValue('id'))}
+                   >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

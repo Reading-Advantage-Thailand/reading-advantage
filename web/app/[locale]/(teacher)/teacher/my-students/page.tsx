@@ -49,7 +49,8 @@ export default async function myStudentPage() {
       }
     }
     const allClassroom = await getAllClassroom();
-
+    
+    // get matched students
     function getMatchedStudents() {
         let matchedStudents: any[] = [];
         const teacherId = (user as { id: string }).id;
@@ -65,12 +66,11 @@ export default async function myStudentPage() {
             }
           });
         });
-  
+        
       return matchedStudents;
     }
-  
     const matchedStudents = getMatchedStudents();
-
+    
     return (
       <div>
       <NextAuthSessionProvider session={user}>
@@ -82,5 +82,3 @@ export default async function myStudentPage() {
    </div>
     )
 }
-
-
