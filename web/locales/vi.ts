@@ -107,6 +107,7 @@ export default {
           errorOrder: "Vui lòng sắp xếp đúng",
           submitArticle: "Kiểm tra câu trả lời của bạn",
           nextPassage: "Đoạn tiếp theo",
+          tryToSortThisSentence: "Hãy sắp xếp câu này.",
         },
       },
     },

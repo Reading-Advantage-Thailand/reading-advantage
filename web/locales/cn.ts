@@ -96,6 +96,7 @@ export default {
           errorOrder: "请正确排序",
           submitArticle: "检查你的答案",
           nextPassage: "下一段落",
+          tryToSortThisSentence: "尝试排序这个句子",
         },
       },
     },

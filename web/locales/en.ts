@@ -114,6 +114,7 @@ export default {
           errorOrder: "Please order correctly",
           submitArticle: "Check your answers",
           nextPassage: "Next Passage",
+          tryToSortThisSentence: "Try to sort this sentence",          
         },
       },
     },
