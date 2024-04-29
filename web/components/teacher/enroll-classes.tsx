@@ -21,17 +21,19 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Checkbox, TableHead } from "@mui/material";
+import { Checkbox, Radio, TableHead } from "@mui/material";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { set } from "lodash";
+import en from "@/locales/en";
 
 type Student = {
-    id: string;
-    email: string;
-    name: string;
-    };
+  id: string;
+  email: string;
+  name: string;
+};
 
 type Classroom = {
   id: string;
@@ -49,7 +51,7 @@ type Classroom = {
 type MyEnrollProps = {
   enrolledClasses: Classroom[];
   studentId: string;
-    matchedStudents: Student[];
+  matchedStudents: Student[];
 };
 
 export default function MyEnrollClasses({
@@ -57,8 +59,6 @@ export default function MyEnrollClasses({
   studentId,
   matchedStudents,
 }: MyEnrollProps) {
-    console.log('matchedStudents', matchedStudents);
-    
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -69,20 +69,48 @@ export default function MyEnrollClasses({
   const t = useScopedI18n("components.articleRecordsTable");
   const router = useRouter();
   const [classroomId, setClassroomId] = useState("");
+  const [isCheck, setIsCheck] = useState(false);
+  const [studentInClassVar, setStudentInClassVar] = useState<String[]>([]);
+
+  useEffect(() => {
+    eachClassChecked(classroomId);
+  }, [isCheck]);
+
+  const eachClassChecked = (id: string) => {
+    if (isCheck) {
+      setStudentInClassVar(["classId_" + id]);
+    }
+  };
 
   const handleStudentEnrollment = async (id: string, enrolledClasses: any) => {
+    let studentInClass: any[] = [];
+    enrolledClasses.forEach((enrolledClass: any) => {
+      enrolledClass.student.forEach((student: { studentId: string }) => {
+        if (enrolledClass.id === id) {
+          studentInClass.push(student.studentId);
+        }
+        if (!studentInClass.includes(studentId)) {
+          studentInClass.push(studentId);
+        }
+      });
+    });
+    const updateStudentListBuilder = studentInClass.map((studentId) => ({
+      studentId,
+    }));
+
     try {
-      const response = await axios.patch(`/api/classroom/${id}`,
-       { teacherId: enrolledClasses[0].teacherId,
+      const response = await axios.patch(`/api/classroom/${id}`, {
+        teacherId: enrolledClasses[0].teacherId,
         classCode: enrolledClasses[0].classCode,
         classroomName: enrolledClasses[0].classroomName,
         coTeacher: "",
         description: enrolledClasses[0].description,
         grade: enrolledClasses[0].grade,
         noOfStudents: enrolledClasses[0].noOfStudents,
-        student: [{studentId: studentId, lastActivity: new Date()}],
-        title: enrolledClasses[0].title,});
-      
+        student: updateStudentListBuilder,
+        title: enrolledClasses[0].title,
+      });
+
       if (response.status === 200) {
         console.log("add success");
       } else {
@@ -167,7 +195,9 @@ export default function MyEnrollClasses({
 
   return (
     <>
-      <div className="font-bold text-3xl">Enrolled Classes for {matchedStudents[0].name}</div>
+      <div className="font-bold text-3xl">
+        Enrolled Classes for {matchedStudents[0].name}
+      </div>
       <div className="flex items-center justify-between">
         <Input
           placeholder={"Search..."}
@@ -180,11 +210,11 @@ export default function MyEnrollClasses({
           className="max-w-sm mt-4"
         />
         <Button
-            variant="default"
-            className="max-w-sm mt-4"
-            onClick={() => handleStudentEnrollment(classroomId, enrolledClasses)}
+          variant="default"
+          className="max-w-sm mt-4"
+          onClick={() => handleStudentEnrollment(classroomId, enrolledClasses)}
         >
-            Add
+          Add
         </Button>
       </div>
       <div className="rounded-md border mt-4">
@@ -218,9 +248,7 @@ export default function MyEnrollClasses({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

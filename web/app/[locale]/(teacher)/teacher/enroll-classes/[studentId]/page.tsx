@@ -5,7 +5,6 @@ import React from 'react'
 import { headers } from "next/headers";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 import MyEnrollClasses from '@/components/teacher/enroll-classes';
-import { match } from 'assert';
 
 export default async function EnrollPage({params}: {params: {studentId: string}}) {
       const user = await getCurrentUser();
@@ -95,26 +94,51 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
                   .concat(arrayB.filter(item => !arrayA.includes(item)));
   } 
   const differentClasses = getDifferentItems(teacherClassrooms, matchedClassrooms);
-  // console.log('differentItems: ', differentClasses);
+  console.log('differentItems: ', differentClasses);
 
    // get matched students
-   function getMatchedStudents(studentId: string) {
-    let matchedStudents: any[] = [];
+    function getMatchedStudents() {
+        let matchedStudents: any[] = [];
+        const teacherId = (user as { id: string }).id;
 
-    allStudent.students.forEach((student: { id: string; }) => {
-      if (student.id === studentId) {
-        matchedStudents.push(student);
-      }
-    });
+        allStudent.students.forEach((student: { id: string; }) => {
+          allClassroom.data.forEach((classroom: { student: any; archived: boolean; teacherId: string; }) => {
+            if (!classroom.archived && classroom.teacherId === teacherId) {
+              classroom.student.forEach((students: { studentId: string; }) => {
+                if (students.studentId === student.id) {
+                  matchedStudents.push(student);
+                }
+              });
+            }
+          });
+        });
+  
+      return matchedStudents;
+    }
+    const matchedStudents = getMatchedStudents();
 
-  return matchedStudents;
-}
-const matchedStudents = getMatchedStudents(params.studentId);
+    //get student in different classes
+    const studentInDifferentClasses = () => {
+      let studentsInChecked: any[] = [];
+      differentClasses.forEach((classroom: { student: any; isChecked: boolean; classroomId: string }) => {
+        // if (classroom.isChecked) {
+          classroom.student.forEach((students: { studentId: string; }) => {
+            console.log('students: ', students.studentId);
+            studentsInChecked.push(students.studentId);
+          });
+        // }
+      });
+      return studentsInChecked;
+    };
+    
+    const studentInDifferent = studentInDifferentClasses();
+    console.log('studentInDifferent: ', studentInDifferent);
+    
 
     return (
       <div>
       <NextAuthSessionProvider session={user}>
-     <MyEnrollClasses enrolledClasses={differentClasses} studentId={params.studentId} matchedStudents={matchedStudents} />
+     <MyEnrollClasses enrolledClasses={differentClasses} studentId={params.studentId} matchedStudents={matchedStudents}/>
       </NextAuthSessionProvider>
    </div>
     )

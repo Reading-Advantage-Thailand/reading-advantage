@@ -66,7 +66,7 @@ export default async function myStudentPage() {
             }
           });
         });
-  
+        
       return matchedStudents;
     }
     const matchedStudents = getMatchedStudents();
