@@ -28,10 +28,10 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 
 type Student = {
-    id: string;
-    email: string;
-    name: string;
-    };
+  id: string;
+  email: string;
+  name: string;
+};
 
 type Classroom = {
   id: string;
@@ -48,17 +48,15 @@ type Classroom = {
 
 type MyEnrollProps = {
   enrolledClasses: Classroom[];
-  studentId: string;
-    matchedStudents: Student[];
+  matchedNameOfStudents: Student[];
+  updateStudentList: any;
 };
 
-export default function MyEnrollClasses({
+export default function MyUnEnrollClasses({
   enrolledClasses,
-  studentId,
-  matchedStudents,
+  matchedNameOfStudents,
+  updateStudentList,
 }: MyEnrollProps) {
-    console.log('matchedStudents', matchedStudents);
-    
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -70,23 +68,24 @@ export default function MyEnrollClasses({
   const router = useRouter();
   const [classroomId, setClassroomId] = useState("");
 
-  const handleStudentEnrollment = async (id: string, enrolledClasses: any) => {
+  const handleStudentEnrollment = async (id: string, enrolledClasses: any, updateStudentList: any) => {
     try {
-      const response = await axios.patch(`/api/classroom/${id}`,
-       { teacherId: enrolledClasses[0].teacherId,
+      const response = await axios.patch(`/api/classroom/${id}`, {
+        teacherId: enrolledClasses[0].teacherId,
         classCode: enrolledClasses[0].classCode,
         classroomName: enrolledClasses[0].classroomName,
         coTeacher: "",
         description: enrolledClasses[0].description,
         grade: enrolledClasses[0].grade,
         noOfStudents: enrolledClasses[0].noOfStudents,
-        student: [{studentId: studentId, lastActivity: new Date()}],
-        title: enrolledClasses[0].title,});
-      
+        student: updateStudentList,
+        title: enrolledClasses[0].title,
+      });
+
       if (response.status === 200) {
-        console.log("add success");
+        console.log("remove success");
       } else {
-        console.log("add failed with status: ", response.status);
+        console.log("remove failed with status: ", response.status);
       }
 
       return new Response(
@@ -130,7 +129,7 @@ export default function MyEnrollClasses({
     {
       accessorKey: "id",
       header: ({ column }) => {
-        return <Button variant="ghost">Enroll</Button>;
+        return <Button variant="ghost">Unenroll</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza">
@@ -167,7 +166,9 @@ export default function MyEnrollClasses({
 
   return (
     <>
-      <div className="font-bold text-3xl">Enrolled Classes for {matchedStudents[0].name}</div>
+      <div className="font-bold text-3xl">
+        Un-enrolled Classes for {matchedNameOfStudents[0].name}
+      </div>
       <div className="flex items-center justify-between">
         <Input
           placeholder={"Search..."}
@@ -180,11 +181,11 @@ export default function MyEnrollClasses({
           className="max-w-sm mt-4"
         />
         <Button
-            variant="default"
-            className="max-w-sm mt-4"
-            onClick={() => handleStudentEnrollment(classroomId, enrolledClasses)}
+          variant="default"
+          className="max-w-sm mt-4"
+          onClick={() => handleStudentEnrollment(classroomId, enrolledClasses, updateStudentList)}
         >
-            Add
+          Remove
         </Button>
       </div>
       <div className="rounded-md border mt-4">
@@ -218,9 +219,7 @@ export default function MyEnrollClasses({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

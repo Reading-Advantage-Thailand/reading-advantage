@@ -90,7 +90,7 @@ const handleActionSelected = (action: string, id: string) => {
       setRedirectUrl(`/teacher/enroll-classes/${id}`);
       break;
     case 'unenroll':
-      console.log('unenroll');
+      setRedirectUrl(`/teacher/unenroll-classes/${id}`)
       break;
     default:
       console.log('default');
@@ -189,7 +189,7 @@ const handleResetProgress = async (selectedStudentId: string) => {
               <Link href={redirectUrl} onClick={() => handleActionSelected('enroll', row.getValue('id'))}>Enroll</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem>
-              <Link href='' onClick={() => handleActionSelected('unenroll', row.getValue('id'))}>Unenroll</Link>
+              <Link href={redirectUrl} onClick={() => handleActionSelected('unenroll', row.getValue('id'))}>Unenroll</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem onClick={() => openResetModal(row.getValue('id'))}>
               Reset Progress
