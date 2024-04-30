@@ -30,12 +30,57 @@ export default async function myClassesPage() {
     }
   }
 const resClassroom = await getClassroomData();
+
+// get teacher data from database
+async function getAllTeachersData() {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom/teachers`,
+      {
+        method: "GET",
+        headers: headers(),
+      }
+    );
+    
+    return res.json();
+  } catch (error) {
+    console.error("Failed to parse JSON", error);
+  }
+}
+const allTeachers = await getAllTeachersData();
+
+// filter only teacher login
+const teacherId = () => {
+let teacherId: String[] = [];
+allTeachers.teachers.forEach((teacher: { id: string; role: any}) => {
+  if (teacher.role.includes('TEACHER') && teacher.id === user.id) {
+    teacherId.push(teacher.id);
+  }
+});
+return teacherId;
+}
+const teacher = teacherId();
+
+const getClassroomOfThatTeacher = () => {
+  let classrooms: any[] = [];
+  resClassroom.data.forEach((classroom: { student: any; archived: boolean; teacherId: string; }) => {
+     if (!classroom.archived && classroom.teacherId === teacher[0]) {
+      // console.log('classroom', classroom);
+      classrooms.push(classroom);
+    }
+  });
+  return classrooms;
+ }
+ const classes = getClassroomOfThatTeacher();
+ console.log('classes :', classes);
+ 
+
   return (
     <div>
        <NextAuthSessionProvider session={user}>
       <MyClasses 
       userId={user.id}
-      classrooms={ resClassroom.data} 
+      classrooms={ classes} 
       />
        </NextAuthSessionProvider>
     </div>
