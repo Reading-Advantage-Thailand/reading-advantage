@@ -168,6 +168,7 @@ export default function OrderWords({ userId }: Props) {
                     </div>
                   </div>
                 </div>
+                <p>{articleOrderWords[currentArticleIndex]?.translationTh}</p>
               </>
             ) : (
               <></>
