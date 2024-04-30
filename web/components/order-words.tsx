@@ -107,16 +107,14 @@ export default function OrderWords({ userId }: Props) {
     return rawData;
   };
 
-  //=====> play audio
-  const handlePause = () => {
-    setIsPlaying(!isplaying);
-    if (audioRef.current === null) return;
-    if (isplaying) {
-      audioRef.current?.pause();
-    } else {
-      audioRef.current?.play();
+  const onDragStart = () => {
+    if (window.navigator.vibrate) {
+      window.navigator.vibrate(100);
     }
   };
+
+  const onDragEnd = (result: DropResult) => {}
+
 
     const onNextPassage = async () => {
       // setLoading(false);
@@ -168,7 +166,15 @@ export default function OrderWords({ userId }: Props) {
                     </div>
                   </div>
                 </div>
-                <p>{articleOrderWords[currentArticleIndex]?.translationTh}</p>
+                <div className="flex justify-center my-5">
+                  <p>{articleOrderWords[currentArticleIndex]?.translationTh}</p>
+                </div>
+                <DragDropContext
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                >
+                  <></>
+                </DragDropContext>
               </>
             ) : (
               <></>
