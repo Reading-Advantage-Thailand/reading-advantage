@@ -62,6 +62,7 @@ export default {
       practicePage: {
         //Headings
         flashcard: "การ์ดคำศัพท์",
+        manage: "จัดการ",
         //descriptions
         flashcardDescription:
           "คุณสามารถฝึกทักษะการอ่านของคุณด้วยการ์ดคำศัพท์ และประโยคที่คุณบันทึกไว้จะปรากฏที่นี่",
