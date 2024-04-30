@@ -51,6 +51,7 @@ export default {
       },
       practicePage: {
         flashcard: "单词卡",
+        manage: "管理",
         flashcardDescription:
           "您可以使用单词卡来练习您的阅读技能，您保存的句子将在这里显示。",
         savedSentences: "保存的句子",
