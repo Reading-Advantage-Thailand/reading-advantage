@@ -110,6 +110,7 @@ export default {
           errorOrder: "กรุณาเรียงลำดับให้ถูกต้อง",
           submitArticle: "ตรวจสอบคำตอบของคุณ",
           nextPassage: "ตอนต่อไป",
+          tryToSortThisSentence: "ลองเรียงประโยคนี้",
         },
       },
     },

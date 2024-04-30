@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
             const decoded = await firebaseAdmin
               .auth()
               .verifyIdToken(credentials.idToken);
-            console.log("decoded", decoded);
+            // console.log("decoded", decoded);
             // Convert the decoded token to a User object
             const defaultName = decoded.name || decoded.email?.split("@")[0];
             const user = {
@@ -26,7 +26,7 @@ export const authOptions: NextAuthOptions = {
               image: decoded.picture || "",
               verified: decoded.email_verified,
             };
-            console.log("user", user);
+            // console.log("user", user);
             return Promise.resolve(user);
           } catch (err) {
             console.error(err);
@@ -49,7 +49,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     jwt: async ({ token, user, profile }: any) => {
       try {
-        console.log("token", token);
+        // console.log("token", token);
         const userdb = await db
           .collection("users")
           .doc(token.sub as string)
@@ -103,7 +103,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
       }
       // console.log("session callback");
-      console.log("session", session);
+      // console.log("session", session);
       return session;
     },
   },
