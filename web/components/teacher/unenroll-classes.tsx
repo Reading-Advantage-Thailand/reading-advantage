@@ -195,7 +195,7 @@ export default function MyUnEnrollClasses({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableCell>
+                    <TableCell key={header.id}>
                       <TableHead key={header.id}>
                         {header.isPlaceholder
                           ? null

@@ -79,7 +79,7 @@ useEffect(() => {
   if (redirectUrl) {
     router.push(redirectUrl);
   }
-}, [selectedStudentId, action]);
+}, [selectedStudentId, action, redirectUrl, router]);
 
 const handleActionSelected = (action: string, id: string) => {
   switch (action) { 
@@ -263,7 +263,7 @@ const handleResetProgress = async (selectedStudentId: string) => {
               <TableRow key={headerGroup.id} >
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableCell>
+                    <TableCell key={header.id}>
                       <TableHead key={header.id}>
                         {header.isPlaceholder
                           ? null

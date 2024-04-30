@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -26,8 +26,6 @@ import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { set } from "lodash";
-import en from "@/locales/en";
 
 type Student = {
   id: string;
@@ -72,15 +70,16 @@ export default function MyEnrollClasses({
   const [isCheck, setIsCheck] = useState(false);
   const [studentInClassVar, setStudentInClassVar] = useState<String[]>([]);
 
-  useEffect(() => {
-    eachClassChecked(classroomId);
-  }, [isCheck]);
-
-  const eachClassChecked = (id: string) => {
+  const eachClassChecked = useCallback((id: string) => {
     if (isCheck) {
       setStudentInClassVar(["classId_" + id]);
     }
-  };
+  }, [isCheck, setStudentInClassVar]);
+
+  useEffect(() => {
+    eachClassChecked(classroomId);
+  }, [isCheck, classroomId, eachClassChecked]);
+
 
   const handleStudentEnrollment = async (id: string, enrolledClasses: any) => {
     let studentInClass: any[] = [];
@@ -224,7 +223,7 @@ export default function MyEnrollClasses({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableCell>
+                    <TableCell key={header.id}>
                       <TableHead key={header.id}>
                         {header.isPlaceholder
                           ? null
