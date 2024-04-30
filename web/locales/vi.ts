@@ -60,6 +60,7 @@ export default {
       practicePage: {
         // Headings
         flashcard: "Thẻ học",
+        manage: "quản lý",
         // Descriptions
         flashcardDescription:
           "Bạn có thể luyện tập kỹ năng đọc của mình với thẻ học. Và các câu đoạn đã lưu của bạn sẽ được hiển thị ở đây.",

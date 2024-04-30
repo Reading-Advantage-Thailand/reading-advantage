@@ -64,6 +64,7 @@ export default {
       practicePage: {
         //Headings
         flashcard: "Flashcard",
+        manage: "Manage",
         //descriptions
         flashcardDescription:
           "You can practice your reading skills with flashcards. and your saved sentences will be displayed here.",
