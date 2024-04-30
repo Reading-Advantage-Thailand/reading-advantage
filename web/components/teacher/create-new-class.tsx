@@ -73,7 +73,7 @@ function CreateNewClass({ userId }: { userId: string }) {
 
   return (
     <div>
-      <div>
+      <div className="max-w-sm mt-4">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="outline">
