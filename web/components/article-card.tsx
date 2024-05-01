@@ -13,6 +13,7 @@ import Questions from './questions/questions'
 import { ArticleType } from '@/types'
 import { ArticleFooter } from './article-footer'
 import { Skeleton } from './ui/skeleton'
+import RatingPopup from './rating-popup'
 
 type Props = {
     article: ArticleType,
@@ -28,7 +29,8 @@ export default async function ArticleCard({
     const t = await getScopedI18n('components.articleCard');
     return (
         <div className='md:flex md:flex-row md:gap-3 md:mb-5'>
-            <Card className='mt-4 md:basis-3/5'>
+            <div className='mt-4 md:basis-3/5'>
+            <Card >
                 <CardHeader>
                     <CardTitle className='font-bold text-3xl md:text-3xl'>
                         {article.title}
@@ -62,7 +64,12 @@ export default async function ArticleCard({
                     <ArticleContent article={article} articleId={articleId} userId={userId} />
                 </CardHeader>
                 <ArticleFooter />
-            </Card >
+              </Card >
+              <RatingPopup />  
+            </div>
+                                
+            {/* part question */}
+                                       
             {
                 article.questions && (
                     <Questions
@@ -88,8 +95,7 @@ export default async function ArticleCard({
                         </CardHeader>
                     </Card>
                 )
-
             }
-        </div >
+        </div>
     )
 }
