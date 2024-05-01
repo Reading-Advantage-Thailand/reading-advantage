@@ -33,7 +33,7 @@ export type TeacherPageConfig = {
 
 
 export type SidebarNavItem = {
-    title: "read" | "sentences" | "reports" | "history",
+    title: "read" | "sentences" | "history",
     disabled?: boolean
     external?: boolean
     icon?: keyof typeof Icons
@@ -49,7 +49,7 @@ export type SidebarNavItem = {
     )
 
 export type SidebarTeacherNavItem = {
-    title: "myClasses" | "myStudent" | "classRoster" | "reports",
+    title: "myClasses" | "myStudent" | "reports",
     disabled?: boolean
     external?: boolean
     icon?: keyof typeof Icons
