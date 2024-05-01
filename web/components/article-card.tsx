@@ -13,6 +13,7 @@ import Questions from './questions/questions'
 import { ArticleType } from '@/types'
 import { ArticleFooter } from './article-footer'
 import { Skeleton } from './ui/skeleton'
+import RatingPopup from './rating-popup'
 
 type Props = {
     article: ArticleType,
@@ -63,6 +64,10 @@ export default async function ArticleCard({
                 </CardHeader>
                 <ArticleFooter />
             </Card >
+
+            {/* part question */}
+            <div className='mt-4'>                     
+                <RatingPopup />   
             {
                 article.questions && (
                     <Questions
@@ -88,8 +93,8 @@ export default async function ArticleCard({
                         </CardHeader>
                     </Card>
                 )
-
             }
+            </div>
         </div >
     )
 }
