@@ -1,5 +1,8 @@
-/saquestions
+user:
 Formulate 5 very simple and clear short-answer questions from the {nonfiction article text}, aimed at readers at the A1 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Create questions designed to evaluate a CEFR A1 learner's very basic comprehension of the article, focusing on their ability to recall straightforward and simple facts or details.
 
 Key Guidelines:
 1. **Question Simplicity:** The question should be extremely basic, asking about very clear and concrete details in the article, such as names, colors, sizes, or other easily identifiable attributes.
@@ -7,8 +10,6 @@ Key Guidelines:
 3. **Response Content:** Anticipate a straightforward and short answer that directly reflects simple information found in the article. The response should require minimal language skills to express.
 4. **Focus Areas:** The question should target the simplest facts or elements in the article, such as identifying a common object, basic action, or simple characteristic mentioned.
 5. **Expected Answer:** The answer should be very brief, possibly one or two words, showing the learner's ability to understand and recall the most basic information from the text.
-
-These types of questions are designed to evaluate an A1 learner's very basic comprehension of the article, focusing on their ability to recall straightforward and simple facts or details.
 
 Output as JSON following this example:
 {

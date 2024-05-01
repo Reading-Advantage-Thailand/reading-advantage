@@ -1,5 +1,8 @@
-/mcquestions
+user:
 Develop a set of 10 engaging multiple-choice questions based on the provided {fiction story text}, suitable for readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Create questions that help B1 level learners to engage more critically with the story, understanding its deeper meanings and nuances, and recognizing character development and thematic elements.
 
 Key Guidelines:
 1. **Question Style:** Questions should test understanding of the story at a deeper level, such as motivations of characters, main themes, and the sequence of events. Questions can include why characters behave in certain ways or the implications of their actions.
@@ -7,8 +10,6 @@ Key Guidelines:
 3. **Content Focus:** Focus on more detailed aspects of the plot, character development, and settings. Include questions that require basic analytical thinking and understanding of the narrative's structure.
 4. **Answers:** Provide four answer choices, ensuring one correct answer with subtler distractors that require closer reading or inference to distinguish.
 5. **Engagement:** Encourage deeper engagement with the text by asking questions that make the readers think about the story's various layers and underlying messages.
-
-Create questions that help B1 level learners to engage more critically with the story, understanding its deeper meanings and nuances, and recognizing character development and thematic elements.
 
 Output as JSON following this example:
 {

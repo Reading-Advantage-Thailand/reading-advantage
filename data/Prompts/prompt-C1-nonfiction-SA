@@ -1,5 +1,8 @@
-/saquestions
+user:
 Develop 5 detailed short-answer questions based on the {nonfiction article text}, suitable for readers at the C1 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Compose questions that stimulate C1 level learners to apply advanced critical thinking skills and comprehensive language understanding to grasp the full depth and breadth of the article's content.
 
 Key Guidelines:
 1. **Question Depth:** The question should encourage a detailed understanding of the article, asking the reader to explain, compare, or analyze key concepts or arguments presented.
