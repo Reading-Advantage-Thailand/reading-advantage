@@ -41,6 +41,8 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import CreateNewClass from "./create-new-class";
+import EditClass from "./edit-class";
+import { useNavigate} from 'react-router-dom';
 
 type Classes = {
   classroomName: string;
@@ -53,6 +55,7 @@ type Classes = {
   };
   id: string;
   archived: boolean;  
+  title: string;
 };
 
 type MyClassesProps = {
@@ -76,6 +79,8 @@ const router = useRouter();
 const [isOpen, setIsOpen] = useState(false);
 const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 const [redirectUrl, setRedirectUrl] = useState('');
+const [showEditModal, setShowEditModal] = useState(false); 
+
 
 let action = '';  
 
@@ -91,8 +96,8 @@ useEffect(() => {
 
 const handleActionSelected = (action: string, id: string) => {
   switch (action) { 
-    case 'progress':
-      setRedirectUrl(`/teacher/student-progress/${id}`);
+    case 'edit':
+      setShowEditModal(true);
       break;
     case 'enroll':
       setRedirectUrl(`/teacher/enroll-classes/${id}`);
@@ -113,6 +118,9 @@ const openResetModal = (selectedStudentId: null) => {
 
 const closeResetModal = () => {
   setIsResetModalOpen(false);
+};
+const handleClassroomClick = (classroomId: string) => {
+  router.push(`/teacher/class-roster/${classroomId}`);
 };
 
 const handleResetProgress = async (selectedStudentId: string) => {
@@ -161,7 +169,22 @@ const handleResetProgress = async (selectedStudentId: string) => {
           </Button>
         );
       },
-      cell: ({ row }) => <div className="captoliza" onClick={() => row.toggleSelected}>{row.getValue("classroomName")}</div>,
+      // cell: ({ row }) => <div className="captoliza" onClick={() => row.toggleSelected}>{row.getValue("classroomName")}</div>,
+      cell: ({ row }) => {
+        
+        return (
+          <div 
+            className="captoliza" 
+            onClick={() => {
+              row.toggleSelected();
+              handleClassroomClick(row.getValue("classroomName"));
+              // navigate('/teacher/class-roster', { state: { classroomName: row.getValue("classroomName") } });
+            }}
+          >
+            {row.getValue("classroomName")}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "classCode",
@@ -190,8 +213,9 @@ const handleResetProgress = async (selectedStudentId: string) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuCheckboxItem onClick={() => handleActionSelected('progress', row.getValue('id') )}>
-              <Link href={redirectUrl}>Edit</Link>
+            <DropdownMenuCheckboxItem onClick={() => handleActionSelected('edit', row.getValue('id') )}>
+              <Link href=''>Edit</Link>
+              
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem >
               <Link href={redirectUrl} onClick={() => handleActionSelected('enroll', row.getValue('id'))}>Roster</Link>
@@ -229,32 +253,7 @@ const handleResetProgress = async (selectedStudentId: string) => {
   
   return (
     <>
-    {isResetModalOpen && (
-      <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reset all XP progress</DialogTitle>
-          </DialogHeader>
-          <DialogDescription>
-            Are you sure you want to reset all progress?
-          </DialogDescription>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => closeResetModal()}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleResetProgress(selectedStudentId ?? "")}
-            >
-              Reset
-            </Button>
-          </DialogFooter>
-        </DialogContent>  
-      </Dialog>
-    )}
+    {/* {showEditModal && <EditClass userId={userId} classroomData={classrooms} title="My Classes" />} */}
       <div className="font-bold text-3xl">My Classes</div>
       <div className="flex justify-between">
       <Input
@@ -348,6 +347,7 @@ const handleResetProgress = async (selectedStudentId: string) => {
           </Button>
         </div>
       </div>
+      
     </>
   );
 }

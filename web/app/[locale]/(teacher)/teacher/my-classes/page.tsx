@@ -72,7 +72,7 @@ const getClassroomOfThatTeacher = () => {
   return classrooms;
  }
  const classes = getClassroomOfThatTeacher();
- console.log('classes :', classes);
+//  console.log('classes :', classes);
  
 
   return (
@@ -80,7 +80,7 @@ const getClassroomOfThatTeacher = () => {
        <NextAuthSessionProvider session={user}>
       <MyClasses 
       userId={user.id}
-      classrooms={ classes} 
+      classrooms={classes} 
       />
        </NextAuthSessionProvider>
     </div>
