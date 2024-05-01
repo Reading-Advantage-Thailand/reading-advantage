@@ -199,9 +199,9 @@ export default function OrderWords({ userId }: Props) {
                                 ?.endTimepoint
                             }
                           />
-                        </div>
+                        </div>                       
                         <div
-                          className="absolute h-4 w-4 rotate-45 border-b-2 border-l-2 border-gray-200 bg-white"
+                          className="absolute h-4 w-4 rotate-45 border-b-2 border-l-2 border-gray-200 bg-white dark:bg-[#020817]"
                           style={{
                             top: "calc(50% - 8px)",
                             left: "-10px",
@@ -214,7 +214,7 @@ export default function OrderWords({ userId }: Props) {
                         return (
                           <button
                             key={i}
-                            className="rounded-2xl border-2 border-b-4 border-gray-200 p-2 text-gray-700"
+                            className="rounded-2xl border-2 border-b-4 border-gray-200 p-2 "
                             onClick={() => {
                               setShowBadges(false);
                               setShowButtonNextPassage(false);
@@ -272,7 +272,7 @@ export default function OrderWords({ userId }: Props) {
                             className={
                               selectedAnswers.includes(i)
                                 ? "rounded-2xl border-2 border-b-4 border-gray-200 bg-gray-200 p-2 text-gray-200"
-                                : "rounded-2xl border-2 border-b-4 border-gray-200 p-2 text-gray-700"
+                                : "rounded-2xl border-2 border-b-4 border-gray-200 p-2 "
                             }
                             disabled={selectedAnswers.includes(i)}
                             onClick={() => {
