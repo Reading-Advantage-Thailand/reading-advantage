@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -31,6 +31,16 @@ import { TableHead } from "@mui/material";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 
 type Student = {  
   studentId: string;
@@ -46,7 +56,89 @@ type MyRosterProps = {
  studentInClass: Student[];
 };
 
-export const columns: ColumnDef<Student>[] = [
+export default function ClassRoster({ studentInClass }: MyRosterProps) {
+const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+  const t = useScopedI18n("components.articleRecordsTable");
+  const router = useRouter(); 
+  const [isOpen, setIsOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState(null);  
+
+let action = '';  
+
+const closeDialog = () => {
+  setIsOpen(false);
+};
+
+useEffect(() => {
+  if (redirectUrl) {
+    router.push(redirectUrl);
+  }
+}, [selectedStudentId, action, redirectUrl, router]);
+
+const handleActionSelected = (action: string, studentId: string) => {
+  switch (action) { 
+    case 'progress':
+      setRedirectUrl(`/teacher/student-progress/${studentId}`);
+      break;
+    case 'enroll':
+      setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
+      break;
+    default:
+      console.log('default');
+      break;
+  }
+};
+
+const openResetModal = (selectedStudentId: null) => {
+    setIsResetModalOpen(true);
+    setSelectedStudentId(selectedStudentId);
+};
+
+const closeResetModal = () => {
+  setIsResetModalOpen(false);
+};
+
+const handleResetProgress = async (selectedStudentId: string) => {
+  closeResetModal();
+  try {
+    const response = await fetch(`/api/users/${selectedStudentId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        xp: 0,
+        level: 0,
+        cefrLevel: "",
+      }),
+    });
+  
+    return new Response(
+      JSON.stringify({
+        message: "success",
+      }),
+      { status: 200 }
+      );
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          message: error,
+        }),
+        { status: 500 }
+        );
+      }
+  finally {
+    closeDialog();
+    router.refresh();
+  }
+};
+
+const columns: ColumnDef<Student>[] = [
   {
     accessorKey: "studentName",
     header: ({ column }) => {
@@ -74,6 +166,13 @@ export const columns: ColumnDef<Student>[] = [
     },
   },
   {
+    accessorKey: "studentId",
+    header: ({ column }) => {
+      return null;
+    },
+    cell: ({ row }) => null,
+  },
+  {
     accessorKey: "action",
     header: ({ column }) => {
       return <Button variant="ghost">Action</Button>;
@@ -86,32 +185,20 @@ export const columns: ColumnDef<Student>[] = [
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuCheckboxItem >
-            <Link href={`/progress/${row.id}`}>Progress</Link>
+        <DropdownMenuCheckboxItem onClick={() => handleActionSelected('progress', row.getValue('studentId') )}>
+              <Link href={redirectUrl}>Progress</Link>
             </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem >
-          <Link href={`/teacher/report/`}>Enroll</Link>
+          <DropdownMenuCheckboxItem onClick={() => handleActionSelected('enroll', row.getValue('studentId'))}>
+          <Link href={redirectUrl}>Enroll</Link>
             </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem >
-          <Link href={`/teacher/report/`}>Reset Progress</Link>
+            <DropdownMenuCheckboxItem onClick={() => openResetModal(row.getValue('studentId'))}>
+              Reset Progress
             </DropdownMenuCheckboxItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
   },
 ];
-
-export default function ClassRoster({ studentInClass }: MyRosterProps) {
-  console.log('studentInClass :', studentInClass);
-  
-const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const t = useScopedI18n("components.articleRecordsTable");
 
   const table = useReactTable({
     data: studentInClass,
@@ -133,6 +220,32 @@ const [sorting, setSorting] = React.useState<SortingState>([]);
   });
   return (
     <>
+     {isResetModalOpen && (
+      <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset all XP progress</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            Are you sure you want to reset all progress?
+          </DialogDescription>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => closeResetModal()}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleResetProgress(selectedStudentId ?? "")}
+            >
+              Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>  
+      </Dialog>
+    )}
       <div className="font-bold text-3xl">Roster for classroom : {studentInClass[0].classroomName}</div>
       <Input
         placeholder={"Search..."}
