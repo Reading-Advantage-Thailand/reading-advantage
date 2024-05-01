@@ -40,6 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import CreateNewStudent from "./create-new-student";
 
 
 type Student = {  
@@ -247,6 +248,7 @@ const columns: ColumnDef<Student>[] = [
       </Dialog>
     )}
       <div className="font-bold text-3xl">Roster for classroom : {studentInClass[0].classroomName}</div>
+      <div className="flex justify-between">
       <Input
         placeholder={"Search..."}
         value={(table.getColumn("studentName")?.getFilterValue() as string) ?? ""}
@@ -255,6 +257,8 @@ const columns: ColumnDef<Student>[] = [
         }
         className="max-w-sm mt-4"
       />
+      <CreateNewStudent />
+      </div>
       <div className="rounded-md border mt-4">
         <Table>
           <TableHeader className="font-bold">
