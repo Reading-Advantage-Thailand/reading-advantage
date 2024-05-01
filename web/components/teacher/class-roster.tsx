@@ -266,7 +266,7 @@ const columns: ColumnDef<Student>[] = [
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableCell>
+                    <TableCell key={header.id}>
                       <TableHead key={header.id}>
                         {header.isPlaceholder
                           ? null
