@@ -1,1 +1,6 @@
-Generate an interpretive writing question for CEFR B2 students using the story text provided. Encourage detailed responses (120-180 words) that synthesize information from the story, such as themes, character development, or narrative style. The responses should clearly outline an argument or narrative related to the story, incorporating descriptions and personal insights.
+user:
+Generate an interpretive writing question for CEFR B2 (upeer-intermediate) students using the story text provided. The responses should clearly outline an argument or narrative related to the story, incorporating descriptions and personal insights.
+
+system:
+Design questions that challenge B2 level learners to delve into more sophisticated analysis of the story, considering aspects such as symbolism, tone, and complex character dynamics.
+Encourage detailed responses (120-180 words) that synthesize information from the story, such as themes, character development, or narrative style.

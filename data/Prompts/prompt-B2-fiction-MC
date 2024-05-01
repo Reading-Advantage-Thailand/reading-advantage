@@ -1,5 +1,7 @@
-/mcquestions
-Compose a series of 10 multiple-choice questions targeting a deeper comprehension and analysis of the {fiction story text}, aimed at readers at the B2 level of the Common European Framework of Reference for Languages (CEFR).
+user: Compose a series of 10 multiple-choice questions targeting a deeper comprehension and analysis of the {fiction story text}, aimed at readers at the B2 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Design questions that challenge B2 level learners to delve into more sophisticated analysis of the story, considering aspects such as symbolism, tone, and complex character dynamics.
 
 Key Guidelines:
 1. **Question Style:** Formulate questions that test a deeper understanding and interpretation of the story, including themes, character arcs, narrative techniques, and subtler aspects of the plot.
@@ -7,8 +9,6 @@ Key Guidelines:
 3. **Content Focus:** Questions should cover complex character motivations, plot developments, thematic elements, and authorial intent. Encourage analytical and critical thinking.
 4. **Answers:** Provide four nuanced answer options, ensuring one correct answer. Distractors should be challenging and plausible, requiring careful reading and interpretation to differentiate.
 5. **Engagement:** Motivate readers to think critically about the story, analyzing language, style, and deeper meanings beyond the surface narrative.
-
-Design questions that challenge B2 level learners to delve into more sophisticated analysis of the story, considering aspects such as symbolism, tone, and complex character dynamics.
 
 Output as JSON following this example:
 {

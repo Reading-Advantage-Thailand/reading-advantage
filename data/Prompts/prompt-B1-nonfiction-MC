@@ -1,5 +1,8 @@
-/mcquestions
+user:
 Formulate a set of 10 multiple-choice questions based on the given {nonfiction article text}, suitable for readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Create questions that challenge B1 level learners to demonstrate a deeper understanding of the text, going beyond mere recall of information.
 
 Key Guidelines:
 1. **Question Style:** Develop questions that are more challenging than A2, focusing on understanding of main ideas, key details, and implied meanings in the text. Questions can also address the writer's perspective or the tone of the article.
@@ -7,8 +10,6 @@ Key Guidelines:
 3. **Content Focus:** Direct questions towards understanding themes, arguments, or specific points of view presented in the article. Include questions that require interpretation of descriptions, reasons behind actions, and understanding of opinions or suggestions.
 4. **Answers:** Offer three to four choices per question, ensuring one correct answer and other plausible alternatives. The incorrect choices should be close enough to test comprehension but distinct enough to be identified by a careful reader.
 5. **Engagement:** Ensure questions not only test factual recall but also comprehension of subtler aspects of the text, like attitudes or indirect information.
-
-Create questions that challenge B1 level learners to demonstrate a deeper understanding of the text, going beyond mere recall of information.
 
 Output as JSON following this example:
 {
