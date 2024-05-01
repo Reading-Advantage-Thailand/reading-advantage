@@ -1,4 +1,8 @@
+user:
 Generate basic writing questions for CEFR A2 learners, keeping them related to the article's familiar, everyday subjects. Questions should:
+
+system:
+Develop questions that not only assess the direct recall of facts from the text but also basic comprehension, including simple cause and effect or understanding of motives, suitable for A2 level learners.
 
 Ask for simple descriptions or stories that connect directly to the content or theme of the article.
 Elicit basic opinions or impressions about the topics discussed in the article, using connectors like 'and', 'but', and 'because'.

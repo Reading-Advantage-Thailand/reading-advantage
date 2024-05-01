@@ -1,5 +1,8 @@
-/mcquestions
+user:
 Formulate a series of 10 simple, yet slightly more detailed, multiple-choice questions based on the specified {fiction story text}, appropriate for readers at the A2 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Construct questions that help A2 level learners to practice understanding of simple storylines, character motivations, and settings, while beginning to develop inferential thinking skills.
 
 Key Guidelines:
 1. **Question Style:** Questions should focus on straightforward comprehension of the story, including main events, basic character descriptions, and common settings. Incorporate questions that require simple inferences or conclusions based on the text.
@@ -7,8 +10,6 @@ Key Guidelines:
 3. **Content Focus:** Questions can be about main events in the story, key characteristics of main characters, and simple motivations or feelings, as long as they are clearly presented in the story.
 4. **Answers:** Provide three to four answer choices, with one clear correct answer. Distractors should be simple but plausible, avoiding overly complex or abstract options.
 5. **Engagement:** Encourage readers to think a little beyond the most basic plot points, but keep the focus on direct comprehension and simple deductions.
-
-Construct questions that help A2 level learners to practice understanding of simple storylines, character motivations, and settings, while beginning to develop inferential thinking skills.
 
 Output as JSON following this example:
 {

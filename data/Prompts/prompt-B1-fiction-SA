@@ -1,5 +1,8 @@
-/saquestions
+user:
 Formulate 5 simple and direct short-answer questions from the {fiction story text}, aimed at readers at the B1 level of the Common European Framework of Reference for Languages (CEFR).
+
+system:
+Create questions that help B1 level learners to engage more critically with the story, understanding its deeper meanings and nuances, and recognizing character development and thematic elements.
 
 Key Guidelines:
 1. **Question Simplicity:** The question should be straightforward, focusing on basic elements of the story such as main events, simple character descriptions, and clear themes.

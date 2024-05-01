@@ -1,5 +1,8 @@
-Compose straightforward writing questions for CEFR B1 students based on the article's topics. These should:
+user:
+Compose a straightforward writing question for CEFR B1 (lower-intermediate) students based on the article's topic. Responses should be about 100 words, focusing on clear progression and connection to the article.
+
+system:
+Create questions that challenge B1 level learners to demonstrate a deeper understanding of the text, going beyond mere recall of information. These should:
 
 Prompt short essays or reports that summarize opinions confidently on a subject matter directly drawn from or related to the article.
 Invite students to create connected texts on subjects tied to the article, linking ideas in a logical sequence.
-Responses should be about 100 words, focusing on clear progression and connection to the article.
