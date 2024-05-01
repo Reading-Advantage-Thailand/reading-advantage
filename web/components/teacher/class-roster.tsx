@@ -247,7 +247,13 @@ const columns: ColumnDef<Student>[] = [
         </DialogContent>  
       </Dialog>
     )}
-      <div className="font-bold text-3xl">Roster for classroom : {studentInClass[0].classroomName}</div>
+      {/* <div className="font-bold text-3xl">Roster for classroom : {studentInClass[0]? studentInClass[0].classroomName : ""}</div> */}
+      {
+  studentInClass.length > 0 ? 
+  <div className="font-bold text-3xl">Roster for classroom : {studentInClass[0].classroomName}</div> 
+  : 
+  <div className="font-bold text-3xl">No students in the class</div>
+}
       <div className="flex justify-between">
       <Input
         placeholder={"Search..."}
