@@ -94,7 +94,6 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
                   .concat(arrayB.filter(item => !arrayA.includes(item)));
   } 
   const differentClasses = getDifferentItems(teacherClassrooms, matchedClassrooms);
-  console.log('differentItems: ', differentClasses);
 
    // get matched students
     function getMatchedStudents() {
@@ -123,7 +122,6 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
       differentClasses.forEach((classroom: { student: any; isChecked: boolean; classroomId: string }) => {
         // if (classroom.isChecked) {
           classroom.student.forEach((students: { studentId: string; }) => {
-            console.log('students: ', students.studentId);
             studentsInChecked.push(students.studentId);
           });
         // }
@@ -132,8 +130,6 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
     };
     
     const studentInDifferent = studentInDifferentClasses();
-    console.log('studentInDifferent: ', studentInDifferent);
-    
 
     return (
       <div>
