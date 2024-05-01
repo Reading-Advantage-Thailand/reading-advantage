@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { flatten } from "lodash";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -18,7 +17,6 @@ import { toast } from "./ui/use-toast";
 import { Skeleton } from "./ui/skeleton";
 import { updateScore } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
-import { Icons } from "./icons";
 import AudioButton from "./audio-button";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
@@ -35,11 +33,11 @@ export default function OrderWords({ userId }: Props) {
     "pages.student.practicePage.flashcardPractice"
   );
   const router = useRouter();
-  const [isplaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [articleOrderWords, setArticleOrderWords] = useState<any[]>([]);
   const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
   const [showBadges, setShowBadges] = useState(false);
+  const [resultOrderWords, setResultOrderWords] = useState(false);
   const [showButtonNextPassage, setShowButtonNextPassage] = useState(false);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
 
@@ -55,7 +53,7 @@ export default function OrderWords({ userId }: Props) {
       const closest = res.data.sentences.sort((a: Sentence, b: Sentence) => {
         return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
       });
-      console.log("🚀 ~ closest ~ closest:", closest);
+
       const newTodos = [...articleOrderWords];
       for (const article of closest) {
         let resultList = await getArticle(
@@ -69,7 +67,6 @@ export default function OrderWords({ userId }: Props) {
           endTimepoint: article?.endTimepoint,
         });
       }
-      console.log("🚀 ~ getUserSentenceSaved ~ newTodos:", newTodos);
       setArticleOrderWords(newTodos);
     } catch (error) {
       console.log(error);
@@ -112,18 +109,49 @@ export default function OrderWords({ userId }: Props) {
   `;
 
   const onSubmitOrderWords = async () => {
-    
+     const numbersEqual =
+      articleOrderWords[currentArticleIndex]?.textList.length ===
+        selectedAnswers.length &&
+      selectedAnswers.every(
+        (i) =>
+          articleOrderWords[currentArticleIndex]?.randomTextList[
+            selectedAnswers[i]
+          ] === articleOrderWords[currentArticleIndex]?.textList[i]
+      );
+   
+    setResultOrderWords(numbersEqual);
+    setShowButtonNextPassage(numbersEqual);
+    setShowBadges(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
   };
 
   const onNextPassage = async () => {
-    // setLoading(false);
-    // setSelectedWord({});
-    // setShowBadges(false);
-    setCurrentArticleIndex((prev) => prev + 1);
-    // setShowButtonNextPassage(false);
-    // setIsPlaying(false);
+    if (resultOrderWords) {
+      try {
+        const result = await updateScore(5, userId);
+        if (result?.status === 201) {
+          router.refresh();
+          toast({
+            title: t("toast.success"),
+            description: tUpdateScore("yourXp", { xp: 5 }),
+          });
+          setLoading(false);
+          setShowBadges(false);
+          setCurrentArticleIndex((prev) => prev + 1);
+          setShowButtonNextPassage(false);
+          setSelectedAnswers([]);
+        }
+      } catch (error) {
+        toast({
+          title: t("toast.error"),
+          description: t("toast.errorDescription"),
+          variant: "destructive",
+        });
+      }
+    }   
   };
-  console.log();
 
   return (
     <>
@@ -188,6 +216,8 @@ export default function OrderWords({ userId }: Props) {
                             key={i}
                             className="rounded-2xl border-2 border-b-4 border-gray-200 p-2 text-gray-700"
                             onClick={() => {
+                              setShowBadges(false);
+                              setShowButtonNextPassage(false);
                               setSelectedAnswers((selectedAnswers) => {
                                 return selectedAnswers.filter((x) => x !== i);
                               });
@@ -201,14 +231,35 @@ export default function OrderWords({ userId }: Props) {
                         );
                       })}
                       <div className="flex items-center">
-                        <Badges>
-                          <Image
-                            src={"/correct.png"}
-                            alt="Malcolm X"
-                            width={25}
-                            height={25}
-                          />
-                        </Badges>
+                        {showBadges ? (
+                          <>
+                            {resultOrderWords ? (
+                              <>
+                                <Badges>
+                                  <Image
+                                    src={"/correct.png"}
+                                    alt="Malcolm X"
+                                    width={25}
+                                    height={25}
+                                  />
+                                </Badges>
+                              </>
+                            ) : (
+                              <>
+                                <Badges>
+                                  <Image
+                                    src={"/wrong.png"}
+                                    alt="Malcolm X"
+                                    width={25}
+                                    height={25}
+                                  />
+                                </Badges>
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          <></>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -224,14 +275,16 @@ export default function OrderWords({ userId }: Props) {
                                 : "rounded-2xl border-2 border-b-4 border-gray-200 p-2 text-gray-700"
                             }
                             disabled={selectedAnswers.includes(i)}
-                            onClick={() =>
+                            onClick={() => {
+                              setShowBadges(false);
+                              setShowButtonNextPassage(false);
                               setSelectedAnswers((selectedAnswers) => {
                                 if (selectedAnswers.includes(i)) {
                                   return selectedAnswers;
                                 }
                                 return [...selectedAnswers, i];
-                              })
-                            }
+                              });
+                            }}
                           >
                             {word}
                           </button>
