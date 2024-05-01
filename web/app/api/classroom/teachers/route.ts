@@ -14,14 +14,13 @@ import { getServerSession } from "next-auth";
         );
         }
         
-        const userId = session.user.id;
-        const userRef = db.collection('users').where('role', 'array-contains', 'STUDENT');
+        const userRef = db.collection('users').where('role', 'array-contains', 'TEACHER');
         const snapshot = await userRef.get();
-        const students = snapshot.docs.map(doc => doc.data());
+        const teachers = snapshot.docs.map(doc => doc.data());
     
         return new Response(
         JSON.stringify({
-            students: students,
+            teachers: teachers,
         }),
         { status: 200 }
         );
