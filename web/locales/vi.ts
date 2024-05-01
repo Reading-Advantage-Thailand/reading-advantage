@@ -103,7 +103,7 @@ export default {
         orderWordsPractice: {
           orderWords: "Sắp xếp từ",
           orderWordsDescription:
-            "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy sắp xếp các từ theo trật tự có ý nghĩa đối với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 5 XP.",
+            "Đây là một câu từ một đoạn văn bạn đã đọc. Hãy sắp xếp các từ theo trật tự có ý nghĩa đối với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 5 điểm kinh nghiệm.",
           saveOrder: "Tiếp tục",
           errorOrder: "Vui lòng sắp xếp đúng",
           submitArticle: "Kiểm tra câu trả lời của bạn",

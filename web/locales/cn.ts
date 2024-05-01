@@ -92,7 +92,7 @@ export default {
         orderWordsPractice: {
           orderWords: "排序单词",
           orderWordsDescription:
-            "这些是您读过的文章中的一些句子。按照对您有意义的顺序排列这些单词。如果顺序与文章相同，您将获得5 XP。",
+            "这是你读过的一段文字中的一句。请将这些单词按对你有意义的顺序排列。如果这些单词的顺序与文章中的相同，你将获得5经验点。",
           saveOrder: "继续",
           errorOrder: "请正确排序",
           submitArticle: "检查你的答案",

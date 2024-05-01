@@ -2,8 +2,6 @@
 // "use client";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { DragDropContext } from "@hello-pangea/dnd";
-import type { DropResult } from "@hello-pangea/dnd";
 import { flatten } from "lodash";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
@@ -11,6 +9,9 @@ import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { useScopedI18n } from "@/locales/client";
+import Image from "next/image";
+import styled from "@emotion/styled";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import { Header } from "./header";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
@@ -19,7 +20,6 @@ import { updateScore } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
 import { Icons } from "./icons";
 import AudioButton from "./audio-button";
-import { splitTextIntoSentences } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -35,13 +35,13 @@ export default function OrderWords({ userId }: Props) {
     "pages.student.practicePage.flashcardPractice"
   );
   const router = useRouter();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isplaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [articleOrderWords, setArticleOrderWords] = useState<any[]>([]);
   const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
   const [showBadges, setShowBadges] = useState(false);
   const [showButtonNextPassage, setShowButtonNextPassage] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
 
   useEffect(() => {
     getUserSentenceSaved();
@@ -107,23 +107,23 @@ export default function OrderWords({ userId }: Props) {
     return rawData;
   };
 
-  const onDragStart = () => {
-    if (window.navigator.vibrate) {
-      window.navigator.vibrate(100);
-    }
+  const Badges = styled.small`
+    margin-right: 10px;
+  `;
+
+  const onSubmitOrderWords = async () => {
+    
   };
 
-  const onDragEnd = (result: DropResult) => {}
-
-
-    const onNextPassage = async () => {
-      // setLoading(false);
-      // setSelectedWord({});
-      // setShowBadges(false);
-      setCurrentArticleIndex((prev) => prev + 1);
-      // setShowButtonNextPassage(false);
-      // setIsPlaying(false);
-    };
+  const onNextPassage = async () => {
+    // setLoading(false);
+    // setSelectedWord({});
+    // setShowBadges(false);
+    setCurrentArticleIndex((prev) => prev + 1);
+    // setShowButtonNextPassage(false);
+    // setIsPlaying(false);
+  };
+  console.log();
 
   return (
     <>
@@ -145,50 +145,145 @@ export default function OrderWords({ userId }: Props) {
           <>
             {articleOrderWords?.length !== currentArticleIndex ? (
               <>
-                <div className="bg-[#2684FFß] flex max-w-screen-lg">
-                  <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
-                    <div className="flex justify-between">
-                      <h4 className="py-4 pl-5 font-bold">
-                        {t("orderWordsPractice.tryToSortThisSentence")}
-                      </h4>
-                      <div className="p-3">
-                        <AudioButton
-                          key={currentArticleIndex}
-                          audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleOrderWords[currentArticleIndex]?.articleId}.mp3`}
-                          startTimestamp={
-                            articleOrderWords[currentArticleIndex]?.timepoint
-                          }
-                          endTimestamp={
-                            articleOrderWords[currentArticleIndex]?.endTimepoint
-                          }
-                        />
+                <div className="flex grow flex-col gap-5">
+                  <h4 className="my-5 text-2xl font-bold sm:text-3xl flex justify-center">
+                    {t("orderWordsPractice.tryToSortThisSentence")}
+                  </h4>
+                  <div className="w-full">
+                    <div className="flex justify-center gap-2 px-2 mb-5">
+                      <Image
+                        src={"/man-mage-light.svg"}
+                        alt="Man"
+                        width={92}
+                        height={115}
+                      />
+                      <div className="relative ml-2 w-fit rounded-2xl border-2 border-gray-200 p-4">
+                        {articleOrderWords[currentArticleIndex]?.translationTh}
+                        <div className="pt-3">
+                          <AudioButton
+                            key={currentArticleIndex}
+                            audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleOrderWords[currentArticleIndex]?.articleId}.mp3`}
+                            startTimestamp={
+                              articleOrderWords[currentArticleIndex]?.timepoint
+                            }
+                            endTimestamp={
+                              articleOrderWords[currentArticleIndex]
+                                ?.endTimepoint
+                            }
+                          />
+                        </div>
+                        <div
+                          className="absolute h-4 w-4 rotate-45 border-b-2 border-l-2 border-gray-200 bg-white"
+                          style={{
+                            top: "calc(50% - 8px)",
+                            left: "-10px",
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div className="flex min-h-[60px] flex-wrap gap-1 border-b-2 border-t-2 border-gray-200 py-1">
+                      {selectedAnswers.map((i) => {
+                        return (
+                          <button
+                            key={i}
+                            className="rounded-2xl border-2 border-b-4 border-gray-200 p-2 text-gray-700"
+                            onClick={() => {
+                              setSelectedAnswers((selectedAnswers) => {
+                                return selectedAnswers.filter((x) => x !== i);
+                              });
+                            }}
+                          >
+                            {
+                              articleOrderWords[currentArticleIndex]
+                                ?.randomTextList[i]
+                            }
+                          </button>
+                        );
+                      })}
+                      <div className="flex items-center">
+                        <Badges>
+                          <Image
+                            src={"/correct.png"}
+                            alt="Malcolm X"
+                            width={25}
+                            height={25}
+                          />
+                        </Badges>
                       </div>
                     </div>
                   </div>
+                  <div className="flex flex-wrap justify-center gap-1">
+                    {articleOrderWords[currentArticleIndex]?.randomTextList.map(
+                      (word: string, i: number) => {
+                        return (
+                          <button
+                            key={i}
+                            className={
+                              selectedAnswers.includes(i)
+                                ? "rounded-2xl border-2 border-b-4 border-gray-200 bg-gray-200 p-2 text-gray-200"
+                                : "rounded-2xl border-2 border-b-4 border-gray-200 p-2 text-gray-700"
+                            }
+                            disabled={selectedAnswers.includes(i)}
+                            onClick={() =>
+                              setSelectedAnswers((selectedAnswers) => {
+                                if (selectedAnswers.includes(i)) {
+                                  return selectedAnswers;
+                                }
+                                return [...selectedAnswers, i];
+                              })
+                            }
+                          >
+                            {word}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
                 </div>
-                <div className="flex justify-center my-5">
-                  <p>{articleOrderWords[currentArticleIndex]?.translationTh}</p>
-                </div>
-                <DragDropContext
-                  onDragStart={onDragStart}
-                  onDragEnd={onDragEnd}
-                >
-                  <></>
-                </DragDropContext>
               </>
             ) : (
               <></>
             )}
-            <>
-              <Button
-                className="mt-4 ml-4"
-                variant="secondary"
-                size="sm"
-                onClick={onNextPassage}
-              >
-                {t("clozeTestPractice.nextPassage")}
-              </Button>
-            </>
+
+            {articleOrderWords.length !== currentArticleIndex ? (
+              <>
+                {loading ? (
+                  <Button className="mt-4" disabled>
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    {t("orderWordsPractice.saveOrder")}
+                  </Button>
+                ) : (
+                  <>
+                    {selectedAnswers.length ===
+                      articleOrderWords[currentArticleIndex]?.randomTextList
+                        .length && (
+                      <Button
+                        className="mt-4"
+                        variant="outline"
+                        disabled={loading}
+                        size="sm"
+                        onClick={onSubmitOrderWords}
+                      >
+                        {t("orderWordsPractice.submitArticle")}
+                      </Button>
+                    )}
+
+                    {showButtonNextPassage && (
+                      <Button
+                        className="mt-4 ml-4"
+                        variant="secondary"
+                        size="sm"
+                        onClick={onNextPassage}
+                      >
+                        {t("orderWordsPractice.nextPassage")}
+                      </Button>
+                    )}
+                  </>
+                )}
+              </>
+            ) : (
+              <></>
+            )}
           </>
         )}
       </div>
