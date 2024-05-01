@@ -110,7 +110,7 @@ export default {
         orderWordsPractice: {
           orderWords: "Order Words",
           orderWordsDescription:
-            "These are some sentences from one of the passages you've read. Put the words in an order that makes sense to you. If the order is the same as the passage, you'll receive 5 XP.",
+            "This is a sentence from one of the passages you've read. Put the words in an order that makes sense to you. If the order is the same as the passage, you'll receive 5 XP.",
           saveOrder: "Continue",
           errorOrder: "Please order correctly",
           submitArticle: "Check your answers",
