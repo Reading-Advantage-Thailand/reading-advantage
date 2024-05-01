@@ -24,7 +24,7 @@ export default function RatingPopup(){
   <div className=''>
   <div 
   onClick={toggleModal}
-  className='pl-[5.5%] py-2 font-bold text-2xl md:text-2xl cursor-pointer
+  className='pl-[5.5%] mt-4 py-2 font-bold text-2xl md:text-2xl cursor-pointer
     flex gap-4 items-center border-[1px] border-gray-300 rounded-xl
     dark:border-[#1e293b]
   '> 

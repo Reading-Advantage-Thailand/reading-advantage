@@ -29,7 +29,8 @@ export default async function ArticleCard({
     const t = await getScopedI18n('components.articleCard');
     return (
         <div className='md:flex md:flex-row md:gap-3 md:mb-5'>
-            <Card className='mt-4 md:basis-3/5'>
+            <div className='mt-4 md:basis-3/5'>
+            <Card >
                 <CardHeader>
                     <CardTitle className='font-bold text-3xl md:text-3xl'>
                         {article.title}
@@ -63,11 +64,12 @@ export default async function ArticleCard({
                     <ArticleContent article={article} articleId={articleId} userId={userId} />
                 </CardHeader>
                 <ArticleFooter />
-            </Card >
-
+              </Card >
+              <RatingPopup />  
+            </div>
+                                
             {/* part question */}
-            <div className='mt-4'>                     
-                <RatingPopup />   
+                                       
             {
                 article.questions && (
                     <Questions
@@ -94,7 +96,6 @@ export default async function ArticleCard({
                     </Card>
                 )
             }
-            </div>
-        </div >
+        </div>
     )
 }
