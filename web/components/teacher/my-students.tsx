@@ -153,14 +153,27 @@ const handleResetProgress = async (selectedStudentId: string) => {
           </Button>
         );
       },
-      cell: ({ row }) => <div className="captoliza" onClick={() => row.toggleSelected}>{row.getValue("name")}</div>,
+      cell: ({ row }) => {
+        const studentName: string = row.getValue("name");
+        return (
+          <div className="captoliza ml-4" onClick={() => row.toggleSelected}>{
+            studentName ? studentName : "Anonymous"
+          }
+          </div>
+        )
+      },
     },
     {
       accessorKey: "email",
       header: ({ column }) => {
         return <Button variant="ghost">Email</Button>;
       },
-      cell: ({ row }) => <div className="captoliza">{row.getValue("email")}</div>,
+      cell: ({ row }) => {
+        const studentEmail: string = row.getValue("email");
+        return (
+          <div className="captoliza ml-4">{studentEmail ? studentEmail : "Unknown"}</div>
+        )
+      }
     },
     {
       accessorKey: "id",

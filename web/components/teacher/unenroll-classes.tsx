@@ -167,7 +167,7 @@ export default function MyUnEnrollClasses({
   return (
     <>
       <div className="font-bold text-3xl">
-        Un-enrolled Classes for {matchedNameOfStudents[0].name}
+        Un-enrolled Classes for {matchedNameOfStudents[0] ? matchedNameOfStudents[0].name : "Unknown"}
       </div>
       <div className="flex items-center justify-between">
         <Input

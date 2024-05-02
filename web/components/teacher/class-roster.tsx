@@ -153,7 +153,7 @@ const columns: ColumnDef<Student>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="captoliza">{row.getValue("studentName")}</div>,
+    cell: ({ row }) => <div className="captoliza ml-4">{row.getValue("studentName")}</div>,
   },
   {
     accessorKey: "lastActivity",  
@@ -163,7 +163,7 @@ const columns: ColumnDef<Student>[] = [
     cell: ({ row }) => {
       const lastActivitySeconds = row.getValue("lastActivity") as { _seconds: number };
       const lastActivityDate = new Date(lastActivitySeconds._seconds * 1000);
-      return <div className="captoliza">{lastActivityDate.toLocaleString()}</div>;
+      return <div className="captoliza ml-4">{lastActivityDate.toLocaleString()}</div>;
     },
   },
   {
