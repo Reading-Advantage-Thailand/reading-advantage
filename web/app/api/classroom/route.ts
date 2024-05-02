@@ -56,11 +56,6 @@ export async function POST(req: Request, res: Response) {
             teacherId: userId,
             classCode: body.classCode,
             classroomName: body.classroomName,
-            coTeacher: body.coTeacher.map((coTeacher: any) => {
-                return {
-                    coTeacherId: userId,
-                    name: coTeacher.name,
-                }}),
             description: body.description,
             grade: body.grade,
             noOfStudents: body.noOfStudents,

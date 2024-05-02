@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,10 +16,6 @@ import { toast } from "../ui/use-toast";
 function CreateNewClass({ userId }: { userId: string }) {
   const [classroomName, setClassroomName] = useState("");
   const [grade, setGrade] = useState("0");
-  const [coTeachers, setCoTeachers] = useState({
-    coteacherId: "userId",
-    name: "",
-  });
   const [classCode, setClassCode] = useState("");
   const [noOfStudents, setNoOfStudents] = useState(0);
   const [open, setOpen] = useState(false);
@@ -31,16 +27,14 @@ function CreateNewClass({ userId }: { userId: string }) {
         teacherId: userId,
         classCode: classCode,
         classroomName: classroomName,
-        coTeacher: [{ coteacherId: userId, name: coTeachers.name }],
         description: "description",
         grade: grade,
         noOfStudents: noOfStudents,
-        student: [{ studentId: userId, lastActivity: new Date() }],
+        student: [{ studentId: "", lastActivity: new Date() }],
         title: "title",
-        // createAT: new Date(),
       };
 
-      if (!userId || !classCode || !classroomName || !grade || !noOfStudents) {
+      if (!userId || !classCode || !classroomName || !grade ) {
         toast({
           title: "Attention",
           description: "All fields must be filled out!",
@@ -71,6 +65,11 @@ function CreateNewClass({ userId }: { userId: string }) {
     return Math.random().toString(36).substring(2, 8);
   };
 
+  useEffect(() => { 
+    setClassCode(generateRandomCode());
+  }, []);
+
+
   return (
     <div>
       <div className="max-w-sm mt-4">
@@ -96,18 +95,7 @@ function CreateNewClass({ userId }: { userId: string }) {
               onChange={(e) => setClassroomName(e.target.value)}
             />
             <div className="flex w-full border rounded-md p-2">
-              <input
-                type="text"
-                className="flex-grow"
-                placeholder="Class Code"
-                value={classCode}
-              />
-              <div className="self-center cursor-pointer">
-                <Icons.refresh
-                  className="cursor-pointer"
-                  onClick={() => setClassCode(generateRandomCode())}
-                />
-              </div>
+              <input type="text" value={classCode} readOnly className="flex-grow cursor-pointer"/>
             </div>
             <select
               className="w-full border rounded-md p-2"
@@ -117,26 +105,24 @@ function CreateNewClass({ userId }: { userId: string }) {
               onChange={(e) => setGrade(e.target.value)}
             >
               <option value="select">Select Grade</option>
-              <option value="1">grade 1</option>
-              <option value="2">grade 2</option>
               <option value="3">grade 3</option>
+              <option value="3">grade 4</option>
+              <option value="3">grade 5</option>
+              <option value="3">grade 6</option>
+              <option value="3">grade 7</option>
+              <option value="3">grade 8</option>
+              <option value="3">grade 9</option>
+              <option value="3">grade 10</option>
+              <option value="3">grade 11</option>
+              <option value="3">grade 12</option>
             </select>
-            <input
-              type="text"
-              className="w-full border rounded-md p-2"
-              placeholder="Co-teachers"
-              value={coTeachers.name}
-              onChange={(e) =>
-                setCoTeachers({ ...coTeachers, name: e.target.value })
-              }
-            />
-            <input
+            {/* <input
               type="number"
               className="w-full border rounded-md p-2"
               placeholder="No of Students"
               value={noOfStudents}
               onChange={(e) => setNoOfStudents(Number(e.target.value))}
-            />
+            /> */}
             <DialogFooter>
               <Button variant="outline" onClick={() => handleCreateClass()}>
                 Create Class

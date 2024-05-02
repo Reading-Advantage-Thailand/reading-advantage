@@ -101,7 +101,7 @@ export default {
         clozeTestPractice: {
           clozeTest: "Cloze Test",
           clozeTestDescription:
-            "Fill in the blanks with the correct word to complete the passage. If you get all the answers correct, you'll receive 2 XP.",
+            "Fill in the blanks with the correct word to complete the passage. For each correct answer, you'll receive 2 XP.",
           saveAnswer: "Continue",
           errorAnswer: "Please answer correctly",
           submitArticle: "Check your answers",

@@ -31,6 +31,11 @@ export const teacherPageConfig: TeacherPageConfig = {
             icon: "student",
         },
         {
+            title: "classRoster",
+            href: '/teacher/class-roster',
+            icon: "roster",
+        },
+        {
             title: "reports",
             href: '/teacher/reports',
             icon: "report",
