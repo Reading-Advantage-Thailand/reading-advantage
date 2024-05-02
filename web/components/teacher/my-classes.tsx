@@ -32,18 +32,10 @@ import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import CreateNewClass from "./create-new-class";
 import EditClass from "./edit-class";
-import { useNavigate } from "react-router-dom";
-import { set } from "lodash";
+import DeleteClass from "./delete-class";
+import ArchiveClass from "./archive-class";
 
 type Classes = {
   classroomName: string;
@@ -79,18 +71,9 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
   const t = useScopedI18n("components.articleRecordsTable");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState("");
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showArchiveModal, setShowArchiveModal] = useState(false);
-  const [noOfStudents, setNoOfStudents] = useState(0);
 
   let action = "";
-
-  const closeDialog = () => {
-    setIsOpen(false);
-  };
 
   useEffect(() => {
     if (redirectUrl) {
@@ -98,37 +81,18 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
     }
   }, [selectedStudentId, action, redirectUrl, router]);
 
-
   const handleActionSelected = (action: string, id: string) => {
     switch (action) {
-      case "edit":
-        setShowEditModal(true);
-        break;
       case "roster":
         setRedirectUrl(`/teacher/class-roster/${id}`);
         break;
       case "reports":
         setRedirectUrl(`/teacher/reports`);
         break;
-      case "archive":
-        setShowArchiveModal(true);
-        break;
       default:
         console.log("default");
         break;
     }
-  };
-
-  const openResetModal = (selectedStudentId: null) => {
-    setIsResetModalOpen(true);
-    setSelectedStudentId(selectedStudentId);
-  };
-
-  const closeResetModal = () => {
-    setIsResetModalOpen(false);
-  };
-  const handleClassroomClick = (classroomName: string) => {
-    router.push(`/teacher/class-roster/${classroomName}`);
   };
 
   const columns: ColumnDef<Classes>[] = [
@@ -190,14 +154,6 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
             <DropdownMenuCheckboxItem>
               <Link
                 href={redirectUrl}
-                onClick={() => handleActionSelected("edit", row.getValue("id"))}
-              >
-                Edit
-              </Link>
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>
-              <Link
-                href={redirectUrl}
                 onClick={() =>
                   handleActionSelected("roster", row.getValue("id"))
                 }
@@ -215,16 +171,6 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
                 Reports
               </Link>
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>
-              <Link
-                href={redirectUrl}
-                onClick={() =>
-                  handleActionSelected("archive", row.getValue("id"))
-                }
-              >
-                Archive Class
-              </Link>
-            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -235,7 +181,21 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
         return <Button variant="ghost">Detail</Button>;
       },
       cell: ({ row }) => (
-        <div className="captoliza">{}</div>
+        <div className="captoliza flex gap-2" >
+        <EditClass
+          userId={userId}
+          classroomData={classrooms}
+          title="Edit Class"
+          />
+           <ArchiveClass
+                    classroomData={classrooms}
+                    title="archive class"
+                  />
+                  <DeleteClass
+                    classroomData={classrooms} 
+                    title="delete class"
+                  />
+        </div>
       ),
     },
   ];
@@ -261,21 +221,13 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
 
   return (
     <>
-    {showEditModal && (
-        <EditClass
-          userId={userId}
-          classroomData={classrooms}
-          title="Edit Class"
-        />
-      )}
-
       <div className="font-bold text-3xl">My Classes</div>
       <div className="flex justify-between">
         <Input
           placeholder={"Search..."}
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("classroomName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("classroomName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm mt-4"
         />
@@ -316,9 +268,6 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
                       key={cell.id}
                       onClick={() => {
                         setSelectedStudentId(
-                          cell.getContext().cell.row.getValue("id")
-                        );
-                        handleClassroomClick(
                           cell.getContext().cell.row.getValue("id")
                         );
                       }}
@@ -370,6 +319,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
           </Button>
         </div>
       </div>
+      
     </>
   );
 }
