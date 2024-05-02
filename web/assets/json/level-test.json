@@ -8,7 +8,7 @@
                     "prompt": "Is this a book?",
                     "options": {
                         "A": "Yes, it is a book.",
-                        "B": "No, it is not a book.",
+                        "B": "No, it is a book.",
                         "C": "Yes, it is a pen."
                     }
                 },
