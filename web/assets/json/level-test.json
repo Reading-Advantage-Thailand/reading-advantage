@@ -55,59 +55,59 @@
   ]
 },
       {
-        "level": "A1",
-        "points": 6000,
-        "questions": [
-          {
-            "prompt": "What color is your car?",
-            "options": {
-              "A": "My car is blue.",
-              "B": "It's a big car.",
-              "C": "I like red cars."
-            }
-          },
-          {
-            "prompt": "Where are you from?",
-            "options": {
-              "A": "I am from Italy.",
-              "B": "Italy is far away.",
-              "C": "I live in Spain."
-            }
-          },
-          {
-            "prompt": "What's your favorite food?",
-            "options": {
-              "A": "I like apples.",
-              "B": "Apples are tasty.",
-              "C": "I eat rice."
-            }
-          },
-          {
-            "prompt": "What time is it?",
-            "options": {
-              "A": "It's three o'clock.",
-              "B": "It's time to go.",
-              "C": "I have a clock."
-            }
-          },
-          {
-            "prompt": "Do you like coffee?",
-            "options": {
-              "A": "Yes, I love coffee.",
-              "B": "Coffee is hot.",
-              "C": "I drink water."
-            }
-          },
-          {
-            "prompt": "Where is the bus station?",
-            "options": {
-              "A": "It's near the park.",
-              "B": "I go by bus.",
-              "C": "The station is big."
-            }
-          }
-        ]
-      },
+  "level": "A1",
+  "points": 6000,
+  "questions": [
+    {
+      "prompt": "What color is your car?",
+      "options": {
+        "A": "My car is blue.",
+        "B": "My car is big.",
+        "C": "I don’t have a car."
+      }
+    },
+    {
+      "prompt": "Where are you from?",
+      "options": {
+        "A": "I am from Italy.",
+        "B": "Italy is beautiful.",
+        "C": "I like traveling."
+      }
+    },
+    {
+      "prompt": "What's your favorite food?",
+      "options": {
+        "A": "I like apples.",
+        "B": "Apples are red.",
+        "C": "I eat breakfast."
+      }
+    },
+    {
+      "prompt": "What time is it?",
+      "options": {
+        "A": "It's three o'clock.",
+        "B": "It’s time to eat.",
+        "C": "I have a watch."
+      }
+    },
+    {
+      "prompt": "Do you like coffee?",
+      "options": {
+        "A": "Yes, I love coffee.",
+        "B": "Coffee is bitter.",
+        "C": "I drink tea."
+      }
+    },
+    {
+      "prompt": "Where is the bus station?",
+      "options": {
+        "A": "It's near the park.",
+        "B": "I take the bus.",
+        "C": "The bus is late."
+      }
+    }
+  ]
+},
       {
         "level": "A2",
         "points": 9000,
