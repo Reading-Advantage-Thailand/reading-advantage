@@ -271,43 +271,59 @@
   ]
 },
       {
-        "level": "C1",
-        "points": 18000,
-        "questions": [
-          {
-            "prompt": "How do you interpret the rise in digital art sales?",
-            "options": {
-              "A": "It reflects new art appreciation.",
-              "B": "Digital art isn't traditional.",
-              "C": "I prefer paintings."
-            }
-          },
-          {
-            "prompt": "The novel explores themes of identity and memory.",
-            "options": {
-              "A": "That sounds profound.",
-              "B": "I haven't read it.",
-              "C": "Novels are interesting."
-            }
-          },
-          {
-            "prompt": "What's your stance on universal basic income?",
-            "options": {
-              "A": "It could reduce inequality.",
-              "B": "It's a complex topic.",
-              "C": "I haven't thought about it."
-            }
-          },
-          {
-            "prompt": "In what ways can technology influence art?",
-            "options": {
-              "A": "It opens up new forms and methods.",
-              "B": "Art and technology are different.",
-              "C": "I like traditional art."
-            }
-          }
-        ]
-      },
+  "level": "C1",
+  "points": 18000,
+  "questions": [
+    {
+      "prompt": "How do you interpret the rise in digital art sales?",
+      "options": {
+        "A": "It reflects new art appreciation.",
+        "B": "Digital art isn't seen as traditional.",
+        "C": "I'm preferring classic art forms."
+      }
+    },
+    {
+      "prompt": "The novel explores themes of identity and memory.",
+      "options": {
+        "A": "That sounds profound.",
+        "B": "It's quite an interesting novel.",
+        "C": "Themes are too abstract for me."
+      }
+    },
+    {
+      "prompt": "What's your stance on universal basic income?",
+      "options": {
+        "A": "It could reduce inequality.",
+        "B": "Such policy could be beneficial.",
+        "C": "It's a complex topic, indeed."
+      }
+    },
+    {
+      "prompt": "In what ways can technology influence art?",
+      "options": {
+        "A": "It opens up new forms and methods.",
+        "B": "Technology is transforming art.",
+        "C": "I tend to prefer more traditional techniques."
+      }
+    },
+    {
+      "prompt": "What are your views on the impact of globalization on local cultures?",
+      "options": {
+        "A": "It can be both enriching and damaging.",
+        "B": "Globalization is unavoidable.",
+        "C": "Local cultures must adapt or perish."
+      }
+    },
+    {
+      "prompt": "Discuss the role of AI in modern healthcare.",
+      "options": {
+        "A": "It improves efficiency and diagnostic accuracy.",
+        "B": "AI is becoming indispensable in healthcare.",
+        "C": "AI must be used cautiously."
+      }
+    }
+  ]
+},
       {
         "level": "C2",
         "points": 21000,
