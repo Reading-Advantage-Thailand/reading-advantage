@@ -4,6 +4,7 @@ import React from "react";
 import { headers } from "next/headers";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 import MyUnEnrollClasses from "@/components/teacher/unenroll-classes";
+import { Console } from "console";
 
 export default async function UnEnrollPage({
   params,
@@ -63,13 +64,17 @@ export default async function UnEnrollPage({
       allClassroom.data.forEach(
         (classroom: { student: any; archived: boolean; teacherId: string }) => {
           if (!classroom.archived && classroom.teacherId === teacherId) {
-            classroom.student.forEach((students: { studentId: string }) => {
-              if (students.studentId === studentId) {
-                if (!matchedClassrooms.includes(classroom)) {
-                  matchedClassrooms.push(classroom);
+            if (classroom.student) {
+              classroom.student.forEach((students: { studentId: string }) => {
+                if (students.studentId === studentId) {
+                  if (!matchedClassrooms.includes(classroom)) {
+                    matchedClassrooms.push(classroom);
+                  }
                 }
-              }
-            });
+              });
+            } else {
+              matchedClassrooms.push("No students found");
+            }
           }
         }
       );
@@ -93,8 +98,16 @@ export default async function UnEnrollPage({
   const matchedNameOfStudents = getMatchedNameOfStudents(params.studentId);
 
 const studentIdInMatchedClassrooms = matchedClassrooms.flatMap(
-    (classroom) => classroom.student.map((student: { studentId: string; }) => student.studentId)
+    (classroom) => {
+      if (classroom && classroom.student && classroom.student.length === 0) {
+        console.log('This classroom has no student');
+      } else {
+         return classroom && classroom.student ? classroom.student.map((student: { studentId: string; }) => student.studentId) : [];
+      }
+    }
 );
+console.log('studentIdInMatchedClassrooms', studentIdInMatchedClassrooms);
+
   // get id of student in matched classrooms
  function getIdOfStudentInMatchedClassrooms(studentId: string) {
     let updateStudentIdInMatchedClassrooms: any[] = [];

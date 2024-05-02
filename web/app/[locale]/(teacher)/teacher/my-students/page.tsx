@@ -64,6 +64,8 @@ export default async function myStudentPage() {
                     matchedStudents.push(student);
                   }
                 });
+              } else {
+                matchedStudents.push("No students found");
               }
             }
           });
