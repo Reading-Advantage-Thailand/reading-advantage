@@ -186,6 +186,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
           userId={userId}
           classroomData={classrooms}
           title="Edit Class"
+          classroomId={row.getValue("id")}
           />
            <ArchiveClass
                     classroomData={classrooms}

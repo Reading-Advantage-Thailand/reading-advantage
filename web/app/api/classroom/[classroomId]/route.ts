@@ -28,16 +28,8 @@ export async function PATCH(req: Request,  context: z.infer<typeof routeContextS
         const userId = session.user.id;
 
         const classroom = {
-            teacherId: userId,
-            classCode: json.classCode,
             classroomName: json.classroomName,
-            coTeacher: json.coTeacher,
-            description: json.description,
             grade: json.grade,
-            noOfStudents: json.noOfStudents,
-            student: json.student.map((student: { studentId: string; }) => ({ studentId: student.studentId, lastActivity:
-                new Date()})),
-            title: json.title,
         };
 
         // Fetch the classroom from the database
