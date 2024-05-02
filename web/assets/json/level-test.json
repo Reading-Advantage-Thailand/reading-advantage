@@ -109,59 +109,59 @@
   ]
 },
       {
-        "level": "A2",
-        "points": 9000,
-        "questions": [
-          {
-            "prompt": "Did you enjoy the movie last night?",
-            "options": {
-              "A": "Yes, it was very interesting.",
-              "B": "The movie was long.",
-              "C": "I prefer books."
-            }
-          },
-          {
-            "prompt": "Are you going to the party on Friday?",
-            "options": {
-              "A": "I don’t know yet.",
-              "B": "I like parties.",
-              "C": "Party was yesterday."
-            }
-          },
-          {
-            "prompt": "Should we take a taxi or walk?",
-            "options": {
-              "A": "Let’s take a taxi, it's faster.",
-              "B": "Walking is good.",
-              "C": "I don't like taxis."
-            }
-          },
-          {
-            "prompt": "Have you finished your homework?",
-            "options": {
-              "A": "Not yet, I'm still working on it.",
-              "B": "Homework is hard.",
-              "C": "I will do it later."
-            }
-          },
-          {
-            "prompt": "What did you do last weekend?",
-            "options": {
-              "A": "I went to the beach.",
-              "B": "Weekends are fun.",
-              "C": "I will go next week."
-            }
-          },
-          {
-            "prompt": "Can you help me with this?",
-            "options": {
-              "A": "Of course, what do you need?",
-              "B": "This is difficult.",
-              "C": "I need help too."
-            }
-          }
-        ]
-      },
+  "level": "A2",
+  "points": 9000,
+  "questions": [
+    {
+      "prompt": "Did you enjoy the movie last night?",
+      "options": {
+        "A": "Yes, it was very interesting.",
+        "B": "No, I doesn't like it.",
+        "C": "Movies is too long for me."
+      }
+    },
+    {
+      "prompt": "Are you going to the party on Friday?",
+      "options": {
+        "A": "I don’t know yet.",
+        "B": "Parties was fun.",
+        "C": "Friday I have to work."
+      }
+    },
+    {
+      "prompt": "Should we take a taxi or walk?",
+      "options": {
+        "A": "Let’s take a taxi, it's faster.",
+        "B": "Walking is health.",
+        "C": "Taxi are expensive."
+      }
+    },
+    {
+      "prompt": "Have you finished your homework?",
+      "options": {
+        "A": "Not yet, I'm still working on it.",
+        "B": "I finishes it tomorrow.",
+        "C": "Homeworks are hard."
+      }
+    },
+    {
+      "prompt": "What did you do last weekend?",
+      "options": {
+        "A": "I went to the beach.",
+        "B": "I goes to the park.",
+        "C": "Beaches is nice."
+      }
+    },
+    {
+      "prompt": "Can you help me with this?",
+      "options": {
+        "A": "Of course, what do you need?",
+        "B": "I am helping later.",
+        "C": "This is easy."
+      }
+    }
+  ]
+},
       {
         "level": "B1",
         "points": 12000,
