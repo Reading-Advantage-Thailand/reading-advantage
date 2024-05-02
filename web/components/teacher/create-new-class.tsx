@@ -13,11 +13,11 @@ import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from "../ui/use-toast";
 
-function CreateNewClass({ userId }: { userId: string }) {
+function CreateNewClass({ userId }: { userId: string}, { userName }: { userName: string}) {
   const [classroomName, setClassroomName] = useState("");
   const [grade, setGrade] = useState("0");
   const [classCode, setClassCode] = useState("");
-  const [noOfStudents, setNoOfStudents] = useState(0);
+  // const [noOfStudents, setNoOfStudents] = useState(0);
   const [open, setOpen] = useState(false);
 
   const handleCreateClass = async () => {
@@ -29,9 +29,9 @@ function CreateNewClass({ userId }: { userId: string }) {
         classroomName: classroomName,
         description: "description",
         grade: grade,
-        noOfStudents: noOfStudents,
-        student: [{ studentId: "", lastActivity: new Date() }],
-        title: "title",
+        // student: [{ studentId: "", lastActivity: new Date() }],
+        student: [],
+        title: `${userName}'s ${classroomName} class`,
       };
 
       if (!userId || !classCode || !classroomName || !grade ) {
@@ -116,13 +116,6 @@ function CreateNewClass({ userId }: { userId: string }) {
               <option value="3">grade 11</option>
               <option value="3">grade 12</option>
             </select>
-            {/* <input
-              type="number"
-              className="w-full border rounded-md p-2"
-              placeholder="No of Students"
-              value={noOfStudents}
-              onChange={(e) => setNoOfStudents(Number(e.target.value))}
-            /> */}
             <DialogFooter>
               <Button variant="outline" onClick={() => handleCreateClass()}>
                 Create Class
