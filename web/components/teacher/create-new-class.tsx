@@ -15,7 +15,7 @@ import { toast } from "../ui/use-toast";
 
 function CreateNewClass({ userId, userName }: { userId: string, userName: string}) {
   const [classroomName, setClassroomName] = useState("");
-  const [grade, setGrade] = useState("0");
+  const [grade, setGrade] = useState("");
   const [classCode, setClassCode] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -68,7 +68,6 @@ function CreateNewClass({ userId, userName }: { userId: string, userName: string
     setClassCode(generateRandomCode());
   }, []);
 
-
   return (
     <div>
       <div className="max-w-sm mt-4">
@@ -105,15 +104,15 @@ function CreateNewClass({ userId, userName }: { userId: string, userName: string
             >
               <option value="select">Select Grade</option>
               <option value="3">grade 3</option>
-              <option value="3">grade 4</option>
-              <option value="3">grade 5</option>
-              <option value="3">grade 6</option>
-              <option value="3">grade 7</option>
-              <option value="3">grade 8</option>
-              <option value="3">grade 9</option>
-              <option value="3">grade 10</option>
-              <option value="3">grade 11</option>
-              <option value="3">grade 12</option>
+              <option value="4">grade 4</option>
+              <option value="5">grade 5</option>
+              <option value="6">grade 6</option>
+              <option value="7">grade 7</option>
+              <option value="8">grade 8</option>
+              <option value="9">grade 9</option>
+              <option value="10">grade 10</option>
+              <option value="11">grade 11</option>
+              <option value="12">grade 12</option>
             </select>
             <DialogFooter>
               <Button variant="outline" onClick={() => handleCreateClass()}>
