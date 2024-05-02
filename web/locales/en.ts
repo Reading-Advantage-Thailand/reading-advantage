@@ -255,6 +255,7 @@ export default {
     },
     rate: {
       title: "Rate this article",
+      content: "How do you rate the quality of this article?",
       description: "This rating is used for calculating your next level.",
       newLevel: "Your new level is {level}",
       submitButton: "Submit",

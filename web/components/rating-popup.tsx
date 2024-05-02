@@ -2,18 +2,62 @@
 
 import React from 'react';
 import { Rating, Stack } from '@mui/material'
+import axios from "axios";
+import { useScopedI18n } from "@/locales/client";
+import { toast } from "./ui/use-toast";
+import { ArticleType } from '@/types'
 
-export default function RatingPopup(){
- const [value, setValue] = React.useState<number | null>(3);
+interface RateDialogProps {
+  disabled?: boolean;
+  article: ArticleType;
+  userId: string;
+  articleId: string;
+}
+
+export default function RatingPopup({
+  disabled = false,
+  article,
+  userId,
+  articleId,
+}: RateDialogProps){
+ const t = useScopedI18n('components.rate');
+ const [value, setValue] = React.useState<number | null>(-1);
  const [modalIsOpen, setModalIsOpen] = React.useState<boolean>(false);
+ const [loading, setLoading] = React.useState<boolean>(false);
+ const [userLevel, setUserLevel] = React.useState<number>(0);
 
- console.log({ value })
+ const instance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+  // timeout: 1000,
+ });
+
+ const onUpdateUser = async() => {
+  if(value === -1) return;
+  const response = await instance.patch(`/api/users/${userId}/article-records`, {
+    articleId,
+    rating: value
+  })
+  const data = await response.data;
+  console.log(data);
+  console.log(data.message === 'success')
+  if(data.message === 'success'){
+    toast({
+      title: t('toast.success'),
+      description: t('toast.successDescription', {
+        level: data.level,
+    }),
+  });
+  setUserLevel(data.level);
+  setModalIsOpen(false);
+  }
+  setLoading(false);
+}
 
  const handleChange = (
     _event: React.ChangeEvent<{}>,
     newValue: number | null
   ) => {
-    setValue(newValue)
+    setValue(newValue ? newValue : 0)
   }
 
   const toggleModal = () => {
@@ -31,11 +75,12 @@ export default function RatingPopup(){
     Rate this article        
     <Stack>                    
       <Rating
-      value={value} 
+      value={article.averageRating} 
       onChange={handleChange}
       precision={0.5}
       size="large"
       className='dark:bg-white py-1 px-4 rounded-xl'
+      readOnly
       />
     </Stack>
   </div>
@@ -51,14 +96,14 @@ export default function RatingPopup(){
             w-[450px] rounded-2xl py-6 shadow-2xl dark:bg-[#1e293b]'>
             <div className='flex justify-between mb-2 mx-4 
             '>  
-              <h1 className='font-bold text-xl'>Rate this article</h1>
+              <h1 className='font-bold text-xl'>{t('title')}</h1>
               <button 
               onClick={() => setModalIsOpen(false)}
               className='text-xl font-semibold -mt-4 p-1'>
                 x
               </button>                                
             </div>
-            <p className='mx-4'>How do you rate the quality of this article?</p>
+            <p className='mx-4'>{t("content")}</p>
             <div className='flex justify-center mt-6'>
               <Rating
                 value={value} 
@@ -69,14 +114,15 @@ export default function RatingPopup(){
               />            
             </div>
             <div className='mt-6 mx-4 flex justify-end items-end'>
-            <button            
+            <button
+            disabled={loading}
+            onClick={onUpdateUser}                   
             className='bg-black text-white px-4 py-2 rounded-md 
               shadow-sm dark:bg-white dark:text-[#1e293b]'>
-              Submit
+              {t('submitButton')}
             </button>  
             </div>
-            
-            
+           
           </div>
         </div>
       </div> 

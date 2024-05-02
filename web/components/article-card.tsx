@@ -65,11 +65,10 @@ export default async function ArticleCard({
                 </CardHeader>
                 <ArticleFooter />
               </Card >
-              <RatingPopup />  
+              <RatingPopup userId={userId} article={article} articleId={articleId} />  
             </div>
                                 
-            {/* part question */}
-                                       
+            {/* part question */}             
             {
                 article.questions && (
                     <Questions
