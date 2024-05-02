@@ -325,59 +325,59 @@
   ]
 },
       {
-        "level": "C2",
-        "points": 21000,
-        "questions": [
-          {
-        "prompt": "Quantum computing could change data encryption.",
-            "options": {
-              "A": "It poses cybersecurity challenges.",
-              "B": "Quantum is a future trend.",
-              "C": "Computing is evolving."
-            }
-          },
-          {
-            "prompt": "Post-structuralism critiques language and meaning.",
-            "options": {
-              "A": "It's a rewarding perspective.",
-              "B": "It's hard to understand.",
-              "C": "Language is evolving."
-            }
-          },
-          {
-            "prompt": "The interplay between geopolitics and economics is intricate.",
-            "options": {
-              "A": "Understanding it is key.",
-              "B": "It's a global issue.",
-              "C": "Economics are important."
-            }
-          },
-          {
-            "prompt": "Transhumanism explores the potential of enhancing the human condition.",
-            "options": {
-              "A": "It challenges ethical boundaries.",
-              "B": "Humanity is evolving.",
-              "C": "Technology is advancing rapidly."
-            }
-          },
-          {
-            "prompt": "In literary modernism, traditional structures were often discarded.",
-            "options": {
-              "A": "It heralded narrative experimentation.",
-              "B": "Modern literature is diverse.",
-              "C": "Traditional structures were outdated."
-            }
-          },
-          {
-            "prompt": "Climate change discourse is shaped by complex scientific data.",
-            "options": {
-              "A": "Interpreting this data is crucial.",
-              "B": "Climate is a pressing issue.",
-              "C": "Scientific understanding is evolving."
-            }
-          }
-        ]
+  "level": "C2",
+  "points": 21000,
+  "questions": [
+    {
+      "prompt": "Quantum computing could change data encryption.",
+      "options": {
+        "A": "It poses cybersecurity challenges.",
+        "B": "Quantum mechanics isn't widely understood.",
+        "C": "Such computing trends are futuristic."
       }
+    },
+    {
+      "prompt": "Post-structuralism critiques language and meaning.",
+      "options": {
+        "A": "It's a rewarding perspective.",
+        "B": "It deconstructs traditional narratives.",
+        "C": "Such theories are often convoluted."
+      }
+    },
+    {
+      "prompt": "The interplay between geopolitics and economics is intricate.",
+      "options": {
+        "A": "Understanding it is key.",
+        "B": "Geopolitics often dictates economics.",
+        "C": "It’s a dynamic field of study."
+      }
+    },
+    {
+      "prompt": "Transhumanism explores the potential of enhancing the human condition.",
+      "options": {
+        "A": "It challenges ethical boundaries.",
+        "B": "It pushes scientific innovations.",
+        "C": "Such movements are controversial."
+      }
+    },
+    {
+      "prompt": "In literary modernism, traditional structures were often discarded.",
+      "options": {
+        "A": "It heralded narrative experimentation.",
+        "B": "It was a break from classical forms.",
+        "C": "Such styles can seem inaccessible."
+      }
+    },
+    {
+      "prompt": "Climate change discourse is shaped by complex scientific data.",
+      "options": {
+        "A": "Interpreting this data is crucial.",
+        "B": "Climate models are predictive.",
+        "C": "The data often presents alarming trends."
+      }
+    }
+  ]
+}
     ]
   }
   
