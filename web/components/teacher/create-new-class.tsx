@@ -13,11 +13,10 @@ import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from "../ui/use-toast";
 
-function CreateNewClass({ userId }: { userId: string}, { userName }: { userName: string}) {
+function CreateNewClass({ userId, userName }: { userId: string, userName: string}) {
   const [classroomName, setClassroomName] = useState("");
   const [grade, setGrade] = useState("0");
   const [classCode, setClassCode] = useState("");
-  // const [noOfStudents, setNoOfStudents] = useState(0);
   const [open, setOpen] = useState(false);
 
   const handleCreateClass = async () => {
@@ -31,7 +30,7 @@ function CreateNewClass({ userId }: { userId: string}, { userName }: { userName:
         grade: grade,
         // student: [{ studentId: "", lastActivity: new Date() }],
         student: [],
-        title: `${userName}'s ${classroomName} class`,
+        title: `${userName}'s Classes`,
       };
 
       if (!userId || !classCode || !classroomName || !grade ) {

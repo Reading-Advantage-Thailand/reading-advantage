@@ -68,7 +68,7 @@ type MyClassesProps = {
   userName: string;
   classrooms: Classes[];
 };
-export default function MyStudents({ userId, classrooms }: MyClassesProps) {
+export default function MyStudents({ userId, classrooms, userName }: MyClassesProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -279,7 +279,7 @@ export default function MyStudents({ userId, classrooms }: MyClassesProps) {
           }
           className="max-w-sm mt-4"
         />
-        <CreateNewClass userId={userId} />
+        <CreateNewClass userId={userId} userName={userName} />
       </div>
       <div className="rounded-md border mt-4">
         <Table>
