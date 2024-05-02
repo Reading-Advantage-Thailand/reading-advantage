@@ -517,14 +517,14 @@ export default function ClozeTest({ userId }: Props) {
             {articleClozeTest.length !== currentArticleIndex ? (
               <>
                 {loading ? (
-                  <Button className="mt-4" disabled>
+                  <Button className="my-4" disabled>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                     {t("orderSentencesPractice.saveOrder")}
                   </Button>
                 ) : (
                   <>
                     <Button
-                      className="mt-4"
+                      className="my-4"
                       variant="outline"
                       disabled={loading}
                       size="sm"
@@ -534,7 +534,7 @@ export default function ClozeTest({ userId }: Props) {
                     </Button>
                     {showButtonNextPassage && (
                       <Button
-                        className="mt-4 ml-4"
+                        className="my-4 ml-4"
                         variant="secondary"
                         size="sm"
                         onClick={onNextPassage}
