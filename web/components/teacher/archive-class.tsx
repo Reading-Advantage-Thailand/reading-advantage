@@ -28,6 +28,7 @@ type Classes = {
 function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
   const [open, setOpen] = useState(false);
   const [archiveClass, setArchiveClass] = useState(false);
+  const classroom = classroomData.find((classroom) => classroom.id === classroomId);
 
   const handleArchiveClass = async (classroomId: string) => {
     setOpen(true);
@@ -75,13 +76,12 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
                   />
             </span>
           </DialogTrigger>
-          {classroomData.map((classroom) => (
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Archive Class</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Do you want to archive <span className="font-bold">{classroom.classroomName}</span> class?
+              Do you want to archive <span className="font-bold">{classroom?. classroomName}</span> class?
             </DialogDescription>
             <DialogFooter>
               <Button variant="secondary" onClick={() => handleArchiveClass(classroomId)}>
@@ -90,8 +90,6 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
               <Button onClick={handleClose}>Cancel</Button>
             </DialogFooter>
           </DialogContent>
-          ))
-          }
         </Dialog>
       </div>
     </div>
