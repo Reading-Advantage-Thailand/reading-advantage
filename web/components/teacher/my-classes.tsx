@@ -110,7 +110,8 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
         );
       },
       cell: ({ row }) => {
-        return <div className="captoliza">{row.getValue("classroomName")}</div>;
+        const classroomName: string = row.getValue("classroomName");
+        return <div className="captoliza ml-4">{classroomName ? classroomName : "Unknow"}</div>;
       },
     },
     {
@@ -119,7 +120,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
         return <Button variant="ghost">Class Code</Button>;
       },
       cell: ({ row }) => (
-        <div className="captoliza">{row.getValue("classCode")}</div>
+        <div className="captoliza ml-4">{row.getValue("classCode")}</div>
       ),
     },
     {
@@ -135,7 +136,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
         return <Button variant="ghost">No. of Students</Button>;
       },
       cell: ({ row }) => (
-        <div className="captoliza">{row.original?.student?.length || 0}</div>
+        <div className="captoliza ml-4">{row.original?.student?.length || 0}</div>
       ),
     },
     {
