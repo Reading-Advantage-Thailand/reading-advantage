@@ -126,7 +126,7 @@ export async function PATCH(req: Request, res: Response) {
         const userRef = db.collection('users')
             .doc(userId)
             .update({
-                level: userLevel + (rating - 3),
+                level: userLevel + 0,
             });
         console.log('new level', userLevel + (rating - 3));
 

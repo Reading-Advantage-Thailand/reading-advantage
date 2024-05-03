@@ -227,6 +227,7 @@ export default {
     },
     rate: {
       title: "评价这篇文章",
+      content: "你如何评价本文的质量?",
       description: "此评分用于计算您下一级别。",
       newLevel: "您的新级别是 {level}",
       submitButton: "提交",

@@ -64,12 +64,12 @@ export default async function ArticleCard({
                     <ArticleContent article={article} articleId={articleId} userId={userId} />
                 </CardHeader>
                 <ArticleFooter />
-              </Card >
-              <RatingPopup />  
+              </Card > 
+                
+              <RatingPopup userId={userId} averageRating={article.averageRating} articleId={articleId} />          
             </div>
                                 
-            {/* part question */}
-                                       
+            {/* part question */}             
             {
                 article.questions && (
                     <Questions
