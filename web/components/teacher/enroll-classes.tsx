@@ -99,19 +99,12 @@ export default function MyEnrollClasses({
     });
     const updateStudentListBuilder = studentInClass.map((studentId) => ({
       studentId,
+      lastActivity: new Date(),
     }));
 
     try {
-      const response = await axios.patch(`/api/classroom/${id}`, {
-        teacherId: enrolledClasses[0].teacherId,
-        classCode: enrolledClasses[0].classCode,
-        classroomName: enrolledClasses[0].classroomName,
-        coTeacher: "",
-        description: enrolledClasses[0].description,
-        grade: enrolledClasses[0].grade,
-        noOfStudents: enrolledClasses[0].noOfStudents,
+      const response = await axios.patch(`/api/classroom/${id}/enroll`, {
         student: updateStudentListBuilder,
-        title: enrolledClasses[0].title,
       });
 
       if (response.status === 200) {
