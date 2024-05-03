@@ -3,6 +3,7 @@ import db from '@/configs/firestore-config';
 import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth';
 import * as z from "zod"
+import firebase from 'firebase-admin';
 
 // update classroom
 const routeContextSchema = z.object({
@@ -26,12 +27,12 @@ export async function PATCH(req: Request,  context: z.infer<typeof routeContextS
         }
         const json = await req.json();
         const userId = session.user.id;
+console.log('json', json);
 
-        const classroom = {
+        const editClassroom = {
             classroomName: json.classroomName,
             grade: json.grade,
         };
-
         // Fetch the classroom from the database
         const docRef = db.collection('classroom').doc(classroomId);
         const doc = await docRef.get();
@@ -42,9 +43,8 @@ export async function PATCH(req: Request,  context: z.infer<typeof routeContextS
                 message: 'Classroom not found or id does not match',
             }), { status: 404 })
         }
-
         // Update the classroom
-        await docRef.update(classroom);
+        await docRef.update(editClassroom);
         
         return new Response(JSON.stringify({
             message: 'success',
