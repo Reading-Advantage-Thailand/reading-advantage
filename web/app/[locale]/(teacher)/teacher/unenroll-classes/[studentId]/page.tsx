@@ -4,7 +4,6 @@ import React from "react";
 import { headers } from "next/headers";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 import MyUnEnrollClasses from "@/components/teacher/unenroll-classes";
-import { Console } from "console";
 
 export default async function UnEnrollPage({
   params,
@@ -106,7 +105,6 @@ const studentIdInMatchedClassrooms = matchedClassrooms.flatMap(
       }
     }
 );
-console.log('studentIdInMatchedClassrooms', studentIdInMatchedClassrooms);
 
   // get id of student in matched classrooms
  function getIdOfStudentInMatchedClassrooms(studentId: string) {
@@ -120,7 +118,7 @@ console.log('studentIdInMatchedClassrooms', studentIdInMatchedClassrooms);
   }
     const updateStudentIdInMatchedClassrooms = getIdOfStudentInMatchedClassrooms(params.studentId);
 
-const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(studentId => ({ studentId }));
+const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(studentId => ({ studentId, lastActivity: new Date()}));
 
   return (
     <div>
@@ -129,6 +127,7 @@ const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(studentI
           enrolledClasses={matchedClassrooms}
           matchedNameOfStudents={matchedNameOfStudents}
           updateStudentList={updateStudentListBuilder}
+          studentId={params.studentId}
         />
       </NextAuthSessionProvider>
     </div>
