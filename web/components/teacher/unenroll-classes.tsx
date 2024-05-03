@@ -50,12 +50,14 @@ type MyEnrollProps = {
   enrolledClasses: Classroom[];
   matchedNameOfStudents: Student[];
   updateStudentList: any;
+  studentId: string;
 };
 
 export default function MyUnEnrollClasses({
   enrolledClasses,
   matchedNameOfStudents,
   updateStudentList,
+  studentId
 }: MyEnrollProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -68,42 +70,54 @@ export default function MyUnEnrollClasses({
   const router = useRouter();
   const [classroomId, setClassroomId] = useState("");
 
-  const handleStudentEnrollment = async (id: string, enrolledClasses: any, updateStudentList: any) => {
-    try {
-      const response = await axios.patch(`/api/classroom/${id}`, {
-        teacherId: enrolledClasses[0].teacherId,
-        classCode: enrolledClasses[0].classCode,
-        classroomName: enrolledClasses[0].classroomName,
-        coTeacher: "",
-        description: enrolledClasses[0].description,
-        grade: enrolledClasses[0].grade,
-        noOfStudents: enrolledClasses[0].noOfStudents,
-        student: updateStudentList,
-        title: enrolledClasses[0].title,
-      });
-
-      if (response.status === 200) {
-        console.log("remove success");
-      } else {
-        console.log("remove failed with status: ", response.status);
+  const handleStudentEnrollment = async (id: string, enrolledClasses: any, updateStudentList: any, studentId: string) => {
+    console.log('studentId', studentId);
+    
+    const removeStudentInClass: any[]= [];
+    enrolledClasses.forEach((classroom: any, index: number) => {
+      
+      if (classroom.id === id) {
+        updateStudentList.forEach((student: any, index: number) => {
+          console.log("student", student.studentId);
+          
+          if (student.studentId !== studentId) {
+            removeStudentInClass.push(student);
+          }
+        });
       }
+    });
+    console.log("removeStudentInClass", removeStudentInClass);
+    
 
-      return new Response(
-        JSON.stringify({
-          message: "success",
-        }),
-        { status: 200 }
-      );
-    } catch (error) {
-      return new Response(
-        JSON.stringify({
-          message: error,
-        }),
-        { status: 500 }
-      );
-    } finally {
-      router.refresh();
-    }
+    // try {
+    //   const response = await axios.delete(`/api/classroom/${id}/unenroll?student=${studentId}`, {
+    //     data: {
+    //       student: updateStudentList,
+    //     }
+    //   });
+
+    //   if (response.status === 200) {
+    //     console.log("remove success");
+    //   } else {
+    //     console.log("remove failed with status: ", response.status);
+    //   }
+
+    //   return new Response(
+    //     JSON.stringify({
+    //       message: "success",
+    //     }),
+    //     { status: 200 }
+    //   );
+    // } catch (error) {
+    //   return new Response(
+    //     JSON.stringify({
+    //       message: error,
+    //     }),
+    //     { status: 500 }
+    //   );
+    // } finally {
+    //   router.refresh();
+    // }
   };
 
   const columns: ColumnDef<Classroom>[] = [
@@ -167,7 +181,7 @@ export default function MyUnEnrollClasses({
   return (
     <>
       <div className="font-bold text-3xl">
-        Un-enrolled Classes for {matchedNameOfStudents[0].name}
+        Un-enrolled Classes for {matchedNameOfStudents[0] ? matchedNameOfStudents[0].name : "Unknown"}
       </div>
       <div className="flex items-center justify-between">
         <Input
@@ -183,7 +197,7 @@ export default function MyUnEnrollClasses({
         <Button
           variant="default"
           className="max-w-sm mt-4"
-          onClick={() => handleStudentEnrollment(classroomId, enrolledClasses, updateStudentList)}
+          onClick={() => handleStudentEnrollment(classroomId, enrolledClasses, updateStudentList, studentId)}
         >
           Remove
         </Button>

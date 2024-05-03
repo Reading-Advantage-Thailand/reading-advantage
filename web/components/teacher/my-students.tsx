@@ -81,16 +81,16 @@ useEffect(() => {
   }
 }, [selectedStudentId, action, redirectUrl, router]);
 
-const handleActionSelected = (action: string, id: string) => {
+const handleActionSelected = (action: string, studentId: string) => {
   switch (action) { 
     case 'progress':
-      setRedirectUrl(`/teacher/student-progress/${id}`);
+      setRedirectUrl(`/teacher/student-progress/${studentId}`);
       break;
     case 'enroll':
-      setRedirectUrl(`/teacher/enroll-classes/${id}`);
+      setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
       break;
     case 'unenroll':
-      setRedirectUrl(`/teacher/unenroll-classes/${id}`)
+      setRedirectUrl(`/teacher/unenroll-classes/${studentId}`);
       break;
     default:
       console.log('default');
@@ -153,14 +153,27 @@ const handleResetProgress = async (selectedStudentId: string) => {
           </Button>
         );
       },
-      cell: ({ row }) => <div className="captoliza" onClick={() => row.toggleSelected}>{row.getValue("name")}</div>,
+      cell: ({ row }) => {
+        const studentName: string = row.getValue("name");
+        return (
+          <div className="captoliza ml-4" onClick={() => row.toggleSelected}>{
+            studentName ? studentName : "Anonymous"
+          }
+          </div>
+        )
+      },
     },
     {
       accessorKey: "email",
       header: ({ column }) => {
         return <Button variant="ghost">Email</Button>;
       },
-      cell: ({ row }) => <div className="captoliza">{row.getValue("email")}</div>,
+      cell: ({ row }) => {
+        const studentEmail: string = row.getValue("email");
+        return (
+          <div className="captoliza ml-4">{studentEmail ? studentEmail : "Unknown"}</div>
+        )
+      }
     },
     {
       accessorKey: "id",

@@ -13,67 +13,43 @@ import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from "../ui/use-toast";
 
-type resClassroom = {
+type Classes = {
   classroomName: string;
   classCode: string;
-  noOfStudents: number;
   grade: string;
-  coTeacher: {
-    [x: string]: any;
-    coTeacherId: string;
-    name: string;
-  };
   id: string;
 };
 
 interface EditClassProps {
   userId: string;
-  classroomData: resClassroom;
+  classroomData: Classes[];
   title: string;
+  classroomId: string;
 }
 
-interface CoTeacher {
-  coteacherId: string;
-  name: string;
-}
-
-function EditClass({ userId, classroomData }: EditClassProps) {
-  const [classroomName, setClassroomName] = useState(
-    classroomData.classroomName
-  );
-  const [grade, setGrade] = useState(classroomData.grade);
-  const [coTeachers, setCoTeachers] = useState<CoTeacher[]>(
-    Array.isArray(classroomData.coTeacher)
-      ? classroomData.coTeacher.map((coTeacher) => ({
-          ...coTeacher,
-          name: coTeacher.name || "",
-        }))
-      : [
-          {
-            ...classroomData.coTeacher,
-            name: classroomData.coTeacher.name || "",
-          },
-        ]
-  );
-  const [classCode, setClassCode] = useState(classroomData.classCode);
-  const [noOfStudents, setNoOfStudents] = useState(classroomData.noOfStudents);
+function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
+  const classroomToEdit = classroomData.find((classroom) => classroom.id === classroomId);
+  const [classroomName, setClassroomName] = useState(classroomToEdit? classroomToEdit.classroomName : "");
+  const [grade, setGrade] = useState(classroomToEdit? classroomToEdit.grade : "");
   const [open, setOpen] = useState(false);
 
-  const handleEditClass = async (classroomData: resClassroom) => {
+  const handleEditClass = async (classroomId: string) => {
     setOpen(true);
     try {
-      const classroom = {
-        teacherId: userId,
-        classCode: classCode,
+      const editClassroom = {
         classroomName: classroomName,
-        coTeacher: coTeachers,
-        description: "description",
         grade: grade,
-        noOfStudents: noOfStudents,
-        student: [{ studentId: userId, lastActivity: new Date() }],
-        title: "title",
       };
-      await axios.patch(`/api/classroom/${classroomData.id}`, classroom);
+      if (!userId || !classroomName || !grade ) {
+        toast({
+          title: "Attention",
+          description: "All fields must be filled out!",
+          variant: "destructive",
+        })
+        return;  
+      } else {
+        await axios.patch(`/api/classroom/${classroomId}`, editClassroom);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -90,13 +66,8 @@ function EditClass({ userId, classroomData }: EditClassProps) {
     setOpen(false);
   };
 
-  const generateRandomCode = () => {
-    return Math.random().toString(36).substring(2, 8);
-  };
-
   return (
     <div>
-      <div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <span title="edit class">
@@ -106,6 +77,8 @@ function EditClass({ userId, classroomData }: EditClassProps) {
             />
             </span>
           </DialogTrigger>
+          {classroomData.map((classroom) => (
+        <div key={classroom.id}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Class Details</DialogTitle>
@@ -118,23 +91,9 @@ function EditClass({ userId, classroomData }: EditClassProps) {
               className="w-full border rounded-md p-2"
               placeholder="Class name"
               value={classroomName}
-              key={classroomData.id}
+              key={classroom.id}
               onChange={(e) => setClassroomName(e.target.value)}
             />
-            <div className="flex w-full border rounded-md p-2">
-              <input
-                type="text"
-                className="flex-grow"
-                placeholder="Class Code"
-                value={classCode}
-              />
-              <div className="self-center cursor-pointer">
-                <Icons.refresh
-                  className="cursor-pointer"
-                  onClick={() => setClassCode(generateRandomCode())}
-                />
-              </div>
-            </div>
             <select
               className="w-full border rounded-md p-2"
               name="grade"
@@ -142,48 +101,34 @@ function EditClass({ userId, classroomData }: EditClassProps) {
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
             >
-              <option value="0">Select Grade</option>
-              <option value="1">grade 1</option>
-              <option value="2">grade 2</option>
+              <option value="select">Select Grade</option>
               <option value="3">grade 3</option>
+              <option value="4">grade 4</option>
+              <option value="5">grade 5</option>
+              <option value="6">grade 6</option>
+              <option value="7">grade 7</option>
+              <option value="8">grade 8</option>
+              <option value="9">grade 9</option>
+              <option value="10">grade 10</option>
+              <option value="11">grade 11</option>
+              <option value="12">grade 12</option>
+              <option value="13">grade 13</option>
             </select>
-            {coTeachers.map((coTeacher, index) => (
-              <input
-                key={index}
-                type="text"
-                className="w-full border rounded-md p-2"
-                placeholder="Co-teacher name"
-                value={coTeacher.name}
-                onChange={(e) => {
-                  const newCoTeachers: CoTeacher[] = [...coTeachers];
-                  newCoTeachers[index] = {
-                    ...newCoTeachers[index],
-                    name: e.target.value,
-                  };
-                  setCoTeachers(newCoTeachers);
-                }}
-              />
-            ))}
-            <input
-              type="text"
-              className="w-full border rounded-md p-2"
-              placeholder="No of Students"
-              value={noOfStudents}
-              onChange={(e) => setNoOfStudents(Number(e.target.value))}
-            />
 
             <DialogFooter>
               <Button
                 variant="outline"
-                onClick={() => handleEditClass(classroomData)}
+                onClick={() => handleEditClass(classroomId)}
               >
                 Update Class
               </Button>
               <Button onClick={handleClose}>Cancel</Button>
             </DialogFooter>
           </DialogContent>
+          
+        </div>
+      ))}
         </Dialog>
-      </div>
     </div>
   );
 }

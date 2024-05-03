@@ -65,14 +65,12 @@ const getClassroomOfThatTeacher = () => {
   let classrooms: any[] = [];
   resClassroom.data.forEach((classroom: { student: any; archived: boolean; teacherId: string; }) => {
      if (!classroom.archived && classroom.teacherId === teacher[0]) {
-      // console.log('classroom', classroom);
       classrooms.push(classroom);
     }
   });
   return classrooms;
  }
  const classes = getClassroomOfThatTeacher();
-//  console.log('classes :', classes);
  
 
   return (
@@ -80,6 +78,7 @@ const getClassroomOfThatTeacher = () => {
        <NextAuthSessionProvider session={user}>
       <MyClasses 
       userId={user.id}
+      userName={user.name}  
       classrooms={classes} 
       />
        </NextAuthSessionProvider>
