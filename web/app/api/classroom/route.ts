@@ -54,16 +54,16 @@ export async function POST(req: Request, res: Response) {
         const userId = session.user.id;
         const classroom = {
             teacherId: userId,
+            archived: false,
             classCode: body.classCode,
             classroomName: body.classroomName,
-            description: body.description,
             grade: body.grade,
-            // student: body.student.map((student: any) => {
-            //     return {
-            //         studentId: student.studentId,
-            //         lastActivity: student.lastActivity,
-            //     }
-            // }),
+            student: body.student.map((student: any) => {
+                return {
+                    studentId: student.studentId,
+                    lastActivity: student.lastActivity,
+                }
+            }),
             title: body.title,
             createdAt: new Date(),
         };
