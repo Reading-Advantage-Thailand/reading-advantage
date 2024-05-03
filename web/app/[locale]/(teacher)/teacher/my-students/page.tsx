@@ -58,11 +58,13 @@ export default async function myStudentPage() {
         allStudent.students.forEach((student: { id: string; }) => {
           allClassroom.data.forEach((classroom: { student: any; archived: boolean; teacherId: string; }) => {
             if (!classroom.archived && classroom.teacherId === teacherId) {
-              classroom.student.forEach((students: { studentId: string; }) => {
-                if (students.studentId === student.id) {
-                  matchedStudents.push(student);
-                }
-              });
+              if (classroom.student) {
+                classroom.student.forEach((students: { studentId: string; }) => {
+                  if (students.studentId === student.id) {
+                    matchedStudents.push(student);
+                  }
+                });
+              }
             }
           });
         });
