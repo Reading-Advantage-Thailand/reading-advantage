@@ -42,8 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import CreateNewStudent from "./create-new-student";
 
-
-type Student = {  
+type Student = {
   studentId: string;
   lastActivity: {
     _seconds: number;
@@ -54,11 +53,11 @@ type Student = {
 };
 
 type MyRosterProps = {
- studentInClass: Student[];
+  studentInClass: Student[];
 };
 
 export default function ClassRoster({ studentInClass }: MyRosterProps) {
-const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -66,64 +65,64 @@ const [sorting, setSorting] = React.useState<SortingState>([]);
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
-  const router = useRouter(); 
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState('');
-  const [selectedStudentId, setSelectedStudentId] = useState(null);  
+  const [redirectUrl, setRedirectUrl] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
 
-let action = '';  
+  let action = "";
 
-const closeDialog = () => {
-  setIsOpen(false);
-};
+  const closeDialog = () => {
+    setIsOpen(false);
+  };
 
-useEffect(() => {
-  if (redirectUrl) {
-    router.push(redirectUrl);
-  }
-}, [selectedStudentId, action, redirectUrl, router]);
+  useEffect(() => {
+    if (redirectUrl) {
+      router.push(redirectUrl);
+    }
+  }, [selectedStudentId, action, redirectUrl, router]);
 
-const handleActionSelected = (action: string, studentId: string) => {
-  switch (action) { 
-    case 'progress':
-      setRedirectUrl(`/teacher/student-progress/${studentId}`);
-      break;
-    case 'enroll':
-      setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
-      break;
-    default:
-      console.log('default');
-      break;
-  }
-};
+  const handleActionSelected = (action: string, studentId: string) => {
+    switch (action) {
+      case "progress":
+        setRedirectUrl(`/teacher/student-progress/${studentId}`);
+        break;
+      case "enroll":
+        setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
+        break;
+      default:
+        console.log("default");
+        break;
+    }
+  };
 
-const openResetModal = (selectedStudentId: null) => {
+  const openResetModal = (selectedStudentId: null) => {
     setIsResetModalOpen(true);
     setSelectedStudentId(selectedStudentId);
-};
+  };
 
-const closeResetModal = () => {
-  setIsResetModalOpen(false);
-};
+  const closeResetModal = () => {
+    setIsResetModalOpen(false);
+  };
 
-const handleResetProgress = async (selectedStudentId: string) => {
-  closeResetModal();
-  try {
-    const response = await fetch(`/api/users/${selectedStudentId}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        xp: 0,
-        level: 0,
-        cefrLevel: "",
-      }),
-    });
-  
-    return new Response(
-      JSON.stringify({
-        message: "success",
-      }),
-      { status: 200 }
+  const handleResetProgress = async (selectedStudentId: string) => {
+    closeResetModal();
+    try {
+      const response = await fetch(`/api/users/${selectedStudentId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          xp: 0,
+          level: 0,
+          cefrLevel: "",
+        }),
+      });
+
+      return new Response(
+        JSON.stringify({
+          message: "success",
+        }),
+        { status: 200 }
       );
     } catch (error) {
       return new Response(
@@ -131,75 +130,103 @@ const handleResetProgress = async (selectedStudentId: string) => {
           message: error,
         }),
         { status: 500 }
-        );
-      }
-  finally {
-    closeDialog();
-    router.refresh();
-  }
-};
-
-const columns: ColumnDef<Student>[] = [
-  {
-    accessorKey: "studentName",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
       );
-    },
-    cell: ({ row }) => <div className="captoliza ml-4">{row.getValue("studentName")}</div>,
-  },
-  {
-    accessorKey: "lastActivity",  
-    header: ({ column }) => {
-      return <Button variant="ghost">Last Activity</Button>;
-    },
-    cell: ({ row }) => {
-      const lastActivitySeconds = row.getValue("lastActivity") as { _seconds: number };
-      const lastActivityDate = new Date(lastActivitySeconds._seconds * 1000);
-      return <div className="captoliza ml-4">{lastActivityDate.toLocaleString()}</div>;
-    },
-  },
-  {
-    accessorKey: "studentId",
-    header: ({ column }) => {
-      return null;
-    },
-    cell: ({ row }) => null,
-  },
-  {
-    accessorKey: "action",
-    header: ({ column }) => {
-      return <Button variant="ghost">Action</Button>;
-    },
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="default" className="ml-auto">
-            Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+    } finally {
+      closeDialog();
+      router.refresh();
+    }
+  };
+
+  const columns: ColumnDef<Student>[] = [
+    {
+      accessorKey: "studentName",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Name
+            <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-        <DropdownMenuCheckboxItem onClick={() => handleActionSelected('progress', row.getValue('studentId') )}>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="captoliza ml-4">{row.getValue("studentName")}</div>
+      ),
+    },
+    {
+      accessorKey: "lastActivity",
+      header: ({ column }) => {
+        return <Button variant="ghost">Last Activity</Button>;
+      },
+      cell: ({ row }) => {
+        const lastActivity = row.getValue("lastActivity");
+        let lastActivityDate;
+
+        if (typeof lastActivity === "string") {
+          lastActivityDate = new Date(lastActivity);
+        } else if (
+          lastActivity &&
+          typeof lastActivity === "object" &&
+          "_seconds" in lastActivity
+        ) {
+          lastActivityDate = new Date(
+            (lastActivity as { _seconds: number })._seconds * 1000
+          );
+        }
+
+        return (
+          <div className="captoliza ml-4">
+            {lastActivityDate && lastActivityDate.toLocaleString()}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "studentId",
+      header: ({ column }) => {
+        return null;
+      },
+      cell: ({ row }) => null,
+    },
+    {
+      accessorKey: "action",
+      header: ({ column }) => {
+        return <Button variant="ghost">Action</Button>;
+      },
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="default" className="ml-auto">
+              Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuCheckboxItem
+              onClick={() =>
+                handleActionSelected("progress", row.getValue("studentId"))
+              }
+            >
               <Link href={redirectUrl}>Progress</Link>
             </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem onClick={() => handleActionSelected('enroll', row.getValue('studentId'))}>
-          <Link href={redirectUrl}>Enroll</Link>
+            <DropdownMenuCheckboxItem
+              onClick={() =>
+                handleActionSelected("enroll", row.getValue("studentId"))
+              }
+            >
+              <Link href={redirectUrl}>Enroll</Link>
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem onClick={() => openResetModal(row.getValue('studentId'))}>
+            <DropdownMenuCheckboxItem
+              onClick={() => openResetModal(row.getValue("studentId"))}
+            >
               Reset Progress
             </DropdownMenuCheckboxItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   const table = useReactTable({
     data: studentInClass,
@@ -221,49 +248,48 @@ const columns: ColumnDef<Student>[] = [
   });
   return (
     <>
-     {isResetModalOpen && (
-      <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reset all XP progress</DialogTitle>
-          </DialogHeader>
-          <DialogDescription>
-            Are you sure you want to reset all progress?
-          </DialogDescription>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => closeResetModal()}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleResetProgress(selectedStudentId ?? "")}
-            >
-              Reset
-            </Button>
-          </DialogFooter>
-        </DialogContent>  
-      </Dialog>
-    )}
-      {/* <div className="font-bold text-3xl">Roster for classroom : {studentInClass[0]? studentInClass[0].classroomName : ""}</div> */}
-      {
-  studentInClass.length > 0 ? 
-  <div className="font-bold text-3xl">Roster for classroom : {studentInClass[0].classroomName}</div> 
-  : 
-  <div className="font-bold text-3xl">No students in the class</div>
-}
+      {isResetModalOpen && (
+        <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Reset all XP progress</DialogTitle>
+            </DialogHeader>
+            <DialogDescription>
+              Are you sure you want to reset all progress?
+            </DialogDescription>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => closeResetModal()}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleResetProgress(selectedStudentId ?? "")}
+              >
+                Reset
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      {studentInClass.length > 0 ? (
+        <div className="font-bold text-3xl">
+          Roster for classroom : {studentInClass[0].classroomName}
+        </div>
+      ) : (
+        <div className="font-bold text-3xl">No students in the class</div>
+      )}
       <div className="flex justify-between">
-      <Input
-        placeholder={"Search..."}
-        value={(table.getColumn("studentName")?.getFilterValue() as string) ?? ""}
-        onChange={(event) =>
-          table.getColumn("studentName")?.setFilterValue(event.target.value)
-        }
-        className="max-w-sm mt-4"
-      />
-      <CreateNewStudent />
+        <Input
+          placeholder={"Search..."}
+          value={
+            (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
+          }
+          onChange={(event) =>
+            table.getColumn("studentName")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm mt-4"
+        />
+        <CreateNewStudent />
       </div>
       <div className="rounded-md border mt-4">
         <Table>
