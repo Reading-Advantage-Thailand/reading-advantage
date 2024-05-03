@@ -69,7 +69,7 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
                   }
                 });
               } else {
-                matchedClassrooms.push("No student found in this class");
+                // matchedClassrooms.push("No student found in this class");
               }
             }
           });
@@ -114,7 +114,7 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
                   }
                 });
               } else {
-                matchedStudents.push("No student found in this class")
+                // matchedStudents.push("No student found in this class")
               }
             }
           });
@@ -133,7 +133,7 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
             studentsInChecked.push(students.studentId);
           });
         } else {
-          studentsInChecked.push("No student in this class");
+          // studentsInChecked.push("No student in this class");
         }
       });
       return studentsInChecked;
