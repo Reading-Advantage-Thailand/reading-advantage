@@ -101,7 +101,7 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
             >
-              <option value="0">Select Grade</option>
+              <option value="select">Select Grade</option>
               <option value="3">grade 3</option>
               <option value="4">grade 4</option>
               <option value="5">grade 5</option>
