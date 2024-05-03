@@ -60,14 +60,12 @@ export default async function myStudentPage() {
             if (!classroom.archived && classroom.teacherId === teacherId) {
               if (classroom.student) {
                 classroom.student.forEach((students: { studentId: string; }) => {
-                  if (students.studentId === student.id) {
+                  if (students.studentId === student.id && !matchedStudents.includes(student)) {
                     matchedStudents.push(student);
                   }
                 });
-              } else {
-                matchedStudents.push("No students found");
-              }
             }
+          }
           });
         });
         
