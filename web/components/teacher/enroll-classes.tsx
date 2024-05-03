@@ -84,14 +84,18 @@ export default function MyEnrollClasses({
   const handleStudentEnrollment = async (id: string, enrolledClasses: any) => {
     let studentInClass: any[] = [];
     enrolledClasses.forEach((enrolledClass: any) => {
-      enrolledClass.student.forEach((student: { studentId: string }) => {
-        if (enrolledClass.id === id) {
-          studentInClass.push(student.studentId);
-        }
-        if (!studentInClass.includes(studentId)) {
-          studentInClass.push(studentId);
-        }
-      });
+      if (enrolledClass.student) {
+        enrolledClass.student.forEach((student: { studentId: string }) => {
+          if (enrolledClass.id === id) {
+            studentInClass.push(student.studentId);
+          }
+          if (!studentInClass.includes(studentId)) {
+            studentInClass.push(studentId);
+          }
+        });
+      } else {
+        studentInClass.push("No student in this class");
+      }
     });
     const updateStudentListBuilder = studentInClass.map((studentId) => ({
       studentId,
@@ -148,11 +152,14 @@ export default function MyEnrollClasses({
           </Button>
         );
       },
-      cell: ({ row }) => (
-        <div className="captoliza" onClick={() => row.toggleSelected}>
-          {row.getValue("classroomName")}
+      cell: ({ row }) => {
+        const classroomName: string = row.getValue("classroomName");
+        return (
+        <div className="captoliza ml-4" onClick={() => row.toggleSelected}>
+          {classroomName ? classroomName : "Anonymous"}
         </div>
-      ),
+        );
+      },
     },
     {
       accessorKey: "id",
@@ -160,7 +167,7 @@ export default function MyEnrollClasses({
         return <Button variant="ghost">Enroll</Button>;
       },
       cell: ({ row }) => (
-        <div className="captoliza">
+        <div className="captoliza ml-2">
           <Checkbox
             checked={row.getIsSelected()}
             onChange={() => {
