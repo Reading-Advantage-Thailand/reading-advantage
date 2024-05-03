@@ -196,6 +196,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
                   <DeleteClass
                     classroomData={classrooms} 
                     title="delete class"
+                    classroomId={row.getValue("id")}
                   />
         </div>
       ),

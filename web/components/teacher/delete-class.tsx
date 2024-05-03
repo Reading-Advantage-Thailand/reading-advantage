@@ -14,31 +14,25 @@ import axios from "axios";
 import { toast } from '../ui/use-toast';
 
 interface DeleteClassProps { 
-  classroomData: resClassroom;
+  classroomData: Classes[];
   title: string;
+  classroomId: string;
 }
 
-type resClassroom = {
+type Classes = {
   classroomName: string;
-  classCode: string;
-  noOfStudents: number;
   grade: string;
-  coTeacher: {
-    [x: string]: any;
-    coTeacherId: string;
-    name: string;
-  };
   id: string;
 };
 
-
-function DeleteClass ({ classroomData }: DeleteClassProps) {
+function DeleteClass ({ classroomData, classroomId, title}: DeleteClassProps) {
   const [open, setOpen] = useState(false);
+  const classroom = classroomData.find((classroom) => classroom.id === classroomId);
 
-  const handleDeleteClass = async (classroomData: resClassroom) => {
+  const handleDeleteClass = async (classroomId: string) => {
     setOpen(true);
     try {
-        await axios.delete(`/api/classroom/${classroomData.id}`);
+        await axios.delete(`/api/classroom/${classroomId}`);
         toast({
           title: "Class deleted", 
           description: "Class has been deleted successfully",
@@ -60,8 +54,6 @@ function DeleteClass ({ classroomData }: DeleteClassProps) {
   const handleClose = () => {
     setOpen(false);
   };
-
-
   return (
     <div>
       <div>
@@ -79,10 +71,10 @@ function DeleteClass ({ classroomData }: DeleteClassProps) {
               <DialogTitle>Delete Classroom</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Do you want to delete <span className="font-bold">{classroomData.classroomName}</span> classroom ?
+              Do you want to delete <span className="font-bold">{classroom?. classroomName}</span> classroom ?
             </DialogDescription>
             <DialogFooter>
-              <Button variant="destructive" onClick={() => handleDeleteClass(classroomData)}>
+              <Button variant="destructive" onClick={() => handleDeleteClass(classroomId)}>
                 Delete
               </Button>
               <Button onClick={handleClose}>Cancel</Button>
