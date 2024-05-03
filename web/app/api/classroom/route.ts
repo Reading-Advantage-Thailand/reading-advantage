@@ -48,7 +48,7 @@ export async function POST(req: Request, res: Response) {
         }
         const json = await req.json();
         const body = json.classroom;
-        console.log('body', body);
+        // console.log('body', body);
         
 
         const userId = session.user.id;
@@ -58,7 +58,6 @@ export async function POST(req: Request, res: Response) {
             classroomName: body.classroomName,
             description: body.description,
             grade: body.grade,
-            // noOfStudents: body.noOfStudents,
             // student: body.student.map((student: any) => {
             //     return {
             //         studentId: student.studentId,
