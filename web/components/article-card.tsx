@@ -64,8 +64,9 @@ export default async function ArticleCard({
                     <ArticleContent article={article} articleId={articleId} userId={userId} />
                 </CardHeader>
                 <ArticleFooter />
-              </Card >
-              <RatingPopup userId={userId} article={article} articleId={articleId} />  
+              </Card > 
+                
+              <RatingPopup userId={userId} averageRating={article.averageRating} articleId={articleId} />          
             </div>
                                 
             {/* part question */}             
