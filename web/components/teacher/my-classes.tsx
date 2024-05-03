@@ -111,7 +111,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
       },
       cell: ({ row }) => {
         const classroomName: string = row.getValue("classroomName");
-        return <div className="captoliza ml-4">{classroomName ? classroomName : "Unknow"}</div>;
+        return <div className="captoliza ml-4">{classroomName ? classroomName : "Unknown"}</div>;
       },
     },
     {
