@@ -12,34 +12,28 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from '../ui/use-toast';
-import { set } from "lodash";
 
 interface ArchiveClassProps { 
-  classroomData: resClassroom;
+  classroomData: Classes[];
   title: string;
+  classroomId: string;
 }
 
-type resClassroom = {
+type Classes = {
   classroomName: string;
-  classCode: string;
-  noOfStudents: number;
   grade: string;
-  coTeacher: {
-    [x: string]: any;
-    coTeacherId: string;
-    name: string;
-  };
   id: string;
 };
 
-function ArchiveClass({ classroomData }: ArchiveClassProps) {
+function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
   const [open, setOpen] = useState(false);
   const [archiveClass, setArchiveClass] = useState(false);
+  const classroom = classroomData.find((classroom) => classroom.id === classroomId);
 
-  const handleArchiveClass = async (classroomData: resClassroom) => {
+  const handleArchiveClass = async (classroomId: string) => {
     setOpen(true);
     try {
-      const response = await axios.patch(`/api/classroom/${ classroomData.id }/archived`,
+      const response = await axios.patch(`/api/classroom/${ classroomId }/archived`,
         { archived: true }
         );
 
@@ -87,10 +81,10 @@ function ArchiveClass({ classroomData }: ArchiveClassProps) {
               <DialogTitle>Archive Class</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Do you want to archive <span className="font-bold">{classroomData.classroomName}</span> class?
+              Do you want to archive <span className="font-bold">{classroom?. classroomName}</span> class?
             </DialogDescription>
             <DialogFooter>
-              <Button variant="secondary" onClick={() => handleArchiveClass(classroomData)}>
+              <Button variant="secondary" onClick={() => handleArchiveClass(classroomId)}>
                 Archive
               </Button>
               <Button onClick={handleClose}>Cancel</Button>

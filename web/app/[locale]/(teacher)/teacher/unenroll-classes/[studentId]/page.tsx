@@ -63,13 +63,17 @@ export default async function UnEnrollPage({
       allClassroom.data.forEach(
         (classroom: { student: any; archived: boolean; teacherId: string }) => {
           if (!classroom.archived && classroom.teacherId === teacherId) {
-            classroom.student.forEach((students: { studentId: string }) => {
-              if (students.studentId === studentId) {
-                if (!matchedClassrooms.includes(classroom)) {
-                  matchedClassrooms.push(classroom);
+            if (classroom.student) {
+              classroom.student.forEach((students: { studentId: string }) => {
+                if (students.studentId === studentId) {
+                  if (!matchedClassrooms.includes(classroom)) {
+                    matchedClassrooms.push(classroom);
+                  }
                 }
-              }
-            });
+              });
+            } else {
+              matchedClassrooms.push("No students found");
+            }
           }
         }
       );
@@ -93,8 +97,15 @@ export default async function UnEnrollPage({
   const matchedNameOfStudents = getMatchedNameOfStudents(params.studentId);
 
 const studentIdInMatchedClassrooms = matchedClassrooms.flatMap(
-    (classroom) => classroom.student.map((student: { studentId: string; }) => student.studentId)
+    (classroom) => {
+      if (classroom && classroom.student && classroom.student.length === 0) {
+        console.log('This classroom has no student');
+      } else {
+         return classroom && classroom.student ? classroom.student.map((student: { studentId: string; }) => student.studentId) : [];
+      }
+    }
 );
+
   // get id of student in matched classrooms
  function getIdOfStudentInMatchedClassrooms(studentId: string) {
     let updateStudentIdInMatchedClassrooms: any[] = [];
@@ -107,7 +118,7 @@ const studentIdInMatchedClassrooms = matchedClassrooms.flatMap(
   }
     const updateStudentIdInMatchedClassrooms = getIdOfStudentInMatchedClassrooms(params.studentId);
 
-const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(studentId => ({ studentId }));
+const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(studentId => ({ studentId, lastActivity: new Date()}));
 
   return (
     <div>
@@ -116,6 +127,7 @@ const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(studentI
           enrolledClasses={matchedClassrooms}
           matchedNameOfStudents={matchedNameOfStudents}
           updateStudentList={updateStudentListBuilder}
+          studentId={params.studentId}
         />
       </NextAuthSessionProvider>
     </div>

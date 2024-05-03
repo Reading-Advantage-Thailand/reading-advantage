@@ -96,9 +96,13 @@ export default async function rosterPage(params: {
           classroom.teacherId === teacher[0] &&
           classroom.id === classroomId
         ) {
-          classroom.student.forEach((students: { studentId: string }) => {
-            studentInEachClass.push(students.studentId);
-          });
+          if (classroom.student) {
+            classroom.student.forEach((students: { studentId: string }) => {
+              studentInEachClass.push(students.studentId);
+            });
+          } else {
+            studentInEachClass.push("No student in this class");
+           }  
         }
       }
     );
@@ -134,6 +138,7 @@ export default async function rosterPage(params: {
 
   // combine student in each class and classroom name
   const studentsMapped = classrooms.flatMap((classStudent) =>
+    classStudent.student?
     classStudent.student.map(
       (studentData: { studentId: string; lastActivity: any }) => {
         const matchedStudent = matchedStudents.find(
@@ -146,7 +151,7 @@ export default async function rosterPage(params: {
           classroomName: classStudent.classroomName,
         };
       }
-    )
+    ): []
   );
 
   return (

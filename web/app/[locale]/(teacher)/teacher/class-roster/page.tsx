@@ -96,9 +96,13 @@ export default async function rosterPage(params: {
           classroom.teacherId === teacher[0] &&
           classroom.id === classroomId
         ) {
-          classroom.student.forEach((students: { studentId: string }) => {
-            studentInEachClass.push(students.studentId);
-          });
+          if (classroom.student) {
+            classroom.student.forEach((students: { studentId: string }) => {
+              studentInEachClass.push(students.studentId);
+            });
+          } else {
+            studentInEachClass = [];
+          }
         }
       }
     );

@@ -84,30 +84,27 @@ export default function MyEnrollClasses({
   const handleStudentEnrollment = async (id: string, enrolledClasses: any) => {
     let studentInClass: any[] = [];
     enrolledClasses.forEach((enrolledClass: any) => {
-      enrolledClass.student.forEach((student: { studentId: string }) => {
-        if (enrolledClass.id === id) {
-          studentInClass.push(student.studentId);
-        }
-        if (!studentInClass.includes(studentId)) {
-          studentInClass.push(studentId);
-        }
-      });
+      if (enrolledClass.student) {
+        enrolledClass.student.forEach((student: { studentId: string }) => {
+          if (enrolledClass.id === id) {
+            studentInClass.push(student.studentId);
+          }
+          if (!studentInClass.includes(studentId)) {
+            studentInClass.push(studentId);
+          }
+        });
+      } else {
+        studentInClass.push("No student in this class");
+      }
     });
     const updateStudentListBuilder = studentInClass.map((studentId) => ({
       studentId,
+      lastActivity: new Date(),
     }));
 
     try {
-      const response = await axios.patch(`/api/classroom/${id}`, {
-        teacherId: enrolledClasses[0].teacherId,
-        classCode: enrolledClasses[0].classCode,
-        classroomName: enrolledClasses[0].classroomName,
-        coTeacher: "",
-        description: enrolledClasses[0].description,
-        grade: enrolledClasses[0].grade,
-        noOfStudents: enrolledClasses[0].noOfStudents,
+      const response = await axios.patch(`/api/classroom/${id}/enroll`, {
         student: updateStudentListBuilder,
-        title: enrolledClasses[0].title,
       });
 
       if (response.status === 200) {
@@ -148,11 +145,14 @@ export default function MyEnrollClasses({
           </Button>
         );
       },
-      cell: ({ row }) => (
-        <div className="captoliza" onClick={() => row.toggleSelected}>
-          {row.getValue("classroomName")}
+      cell: ({ row }) => {
+        const classroomName: string = row.getValue("classroomName");
+        return (
+        <div className="captoliza ml-4" onClick={() => row.toggleSelected}>
+          {classroomName ? classroomName : "Anonymous"}
         </div>
-      ),
+        );
+      },
     },
     {
       accessorKey: "id",
@@ -160,7 +160,7 @@ export default function MyEnrollClasses({
         return <Button variant="ghost">Enroll</Button>;
       },
       cell: ({ row }) => (
-        <div className="captoliza">
+        <div className="captoliza ml-2">
           <Checkbox
             checked={row.getIsSelected()}
             onChange={() => {

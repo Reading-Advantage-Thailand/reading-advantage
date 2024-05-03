@@ -60,13 +60,17 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
         allStudent.students.forEach((student: { id: string; }) => {
           allClassroom.data.forEach((classroom: { student: any; archived: boolean; teacherId: string; }) => {
             if (!classroom.archived && classroom.teacherId === teacherId) {
-              classroom.student.forEach((students: { studentId: string; }) => {
-                if (students.studentId === studentId) {
-                  if (!matchedClassrooms.includes(classroom)) {
-                    matchedClassrooms.push(classroom);
+              if (classroom.student) {
+                classroom.student.forEach((students: { studentId: string; }) => {
+                  if (students.studentId === studentId) {
+                    if (!matchedClassrooms.includes(classroom)) {
+                      matchedClassrooms.push(classroom);
+                    }
                   }
-                }
-              });
+                });
+              } else {
+                // matchedClassrooms.push("No student found in this class");
+              }
             }
           });
         });
@@ -103,11 +107,15 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
         allStudent.students.forEach((student: { id: string; }) => {
           allClassroom.data.forEach((classroom: { student: any; archived: boolean; teacherId: string; }) => {
             if (!classroom.archived && classroom.teacherId === teacherId) {
-              classroom.student.forEach((students: { studentId: string; }) => {
-                if (students.studentId === student.id) {
-                  matchedStudents.push(student);
-                }
-              });
+              if (classroom.student) {
+                classroom.student.forEach((students: { studentId: string; }) => {
+                  if (students.studentId === student.id) {
+                    matchedStudents.push(student);
+                  }
+                });
+              } else {
+                // matchedStudents.push("No student found in this class")
+              }
             }
           });
         });
@@ -120,11 +128,13 @@ export default async function EnrollPage({params}: {params: {studentId: string}}
     const studentInDifferentClasses = () => {
       let studentsInChecked: any[] = [];
       differentClasses.forEach((classroom: { student: any; isChecked: boolean; classroomId: string }) => {
-        // if (classroom.isChecked) {
+        if (classroom.student) {
           classroom.student.forEach((students: { studentId: string; }) => {
             studentsInChecked.push(students.studentId);
           });
-        // }
+        } else {
+          // studentsInChecked.push("No student in this class");
+        }
       });
       return studentsInChecked;
     };

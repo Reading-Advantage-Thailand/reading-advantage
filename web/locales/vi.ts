@@ -248,6 +248,7 @@ export default {
     },
     rate: {
       title: "Đánh giá bài viết này",
+      content: "Bạn đánh giá chất lượng của bài viết này như thế nào?",
       description:
         "Điểm đánh giá này được sử dụng để tính trình độ mới của bạn.",
       newLevel: "Trình độ mới của bạn là {level}",
