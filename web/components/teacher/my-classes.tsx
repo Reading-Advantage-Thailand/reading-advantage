@@ -57,10 +57,15 @@ type Classes = {
   id: string;
   archived: boolean;
   title: string;
+  student: [{
+    studentId: string;
+    lastActivity: Date;
+  }];
 };
 
 type MyClassesProps = {
   userId: string;
+  userName: string;
   classrooms: Classes[];
 };
 export default function MyStudents({ userId, classrooms }: MyClassesProps) {
@@ -79,6 +84,7 @@ export default function MyStudents({ userId, classrooms }: MyClassesProps) {
   const [redirectUrl, setRedirectUrl] = useState("");
   const [showEditModal, setShowEditModal] = useState(false);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [noOfStudents, setNoOfStudents] = useState(0);
 
   let action = "";
 
@@ -91,6 +97,7 @@ export default function MyStudents({ userId, classrooms }: MyClassesProps) {
       router.push(redirectUrl);
     }
   }, [selectedStudentId, action, redirectUrl, router]);
+
 
   const handleActionSelected = (action: string, id: string) => {
     switch (action) {
@@ -159,12 +166,12 @@ export default function MyStudents({ userId, classrooms }: MyClassesProps) {
       cell: ({ row }) => <div className="captoliza"></div>,
     },
     {
-      accessorKey: "noOfStudents",
+      accessorKey: "student.lenght",
       header: ({ column }) => {
         return <Button variant="ghost">No. of Students</Button>;
       },
       cell: ({ row }) => (
-        <div className="captoliza">{row.getValue("noOfStudents")}</div>
+        <div className="captoliza">{row.original?.student?.length || 0}</div>
       ),
     },
     {
@@ -220,6 +227,15 @@ export default function MyStudents({ userId, classrooms }: MyClassesProps) {
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      ),
+    },
+    {
+      accessorKey: "detail",
+      header: ({ column }) => {
+        return <Button variant="ghost">Detail</Button>;
+      },
+      cell: ({ row }) => (
+        <div className="captoliza">{}</div>
       ),
     },
   ];

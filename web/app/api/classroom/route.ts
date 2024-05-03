@@ -58,13 +58,13 @@ export async function POST(req: Request, res: Response) {
             classroomName: body.classroomName,
             description: body.description,
             grade: body.grade,
-            noOfStudents: body.noOfStudents,
-            student: body.student.map((student: any) => {
-                return {
-                    studentId: student.studentId,
-                    lastActivity: student.lastActivity,
-                }
-            }),
+            // noOfStudents: body.noOfStudents,
+            // student: body.student.map((student: any) => {
+            //     return {
+            //         studentId: student.studentId,
+            //         lastActivity: student.lastActivity,
+            //     }
+            // }),
             title: body.title,
             createdAt: new Date(),
         };
