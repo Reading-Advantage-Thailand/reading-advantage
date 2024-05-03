@@ -36,7 +36,7 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
   const handleEditClass = async (classroomId: string) => {
     setOpen(true);
     try {
-      const classroom = {
+      const editClassroom = {
         classroomName: classroomName,
         grade: grade,
       };
@@ -45,10 +45,10 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
           title: "Attention",
           description: "All fields must be filled out!",
           variant: "destructive",
-        });
-        return;
+        })
+        return;  
       } else {
-        await axios.patch(`/api/classroom/${classroomId}`, classroom);
+        await axios.patch(`/api/classroom/${classroomId}`, editClassroom);
       }
     } catch (error) {
       console.error(error);
