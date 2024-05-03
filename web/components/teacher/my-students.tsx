@@ -81,16 +81,16 @@ useEffect(() => {
   }
 }, [selectedStudentId, action, redirectUrl, router]);
 
-const handleActionSelected = (action: string, id: string) => {
+const handleActionSelected = (action: string, studentId: string) => {
   switch (action) { 
     case 'progress':
-      setRedirectUrl(`/teacher/student-progress/${id}`);
+      setRedirectUrl(`/teacher/student-progress/${studentId}`);
       break;
     case 'enroll':
-      setRedirectUrl(`/teacher/enroll-classes/${id}`);
+      setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
       break;
     case 'unenroll':
-      setRedirectUrl(`/teacher/unenroll-classes/${id}`)
+      setRedirectUrl(`/teacher/unenroll-classes/${studentId}`);
       break;
     default:
       console.log('default');
