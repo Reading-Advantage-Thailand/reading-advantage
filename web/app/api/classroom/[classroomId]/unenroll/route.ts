@@ -12,11 +12,11 @@ const routeContextSchema = z.object({
     }),
 })
 
-export async function DELETE(req: Request,  context: z.infer<typeof routeContextSchema>) {
+export async function PATCH(req: Request,  context: z.infer<typeof routeContextSchema>) {
     
     try {
-        const url = new URL(req.url);
-        const studentId = url.searchParams.get('student');
+        // const url = new URL(req.url);
+        // const studentId = url.searchParams.get('student');
 
         const { params } = routeContextSchema.parse(context);
         const classroomId = params.classroomId;
@@ -31,13 +31,14 @@ export async function DELETE(req: Request,  context: z.infer<typeof routeContext
         const json = await req.json();
         const userId = session.user.id;
 console.log('json', json);
+const studentId = json.studentId;
+const unenrollmentClassroom = json.student;
+
 
         // Fetch the classroom from the database
         const docRef = db.collection('classroom').doc(classroomId);
         const doc = await docRef.get();
         const data = doc.data();
-console.log('doc', doc);
-
 
         // Check if the classroom exists and the id matches
         if (!doc.exists || doc.id !== classroomId) {
@@ -46,24 +47,10 @@ console.log('doc', doc);
             }), { status: 404 })
         }
 
-        // Check if the student is enrolled in the classroom
-        // if (data && data.student) {
-        //     const students: string[] = data.student;
-        //     console.log('students', students);
-            
-        //     const index = students.indexOf(studentId!);
-        //     if (index !== -1) {
-                
-        //         // await docRef.update({ students });
-        //     } else {
-        //         return new Response(JSON.stringify({
-        //             message: 'Student not enrolled in this class',
-        //         }), { status: 404 });
-        //     }
-        // }
-
         // Update the classroom
-        // await docRef.delete();
+        await docRef.update({
+            student: unenrollmentClassroom,
+        });
         
         return new Response(JSON.stringify({
             message: 'success',

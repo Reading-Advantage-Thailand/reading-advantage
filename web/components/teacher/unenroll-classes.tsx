@@ -70,54 +70,51 @@ export default function MyUnEnrollClasses({
   const router = useRouter();
   const [classroomId, setClassroomId] = useState("");
 
-  const handleStudentEnrollment = async (id: string, enrolledClasses: any, updateStudentList: any, studentId: string) => {
-    console.log('studentId', studentId);
-    
-    const removeStudentInClass: any[]= [];
-    enrolledClasses.forEach((classroom: any, index: number) => {
+  const handleStudentEnrollment = async (classroomId: string, enrolledClasses: any, studentId: string) => {
+    const removedStudentInClass: any[]= [];
+    enrolledClasses.forEach((classroom: any) => {
       
-      if (classroom.id === id) {
-        updateStudentList.forEach((student: any, index: number) => {
-          console.log("student", student.studentId);
-          
+      if (classroom.id === classroomId) {
+        classroom.student.forEach((student: any) => {
           if (student.studentId !== studentId) {
-            removeStudentInClass.push(student);
+            removedStudentInClass.push(student.studentId);
           }
         });
       }
     });
-    console.log("removeStudentInClass", removeStudentInClass);
     
+const updateStudentListBuilder = removedStudentInClass.map((student) => ({
+  studentId: student,
+  lastActivity: new Date(),
+}));
 
-    // try {
-    //   const response = await axios.delete(`/api/classroom/${id}/unenroll?student=${studentId}`, {
-    //     data: {
-    //       student: updateStudentList,
-    //     }
-    //   });
+    try {
+      const response = await axios.patch(`/api/classroom/${classroomId}/unenroll`, {
+          student: updateStudentListBuilder,
+          studentId: studentId,
+      });
+      if (response.status === 200) {
+        console.log("remove success");
+      } else {
+        console.log("remove failed with status: ", response.status);
+      }
 
-    //   if (response.status === 200) {
-    //     console.log("remove success");
-    //   } else {
-    //     console.log("remove failed with status: ", response.status);
-    //   }
-
-    //   return new Response(
-    //     JSON.stringify({
-    //       message: "success",
-    //     }),
-    //     { status: 200 }
-    //   );
-    // } catch (error) {
-    //   return new Response(
-    //     JSON.stringify({
-    //       message: error,
-    //     }),
-    //     { status: 500 }
-    //   );
-    // } finally {
-    //   router.refresh();
-    // }
+      return new Response(
+        JSON.stringify({
+          message: "success",
+        }),
+        { status: 200 }
+      );
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          message: error,
+        }),
+        { status: 500 }
+      );
+    } finally {
+      router.refresh();
+    }
   };
 
   const columns: ColumnDef<Classroom>[] = [
@@ -135,8 +132,8 @@ export default function MyUnEnrollClasses({
         );
       },
       cell: ({ row }) => (
-        <div className="captoliza" onClick={() => row.toggleSelected}>
-          {row.getValue("classroomName")}
+        <div className="captoliza ml-4" onClick={() => row.toggleSelected}>
+          {row.getValue("classroomName") || "Unknown"}
         </div>
       ),
     },
@@ -146,7 +143,7 @@ export default function MyUnEnrollClasses({
         return <Button variant="ghost">Unenroll</Button>;
       },
       cell: ({ row }) => (
-        <div className="captoliza">
+        <div className="captoliza ml-2">
           <Checkbox
             checked={row.getIsSelected()}
             onChange={() => {
@@ -197,7 +194,7 @@ export default function MyUnEnrollClasses({
         <Button
           variant="default"
           className="max-w-sm mt-4"
-          onClick={() => handleStudentEnrollment(classroomId, enrolledClasses, updateStudentList, studentId)}
+          onClick={() => handleStudentEnrollment(classroomId, enrolledClasses, studentId)}
         >
           Remove
         </Button>
