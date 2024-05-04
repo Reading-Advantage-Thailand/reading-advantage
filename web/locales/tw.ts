@@ -52,6 +52,10 @@ export default {
       practicePage: {
         flashcard: "單詞卡",
         manage: "管理",
+        orderSentences: "排列句子",
+        clozeTest: "填空測試",
+        orderWords: "排序單詞",
+        matching: "匹配",
         flashcardDescription:
           "您可以使用單詞卡來練習您的閱讀技能，您保存的句子將在這裡顯示。",
         savedSentences: "保存的句子",
