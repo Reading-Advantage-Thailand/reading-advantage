@@ -61,6 +61,10 @@ export default {
         // Headings
         flashcard: "Thẻ học",
         manage: "quản lý",
+        orderSentences: "Sắp xếp câu",
+        clozeTest: "Bài kiểm tra lỗ hổng",
+        orderWords: "Sắp xếp từ",
+        matching: "Kết hợp",
         // Descriptions
         flashcardDescription:
           "Bạn có thể luyện tập kỹ năng đọc của mình với thẻ học. Và các câu đoạn đã lưu của bạn sẽ được hiển thị ở đây.",

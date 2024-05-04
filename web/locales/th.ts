@@ -63,6 +63,10 @@ export default {
         //Headings
         flashcard: "การ์ดคำศัพท์",
         manage: "จัดการ",
+        orderSentences: "เรียงประโยค",
+        clozeTest: "ทดสอบเติมคำในช่องว่าง",
+        orderWords: "เรียงคำ",
+        matching: "การจับคู่",
         //descriptions
         flashcardDescription:
           "คุณสามารถฝึกทักษะการอ่านของคุณด้วยการ์ดคำศัพท์ และประโยคที่คุณบันทึกไว้จะปรากฏที่นี่",
