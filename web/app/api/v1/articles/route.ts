@@ -27,6 +27,12 @@ router.use(logRequest);
 
 router.get(getSearchArticles);
 
-export async function GET(request: NextRequest, ctx: { params?: unknown }) {
-    return router.run(request, ctx);
+export async function GET(request: NextRequest, ctx: { params?: unknown }): Promise<NextResponse> {
+    const result = await router.run(request, ctx);
+    if (result instanceof NextResponse) {
+        return result;
+    }
+    // Handle the case where result is not a NextResponse
+    // You might want to return a default NextResponse or throw an error
+    throw new Error("Expected a NextResponse from router.run");
 }
