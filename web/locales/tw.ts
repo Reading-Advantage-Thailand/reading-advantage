@@ -106,7 +106,7 @@ export default {
         matchingPractice: {
           matching: "配對",
           matchingDescription:
-            "這裡有一些您已經閱讀過的文章中的句子。正確配對缺失的單詞。如果您答對了，您將獲得5 XP。",
+            "將句子與其翻譯配對。如果您正確配對所有句子，您將獲得5 XP。",
           saveOrder: "儲存並稍後繼續",
           errorOrder: "請正確排序",
           submitArticle: "檢查您的答案",

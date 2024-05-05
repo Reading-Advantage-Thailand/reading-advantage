@@ -117,7 +117,7 @@ export default {
         matchingPractice: {
           matching: "Ghép cặp",
           matchingDescription:
-            "Đây là một số câu từ một trong những bài báo bạn đã đọc. Ghép đúng các từ bị thiếu. Nếu bạn trả lời đúng, bạn sẽ nhận được 5 XP.",
+            "Hãy ghép câu với bản dịch của nó. Nếu bạn ghép đúng tất cả các câu, bạn sẽ nhận được 5 XP.",
           saveOrder: "Lưu & Tiếp tục sau",
           errorOrder: "Vui lòng sắp xếp đúng",
           submitArticle: "Kiểm tra câu trả lời của bạn",
