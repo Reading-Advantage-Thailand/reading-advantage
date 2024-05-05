@@ -1,5 +1,5 @@
-import { getSearchArticles } from "@/backend/controllers/article_controller";
-import { logRequest } from "@/backend/utils/middleware";
+import { getSearchArticles } from "@/controllers/article_controller";
+import { logRequest } from "@/utils/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
