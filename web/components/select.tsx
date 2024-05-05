@@ -1,149 +1,128 @@
-'use client';
-import React from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { Button } from './ui/button'
-import axios from 'axios'
-import { useRouter } from 'next/navigation';
-import { useScopedI18n } from '@/locales/client';
-import ArticleShowcaseCard from './article-showcase-card';
-import { articleShowcaseType } from '@/types';
+"use client";
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Button } from "./ui/button";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useScopedI18n } from "@/locales/client";
+import ArticleShowcaseCard from "./article-showcase-card";
+import { articleShowcaseType } from "@/types";
+
 type Props = {
-    user: {
-        level: number,
-        // level: string,
-        name: string,
-        id: string,
-    }
-    types: string[],
+  user: {
+    level: number;
+    name: string;
+    id: string;
+  };
+  types: string[];
+};
+
+async function fetchArticles(params: string) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/articles?${params}`
+  );
+
+  const data = await response.json();
+  return data;
 }
 
-export default function Select({
-    user,
-    types,
-}: Props) {
-    const t = useScopedI18n('components.select');
-    const ta = useScopedI18n('components.article');
-    const router = useRouter();
+export default function Select({ user, types }: Props) {
+  const t = useScopedI18n("components.select");
+  const ta = useScopedI18n("components.article");
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-    const [loading, setLoading] = React.useState(false);
-    const [step, setStep] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
+  const [articleTypesData, setArticleTypesData] = React.useState<string[]>([]);
+  const [articleShowcaseData, setArticleShowcaseData] = React.useState<
+    articleShowcaseType[]
+  >([]);
 
-    const [selectedType, setSelectedType] = React.useState('');
-    const [selectedGenre, setSelectedGenre] = React.useState('');
-    const [selectedSubgenre, setSelectedSubgenre] = React.useState('');
+  const selectedType = searchParams.get("type");
+  const selectedGenre = searchParams.get("genre");
+  const selectedSubgenre = searchParams.get("subgenre");
 
-    //remove '-' from types
-    const typesWithoutDash = types.map((type) => {
-        return type.replace('-', ' ')
-    })
-    const [values, setValues] = React.useState<string[]>(typesWithoutDash);
-    const [articleShowcaseData, setArticleShowcaseData] = React.useState<articleShowcaseType[]>([]);
-    //function to replace all '-' with ' '
-    function replaceDashes(str: string) {
-        return str.replace(/\s/g, '-');
+  function getArticleType() {
+    if (selectedType && !selectedGenre && !selectedSubgenre) return "type";
+    if (selectedType && selectedGenre && !selectedSubgenre) return "genre";
+    if (selectedType && selectedGenre && selectedSubgenre) return "subGenre";
+    return "article";
+  }
+
+  async function handleButtonClick(value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (!selectedType && !selectedGenre && !selectedSubgenre) {
+      params.set("type", value);
     }
+    if (selectedType && !selectedGenre && !selectedSubgenre) {
+      params.set("genre", value);
+    }
+    if (selectedType && selectedGenre && !selectedSubgenre) {
+      params.set("subgenre", value);
+    }
+    router.push("?" + params.toString());
+  }
 
-    async function onSubmit(value: string) {
-        console.log(value)
-        let params = {
-            level: user.level,
-            type: replaceDashes(value),
-            genre: '',
-            subgenre: '',
-        }
-        if (step === 0) {
-            setSelectedType(value);
-        }
-        if (step === 1) {
-            params = {
-                level: user.level,
-                type: replaceDashes(selectedType),
-                genre: replaceDashes(value),
-                subgenre: '',
-            }
-            setSelectedGenre(value);
-        }
-        if (step === 2) {
-            params = {
-                level: user.level,
-                type: replaceDashes(selectedType),
-                genre: replaceDashes(selectedGenre),
-                subgenre: replaceDashes(value),
-            }
-            setSelectedSubgenre(value);
-        }
-        try {
-            setLoading(true);
+  React.useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      const response = await fetchArticles(searchParams.toString());
 
-            const response = await axios.get(`/api/articles`, {
-                params: params
-            });
-            const data = response.data.data;
-            console.log(data);
-            if (step === 2) {
-                setArticleShowcaseData(data);
-                // return router.push(`/student/read/${response.data.articleId}`)
-            }
-            setValues(data);
-            setStep(step + 1);
-        } catch (error) {
-            console.log(error)
-        } finally {
-            setLoading(false);
-        }
-    };
+      if (response.results.length === 0) {
+        router.push("?");
+      }
+      if (selectedType && selectedGenre && selectedSubgenre) {
+        setArticleShowcaseData(response.results);
+      } else {
+        setArticleTypesData(response.results);
+      }
+      setLoading(false);
+    }
+    fetchData();
+  }, [types]);
 
-    return (
-        <Card className='my-2'>
-            <CardHeader>
-                <CardTitle>
-                    {t('articleChoose', {
-                        article: <b>{ta(step === 0 ? 'type' : step === 1 ? 'genre' : step === 2 ? 'subGenre' : 'article')}</b>,
-                    })}
-                </CardTitle>
-                <CardDescription>
-                    {t('articleChooseDescription', {
-                        level: <b>{user.level}</b>,
-                        article: <b>{ta(step === 0 ? 'type' : step === 1 ? 'genre' : step === 2 ? 'subGenre' : 'article')}</b>,
-                    })}
-                    {/* Your level is {user.level} and here are the article {step === 0 ? 'types' : step === 1 ? 'genres' : 'sub-genres'} that you can choose. */}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                {
-                    step !== 3 ? <div className='flex flex-wrap gap-2'>
-                        {values.map((value, index) => (
-                            <Button
-                                key={index}
-                                onClick={() => onSubmit(value)}
-                                disabled={loading}
-                            >
-                                {value}
-                            </Button>
-                        ))}
-                    </div> :
-                        <div className='grid sm:grid-cols-2 grid-flow-row gap-4'>
-                            {articleShowcaseData.map((article, index) => (
-                                <ArticleShowcaseCard
-                                    key={index}
-                                    article={articleShowcaseData[index]}
-                                />
-                            ))}
-                        </div>
-                }
-                {/* {
-                     values.map((value, index) => (
-                        <Button
-                            key={index}
-                            onClick={() => onSubmit(value)}
-                            disabled={loading}
-                        >
-                            {value}
-                        </Button>
-                    ))
-                } */}
-            </CardContent>
-        </Card>
-
-    )
+  return (
+    <Card className="my-2">
+      <CardHeader>
+        <CardTitle>
+          {t("articleChoose", {
+            article: <b>{ta(getArticleType())}</b>,
+          })}
+        </CardTitle>
+        <CardDescription>
+          {t("articleChooseDescription", {
+            level: <b>{user.level}</b>,
+            article: <b>{ta(getArticleType())}</b>,
+          })}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {selectedType && selectedGenre && selectedSubgenre ? (
+          <div className="grid sm:grid-cols-2 grid-flow-row gap-4">
+            {articleShowcaseData.map((article, index) => (
+              <ArticleShowcaseCard key={index} article={article} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {articleTypesData.map((type, index) => (
+              <Button
+                key={index}
+                onClick={() => handleButtonClick(type)}
+                disabled={loading}
+              >
+                {type.replace(/_/g, " ")}
+              </Button>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
