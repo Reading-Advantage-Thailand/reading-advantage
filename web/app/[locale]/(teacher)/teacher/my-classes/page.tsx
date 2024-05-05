@@ -53,7 +53,7 @@ const allTeachers = await getAllTeachersData();
 const teacherId = () => {
 let teacherId: String[] = [];
 allTeachers.teachers.forEach((teacher: { id: string; role: any}) => {
-  if (teacher.role.includes('TEACHER') && teacher.id === user.id) {
+  if (teacher.role && teacher.role.includes('TEACHER') && teacher.id === user.id) {
     teacherId.push(teacher.id);
   }
 });
