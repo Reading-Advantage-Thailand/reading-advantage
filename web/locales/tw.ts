@@ -103,6 +103,15 @@ export default {
           nextPassage: "下一段",
           tryToSortThisSentence: "試著排序這句話",
         },
+        matchingPractice: {
+          matching: "配對",
+          matchingDescription:
+            "這裡有一些您已經閱讀過的文章中的句子。正確配對缺失的單詞。如果您答對了，您將獲得5 XP。",
+          saveOrder: "儲存並稍後繼續",
+          errorOrder: "請正確排序",
+          submitArticle: "檢查您的答案",
+          nextPassage: "下一篇章",
+        },
       },
     },
   },

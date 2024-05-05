@@ -1,4 +1,5 @@
 import OrderWords from "@/components/order-words";
+import { match } from "assert";
 
 export default {
   pages: {
@@ -116,6 +117,15 @@ export default {
           submitArticle: "ตรวจสอบคำตอบของคุณ",
           nextPassage: "ตอนต่อไป",
           tryToSortThisSentence: "ลองเรียงประโยคนี้",
+        },
+        matchingPractice: {
+          matching: "การจับคู่",
+          matchingDescription:
+            "นี่คือบางประโยคจากหนึ่งในบทความที่คุณได้อ่านไปแล้ว จับคู่คำที่ขาดหายไปให้ถูกต้อง หากคุณตอบถูก คุณจะได้รับ 5 XP.",
+          saveOrder: "บันทึก & ดำเนินการต่อในภายหลัง",
+          errorOrder: "กรุณาเรียงลำดับให้ถูกต้อง",
+          submitArticle: "ตรวจสอบคำตอบของคุณ",
+          nextPassage: "ตอนต่อไป",
         },
       },
     },

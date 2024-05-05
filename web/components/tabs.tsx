@@ -6,6 +6,7 @@ import FlashCard from "@/components/flash-card";
 import OrderSentences from "@/components/dnd/order-sentences";
 import ClozeTest from "@/components/cloze-test";
 import OrderWords from "@/components/order-words";
+import Matching from "@/components/matching";
 import ManageTab from "./manage-tab";
 import { useScopedI18n } from "@/locales/client";
 
@@ -44,7 +45,7 @@ export default function TabsPractice({ userId }: Props) {
         <OrderWords userId={userId} />
       </TabsContent>
       <TabsContent className="space-y-2" value="tab5">
-        Matching
+        <Matching userId={userId} />
       </TabsContent>
       <TabsContent className="space-y-2" value="tab6">
         <ManageTab userId={userId} />

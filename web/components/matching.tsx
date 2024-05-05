@@ -44,5 +44,13 @@ export default function Matching({ userId }: Props) {
 
   const getUserSentenceSaved = async () => {}
 
-  return <></>;
+  return (
+    <>
+      {" "}
+      <Header
+        heading={t("matchingPractice.matching")}
+        text={t("matchingPractice.matchingDescription")}
+      />
+    </>
+  );
 }

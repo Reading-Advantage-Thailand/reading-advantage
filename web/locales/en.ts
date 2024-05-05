@@ -121,6 +121,15 @@ export default {
           nextPassage: "Next Passage",
           tryToSortThisSentence: "Try to sort this sentence",
         },
+        matchingPractice: {
+          matching: "Matching",
+          matchingDescription:
+            "Here are some sentences from one of the articles you have already read. Match the missing words correctly. If you answer correctly, you will receive 5 XP.",
+          saveOrder: "Save & Continue Later",
+          errorOrder: "Please order correctly",
+          submitArticle: "Check your answers",
+          nextPassage: "Next Passage",
+        },
       },
     },
   },
