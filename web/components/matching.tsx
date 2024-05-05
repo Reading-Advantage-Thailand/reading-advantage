@@ -33,6 +33,9 @@ export default function Matching({ userId }: Props) {
   );
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [articleMatching, setArticleMatching] = useState<any[]>([]);
+  const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
+  const [articleRandom, setArticleRandom] = useState<any[]>([]);
   const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
   const [showBadges, setShowBadges] = useState(false);
   const [showButtonNextPassage, setShowButtonNextPassage] = useState(false);
@@ -42,7 +45,77 @@ export default function Matching({ userId }: Props) {
     getUserSentenceSaved();
   }, []);
 
-  const getUserSentenceSaved = async () => {}
+  const getUserSentenceSaved = async () => {
+    try {
+      const res = await axios.get(`/api/users/${userId}/sentences`);
 
-  return <></>;
+      // step 1 : sort Article sentence: ID and SN due date expired
+      const matching = res.data.sentences.sort((a: Sentence, b: Sentence) => {
+        return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
+      });
+      console.log("🚀 ~ matching ~ matching:", matching);
+
+      const newTodos = [...articleMatching];
+      const data = [...articleBeforeRandom];
+      for (const article of matching) {
+        newTodos.push({
+          [article?.articleId]: {
+            articleId: article?.articleId,
+            timepoint: article?.timepoint,
+            endTimepoint: article?.endTimepoint,
+            sentenceEn: article?.sentence,
+            sentenceTh: article?.translation?.th
+          },
+        });
+        data.push(article?.sentence, article?.translation?.th);
+      }
+      setArticleMatching(newTodos);
+      setArticleBeforeRandom(data);
+      setArticleRandom(swapWordPositions(data));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  
+  const swapWordPositions = (words: any) => {
+    const rawData = JSON.parse(JSON.stringify(words));
+    if (rawData.length > 1) {
+      rawData.forEach((_element: string, index: number) => {
+        const j = Math.floor(Math.random() * (index + 1));
+        [rawData[index], rawData[j]] = [rawData[j], rawData[index]];
+      });
+    }
+
+    return rawData;
+  };
+
+  console.log("🚀 ~ Matching ~ articleMatching:", articleMatching);
+  console.log("🚀 ~ Matching ~ articleBeforeRandom:", articleBeforeRandom);
+  console.log("🚀 ~ Matching ~ articleRandom:", articleRandom);
+
+  return (
+    <>
+      <Header
+        heading={t("matchingPractice.matching")}
+        text={t("matchingPractice.matchingDescription")}
+      />
+      <div className="mt-10">
+        {articleRandom.length === 0 ? (
+          <>
+            <div className="grid w-full gap-10">
+              <div className="mx-auto w-[800px] space-y-6">
+                <Skeleton className="h-[200px] w-full" />
+                <Skeleton className="h-[20px] w-2/3" />
+                <Skeleton className="h-[20px] w-full" />
+                <Skeleton className="h-[20px] w-full" />
+              </div>
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
+      </div>
+    </>
+  );
 }

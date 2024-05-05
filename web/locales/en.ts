@@ -121,6 +121,15 @@ export default {
           nextPassage: "Next Passage",
           tryToSortThisSentence: "Try to sort this sentence",
         },
+        matchingPractice: {
+          matching: "Matching",
+          matchingDescription:
+            "Match the sentence with its translation. If you match all the sentences correctly, you'll receive 5 XP.",
+          saveOrder: "Save & Continue Later",
+          errorOrder: "Please order correctly",
+          submitArticle: "Check your answers",
+          nextPassage: "Next Passage",
+        },
       },
     },
   },

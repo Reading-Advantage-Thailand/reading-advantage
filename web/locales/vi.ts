@@ -114,6 +114,15 @@ export default {
           nextPassage: "Đoạn tiếp theo",
           tryToSortThisSentence: "Hãy sắp xếp câu này.",
         },
+        matchingPractice: {
+          matching: "Ghép cặp",
+          matchingDescription:
+            "Hãy ghép câu với bản dịch của nó. Nếu bạn ghép đúng tất cả các câu, bạn sẽ nhận được 5 XP.",
+          saveOrder: "Lưu & Tiếp tục sau",
+          errorOrder: "Vui lòng sắp xếp đúng",
+          submitArticle: "Kiểm tra câu trả lời của bạn",
+          nextPassage: "Đoạn tiếp theo",
+        },
       },
     },
   },
