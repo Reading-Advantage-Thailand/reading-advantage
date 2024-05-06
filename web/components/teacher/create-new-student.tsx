@@ -22,6 +22,7 @@ function CreateNewStudent() {
   const classCode = "ABC123";
   const [inputs, setInputs] = useState(0);
 
+
   return (
     <div>
       <Card className="flex flex-col items-center justify-center">

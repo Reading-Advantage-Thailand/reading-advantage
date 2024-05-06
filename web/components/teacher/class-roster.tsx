@@ -291,17 +291,12 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
           className="max-w-sm mt-4"
         />
         <div className="max-w-sm mt-4">
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
               <Link href={`/teacher/class-roster/classroomId/create-new-student`}>
             <Button variant="outline">
               <Icons.add />
               &nbsp; Add new students
             </Button>
               </Link>
-          </DialogTrigger>
-            <DialogContent>Create new student dialog coming soon</DialogContent>
-        </Dialog>
       </div>
       </div>
       <div className="rounded-md border mt-4">
