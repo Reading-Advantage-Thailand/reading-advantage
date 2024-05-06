@@ -39,3 +39,9 @@ node_modules
 #env
 .env
 package-lock.json
+
+# Remove all lock.json files
+**/package-lock.json
+**/yarn.lock
+**/npm-shrinkwrap.json
+**/pnpm-lock.yaml

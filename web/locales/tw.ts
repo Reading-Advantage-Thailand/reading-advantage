@@ -103,6 +103,15 @@ export default {
           nextPassage: "下一段",
           tryToSortThisSentence: "試著排序這句話",
         },
+        matchingPractice: {
+          matching: "配對",
+          matchingDescription:
+            "將句子與其翻譯配對。如果您正確配對所有句子，您將獲得5 XP。",
+          saveOrder: "儲存並稍後繼續",
+          errorOrder: "請正確排序",
+          submitArticle: "檢查您的答案",
+          nextPassage: "下一篇章",
+        },
       },
     },
   },
