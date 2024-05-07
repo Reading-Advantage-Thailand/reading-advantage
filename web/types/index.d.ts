@@ -188,18 +188,25 @@ export type ArticleType = {
 }
 
 export type articleShowcaseType = {
-    articleId: string,
-    title: string,
-    type: string,
-    genre: string,
-    subgenre: string,
-    raLevel: number,
-    cefrLevel: string,
+    // articleId: string,
+    // title: string,
+    // type: string,
+    // genre: string,
+    // subgenre: string,
+    // raLevel: number,
+    // cefrLevel: string,
+    // summary: string,
+    // isRead: boolean,
+    // status: RecordStatus,
+    // averageRating: number,
+    // totalRatings: number,
+    // topic: string,
+    // readCount: number
+    average_rating: number,
+    cefr_level: string,
+    id: string,
+    ra_level: string,
     summary: string,
-    isRead: boolean,
-    status: RecordStatus,
-    averageRating: number,
-    totalRatings: number,
-    topic: string,
-    readCount: number
+    title: string,
+    is_read: boolean,
 }

@@ -99,7 +99,7 @@ export default async function UnEnrollPage({
 const studentIdInMatchedClassrooms = matchedClassrooms.flatMap(
     (classroom) => {
       if (classroom && classroom.student && classroom.student.length === 0) {
-        console.log('This classroom has no student');
+        return ('This classroom has no student');
       } else {
          return classroom && classroom.student ? classroom.student.map((student: { studentId: string; }) => student.studentId) : [];
       }

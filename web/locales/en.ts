@@ -65,6 +65,10 @@ export default {
         //Headings
         flashcard: "Flashcard",
         manage: "Manage",
+        orderSentences: "Order Sentences",
+        clozeTest: "Cloze Test",
+        orderWords: "Order Words",
+        matching: "Matching",
         //descriptions
         flashcardDescription:
           "You can practice your reading skills with flashcards. and your saved sentences will be displayed here.",
@@ -115,7 +119,16 @@ export default {
           errorOrder: "Please order correctly",
           submitArticle: "Check your answers",
           nextPassage: "Next Passage",
-          tryToSortThisSentence: "Try to sort this sentence",          
+          tryToSortThisSentence: "Try to sort this sentence",
+        },
+        matchingPractice: {
+          matching: "Matching",
+          matchingDescription:
+            "Match the sentence with its translation. If you match all the sentences correctly, you'll receive 5 XP.",
+          saveOrder: "Save & Continue Later",
+          errorOrder: "Please order correctly",
+          submitArticle: "Check your answers",
+          nextPassage: "Next Passage",
         },
       },
     },

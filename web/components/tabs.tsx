@@ -6,7 +6,9 @@ import FlashCard from "@/components/flash-card";
 import OrderSentences from "@/components/dnd/order-sentences";
 import ClozeTest from "@/components/cloze-test";
 import OrderWords from "@/components/order-words";
+import Matching from "@/components/matching";
 import ManageTab from "./manage-tab";
+import { useScopedI18n } from "@/locales/client";
 
 type Props = {
   userId: string;
@@ -14,16 +16,17 @@ type Props = {
 
 export default function TabsPractice({ userId }: Props) {
   const [showButton, setShowButton] = useState(true);
+  const t = useScopedI18n("pages.student.practicePage");
 
   return (
     <Tabs defaultValue="tab1" className="w-full">
       <TabsList className="h-fit grid grid-cols-1 md:grid-cols-6">
-        <TabsTrigger value="tab1">Flashcard Practice</TabsTrigger>
-        <TabsTrigger value="tab2">Order Sentences</TabsTrigger>
-        <TabsTrigger value="tab3">Cloze Test</TabsTrigger>
-        <TabsTrigger value="tab4">Order Words</TabsTrigger>
-        <TabsTrigger value="tab5">Matching</TabsTrigger>
-        <TabsTrigger value="tab6">Manage</TabsTrigger>
+        <TabsTrigger value="tab1">{t("flashcard").toString()}</TabsTrigger>
+        <TabsTrigger value="tab2">{t("orderSentences").toString()}</TabsTrigger>
+        <TabsTrigger value="tab3">{t("clozeTest").toString()}</TabsTrigger>
+        <TabsTrigger value="tab4">{t("orderWords").toString()}</TabsTrigger>
+        <TabsTrigger value="tab5">{t("matching").toString()}</TabsTrigger>
+        <TabsTrigger value="tab6">{t("manage").toString()}</TabsTrigger>
       </TabsList>
       <TabsContent className="space-y-2" value="tab1">
         <FlashCard
@@ -42,7 +45,7 @@ export default function TabsPractice({ userId }: Props) {
         <OrderWords userId={userId} />
       </TabsContent>
       <TabsContent className="space-y-2" value="tab5">
-        Matching
+        <Matching userId={userId} />
       </TabsContent>
       <TabsContent className="space-y-2" value="tab6">
         <ManageTab userId={userId} />

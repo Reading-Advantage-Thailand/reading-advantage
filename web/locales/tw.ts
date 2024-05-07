@@ -52,6 +52,10 @@ export default {
       practicePage: {
         flashcard: "單詞卡",
         manage: "管理",
+        orderSentences: "排列句子",
+        clozeTest: "填空測試",
+        orderWords: "排序單詞",
+        matching: "匹配",
         flashcardDescription:
           "您可以使用單詞卡來練習您的閱讀技能，您保存的句子將在這裡顯示。",
         savedSentences: "保存的句子",
@@ -98,6 +102,15 @@ export default {
           submitArticle: "檢查您的答案",
           nextPassage: "下一段",
           tryToSortThisSentence: "試著排序這句話",
+        },
+        matchingPractice: {
+          matching: "配對",
+          matchingDescription:
+            "將句子與其翻譯配對。如果您正確配對所有句子，您將獲得5 XP。",
+          saveOrder: "儲存並稍後繼續",
+          errorOrder: "請正確排序",
+          submitArticle: "檢查您的答案",
+          nextPassage: "下一篇章",
         },
       },
     },

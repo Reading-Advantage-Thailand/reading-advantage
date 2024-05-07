@@ -1,4 +1,5 @@
 import OrderWords from "@/components/order-words";
+import { match } from "assert";
 
 export default {
   pages: {
@@ -63,6 +64,10 @@ export default {
         //Headings
         flashcard: "การ์ดคำศัพท์",
         manage: "จัดการ",
+        orderSentences: "เรียงประโยค",
+        clozeTest: "ทดสอบเติมคำในช่องว่าง",
+        orderWords: "เรียงคำ",
+        matching: "การจับคู่",
         //descriptions
         flashcardDescription:
           "คุณสามารถฝึกทักษะการอ่านของคุณด้วยการ์ดคำศัพท์ และประโยคที่คุณบันทึกไว้จะปรากฏที่นี่",
@@ -112,6 +117,15 @@ export default {
           submitArticle: "ตรวจสอบคำตอบของคุณ",
           nextPassage: "ตอนต่อไป",
           tryToSortThisSentence: "ลองเรียงประโยคนี้",
+        },
+        matchingPractice: {
+          matching: "การจับคู่",
+          matchingDescription:
+            "จับคู่ประโยคกับการแปลของมัน ถ้าคุณจับคู่ทุกประโยคถูกต้อง คุณจะได้รับ 5 XP.",
+          saveOrder: "บันทึก & ดำเนินการต่อในภายหลัง",
+          errorOrder: "กรุณาเรียงลำดับให้ถูกต้อง",
+          submitArticle: "ตรวจสอบคำตอบของคุณ",
+          nextPassage: "ตอนต่อไป",
         },
       },
     },
