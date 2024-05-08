@@ -149,6 +149,8 @@ export default async function rosterPage(params: {
           lastActivity: studentData.lastActivity,
           studentName: matchedStudent ? matchedStudent.name : "Unknown",
           classroomName: classStudent.classroomName,
+          classroomId: classStudent.id,
+          email: matchedStudent ? matchedStudent.email : "Unknown",
         };
       }
     ): []

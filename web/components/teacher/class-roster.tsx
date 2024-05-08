@@ -40,7 +40,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { DialogTrigger } from "@radix-ui/react-dialog";
 import { Icons } from "@/components/icons";
 
 type Student = {
@@ -51,6 +50,8 @@ type Student = {
   };
   studentName: string;
   classroomName: string;
+  classroomId: string;
+  email: string;
 };
 
 type MyRosterProps = {
@@ -291,7 +292,7 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
           className="max-w-sm mt-4"
         />
         <div className="max-w-sm mt-4">
-              <Link href={`/teacher/class-roster/classroomId/create-new-student`}>
+              <Link href={studentInClass && studentInClass.length > 0 ? `/teacher/class-roster/${studentInClass[0].classroomId}/create-new-student`: '#'}>
             <Button variant="outline">
               <Icons.add />
               &nbsp; Add new students

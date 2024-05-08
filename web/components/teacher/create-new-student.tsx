@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -17,210 +17,167 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Icons } from "@/components/icons";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 
-function CreateNewStudent() {
-  const classroomName = "Math 101";
-  const classCode = "ABC123";
+type Student = {
+  studentId: string;
+  lastActivity: {
+    _seconds: number;
+    _nanoseconds: number;
+  };
+  studentName: string;
+  classroomName: string;
+  classroomsId: string;
+  email: string;
+};
+
+type CreateNewStudentProps = {
+  studentDataInClass: Student[];
+  allStudentEmail: any;
+  studentInEachClass: any;
+};
+
+async function CreateNewStudent({
+  studentDataInClass,
+  allStudentEmail,
+  studentInEachClass,
+}: CreateNewStudentProps) {
+  const router = useRouter();
   const [inputs, setInputs] = useState(0);
+  const [form, setForm] = useState({
+    email: "",
+  });
+  const [email, setEmail] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
-const handleAddStudent = () => {
-    console.log("Add student");
-    
+  const classroomId = studentDataInClass[0].classroomsId;
+
+    const handleAddStudent = async (classroomId: string, email: string) => {
+      let studentEmail = allStudentEmail.map((student: { email: string, studentId: string }) => student.email);
+
+  const studentIdToAdd = () => {
+      allStudentEmail.forEach((student: { email: string, studentId: string }) => {
+          if (student.email === email) {
+              if (studentDataInClass[0].studentId !== student.studentId) {
+                  studentInEachClass.push(student.studentId);
+              }
+          }
+      });
+      return studentInEachClass;
+  }
+      const studentId = studentIdToAdd();
+
+      const updateStudentListBuilder = studentId.map((id: string) => (
+          {
+          studentId: id,
+          lastActivity: new Date(),
+        }));
+
+      if (studentEmail.includes(email)) {
+        console.log("Email already exists, can be added");
+        // try {
+        //   const response = await axios.patch(`/api/classroom/${classroomId}/enroll`, {
+        //     student: updateStudentListBuilder,
+        //   });
+
+        //   if (response.status === 200) {
+        //     console.log("add success");
+        //   } else {
+        //     console.log("add failed with status: ", response.status);
+        //   }
+
+        //   return new Response(
+        //     JSON.stringify({
+        //       message: "success",
+        //     }),
+        //     { status: 200 }
+        //   );
+        // } catch (error) {
+        //   return new Response(
+        //     JSON.stringify({
+        //       message: error,
+        //     }),
+        //     { status: 500 }
+        //   );
+        // } finally {
+        //   router.refresh();
+        // }
+      } else {
+        toast({
+            title: "Email Not Found", 
+            description: "This email address isn't associated with any account. Please check the spelling or try a different email address.",
+            variant: "destructive",
+          });
+      }
+    };
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (formRef.current) {
+        const formEmail = new FormData(formRef.current);
+        const entriesArray = Array.from(formEmail.entries());
+        const data = Object.fromEntries(entriesArray);
+        handleAddStudent(classroomId, data.email as string);
+    }
 }
+
   return (
     <div>
       <Card className="flex flex-col items-center justify-center">
-        <CardTitle className="mt-10 mb-4 text-3xl text-[#3882fd]">
-          Add new students to {classroomName}
+        <CardTitle className="mt-10 mb-4 text-3xl ">
+          Add new students to {studentDataInClass[0].classroomName}
         </CardTitle>
         <CardDescription className="text-base mb-4">
-          There are two ways to add students to the classroom
+          Add new students to the classroom by entering their email addresses.
         </CardDescription>
-        {/* <Tabs.Root> */}
-          {/* <div className="flex justify-center items-center">
-            <Tabs.List className="h-fit w-fit grid grid-cols-2 md:grid-cols-2 rounded-full border-4 overflow-x-auto border-[#314265]">
-              <Tabs.Trigger
-                className="focus:text-white focus:bg-[#314265] rounded-l-full p-2"
-                value="class code"
-              >
-                Send Code
-              </Tabs.Trigger>
-              <Tabs.Trigger
-                value="manually"
-                className=" focus:text-white focus:bg-[#314265]  rounded-r-full p-2"
-              >
-                Add Manually
-              </Tabs.Trigger>
-            </Tabs.List>
-          </div> */}
-          {/* class code */}
-          {/* <Tabs.Content
-            value="class code"
-            className="flex flex-col items-center"
-          >
-            <Card className="flex flex-col items-center justify-center my-4 ">
-              <CardContent className="text-base overflow-auto text-center w-[67%] mt-8">
-                Share this class code with your students.
-                <br />
-                They can enter the code when they sign up and they will
-                automatically join the class you have just created.
-              </CardContent>
-              <CardContent className="flex flex-col mt-6">
-                Class Code:{" "}
-                <input
-                  type="text"
-                  value={classCode}
-                  readOnly
-                  className="border bg-gray-200 p-1 rounded h-[60px] text-center text-3xl"
-                />
-              </CardContent>
-              <CardFooter className="mb-4 text-[#3882fd] cursor-pointer">
-                <Link href="">Download handout</Link>
-              </CardFooter>
-            </Card>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-full border-2 border-[#314265]">
-              Done
-            </button>
-          </Tabs.Content> */}
+              <form ref={formRef} onSubmit={handleSubmit} >
+        <CardContent className="flex flex-col items-center mb-8 overflow-auto md:w-full">
+          <Card className="my-4 overflow-x-auto flex flex-col items-center justify-center">
+            <div className="flex justify-center items-center mt-8 w-[90%]">
+          <label htmlFor="email" className="text-base">
+              Email:
+            </label>
+            <Input
+              type="email"
+              name="email"
+              placeholder="Enter email address"
+              className="hover:border-none border-b p-2 m-2 focus:outline-none focus:border-transparent overflow-x-auto"
+            />
 
-          {/* manually */}
-          <CardContent
-            // value="manually"
-            className="flex flex-col items-center mb-8"
-          >
-            {/* <div className="flex ml-auto mr-[10%] cursor-pointer text-[#3882fd]">
-              Import from CSV
-            </div> */}
-              <Card className="my-4">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="h-[50px]">
-                      <TableCell className="p-4">First Name</TableCell>
-                      <TableCell className="p-4">Last Name</TableCell>
-                      <TableCell className="p-4">Email</TableCell>
-                      <TableCell className="p-4">User Name</TableCell>
-                      <TableCell className="p-4">Password</TableCell>
-                    </TableRow>
-                  </TableHeader>
-                  {Array.from({ length: inputs }).map(
-                    (_: any, index: number) => (
-                      <TableBody key={index}>
-                        <TableCell>
-                          <input
-                            type="text"
-                            placeholder="First Name"
-                            className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent "
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <input
-                            type="text"
-                            placeholder="Last Name"
-                            className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent"
-                            onInvalid={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => {
-                              e.target.setCustomValidity(
-                                "Last Name is required"
-                              );
-                            }}
-                            onInput={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => {
-                              e.target.setCustomValidity("");
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <input
-                            type="text"
-                            placeholder="Email(Optional)"
-                            className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <input
-                            type="text"
-                            placeholder="User Name"
-                            className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <input
-                            type="text"
-                            placeholder="Password"
-                            className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent"
-                          />
-                        </TableCell>
-                      </TableBody>
-                    )
-                  )}
-                  <TableBody>
-                    <TableCell>
-                      <input
-                        type="text"
-                        placeholder="First Name"
-                        className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent overflow-x-auto"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <input
-                        type="text"
-                        placeholder="Last Name"
-                        className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent overflow-x-auto"
-                        onInvalid={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          e.target.setCustomValidity("Last Name is required");
-                        }}
-                        onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          e.target.setCustomValidity("");
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <input
-                        type="text"
-                        placeholder="Email(Optional)"
-                        className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent overflow-x-auto"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <input
-                        type="text"
-                        placeholder="User Name"
-                        className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent overflow-x-auto"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <input
-                        type="text"
-                        placeholder="Password"
-                        className="hover:border-none border-b p-2 focus:outline-none focus:border-transparent overflow-x-auto"
-                      />
-                    </TableCell>
-                  </TableBody>
-                </Table>
-                <Link
-                  href=""
-                  className="flex justify-end m-4 p-4 text-[#3882fd] cursor-pointer"
-                  onClick={() => setInputs((prevInputs) => prevInputs + 1)}
-                >
-                  Add new student <Icons.addUser className="w-5 ml-2" />
-                </Link>
-                <CardDescription className="text-center w-full m-4 p-4 mr-8 text-red-500 mb-16">
-                  To add a student, please fill in the required fields above.
-                </CardDescription>
-              </Card>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-full mt-2 flex border-2 border-[#314265]" onClick={handleAddStudent}>
-              SAVE AND CONTINUE
-            </button>
-            <CardDescription className="text-center overflow-auto mt-8 md:w-[85%] lg:w-50%]">
-              * Clicking the save button will create these student accounts and
-              you will receive an email with a file containing these credentials
-              for future use. If you do not see the email in a few minutes,
-              check your 'junk mail', 'spam' or 'promotions' folder.
+            </div>
+            {Array.from({ length: inputs }).map((_: any, index: number) => (
+              <Input
+                type="email"
+                name='email'
+                placeholder="Enter email address"
+                className="hover:border-none border-b p-2 m-2 ml-12 focus:outline-none focus:border-transparent overflow-x-auto w-[77%]"
+              />
+            ))}
+            <Link
+              href=""
+              className="flex justify-end m-4 p-4 text-[#3882fd] cursor-pointer"
+              onClick={() => {setInputs((prevInputs) => prevInputs + 1)}}
+            >
+              Add new student <Icons.addUser className="w-5 ml-2" />
+            </Link>
+            <CardDescription className="text-center w-full m-4 p-4 mr-8 text-red-500 mb-16">
+              To add a student, please fill in the required fields above.
             </CardDescription>
-          </CardContent>
-        {/* </Tabs.Root> */}
+          </Card>
+          <Button
+          type="submit"
+            variant={"default"}
+            className=" mt-2"
+            // onClick={() => handleAddStudent(classroomId)}
+          >
+            SAVE AND CONTINUE
+          </Button>
+        </CardContent>
+          </form>
       </Card>
     </div>
   );
