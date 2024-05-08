@@ -63,7 +63,6 @@ export default function CreateNewStudent({
       return studentInEachClass;
     };
     const studentId = studentIdToAdd();
-console.log(studentId);
 
     const updateStudentListBuilder = studentId.map((id: string) => ({
       studentId: id,
@@ -82,6 +81,11 @@ console.log(studentId);
 
         if (response.status === 200) {
           console.log("add success");
+          toast({
+            title: "Student Added",
+            description: "Student successfully added to this class.",
+            variant: "default",
+          })
         } else {
           console.log("add failed with status: ", response.status);
         }
@@ -100,7 +104,7 @@ console.log(studentId);
           { status: 500 }
         );
       } finally {
-        router.refresh();
+        router.push(`/teacher/class-roster/${classroomId}`)
       }
     } else {
       toast({
