@@ -87,7 +87,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
         setRedirectUrl(`/teacher/class-roster/${id}`);
         break;
       case "reports":
-        setRedirectUrl(`/teacher/reports`);
+        setRedirectUrl(`/teacher/reports/${id}`);
         break;
       default:
         console.log("default");
