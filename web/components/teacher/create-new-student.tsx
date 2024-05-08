@@ -32,7 +32,7 @@ type CreateNewStudentProps = {
   studentInEachClass: any;
 };
 
-async function CreateNewStudent({
+export default function CreateNewStudent({
   studentDataInClass,
   allStudentEmail,
   studentInEachClass,
@@ -145,8 +145,9 @@ console.log(studentId);
                   className="hover:border-none border-b p-2 m-2 focus:outline-none focus:border-transparent overflow-x-auto"
                 />
               </div>
-              {Array.from({ length: inputs }).map((_: any) => (
+              {Array.from({ length: inputs }).map((_: any, index: number) => (
                 <Input
+                key={index}
                   type="email"
                   name="email"
                   placeholder="Enter email address"
@@ -176,4 +177,3 @@ console.log(studentId);
   );
 }
 
-export default CreateNewStudent;
