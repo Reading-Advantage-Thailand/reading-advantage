@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 
-export default async function myClassesPage() {
+export default async function MyClassesPage() {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");

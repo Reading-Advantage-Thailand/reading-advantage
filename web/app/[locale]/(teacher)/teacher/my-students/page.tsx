@@ -5,7 +5,7 @@ import React from 'react'
 import { headers } from "next/headers";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 
-export default async function myStudentPage() {
+export default async function MyStudentPage() {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
