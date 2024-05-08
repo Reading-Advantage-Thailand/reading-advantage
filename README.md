@@ -22,7 +22,7 @@ Our development approach emphasizes agility, scalability, and user-centric desig
 ## Current Features and Roadmap | คุณสมบัติปัจจุบันและแผนงาน
 Reading Advantage combines extensive reading with AI to enhance language learning:
 - **Extensive Reading Library:** AI-curated materials for all user levels.
-- **Personalized Learning Paths:** Adaptive algorithms for customized content.
+- **Personalized Learning Paths:** Users choice for customized content.
 - **Interactive Exercises:** Engaging exercises and quizzes.
 - **Pronunciation Practice:** Google's Neural2 TTS for pronunciation and listening skills.
 
@@ -42,9 +42,13 @@ Detailing challenges like AI service integration and user data security, along w
 5. [x] Audio with Highlighting | เสียงพร้อมไฮไลท์ประโยค
 6. [x] Translation Pane | บานหน้าต่างการแปล
 7. [x] Sentence Saving | การบันทึกประโยค
-8. [x] Vocabulary SRS Practice | การฝึกฝนคำศัพท์ SRS
-9. [x] Comprehension Questions | คำถามความเข้าใจ
-10. [ ] Writing Prompts | คำแนะนำในการเขียน
+8. [x] Sentence SRS Practice | การฝึกประโยชน์ SRS
+8. [ ] Article vocabulary lists
+8. [ ] Vocabulary SRS Practice | การฝึกฝนคำศัพท์ SRS
+9. [x] MC and SA Comprehension Questions | คำถามความเข้าใจ
+9. [ ] First-run tour
+9. [ ] "Ask questions about the language in this article" Chatbot.
+10. [ ] LA Writing Prompts and Feedback | คำแนะนำในการเขียน
 11. [ ] Running Records | การบันทึกการวิ่ง
 12. [ ] Teacher & Classroom Management | การจัดการครูและห้องเรียน
 13. [ ] School Admin Management | การจัดการผู้ดูแลโรงเรียน
