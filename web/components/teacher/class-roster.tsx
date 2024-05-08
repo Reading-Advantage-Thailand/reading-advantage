@@ -40,7 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import CreateNewStudent from "./create-new-student";
+import { Icons } from "@/components/icons";
 
 type Student = {
   studentId: string;
@@ -50,6 +50,8 @@ type Student = {
   };
   studentName: string;
   classroomName: string;
+  classroomId: string;
+  email: string;
 };
 
 type MyRosterProps = {
@@ -276,7 +278,7 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
           Roster for classroom : {studentInClass[0].classroomName}
         </div>
       ) : (
-        <div className="font-bold text-3xl">No students in the class</div>
+        <div className="font-bold text-3xl">No students in the class, please select from My Classes</div>
       )}
       <div className="flex justify-between">
         <Input
@@ -289,7 +291,14 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
           }
           className="max-w-sm mt-4"
         />
-        <CreateNewStudent />
+        <div className="max-w-sm mt-4">
+              <Link href={studentInClass && studentInClass.length > 0 ? `/teacher/class-roster/${studentInClass[0].classroomId}/create-new-student`: '#'}>
+            <Button variant="outline">
+              <Icons.add />
+              &nbsp; Add new students
+            </Button>
+              </Link>
+      </div>
       </div>
       <div className="rounded-md border mt-4">
         <Table>

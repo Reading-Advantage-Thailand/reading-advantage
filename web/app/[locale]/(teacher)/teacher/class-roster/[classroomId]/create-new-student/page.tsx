@@ -1,22 +1,18 @@
-import ClassRoster from "@/components/teacher/class-roster";
-import React from "react";
+import React from 'react'
+import CreateNewStudent from '@/components/teacher/create-new-student';
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 
-export default async function rosterPage(params: {
-  params: {classroomId: string;}
-}) {
-  const user = await getCurrentUser();
-  if (!user) {
-    return redirect("/auth/signin");
-  }
-  if (user.role === "TEACHER") {
-    return redirect("/teacher/my-classes");
-  }
 
-  //get all classroom data from database
-  async function getAllClassroom() {
+export default async function AddNewStudent(params: { params: { classroomId: string; }; }) {
+  const user = await getCurrentUser();
+if (!user) {
+  return redirect("/auth/signin");
+}
+
+//get all classroom data from database
+async function getAllClassroom() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom/`,
@@ -67,18 +63,18 @@ export default async function rosterPage(params: {
       console.error("Failed to parse JSON", error);
     }
   }
-  const allTeachers = await getAllTeachersData();
+const allTeachers = await getAllTeachersData();
 
-  const teacherId = () => {
+const teacherId = () => {
     let teacherId: String[] = [];
     allTeachers.teachers.forEach((teacher: { id: string; role: any }) => {
-      if (teacher.role.includes("TEACHER") && teacher.id === user.id) {
-        teacherId.push(teacher.id);
-      }
+        if (teacher.role.includes("TEACHER") && teacher.id === (user.id)) {
+            teacherId.push(teacher.id);
+        }
     });
     return teacherId;
-  };
-  const teacher = teacherId();
+};
+const teacher = teacherId();
 
   //get student in each class
   const getStudentInEachClass = (classroomId: string) => {
@@ -149,16 +145,24 @@ export default async function rosterPage(params: {
           lastActivity: studentData.lastActivity,
           studentName: matchedStudent ? matchedStudent.name : "Unknown",
           classroomName: classStudent.classroomName,
-          classroomId: classStudent.id,
+          classroomsId: classStudent.id,
           email: matchedStudent ? matchedStudent.email : "Unknown",
         };
       }
     ): []
   );
 
+  //get student email
+ const studentEmail = allStudent.students.map((student: { id: string, email: string }) => {
+    return {
+      email: student.email, 
+      studentId: student.id
+    };
+    });
+
   return (
-    <div>
-      <ClassRoster studentInClass={studentsMapped} />
-    </div>
-  );
+    <>
+  <CreateNewStudent studentDataInClass={studentsMapped} allStudentEmail={studentEmail} studentInEachClass={studentInEachClass}/>
+    </>
+  )
 }
