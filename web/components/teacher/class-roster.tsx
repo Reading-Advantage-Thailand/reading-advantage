@@ -278,7 +278,7 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
           Roster for classroom : {studentInClass[0].classroomName}
         </div>
       ) : (
-        <div className="font-bold text-3xl">No students in the class</div>
+        <div className="font-bold text-3xl">No students in the class, please select from My Classes</div>
       )}
       <div className="flex justify-between">
         <Input
