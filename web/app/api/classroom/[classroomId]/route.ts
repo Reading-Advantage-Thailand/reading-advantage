@@ -36,7 +36,6 @@ export async function PATCH(req: Request,  context: z.infer<typeof routeContextS
         const docRef = db.collection('classroom').doc(classroomId);
         const doc = await docRef.get();
         const classroomData = doc.data();
-console.log('classroomData', classroomData);
 
         // Check if the classroom exists and the id matches
         if (!doc.exists || doc.id !== classroomId) {
