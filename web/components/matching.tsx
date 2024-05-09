@@ -32,7 +32,6 @@ export default function Matching({ userId }: Props) {
     "pages.student.practicePage.flashcardPractice"
   );
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [articleMatching, setArticleMatching] = useState<any[]>([]);
   const [articleBeforeRandom, setArticleBeforeRandom] = useState<any[]>([]);
   const [articleRandom, setArticleRandom] = useState<any[]>([]);
@@ -53,13 +52,13 @@ export default function Matching({ userId }: Props) {
       const matching = res.data.sentences.sort((a: Sentence, b: Sentence) => {
         return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
       });
-      console.log("🚀 ~ matching ~ matching:", matching);
 
       const newTodos = [...articleMatching];
       const data = [...articleBeforeRandom];
       for (const article of matching) {
         newTodos.push({
-          [article?.articleId]: {
+          [article?.id]: {
+            id: article?.id,
             articleId: article?.articleId,
             timepoint: article?.timepoint,
             endTimepoint: article?.endTimepoint,
@@ -89,6 +88,12 @@ export default function Matching({ userId }: Props) {
 
     return rawData;
   };
+
+  // action card
+  const handleCardClick = (index: number) => {
+    // We will handle it later
+  };
+
 
   console.log("🚀 ~ Matching ~ articleMatching:", articleMatching);
   console.log("🚀 ~ Matching ~ articleBeforeRandom:", articleBeforeRandom);
