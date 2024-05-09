@@ -6,7 +6,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-  TableHead
+  TableHead,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,12 +28,12 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-// import { CardContent, TableHead } from "@mui/material";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import EditStudent from "./edit-student";
 
 type Student = {
   studentId: string;
@@ -50,7 +50,7 @@ type MyStudentProps = {
   studentInClass: Student[];
 };
 
-export default function Reports({ studentInClass }: MyStudentProps) {
+export default function Reports({ studentInClass, userId}: MyStudentProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -71,19 +71,14 @@ export default function Reports({ studentInClass }: MyStudentProps) {
     }
   }, [selectedStudentId, action, redirectUrl, router]);
 
-  const handleActionSelected = (action: string, studentId: string, classroomId: string) => {
-    console.log('studentId', studentId);
-    console.log('action', action);
-    console.log('classroomId', classroomId);
-    
-    
-    
+  const handleActionSelected = (
+    action: string,
+    studentId: string,
+    classroomId: string,
+  ) => {
     switch (action) {
       case "view details":
-        setRedirectUrl(`/teacher/reports/${classroomId}/report-student-progress/${studentId}`);
-        break;
-      case "edit":
-        // setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
+        setRedirectUrl(`/teacher/student-progress/${studentId}`)
         break;
       case "remove":
         setRedirectUrl(`/teacher/unenroll-classes/${studentId}`);
@@ -100,8 +95,8 @@ export default function Reports({ studentInClass }: MyStudentProps) {
       sum += student.level;
     });
     return sum / data.length;
-  }
- const averageLevel = calculateAverageLevel(studentInClass);
+  };
+  const averageLevel = calculateAverageLevel(studentInClass);
 
   const columns: ColumnDef<Student>[] = [
     {
@@ -203,7 +198,11 @@ export default function Reports({ studentInClass }: MyStudentProps) {
               <Link
                 href={redirectUrl}
                 onClick={() =>
-                  handleActionSelected("view details", row.getValue("studentId"), row.getValue("classroomId"))
+                  handleActionSelected(
+                    "view details",
+                    row.getValue("studentId"),
+                    row.getValue("classroomId")
+                  )
                 }
               >
                 View Details
@@ -213,17 +212,11 @@ export default function Reports({ studentInClass }: MyStudentProps) {
               <Link
                 href={redirectUrl}
                 onClick={() =>
-                  handleActionSelected("edit", row.getValue("studentId"), row.getValue("classroomId"))
-                }
-              >
-                Edit
-              </Link>
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>
-              <Link
-                href={redirectUrl}
-                onClick={() =>
-                  handleActionSelected("remove", row.getValue("studentId"), row.getValue("classroomId"))
+                  handleActionSelected(
+                    "remove",
+                    row.getValue("studentId"),
+                    row.getValue("classroomId")
+                  )
                 }
               >
                 Remove
@@ -231,6 +224,21 @@ export default function Reports({ studentInClass }: MyStudentProps) {
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      ),
+    },
+    {
+      accessorKey: "edit",
+      header: ({ column }) => {
+        return <Button variant="ghost">Edit</Button>;
+      },
+      cell: ({ row }) => (
+        <div className="captoliza flex gap-2 ml-4" >
+        <EditStudent
+        userId={userId}
+          studentInClass={studentInClass}
+          studentIdSelected={row.getValue("studentId")}
+          />
+        </div>
       ),
     },
   ];
@@ -256,31 +264,34 @@ export default function Reports({ studentInClass }: MyStudentProps) {
 
   return (
     <>
-    {studentInClass.length > 0 ? (
-      <div className="font-bold text-3xl">
-        Class Reports: {studentInClass[0].classroomName}
-      </div>
-    ) : (
-      <div className="font-bold text-3xl">No student in this class</div>
-    )}
+      {studentInClass.length > 0 ? (
+        <div className="font-bold text-3xl">
+          Class Reports: {studentInClass[0].classroomName}
+        </div>
+      ) : (
+        <div className="font-bold text-3xl">No student in this class</div>
+      )}
       <div className="grid grid-cols-2 items-end">
-      <Input
-        placeholder={"Search..."}
-        value={(table.getColumn("studentName")?.getFilterValue() as string) ?? ""}
-        onChange={(event) =>
-          table.getColumn("studentName")?.setFilterValue(event.target.value)
-        }
-        className="max-w-sm mt-4"
-      />
-      {
-        studentInClass.length > 0 ? (
+        <Input
+          placeholder={"Search..."}
+          value={
+            (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
+          }
+          onChange={(event) =>
+            table.getColumn("studentName")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm mt-4"
+        />
+        {studentInClass.length > 0 ? (
           <div className="flex justify-end">
-          <Card className="flex items-center justify-center w-[50%]">
-            <CardContent className="mt-4">Average Level: <span className="text-xl ml-2">{averageLevel}</span> </CardContent>
-          </Card>
+            <Card className="flex items-center justify-center w-[50%]">
+              <CardContent className="mt-4">
+                Average Level:{" "}
+                <span className="text-xl ml-2">{averageLevel}</span>{" "}
+              </CardContent>
+            </Card>
           </div>
-        ) : null
-      }
+        ) : null}
       </div>
       <div className="rounded-md border mt-4">
         <Table>
