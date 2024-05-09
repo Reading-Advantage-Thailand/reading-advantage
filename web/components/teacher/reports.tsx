@@ -43,10 +43,6 @@ type Student = {
   classroomId: string;
   email: string;
   xp: number;
-  fictionRead: number;
-  nonFictionRead: number;
-  quizzesTaken: number;
-  practiceTime: Date | number;
 };
 
 type MyStudentProps = {
@@ -75,10 +71,16 @@ export default function Reports({ studentInClass }: MyStudentProps) {
     }
   }, [selectedStudentId, action, redirectUrl, router]);
 
-  const handleActionSelected = (action: string, studentId: string) => {
+  const handleActionSelected = (action: string, studentId: string, classroomId: string) => {
+    console.log('studentId', studentId);
+    console.log('action', action);
+    console.log('classroomId', classroomId);
+    
+    
+    
     switch (action) {
       case "view details":
-        setRedirectUrl(`/teacher/student-progress/${studentId}`);
+        setRedirectUrl(`/teacher/reports/${classroomId}/report-student-progress/${studentId}`);
         break;
       case "edit":
         // setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
@@ -170,7 +172,20 @@ export default function Reports({ studentInClass }: MyStudentProps) {
         );
       },
     },
-  
+    {
+      accessorKey: "studentId",
+      header: ({ column }) => {
+        return null;
+      },
+      cell: ({ row }) => null,
+    },
+    {
+      accessorKey: "classroomId",
+      header: ({ column }) => {
+        return null;
+      },
+      cell: ({ row }) => null,
+    },
     {
       accessorKey: "action",
       header: ({ column }) => {
@@ -188,7 +203,7 @@ export default function Reports({ studentInClass }: MyStudentProps) {
               <Link
                 href={redirectUrl}
                 onClick={() =>
-                  handleActionSelected("view details", row.getValue("id"))
+                  handleActionSelected("view details", row.getValue("studentId"), row.getValue("classroomId"))
                 }
               >
                 View Details
@@ -198,7 +213,7 @@ export default function Reports({ studentInClass }: MyStudentProps) {
               <Link
                 href={redirectUrl}
                 onClick={() =>
-                  handleActionSelected("enroll", row.getValue("id"))
+                  handleActionSelected("edit", row.getValue("studentId"), row.getValue("classroomId"))
                 }
               >
                 Edit
@@ -208,7 +223,7 @@ export default function Reports({ studentInClass }: MyStudentProps) {
               <Link
                 href={redirectUrl}
                 onClick={() =>
-                  handleActionSelected("unenroll", row.getValue("id"))
+                  handleActionSelected("remove", row.getValue("studentId"), row.getValue("classroomId"))
                 }
               >
                 Remove
@@ -248,20 +263,22 @@ export default function Reports({ studentInClass }: MyStudentProps) {
     ) : (
       <div className="font-bold text-3xl">No student in this class</div>
     )}
-      <div className="grid grid-cols-2 mt-4">
+      <div className="grid grid-cols-2 items-end">
       <Input
         placeholder={"Search..."}
         value={(table.getColumn("studentName")?.getFilterValue() as string) ?? ""}
         onChange={(event) =>
           table.getColumn("studentName")?.setFilterValue(event.target.value)
         }
-        className="max-w-md mt-10 "
+        className="max-w-sm mt-4"
       />
       {
         studentInClass.length > 0 ? (
-          <Card>
-            <CardContent className="mt-4 flex items-center justify-center">Average Level: <span className="text-xl ml-2">{averageLevel}</span> </CardContent>
+          <div className="flex justify-end">
+          <Card className="flex items-center justify-center w-[50%]">
+            <CardContent className="mt-4">Average Level: <span className="text-xl ml-2">{averageLevel}</span> </CardContent>
           </Card>
+          </div>
         ) : null
       }
       </div>
@@ -300,7 +317,7 @@ export default function Reports({ studentInClass }: MyStudentProps) {
                       key={cell.id}
                       onClick={() =>
                         setSelectedStudentId(
-                          cell.getContext().cell.row.getValue("id")
+                          cell.getContext().cell.row.getValue("studentId")
                         )
                       }
                     >
