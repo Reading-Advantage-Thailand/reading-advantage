@@ -63,7 +63,7 @@ export default function Matching({ userId }: Props) {
             timepoint: article?.timepoint,
             endTimepoint: article?.endTimepoint,
             sentenceEn: article?.sentence,
-            sentenceTh: article?.translation?.th
+            sentenceTh: article?.translation?.th,
           },
         });
         data.push(article?.sentence, article?.translation?.th);
@@ -76,7 +76,6 @@ export default function Matching({ userId }: Props) {
     }
   };
 
-  
   const swapWordPositions = (words: any) => {
     const rawData = JSON.parse(JSON.stringify(words));
     if (rawData.length > 1) {
@@ -94,10 +93,65 @@ export default function Matching({ userId }: Props) {
     // We will handle it later
   };
 
-
   console.log("🚀 ~ Matching ~ articleMatching:", articleMatching);
   console.log("🚀 ~ Matching ~ articleBeforeRandom:", articleBeforeRandom);
   console.log("🚀 ~ Matching ~ articleRandom:", articleRandom);
+
+  /*
+  
+.j1bqijo0 {
+    animation: jiggle-j1bqijo0;
+    animation-iteration-count: 1;
+    animation-duration: .3s
+}
+
+@keyframes jiggle-j1bqijo0 {
+    0% {
+        transform: rotate(0deg)
+    }
+
+    12.5% {
+        transform: rotate(5deg)
+    }
+
+    25% {
+        transform: rotate(0deg)
+    }
+
+    37.5% {
+        transform: rotate(-5deg)
+    }
+
+    50% {
+        transform: rotate(0deg)
+    }
+
+    62.75% {
+        transform: rotate(5deg)
+    }
+
+    75% {
+        transform: rotate(0deg)
+    }
+
+    87.5% {
+        transform: rotate(-5deg)
+    }
+
+    to {
+        transform: rotate(0deg)
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    .j1bqijo0 {
+        animation-duration: 1ms;
+        animation-iteration-count: 1;
+        transition-duration: 1ms
+    }
+}
+  
+  */
 
   return (
     <>
