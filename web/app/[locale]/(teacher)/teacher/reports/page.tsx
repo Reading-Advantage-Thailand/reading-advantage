@@ -5,7 +5,7 @@ import React from "react";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 
-export default async function ReportsClassroomPage(params: {
+export default async function ReportsPage(params: {
   params: { classroomId: string };
 }) {
   const user = await getCurrentUser();
