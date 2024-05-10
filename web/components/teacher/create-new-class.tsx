@@ -12,12 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from "../ui/use-toast";
+import { useRouter } from "next/navigation";
 
 function CreateNewClass({ userId, userName }: { userId: string, userName: string}) {
   const [classroomName, setClassroomName] = useState("");
   const [grade, setGrade] = useState("");
   const [classCode, setClassCode] = useState("");
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const handleCreateClass = async () => {
     setOpen(true);
@@ -52,7 +54,7 @@ function CreateNewClass({ userId, userName }: { userId: string, userName: string
       title: "Success",
       description: "Class created successfully",
     });
-    location.reload();
+    router.refresh();
     setOpen(false);
   };
 

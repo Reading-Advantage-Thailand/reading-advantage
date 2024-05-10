@@ -12,6 +12,7 @@ import {
 import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from "../ui/use-toast";
+import { useRouter } from "next/navigation";
 
 type Student = {
     studentId: string;
@@ -30,17 +31,12 @@ type Student = {
   };
 
 export default function EditStudent ({studentInClass, userId, studentIdSelected}: MyStudentProps) {
-    const [open, setOpen] = useState(false);   
+    const [open, setOpen] = useState(false); 
+    const router = useRouter();  
     const studentToEdit = studentInClass.find((student) => student.studentId === studentIdSelected);
   const [studentName, setStudentName] = useState(studentToEdit? studentToEdit.studentName : "");
-// console.log('studentName', studentName);
-// console.log('studentToEdit', studentToEdit);
-// console.log('studentIdSelected', studentIdSelected);
-
 
   const handleEditStudent = async (studentId: string) => {
-    console.log('studentId send to route: ', studentId);
-    
     setOpen(true);
     try {
       const editStudent = {
@@ -65,7 +61,7 @@ export default function EditStudent ({studentInClass, userId, studentIdSelected}
       description: "Student information updated successfully",
       variant: "default",
     });
-    // location.reload();
+    router.refresh();
     setOpen(false);
   };
 
@@ -84,8 +80,6 @@ export default function EditStudent ({studentInClass, userId, studentIdSelected}
             />
             </span>
           </DialogTrigger>
-          {/* {studentInClass.map((student, index) => ( */}
-        {/* <div key={index}> */}
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Student Details</DialogTitle>
@@ -98,10 +92,8 @@ export default function EditStudent ({studentInClass, userId, studentIdSelected}
               className="w-full border rounded-md p-2"
               placeholder="Student name"
               value={studentName}
-            //   key={student.studentId}
               onChange={(e) => setStudentName(e.target.value)}
             />
-
             <DialogFooter>
                 <Button
                     variant="outline"
@@ -112,9 +104,6 @@ export default function EditStudent ({studentInClass, userId, studentIdSelected}
                 <Button onClick={handleClose}>Cancel</Button>
             </DialogFooter>
           </DialogContent>
-          
-        {/* </div> */}
-      {/* ))} */}
         </Dialog>
     </>
     )
