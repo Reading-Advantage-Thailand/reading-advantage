@@ -1,6 +1,13 @@
 import db from "@/configs/firestore-config";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
+import * as z from "zod";
+
+const routeContextSchema = z.object({
+    params: z.object({
+        classroomId: z.string(),
+    }),
+})
 
 // update student name in report
 export async function PATCH(req: Request, res: Response) {
@@ -45,3 +52,4 @@ export async function PATCH(req: Request, res: Response) {
     );
   }
 }
+

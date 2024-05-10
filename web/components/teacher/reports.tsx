@@ -34,6 +34,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import EditStudent from "./edit-student";
+import RemoveStudent from "./remove-student-inclass";
+import { Header } from "@/components/header";
 
 type Student = {
   studentId: string;
@@ -79,9 +81,6 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
     switch (action) {
       case "view details":
         setRedirectUrl(`/teacher/student-progress/${studentId}`)
-        break;
-      case "remove":
-        setRedirectUrl(`/teacher/unenroll-classes/${studentId}`);
         break;
       default:
         console.log("default");
@@ -208,28 +207,14 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
                 View Details
               </Link>
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>
-              <Link
-                href={redirectUrl}
-                onClick={() =>
-                  handleActionSelected(
-                    "remove",
-                    row.getValue("studentId"),
-                    row.getValue("classroomId")
-                  )
-                }
-              >
-                Remove
-              </Link>
-            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ),
     },
     {
-      accessorKey: "edit",
+      accessorKey: "detail",
       header: ({ column }) => {
-        return <Button variant="ghost">Edit</Button>;
+        return <Button variant="ghost">Detail</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza flex gap-2 ml-4" >
@@ -237,6 +222,12 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
         userId={userId}
           studentInClass={studentInClass}
           studentIdSelected={row.getValue("studentId")}
+          />
+          <RemoveStudent 
+          studentInClass={studentInClass}
+          userId={userId}
+          studentIdSelected={row.getValue("studentId")}
+          classroomIdSelected={studentInClass[0].classroomId}
           />
         </div>
       ),
@@ -269,7 +260,10 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
           Class Reports: {studentInClass[0].classroomName}
         </div>
       ) : (
-        <div className="font-bold text-3xl">No student in this class</div>
+        <div className="flex flex-col gap-2">
+          <Header heading="No student in this class" />
+           Please select class from My Classes
+        </div>
       )}
       <div className="grid grid-cols-2 items-end">
         <Input
