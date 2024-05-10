@@ -1,11 +1,12 @@
-import ClassRoster from "@/components/teacher/class-roster";
-import React from "react";
+import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
+import Reports from "@/components/teacher/reports";
 import { headers } from "next/headers";
+import React from "react";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 
-export default async function RosterPage(params: {
-  params: {classroomId: string;}
+export default async function ReportsClassroomPage(params: {
+  params: { classroomId: string };
 }) {
   const user = await getCurrentUser();
   if (!user) {
@@ -101,7 +102,7 @@ export default async function RosterPage(params: {
               studentInEachClass.push(students.studentId);
             });
           } else {
-            studentInEachClass = [];
+            studentInEachClass.push("No student in this class");
           }
         }
       }
@@ -138,24 +139,31 @@ export default async function RosterPage(params: {
 
   // combine student in each class and classroom name
   const studentsMapped = classrooms.flatMap((classStudent) =>
-    classStudent.student.map(
-      (studentData: { studentId: string; lastActivity: any }) => {
-        const matchedStudent = matchedStudents.find(
-          (s) => s.id === studentData.studentId
-        );
-        return {
-          studentId: studentData.studentId,
-          lastActivity: studentData.lastActivity,
-          studentName: matchedStudent ? matchedStudent.name : "Unknown",
-          classroomName: classStudent.classroomName,
-        };
-      }
-    )
+    classStudent.student
+      ? classStudent.student.map(
+          (studentData: { studentId: string; lastActivity: any }) => {
+            const matchedStudent = matchedStudents.find(
+              (s) => s.id === studentData.studentId
+            );
+            return {
+              studentId: studentData.studentId,
+              lastActivity: studentData.lastActivity,
+              studentName: matchedStudent ? matchedStudent.name : "Unknown",
+              classroomName: classStudent.classroomName,
+              classroomId: classStudent.id,
+              xp: matchedStudent ? matchedStudent.xp : 0,
+              level: matchedStudent ? matchedStudent.level : 0,
+            };
+          }
+        )
+      : []
   );
 
   return (
     <div>
-      <ClassRoster studentInClass={studentsMapped} />
+      <NextAuthSessionProvider session={user}>
+        <Reports studentInClass={studentsMapped} userId={user.id} />
+      </NextAuthSessionProvider>
     </div>
   );
 }

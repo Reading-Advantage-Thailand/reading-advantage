@@ -15,9 +15,6 @@ const routeContextSchema = z.object({
 export async function PATCH(req: Request,  context: z.infer<typeof routeContextSchema>) {
     
     try {
-        // const url = new URL(req.url);
-        // const studentId = url.searchParams.get('student');
-
         const { params } = routeContextSchema.parse(context);
         const classroomId = params.classroomId;
 
@@ -30,10 +27,7 @@ export async function PATCH(req: Request,  context: z.infer<typeof routeContextS
         }
         const json = await req.json();
         const userId = session.user.id;
-console.log('json', json);
-const studentId = json.studentId;
 const unenrollmentClassroom = json.student;
-
 
         // Fetch the classroom from the database
         const docRef = db.collection('classroom').doc(classroomId);

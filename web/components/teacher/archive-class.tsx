@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from '../ui/use-toast';
+import { useRouter } from "next/navigation";
 
 interface ArchiveClassProps { 
   classroomData: Classes[];
@@ -28,6 +29,7 @@ type Classes = {
 function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
   const [open, setOpen] = useState(false);
   const [archiveClass, setArchiveClass] = useState(false);
+  const router = useRouter();
   const classroom = classroomData.find((classroom) => classroom.id === classroomId);
 
   const handleArchiveClass = async (classroomId: string) => {
@@ -44,7 +46,7 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
           description: "Class has been archived successfully!",
           variant: "default",
         });
-        location.reload();
+        router.refresh();
       } else {
         throw new Error('Failed to archive class');
       }
@@ -56,7 +58,7 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
         variant: "default",
     })
     }
-    location.reload();
+    router.refresh();
     setOpen(false);
   };
 
@@ -81,7 +83,7 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
               <DialogTitle>Archive Class</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Do you want to archive <span className="font-bold">{classroom?. classroomName}</span> class?
+              Do you want to archive <span className="font-bold">{classroom?.classroomName}</span> class?
             </DialogDescription>
             <DialogFooter>
               <Button variant="secondary" onClick={() => handleArchiveClass(classroomId)}>
