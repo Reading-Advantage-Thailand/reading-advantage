@@ -150,6 +150,8 @@ export default {
       myStudents: "我的学生",
       classRoster: "班级名单",
       reports: "报告",
+      passages: "段落",
+      assignments: "作业",
     },
     articleRecordsTable: {
       title: "标题",

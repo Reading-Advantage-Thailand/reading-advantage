@@ -159,6 +159,8 @@ export default {
       history: "ประวัติ",
       sentences: "ประโยค",
       reports: "รายงาน",
+      passages: "บทความ",
+      assignments: "การบ้าน",
     },
     sidebarTeacherNav: {
       myClasses: "ชั้นเรียนของฉัน",

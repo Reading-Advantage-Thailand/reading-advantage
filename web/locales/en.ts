@@ -1,3 +1,5 @@
+import { assign } from "lodash";
+
 export default {
   pages: {
     indexPage: {
@@ -168,6 +170,8 @@ export default {
       myStudents: "My Students",
       classRoster: "Class Roster",
       reports: "Reports",
+      passages: "Passages",
+      assignments: "Assignments",
     },
     articleRecordsTable: {
       title: "Title",
