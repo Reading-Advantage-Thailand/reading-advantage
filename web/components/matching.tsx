@@ -136,7 +136,7 @@ export default function Matching({ userId }: Props) {
 
   const getCardStyle = (word: Word) => {
     let styles = {
-      backgroundColor: selectedCard?.text === word.text ? "#edefff" : '', // Change to a light yellow on wrong select
+      backgroundColor: selectedCard?.text === word.text ? "#fff5ed" : '', // Change to a light yellow on wrong select
       border:
         selectedCard?.text === word.text
           ? "2px solid #425fff"
@@ -173,9 +173,12 @@ export default function Matching({ userId }: Props) {
                 <>
                   <div
                     key={index}
-                    className={`cursor-pointer rounded-xl p-5 m-5 w-64 text-center border-solid border border-[#282e3e14] bg-slate-50 hover:bg-slate-200 shadow-lg 
+                    className={`cursor-pointer rounded-xl p-5 m-5 w-64 text-center dark:bg-[#020817] border-solid border border-[#282e3e14] bg-slate-50 hover:bg-slate-200 shadow-lg 
               ${correctMatches.includes(word.text) && "hidden"}
-              ${animateShake}              
+              ${animateShake}  
+              ${
+                selectedCard?.text === word.text && "dark:text-black"
+              }            
               `}
                     style={getCardStyle(word)}
                   >
