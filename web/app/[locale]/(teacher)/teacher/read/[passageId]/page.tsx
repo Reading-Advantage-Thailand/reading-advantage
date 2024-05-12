@@ -8,10 +8,10 @@ import { getScopedI18n } from "@/locales/server";
 import Stats from "@/components/stats";
 import TeacherReadArticleCard  from "@/components/teacher/teacherReadArticleCard";
 
-// export const metadata = {
-//   title: "Teahcer Read Assignment Page",
-//   description: "Teahcer Read Assignment Page",
-// };
+export const metadata = {
+  title: "Teahcer Read Assignment Page",
+  description: "Teahcer Read Assignment Page",
+};
 
 async function getArticle(passageId: string) {
   const response = await fetch(
@@ -50,6 +50,7 @@ export default async function TeacherReadAssignmentPage({
         article={articleResult.article}
         articleId={params.passageId}
         userId={user.id}
+        
       />
       
     </>

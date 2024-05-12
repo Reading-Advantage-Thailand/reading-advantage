@@ -15,6 +15,9 @@ import { ArticleFooter } from "../article-footer";
 import { Skeleton } from "../ui/skeleton";
 import RatingPopup from "../rating-popup";
 import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
+import {Link }from "react-router-dom";
+import AssignDialog from "./assign-dialog";
 
 type Props = {
   article: ArticleType;
@@ -28,6 +31,8 @@ export default async function TeahcerReadArticleCard({
   userId,
 }: Props) {
   const t = await getScopedI18n("components.articleCard");
+
+
   return (
     <div className="md:flex md:flex-row md:gap-3 md:mb-5">
       <div className="mt-4 md:basis-3/5">
@@ -78,7 +83,12 @@ export default async function TeahcerReadArticleCard({
         />
       </div>
       <div>
-        <Button className="mt-4" onClick={handleShow}>Assign</Button>
+        <AssignDialog 
+          article={article}
+          articleId={articleId}
+          userId={userId}
+        />
+
         {/* part question */}
         {(article.questions && (
           <Questions
