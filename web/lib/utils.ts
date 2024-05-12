@@ -8,30 +8,30 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// const date = new Date(createdAt._seconds * 1000).toLocaleString('en-GB', { timeZone: 'Asia/Bangkok' });
-//Date formatting
-export function formatDate(updatedAt: {
-  _seconds: number;
-  _nanoseconds: number;
-}): string {
-  const currentDate = new Date();
-  const updatedDate = new Date(updatedAt._seconds * 1000);
+// Convert ISO to time ago 2024-05-11T14:42:23.400Z => 2 hours ago
+export function formatDate(updatedAt: string): string {
+  const date = new Date(updatedAt);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(months / 12);
 
-  const timeDifferenceInSeconds = Math.floor(
-    (currentDate.getTime() - updatedDate.getTime()) / 1000
-  );
-
-  if (timeDifferenceInSeconds < 60) {
-    return `${timeDifferenceInSeconds} seconds ago`;
-  } else if (timeDifferenceInSeconds < 3600) {
-    const minutes = Math.floor(timeDifferenceInSeconds / 60);
-    return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
-  } else if (timeDifferenceInSeconds < 86400) {
-    const hours = Math.floor(timeDifferenceInSeconds / 3600);
-    return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  if (years > 0) {
+    return years === 1 ? "1 year ago" : `${years} years ago`;
+  } else if (months > 0) {
+    return months === 1 ? "1 month ago" : `${months} months ago`;
+  } else if (days > 0) {
+    return days === 1 ? "1 day ago" : `${days} days ago`;
+  } else if (hours > 0) {
+    return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+  } else if (minutes > 0) {
+    return minutes === 1 ? "1 minute ago" : `${minutes} minutes ago`;
   } else {
-    const days = Math.floor(timeDifferenceInSeconds / 86400);
-    return `${days} ${days === 1 ? "day" : "days"} ago`;
+    return seconds === 1 ? "1 second ago" : `${seconds} seconds ago`;
   }
 }
 
