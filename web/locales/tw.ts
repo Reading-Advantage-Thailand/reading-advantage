@@ -111,6 +111,7 @@ export default {
           errorOrder: "請正確排序",
           submitArticle: "檢查您的答案",
           nextPassage: "下一篇章",
+          minSentencesAlert: "您至少需要儲存五個句子才能進行此活動。",
         },
       },
     },
