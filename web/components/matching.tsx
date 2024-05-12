@@ -136,7 +136,7 @@ export default function Matching({ userId }: Props) {
 
   const getCardStyle = (word: Word) => {
     let styles = {
-      backgroundColor: selectedCard?.text === word.text ? "#fff5ed" : '', // Change to a light yellow on wrong select
+      backgroundColor: selectedCard?.text === word.text ? "#edefff" : '', // Change to a light yellow on wrong select
       border:
         selectedCard?.text === word.text
           ? "2px solid #425fff"
@@ -168,35 +168,51 @@ export default function Matching({ userId }: Props) {
           </>
         ) : (
           <>
-            <div className="flex flex-wrap justify-center">
-              {words.map((word, index) => (
-                <>
-                  <div
-                    key={index}
-                    className={`cursor-pointer rounded-xl p-5 m-5 w-64 text-center dark:bg-[#020817] border-solid border border-[#282e3e14] bg-slate-50 hover:bg-slate-200 shadow-lg 
+            {articleMatching.length >= 5 ? (
+              <>
+                <div className="flex flex-wrap justify-center">
+                  {words.map((word, index) => (
+                    <>
+                      <div
+                        key={index}
+                        className={`cursor-pointer rounded-xl p-5 m-5 w-64 text-center dark:bg-[#020817] border-solid border border-[#282e3e14] bg-slate-50 hover:bg-slate-200 shadow-lg 
               ${correctMatches.includes(word.text) && "hidden"}
               ${animateShake}  
               ${
                 selectedCard?.text === word.text && "dark:text-black"
               }            
               `}
-                    style={getCardStyle(word)}
-                  >
-                    <div className="mb-5">
-                      {new RegExp(/^[a-zA-Z\s,.']+$/).test(word.text) && (
-                        <AudioButton
-                          key={word?.text}
-                          audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${word?.articleId}.mp3`}
-                          startTimestamp={word?.timepoint}
-                          endTimestamp={word?.endTimepoint}
-                        />
-                      )}
-                    </div>
-                    <div onClick={() => handleCardClick(word)}>{word.text}</div>
-                  </div>
-                </>
-              ))}
-            </div>
+                        style={getCardStyle(word)}
+                      >
+                        <div className="mb-5">
+                          {new RegExp(/^[a-zA-Z\s,.']+$/).test(word.text) && (
+                            <AudioButton
+                              key={word?.text}
+                              audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${word?.articleId}.mp3`}
+                              startTimestamp={word?.timepoint}
+                              endTimestamp={word?.endTimepoint}
+                            />
+                          )}
+                        </div>
+                        <div onClick={() => handleCardClick(word)}>
+                          {word.text}
+                        </div>
+                      </div>
+                    </>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+               <div className="flex flex-wrap justify-center rounded-2xl border-2 border-gray-200 p-4 mt-20">
+               
+                <div className="text-rose-600 dark:text-rose-300 font-bold">
+                  {t("matchingPractice.minSentencesAlert")}
+                </div>
+               </div>
+                
+              </>
+            )}
           </>
         )}
       </div>

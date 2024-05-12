@@ -111,6 +111,7 @@ export default {
           errorOrder: "请正确排序",
           submitArticle: "检查你的答案",
           nextPassage: "下一段",
+          minSentencesAlert: "您至少需要保存五个句子才能进行这项活动。",
         },
       },
     },
