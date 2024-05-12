@@ -13,6 +13,21 @@ import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "./article-showcase-card";
 import { articleShowcaseType } from "@/types";
 
+import axios from "axios";
+import { useCurrentLocale } from "@/locales/client";
+
+async function getTranslate(
+ sentences: string[],
+ articleId: string,
+ language: string
+) {
+ const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
+   sentences,
+   language,
+ });
+ return res.data;
+}
+
 type Props = {
   user: {
     level: number;
@@ -33,7 +48,7 @@ async function fetchArticles(params: string) {
 export default function Select({ user }: Props) {
   const t = useScopedI18n("components.select");
   const ta = useScopedI18n("components.article");
-  const tf: string | any = useScopedI18n("components.types");
+  // const tf: string | any = useScopedI18n("components.types");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -52,10 +67,6 @@ export default function Select({ user }: Props) {
     if (selectedType && !selectedGenre && !selectedSubgenre) return "genre";
     if (selectedType && selectedGenre && !selectedSubgenre) return "subGenre";
     return "article";
-  }
-
-  function getFictionType(){
-
   }
 
   async function handleButtonClick(value: string) {
@@ -91,6 +102,27 @@ export default function Select({ user }: Props) {
     fetchData();
   }, [searchParams, router, selectedGenre, selectedSubgenre, selectedType]);
 
+   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
+   const locale = useCurrentLocale();
+   async function handleTranslateSummary({ type }: any){
+    if(!locale || locale === "en"){
+      return ;
+    }
+    type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
+    let localeTarget: ExtendedLocale = locale as ExtendedLocale;
+    switch(locale){
+      case "cn":
+        localeTarget = "zh-CN";
+        break;
+      case "tw":
+        localeTarget = "zh-TW";
+        break;
+    }
+    const res = await getTranslate([type], "", localeTarget);
+    
+    setSummarySentence(res.translation);
+  }
+
   return (
     <Card className="my-2">
       <CardHeader>
@@ -115,15 +147,17 @@ export default function Select({ user }: Props) {
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {articleTypesData.map((type, index) => (
-              <Button
+            {articleTypesData.map((type, index) => {
+              
+              return (<Button
                 key={index}
                 onClick={() => handleButtonClick(type)}
                 disabled={loading}
               >
-                {tf(type.replace(/_/g, " "))}
+                {type.replace(/_/g, " ")}
               </Button>
-            ))}
+              )
+            })}
           </div>
         )}
       </CardContent>

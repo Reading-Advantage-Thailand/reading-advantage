@@ -3,6 +3,8 @@ import { Badge } from "./ui/badge";
 import Link from "next/link";
 import { Rating } from "@mui/material";
 import { ArticleShowcase } from "./models/article-model";
+import axios from "axios";
+import { useCurrentLocale } from "@/locales/client";
 
 type Props = {
   article: ArticleShowcase;
@@ -22,7 +24,7 @@ async function getTranslate(
 
 export default async function ArticleShowcaseCard({ article }: Props) {
 
-  useEffect(() => {
+  React.useEffect(() => {
     handleTranslateSummary();
   }, [article]);
 
@@ -53,7 +55,6 @@ export default async function ArticleShowcaseCard({ article }: Props) {
   }
 
   return (
-    // <SummarySentenceProvider>
     <Link href={`/student/read/${article.id}`}>
       <div
         className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
@@ -77,7 +78,10 @@ export default async function ArticleShowcaseCard({ article }: Props) {
             {article.title}
           </p>
           <p className="text-sm drop-shadow-lg line-clamp-4 text-white">
-            {article.summary}
+            { locale == "en" 
+              ? <p>{article.summary}</p>
+              : <p>{summarySentence}</p>
+            } 
           </p>
         </div>
       </div>
@@ -89,6 +93,5 @@ export default async function ArticleShowcaseCard({ article }: Props) {
         </div>
       )}
     </Link>
-    
   );
 }
