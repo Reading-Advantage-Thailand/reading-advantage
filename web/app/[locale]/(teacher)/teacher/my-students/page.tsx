@@ -77,7 +77,6 @@ export default async function MyStudentPage() {
       <div>
       <NextAuthSessionProvider session={user}>
      <MyStudents 
-            userId={user.id}
             matchedStudents={matchedStudents}
             />
       </NextAuthSessionProvider>
