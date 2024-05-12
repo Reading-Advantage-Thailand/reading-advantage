@@ -33,6 +33,7 @@ async function fetchArticles(params: string) {
 export default function Select({ user }: Props) {
   const t = useScopedI18n("components.select");
   const ta = useScopedI18n("components.article");
+  const tf: string | any = useScopedI18n("components.types");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -51,6 +52,10 @@ export default function Select({ user }: Props) {
     if (selectedType && !selectedGenre && !selectedSubgenre) return "genre";
     if (selectedType && selectedGenre && !selectedSubgenre) return "subGenre";
     return "article";
+  }
+
+  function getFictionType(){
+
   }
 
   async function handleButtonClick(value: string) {
@@ -116,7 +121,7 @@ export default function Select({ user }: Props) {
                 onClick={() => handleButtonClick(type)}
                 disabled={loading}
               >
-                {type.replace(/_/g, " ")}
+                {tf(type.replace(/_/g, " "))}
               </Button>
             ))}
           </div>
