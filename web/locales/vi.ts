@@ -215,6 +215,307 @@ export default {
       subGenre: "Thể loại phụ bài viết",
       article: "Bài viết",
     },
+<<<<<<< HEAD
+=======
+    // use this for article selection page
+    types: {
+     // article type
+     fiction: "viễn tưởng",
+     // fiction
+     "Adventure": "Phiêu lưu",
+     "Horror": "Kinh dị",
+     "Epic": "Hùng biện",
+     "Media": "Truyền thông",
+     "Romance": "Lãng mạn",
+     "Classic Literature": "Văn học cổ điển",
+     "Western": "Miền Tây",
+     "Drama": "Kịch",
+     "Fantasy": "Tưởng tượng",
+     "Science Fiction": "Khoa học viễn tưởng",
+     "Dystopian Fiction": "tiểu thuyết đen tối",
+     "Mythology": "Thần thoại",
+     "novel": "tiểu thuyết",
+     "Folklore": "Văn hóa dân gian",
+     "Mystery": "Bí ẩn",
+     "Comedy": "Hài",
+     "Literary Fiction": "Văn học",
+     "Family Drama": "Kịch gia đình",
+     // Adventure
+     "Exploration": "Khám phá",
+     "Animal Adventure": "Phiêu lưu cùng động vật",
+     "Treasure Hunt": "Săn kho báu",
+     "Historical Fiction": "Tiểu thuyết lịch sử",
+     "Historical fiction": "Tiểu thuyết lịch sử",
+     // Horror
+     "Psychological Horror": "Kinh dị tâm lý",
+     "Gothic horror": "kinh dị Gothic",
+     "Supernatural": "Siêu nhiên",
+     // media
+     "World Literature": "Văn học thế giới",
+     // romance
+     "Young Adult": "Người trẻ tuổi",
+     "Contemporary Romance": "Lãng mạn đương đại",
+     // Classic Literature
+     "Romantic Fiction": "Tiểu thuyết lãng mạn",
+     // western
+     "Bounty Hunter": "Thợ săn tiền thưởng",
+     // drama
+     "Coming-of-Age": "Chuyện lớn lên",
+     // Historical fiction
+     "Legendary": "Huyền thoại",
+     // fantasy
+     "Time Travel": "Du hành thời gian",
+     "Mythical Creatures": "Sinh vật huyền bí",
+     "Epic Fantasy": "Kỳ thư huyền bí",
+     "Urban Fantasy": "Kỳ thư đô thị",
+     "Magical Realism": "Hiện thực ma thuật",
+     "Supernatural Mystery": "Bí ẩn siêu nhiên",
+     // Science Fiction
+     "Space Opera": "Opera không gian",
+     "Dystopian": "Phản địa đàng",
+     "Time Travel Comedy": "Hài hước về du hành thời gian",
+     // dystopian fiction
+     "Resistance": "Sự kháng cự",
+     // Mythology
+     "Hindu Mythology": "Thần thoại Hindu",
+     "Aztec Mythology": "Thần thoại Aztec",
+     "African Mythology": "Thần thoại châu Phi",
+     "Andean Mythology": "Thần thoại Andean",
+     "Creation Myth": "Thần thoại sáng tạo",
+     "Greek Mythology": "Thần thoại Hy Lạp",
+     // Folklore
+     "Eastern European Folklore": "Văn hóa dân gian Đông Âu",
+     // Mystery
+     "Detective Fiction": "Tiểu thuyết trinh thám",
+     "Psychological Thriller": "Phim kinh dị tâm lý",
+     // comedy
+     "Superhero": "Siêu anh hùng",
+     // Historical Fiction
+     "Medieval Adventure": "Phiêu lưu thời Trung cổ",
+     "Harlem Renaissance": "Phục hưng Harlem",
+     "World War II Resistance": "Kháng chiến Thế chiến II",
+     // Literary Fiction
+     "Existential Fiction": "Văn học tồn tại",
+     "Modernist Literature": "Văn học hiện đại",
+     "Existentialism": "Chủ nghĩa tồn tại",
+     // Drama
+     "Domestic Life": "Cuộc sống gia đình",
+     // novel
+     "drama": "kịch",
+
+     /* ------------------------------- */
+
+     // article type non-fiction
+     nonfiction: "sách phi hư cấu",
+     // non-fiction
+     "Entertainment": "Giải trí",
+     "Film": "Phim ảnh",
+     "Psychology": "Tâm lý học",
+     "Social Issues": "Vấn đề Xã hội",
+     "Earth Science": "Khoa học Trái đất",
+     "Science": "Khoa học",
+     "Biology": "Sinh học",
+     "History": "Lịch sử",
+     "Paranormal": "Siêu nhiên",
+     "Arts": "Nghệ thuật",
+     "Environmental Science": "Khoa học Môi trường",
+     "True Crime": "Tội phạm có thật",
+     "Technology": "Công nghệ",
+     "Education": "Giáo dục",
+     "Sociology": "Xã hội học",
+     "Art and Technology": "Nghệ thuật và Công nghệ",
+     "Natural Science": "Khoa học Tự nhiên",
+     "Biography": "Tiểu sử",
+     "Business": "Kinh doanh",
+     "Sports": "Thể thao",
+     "Nature": "Tự nhiên",
+     "Self-help": "Tự giúp bản thân",
+     "Travel Guide": "Hướng dẫn du lịch",
+     "Memoir": "Hồi ký",
+     "Health": "Sức khỏe",
+     "Science and Technology": "Khoa học và Công nghệ",
+     "Religion": "Tôn giáo",
+     "Educational": "Giáo dục",
+     "Health and Wellness": "Sức khỏe và Sự thịnh vượng",
+     "Self-Help": "Tự giúp bản thân",
+     "Natural Sciences": "Khoa học tự nhiên",
+     "Cultural Celebration": "Lễ hội văn hóa",
+     "Travel": "Du lịch",
+     "Visual Arts": "Nghệ thuật hình ảnh",
+     "Music": "Âm nhạc",
+     "Cryptozoology": "Khoa học về động vật huyền bí",
+     "Social Sciences": "Khoa học xã hội",
+     "Medical": "Thuộc về y học",
+     "Political Science": "Khoa học chính trị",
+     "Natural History": "Lịch sử tự nhiên",
+     "Religion and Spirituality": "Tôn giáo và Tâm linh",
+     // Entertainment
+     "Podcasts": "Podcasts",
+     "Film Industry": "Ngành công nghiệp phim ảnh",
+     // Psychology
+     "Music and Memory": "Âm nhạc và Trí nhớ",
+     "Music Therapy": "Điều trị Âm nhạc",
+     // Social Issues
+     "Indigenous Rights": "Quyền của Các dân tộc bản địa",
+     // Earth Science
+     "Natural Disasters": "Thảm họa Tự nhiên",
+     // Science
+     "The Marvels of Earth's Magnetic Field": "Những kỳ quan của Trường từ Trái đất",
+     "Renewable Energy": "Năng lượng tái tạo",
+     "Astrophysics": "Vật lý thiên văn",
+     "Geology": "Địa chất học",
+     "Scientist": "Nhà khoa học",
+     "Animal Biology": "Sinh học Động vật",
+     "Ecology": "Hệ sinh thái học",
+     "Paleontology": "Cổ sinh vật học",
+     "Physics": "Vật lý",
+     "Botany": "Thực vật học",
+     "Marine Biology": "Sinh học Biển",
+     "Evolution": "Tiến hóa",
+     "Astronomy": "Thiên văn học",
+     "Space Exploration": "Khám phá không gian",
+     "Meteorology": "Khí tượng học",
+     // Biology
+     "Animal Behavior": "Hành vi Động vật",
+     "Animals": "Động vật",
+     "Wildlife": "Động vật hoang dã",
+     "Organismal Biology": "Sinh học Cơ thể",
+     "Herpetology": "Bò sát học",
+     "Aquatic Life": "Đời sống Dưới nước",
+     "Animal Adaptations": "Sự thích nghi của Động vật",    
+     // History
+     "Medieval History": "Lịch sử Trung cổ",
+     "Ancient Egypt": "Ai Cập cổ đại",
+     "Invention and Technology": "Sáng chế và Công nghệ",
+     "European History": "Lịch sử Châu Âu",
+     "World War II": "Thế chiến II",
+     "War": "Chiến tranh",
+     "Military History": "Lịch sử Quân sự",
+     "Invention": "Sáng chế",
+     "Ancient Rome": "La Mã cổ đại",
+     "Ancient Civilization": "Nền văn minh cổ đại",
+     "Ancient History": "Lịch sử cổ đại",
+     "Transportation and Communication": "Giao thông và Truyền thông",
+     "Ancient Civilizations": "Các nền văn minh cổ đại",
+     "Islamic History": "Lịch sử Hồi giáo",
+     "Modern History": "Lịch sử Hiện đại",
+     "Revolution": "Cách mạng",
+     // Paranormal
+     "Haunted Locations": "Địa điểm ma ám",
+     // Arts
+     "Art Techniques": "Kỹ thuật Nghệ thuật",
+     "Comics and Graphic Novels": "Truyện tranh và Tiểu thuyết đồ họa",
+     "Screenwriting": "Viết kịch bản",
+     // Environmental Science
+     "Marine Pollution": "Ô nhiễm biển",
+     "Land Degradation": "Suy thoái đất đai",
+     // True Crime
+     "Serial Killers": "Sát nhân hàng loạt",
+     // Technology
+     "Wearable Technology": "Công nghệ có thể mặc",
+     "History and Evolution": "Lịch sử và Tiến hóa",
+     "Mobile Technology": "Công nghệ di động",
+     "Internet": "Internet",
+     "History and Impact": "Lịch sử và Tác động",
+     // Education
+     "STEAM Education": "Giáo dục STEAM",
+     "Technology in Education": "Công nghệ trong Giáo dục",
+     "Diversity and Inclusion": "Đa dạng và Sự kết hợp",
+     // Sociology
+     "Global Collaboration": "Hợp tác Toàn cầu",
+     // Art and Technology
+     "Digital Art": "Nghệ thuật số",
+     // Natural Science
+     "Aquatic Biology": "Sinh học Động vật Dưới nước",
+     "Wildlife Biology": "Sinh học Động vật hoang dã",
+     // Biography
+     "Inventors": "Nhà phát minh",
+     "Historical": "Lịch sử",
+     "Art History": "Lịch sử Nghệ thuật",
+     "Civil Rights Movement": "Phong trào Dân quyền",
+     "Philosophy": "Triết học",
+     // Business
+     "Art Entrepreneurship": "Doanh nhân Nghệ thuật",
+     // sports
+     "Sports Media": "Truyền thông Thể thao",
+     "Inspirational": "truyền cảm hứng",
+     "Media Coverage": "Phương tiện Truyền thông",
+     "Women in Sports": "Phụ nữ trong Thể thao",
+     // nature
+     "Marine Life": "Đời sống Dưới biển",
+     "Bird Watching": "Quan sát Chim",
+     "Wildlife Conservation": "Bảo tồn Động vật hoang dã",
+     // Self-help
+     "Relationships": "Mối quan hệ",
+     "Personal Development": "Phát triển cá nhân",
+     "Communication Skills": "Kỹ năng Giao tiếp",
+     // Travel Guide
+     "City Guide": "Hướng dẫn Thành phố",
+     // Memoir
+     "Medical Memoir": "Hồi ký Y học",
+     // Horror
+     "Legends": "Huyền thoại",
+     // Health
+     "Medical Profession": "Ngành Y",
+     "Public Health": "Y tế Công cộng",
+     "Epidemiology": "Dịch tễ học",
+     // Science and Technology
+     "Home Appliances": "Thiết bị gia dụng",
+     "Music Technology": "Công nghệ âm nhạc",
+     "History and Innovation": "Lịch sử và Đổi mới",
+     // Religion
+     "Judaism": "Đạo Do thái",
+     // Educational
+     "Media Literacy": "Kiến thức truyền thông", 
+     // Health and Wellness
+     "Physical Fitness": "Sức khỏe Thể chất",
+     "Alternative Medicine": "Y học Thay thế",    
+     "Fitness": "Thể dục",
+     // Self-help
+     "Time Management": "Quản lý thời gian",
+     // Natural Sciences
+     // Cultural Celebration 
+     "Indigenous Festivals": "Lễ hội Dân tộc bản địa",
+     "Traditional Festival": "Lễ hội Truyền thống",
+     // Travel
+     "Travel Guides": "Hướng dẫn Du lịch",
+     "Cultural Festival": "Lễ hội Văn hóa", 
+     // Visual Arts
+     "Film and Fine Art": "Phim và Nghệ thuật Tinh tế",
+     // Music
+     "Biographies": "Tiểu sử",    
+     "Social Issues in Music": "Vấn đề Xã hội trong Âm nhạc",
+     "History of Music Innovation": "Lịch sử Đổi mới Âm nhạc",
+     "Musical Collaboration": "Sự hợp tác âm nhạc",
+     "Exploration of Music Genres": "Khám phá Thể loại Âm nhạc", 
+     "Musical Collaborations": "Sự hợp tác âm nhạc",
+     "Music History": "Lịch sử Âm nhạc",
+     // "Cryptozoology   
+     "Legendary Creatures": "Sinh vật Huyền thoại",
+     "Cryptids": "Cryptids",
+     "Cryptids and Mythical Beasts": "Cryptids và Sinh vật Thần thoại",
+     // Mythology
+     "Australian Aboriginal Mythology": "Thần thoại của Người Aboriginal Úc", 
+     "Australian Aboriginal": "Người Aboriginal Úc",
+     // Social Sciences
+     // Medical
+     "Cardiology": "Tim mạch",    
+     // Political Science
+     "Global Governance": "Quản trị Toàn cầu",
+     // Natural History
+     "Birds": "Chim",
+     "Extinction and Conservation": "Tuyệt chủng và Bảo tồn",
+     "Evolutionary Biology": "Sinh học Tiến hóa", 
+     "Insects": "Côn trùng",
+     "Ornithology": "Ornithology",    
+     "Arctic Wildlife": "Động vật hoang dã Bắc cực",
+     "Mammalogy": "Sinh học Động vật có vú",
+     "Prehistoric Animals": "Động vật tiền sử",
+     // Religion and Spirituality
+     "Indigenous Beliefs": "Niềm tin của Các dân tộc bản địa", 
+    },
+
+>>>>>>> 2b400a1 (rebase commit)
     articleCard: {
       raLevel: "Trình độ đọc là {raLevel}",
       cefrLevel: "Trình độ CEFR là {cefrLevel}",

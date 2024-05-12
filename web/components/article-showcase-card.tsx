@@ -8,8 +8,52 @@ type Props = {
   article: ArticleShowcase;
 };
 
+async function getTranslate(
+  sentences: string[],
+  articleId: string,
+  language: string
+) {
+  const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
+    sentences,
+    language,
+  });
+  return res.data;
+}
+
 export default async function ArticleShowcaseCard({ article }: Props) {
+
+  useEffect(() => {
+    handleTranslateSummary();
+  }, [article]);
+
+  const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
+  
+  const locale = useCurrentLocale();
+
+  async function handleTranslateSummary(){
+    
+    const articleId = article.id;
+    if(!locale || locale === "en"){
+      return;
+    }
+    type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
+    let localeTarget: ExtendedLocale = locale as ExtendedLocale;
+
+    switch(locale){
+      case "cn":
+        localeTarget = "zh-CN";
+        break;
+      case "tw":
+        localeTarget = "zh-TW";
+        break;
+    }
+    const res = await getTranslate([article.summary], articleId, localeTarget);
+
+    setSummarySentence(res.translation);
+  }
+
   return (
+    // <SummarySentenceProvider>
     <Link href={`/student/read/${article.id}`}>
       <div
         className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
@@ -45,5 +89,6 @@ export default async function ArticleShowcaseCard({ article }: Props) {
         </div>
       )}
     </Link>
+    
   );
 }

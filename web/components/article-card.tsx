@@ -13,6 +13,8 @@ import { ArticleFooter } from "./article-footer";
 import RatingPopup from "./rating-popup";
 import { Article } from "./models/article-model";
 
+import { SummarySentenceProvider } from "../contexts/useSummarySentence"; // Import the SummarySentenceProvider
+
 type Props = {
   article: Article;
   articleId: string;

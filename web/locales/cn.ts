@@ -199,6 +199,309 @@ export default {
       subGenre: "文章子类",
       article: "文章",
     },
+<<<<<<< HEAD
+=======
+
+    // use this for article selection page
+    types: {
+      // article type
+      fiction: "小说",
+      // fiction
+      "Adventure": "冒险",
+      "Horror": "恐怖",
+      "Epic": "史诗",
+      "Media": "媒体",
+      "Romance": "浪漫",
+      "Classic Literature": "经典文学",
+      "Western": "西部",
+      "Drama": "戏剧",
+      "Fantasy": "奇幻",
+      "Science Fiction": "科幻小说",
+      "Dystopian Fiction": "反乌托邦小说",
+      "Mythology": "神话",
+      "novel": "小说",
+      "Folklore": "民俗學",
+      "Mystery": "神秘",
+      "Comedy": "喜剧",
+      "Literary Fiction": "文学小说",
+      "Family Drama": "家庭戏剧",
+      // Adventure
+      "Exploration": "勘探",
+      "Animal Adventure": "动物冒险",
+      "Treasure Hunt": "寻宝",
+      "Historical Fiction": "历史小说",
+      "Historical fiction": "历史小说",
+      // Horror
+      "Psychological Horror": "心理恐怖",
+      "Gothic horror": "哥特式恐怖",
+      "Supernatural": "超自然",
+      // media
+      "World Literature": "世界文学",
+      // romance
+      "Young Adult": "青少年",
+      "Contemporary Romance": "当代浪漫",
+      // Classic Literature
+      "Romantic Fiction": "浪漫小说",
+      // western
+      "Bounty Hunter": "赏金猎人",
+      // drama
+      "Coming-of-Age": "即将成年",
+      // Historical fiction
+      "Legendary": "传奇",
+      // fantasy
+      "Time Travel": "时间旅行",
+      "Mythical Creatures": "神话生物",
+      "Epic Fantasy": "史诗奇幻",
+      "Urban Fantasy": "都市奇幻",
+      "Magical Realism": "魔幻现实主义",
+      "Supernatural Mystery": "超自然神秘",
+      // Science Fiction
+      "Space Opera": "太空歌剧",
+      "Dystopian": "反乌托邦",
+      "Time Travel Comedy": "时间旅行喜剧",
+      // dystopian fiction
+      "Resistance": "阻力",
+      // Mythology
+      "Hindu Mythology": "印度神话",
+      "Aztec Mythology": "阿兹特克神话",
+      "African Mythology": "非洲神话",
+      "Andean Mythology": "安第斯神话",
+      "Creation Myth": "创世神话",
+      "Greek Mythology": "希腊神话",
+      // Folklore
+      "Eastern European Folklore": "东欧民间传说",
+      // Mystery
+      "Detective Fiction": "侦探小说",
+      "Psychological Thriller": "心理惊悚",
+      // comedy
+      "Superhero": "超级英雄",
+      // Historical Fiction
+      "Medieval Adventure": "中世纪冒险",
+      "Harlem Renaissance": "哈莱姆文艺复兴",
+      "World War II Resistance": "第二次世界大战抵抗",
+      // Literary Fiction
+      "Existential Fiction": "存在主义小说",
+      "Modernist Literature": "现代主义文学",
+      "Existentialism": "存在主义",
+      // Drama
+      "Domestic Life": "家庭生活",
+      // novel
+      "drama": "戏剧",
+
+      /* ------------------------------- */
+
+      // article type non-fiction
+      nonfiction: "非虚构",
+      // non-fiction
+      "Entertainment": "娱乐",
+      "Film": "电影",
+      "Psychology": "心理学",
+      "Social Issues": "社会问题",
+      "Earth Science": "地球科学",
+      "Science": "科学",
+      "Biology": "生物学",
+      "History": "历史",
+      "Paranormal": "超自然现象",
+      "Arts": "艺术",
+      "Environmental Science": "环境科学",
+      "True Crime": "真实犯罪",
+      "Technology": "技术",
+      "Education": "教育",
+      "Sociology": "社会学",
+      "Art and Technology": "艺术与技术",
+      "Natural Science": "自然科学",
+      "Biography": "传记",
+      "Business": "商业",
+      "Sports": "体育",
+      "Nature": "自然",
+      "Self-help": "自助",
+      "Travel Guide": "旅行指南",
+      "Memoir": "回忆录",
+      "Health": "健康",
+      "Science and Technology": "科学与技术",
+      "Religion": "宗教",
+      "Educational": "教育",
+      "Health and Wellness": "健康与养生",
+      "Self-Help": "自助",
+      "Natural Sciences": "自然科学",
+      "Cultural Celebration": "文化庆祝",
+      "Travel": "旅游",
+      "Visual Arts": "视觉艺术",
+      "Music": "音乐",
+      "Cryptozoology": "神秘动物学",
+      "Social Sciences": "社会科学",
+      "Medical": "医疗的",
+      "Political Science": "政治学",
+      "Natural History": "自然历史",
+      "Religion and Spirituality": "宗教与灵性",
+      // Entertainment
+      "Podcasts": "播客",
+      "Film Industry": "电影工业",
+      // Psychology
+      "Music and Memory": "音乐与记忆",
+      "Music Therapy": "音乐疗法",
+      // Social Issues
+      "Indigenous Rights": "土著权利",
+      // Earth Science
+      "Natural Disasters": "自然灾害",
+      // Science
+      "The Marvels of Earth's Magnetic Field": "地球磁场的奇迹",
+      "Renewable Energy": "可再生能源",
+      "Astrophysics": "天体物理学",
+      "Geology": "地质学",
+      "Scientist": "科学家",
+      "Animal Biology": "动物生物学",
+      "Ecology": "生态学",
+      "Paleontology": "古生物学",
+      "Physics": "物理学",
+      "Botany": "植物学",
+      "Marine Biology": "海洋生物学",
+      "Evolution": "进化论",
+      "Astronomy": "天文学",
+      "Space Exploration": "太空探索",
+      "Meteorology": "气象学",
+      // Biology
+      "Animal Behavior": "动物行为",
+      "Animals": "动物",
+      "Wildlife": "野生动物",
+      "Organismal Biology": "有机体生物学",
+      "Herpetology": "爬行动物学",
+      "Aquatic Life": "水生生物",
+      "Animal Adaptations": "动物适应",    
+      // History
+      "Medieval History": "中世纪历史",
+      "Ancient Egypt": "古埃及",
+      "Invention and Technology": "发明与技术",
+      "European History": "欧洲历史",
+      "World War II": "第二次世界大战",
+      "War": "战争",
+      "Military History": "军事史",
+      "Invention": "发明",
+      "Ancient Rome": "古罗马",
+      "Ancient Civilization": "古代文明",
+      "Ancient History": "古代历史",
+      "Transportation and Communication": "交通与通信",
+      "Ancient Civilizations": "古代文明",
+      "Islamic History": "伊斯兰历史",
+      "Modern History": "现代历史",
+      "Revolution": "革命",
+      // Paranormal
+      "Haunted Locations": "鬼屋地点",
+      // Arts
+      "Art Techniques": "艺术技巧",
+      "Comics and Graphic Novels": "漫画与图像小说",
+      "Screenwriting": "编剧",
+      // Environmental Science
+      "Marine Pollution": "海洋污染",
+      "Land Degradation": "土地退化",
+
+      // True Crime
+      "Serial Killers": "连环杀手",
+      // Technology
+      "Wearable Technology": "可穿戴技术",
+      "History and Evolution": "历史与演变",
+      "Mobile Technology": "移动技术",
+      "Internet": "互联网",
+      "History and Impact": "历史与影响",
+      // Education
+      "STEAM Education": "水蒸氣教育",
+      "Technology in Education": "教育技术",
+      "Diversity and Inclusion": "多样性与包容性",
+      // Sociology
+      "Global Collaboration": "全球合作",
+      // Art and Technology
+      "Digital Art": "数字艺术",
+      // Natural Science
+      "Aquatic Biology": "水生生物学",
+      "Wildlife Biology": "野生生物学",
+      // Biography
+      "Inventors": "发明家",
+      "Historical Biography": "历史传记",
+      "Art History": "艺术史",
+      "Civil Rights Movement": "民权运动",
+      "Philosophy": "哲学",
+      // Business
+      "Art Entrepreneurship": "艺术创业",
+      // sports
+      "Sports Media": "体育媒体",
+      "Inspirational": "启发",
+      "Media Coverage": "媒体报道",
+      "Women in Sports": "女性运动",
+      // nature
+      "Marine Life": "海洋生物",
+      "Bird Watching": "观鸟",
+      "Wildlife Conservation": "野生动物保护",
+      // Self-help
+      "Relationships": "关系",
+      "Personal Development": "个人发展",
+      "Communication Skills": "沟通技巧",
+      // Travel Guide
+      "City Guide": "城市指南",
+      // Memoir
+      "Medical Memoir": "医学回忆录",
+      // Horror
+      "Legends": "传奇",
+      // Health
+      "Medical Profession": "医疗行业",
+      "Public Health": "公共卫生",
+      "Epidemiology": "流行病学",
+      // Science and Technology
+      "Home Appliances": "家电",
+      "Music Technology": "音乐技术",
+      "History and Innovation": "历史与创新",
+      // Religion
+      "Judaism": "犹太教",
+      // Educational
+      "Media Literacy": "媒体素养", 
+      // Health and Wellness
+      "Physical Fitness": "身体素质",
+      "Alternative Medicine": "替代医学",    
+      "Fitness": "健身",
+      // Self-help
+      "Time Management": "时间管理",
+      // Natural Sciences
+      // Cultural Celebration 
+      "Indigenous Festivals": "民间节日",
+      "Traditional Festival": "传统节日",
+      // Travel
+      "Travel Guides": "旅行指南",
+      "Cultural Festival": "文化节", 
+      // Visual Arts
+      "Film and Fine Art": "电影与艺术",
+      // Music
+      "Biographies": "传记",    
+      "Social Issues in Music": "音乐中的社会问题",
+      "History of Music Innovation": "音乐创新的历史",
+      "Musical Collaboration": "音乐合作",
+      "Exploration of Music Genres": "音乐流派探索", 
+      "Musical Collaborations": "音乐合作",
+      "Music History": "音乐历史",
+      // "Cryptozoology   
+      "Legendary Creatures": "传奇生物",
+      "Cryptids": "神秘动物",
+      "Cryptids and Mythical Beasts": "神秘动物与传奇生物",
+      // Mythology
+      "Australian Aboriginal Mythology": "澳大利亚原住民传说", 
+      "Australian Aboriginal": "澳大利亚原住民",
+      // Social Sciences
+      // Medical
+      "Cardiology": "心脏病学",    
+      // Political Science
+      "Global Governance": "全球治理",
+      // Natural History
+      "Birds": "鸟类",
+      "Extinction and Conservation": "灭绝与保护",
+      "Evolutionary Biology": "进化生物学", 
+      "Insects": "昆虫",
+      "Ornithology": "鸟类学",    
+      "Arctic Wildlife": "北极野生动物",
+      "Mammalogy": "哺乳动物学",
+      "Prehistoric Animals": "史前动物",
+      // Religion and Spirituality
+      "Indigenous Beliefs": "土著信仰", 
+    },
+
+>>>>>>> 2b400a1 (rebase commit)
     articleCard: {
       raLevel: "阅读能力等级为 {raLevel}",
       cefrLevel: "CEFR 等级为 {cefrLevel}",
