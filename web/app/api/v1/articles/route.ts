@@ -15,7 +15,6 @@ router.use(logRequest);
 //     next: () => void
 // ) => {
 
-
 //     // Check level is be the same as the user's level
 //     const userLevel = session.user.level;
 //     const level = new Number(req.nextUrl.searchParams.get('level')).valueOf();
@@ -24,6 +23,7 @@ router.use(logRequest);
 //     }
 //     return next();
 // });
+
 router.use(protect);
 router.get(getSearchArticles);
 
