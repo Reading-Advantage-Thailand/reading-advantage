@@ -48,7 +48,6 @@ type Student = {
 };
 
 type MyStudentProps = {
-  userId: string;
  matchedStudents: Student[];
 };
 
@@ -198,11 +197,11 @@ const handleResetProgress = async (selectedStudentId: string) => {
             <DropdownMenuCheckboxItem onClick={() => handleActionSelected('progress', row.getValue('id') )}>
               <Link href={redirectUrl}>Progress</Link>
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem >
-              <Link href={redirectUrl} onClick={() => handleActionSelected('enroll', row.getValue('id'))}>Enroll</Link>
+            <DropdownMenuCheckboxItem onClick={() => handleActionSelected('enroll', row.getValue('id'))}>
+              <Link href={redirectUrl} >Enroll</Link>
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>
-              <Link href={redirectUrl} onClick={() => handleActionSelected('unenroll', row.getValue('id'))}>Unenroll</Link>
+            <DropdownMenuCheckboxItem onClick={() => handleActionSelected('unenroll', row.getValue('id'))}>
+              <Link href={redirectUrl} >Unenroll</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem onClick={() => openResetModal(row.getValue('id'))}>
               Reset Progress

@@ -139,7 +139,7 @@ describe("myClasses Page", () => {
       expect (classroomElement).toBeInTheDocument();
       userEvent.click(classroomElement);
 
-      render(<ClassRoster />);
+      render(<ClassRoster studentInClass={[]}/>);
       const classRosterElement = await screen.findByText((content, element) => content.startsWith('Class Roster'));
 
       expect(classRosterElement).toBeInTheDocument();
