@@ -81,12 +81,12 @@ export default function MyEnrollClasses({
   }, [isCheck, classroomId, eachClassChecked]);
 
 
-  const handleStudentEnrollment = async (id: string, enrolledClasses: any) => {
+  const handleStudentEnrollment = async (classroomId: string, enrolledClasses: any) => {
     let studentInClass: any[] = [];
     enrolledClasses.forEach((enrolledClass: any) => {
       if (enrolledClass.student) {
         enrolledClass.student.forEach((student: { studentId: string }) => {
-          if (enrolledClass.id === id) {
+          if (enrolledClass.id === classroomId) {
             studentInClass.push(student.studentId);
           }
           if (!studentInClass.includes(studentId)) {
@@ -103,7 +103,7 @@ export default function MyEnrollClasses({
     }));
 
     try {
-      const response = await axios.patch(`/api/classroom/${id}/enroll`, {
+      const response = await axios.patch(`/api/classroom/${classroomId}/enroll`, {
         student: updateStudentListBuilder,
       });
 

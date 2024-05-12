@@ -12,18 +12,13 @@ type Props = {
 
 export default async function ReadPage({ params, searchParams }: Props) {
   const user = await getCurrentUser();
-  if (!user) {
-    return redirect("/auth/signin");
-  }
-  if (user.cefrLevel === "" && user.level === 0) {
-    return redirect("/level");
-  }
+  if (!user) return redirect("/auth/signin");
+  if (user.cefrLevel === "" && user.level === 0) return redirect("/level");
   const t = await getScopedI18n("pages.student.readPage");
   return (
     <>
       <Header heading={t("articleSelection")} />
       <Select
-        types={[]}
         user={{
           level: user.level,
           name: user.name,

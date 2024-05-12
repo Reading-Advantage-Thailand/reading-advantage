@@ -19,7 +19,6 @@ type Props = {
     name: string;
     id: string;
   };
-  types: string[];
 };
 
 async function fetchArticles(params: string) {
@@ -31,7 +30,7 @@ async function fetchArticles(params: string) {
   return data;
 }
 
-export default function Select({ user, types }: Props) {
+export default function Select({ user }: Props) {
   const t = useScopedI18n("components.select");
   const ta = useScopedI18n("components.article");
   const router = useRouter();
@@ -48,9 +47,9 @@ export default function Select({ user, types }: Props) {
   const selectedSubgenre = searchParams.get("subgenre");
 
   function getArticleType() {
-    if (selectedType && !selectedGenre && !selectedSubgenre) return "type";
-    if (selectedType && selectedGenre && !selectedSubgenre) return "genre";
-    if (selectedType && selectedGenre && selectedSubgenre) return "subGenre";
+    if (!selectedType && !selectedGenre && !selectedSubgenre) return "type";
+    if (selectedType && !selectedGenre && !selectedSubgenre) return "genre";
+    if (selectedType && selectedGenre && !selectedSubgenre) return "subGenre";
     return "article";
   }
 
@@ -85,7 +84,7 @@ export default function Select({ user, types }: Props) {
       setLoading(false);
     }
     fetchData();
-  }, [types]);
+  }, [searchParams, router, selectedGenre, selectedSubgenre, selectedType]);
 
   return (
     <Card className="my-2">

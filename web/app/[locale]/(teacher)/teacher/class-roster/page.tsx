@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 
-export default async function rosterPage(params: {
+export default async function RosterPage(params: {
   params: {classroomId: string;}
 }) {
   const user = await getCurrentUser();

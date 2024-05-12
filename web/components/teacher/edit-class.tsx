@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from "../ui/use-toast";
+import { useRouter } from "next/navigation";
 
 type Classes = {
   classroomName: string;
@@ -32,6 +33,7 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
   const [classroomName, setClassroomName] = useState(classroomToEdit? classroomToEdit.classroomName : "");
   const [grade, setGrade] = useState(classroomToEdit? classroomToEdit.grade : "");
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const handleEditClass = async (classroomId: string) => {
     setOpen(true);
@@ -58,7 +60,7 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
       description: "Class updated successfully",
       variant: "default",
     });
-    location.reload();
+    router.refresh();
     setOpen(false);
   };
 

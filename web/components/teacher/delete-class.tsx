@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from '../ui/use-toast';
+import { useRouter } from "next/navigation";
 
 interface DeleteClassProps { 
   classroomData: Classes[];
@@ -27,6 +28,7 @@ type Classes = {
 
 function DeleteClass ({ classroomData, classroomId, title}: DeleteClassProps) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   const classroom = classroomData.find((classroom) => classroom.id === classroomId);
 
   const handleDeleteClass = async (classroomId: string) => {
@@ -46,7 +48,7 @@ function DeleteClass ({ classroomData, classroomId, title}: DeleteClassProps) {
             variant: "destructive",
         })
     } finally {
-        location.reload();
+      router.refresh();
         setOpen(false);
         }
   };

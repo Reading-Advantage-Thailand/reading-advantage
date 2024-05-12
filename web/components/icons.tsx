@@ -36,6 +36,7 @@ import {
     RefreshCw,
     ArchiveRestore,
     Trash2,
+    UserPlus
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -76,6 +77,7 @@ export const Icons = {
   refresh: RefreshCw,
   archive: ArchiveRestore, 
   delete: Trash2,
+  addUser: UserPlus,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"

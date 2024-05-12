@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 
-export default async function rosterPage(params: {
+export default async function RosterPage(params: {
   params: {classroomId: string;}
 }) {
   const user = await getCurrentUser();
@@ -149,6 +149,8 @@ export default async function rosterPage(params: {
           lastActivity: studentData.lastActivity,
           studentName: matchedStudent ? matchedStudent.name : "Unknown",
           classroomName: classStudent.classroomName,
+          classroomId: classStudent.id,
+          email: matchedStudent ? matchedStudent.email : "Unknown",
         };
       }
     ): []

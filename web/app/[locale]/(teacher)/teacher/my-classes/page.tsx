@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 
-export default async function myClassesPage() {
+export default async function MyClassesPage() {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
@@ -53,7 +53,7 @@ const allTeachers = await getAllTeachersData();
 const teacherId = () => {
 let teacherId: String[] = [];
 allTeachers.teachers.forEach((teacher: { id: string; role: any}) => {
-  if (teacher.role.includes('TEACHER') && teacher.id === user.id) {
+  if (teacher.role && teacher.role.includes('TEACHER') && teacher.id === user.id) {
     teacherId.push(teacher.id);
   }
 });
