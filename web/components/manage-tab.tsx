@@ -9,7 +9,7 @@ import {
 } from "./ui/card";
 import { toast } from "./ui/use-toast";
 import axios from "axios";
-import { formatDate, updateScore } from "@/lib/utils";
+import { formatDate, formatTimestamp, updateScore } from "@/lib/utils";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -168,7 +168,7 @@ export default function ManageTab({ userId }: Props) {
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {t("added", {
-                          date: formatDate(sentence.createdAt),
+                          date: formatTimestamp(sentence.createdAt),
                         })}
                       </p>
                     </div>

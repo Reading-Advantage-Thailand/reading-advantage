@@ -131,6 +131,8 @@ export default {
           errorOrder: "Please order correctly",
           submitArticle: "Check your answers",
           nextPassage: "Next Passage",
+          minSentencesAlert:
+            "You need at least five saved sentences to play this activity.",
         },
       },
     },

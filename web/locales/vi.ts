@@ -122,6 +122,7 @@ export default {
           errorOrder: "Vui lòng sắp xếp đúng",
           submitArticle: "Kiểm tra câu trả lời của bạn",
           nextPassage: "Đoạn tiếp theo",
+          minSentencesAlert: "Bạn cần ít nhất năm câu đã lưu để tham gia hoạt động này.",
         },
       },
     },
