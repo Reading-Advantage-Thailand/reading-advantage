@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
+import { Article } from "./models/article-model";
 
 async function getTranslate(
   sentences: string[],
@@ -44,7 +45,7 @@ interface ITextAudio {
 }
 
 type Props = {
-  article: ArticleType;
+  article: Article;
   className?: string;
   articleId: string;
   userId: string;
@@ -67,9 +68,10 @@ export default function ArticleContent({
   const [translate, setTranslate] = React.useState<string[]>([]);
   const [isTranslate, setIsTranslate] = React.useState(false);
   const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
+
   React.useEffect(() => {
     if (!isSplit) {
-      splitToText(article);
+      splitToText(article.passage);
       setIsSplit(true);
     }
   }, [article, isSplit]);
@@ -107,16 +109,19 @@ export default function ArticleContent({
     }
   };
 
-  const splitToText = (article: ArticleType) => {
-    console.log("article", article.content);
+  const splitToText = (passage: string) => {
+    console.log("article", passage);
     const regex = /(\n\n|\n|\\n\\n|\\n)/g;
     // if contains \n\n or \n or \\n\\n or \\n then replace with ''
-    if (article.content.match(regex)) {
-
+    if (passage.match(regex)) {
       // just replace \n\n and \\n\\n
-      const content = article.content.replace(regex, '~~');
+      const content = passage.replace(regex, "~~");
       // split . but except for Mr. Mrs. Dr. Ms. and other abbreviations
-      const sentences = content.split(/(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./).filter((sentence) => sentence.length > 0);
+      const sentences = content
+        .split(
+          /(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./
+        )
+        .filter((sentence) => sentence.length > 0);
       const result = sentences.map((sentence) => sentence.trim());
       console.log("result", result);
       setText([]);
@@ -130,7 +135,7 @@ export default function ArticleContent({
     } else {
       // use tokenizer to split sentence
       const tokenizer = new Tokenizer();
-      tokenizer.setEntry(article.content);
+      tokenizer.setEntry(passage);
       const sentences = tokenizer.getSentences();
       setText([]);
       for (let i = 0; i < article.timepoints.length; i++) {
@@ -153,7 +158,6 @@ export default function ArticleContent({
     if (!isTranslate) {
       await handleTranslateSentence();
     } else {
-     
       try {
         let card: Card = createEmptyCard();
         let endTimepoint = 0;
@@ -178,10 +182,10 @@ export default function ArticleContent({
 
         toast({
           title: "Success",
-          description: `You have saved "${text[selectedSentence as number].text
-            }" to flashcard`,
+          description: `You have saved "${
+            text[selectedSentence as number].text
+          }" to flashcard`,
         });
-
       } catch (error) {
         if (axios.isAxiosError(error)) {
           if (error.response?.data.message === "Sentence already saved") {
@@ -199,7 +203,6 @@ export default function ArticleContent({
           });
         }
       }
-      
     }
   };
   const locale = useCurrentLocale();
@@ -208,7 +211,9 @@ export default function ArticleContent({
     setLoading(true);
     try {
       //remove ~~ from text
-      const sentences = text.map((sentence) => sentence.text.replace(/~~/g, ""));
+      const sentences = text.map((sentence) =>
+        sentence.text.replace(/~~/g, "")
+      );
       // const sentences = text.map((sentence) => sentence.text);
       // get language from local
       if (!locale || locale === "en") {
@@ -241,7 +246,6 @@ export default function ArticleContent({
         setIsTranslateOpen(!isTranslateOpen);
         setTranslate(res.translation);
         setIsTranslate(true);
-
       }
     } catch (error) {
       console.log(error);
@@ -293,8 +297,8 @@ export default function ArticleContent({
             {loading
               ? "Loading"
               : isTranslate && isTranslateOpen
-                ? t("translateฺButton.close")
-                : t("translateฺButton.open")}
+              ? t("translateฺButton.close")
+              : t("translateฺButton.open")}
           </Button>
         )}
       </div>
@@ -335,8 +339,8 @@ export default function ArticleContent({
                     ? "bg-yellow-50"
                     : "bg-transparent"
                   : highlightedWordIndex + 1 === index
-                    ? "bg-yellow-50"
-                    : "bg-transparent"
+                  ? "bg-yellow-50"
+                  : "bg-transparent"
               )}
               onMouseEnter={() => {
                 setSelectedSentence(index);
@@ -348,10 +352,15 @@ export default function ArticleContent({
                 // if start with ~~ then add break line
                 sentence.text.split("~~").map((line, index) => (
                   <span key={index}>
-                    {
-                      line + (index !== sentence.text.split("~~").length - 1 ? " " : line.endsWith(".") ? " " : ". ")
-                    }
-                    {index !== sentence.text.split("~~").length - 1 && <div className="mt-3" />}
+                    {line +
+                      (index !== sentence.text.split("~~").length - 1
+                        ? " "
+                        : line.endsWith(".")
+                        ? " "
+                        : ". ")}
+                    {index !== sentence.text.split("~~").length - 1 && (
+                      <div className="mt-3" />
+                    )}
                   </span>
                 ))
               }
@@ -414,7 +423,7 @@ export default function ArticleContent({
         }
       >
         <source
-          src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleId}.mp3`}
+          src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${articleId}.mp3`}
         />
       </audio>
     </>

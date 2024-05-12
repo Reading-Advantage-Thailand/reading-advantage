@@ -1,5 +1,5 @@
-import { getSearchArticles } from "@/controllers/article_controller";
-import { logRequest } from "@/utils/middleware";
+import { getSearchArticles } from "@/controllers/article-controller";
+import { logRequest, protect } from "@/utils/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -24,7 +24,7 @@ router.use(logRequest);
 //     }
 //     return next();
 // });
-
+router.use(protect);
 router.get(getSearchArticles);
 
 export async function GET(request: NextRequest, ctx: { params?: unknown }): Promise<NextResponse> {

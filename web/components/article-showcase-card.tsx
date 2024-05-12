@@ -1,12 +1,11 @@
-import { articleShowcaseType } from "@/types";
 import React from "react";
 import { Badge } from "./ui/badge";
 import Link from "next/link";
-import { camelToSentenceCase } from "@/lib/utils";
 import { Rating } from "@mui/material";
+import { ArticleShowcase } from "./models/article-model";
 
 type Props = {
-  article: articleShowcaseType;
+  article: ArticleShowcase;
 };
 
 export default async function ArticleShowcaseCard({ article }: Props) {
@@ -33,7 +32,7 @@ export default async function ArticleShowcaseCard({ article }: Props) {
           <p className="text-xl drop-shadow-lg font-bold text-white">
             {article.title}
           </p>
-          <p className="text-sm drop-shadow-lg line-clamp-4">
+          <p className="text-sm drop-shadow-lg line-clamp-4 text-white">
             {article.summary}
           </p>
         </div>
