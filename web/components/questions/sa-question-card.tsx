@@ -79,7 +79,7 @@ export default function SAQuestionCard({ userId, articleId }: Props) {
         console.error("error: ", error);
         setState(QuestionState.ERROR);
       });
-  }, [state]);
+  }, [state, articleId]);
 
   const handleCompleted = () => {
     setState(QuestionState.LOADING);
@@ -303,7 +303,7 @@ function SAQuestion({
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader className="text-left">
                 <DialogTitle className="font-bold text-2xl">
-                  Let's Rate Your Answer
+                  Let&apos;s Rate Your Answer
                 </DialogTitle>
                 <DialogDescription>
                   <p className="font-bold text-lg mt-4">Question</p>

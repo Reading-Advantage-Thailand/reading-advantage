@@ -50,7 +50,7 @@ export default function MCQuestionCard({ userId, articleId }: Props) {
         setData(data);
         setState(data.state);
       });
-  }, [state]);
+  }, [state, articleId]);
 
   const handleCompleted = () => {
     setState(QuestionState.LOADING);

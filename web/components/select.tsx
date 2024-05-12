@@ -12,7 +12,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "./article-showcase-card";
 import { articleShowcaseType } from "@/types";
-import { Skeleton } from "./ui/skeleton";
 
 type Props = {
   user: {
@@ -85,7 +84,7 @@ export default function Select({ user }: Props) {
       setLoading(false);
     }
     fetchData();
-  }, [searchParams]);
+  }, [searchParams, router, selectedGenre, selectedSubgenre, selectedType]);
 
   return (
     <Card className="my-2">
