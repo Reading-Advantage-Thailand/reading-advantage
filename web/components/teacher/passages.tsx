@@ -318,8 +318,6 @@ export default function Passages(passages: PassagesProps) {
           </Button>
         </div>
       </div>
-        
-        
     </div>
   );
 }
