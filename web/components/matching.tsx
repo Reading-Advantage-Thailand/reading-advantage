@@ -217,13 +217,13 @@ export default function Matching({ userId }: Props) {
           </>
         )}
         {correctMatches.length === 10 && (
-          <div className="flex flex-wrap justify-center flex-row">
+          <div className="flex flex-wrap justify-center mt-10 ">
             <Image
               src={"/winners.svg"}
               alt="winners"
-              width={450}
-              height={115}
-              className="animate__animated animate__zoomInDown"
+              width={250}
+              height={100}
+              className="animate__animated animate__jackInTheBox"
             />
           </div>
         )}
