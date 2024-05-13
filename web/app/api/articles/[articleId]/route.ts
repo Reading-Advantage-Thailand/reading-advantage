@@ -37,7 +37,6 @@ export async function GET(
         }
 
         const article = articleSnapshot.data();
-        console.log('article', article);
 
         // If the article does not have questions, return the article as is
         if (!article?.questions) {

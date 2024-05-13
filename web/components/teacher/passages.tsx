@@ -35,6 +35,7 @@ import { Header } from "../header";
 interface CustomCheckboxProps {
   label: string;
 }
+
 type Passage = {
   id: string;
   title: string;
@@ -42,13 +43,13 @@ type Passage = {
   ra_level: number;
   genre: string;
   subgenre: string;
-  is_read: boolean; 
+  is_read: boolean;
   cefr_level: string;
   summary: string;
   average_rating: number;
   article: articleShowcaseType;
-
 };
+
 type PassagesProps = {
   passages: Passage[];
 };
@@ -60,7 +61,6 @@ export default function Passages(passages: PassagesProps) {
   const [isFilterBySubgenre, setIsFilterBySubgenre] = useState(false);
   const [isFictionChecked, setIsFictionChecked] = useState(false);
   const [isNonFictionChecked, setIsNonFictionChecked] = useState(false);
-
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -68,10 +68,12 @@ export default function Passages(passages: PassagesProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [data, setData] = useState(passages.passages);
   const t = useScopedI18n("components.articleRecordsTable");
 
   const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ label }) => {
     const [selected, setSelected] = useState(false);
+
     return (
       <div
         className={`border-2 ${
@@ -88,86 +90,109 @@ export default function Passages(passages: PassagesProps) {
     {
       accessorKey: "title",
       header: ({ column }) => {
-       return null;
+        return null;
       },
       cell: ({ row }) => {
         const passage = row.original;
+
+        const titleFilterValue = table.getColumn("title")?.getFilterValue();
+        const typeFilterValue = table.getColumn("type")?.getFilterValue();
+        const genreFilterValue = table.getColumn("genre")?.getFilterValue();
+        const subgenreFilterValue = table
+          .getColumn("subgenre")
+          ?.getFilterValue();
+        const raLevelFilterValue = table
+          .getColumn("ra_level")
+          ?.getFilterValue();
+
+        if (
+          (titleFilterValue && passage.title !== titleFilterValue) ||
+          (typeFilterValue && passage.type !== typeFilterValue) ||
+          (genreFilterValue && passage.genre !== genreFilterValue) ||
+          (subgenreFilterValue && passage.subgenre !== subgenreFilterValue) ||
+          (raLevelFilterValue && passage.ra_level !== raLevelFilterValue)
+        ) {
+          return null;
+        }
         return (
           <div className="captoliza ml-4">
-             <Link href={`/student/read/${passage.id}`}>
-      <div
-        className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
-        style={{
-          backgroundImage: `url('https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${passage.id}.png')`,
-          boxShadow: "inset 80px 10px 90px 10px rgba(0, 0, 0, 0.9)",
-          opacity: passage.is_read ? 0.3 : 1,
-        }}
-      >
-        <Badge className="shadow-lg max-w-max" variant="destructive">
-          Reading Advantage Level: {passage.ra_level}
-        </Badge>
-        <Badge className="shadow-lg max-w-max" variant="destructive">
-          CEFR Level: {passage.cefr_level}
-        </Badge>
-        <Badge className="shadow-lg max-w-max" variant="destructive">
-          <Rating name="read-only" value={passage.average_rating} readOnly />
-        </Badge>
-        <div className="mt-auto">
-          <p className="text-xl drop-shadow-lg font-bold text-white">
-            {passage.title}
-          </p>
-          <p className="text-sm drop-shadow-lg line-clamp-4">
-            {passage.summary}
-          </p>
-        </div>
-      </div>
-      {passage.is_read && (
-        <div className="flex justify-center">
-          <Badge className="relative m-auto -top-[11rem] text-md left-0 right-0 shadow-lg max-w-max bg-slate-200 text-slate-900">
-            Previously Read
-          </Badge>
-        </div>
-      )}
-      </Link>
-    </div>
-    
-        )
+            <Link href={`/student/read/${passage.id}`}>
+              <div
+                className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
+                style={{
+                  backgroundImage: `url('https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${passage.id}.png')`,
+                  boxShadow: "inset 80px 10px 90px 10px rgba(0, 0, 0, 0.9)",
+                  opacity: passage.is_read ? 0.3 : 1,
+                }}
+              >
+                <Badge className="shadow-lg max-w-max" variant="destructive">
+                  Reading Advantage Level: {passage.ra_level}
+                </Badge>
+                <Badge className="shadow-lg max-w-max" variant="destructive">
+                  CEFR Level: {passage.cefr_level}
+                </Badge>
+                <Badge className="shadow-lg max-w-max" variant="destructive">
+                  <Rating
+                    name="read-only"
+                    value={passage.average_rating}
+                    readOnly
+                  />
+                </Badge>
+                <div className="mt-auto">
+                  <p className="text-xl drop-shadow-lg font-bold text-white">
+                    {passage.title}
+                  </p>
+                  <p className="text-sm drop-shadow-lg line-clamp-4">
+                    {passage.summary}
+                  </p>
+                </div>
+              </div>
+              {passage.is_read && (
+                <div className="flex justify-center">
+                  <Badge className="relative m-auto -top-[11rem] text-md left-0 right-0 shadow-lg max-w-max bg-slate-200 text-slate-900">
+                    Previously Read
+                  </Badge>
+                </div>
+              )}
+            </Link>
+          </div>
+        );
       },
     },
     {
       accessorKey: "type",
       header: ({ column }) => {
-       return null;
+        return null;
       },
       cell: ({ row }) => {
-        return null
+        return null;
       },
     },
     {
-      accessorKey: "level",
+      accessorKey: "ra_level",
       header: ({ column }) => {
-       return null;
+        return null;
       },
       cell: ({ row }) => {
-        return null
+        return null;
       },
     },
     {
       accessorKey: "genre",
       header: ({ column }) => {
-       return null;
+        return null;
       },
       cell: ({ row }) => {
-        return null
+        return null;
       },
     },
     {
       accessorKey: "subgenre",
       header: ({ column }) => {
-       return null;
+        return null;
       },
       cell: ({ row }) => {
-        return null
+        return null;
       },
     },
   ];
@@ -193,72 +218,80 @@ export default function Passages(passages: PassagesProps) {
     <div>
       <Header heading="Passages Page" />
       <Input
-          placeholder={"Search..."}
-          value={
-            (table.getColumn("title")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm mt-4"
-        />
+        placeholder={"Search..."}
+        value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+        onChange={(event) =>
+          table.getColumn("title")?.setFilterValue(event.target.value)
+        }
+        className="max-w-sm mt-4"
+      />
       {/* <div className="grid grid-cols-4 items-start"> */}
 
       <div>
         <div className="flex items-center">
-          <Checkbox onChange={() => setIsFilterByTypeChecked(!isFilterByTypeChecked)}/>
+          <Checkbox
+            onChange={() => setIsFilterByTypeChecked(!isFilterByTypeChecked)}
+          />
           <p>Filter by Type</p>
         </div>
         {isFilterByTypeChecked && (
-        <div className="ml-4">
-          <div className="flex items-center">
-            <Checkbox />
-            <p>Fiction</p>
+          <div className="ml-4">
+            <div className="flex items-center">
+              <Checkbox
+                value={
+                  (table.getColumn("type")?.getFilterValue() as string) ===
+                  "fiction"
+                }
+                onChange={() =>
+                  table.getColumn("type")?.setFilterValue("fiction")
+                }
+              />
+              <p>Fiction</p>
+            </div>
+            <div className="flex items-center">
+              <Checkbox
+                value={
+                  (table.getColumn("type")?.getFilterValue() as string) ===
+                  "nonfiction"
+                }
+                onChange={() =>
+                  table.getColumn("type")?.setFilterValue("nonfiction")
+                }
+              />
+              <p>Non Fiction</p>
+            </div>
           </div>
-          <div className="flex items-center">
-            <Checkbox />
-            <p>Non Fiction</p>
-          </div>
-        </div>
         )}
       </div>
-      <div className="flex items-center ">
-        <Checkbox />
-        <p>Filter by Genre</p>
-      </div>
       <div className="flex items-center">
-        <Checkbox />
-        <p>Filter by Subgenre</p>
-      </div>
-      <div className="flex items-center">
-        <Checkbox onChange={() => setIsFilterByLevel(!isFilterByLevel)}/>
+        <Checkbox onChange={() => setIsFilterByLevel(!isFilterByLevel)} />
         <p>Filter by Level</p>
       </div>
       {/* </div> */}
-        {isFilterByLevel && (
-      <div className="grid grid-cols-6">
-        <CustomCheckbox label="1" />
-        <CustomCheckbox label="2" />
-        <CustomCheckbox label="3" />
-        <CustomCheckbox label="4" />
-        <CustomCheckbox label="5" />
-        <CustomCheckbox label="6" />
-        <CustomCheckbox label="7" />
-        <CustomCheckbox label="8" />
-        <CustomCheckbox label="9" />
-        <CustomCheckbox label="10" />
-        <CustomCheckbox label="11" />
-        <CustomCheckbox label="12" />
-        <CustomCheckbox label="13" />
-        <CustomCheckbox label="14" />
-        <CustomCheckbox label="15" />
-        <CustomCheckbox label="16" />
-        <CustomCheckbox label="17" />
-        <CustomCheckbox label="18" />
-      </div>
-        )}
+      {isFilterByLevel && (
+        <div className="grid grid-cols-6">
+          <CustomCheckbox label="1" />
+          <CustomCheckbox label="2" />
+          <CustomCheckbox label="3" />
+          <CustomCheckbox label="4" />
+          <CustomCheckbox label="5" />
+          <CustomCheckbox label="6" />
+          <CustomCheckbox label="7" />
+          <CustomCheckbox label="8" />
+          <CustomCheckbox label="9" />
+          <CustomCheckbox label="10" />
+          <CustomCheckbox label="11" />
+          <CustomCheckbox label="12" />
+          <CustomCheckbox label="13" />
+          <CustomCheckbox label="14" />
+          <CustomCheckbox label="15" />
+          <CustomCheckbox label="16" />
+          <CustomCheckbox label="17" />
+          <CustomCheckbox label="18" />
+        </div>
+      )}
 
-<div className="rounded-md border mt-4">
+      <div className="rounded-md border mt-4">
         <Table>
           <TableBody>
             {table.getRowModel().rows?.length ? (

@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 
-export default async function PassagesPage() {
+export default async function PassagesPage(params: { articleId: string }) {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
@@ -26,10 +26,10 @@ export default async function PassagesPage() {
     return response.json();
   }
   const passages = await getPassages();
-  
+
   return (
     <div>
-      <Passages passages={passages.passages}/>
+      <Passages passages={passages.passages} />
     </div>
   )
 }
