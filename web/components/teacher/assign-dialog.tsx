@@ -9,32 +9,32 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Icons } from "@/components/icons";
+import { toast } from "../ui/use-toast";
 
 type Props = {
   article: Article;
   articleId: string;
   userId: string;
 };
-const mockClassrooms = [
-  {
-    id: "1",
-    name: "Class 1",
-  },
-  {
-    id: "2",
-    name: "Class 2",
-  },
-  {
-    id: "3",
-    name: "Class 3",
-  },
-];
 
 export default function AssignDialog({ article, articleId, userId }: Props) {
   const [show, setShow] = useState(false);
 
   const handleShow = () => {
-    setShow(true);
+    const articleUri = `https://app.reading-advantage.com/en/student/read/${articleId}`;
+    navigator.clipboard.writeText(articleUri).then(() => {
+      toast({
+        title: "Link copied to clipboard",
+        description: "successfully copied to clipboard",
+      });
+      setShow(true);
+    }).catch(() => {
+      toast({
+        title: "Link not copied to clipboard",
+        description: "could not be copied to clipboard",
+      });
+    });
   };
 
   const handleClose = () => {
@@ -42,7 +42,7 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
   };
   return (
     <div>
-      <Button className="mb-4 ml-5" onClick={handleShow}>
+      {/* <Button className="mb-4 ml-5" onClick={handleShow}>
         Assign
       </Button>
       <Dialog open={show} onOpenChange={handleClose}>
@@ -64,7 +64,12 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
             </DropdownMenuTrigger>
           </DropdownMenu>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
+<div className="flex gap-4">
+      <Button className="mb-4 ml-5" onClick={handleShow}>
+        Copy Link
+      </Button>
+</div>
     </div>
   );
 }
