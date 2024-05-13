@@ -94,7 +94,7 @@ export default function Passages(passages: PassagesProps) {
         const passage = row.original;
         return (
           <div className="captoliza ml-4">
-             <Link href={`/teacher/read/${passage.id}`}>
+             <Link href={`/student/read/${passage.id}`}>
       <div
         className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
         style={{
@@ -127,7 +127,6 @@ export default function Passages(passages: PassagesProps) {
             Previously Read
           </Badge>
         </div>
-        
       )}
       </Link>
     </div>
@@ -203,7 +202,7 @@ export default function Passages(passages: PassagesProps) {
           }
           className="max-w-sm mt-4"
         />
-      <div className="grid grid-cols-4 items-start">
+      {/* <div className="grid grid-cols-4 items-start"> */}
 
       <div>
         <div className="flex items-center">
@@ -235,7 +234,7 @@ export default function Passages(passages: PassagesProps) {
         <Checkbox onChange={() => setIsFilterByLevel(!isFilterByLevel)}/>
         <p>Filter by Level</p>
       </div>
-      </div>
+      {/* </div> */}
         {isFilterByLevel && (
       <div className="grid grid-cols-6">
         <CustomCheckbox label="1" />
