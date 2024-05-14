@@ -48,6 +48,7 @@ async function fetchArticles(params: string) {
 export default function Select({ user }: Props) {
   const t = useScopedI18n("components.select");
   const ta = useScopedI18n("components.article");
+  const locale = useCurrentLocale();
   // const tf: string | any = useScopedI18n("components.types");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -95,33 +96,12 @@ export default function Select({ user }: Props) {
       if (selectedType && selectedGenre && selectedSubgenre) {
         setArticleShowcaseData(response.results);
       } else {
-        setArticleTypesData(response.results);
+        setArticleTypesData(response.results);  
       }
       setLoading(false);
     }
     fetchData();
   }, [searchParams, router, selectedGenre, selectedSubgenre, selectedType]);
-
-   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
-   const locale = useCurrentLocale();
-   async function handleTranslateSummary({ type }: any){
-    if(!locale || locale === "en"){
-      return ;
-    }
-    type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
-    let localeTarget: ExtendedLocale = locale as ExtendedLocale;
-    switch(locale){
-      case "cn":
-        localeTarget = "zh-CN";
-        break;
-      case "tw":
-        localeTarget = "zh-TW";
-        break;
-    }
-    const res = await getTranslate([type], "", localeTarget);
-    
-    setSummarySentence(res.translation);
-  }
 
   return (
     <Card className="my-2">
@@ -147,16 +127,18 @@ export default function Select({ user }: Props) {
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {articleTypesData.map((type, index) => {
-              
-              return (<Button
+            {articleTypesData.map((type, index) => {                          
+              return (
+              <Button
                 key={index}
                 onClick={() => handleButtonClick(type)}
                 disabled={loading}
               >
-                {type.replace(/_/g, " ")}
+                {locale == "en" 
+                  ? type.replace(/_/g, " ") : type.replace(/_/g, " ")
+                }        
               </Button>
-              )
+               )
             })}
           </div>
         )}
