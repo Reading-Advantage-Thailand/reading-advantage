@@ -13,6 +13,21 @@ import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "./article-showcase-card";
 import { articleShowcaseType } from "@/types";
 
+import axios from "axios";
+import { useCurrentLocale } from "@/locales/client";
+
+async function getTranslate(
+ sentences: string[],
+ articleId: string,
+ language: string
+) {
+ const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
+   sentences,
+   language,
+ });
+ return res.data;
+}
+
 type Props = {
   user: {
     level: number;
@@ -33,6 +48,8 @@ async function fetchArticles(params: string) {
 export default function Select({ user }: Props) {
   const t = useScopedI18n("components.select");
   const ta = useScopedI18n("components.article");
+  const locale = useCurrentLocale();
+  // const tf: string | any = useScopedI18n("components.types");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -79,7 +96,7 @@ export default function Select({ user }: Props) {
       if (selectedType && selectedGenre && selectedSubgenre) {
         setArticleShowcaseData(response.results);
       } else {
-        setArticleTypesData(response.results);
+        setArticleTypesData(response.results);  
       }
       setLoading(false);
     }
@@ -110,15 +127,19 @@ export default function Select({ user }: Props) {
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {articleTypesData.map((type, index) => (
+            {articleTypesData.map((type, index) => {                          
+              return (
               <Button
                 key={index}
                 onClick={() => handleButtonClick(type)}
                 disabled={loading}
               >
-                {type.replace(/_/g, " ")}
+                {locale == "en" 
+                  ? type.replace(/_/g, " ") : type.replace(/_/g, " ")
+                }        
               </Button>
-            ))}
+               )
+            })}
           </div>
         )}
       </CardContent>

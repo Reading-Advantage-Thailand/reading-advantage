@@ -12,6 +12,7 @@ import { getScopedI18n } from "@/locales/server";
 import { ArticleFooter } from "./article-footer";
 import RatingPopup from "./rating-popup";
 import { Article } from "./models/article-model";
+import { ArticleSummary } from "./article-summary";
 
 type Props = {
   article: Article;
@@ -44,7 +45,9 @@ export default async function ArticleCard({
               })}
             </Badge>
           </div>
-          <CardDescription>Description of the article</CardDescription>
+          <CardDescription>
+            <ArticleSummary article={article} articleId={articleId} />
+          </CardDescription>
           <div className="flex justify-center">
             <Image
               src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${articleId}.png`}

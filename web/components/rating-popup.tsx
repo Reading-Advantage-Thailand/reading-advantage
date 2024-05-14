@@ -61,15 +61,22 @@ export default function RatingPopup({
 
  return (
   <div className=''>
-  <button 
-  onClick={toggleModal}
-  className='pl-[5.5%] mt-4 py-2 font-bold text-2xl md:text-2xl cursor-pointer
-    flex gap-4 items-center border-[1px] border-gray-300 rounded-xl
-    dark:border-[#1e293b]
+  <div 
+  className='sm:pl-[4.0%] pl-6 mt-4 py-2 font-bold text-3xl
+    flex sm:flex-row flex-wrap gap-4 items-center border-[1px] 
+    dark:border-[#1e293b] border-gray-300 rounded-xl
   '> 
-    Rate this article        
-    <Stack>                    
-      <Rating
+    <h1 
+    onClick={toggleModal}
+    className='cursor-pointer'
+    >
+      Rate this article
+    </h1>        
+    <Stack 
+    onClick={toggleModal}
+    className='cursor-pointer'
+    >                    
+      <Rating    
       value={averageRating} 
       onChange={handleChange}
       precision={0.5}
@@ -78,7 +85,7 @@ export default function RatingPopup({
       readOnly
       />
     </Stack>
-  </button> 
+  </div> 
 
   {/* modal */}
   {modalIsOpen  
