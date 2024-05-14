@@ -9,6 +9,7 @@ import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { useScopedI18n } from "@/locales/client";
 import "animate.css";
+import Image from "next/image";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { Skeleton } from "./ui/skeleton";
@@ -39,6 +40,7 @@ export default function Matching({ userId }: Props) {
   const router = useRouter();
   const [articleMatching, setArticleMatching] = useState<Word[]>([]);
   const [selectedCard, setSelectedCard] = useState<Word | null>(null);
+
   const [correctMatches, setCorrectMatches] = useState<string[]>([]);
   const [words, setWords] = useState<Word[]>([]);
   const [animateShake, setAnimateShake] = useState<string>("");
@@ -73,6 +75,7 @@ export default function Matching({ userId }: Props) {
       });
 
       const initialWords: Word[] = [];
+
       for (const article of matching) {
         initialWords.push({
           text: article?.sentence,
@@ -82,7 +85,9 @@ export default function Matching({ userId }: Props) {
           articleId: article?.articleId,
         });
       }
-      setArticleMatching(initialWords);
+      setArticleMatching(
+        initialWords.length > 5 ? initialWords.slice(0, 5) : initialWords
+      );
     } catch (error) {
       console.log(error);
     }
@@ -117,7 +122,6 @@ export default function Matching({ userId }: Props) {
             title: t("toast.success"),
             description: tUpdateScore("yourXp", { xp: 5 }),
           });
-
         }
       } catch (error) {
         toast({
@@ -129,14 +133,13 @@ export default function Matching({ userId }: Props) {
     } else {
       setAnimateShake("animate__animated animate__wobble"); // Trigger shake
       setTimeout(() => setAnimateShake(""), 2000); // Clear shake effect after 1 second
-      // alert("Wrong match!");
       setSelectedCard(null);
     }
   };
 
   const getCardStyle = (word: Word) => {
     let styles = {
-      backgroundColor: selectedCard?.text === word.text ? "#edefff" : '', // Change to a light yellow on wrong select
+      backgroundColor: selectedCard?.text === word.text ? "#edefff" : "", // Change to a light yellow on wrong select
       border:
         selectedCard?.text === word.text
           ? "2px solid #425fff"
@@ -146,7 +149,7 @@ export default function Matching({ userId }: Props) {
     return styles;
   };
 
-  
+  console.log("🚀 ~ Matching ~ correctMatches:", correctMatches);
 
   return (
     <>
@@ -168,7 +171,7 @@ export default function Matching({ userId }: Props) {
           </>
         ) : (
           <>
-            {articleMatching.length >= 5 ? (
+            {articleMatching.length == 5 ? (
               <>
                 <div className="flex flex-wrap justify-center">
                   {words.map((word, index) => (
@@ -204,16 +207,25 @@ export default function Matching({ userId }: Props) {
               </>
             ) : (
               <>
-               <div className="flex flex-wrap justify-center rounded-2xl border-2 border-gray-200 p-4 mt-20">
-               
-                <div className="text-rose-600 dark:text-rose-300 font-bold">
-                  {t("matchingPractice.minSentencesAlert")}
+                <div className="flex flex-wrap justify-center rounded-2xl border-2 border-gray-200 p-4 mt-20">
+                  <div className="text-rose-600 dark:text-rose-300 font-bold">
+                    {t("matchingPractice.minSentencesAlert")}
+                  </div>
                 </div>
-               </div>
-                
               </>
             )}
           </>
+        )}
+        {correctMatches.length === 10 && (
+          <div className="flex flex-wrap justify-center mt-10 ">
+            <Image
+              src={"/winners.svg"}
+              alt="winners"
+              width={250}
+              height={100}
+              className="animate__animated animate__jackInTheBox"
+            />
+          </div>
         )}
       </div>
     </>
