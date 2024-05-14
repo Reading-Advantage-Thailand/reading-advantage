@@ -3,12 +3,57 @@ import { Badge } from "./ui/badge";
 import Link from "next/link";
 import { Rating } from "@mui/material";
 import { ArticleShowcase } from "./models/article-model";
+import axios from "axios";
+import { useCurrentLocale } from "@/locales/client";
 
 type Props = {
   article: ArticleShowcase;
 };
 
+async function getTranslate(
+  sentences: string[],
+  articleId: string,
+  language: string
+) {
+  const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
+    sentences,
+    language,
+  });
+  return res.data;
+}
+
 export default async function ArticleShowcaseCard({ article }: Props) {
+
+  React.useEffect(() => {
+    handleTranslateSummary();
+  }, [article]);
+
+  const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
+  
+  const locale = useCurrentLocale();
+
+  async function handleTranslateSummary(){
+    
+    const articleId = article.id;
+    if(!locale || locale === "en"){
+      return;
+    }
+    type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
+    let localeTarget: ExtendedLocale = locale as ExtendedLocale;
+
+    switch(locale){
+      case "cn":
+        localeTarget = "zh-CN";
+        break;
+      case "tw":
+        localeTarget = "zh-TW";
+        break;
+    }
+    const res = await getTranslate([article.summary], articleId, localeTarget);
+
+    setSummarySentence(res.translation);
+  }
+
   return (
     <Link href={`/student/read/${article.id}`}>
       <div
@@ -33,7 +78,10 @@ export default async function ArticleShowcaseCard({ article }: Props) {
             {article.title}
           </p>
           <p className="text-sm drop-shadow-lg line-clamp-4 text-white">
-            {article.summary}
+            { locale == "en" 
+              ? <p>{article.summary}</p>
+              : <p>{summarySentence}</p>
+            } 
           </p>
         </div>
       </div>

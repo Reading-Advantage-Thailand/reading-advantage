@@ -2,7 +2,7 @@ import { render, fireEvent, waitFor, screen } from '@testing-library/react';
 import axios from 'axios';
 import RatingPopup from "@/components/rating-popup";
 
-jest.mock('../../web/locales/client', () => ({
+jest.mock('../locales/client', () => ({ 
   useScopedI18n: jest.fn().mockReturnValue('en'), // สร้าง mock สำหรับ useScopedI18n และให้คืนค่าสตริง 'en'
 }));
 
