@@ -88,7 +88,7 @@ export const columns: ColumnDef<ArticleRecord>[] = [
     cell: ({ row }) => {
       const status = row.getValue("status") as QuizStatus;
       const map = {
-        [QuizStatus.READED]: "Readed",
+        [QuizStatus.READED]: "Read",
         [QuizStatus.COMPLETED_MCQ]: "Completed MCQ",
         [QuizStatus.COMPLETED_SAQ]: "Completed SAQ",
         [QuizStatus.UNRATED]: "Unrated",
