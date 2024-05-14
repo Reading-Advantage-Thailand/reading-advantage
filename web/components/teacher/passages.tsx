@@ -33,13 +33,20 @@ import { Header } from "../header";
 import { ArticleShowcase } from "../models/article-model";
 import { get, set } from "lodash";
 import { DropdownMenuArrow } from "@radix-ui/react-dropdown-menu";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { Ghost } from "lucide-react";
 import { Icons } from "react-toastify";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 
 interface CustomCheckboxProps {
   label: string;
+  selected: boolean;
+  onSelectionChange: (label: string) => void;
 }
 
 type Passage = {
@@ -47,7 +54,7 @@ type Passage = {
   id: string;
   title: string;
   type: string;
-  ra_level: string;
+  ra_level: number;
   genre: string;
   subgenre: string;
   is_read: boolean;
@@ -61,16 +68,31 @@ type PassagesProps = {
   passages: Passage[];
   article: ArticleShowcase;
 };
+const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ label, selected, onSelectionChange }) => {
+  // const [selected, setSelected] = useState(false);
+
+  return (
+    <div
+      className={`border-2 ${
+        selected ? "bg-primary text-white" : "border-gray-300"
+      } p-2 m-2 cursor-pointer w-[40px]`}
+      // onClick={() => setSelected(!selected)}
+      onClick={() => onSelectionChange(label)}
+    >
+      {label}
+    </div>
+  );
+};
 
 export default function Passages({ passages, article }: PassagesProps) {
-  const [isFilterByLevel, setIsFilterByLevel] = useState(false);
+  
+  const [isLevelChecked, setIsLevelChecked] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState("");
   const [selectedSubgenre, setSelectedSubgenre] = useState("");
+  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [type, setType] = useState("");
-  const [genre, setGenre] = useState("");
-  const [subgenre, setSubgenre] = useState("");
   const [raLevel, setRaLevel] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,7 +101,6 @@ export default function Passages({ passages, article }: PassagesProps) {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  // const currentItems = passages.slice(indexOfFirstItem, indexOfLastItem);
   const currentItems = passages;
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -100,20 +121,16 @@ export default function Passages({ passages, article }: PassagesProps) {
     return Array.from(subgenresData);
   };
 
-  const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ label }) => {
-    const [selected, setSelected] = useState(false);
-
-    return (
-      <div
-        className={`border-2 ${
-          selected ? "bg-primary text-white" : "border-gray-300"
-        } p-2 m-2 cursor-pointer w-[40px]`}
-        onClick={() => setSelected(!selected)}
-      >
-        {label}
-      </div>
-    );
-  };
+ const getRaLevels = () => {
+    let raLevelsData: Set<number> = new Set();
+    passages.forEach((passage) => {
+      raLevelsData.add(passage.ra_level);
+    });
+    return Array.from(raLevelsData);
+  }
+  const raLevels = getRaLevels();
+  // console.log('raLevels', raLevels);
+  
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -127,17 +144,14 @@ export default function Passages({ passages, article }: PassagesProps) {
     setType(event.target.value);
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    if (value === "genre") {
-      setGenre(event.target.value);
-    }
-    if (value === "subgenre") {
-      setSubgenre(event.target.value);
-    }
-    if (value === "raLevel") {
-      setRaLevel(event.target.value);
-    }
+  const handleSelectionChange = (level: string) => {
+    setSelectedLevels(prevLevels => {
+      if (prevLevels.includes(level)) {
+        return prevLevels.filter(lvl => lvl !== level);
+      } else {
+        return [...prevLevels, level];
+      }
+    });
   };
 
   let filteredPassages = currentItems;
@@ -166,21 +180,21 @@ export default function Passages({ passages, article }: PassagesProps) {
       return passage.subgenre === selectedSubgenre;
     });
   }
-  if (raLevel) {
+  if (selectedLevels.length > 0) {
     filteredPassages = currentItems.filter((passage) => {
-      return passage.ra_level === raLevel;
+      return selectedLevels.includes(passage.ra_level.toString());
     });
   }
-  
+
   // const filterPassages = (currentItems: Passage[], searchTerm: string, type: string, selectedGenre: string, selectedSubgenre: string, raLevel: string) => {
   //   let filteredPassages = [...currentItems];
-  
+
   //   if (searchTerm) {
   //     filteredPassages = filteredPassages.filter((passage) =>
   //       passage.title.toLowerCase().includes(searchTerm.toLowerCase())
   //     );
   //   }
-  
+
   //   if (type) {
   //     filteredPassages = filteredPassages.filter((passage) => {
   //       if (type === "fiction") {
@@ -191,29 +205,30 @@ export default function Passages({ passages, article }: PassagesProps) {
   //       }
   //     });
   //   }
-  
+
   //   if (selectedGenre) {
   //     filteredPassages = filteredPassages.filter((passage) =>
   //       passage.genre === selectedGenre
   //     );
   //   }
-  
+
   //   if (selectedSubgenre) {
   //     filteredPassages = filteredPassages.filter((passage) =>
   //       passage.subgenre === selectedSubgenre
   //     );
   //   }
-  
+
   //   if (raLevel) {
   //     filteredPassages = filteredPassages.filter((passage) =>
   //       passage.ra_level === raLevel
   //     );
   //   }
-  
+
   //   return filteredPassages;
   // };
-  
+
   // let filteredPassages = filterPassages(currentItems, searchTerm, type, selectedGenre, selectedSubgenre, raLevel);
+
 
   useEffect(() => {
     setSelectedSubgenre("");
@@ -252,70 +267,65 @@ export default function Passages({ passages, article }: PassagesProps) {
                 </div>
               </div>
             </div>
+            
             <div className="items-center">
               Topic
               <div className="flex flex-col w-[50%] items-start ml-4">
-  <DropdownMenu>
-    <DropdownMenuTrigger>
-      <Button variant='ghost'>
-        {selectedGenre || "Select Genre"}
-        <ChevronDownIcon className="ml-2 h-4 w-4" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent>
-      {genres.map((genre) => (
-        <DropdownMenuItem onSelect={() => setSelectedGenre(genre)} key={genre}>
-          {genre}
-        </DropdownMenuItem>
-      ))}
-    </DropdownMenuContent>
-  </DropdownMenu>
-  {selectedGenre && (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Button variant='ghost'>
-          {selectedSubgenre || "Select Subgenre"}
-          <ChevronDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {getSubgenres(selectedGenre).map((subgenre) => (
-          <DropdownMenuItem onSelect={() => setSelectedSubgenre(subgenre)} key={subgenre}>
-            {subgenre}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )}
-</div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button variant="ghost">
+                      {selectedGenre || "Select Genre"}
+                      <ChevronDownIcon className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    {genres.map((genre) => (
+                      <DropdownMenuItem
+                        onSelect={() => setSelectedGenre(genre)}
+                        key={genre}
+                      >
+                        {genre}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {selectedGenre && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <Button variant="ghost">
+                        {selectedSubgenre || "Select Subgenre"}
+                        <ChevronDownIcon className="ml-2 h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {getSubgenres(selectedGenre).map((subgenre) => (
+                        <DropdownMenuItem
+                          onSelect={() => setSelectedSubgenre(subgenre)}
+                          key={subgenre}
+                        >
+                          {subgenre}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center">
-              <Checkbox onChange={() => setIsFilterByLevel(!isFilterByLevel)} />
-              <p>Filter by Level</p>
-            </div>
-            {isFilterByLevel && (
-              <div className="grid grid-cols-6">
-                <CustomCheckbox label="1" />
-                <CustomCheckbox label="2" />
-                <CustomCheckbox label="3" />
-                <CustomCheckbox label="4" />
-                <CustomCheckbox label="5" />
-                <CustomCheckbox label="6" />
-                <CustomCheckbox label="7" />
-                <CustomCheckbox label="8" />
-                <CustomCheckbox label="9" />
-                <CustomCheckbox label="10" />
-                <CustomCheckbox label="11" />
-                <CustomCheckbox label="12" />
-                <CustomCheckbox label="13" />
-                <CustomCheckbox label="14" />
-                <CustomCheckbox label="15" />
-                <CustomCheckbox label="16" />
-                <CustomCheckbox label="17" />
-                <CustomCheckbox label="18" />
+            <div className="">
+              <p>Level</p>
+              <div className="grid grid-cols-6 text-center">
+                {Array.from({ length: 26 }, (_, i) => i + 1).map(level => (
+                  <CustomCheckbox 
+                    key={level}
+                    label={String(level)} 
+                    selected={selectedLevels.includes(String(level))}
+                    onSelectionChange={handleSelectionChange}
+                  />
+                ))}
               </div>
-            )}
+            </div>
+
           </form>
         </div>
 
