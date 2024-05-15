@@ -57,7 +57,7 @@ export async function POST(
     }
 
     // First need to find the translation of the article in db
-    const articleRef = db.collection(`translations`).doc(articleId);
+    const articleRef = db.collection(`translations`).doc(articleId).collection('translated-articles').doc(articleId);
     const articleSnapshot = await articleRef.get();
     const article = articleSnapshot.data();
 
