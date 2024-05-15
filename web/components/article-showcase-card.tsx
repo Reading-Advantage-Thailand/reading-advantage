@@ -15,7 +15,7 @@ async function getTranslate(
   articleId: string,
   language: string
 ) {
-  const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
+  const res = await axios.post(`/api/articles/${articleId}/translate/google/summary`, {
     sentences,
     language,
   });
