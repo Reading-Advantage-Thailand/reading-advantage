@@ -206,6 +206,7 @@ export default function Passages({ passages }: PassagesProps) {
     type,
     selectedSubgenre,
     selectedLevels,
+    prevSelectedGenre,
   ]);
 
   useEffect(() => {
@@ -309,9 +310,9 @@ export default function Passages({ passages }: PassagesProps) {
           <div className="grid grid-cols-1">
             {filteredPassages
               .slice((currentPage - 1) * 10, currentPage * 10)
-              .map((passage: Passage) => {
+              .map((passage: Passage, index: number) => {
                 return (
-                  <div className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4">
+                  <div key={index} className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4">
                     <Link href={`/student/read/${passage.id}`}>
                       <div
                         className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
@@ -369,9 +370,9 @@ export default function Passages({ passages }: PassagesProps) {
           <div className="grid grid-cols-1">
             {passages
               .slice((currentPage - 1) * 10, currentPage * 10)
-              .map((passage: Passage) => {
+              .map((passage: Passage, index: number) => {
                 return (
-                  <div className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4">
+                  <div key={index} className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4">
                     <Link href={`/student/read/${passage.id}`}>
                       <div
                         className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
