@@ -17,12 +17,18 @@ import React, { useState } from "react";
 import { DateField } from "@/components/ui/date-field";
 import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 import { useTheme } from "next-themes";
+import { UserArticleRecord } from "../models/user-article-record-model";
+import { QuizStatus } from "../models/questions-model";
 
 // Function to calculate the data for the chart
 // This function takes in the articles and the number of days to go back
 // It returns an array of objects with the day of the week and the total number of articles read on that day
 // Example: [{ day: "Sun 1", total: 5 }, { day: "Mon 2", total: 10 }, ...]
-function formatDataForDays(articles: any, calendarValue: DateValueType) {
+function formatDataForDays(
+  articles: UserArticleRecord[],
+  calendarValue: DateValueType
+) {
+  // ISO date
   let startDate: Date;
   let endDate: Date;
 
@@ -50,16 +56,16 @@ function formatDataForDays(articles: any, calendarValue: DateValueType) {
     const dayOfWeek = daysOfWeek[i.getDay()];
     const dayOfMonth = i.getDate();
 
-    const filteredArticles = articles.filter((article: any) => {
-      // iso
-      const articleDate = new Date(article.created_at);
+    const filteredArticles = articles.filter((article: UserArticleRecord) => {
+      // ISO string to Date object
+      const articleDate = new Date(article.updated_at);
       articleDate.setHours(0, 0, 0, 0);
       return articleDate.getTime() === i.getTime();
     });
 
     const total = filteredArticles.length;
     const articleInfo = filteredArticles.map(
-      (article: any) =>
+      (article: UserArticleRecord) =>
         `${formatStatusToEmoji(article.status)} ${article.title}`
     );
 
@@ -69,15 +75,15 @@ function formatDataForDays(articles: any, calendarValue: DateValueType) {
   return data;
 }
 
-function formatStatusToEmoji(status: RecordStatus) {
+function formatStatusToEmoji(status: QuizStatus) {
   switch (status) {
-    case "completed":
+    case QuizStatus.COMPLETED_SAQ:
       return "🟢";
-    case "unrated":
+    case QuizStatus.COMPLETED_MCQ:
       return "🔴";
-    case "uncompletedShortAnswer":
+    case QuizStatus.UNRATED:
       return "🟡";
-    case "uncompletedMCQ":
+    case QuizStatus.READED:
       return "🟠";
     default:
       return "";
@@ -104,7 +110,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 interface UserActiviryChartProps {
-  data: ArticleRecord[];
+  data: UserArticleRecord[];
 }
 
 export function UserActivityChart({ data }: UserActiviryChartProps) {
@@ -118,7 +124,8 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
     setCalendarValue(newValue);
   };
 
-  const formattedData = formatDataForDays(data, calendarValue);
+  // Check if data is not undefined before passing it to formatDataForDays
+  const formattedData = data ? formatDataForDays(data, calendarValue) : [];
 
   return (
     <div>
@@ -161,16 +168,16 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
         <p className=" text-sm font-bold">Status</p>
         <div className="text-xs text-muted-foreground mt-2">
           <div className="flex items-center">
-            <p>🟢 Completed</p>
+            <p>🟢 Completed Short Answer</p>
           </div>
           <div className="flex items-center">
-            <p>🟠 Uncompleted Short Answer</p>
+            <p>🟠 Completed MCQ</p>
           </div>
           <div className="flex items-center">
-            <p>🟡 Uncompleted MCQ</p>
+            <p>🟡 Unrated</p>
           </div>
           <div className="flex items-center">
-            <p>🔴 Unrated</p>
+            <p>🔴 Read</p>
           </div>
         </div>
       </div>

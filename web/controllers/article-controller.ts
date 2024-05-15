@@ -124,6 +124,7 @@ export async function getArticle(
                     status: QuizStatus.READED,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
+                    level: req.session?.user.level,
                 });
         }
 

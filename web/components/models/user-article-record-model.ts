@@ -9,4 +9,6 @@ export interface UserArticleRecord {
     created_at: string;
     updated_at: string;
     status: QuizStatus;
+    title: string;
+    level: number;
 }

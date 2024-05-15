@@ -309,6 +309,7 @@ export async function answerMCQuestion(
                         scores: progress.filter((status) => status === AnswerStatus.CORRECT)
                             .length,
                         rated: 0,
+                        level: req.session?.user.level,
                         updated_at: new Date().toISOString(),
                     },
                     { merge: true }

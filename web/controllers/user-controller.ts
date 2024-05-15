@@ -52,8 +52,8 @@ export async function getUserHeatmap(
         const records = await db
             .collection("users")
             .doc(user_id)
-            .collection("article-records")
-            .doc('heatmap')
+            .collection("heatmap")
+            .doc('activity')
             .get();
 
         const results = records.data();
