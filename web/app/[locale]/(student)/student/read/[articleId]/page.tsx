@@ -42,21 +42,16 @@ export default async function ArticleQuizPage({
         userId={user.id}
       />
       <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
-        {user.role.includes("TEACHER") && <>
+        {user.role.includes("TEACHER") &&
         <AssignDialog 
            article={articleResponse.article}
            articleId={params.articleId}
            userId={user.id}
         />
-          <MCQuestionCard userId={user.id} articleId={params.articleId} />
-        <SAQuestionCard userId={user.id} articleId={params.articleId} />
-        </>
         }
 
-        {user.role.includes('STUDENT') && <>
         <MCQuestionCard userId={user.id} articleId={params.articleId} />
         <SAQuestionCard userId={user.id} articleId={params.articleId} />
-        </>}
       </div>
     </div>
     </>
