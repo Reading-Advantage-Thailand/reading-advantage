@@ -17,7 +17,7 @@ export async function GET(req: Request, res: Response) {
         }
         
         const userId = session.user.id;
-        const articlesRef = db.collection('articles_new');
+        const articlesRef = db.collection('new-articles');
         const snapshot = await articlesRef.get();
         const articles = snapshot.docs.map(doc => doc.data());
     
