@@ -372,10 +372,9 @@ export default function ClozeTest({ userId }: Props) {
     setSelectedWord({});
     setShowBadges(false);
     setCurrentArticleIndex((prev) => prev + 1);
-    setShowButtonNextPassage(false);  
+    setShowButtonNextPassage(false);
     setIsPlaying(false);
   };
-
 
   return (
     <>
@@ -426,7 +425,7 @@ export default function ClozeTest({ userId }: Props) {
                           }
                         >
                           <source
-                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleClozeTest[currentArticleIndex]?.articleId}.mp3`}
+                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${articleClozeTest[currentArticleIndex]?.articleId}.mp3`}
                           />
                         </audio>
                       </div>

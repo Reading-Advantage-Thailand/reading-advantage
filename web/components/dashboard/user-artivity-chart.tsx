@@ -22,20 +22,24 @@ import { useTheme } from "next-themes";
 // This function takes in the articles and the number of days to go back
 // It returns an array of objects with the day of the week and the total number of articles read on that day
 // Example: [{ day: "Sun 1", total: 5 }, { day: "Mon 2", total: 10 }, ...]
-function formatDataForDays(articles: ArticleRecord[], calendarValue: DateValueType) {
+function formatDataForDays(articles: any, calendarValue: DateValueType) {
   let startDate: Date;
   let endDate: Date;
 
   if (calendarValue) {
-    startDate = calendarValue.startDate ? new Date(calendarValue.startDate) : new Date();
-    endDate = calendarValue.endDate ? new Date(calendarValue.endDate) : new Date();
+    startDate = calendarValue.startDate
+      ? new Date(calendarValue.startDate)
+      : new Date();
+    endDate = calendarValue.endDate
+      ? new Date(calendarValue.endDate)
+      : new Date();
   } else {
     // Handle the case when calendarValue is null
     // You can set default values for startDate and endDate here
     startDate = new Date(); // default start date
     endDate = new Date(); // default end date
   }
-  
+
   startDate.setHours(0, 0, 0, 0); // Set start of the day
   endDate.setHours(23, 59, 59, 999); // Set end of the day
 
@@ -46,19 +50,23 @@ function formatDataForDays(articles: ArticleRecord[], calendarValue: DateValueTy
     const dayOfWeek = daysOfWeek[i.getDay()];
     const dayOfMonth = i.getDate();
 
-   const filteredArticles = articles.filter((article: ArticleRecord) => {
-      const articleDate = new Date(article.createdAt._seconds * 1000);
-      articleDate.setHours(0, 0, 0, 0); // Compare only the date part
+    const filteredArticles = articles.filter((article: any) => {
+      // iso
+      const articleDate = new Date(article.created_at);
+      articleDate.setHours(0, 0, 0, 0);
       return articleDate.getTime() === i.getTime();
     });
 
     const total = filteredArticles.length;
-    const articleInfo = filteredArticles.map(article => `${formatStatusToEmoji(article.status)} ${article.title}`);
+    const articleInfo = filteredArticles.map(
+      (article: any) =>
+        `${formatStatusToEmoji(article.status)} ${article.title}`
+    );
 
     data.push({ day: `${dayOfWeek} ${dayOfMonth}`, total, articleInfo });
   }
 
-   return data;
+  return data;
 }
 
 function formatStatusToEmoji(status: RecordStatus) {
@@ -99,8 +107,8 @@ interface UserActiviryChartProps {
   data: ArticleRecord[];
 }
 
-export function UserActivityChart({ data }: UserActiviryChartProps) {  
-   const { theme } = useTheme();
+export function UserActivityChart({ data }: UserActiviryChartProps) {
+  const { theme } = useTheme();
   const [calendarValue, setCalendarValue] = useState<DateValueType>({
     startDate: new Date(new Date().setDate(new Date().getDate() - 6)),
     endDate: new Date(),
@@ -141,12 +149,10 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
           <Tooltip
             cursor={{ fill: "transparent" }}
             content={<CustomTooltip />}
-          />        
+          />
           {theme === "dark" ? (
-
             <Bar dataKey="total" fill="#fafafa" radius={[4, 4, 0, 0]} />
           ) : (
-
             <Bar dataKey="total" fill="#009688" radius={[4, 4, 0, 0]} />
           )}
         </BarChart>
