@@ -284,7 +284,7 @@ export default function OrderSentences({ userId }: Props) {
                           }
                         >
                           <source
-                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleRandom[currentArticleIndex]?.articleId}.mp3`}
+                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${articleRandom[currentArticleIndex]?.articleId}.mp3`}
                           />
                         </audio>
                       </div>

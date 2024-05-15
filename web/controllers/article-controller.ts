@@ -32,23 +32,29 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
 
         let results: any[] = [];
         if (subgenre) {
+            const userId = req.session?.user.id as string;
             const snapshot = await data
                 .collection("subgenres")
                 .doc(subgenre)
                 .collection("articles")
                 .get();
-            snapshot.forEach((doc) => {
-                results.push(doc.data());
-            });
 
-            // Check if user has read the article
-            for (let i = 0; i < results.length; i++) {
+            for (const doc of snapshot.docs) {
                 const articleRecord = await db
-                    .collection("user-article-records")
-                    .doc(`${userId}-${results[i].id}`)
+                    .collection("users")
+                    .doc(userId)
+                    .collection("article-records")
+                    .doc(doc.id)
                     .get();
-                results[i].is_read = articleRecord.exists;
+                // If already read, add is_read field to the article
+                if (articleRecord.exists) {
+                    results.push({ ...doc.data(), is_read: true });
+                } else {
+                    results.push(doc.data());
+                }
             }
+
+            // Check 
         } else {
             const snapshot = await data.get();
             results = Object.entries(snapshot.data() as any).map(
@@ -117,6 +123,8 @@ export async function getArticle(
                     title: resp.data()?.title,
                     status: QuizStatus.READED,
                     created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    level: req.session?.user.level,
                 });
         }
 

@@ -191,7 +191,7 @@ export default function Matching({ userId }: Props) {
                           {new RegExp(/^[a-zA-Z\s,.']+$/).test(word.text) && (
                             <AudioButton
                               key={word?.text}
-                              audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${word?.articleId}.mp3`}
+                              audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${word?.articleId}.mp3`}
                               startTimestamp={word?.timepoint}
                               endTimestamp={word?.endTimepoint}
                             />
