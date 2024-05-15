@@ -36,7 +36,9 @@ import {
     RefreshCw,
     ArchiveRestore,
     Trash2,
-    UserPlus
+    UserPlus,
+    ClipboardList,
+    BookOpenCheck
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -71,13 +73,14 @@ export const Icons = {
   edit: Pencil,
   class: School,
   student: Users,
-  roster: Book,
+  roster: ClipboardList,
   report: BarChartBig,
   add: Plus,
   refresh: RefreshCw,
   archive: ArchiveRestore, 
   delete: Trash2,
   addUser: UserPlus,
+  assignments: BookOpenCheck,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"

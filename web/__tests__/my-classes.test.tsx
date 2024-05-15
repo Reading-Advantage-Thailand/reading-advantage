@@ -41,8 +41,24 @@ const mockClassroomData = {
   id: "1",
 };
 
+
 describe("myClasses Page", () => {
-  const mockClassrooms = [
+  type Classes = {
+    classroomName: string;
+    classCode: string;
+    noOfStudents: number;
+    grade: string;
+    coTeacher: {
+      coTeacherId: string;
+      name: string;
+    };
+    id: string;
+    archived: boolean;
+    title: string;
+    student: [{ studentId: string; lastActivity: Date }];
+  };
+  
+  const mockClassrooms: Classes[] = [
     {
       classroomName: "Test Class",
       classCode: "TC1",
@@ -54,30 +70,32 @@ describe("myClasses Page", () => {
       },
       id: "1",
       archived: false,
+      title: "", 
+      student: [{ studentId: "S1", lastActivity: new Date() }],
     },
   ];
 
   it("should render myClasses component", async () => {
-    render(<MyClasses userId="1" classrooms={mockClassrooms} />);
+    render(<MyClasses userId="1" classrooms={mockClassrooms} userName="May"/>);
     expect(screen.getByText("My Classroom")).toBeInTheDocument();
   });
 
   it("can click create new class", () => {
-    render(<MyClasses classrooms={mockClassrooms} userId="1" />);
+    render(<MyClasses classrooms={mockClassrooms} userId="1" userName="May"/>);
     fireEvent.click(screen.getByText("Create New Class"));
     expect(screen.getByText("Create New Class")).toBeInTheDocument();
-    render(<CreateNewClass userId="1" />);
+    render(<CreateNewClass userId="1" userName="May"/>);
     expect(screen.getByText("Create a new class")).toBeInTheDocument();
   });
 
   it("can click detail dropdown", async () => {
-    render(<MyClasses classrooms={mockClassrooms} userId="1" />);
+    render(<MyClasses classrooms={mockClassrooms} userId="1" userName="May"/>);
     const dropdown = screen.getByRole("button", { name: /Details/i });
     fireEvent.click(dropdown);
   });
 
   it("can click EditClass, ArchiveClass, DeleteClass", async () => {
-    render(<MyClasses classrooms={mockClassrooms} userId="1" />);
+    render(<MyClasses classrooms={mockClassrooms} userId="1" userName="May"/>);
 
     const editIcon = screen.getByTitle("edit class");
     const archiveIcon = screen.getByTitle("edit class");
@@ -93,7 +111,7 @@ describe("myClasses Page", () => {
   });
 
   it("can show class name, class code, no.of Students, Details, Actions", async () => {
-    render(<MyClasses classrooms={mockClassrooms} userId="1" />);
+    render(<MyClasses classrooms={mockClassrooms} userId="1" userName="May"/>);
 
     mockClassrooms.forEach((classroom) => {
       expect(screen.getByText(classroom.classroomName)).toBeInTheDocument();
@@ -118,11 +136,11 @@ describe("myClasses Page", () => {
       const mockPush = jest.fn();
       (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
 
-      const mockClassrooms = [
+      const mockClassrooms: Classes[] = [
         {
-          classroomName: 'Test Class',
-          classCode: 'Code1',
-          noOfStudents: 10,
+          classroomName: "Test Class",
+          classCode: "TC1",
+          noOfStudents: 20,
           grade: "Grade 1",
           coTeacher: {
             coTeacherId: "CT1",
@@ -130,10 +148,13 @@ describe("myClasses Page", () => {
           },
           id: "1",
           archived: false,
+          title: "", 
+          student: [{ studentId: "S1", lastActivity: new Date() }],
         },
       ];
 
-      render(<MyClasses classrooms={mockClassrooms} userId="1" handleOnClickClassroom={handleOnClickClassroom}/>);
+      // render(<MyClasses classrooms={mockClassrooms} userId="1" handleOnClickClassroom={handleOnClickClassroom} userName="May"/>);
+      render(<MyClasses classrooms={mockClassrooms} userId="1" userName="May"/>);
 
       const classroomElement = screen.getByText('Test Class');
       expect (classroomElement).toBeInTheDocument();
@@ -164,7 +185,7 @@ describe('EditClass', () => {
   test('renders EditClass component and updates class details', async () => {
     jest.spyOn(axios, 'patch').mockResolvedValueOnce({ data: {} });
 
-    render(<EditClass userId="testUserId" classroomData={classroomData} title="Test Title" />);
+    render(<EditClass userId="testUserId" classroomData={[classroomData]} title="Test Title" classroomId={""} />);
 
     fireEvent.click(screen.getByTitle(/edit class/i));
 
@@ -191,14 +212,14 @@ describe('EditClass', () => {
 describe('ArchiveClass', () => {
   it('renders correctly', () => {
     jest.spyOn(axios, 'patch').mockResolvedValueOnce({ data: {} });
-        render(<ArchiveClass classroomData={mockClassroomData} title="Test Title" />);
-            fireEvent.click(screen.getByTitle(/archive class/i));
+    render(<ArchiveClass classroomData={[mockClassroomData]} title="Test Title" classroomId={""} />);
+    fireEvent.click(screen.getByTitle(/archive class/i));
   });
 
   it('calls handleArchiveClass and handleClose when the corresponding buttons are clicked', async () => {
     jest.spyOn(axios, 'patch').mockResolvedValueOnce({ data: {} });
 
-    render(<ArchiveClass classroomData={mockClassroomData} title="Test Title" />);
+    render(<ArchiveClass classroomData={[mockClassroomData]} title="Test Title" classroomId={""} />);
     fireEvent.click(screen.getByTitle(/archive class/i));
     fireEvent.click(screen.getByText('Archive'));
 
@@ -208,19 +229,13 @@ describe('ArchiveClass', () => {
 
 // test for delete class component
 describe("DeleteClass", () => {
-  it("renders correctly", () => {
-    jest.spyOn(axios, "patch").mockResolvedValueOnce({ data: {} });
-    render(
-      <DeleteClass classroomData={mockClassroomData} title="Test Title" />
-    );
-    fireEvent.click(screen.getByTitle(/delete class/i));
-  });
+  <DeleteClass classroomData={[mockClassroomData]} title="Test Title" classroomId={""} />
 
   it("calls the delete API and shows a success toast when the delete button is clicked", async () => {
     jest.spyOn(axios, "delete").mockResolvedValueOnce({ data: {} });
 
     render(
-      <DeleteClass classroomData={mockClassroomData} title="Test Title" />
+      <DeleteClass classroomData={[mockClassroomData]} title="Test Title" classroomId={""} />
     );
 
     fireEvent.click(screen.getByTitle(/delete class/i));
@@ -232,7 +247,7 @@ describe("DeleteClass", () => {
   });
 
   it('closes the dialog when the cancel button is clicked', () => {
-    render(<DeleteClass classroomData={mockClassroomData} title="Test Title" />);
+    render(<DeleteClass classroomData={[mockClassroomData]} title="Test Title" classroomId={""} />);
 
     fireEvent.click(screen.getByLabelText('delete class'));
     fireEvent.click(screen.getByText('Cancel'));
@@ -246,13 +261,13 @@ describe("CreateNewClass", () => {
   it("renders correctly", () => {
     jest.spyOn(axios, "post").mockResolvedValueOnce({ data: {} });
     render(
-      <CreateNewClass userId="testUserId"/>
+      <CreateNewClass userId="testUserId" userName={""}/>
     );
     fireEvent.click(screen.getByText(/create new class/i));
   });
 
   it('opens and closes the dialog', async () => {
-    render(<CreateNewClass userId="testUserId" />);
+    render(<CreateNewClass userId="testUserId" userName={""} />);
     fireEvent.click(screen.getByText(/Create New Class/i));
     expect(screen.getByText(/Create New Class/i)).toBeInTheDocument();
     fireEvent.click(screen.getByText(/Cancel/i));
@@ -266,7 +281,7 @@ describe("CreateNewClass", () => {
    const mockPost = axios.post as jest.MockedFunction<typeof axios.post>;
    mockPost.mockResolvedValueOnce({ data: {} });
 
-   render(<CreateNewClass userId="testUserId" />);
+   render(<CreateNewClass userId="testUserId" userName={""} />);
 
    fireEvent.click(screen.getByText(/Create New Class/i));
 
