@@ -9,23 +9,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/session";
-import axios from "axios";
+import { fetchData } from "@/utils/fetch-data";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import React from "react";
+// import HeatMap from "react-heatmap-grid";
 
 type Props = {};
 
+// async function getUserArticleRecords(userId: string) {
+//   const res = await fetch(
+//     `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/article-records`,
+//     {
+//       method: "GET",
+//       headers: headers(),
+//       next: { revalidate: 0 },
+//     }
+//   );
+//   return res.json();
+// }
+
 async function getUserArticleRecords(userId: string) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/article-records`,
-    {
-      method: "GET",
-      headers: headers(),
-      next: { revalidate: 0 },
-    }
-  );
-  return res.json();
+  return fetchData(`/api/v1/users/${userId}/records`);
 }
 
 async function getGeneralDescription(userLevel: number) {
@@ -38,15 +43,24 @@ async function getGeneralDescription(userLevel: number) {
   );
   return res.json();
 }
+
+// async function getHeatMapData(userId: string) {
+//   return fetchData(`/api/v1/users/${userId}/heatmap`, { log: true });
+// }
+
 export default async function ReportsPage({}: Props) {
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
   // if (user.level === 0) return redirect('/level');
-  console.log("ReportsPage user : ", user);
   const res = await getUserArticleRecords(user.id);
   const resGeneralDescription = await getGeneralDescription(user.level);
-  console.log("ReportsPage res : ", res);
 
+  // const resHeatMap = await getHeatMapData(user.id);
+  // const xLabels = Object.keys(resHeatMap.results);
+  // const yLabels = ["completed", "read"];
+  // const matrixData = yLabels.map((y) =>
+  //   xLabels.map((x) => resHeatMap.results[x][y])
+  // );
   return (
     <>
       <Header heading="Reports" />
@@ -56,7 +70,7 @@ export default async function ReportsPage({}: Props) {
             <CardTitle>Activity</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <UserActivityChart data={res.articles} />
+            <UserActivityChart data={res.results} />
           </CardContent>
         </Card>
         <Card className="md:col-span-3">
@@ -68,11 +82,12 @@ export default async function ReportsPage({}: Props) {
           </CardHeader>
           <CardContent>
             <UserLevelChart
-              data={res.articles}
+              data={res.results}
               resGeneralDescription={resGeneralDescription}
             />
           </CardContent>
         </Card>
+        {/* <HeatMap xLabels={xLabels} yLabels={yLabels} data={matrixData} /> */}
       </div>
     </>
   );
