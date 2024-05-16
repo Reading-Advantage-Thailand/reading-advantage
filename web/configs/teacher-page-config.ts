@@ -39,6 +39,16 @@ export const teacherPageConfig: TeacherPageConfig = {
             title: "reports",
             href: '/teacher/reports',
             icon: "report",
-        }
+        },
+        {
+            title: "passages",
+            href: '/teacher/passages',
+            icon: "article",
+        },
+        {
+            title: "assignments",
+            href: '/teacher/assignments',
+            icon: "assignments",
+        },
     ],
 };

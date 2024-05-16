@@ -156,6 +156,8 @@ export default {
       history: "Lịch sử",
       sentences: "Câu",
       reports: "Báo cáo",
+      passages: "Những đoạn văn",
+      assignments: "Bài tập",
     },
     sidebarTeacherNav: {
       myClasses: "Lớp học của tôi",

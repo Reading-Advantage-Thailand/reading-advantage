@@ -7,6 +7,7 @@ import { fetchData } from "@/utils/fetch-data";
 import CustomError from "./custom-error";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
+import AssignDialog from "@/components/teacher/assign-dialog";
 
 export const metadata = {
   title: "Article",
@@ -32,6 +33,8 @@ export default async function ArticleQuizPage({
     return <CustomError message={articleResponse.message} />;
 
   return (
+    <>
+
     <div className="md:flex md:flex-row md:gap-3 md:mb-5">
       <ArticleCard
         article={articleResponse.article}
@@ -39,9 +42,18 @@ export default async function ArticleQuizPage({
         userId={user.id}
       />
       <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
+        {user.role.includes("TEACHER") &&
+        <AssignDialog 
+           article={articleResponse.article}
+           articleId={params.articleId}
+           userId={user.id}
+        />
+        }
+
         <MCQuestionCard userId={user.id} articleId={params.articleId} />
         <SAQuestionCard userId={user.id} articleId={params.articleId} />
       </div>
     </div>
+    </>
   );
 }

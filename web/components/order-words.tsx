@@ -109,7 +109,7 @@ export default function OrderWords({ userId }: Props) {
   `;
 
   const onSubmitOrderWords = async () => {
-     const numbersEqual =
+    const numbersEqual =
       articleOrderWords[currentArticleIndex]?.textList.length ===
         selectedAnswers.length &&
       selectedAnswers.every(
@@ -118,7 +118,7 @@ export default function OrderWords({ userId }: Props) {
             selectedAnswers[i]
           ] === articleOrderWords[currentArticleIndex]?.textList[i]
       );
-   
+
     setResultOrderWords(numbersEqual);
     setShowButtonNextPassage(numbersEqual);
     setShowBadges(true);
@@ -150,7 +150,7 @@ export default function OrderWords({ userId }: Props) {
           variant: "destructive",
         });
       }
-    }   
+    }
   };
 
   return (
@@ -190,7 +190,7 @@ export default function OrderWords({ userId }: Props) {
                         <div className="pt-3">
                           <AudioButton
                             key={currentArticleIndex}
-                            audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${articleOrderWords[currentArticleIndex]?.articleId}.mp3`}
+                            audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${articleOrderWords[currentArticleIndex]?.articleId}.mp3`}
                             startTimestamp={
                               articleOrderWords[currentArticleIndex]?.timepoint
                             }
@@ -199,7 +199,7 @@ export default function OrderWords({ userId }: Props) {
                                 ?.endTimepoint
                             }
                           />
-                        </div>                       
+                        </div>
                         <div
                           className="absolute h-4 w-4 rotate-45 border-b-2 border-l-2 border-gray-200 bg-white dark:bg-[#020817]"
                           style={{

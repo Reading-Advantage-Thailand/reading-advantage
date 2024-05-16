@@ -1,3 +1,5 @@
+import { assign } from "lodash";
+
 export default {
   pages: {
     indexPage: {
@@ -145,6 +147,8 @@ export default {
       history: "歷史",
       sentences: "句子",
       reports: "報告",
+      passages: "段落",
+      assignments: "作業",
     },
     sidebarTeacherNav: {
       myClasses: "我的課程",

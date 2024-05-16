@@ -126,8 +126,6 @@ export default function FlashCard({
     getUserSentenceSaved();
   }, []);
 
-  
-
   const cards = sentences.map((sentence, index) => {
     return {
       id: index,
@@ -178,7 +176,7 @@ export default function FlashCard({
 
   return (
     <>
-      <Header heading={t("flashcard")} text={t("flashcardDescription")} />        
+      <Header heading={t("flashcard")} text={t("flashcardDescription")} />
       <div className="flex flex-col items-center justify-center space-y-2 mt-4">
         {sentences.length != 0 && (
           <>
@@ -203,7 +201,7 @@ export default function FlashCard({
                   <div className="flex space-x-3" key={uuidv4()}>
                     <AudioButton
                       key={sentence.id}
-                      audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/audios/${sentence.articleId}.mp3`}
+                      audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${sentence.articleId}.mp3`}
                       startTimestamp={sentence.timepoint}
                       endTimestamp={sentence.endTimepoint}
                     />
@@ -245,9 +243,6 @@ export default function FlashCard({
           </>
         )}
       </div>
-
-
-      
     </>
   );
 }
