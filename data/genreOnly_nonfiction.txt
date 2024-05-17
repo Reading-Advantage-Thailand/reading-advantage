@@ -1,0 +1,23 @@
+[
+  "Adventure and Travel",
+  "Art and Culture",
+  "Biography and Memoir",
+  "Business",
+  "Education",
+  "Family and Parenting",
+  "Food and Culinary Arts",
+  "Geography",
+  "Health and Wellness",
+  "History and Mythology",
+  "Language and Literature",
+  "Medical",
+  "Philosophy and Religion",
+  "Professional and Personal Development",
+  "Psychology",
+  "Science and Nature",
+  "Self-help",
+  "Social Sciences and Issues",
+  "Sports",
+  "Technology and Science",
+  "True Crime and Paranormal"
+]

@@ -1,0 +1,1648 @@
+{
+  "data": [
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Adventure"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Budget Travel"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "City Guide"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Culinary Travel"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Cultural Exploration"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Cultural Festival"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Cultural Festivals"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Ecotourism"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Historical Travel"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Memoir"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Mountaineering"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Solo Travel"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Travel Guide"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Travel Guides"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Travel Planning"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Travel Tips"
+    },
+    {
+      "genre": "Adventure and Travel",
+      "subgenre": "Travelogue"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Art and Science"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Art Techniques"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Biographies"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Biography"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Calligraphy"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Children's Book Illustrations"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Comics and Graphic Novels"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Cultural Diversity"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Cultural Impact of Movies"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Digital Art"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Eco-Art"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Eco-Art and Sustainable Practices"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Evolution of Art Styles"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Exploration of Music Genres"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Exploration of Musical Collaborations"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Festival"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Festival Celebration"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Festivals"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Film"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Film Analysis"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Film and Art"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Film and Art Intersection"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Film and Fine Art"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Film Industry"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Film Production"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Film Studies"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Folklore"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "History and Techniques"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "History of Music Innovation"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Iconic Movie Characters"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Impact of Technology on Art"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Indigenous Culture"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Indigenous Festivals"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Movie Production"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Music"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Music and Performance"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Music Education"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Music Exploration"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Music History"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Music Technology"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Musical Collaboration"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Musical Collaborations"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "nonfiction"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Orchestra"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Podcasts"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Psychological Horror"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Screenwriting"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Self-Expression and Empowerment"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Social Commentary"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Social Issues"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Social Issues in Music"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Technology and Art"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Textile art"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Textile Art"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Traditional Celebration"
+    },
+    {
+      "genre": "Art and Culture",
+      "subgenre": "Traditional Festival"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Art"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Art and Science"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Art History"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Artistic Journey"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Biography"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Celebrity Memoir"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Celebrity Memoirs"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Civil Rights Movement"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Cultural Memoir"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Exploration"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Family Heritage"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Historical"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Historical Biography"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Inventors"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Literary Biography"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Medical Memoir"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Philosophy"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Political Memoir"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Scientific Biography"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Scientist Biography"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Survival"
+    },
+    {
+      "genre": "Biography and Memoir",
+      "subgenre": "Survival Stories"
+    },
+    {
+      "genre": "Business",
+      "subgenre": "Art Entrepreneurship"
+    },
+    {
+      "genre": "Business",
+      "subgenre": "Entrepreneurship"
+    },
+    {
+      "genre": "Business",
+      "subgenre": "Environmental Sustainability"
+    },
+    {
+      "genre": "Business",
+      "subgenre": "Environmentally Friendly Practices"
+    },
+    {
+      "genre": "Business",
+      "subgenre": "Sustainability"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Architecture"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Art and Science"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Career Planning"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Cultural Competence"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Cultural Competence and Global Awareness"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Digital Learning Tools"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Digital Literacy"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Diversity and Inclusion"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Environmental Conservation"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Environmental Education"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Exploring the significance of following rules and practicing online ethics for a positive online experience."
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Geography"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Global Issues"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Interdisciplinary Studies"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Library Services"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Mathematics"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Media Literacy"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Science"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Social Issues"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "STEAM Education"
+    },
+    {
+      "genre": "Education",
+      "subgenre": "Technology in Education"
+    },
+    {
+      "genre": "Family and Parenting",
+      "subgenre": "Child Development"
+    },
+    {
+      "genre": "Family and Parenting",
+      "subgenre": "Outdoor Activities"
+    },
+    {
+      "genre": "Family and Parenting",
+      "subgenre": "Parenting Techniques"
+    },
+    {
+      "genre": "Family and Parenting",
+      "subgenre": "Parenting Tips"
+    },
+    {
+      "genre": "Food and Culinary Arts",
+      "subgenre": "Coffee Culture"
+    },
+    {
+      "genre": "Food and Culinary Arts",
+      "subgenre": "Cookbooks"
+    },
+    {
+      "genre": "Food and Culinary Arts",
+      "subgenre": "Culinary History"
+    },
+    {
+      "genre": "Food and Culinary Arts",
+      "subgenre": "Gastronomy"
+    },
+    {
+      "genre": "Food and Culinary Arts",
+      "subgenre": "Restaurant Review"
+    },
+    {
+      "genre": "Geography",
+      "subgenre": "Desert Exploration"
+    },
+    {
+      "genre": "Geography",
+      "subgenre": "Deserts"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Alternative Medicine"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Diet and Nutrition"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Epidemiology"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Exercise"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Fitness"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Healthy Aging"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Healthy Living"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Holistic Healing"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Hydration and Wellness"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Medical Profession"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Medical Technology"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Mindfulness"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Nutrition"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Pharmacy"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Physical Fitness"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Psychology"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Public Health"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Sleep"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Sports and Fitness"
+    },
+    {
+      "genre": "Health and Wellness",
+      "subgenre": "Weight Loss"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "American History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Ancient Civilization"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Ancient Civilizations"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Ancient Egypt"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Ancient History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Ancient Rome"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Ancient Rome was a powerful empire that existed from around 753 BC to 476 AD. One of the most impressive achievements of the ancient Romans was their vast network of roads."
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Andean Mythology"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Australian Aboriginal"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Australian Aboriginal Mythology"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Biography"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Creation Myths"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Cryptozoology"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Culinary History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "European History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Exploration"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Folklore"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Genocide Studies"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Hindu Mythology"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Historical Exploration"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Inuit Mythology"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Invention"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Invention and Innovation"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Invention and Technology"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Inventions"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Islamic History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Medieval History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Memoirs"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Migration"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Migration and Settlement"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Migration and Settlement Patterns"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Military History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Modern History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Native American Mythology"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Political History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Religious History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Revolution"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Space Exploration"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Technological History"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "The Impact of World War II"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "Transportation and Communication"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "War"
+    },
+    {
+      "genre": "History and Mythology",
+      "subgenre": "World War II"
+    },
+    {
+      "genre": "Language and Literature",
+      "subgenre": "Contemporary Young Adult Fiction"
+    },
+    {
+      "genre": "Language and Literature",
+      "subgenre": "Creative Writing"
+    },
+    {
+      "genre": "Language and Literature",
+      "subgenre": "Cultural Memoirs"
+    },
+    {
+      "genre": "Language and Literature",
+      "subgenre": "Essay"
+    },
+    {
+      "genre": "Language and Literature",
+      "subgenre": "Etiquette"
+    },
+    {
+      "genre": "Language and Literature",
+      "subgenre": "Interpreting"
+    },
+    {
+      "genre": "Language and Literature",
+      "subgenre": "Language Mastery"
+    },
+    {
+      "genre": "Language and Literature",
+      "subgenre": "Translation"
+    },
+    {
+      "genre": "Medical",
+      "subgenre": "Cardiology"
+    },
+    {
+      "genre": "Medical",
+      "subgenre": "Healthcare"
+    },
+    {
+      "genre": "Medical",
+      "subgenre": "Medical Devices"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Aesthetics"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Buddhism"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Cultural Celebration"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Epistemology"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Ethics"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Existentialism"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Indigenous Beliefs"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Judaism"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Metaphysics"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Moral Philosophy"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Mythology"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Philosophy of Mind"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Philosophy of Science"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Religious Festival"
+    },
+    {
+      "genre": "Philosophy and Religion",
+      "subgenre": "Religious Studies"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "Architecture"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "Career Development"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "Communication Skills"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "Language Interpretation"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "mindfulness"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "Mindfulness"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "Music Therapy"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "personal development"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "Positive Thinking"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "Saving Money"
+    },
+    {
+      "genre": "Professional and Personal Development",
+      "subgenre": "Time Management"
+    },
+    {
+      "genre": "Psychology",
+      "subgenre": "Child Development"
+    },
+    {
+      "genre": "Psychology",
+      "subgenre": "Educational"
+    },
+    {
+      "genre": "Psychology",
+      "subgenre": "Educational Psychology"
+    },
+    {
+      "genre": "Psychology",
+      "subgenre": "Emotional Intelligence"
+    },
+    {
+      "genre": "Psychology",
+      "subgenre": "Music and Memory"
+    },
+    {
+      "genre": "Psychology",
+      "subgenre": "Music Psychology"
+    },
+    {
+      "genre": "Psychology",
+      "subgenre": "Music Therapy"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Amphibians"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Animal Adaptations"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Animal Behavior"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Animal Biology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Animal Conservation"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Animal Evolution"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Animal Facts"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Animal Studies"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Animals"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Aquatic Biology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Aquatic Ecology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Aquatic Life"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Arctic Plants"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Arctic Wildlife"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Biology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Bird Watching"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Birds"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Birds of Prey"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Botany"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Conservation and Sustainability"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Cryptids"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Cryptids and Mythical Beasts"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Desert Flora"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Desert Plants"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Desert Wildlife"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Ecology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Ecotourism"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Educational"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Entomology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Environmental Conservation"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Evolution"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Evolutionary Biology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Extinct Animals"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Extinct Species"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Extinction and Conservation"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Freshwater Ecology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Herpetology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Insects"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Land Degradation"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Legendary Creatures"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Mammalogy"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Marine Biology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Marine Life"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Marine Pollution"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Meteorology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Natural Disasters"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Ocean Conservation"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Organism Study"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Organismal Biology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Ornithology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Paleontology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Plant Adaptations"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Plant Evolution"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Prehistoric Animals"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Rainforest"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Recycling"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Reptiles"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Sustainability and Conservation"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "The Vital Role of Mussels in Freshwater Ecosystems"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Wildlife"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Wildlife Biology"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Wildlife Conservation"
+    },
+    {
+      "genre": "Science and Nature",
+      "subgenre": "Wildlife Exploration"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Communication Skills"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Conflict Resolution"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Diversity and Inclusion"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Family Relationships"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Global Collaboration"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Instruction Manuals"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Mental Health"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Personal Development"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Positive Thinking"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Problem-solving"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Problem-solving techniques"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Relationships"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Stress Management"
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "The article shares tips on creating a good morning routine, using a to-do list, setting priorities, taking breaks, and reflecting on daily achievements to enhance time management."
+    },
+    {
+      "genre": "Self-help",
+      "subgenre": "Wellness"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Art and Science"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Civic Education"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Civics"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Civil Rights"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Diversity and Inclusion"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Family Dynamics"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Global Collaboration"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Global Governance"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Human Rights"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Impact on News Consumption"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Indigenous Rights"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Indigenous Rights and Cultural Preservation"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Indigenous Studies"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Race Relations"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Racial Equality"
+    },
+    {
+      "genre": "Social Sciences and Issues",
+      "subgenre": "Sociology"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Adaptive Sports"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Aquatic Sports"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Basketball"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "History"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Inspirational"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Media Coverage"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Sports Biography"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Sports Media"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Water Sports"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Women in Sports"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Women's Sports"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Animal Adaptations"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Animal Biology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Art and Science"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Artificial Intelligence"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Astrobiology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Astronomy"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Astrophysics"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Biology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Botany"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Climate Science"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Consumer Electronics"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Cryptozoology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Digital Art"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Digital Devices"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Earth Science"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Earth Sciences"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Ecology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Educational"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Engineering"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Environmental Science"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Evolution"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Exploring the World of Energy"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Geology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Health and Wellness"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "History"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "History and Evolution"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "History and Impact"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "History and Innovation"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Home Appliances"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Informational"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Infrastructure"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Internet"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Invention"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Invention and Innovation"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Marine Biology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Meteorology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Mobile Technology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Music Technology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Natural Disasters"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Nonfiction"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Oceanography"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Paleontology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Physics"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Renewable Energy"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Robotics"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Science"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Science Exploration"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Scientific Exploration"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Scientist"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Social Media"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Space Exploration"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Technology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "The Marvels of Earth's Magnetic Field"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Wearable Technology"
+    },
+    {
+      "genre": "Technology and Science",
+      "subgenre": "Wildlife"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Folklore"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Haunted Cemeteries"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Haunted History"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Haunted Locations"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Haunted Objects"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Haunted Places"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Horror"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Legends"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Serial Killers"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Supernatural"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "Supernatural Phenomena"
+    },
+    {
+      "genre": "True Crime and Paranormal",
+      "subgenre": "True Horror Stories"
+    }
+  ]
+}
