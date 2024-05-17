@@ -1,14 +1,12 @@
 "use client";
-import React, { useState, useRef, useEffect, use } from "react";
+import React, { useState, useRef, useEffect, } from "react";
 import { Input } from "../ui/input";
 import { Checkbox } from "@mui/material";
 import { Button } from "../ui/button";
-import { articleShowcaseType } from "@/types";
 import { Badge } from "../ui/badge";
 import Link from "next/link";
 import { Rating } from "@mui/material";
 import { Header } from "../header";
-import { ArticleShowcase } from "../models/article-model";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +15,6 @@ import {
 } from "../ui/dropdown-menu";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { useScopedI18n } from "@/locales/client";
-import { set } from "lodash";
-import { Divide } from "lucide-react";
 
 interface CustomCheckboxProps {
   label: string;
@@ -75,7 +71,6 @@ export default function Passages({ passages }: PassagesProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [selectedItems, setSelectedItems] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const currentItems = passages;
   const formRef = useRef<HTMLFormElement>(null);
@@ -256,11 +251,12 @@ export default function Passages({ passages }: PassagesProps) {
                       <ChevronDownIcon className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
+                  <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
                     {genres.map((genre) => (
                       <DropdownMenuItem
                         onSelect={() => setSelectedGenre(genre)}
                         key={genre}
+                        // className="overflow-hidden"
                       >
                         {genre}
                       </DropdownMenuItem>
@@ -275,11 +271,12 @@ export default function Passages({ passages }: PassagesProps) {
                         <ChevronDownIcon className="ml-2 h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
                       {getSubgenres(selectedGenre).map((subgenre) => (
                         <DropdownMenuItem
                           onSelect={() => setSelectedSubgenre(subgenre)}
                           key={subgenre}
+                          // className="overflow-hidden"
                         >
                           {subgenre}
                         </DropdownMenuItem>
