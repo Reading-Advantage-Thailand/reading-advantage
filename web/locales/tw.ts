@@ -147,14 +147,15 @@ export default {
       history: "歷史",
       sentences: "句子",
       reports: "報告",
-      passages: "段落",
-      assignments: "作業",
+     
     },
     sidebarTeacherNav: {
       myClasses: "我的課程",
       myStudents: "我的學生",
       classRoster: "班級名單",
       reports: "報告",
+      passages: "段落",
+      assignments: "作業",
     },
     articleRecordsTable: {
       title: "標題",

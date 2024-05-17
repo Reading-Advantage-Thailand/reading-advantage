@@ -161,14 +161,14 @@ export default {
       history: "ประวัติ",
       sentences: "ประโยค",
       reports: "รายงาน",
-      passages: "บทความ",
-      assignments: "การบ้าน",
     },
     sidebarTeacherNav: {
       myClasses: "ชั้นเรียนของฉัน",
       myStudents: "นักเรียนของฉัน",
       classRoster: "บัญชีรายชื่อนักเรียน",
       reports: "รายงาน",
+      passages: "บทความ",
+      assignments: "การบ้าน",
     },
     articleRecordsTable: {
       title: "ชื่อบทความ",
