@@ -1,0 +1,1204 @@
+{
+  "data": [
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Animal Adventure"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Comedy"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Exploration"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Fantasy"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Folklore"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Friendship"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Heroic Fantasy"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Historical Fiction"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Legend"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Military"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Military Thriller"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Mystery"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Mythology"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Pirate"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Pirate Adventure"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Quest"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Sea Adventure"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Supernatural Mystery"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Tall Tale"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Thriller"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Time Travel"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Travel"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Treasure Hunt"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Treasure Hunting"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Virtual Reality"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Virtual Reality Adventure"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Western"
+    },
+    {
+      "genre": "Action and Adventure",
+      "subgenre": "Wild West"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Adventure"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Animal adventure"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Animal Adventure"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Animal fantasy"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Animal Fantasy"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Animal fiction"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Animal Fiction"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Animal welfare"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Charity and Community Service"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Children's Fiction"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Children's Historical Fiction"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Children's literature"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Coming-of-age"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Coming-of-Age"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Community Service"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Environmental awareness"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Environmental conservation"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Fable"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Fairy Tale"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Family"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Fantasy"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Folklore"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Friendship"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Friendship and Adventure"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Friendship and Growth"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Friendship and Kindness"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Friendship and Music"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Friendship and teamwork"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Friendship and Values"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Historical Adventure"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Historical Fiction"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Humor"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Humorous"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Humorous Fiction"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Inspiring story"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Musical adventure"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Musical Adventure"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Musical Friendship Adventure"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Mystery"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Picture Book"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "School life"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "School Life"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "School Stories"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Science Fiction"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Slice of life"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Social and Emotional Learning"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Social issues"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Social Justice"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Social-emotional learning"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Sports"
+    },
+    {
+      "genre": "Children's Literature",
+      "subgenre": "Superhero"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Absurdist Fiction"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "American Literature"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Classic"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Classic Literature"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "coming-of-age"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Coming-of-Age"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Contemporary Fiction"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Existential Fiction"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Existentialism"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Gothic Fiction"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "historical fiction"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Historical Fiction"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Modernist Literature"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Realism"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Romantic Fiction"
+    },
+    {
+      "genre": "Classic and Literary Fiction",
+      "subgenre": "Urban Fiction"
+    },
+    {
+      "genre": "Comedy and Humor",
+      "subgenre": "Adventure"
+    },
+    {
+      "genre": "Comedy and Humor",
+      "subgenre": "Comedy"
+    },
+    {
+      "genre": "Comedy and Humor",
+      "subgenre": "Humorous Fiction"
+    },
+    {
+      "genre": "Comedy and Humor",
+      "subgenre": "Prankster"
+    },
+    {
+      "genre": "Comedy and Humor",
+      "subgenre": "Superhero"
+    },
+    {
+      "genre": "Comedy and Humor",
+      "subgenre": "Superhero Comedy"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Coming-of-age"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Coming-of-Age"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Community"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Community activism"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Community Celebration"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Community Conflict"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Domestic Life"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Family Drama"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Friendship"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Historical Fiction"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Inspiration"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Inspiring Story"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Music"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Personal Growth"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Psychological Fiction"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Relationships"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Romantic Tragedy"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "School"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Slice of Life"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "Slice of Life in a Small Village"
+    },
+    {
+      "genre": "Drama and Family",
+      "subgenre": "War"
+    },
+    {
+      "genre": "Epic and Heroic",
+      "subgenre": "Mythology"
+    },
+    {
+      "genre": "Epic and Heroic",
+      "subgenre": "tragedy"
+    },
+    {
+      "genre": "fantasy",
+      "subgenre": "heroic fantasy"
+    },
+    {
+      "genre": "fantasy",
+      "subgenre": "magical realism"
+    },
+    {
+      "genre": "fantasy",
+      "subgenre": "portal fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Adventure"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Alien Encounter"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Animal Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Arthurian Legend"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Children's Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Cyberpunk"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Dystopian"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Dystopian Fiction"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "epic fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Epic Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Fairy Tale"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Fairytale"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Folklore"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Heroic Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Magical Realism"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Magical School"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Medieval Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Metafiction"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Mythical Creatures"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Mythology"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Parallel Universe"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Portal Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Post-Apocalyptic"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Quest"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Quest Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Religious Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Resistance"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Space Adventure"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Space Colonization"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Space Exploration"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Space Opera"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Superhero"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Supernatural Creatures"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Supernatural Horror"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Supernatural Mystery"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Surrealism"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Time Travel"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Time Travel Comedy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Urban Fantasy"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Virtual Reality Adventure"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Wizardry"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Young Adult"
+    },
+    {
+      "genre": "Fantasy and Science Fiction",
+      "subgenre": "Young Adult Fantasy"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "African Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Ancient Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Andean Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Animal Fable"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Aztec Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Chinese Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Classic Fairy Tale"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Classic Fairy Tales"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Creation Myth"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Eastern European Folklore"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Eastern European Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Epic"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Epic Myth"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Fairy Tale"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Fantasy"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Folk Tale"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Folklore"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Greek Myth"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Greek Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Heroic Myth"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Hindu Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Indian Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Inuit Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Japanese Folklore"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Korean Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Legend"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Magical Realism"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Native American Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Norse Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Slavic Mythology"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "Tall Tale"
+    },
+    {
+      "genre": "Folklore and Mythology",
+      "subgenre": "West African Mythology"
+    },
+    {
+      "genre": "Gothic and Horror",
+      "subgenre": "Gothic horror"
+    },
+    {
+      "genre": "Gothic and Horror",
+      "subgenre": "Horror"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Adventure"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Ancient Civilization"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Ancient Mythology"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Ancient Rome"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Biographical Fiction"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Cultural Heritage"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Harlem Renaissance"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Historical Adventure"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Historical Biographical Fiction"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Legend"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Legendary"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Magical Realism"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Medieval Adventure"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Military ethics"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Military Fiction"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Renaissance"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Renaissance Adventure"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Renaissance Art"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Revolutionary War Fiction"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Social Justice"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Southern Gothic"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "War Fiction"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Western"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "Women's Suffrage Movement"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "World War II Resistance"
+    },
+    {
+      "genre": "Historical",
+      "subgenre": "WWII Resistance"
+    },
+    {
+      "genre": "historical fiction",
+      "subgenre": "community activism"
+    },
+    {
+      "genre": "historical fiction",
+      "subgenre": "historical activism"
+    },
+    {
+      "genre": "historical fiction",
+      "subgenre": "historical biography"
+    },
+    {
+      "genre": "Media",
+      "subgenre": "Fictional Characters"
+    },
+    {
+      "genre": "Media",
+      "subgenre": "World Literature"
+    },
+    {
+      "genre": "mystery",
+      "subgenre": "young adult mystery"
+    },
+    {
+      "genre": "novel",
+      "subgenre": "drama"
+    },
+    {
+      "genre": "Religious Fiction",
+      "subgenre": "Christian Fiction"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Book Club"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Classic Literature"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Contemporary"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Contemporary Romance"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Drama"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Fairy Tale"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Folklore"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Forbidden Love"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Regency Romance"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Relationship Drama"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Second Chance Romance"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Slice of Life"
+    },
+    {
+      "genre": "Romance and Contemporary",
+      "subgenre": "Young Adult"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Children's"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Comedy"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Sports Drama"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Sports Fiction"
+    },
+    {
+      "genre": "Sports",
+      "subgenre": "Sports Inspirational Fiction"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Adventure"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Art Theft"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Children's Mystery"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Comics"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Crime Thriller"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Detective"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Detective Club"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Detective Fiction"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Espionage"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Folklore"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Gothic horror"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Gothic Horror"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Historical Mystery"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Legends"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Military espionage"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Political Thriller"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Psychological Horror"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Psychological Thriller"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Spy"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Supernatural"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Supernatural Mystery"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Teen Detective"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "The Haunting Shadows: An Exploration of Psychological Horror"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Treasure Hunt"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Urban Exploration"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Young Adult"
+    },
+    {
+      "genre": "Thriller and Mystery",
+      "subgenre": "Young Adult Mystery"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Adventure"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Bounty Hunter"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Classic Western"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Coming-of-age"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Cowgirl Adventure"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Mystery"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Tall Tale"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Western Adventure"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Western Legends"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Western Mystery"
+    },
+    {
+      "genre": "Western",
+      "subgenre": "Wild West"
+    },
+    {
+      "genre": "Young Adult",
+      "subgenre": "Coming-of-Age"
+    },
+    {
+      "genre": "Young Adult",
+      "subgenre": "Contemporary Fiction"
+    },
+    {
+      "genre": "Young Adult",
+      "subgenre": "Fantasy"
+    },
+    {
+      "genre": "Young Adult",
+      "subgenre": "Superhero"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+"Old Genre":"New Genre"
+"Action": "Action and Adventure"
+"Action-Adventure":"Action and Adventure"
+"Adventure":"Action and Adventure"
+"Superhero":"Action and Adventure"
+"Thriller":"Thriller and Mystery"
+"Mystery":"Thriller and Mystery"
+"Mystery and Thriller":"Thriller and Mystery"
+"Horror":"Thriller and Mystery"
+"Fantasy":"Fantasy and Science Fiction"
+"Science Fiction":"Fantasy and Science Fiction"
+"Dystopian":"Fantasy and Science Fiction"
+"Dystopian Fiction":"Fantasy and Science Fiction"
+"Gothic":"Gothic and Horror"
+"Gothic fiction":"Gothic and Horror"
+"Historical":"Historical"
+"Historical Fiction":"Historical"
+"Historical fiction":"Historical"
+"War":"Historical"
+"War fiction":"Historical"
+"Drama":"Drama and Family"
+"Family Drama":"Drama and Family"
+"Slice of Life":"Drama and Family"
+"Romance":"Romance and Contemporary"
+"Contemporary":"Romance and Contemporary"
+"Contemporary Fiction":"Romance and Contemporary"
+"Comedy":"Comedy and Humor"
+"Humor":"Comedy and Humor"
+"Children's":"Children's Literature"
+"Children's Fiction":"Children's Literature"
+"Children's fiction":"Children's Literature"
+"Children's Literature":"Children's Literature"
+"Children's literature":"Children's Literature"
+"Classic Literature":"Classic and Literary Fiction"
+"classic literature":"Classic and Literary Fiction"
+"Literary Fiction":"Classic and Literary Fiction"
+"literary fiction":"Classic and Literary Fiction"
+"Folklore":"Folklore and Mythology"
+"Mythology":"Folklore and Mythology"
+"Fairy Tale":"Folklore and Mythology"
+"Fairy Tales":"Folklore and Mythology"
+"Fable":"Folklore and Mythology"
+"Epic":"Epic and Heroic"
+"epic":"Epic and Heroic"
+"Western":"Western"
+"Sports":"Sports"
+"Religious Fiction":"Religious Fiction"
+"Media":"Media"
+
+    "Action": "Action and Adventure",
+    "Action-Adventure":"Action and Adventure",
+    "Adventure":"Action and Adventure",
+    "Superhero":"Action and Adventure",
+    "Thriller":"Thriller and Mystery",
+    "Mystery":"Thriller and Mystery",
+    "Mystery and Thriller":"Thriller and Mystery",
+    "Horror":"Thriller and Mystery",
+    "Fantasy":"Fantasy and Science Fiction",
+    "Science Fiction":"Fantasy and Science Fiction",
+    "Dystopian":"Fantasy and Science Fiction",
+    "Dystopian Fiction":"Fantasy and Science Fiction",
+    "Gothic":"Gothic and Horror",
+    "Gothic fiction":"Gothic and Horror",
+    "Historical":"Historical",
+    "Historical Fiction":"Historical",
+    "Historical fiction":"Historical",
+    "War":"Historical",
+    "War fiction":"Historical",
+    "Drama":"Drama and Family",
+    "Family Drama":"Drama and Family",
+    "Slice of Life":"Drama and Family",
+    "Romance":"Romance and Contemporary",
+    "Contemporary":"Romance and Contemporary",
+    "Contemporary Fiction":"Romance and Contemporary",
+    "Comedy":"Comedy and Humor",
+    "Humor":"Comedy and Humor",
+    "Children's":"Children's Literature",
+    "Children's Fiction":"Children's Literature",
+    "Children's fiction":"Children's Literature",
+    "Children's Literature":"Children's Literature",
+    "Children's literature":"Children's Literature",
+    "Classic Literature":"Classic and Literary Fiction",
+    "classic literature":"Classic and Literary Fiction",
+    "Literary Fiction":"Classic and Literary Fiction",
+    "literary fiction":"Classic and Literary Fiction",
+    "Folklore":"Folklore and Mythology",
+    "Mythology":"Folklore and Mythology",
+    "Fairy Tale":"Folklore and Mythology",
+    "Fairy Tales":"Folklore and Mythology",
+    "Fable":"Folklore and Mythology",
+    "Epic":"Epic and Heroic",
+    "epic":"Epic and Heroic",
+    "Western":"Western",
+    "Sports":"Sports",
+    "Religious Fiction":"Religious Fiction",
+    "Media":"Media"
