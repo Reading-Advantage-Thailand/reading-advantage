@@ -15,6 +15,8 @@ import {
 } from "../ui/dropdown-menu";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { useScopedI18n } from "@/locales/client";
+import ArticleShowcaseCard from "../article-showcase-card";
+import Select from "@/components/select";
 
 interface CustomCheckboxProps {
   label: string;
@@ -27,7 +29,7 @@ type Passage = {
   id: string;
   title: string;
   type: string;
-  ra_level: number;
+  ra_level: string;
   genre: string;
   subgenre: string;
   is_read: boolean;
@@ -256,7 +258,6 @@ export default function Passages({ passages }: PassagesProps) {
                       <DropdownMenuItem
                         onSelect={() => setSelectedGenre(genre)}
                         key={genre}
-                        // className="overflow-hidden"
                       >
                         {genre}
                       </DropdownMenuItem>
@@ -276,7 +277,6 @@ export default function Passages({ passages }: PassagesProps) {
                         <DropdownMenuItem
                           onSelect={() => setSelectedSubgenre(subgenre)}
                           key={subgenre}
-                          // className="overflow-hidden"
                         >
                           {subgenre}
                         </DropdownMenuItem>
@@ -310,55 +310,7 @@ export default function Passages({ passages }: PassagesProps) {
               .map((passage: Passage, index: number) => {
                 return (
                   <div key={index} className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4">
-                    <Link href={`/student/read/${passage.id}`}>
-                      <div
-                        className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
-                        style={{
-                          backgroundImage: `url('https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${passage.id}.png')`,
-                          boxShadow:
-                            "inset 80px 10px 90px 10px rgba(0, 0, 0, 0.9)",
-                          opacity: passage.is_read ? 0.3 : 1,
-                        }}
-                      >
-                        <Badge
-                          className="shadow-lg max-w-max"
-                          variant="destructive"
-                        >
-                          Reading Advantage Level: {passage.ra_level}
-                        </Badge>
-                        <Badge
-                          className="shadow-lg max-w-max"
-                          variant="destructive"
-                        >
-                          CEFR Level: {passage.cefr_level}
-                        </Badge>
-                        <Badge
-                          className="shadow-lg max-w-max"
-                          variant="destructive"
-                        >
-                          <Rating
-                            name="read-only"
-                            value={passage.average_rating}
-                            readOnly
-                          />
-                        </Badge>
-                        <div className="mt-auto">
-                          <p className="text-xl drop-shadow-lg font-bold text-white">
-                            {passage.title}
-                          </p>
-                          <p className="text-sm drop-shadow-lg line-clamp-4">
-                            {passage.summary}
-                          </p>
-                        </div>
-                      </div>
-                      {passage.is_read && (
-                        <div className="flex justify-center">
-                          <Badge className="relative m-auto -top-[11rem] text-md left-0 right-0 shadow-lg max-w-max bg-slate-200 text-slate-900">
-                            Previously Read
-                          </Badge>
-                        </div>
-                      )}
-                    </Link>
+                  <ArticleShowcaseCard key={index} article={passage} />
                   </div>
                 );
               })}
@@ -370,59 +322,18 @@ export default function Passages({ passages }: PassagesProps) {
               .map((passage: Passage, index: number) => {
                 return (
                   <div key={index} className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4">
-                    <Link href={`/student/read/${passage.id}`}>
-                      <div
-                        className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
-                        style={{
-                          backgroundImage: `url('https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${passage.id}.png')`,
-                          boxShadow:
-                            "inset 80px 10px 90px 10px rgba(0, 0, 0, 0.9)",
-                          opacity: passage.is_read ? 0.3 : 1,
-                        }}
-                      >
-                        <Badge
-                          className="shadow-lg max-w-max"
-                          variant="destructive"
-                        >
-                          Reading Advantage Level: {passage.ra_level}
-                        </Badge>
-                        <Badge
-                          className="shadow-lg max-w-max"
-                          variant="destructive"
-                        >
-                          CEFR Level: {passage.cefr_level}
-                        </Badge>
-                        <Badge
-                          className="shadow-lg max-w-max"
-                          variant="destructive"
-                        >
-                          <Rating
-                            name="read-only"
-                            value={passage.average_rating}
-                            readOnly
-                          />
-                        </Badge>
-                        <div className="mt-auto">
-                          <p className="text-xl drop-shadow-lg font-bold text-white">
-                            {passage.title}
-                          </p>
-                          <p className="text-sm drop-shadow-lg line-clamp-4">
-                            {passage.summary}
-                          </p>
-                        </div>
-                      </div>
-                      {passage.is_read && (
-                        <div className="flex justify-center">
-                          <Badge className="relative m-auto -top-[11rem] text-md left-0 right-0 shadow-lg max-w-max bg-slate-200 text-slate-900">
-                            Previously Read
-                          </Badge>
-                        </div>
-                      )}
-                    </Link>
+                    <ArticleShowcaseCard key={index} article={passage} />
                   </div>
                 );
               })}
           </div>
+          //   <Select
+          //   user={{
+          //     level: selectedLevels.length > 0 ? parseInt(selectedLevels[0]) : 0,
+          //     name: "",
+          //     id: "",
+          //   }}
+          // />
         )}
       </div>
 
