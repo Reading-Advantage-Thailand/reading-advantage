@@ -21,7 +21,7 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
             );
         }
 
-        let data = db.collection("levels-test").doc(level);
+        let data = db.collection("article-selection").doc(level);
 
         if (type) {
             data = data.collection("types").doc(type);
