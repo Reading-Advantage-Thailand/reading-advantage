@@ -1,0 +1,112 @@
+{
+    "Action and Adventure": {
+      "Animal Adventure": "Animal and Sea Adventures",
+      "Sea Adventure": "Animal and Sea Adventures",
+      "Treasure Hunt": "Quests and Treasures",
+      "Quest": "Quests and Treasures",
+      "Virtual Reality Adventure": "Virtual Reality and Exploration",
+      "Western": "Western and Pirate Adventures",
+      "Pirate Adventure": "Western and Pirate Adventures",
+      "Military Thriller": "Military and Heroic Thrillers",
+      "Exploration": "Virtual Reality and Exploration",
+      "Heroic Fantasy": "Military and Heroic Thrillers"
+    },
+    "Children's Literature": {
+      "Picture Book": "Fairy Tales",
+      "Fairy Tale": "Fairy Tales",
+      "Friendship": "Friendship and Inspiring Stories",
+      "Inspiring Story": "Friendship and Inspiring Stories",
+      "Animal Adventure": "Animal Adventures and Superheroes",
+      "Superhero": "Animal Adventures and Superheroes",
+      "Historical Fiction": "Historical and Humorous Stories",
+      "Humor": "Historical and Humorous Stories",
+      "Slice of Life": "School and Slice of Life",
+      "School Life": "School and Slice of Life",
+      "Environmental Awareness": "Environmental Awareness",
+      "Children's Fiction": "Environmental Awareness",
+      "Musical Adventure": "Musical and Science Fiction",
+      "Science Fiction": "Musical and Science Fiction",
+      "Folklore": "Fantasy and Folklore",
+      "Mystery": "Mystery and Sports",
+      "Sports": "Mystery and Sports",
+      "Social-emotional learning": "Social-emotional Learning",
+      "Family": "Social-emotional Learning",
+      "Coming-of-Age": "Social-emotional Learning",
+      "Fantasy": "Fantasy and Folklore"
+    },
+    "Classic and Literary Fiction": {
+      "Historical Fiction": "Classic and Historical Fiction",
+      "Modernism": "Modern and Postmodern Fiction",
+      "Coming-of-Age": "Coming-of-Age and Gothic Fiction",
+      "Gothic Fiction": "Coming-of-Age and Gothic Fiction",
+      "Postmodern Fiction": "Modern and Postmodern Fiction",
+      "American Literature": "American and Contemporary Fiction",
+      "Existential Fiction": "Existential and Absurdist Fiction",
+      "Absurdist Fiction": "Existential and Absurdist Fiction",
+      "Classic Literature": "Classic and Historical Fiction",
+      "Contemporary Fiction": "American and Contemporary Fiction"
+    },
+    "Epic and Heroic": {
+      "Quest": "Quests and Sword and Sorcery",
+      "Epic Fantasy": "Epic and Heroic Fantasy",
+      "Mythology": "Mythology",
+      "Sword and Sorcery": "Quests and Sword and Sorcery",
+      "Heroic Fantasy": "Epic and Heroic Fantasy"
+    },
+    "Fantasy and Science Fiction": {
+      "Urban Fantasy": "Urban and High Fantasy",
+      "Alien Encounters": "Alien and Dystopian Encounters",
+      "Dystopian Fiction": "Alien and Dystopian Encounters",
+      "Space Opera": "Space and Time Adventures",
+      "Time Travel": "Space and Time Adventures",
+      "Cyberpunk": "Cyberpunk",
+      "High Fantasy": "Urban and High Fantasy"
+    },
+    "Folklore and Mythology": {
+      "Legend": "Legends and Fairy Tales",
+      "Fairy Tale": "Legends and Fairy Tales",
+      "Mythology": "Folklore and Mythology",
+      "Folklore": "Folklore and Mythology",
+      "Tall Tale": "Tall Tales"
+    },
+    "Gothic and Horror": {
+      "Lovecraftian Horror": "Gothic and Lovecraftian Horror",
+      "Haunted House": "Haunted Houses and Psychological Horror",
+      "Psychological Horror": "Haunted Houses and Psychological Horror",
+      "Body Horror": "Body and Supernatural Horror",
+      "Gothic Horror": "Gothic and Lovecraftian Horror",
+      "Supernatural Horror": "Body and Supernatural Horror"
+    },
+    "Historical": {
+      "Ancient History": "Ancient and Medieval History",
+      "Medieval Era": "Ancient and Medieval History",
+      "World War I and II": "World War History",
+      "Regency Era": "19th Century and Regency Era",
+      "19th Century": "19th Century and Regency Era"
+    },
+    "Mystery/Thriller": {
+      "Detective Noir": "Cozy and Detective Mysteries",
+      "Political Thriller": "Political and Spy Thrillers",
+      "Crime Thriller": "Crime and Legal Thrillers",
+      "Cozy Mystery": "Cozy and Detective Mysteries",
+      "Legal Thriller": "Crime and Legal Thrillers",
+      "Spy Thriller": "Political and Spy Thrillers"
+    },
+    "Romance and Contemporary": {
+      "Relationship Drama": "Relationship Drama and Romantic Suspense",
+      "Historical Romance": "Historical and Contemporary Romance",
+      "Social Commentary": "Social Commentary",
+      "Romantic Suspense": "Relationship Drama and Romantic Suspense",
+      "Urban Fiction": "Urban and Domestic Fiction",
+      "Contemporary Romance": "Historical and Contemporary Romance",
+      "Domestic Fiction": "Urban and Domestic Fiction"
+    },
+    "Western": {
+      "Bounty Hunter": "Bounty Hunters and Gold Rush",
+      "Frontier Adventure": "Classic Western and Frontier Adventure",
+      "Weird West": "Weird West",
+      "Classic Western": "Classic Western and Frontier Adventure",
+      "Gold Rush": "Bounty Hunters and Gold Rush"
+    }
+  }
+  

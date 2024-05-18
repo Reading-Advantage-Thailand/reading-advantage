@@ -1,0 +1,4022 @@
+[
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Civil Rights Movement"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Biography"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Buddhism"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolution"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Calligraphy"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Survival Stories"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Botany"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Scientific Exploration"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Musical Collaborations"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Literary Biography"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Conservation"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "nonfiction"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Art"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Invention and Innovation"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Sciences"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Technology"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Race Relations"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Wearable Technology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Biography"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "The Impact of World War II"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Internet"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Human Rights"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Travel Tips"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Healthy Living"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Fitness"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Psychological Horror"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Health and Wellness"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Relationships"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Geology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Meteorology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Home Appliances"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Islamic History"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Internet"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Mindfulness"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "personal development"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Sociology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Cryptids"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Oceanography"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Life"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Women in Sports"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Indigenous Festivals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Business",
+    "subgenre": "Art Entrepreneurship"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "American History"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Legends"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Indigenous Rights"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Inventions"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Hindu Mythology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Positive Thinking"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Evolution"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Indigenous Culture"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Artificial Intelligence"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Artificial Intelligence"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Botany"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Legends"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Inspirational"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Public Health"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Family and Parenting",
+    "subgenre": "Parenting Tips"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Invention"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Educational"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Mobile Technology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Military History"
+  },
+  {
+    "genre": "Business",
+    "subgenre": "Sustainability"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Botany"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Mobile Technology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Bird Watching"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Water Sports"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Technology in Education"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Adventure"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "True Horror Stories"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Serial Killers"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Biographies"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolution"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Extinction and Conservation"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Amphibians"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Physical Fitness"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Aquatic Sports"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Bird Watching"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Civil Rights Movement"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film and Fine Art"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife Conservation"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Culinary Travel"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ornithology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Reptiles"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife Conservation"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Screenwriting"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "History and Impact"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "War"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds of Prey"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Sciences"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Women's Sports"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Haunted History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Solo Travel"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Geography"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Positive Thinking"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Judaism"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Iconic Movie Characters"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Culinary Travel"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Life"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Cultural Diversity"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Extinct Animals"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Metaphysics"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Australian Aboriginal"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Positive Thinking"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Insects"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Land Degradation"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Civil Rights Movement"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Pharmacy"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Transportation and Communication"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Folklore"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Impact on News Consumption"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Botany"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Celebrity Memoir"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Political Memoir"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Arctic Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Interdisciplinary Studies"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Textile art"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Art"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Technology"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Environmental Education"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Art and Science"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Art Techniques"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Cultural Impact of Movies"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Diversity and Inclusion"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Amphibians"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Military History"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Aesthetics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Biology"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Physical Fitness"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Nutrition"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Medical Memoir"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical Biography"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Native American Mythology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Library Services"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Stress Management"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Geography"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Family Relationships"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Travel Planning"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Philosophy"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Pharmacy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Medical Profession"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Exploration"
+  },
+  {
+    "genre": "Business",
+    "subgenre": "Sustainability"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Supernatural Phenomena"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Mountaineering"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Food and Culinary Arts",
+    "subgenre": "Restaurant Review"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Diet and Nutrition"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Robotics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Legendary Creatures"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Positive Thinking"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Freshwater Ecology"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Hydration and Wellness"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Insects"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Textile Art"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Exploration"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Memoirs"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Biology"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Mental Health"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Life"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Pollution"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecotourism"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ornithology"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Media Literacy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film and Art"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astrophysics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "World War II"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film Analysis"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Indigenous Rights and Cultural Preservation"
+  },
+  {
+    "genre": "Psychology",
+    "subgenre": "Music Therapy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Informational"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Diversity and Inclusion"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Social Media"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Digital Literacy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Cultural Competence"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "History"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Botany"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Podcasts"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Physical Fitness"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Transportation and Communication"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Internet"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolutionary Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical Biography"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Mammalogy"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Medieval History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Modern History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ornithology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical Biography"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Healthy Aging"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Psychological Horror"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Animal Adaptations"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Science Exploration"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Rome"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Geology"
+  },
+  {
+    "genre": "Business",
+    "subgenre": "Entrepreneurship"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Egypt"
+  },
+  {
+    "genre": "Psychology",
+    "subgenre": "Child Development"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Sleep"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Water Sports"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Festival"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "American History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ocean Conservation"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Psychology",
+    "subgenre": "Music Therapy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Engineering"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Extinct Species"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical Biography"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Art and Science"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astrobiology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Technology"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Travelogue"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Military History"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Horror"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical Biography"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Meteorology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Facts"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Travel Guide"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Digital Art"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Natural Disasters"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Human Rights"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "The Vital Role of Mussels in Freshwater Ecosystems"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film Industry"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Life"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Orchestra"
+  },
+  {
+    "genre": "Language and Literature",
+    "subgenre": "Translation"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Artificial Intelligence"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Technology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Memoir"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Fitness"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Land Degradation"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife Conservation"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Cryptozoology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Islamic History"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Desert Plants"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Wellness"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Podcasts"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Racial Equality"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Celebrity Memoirs"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Exploration"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Textile Art"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Artificial Intelligence"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Music"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Recycling"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Consumer Electronics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Art and Science"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Botany"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Ecology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Studies"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Social Issues"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Rome"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Facts"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Biography"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Personal Development"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Medical Memoir"
+  },
+  {
+    "genre": "Psychology",
+    "subgenre": "Music and Memory"
+  },
+  {
+    "genre": "Food and Culinary Arts",
+    "subgenre": "Coffee Culture"
+  },
+  {
+    "genre": "Language and Literature",
+    "subgenre": "Contemporary Young Adult Fiction"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "mindfulness"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Botany"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Technological History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Time Management"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Botany"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Renewable Energy"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Nutrition"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Civil Rights"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Movie Production"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Eco-Art"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Life"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "STEAM Education"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Natural Disasters"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Communication Skills"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Conflict Resolution"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Biology"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Media Coverage"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Fitness"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Musical Collaboration"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Cultural Festival"
+  },
+  {
+    "genre": "Medical",
+    "subgenre": "Medical Devices"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Cryptids"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Supernatural"
+  },
+  {
+    "genre": "Business",
+    "subgenre": "Environmental Sustainability"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Budget Travel"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Mindfulness"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Revolution"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Music History"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Travel Guides"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Exploration of Musical Collaborations"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Music Technology"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Ethics"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Political History"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Relationships"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Diversity and Inclusion"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Language Interpretation"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Geology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Sustainability and Conservation"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Sports Media"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Medieval History"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Diversity and Inclusion"
+  },
+  {
+    "genre": "Psychology",
+    "subgenre": "Educational"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Indigenous Beliefs"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Desert Plants"
+  },
+  {
+    "genre": "Language and Literature",
+    "subgenre": "Creative Writing"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Life"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Cryptids and Mythical Beasts"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Technology in Education"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Personal Development"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Modern History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife Conservation"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Arctic Plants"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Digital Art"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Islamic History"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Social Commentary"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Digital Art"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Diversity and Inclusion"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Eco-Art and Sustainable Practices"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astrophysics"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Inventors"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Freshwater Ecology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolution"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Instruction Manuals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolutionary Biology"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Philosophy of Science"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Music and Performance"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Scientific Biography"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Modern History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Revolution"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Career Development"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Geology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolutionary Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Political History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Migration and Settlement"
+  },
+  {
+    "genre": "Family and Parenting",
+    "subgenre": "Parenting Techniques"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Basketball"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Music Technology"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Serial Killers"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Renewable Energy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Animal Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Family Heritage"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolution"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Islamic History"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Cultural Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Arctic Wildlife"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Engineering"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical Biography"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Architecture"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Adaptations"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Desert Wildlife"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Military History"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Science"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Career Planning"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Cryptozoology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolution"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ornithology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Climate Science"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Global Collaboration"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Inuit Mythology"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Basketball"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Rome"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Invention"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Orchestra"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Invention and Technology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Adaptations"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Migration"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Medical Profession"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Religious Studies"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Digital Devices"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Medical Technology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Medical",
+    "subgenre": "Healthcare"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Communication Skills"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Impact of Technology on Art"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Freshwater Ecology"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Inventors"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film Analysis"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Problem-solving techniques"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Communication Skills"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Historical Exploration"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Fitness"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Exploring the significance of following rules and practicing online ethics for a positive online experience."
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Holistic Healing"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolutionary Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Festival"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Artificial Intelligence"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Folklore"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Festival Celebration"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Music Technology"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Moral Philosophy"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Pharmacy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolution"
+  },
+  {
+    "genre": "Business",
+    "subgenre": "Sustainability"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Bird Watching"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Infrastructure"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Geography"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Psychology"
+  },
+  {
+    "genre": "Language and Literature",
+    "subgenre": "Cultural Memoirs"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Cultural Festival"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Renewable Energy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "World War II"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Technology"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Philosophy of Mind"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Cultural Competence and Global Awareness"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Traditional Celebration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Life"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Serial Killers"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Environmental Conservation"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Nutrition"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Haunted Objects"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Wearable Technology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Genocide Studies"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Organism Study"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Personal Development"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Artificial Intelligence"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Conflict Resolution"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Relationships"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Indigenous Beliefs"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Exploration of Music Genres"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Natural Disasters"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Eco-Art and Sustainable Practices"
+  },
+  {
+    "genre": "Geography",
+    "subgenre": "Deserts"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "European History"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Ecotourism"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Facts"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Life"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Architecture"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Digital Literacy"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Architecture"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolutionary Biology"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Environmental Conservation"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Food and Culinary Arts",
+    "subgenre": "Cookbooks"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife Conservation"
+  },
+  {
+    "genre": "Family and Parenting",
+    "subgenre": "Child Development"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Scientist"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Invention and Innovation"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Scientist Biography"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Science"
+  },
+  {
+    "genre": "Business",
+    "subgenre": "Environmentally Friendly Practices"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Exercise"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Language and Literature",
+    "subgenre": "Language Mastery"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Biology"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Alternative Medicine"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical Biography"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Plant Evolution"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Exploration"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Media Coverage"
+  },
+  {
+    "genre": "Language and Literature",
+    "subgenre": "Etiquette"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Sports Biography"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Religious History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Adaptations"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Indigenous Studies"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Historical Travel"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Life"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Conservation and Sustainability"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Bird Watching"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Haunted History"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Survival"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Mathematics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Life"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Islamic History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Saving Money"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film and Art Intersection"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Festivals"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Revolution"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Epidemiology"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "City Guide"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Arctic Plants"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Life"
+  },
+  {
+    "genre": "Food and Culinary Arts",
+    "subgenre": "Gastronomy"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Invention"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Entomology"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Personal Development"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Pharmacy"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Epistemology"
+  },
+  {
+    "genre": "Professional and Personal Development",
+    "subgenre": "Music Therapy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Epidemiology"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Technology in Education"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Renewable Energy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Modern History"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Technology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Life"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ornithology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Plant Adaptations"
+  },
+  {
+    "genre": "Psychology",
+    "subgenre": "Educational Psychology"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Conflict Resolution"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "History and Techniques"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Invention"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Desert Flora"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Self-Expression and Empowerment"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Memoir"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "European History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Extinct Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Geography",
+    "subgenre": "Desert Exploration"
+  },
+  {
+    "genre": "Geography",
+    "subgenre": "Desert Exploration"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "History and Innovation"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Family Dynamics"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Biography"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "The article shares tips on creating a good morning routine, using a to-do list, setting priorities, taking breaks, and reflecting on daily achievements to enhance time management."
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Natural Disasters"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Andean Mythology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Podcasts"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Eco-Art"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Haunted Locations"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Rainforest"
+  },
+  {
+    "genre": "Food and Culinary Arts",
+    "subgenre": "Culinary History"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Cultural Memoir"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Wearable Technology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Human Rights"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Biography"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film Production"
+  },
+  {
+    "genre": "Psychology",
+    "subgenre": "Emotional Intelligence"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Art"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Reptiles"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Fitness"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Language and Literature",
+    "subgenre": "Interpreting"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Exploring the World of Energy"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Digital Learning Tools"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Aquatic Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Creation Myths"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Arctic Wildlife"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Medieval History"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Travel Guide"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Alternative Medicine"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Music Exploration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Insects"
+  },
+  {
+    "genre": "Language and Literature",
+    "subgenre": "Essay"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Artificial Intelligence"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Biography"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Folklore"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Digital Art"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolutionary Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Nonfiction"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Interdisciplinary Studies"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Organism Study"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Political History"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Art Techniques"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Media Literacy"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Festival"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ornithology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Comics and Graphic Novels"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Relationships"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Global Issues"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "History of Music Innovation"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Medieval History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "European History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Culinary History"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Eco-Art"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Music History"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Global Collaboration"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Extinct Animals"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Technology and Art"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Freshwater Ecology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Migration and Settlement Patterns"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Cultural Festivals"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Conflict Resolution"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Sciences"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Paleontology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Education",
+    "subgenre": "Social Issues"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Cultural Celebration"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Weight Loss"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Australian Aboriginal Mythology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Australian Aboriginal Mythology"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Art"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Biography"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Islamic History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Inspirational"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Prehistoric Animals"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Children's Book Illustrations"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Art and Science"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Biography"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film Production"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Music Education"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Women in Sports"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Bird Watching"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Music and Performance"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Renewable Energy"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Environmental Science"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Inventors"
+  },
+  {
+    "genre": "Medical",
+    "subgenre": "Cardiology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Legends"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "American History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Traditional Festival"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Personal Development"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Astronomy"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Solo Travel"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Religious Festival"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Native American Mythology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolution"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Existentialism"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Organismal Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ornithology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Reptiles"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Art History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Bird Watching"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Modern History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Behavior"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilizations"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Birds"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Mindfulness"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Invention"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Global Governance"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Psychology",
+    "subgenre": "Music Psychology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Desert Wildlife"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolution"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Civic Education"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Mythology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Cryptids and Mythical Beasts"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Evolution of Art Styles"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Herpetology"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical Biography"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Invention"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film Industry"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Educational"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Adventure and Travel",
+    "subgenre": "Cultural Exploration"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Haunted Places"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Political Memoir"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Ethics"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Pharmacy"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Sports and Fitness"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Military History"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Life"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Genocide Studies"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Evolutionary Biology"
+  },
+  {
+    "genre": "Philosophy and Religion",
+    "subgenre": "Epistemology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient History"
+  },
+  {
+    "genre": "Family and Parenting",
+    "subgenre": "Outdoor Activities"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Art and Science"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Space Exploration"
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Global Governance"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Ecology"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "The Marvels of Earth's Magnetic Field"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Art Techniques"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Marine Biology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Rome was a powerful empire that existed from around 753 BC to 476 AD. One of the most impressive achievements of the ancient Romans was their vast network of roads."
+  },
+  {
+    "genre": "Social Sciences and Issues",
+    "subgenre": "Civics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Robotics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Technology"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animals"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Pharmacy"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Sleep"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Physics"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Evolution"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Exploration"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "History and Evolution"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Meteorology"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Invention"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Wildlife"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Social Issues in Music"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Historical Biography"
+  },
+  {
+    "genre": "Art and Culture",
+    "subgenre": "Film Studies"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Artistic Journey"
+  },
+  {
+    "genre": "Biography and Memoir",
+    "subgenre": "Literary Biography"
+  },
+  {
+    "genre": "Sports",
+    "subgenre": "Adaptive Sports"
+  },
+  {
+    "genre": "Science and Nature",
+    "subgenre": "Animal Adaptations"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Civilization"
+  },
+  {
+    "genre": "Health and Wellness",
+    "subgenre": "Physical Fitness"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Problem-solving"
+  },
+  {
+    "genre": "Technology and Science",
+    "subgenre": "Earth Science"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Ancient Rome"
+  },
+  {
+    "genre": "Business",
+    "subgenre": "Sustainability"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Biography"
+  },
+  {
+    "genre": "Self-help",
+    "subgenre": "Diversity and Inclusion"
+  },
+  {
+    "genre": "History and Mythology",
+    "subgenre": "Military History"
+  },
+  {
+    "genre": "True Crime and Paranormal",
+    "subgenre": "Haunted Cemeteries"
+  }
+]
