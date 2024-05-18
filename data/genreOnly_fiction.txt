@@ -1,0 +1,23 @@
+[
+  "Action and Adventure",
+  "Children's Literature",
+  "Classic and Literary Fiction",
+  "Comedy and Humor",
+  "Drama and Family",
+  "Epic and Heroic",
+  "Fantasy and Science Fiction",
+  "Folklore and Mythology",
+  "Gothic and Horror",
+  "Historical",
+  "Media",
+  "Religious Fiction",
+  "Romance and Contemporary",
+  "Sports",
+  "Thriller and Mystery",
+  "Western",
+  "Young Adult",
+  "fantasy",
+  "historical fiction",
+  "mystery",
+  "novel"
+]

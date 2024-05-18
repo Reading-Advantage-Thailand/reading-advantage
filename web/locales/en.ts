@@ -221,10 +221,10 @@ export default {
     },
     // use this for article selection page
     article: {
-      type: "article type",
-      genre: "article genre",
-      subGenre: "article sub-genre",
-      article: "article",
+      type: "type",
+      genre: "genre",
+      subGenre: "sub-genre",
+      article: "article"
     },
     articleCard: {
       raLevel: "Reading Advantage level is {raLevel}",

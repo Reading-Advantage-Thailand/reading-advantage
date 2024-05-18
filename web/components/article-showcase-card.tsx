@@ -77,12 +77,14 @@ export default async function ArticleShowcaseCard({ article }: Props) {
           <p className="text-xl drop-shadow-lg font-bold text-white">
             {article.title}
           </p>
+          <div className=" bg-black bg-opacity-40">
           <p className="text-sm drop-shadow-lg line-clamp-4 text-white">
             { locale == "en" 
               ? <p>{article.summary}</p>
               : <p>{summarySentence}</p>
             } 
           </p>
+          </div>
         </div>
       </div>
       {article.is_read && (
