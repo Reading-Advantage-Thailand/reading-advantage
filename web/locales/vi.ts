@@ -282,5 +282,17 @@ export default {
     },
     menu: "Menu",
     loginButton: "Đăng nhập",
+
+    passages: {
+      heading: "Đoạn văn",
+      type: "Loại",
+      fiction: "Tiểu thuyết",
+      nonFiction: "Phi hư cấu",
+      topic: "Chủ đề",
+      selectGenre: "Chọn thể loại",
+      selectSubGenre: "Chọn thể loại con",
+      level: "Cấp độ",
+      search: "kiếm...",
+    }
   },
 } as const;

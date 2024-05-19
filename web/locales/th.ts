@@ -287,5 +287,17 @@ export default {
     },
     menu: "เมนู",
     loginButton: "เข้าสู่ระบบ",
+    passages: {
+      heading: "บทความ",
+      type: "ประเภท",
+      fiction: "นิยาย",
+      nonFiction: "สารคดี",
+      topic: "หัวข้อ",
+      selectGenre: "เลือกประเภท",
+      selectSubGenre: "เลือกประเภทย่อย",
+      level: "ระดับ",
+      search: "ค้นหา...",
+  
+    }
   },
 } as const;

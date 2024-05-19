@@ -263,5 +263,17 @@ export default {
     },
     menu: "菜單",
     loginButton: "登錄",
+
+    passage: {
+    heading: "段落",
+    type: "類型",
+    fiction: "小說",
+    nonFiction: "非小說類",
+    topic: "主題",
+    selectGenre: "選擇類型",
+    selectSubGenre: "選擇子流派",
+    level: "級別",
+    search: "搜尋...",
+    },
   },
 } as const;

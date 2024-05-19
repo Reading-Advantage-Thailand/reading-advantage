@@ -3,9 +3,6 @@ import React, { useState, useRef, useEffect, } from "react";
 import { Input } from "../ui/input";
 import { Checkbox } from "@mui/material";
 import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import Link from "next/link";
-import { Rating } from "@mui/material";
 import { Header } from "../header";
 import {
   DropdownMenu,
@@ -16,7 +13,6 @@ import {
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "../article-showcase-card";
-import Select from "@/components/select";
 
 interface CustomCheckboxProps {
   label: string;
@@ -73,10 +69,11 @@ export default function Passages({ passages }: PassagesProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [selectedItems, setSelectedItems] = useState(0);
-
   const currentItems = passages;
   const formRef = useRef<HTMLFormElement>(null);
   const t = useScopedI18n("components.articleRecordsTable");
+  const tp = useScopedI18n("components.passages");
+
 
   const getGenres = () => {
     let genresData: Set<string> = new Set();
@@ -107,6 +104,8 @@ export default function Passages({ passages }: PassagesProps) {
     setType(event.target.value);
   };
 
+
+
   const handleSelectionChange = (level: string) => {
     setSelectedLevels((prevLevels) => {
       if (prevLevels.includes(level)) {
@@ -135,13 +134,13 @@ export default function Passages({ passages }: PassagesProps) {
 
     if (type) {
       filteredPassages = filteredPassages.filter((passage) => {
-        passage.type.toLowerCase() === type.toLowerCase();
-        if (type === "fiction") {
-          return passage.type === "fiction";
+        if (type.toLowerCase() === "fiction") {
+          return passage.type.toLowerCase() === "fiction";
         }
-        if (type === "non-fiction") {
-          return passage.type === "nonfiction";
+        if (type.toLowerCase() === "non-fiction") {
+          return passage.type.toLowerCase() === "nonfiction";
         }
+        return false;
       });
     }
 
@@ -210,11 +209,12 @@ export default function Passages({ passages }: PassagesProps) {
     setPrevSelectedGenre(selectedGenre);
   }, [selectedGenre]);
 
+
   return (
     <>
-      <Header heading="Passages Page" />
+      <Header heading={tp("heading")} />
             <Input
-              placeholder={"Search..."}
+              placeholder={tp("search")}
               className="w-full mt-4"
               value={searchTerm}
               onChange={handleSearchChange}
@@ -222,7 +222,7 @@ export default function Passages({ passages }: PassagesProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 mt-4 gap-4">
           <form ref={formRef} onSubmit={handleSubmit} className="md:pr-4">
             <div className="mb-4">
-              <p className="font-bold">Type</p>
+              <p className="font-bold">{tp('type')}</p>
               <div className="ml-4">
                 <div className="flex items-center">
                   <Checkbox
@@ -230,7 +230,7 @@ export default function Passages({ passages }: PassagesProps) {
                     checked={type === "fiction"}
                     onChange={handleTypeChange}
                   />
-                  <p>Fiction</p>
+                  <p>{tp('fiction')}</p>
                 </div>
                 <div className="flex items-center">
                   <Checkbox
@@ -238,18 +238,18 @@ export default function Passages({ passages }: PassagesProps) {
                     checked={type === "non-fiction"}
                     onChange={handleTypeChange}
                   />
-                  <p>Non Fiction</p>
+                  <p>{tp('nonFiction')}</p>
                 </div>
               </div>
             </div>
 
             <div className="mb-4">
-              <p className="font-bold">Topic</p>
+              <p className="font-bold">{tp('topic')}</p>
               <div className="flex flex-col w-full md:w-[50%] items-start ml-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger>
                     <Button variant="ghost">
-                      {selectedGenre || "Select Genre"}
+                      {selectedGenre || tp('selectGenre')}
                       <ChevronDownIcon className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -268,7 +268,7 @@ export default function Passages({ passages }: PassagesProps) {
                   <DropdownMenu>
                     <DropdownMenuTrigger>
                       <Button variant="ghost">
-                        {selectedSubgenre || "Select Subgenre"}
+                        {selectedSubgenre || tp('selectSubGenre')}
                         <ChevronDownIcon className="ml-2 h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -288,7 +288,7 @@ export default function Passages({ passages }: PassagesProps) {
             </div>
 
             <div className="">
-              <p className="font-bold">Level</p>
+              <p className="font-bold">{tp('level')}</p>
               <div className="grid grid-cols-7 w-full text-center">
                 {Array.from({ length: 26 }, (_, i) => i + 1).map((level) => (
                   <CustomCheckbox
@@ -327,13 +327,6 @@ export default function Passages({ passages }: PassagesProps) {
                 );
               })}
           </div>
-          //   <Select
-          //   user={{
-          //     level: selectedLevels.length > 0 ? parseInt(selectedLevels[0]) : 0,
-          //     name: "",
-          //     id: "",
-          //   }}
-          // />
         )}
       </div>
 
