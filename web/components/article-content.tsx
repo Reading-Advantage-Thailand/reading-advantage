@@ -355,7 +355,9 @@ export default function ArticleContent({
                     {line +
                       (index !== sentence.text.split("~~").length - 1
                         ? " "
-                        : line.endsWith(".")
+                        : line.endsWith(".") ||
+                          line.endsWith("!") ||
+                          line.endsWith("?")
                         ? " "
                         : ". ")}
                     {index !== sentence.text.split("~~").length - 1 && (
