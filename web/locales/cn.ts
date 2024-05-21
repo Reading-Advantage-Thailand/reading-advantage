@@ -260,5 +260,17 @@ export default {
     },
     menu: "菜单",
     loginButton: "登录",
+    
+    passages: {
+      heading: "段落",
+      type: "类型",
+      fiction: "小说",
+      nonFiction: "非小说类",
+      topic: "主题",
+      selectGenre: "选择类型",
+      selectSubGenre: "选择子流派",
+      level: "级别",
+      search: "搜索...",
+    }
   },
 } as const;

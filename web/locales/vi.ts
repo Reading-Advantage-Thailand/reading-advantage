@@ -156,14 +156,14 @@ export default {
       history: "Lịch sử",
       sentences: "Câu",
       reports: "Báo cáo",
-      passages: "Những đoạn văn",
-      assignments: "Bài tập",
     },
     sidebarTeacherNav: {
       myClasses: "Lớp học của tôi",
       myStudents: "học sinh của tôi",
       classRoster: "Danh sách lớp",
       reports: "báo cáo",
+      passages: "Những đoạn văn",
+      assignments: "Bài tập",
     },
     articleRecordsTable: {
       title: "Tiêu đề",
@@ -282,5 +282,17 @@ export default {
     },
     menu: "Menu",
     loginButton: "Đăng nhập",
+
+    passages: {
+      heading: "Đoạn văn",
+      type: "Loại",
+      fiction: "Tiểu thuyết",
+      nonFiction: "Phi hư cấu",
+      topic: "Chủ đề",
+      selectGenre: "Chọn thể loại",
+      selectSubGenre: "Chọn thể loại con",
+      level: "Cấp độ",
+      search: "kiếm...",
+    }
   },
 } as const;

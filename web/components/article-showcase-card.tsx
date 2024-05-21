@@ -22,7 +22,8 @@ async function getTranslate(
   return res.data;
 }
 
-export default async function ArticleShowcaseCard({ article }: Props) {
+// export default async function ArticleShowcaseCard({ article }: Props) {
+const ArticleShowcaseCard = ({ article }: Props) => {
 
   React.useEffect(() => {
     handleTranslateSummary();
@@ -97,3 +98,4 @@ export default async function ArticleShowcaseCard({ article }: Props) {
     </Link>
   );
 }
+export default React.memo(ArticleShowcaseCard);

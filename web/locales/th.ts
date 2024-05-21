@@ -161,14 +161,14 @@ export default {
       history: "ประวัติ",
       sentences: "ประโยค",
       reports: "รายงาน",
-      passages: "บทความ",
-      assignments: "การบ้าน",
     },
     sidebarTeacherNav: {
       myClasses: "ชั้นเรียนของฉัน",
       myStudents: "นักเรียนของฉัน",
       classRoster: "บัญชีรายชื่อนักเรียน",
       reports: "รายงาน",
+      passages: "บทความ",
+      assignments: "การบ้าน",
     },
     articleRecordsTable: {
       title: "ชื่อบทความ",
@@ -287,5 +287,17 @@ export default {
     },
     menu: "เมนู",
     loginButton: "เข้าสู่ระบบ",
+    passages: {
+      heading: "บทความ",
+      type: "ประเภท",
+      fiction: "นิยาย",
+      nonFiction: "สารคดี",
+      topic: "หัวข้อ",
+      selectGenre: "เลือกประเภท",
+      selectSubGenre: "เลือกประเภทย่อย",
+      level: "ระดับ",
+      search: "ค้นหา...",
+  
+    }
   },
 } as const;

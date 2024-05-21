@@ -147,14 +147,15 @@ export default {
       history: "歷史",
       sentences: "句子",
       reports: "報告",
-      passages: "段落",
-      assignments: "作業",
+     
     },
     sidebarTeacherNav: {
       myClasses: "我的課程",
       myStudents: "我的學生",
       classRoster: "班級名單",
       reports: "報告",
+      passages: "段落",
+      assignments: "作業",
     },
     articleRecordsTable: {
       title: "標題",
@@ -262,5 +263,17 @@ export default {
     },
     menu: "菜單",
     loginButton: "登錄",
+
+    passage: {
+    heading: "段落",
+    type: "類型",
+    fiction: "小說",
+    nonFiction: "非小說類",
+    topic: "主題",
+    selectGenre: "選擇類型",
+    selectSubGenre: "選擇子流派",
+    level: "級別",
+    search: "搜尋...",
+    },
   },
 } as const;
