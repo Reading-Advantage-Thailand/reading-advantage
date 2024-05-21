@@ -291,5 +291,16 @@ export default {
     },
     menu: "Menu",
     loginButton: "Login",
+    passages: {
+      heading: "Passages",
+      type: "Type",
+      fiction: "Fiction",
+      nonFiction: "Non-Fiction",
+      topic: "Topic",
+      selectGenre: "Select Genre",
+      selectSubGenre: "Select Subgenre",
+      level: "Level",
+      search: "Search...",
+    }
   },
 } as const;
