@@ -61,6 +61,7 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
+  const trp = useScopedI18n("components.reports"); 
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const router = useRouter();
   const [redirectUrl, setRedirectUrl] = useState("");
@@ -106,7 +107,7 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Name
+           {trp('name')}
             <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -123,7 +124,7 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
     {
       accessorKey: "xp",
       header: ({ column }) => {
-        return <Button variant="ghost">XP</Button>;
+        return <Button variant="ghost">{trp('xp')}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza ml-4">{row.getValue("xp")}</div>
@@ -132,7 +133,7 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
     {
       accessorKey: "level",
       header: ({ column }) => {
-        return <Button variant="ghost">Level</Button>;
+        return <Button variant="ghost">{trp('level')}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza ml-4">{row.getValue("level")}</div>
@@ -141,7 +142,7 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
     {
       accessorKey: "lastActivity",
       header: ({ column }) => {
-        return <Button variant="ghost">Last Activity</Button>;
+        return <Button variant="ghost">{trp('lastActivity')}</Button>;
       },
       cell: ({ row }) => {
         const lastActivity = row.getValue("lastActivity");
@@ -183,13 +184,13 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
     {
       accessorKey: "action",
       header: ({ column }) => {
-        return <Button variant="ghost">Action</Button>;
+        return <Button variant="ghost">{trp('actions')}</Button>;
       },
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="default" className="ml-auto">
-              Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+              {trp('actions')} <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -204,7 +205,7 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
                   )
                 }
               >
-                View Details
+                {trp('viewDetails')}
               </Link>
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
@@ -214,7 +215,7 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
     {
       accessorKey: "detail",
       header: ({ column }) => {
-        return <Button variant="ghost">Detail</Button>;
+        return <Button variant="ghost">{trp('detail')}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza flex gap-2 ml-4" >
@@ -257,17 +258,17 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
     <>
       {studentInClass.length > 0 ? (
         <div className="font-bold text-3xl">
-          Class Reports: {studentInClass[0].classroomName}
+          {trp('title', { className: studentInClass[0].classroomName})}
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          <Header heading="No student in this class" />
-           Please select class from My Classes
+          <Header heading={trp('noStudent')} />
+           {trp('noStudentDescription')}
         </div>
       )}
       <div className="grid grid-cols-2 items-end">
         <Input
-          placeholder={"Search..."}
+          placeholder={trp('search')}
           value={
             (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
           }
@@ -280,7 +281,7 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
           <div className="flex justify-end">
             <Card className="flex items-center justify-center w-[50%]">
               <CardContent className="mt-4">
-                Average Level:{" "}
+                {trp('averageLevel')}
                 <span className="text-xl ml-2">{averageLevel}</span>{" "}
               </CardContent>
             </Card>

@@ -214,7 +214,7 @@ export default function Passages({ passages }: PassagesProps) {
     <>
       <Header heading={tp("heading")} />
             <Input
-              placeholder={tp("search")}
+              placeholder={t("search")}
               className="w-full mt-4"
               value={searchTerm}
               onChange={handleSearchChange}

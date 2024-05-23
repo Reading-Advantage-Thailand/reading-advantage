@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { Icons } from "@/components/icons";
 import { Header } from "@/components/header";
+import { toast } from "../ui/use-toast";
 
 type Student = {
   studentId: string;
@@ -68,6 +69,9 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
+  const tr = useScopedI18n("components.classRoster");
+  const ts = useScopedI18n("components.myStudent");
+
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -120,7 +124,10 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
           cefrLevel: "",
         }),
       });
-
+     toast({
+        title: tr('toast.successResetProgress'),
+        description: tr('toast.successResetProgressDescription'),
+     })
       return new Response(
         JSON.stringify({
           message: "success",
@@ -149,7 +156,7 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Name
+            {tr('name')}
             <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -161,7 +168,7 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
     {
       accessorKey: "lastActivity",
       header: ({ column }) => {
-        return <Button variant="ghost">Last Activity</Button>;
+        return <Button variant="ghost">{tr('lastActivity')}</Button>;
       },
       cell: ({ row }) => {
         const lastActivity = row.getValue("lastActivity");
@@ -196,13 +203,13 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
     {
       accessorKey: "action",
       header: ({ column }) => {
-        return <Button variant="ghost">Action</Button>;
+        return <Button variant="ghost">{tr('actions')}</Button>;
       },
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="default" className="ml-auto">
-              Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+              {tr('actions')} <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -211,19 +218,19 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
                 handleActionSelected("progress", row.getValue("studentId"))
               }
             >
-              <Link href={redirectUrl}>Progress</Link>
+              <Link href={redirectUrl}>{ts('progress')}</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               onClick={() =>
                 handleActionSelected("enroll", row.getValue("studentId"))
               }
             >
-              <Link href={redirectUrl}>Enroll</Link>
+              <Link href={redirectUrl}>{ts('enroll')}</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               onClick={() => openResetModal(row.getValue("studentId"))}
             >
-              Reset Progress
+              {ts('resetProgress')}
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -255,20 +262,20 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
         <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Reset all XP progress</DialogTitle>
+              <DialogTitle>{ts('resetTitle')}</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Are you sure you want to reset all progress?
+              {ts('resetDescription')}
             </DialogDescription>
             <DialogFooter>
               <Button variant="outline" onClick={() => closeResetModal()}>
-                Cancel
+                {ts('cancelReset')}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => handleResetProgress(selectedStudentId ?? "")}
               >
-                Reset
+                {ts('reset')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -276,17 +283,17 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
       )}
       {studentInClass.length > 0 ? (
         <div className="font-bold text-3xl">
-          Roster for classroom : {studentInClass[0].classroomName}
+          {tr('title', {className: studentInClass[0].classroomName})} 
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-        <Header heading="No student in this class" />
-         Please select class from My Classes
+        <Header heading={tr('noStudent')} />
+         {tr('description')}
       </div>
       )}
       <div className="flex justify-between">
         <Input
-          placeholder={"Search..."}
+          placeholder={tr('search')}
           value={
             (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
           }
@@ -299,7 +306,7 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
               <Link href={studentInClass && studentInClass.length > 0 ? `/teacher/class-roster/${studentInClass[0].classroomId}/create-new-student`: '#'}>
             <Button variant="outline">
               <Icons.add />
-              &nbsp; Add new students
+              &nbsp; {tr('addStudentButton')}
             </Button>
               </Link>
       </div>

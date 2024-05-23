@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
+import { useScopedI18n } from "@/locales/client";
 
 type Student = {
   studentId: string;
@@ -40,6 +41,7 @@ export default function CreateNewStudent({
   const router = useRouter();
   const [inputs, setInputs] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
+  const t = useScopedI18n("components.classRoster.addNewStudent");
 
   const classroomId = studentDataInClass[0].classroomsId;
 
@@ -47,7 +49,6 @@ export default function CreateNewStudent({
     let studentEmail = allStudentEmail.map(
       (student: { email: string; studentId: string }) => student.email
     );
-
     const studentIdToAdd = () => {
       allStudentEmail.forEach(
         (student: { email: string; studentId: string }) => {
@@ -70,7 +71,6 @@ export default function CreateNewStudent({
     }));
 
     if (studentEmail.includes(email) && email !== studentId) {
-      console.log("Email already exists, can be added");
       try {
         const response = await axios.patch(
           `/api/classroom/${classroomId}/enroll`,
@@ -80,7 +80,6 @@ export default function CreateNewStudent({
         );
 
         if (response.status === 200) {
-          console.log("add success");
           toast({
             title: "Student Added",
             description: "Student successfully added to this class.",
@@ -88,6 +87,11 @@ export default function CreateNewStudent({
           })
         } else {
           console.log("add failed with status: ", response.status);
+          toast({
+            title: "Failed to add student",
+            description: "Failed to add student to this class.",
+            variant: "destructive",
+          })
         }
 
         return new Response(
@@ -130,17 +134,17 @@ export default function CreateNewStudent({
     <div>
       <Card className="flex flex-col items-center justify-center">
         <CardTitle className="mt-10 mb-4 text-3xl ">
-          Add new students to {studentDataInClass[0].classroomName}
+          {t('title', { className: studentDataInClass[0].classroomName })} 
         </CardTitle>
         <CardDescription className="text-base mb-4">
-          Add new students to the classroom by entering their email addresses.
+          {t('description')}
         </CardDescription>
         <form ref={formRef} onSubmit={handleSubmit}>
           <CardContent className="flex flex-col items-center mb-8 overflow-auto md:w-full">
             <Card className="my-4 overflow-x-auto flex flex-col items-center justify-center">
               <div className="flex justify-center items-center mt-8 w-[90%]">
                 <label htmlFor="email" className="text-base">
-                  Email:
+                  {t('email')}
                 </label>
                 <Input
                   type="email"
@@ -154,7 +158,7 @@ export default function CreateNewStudent({
                 key={index}
                   type="email"
                   name="email"
-                  placeholder="Enter email address"
+                  placeholder={t('placeholder')}
                   className="hover:border-none border-b p-2 m-2 ml-12 focus:outline-none focus:border-transparent overflow-x-auto w-[77%]"
                 />
               ))}
@@ -165,14 +169,14 @@ export default function CreateNewStudent({
                   setInputs((prevInputs) => prevInputs + 1);
                 }}
               >
-                Add new student <Icons.addUser className="w-5 ml-2" />
+                {t('addStudent')} <Icons.addUser className="w-5 ml-2" />
               </Link>
               <CardDescription className="text-center w-full m-4 p-4 mr-8 text-red-500 mb-16">
-                To add a student, please fill in the required fields above.
+                {t('warning')}
               </CardDescription>
             </Card>
             <Button type="submit" variant={"default"} className=" mt-2">
-              SAVE AND CONTINUE
+              {t('saveButton')}
             </Button>
           </CardContent>
         </form>

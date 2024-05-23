@@ -62,6 +62,7 @@ export default function MyStudents({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
+  const ts = useScopedI18n("components.myStudent");
   const [selectedStudentId, setSelectedStudentId] = useState(null);  
 const router = useRouter(); 
 const [isOpen, setIsOpen] = useState(false);
@@ -147,7 +148,7 @@ const handleResetProgress = async (selectedStudentId: string) => {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Name
+            {ts("name")}
             <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -165,7 +166,7 @@ const handleResetProgress = async (selectedStudentId: string) => {
     {
       accessorKey: "email",
       header: ({ column }) => {
-        return <Button variant="ghost">Email</Button>;
+        return <Button variant="ghost">{ts('email')}</Button>;
       },
       cell: ({ row }) => {
         const studentEmail: string = row.getValue("email");
@@ -184,27 +185,27 @@ const handleResetProgress = async (selectedStudentId: string) => {
     {
       accessorKey: "action",
       header: ({ column }) => {
-        return <Button variant="ghost">Action</Button>;
+        return <Button variant="ghost">{ts('actions')}</Button>;
       },
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="default" className="ml-auto">
-              Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+              {ts('actions')} <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <DropdownMenuCheckboxItem onClick={() => handleActionSelected('progress', row.getValue('id') )}>
-              <Link href={redirectUrl}>Progress</Link>
+              <Link href={redirectUrl}>{ts('progress')}</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem onClick={() => handleActionSelected('enroll', row.getValue('id'))}>
-              <Link href={redirectUrl} >Enroll</Link>
+              <Link href={redirectUrl} >{ts('enroll')}</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem onClick={() => handleActionSelected('unenroll', row.getValue('id'))}>
-              <Link href={redirectUrl} >Unenroll</Link>
+              <Link href={redirectUrl} >{ts('unEnroll')}</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem onClick={() => openResetModal(row.getValue('id'))}>
-              Reset Progress
+              {ts('resetProgress')}
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -237,31 +238,31 @@ const handleResetProgress = async (selectedStudentId: string) => {
       <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reset all XP progress</DialogTitle>
+            <DialogTitle>{ts('resetTitle')}</DialogTitle>
           </DialogHeader>
           <DialogDescription>
-            Are you sure you want to reset all progress?
+            {ts('resetDescription')}
           </DialogDescription>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => closeResetModal()}
             >
-              Cancel
+              {ts('cancelReset')}
             </Button>
             <Button
               variant="destructive"
               onClick={() => handleResetProgress(selectedStudentId ?? "")}
             >
-              Reset
+              {ts('reset')}
             </Button>
           </DialogFooter>
         </DialogContent>  
       </Dialog>
     )}
-      <div className="font-bold text-3xl">My Students Page</div>
+      <div className="font-bold text-3xl">{ts('title')}</div>
       <Input
-        placeholder={"Search..."}
+        placeholder={ts('searchName')}
         value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
         onChange={(event) =>
           table.getColumn("name")?.setFilterValue(event.target.value)

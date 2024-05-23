@@ -13,6 +13,7 @@ import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
+import { useScopedI18n } from "@/locales/client";
 
 type Classes = {
   classroomName: string;
@@ -34,6 +35,7 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
   const [grade, setGrade] = useState(classroomToEdit? classroomToEdit.grade : "");
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const t = useScopedI18n('components.myClasses.edit');
 
   const handleEditClass = async (classroomId: string) => {
     setOpen(true);
@@ -44,8 +46,8 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
       };
       if (!userId || !classroomName || !grade ) {
         toast({
-          title: "Attention",
-          description: "All fields must be filled out!",
+          title: t('toast.attention'),
+          description: t('toast.attentionDescription'),
           variant: "destructive",
         })
         return;  
@@ -56,8 +58,8 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
       console.error(error);
     }
     toast({
-      title: "Update Successful",
-      description: "Class updated successfully",
+      title: t('toast.successUpdate'),
+      description: t('toast.successUpdateDescription'),
       variant: "default",
     });
     router.refresh();
@@ -83,15 +85,15 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
         <div key={classroom.id}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Class Details</DialogTitle>
+              <DialogTitle>{t('title')}</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Update the class details below
+              {t('description')}
             </DialogDescription>
             <input
               type="text"
               className="w-full border rounded-md p-2"
-              placeholder="Class name"
+              placeholder={t('className')}
               value={classroomName}
               key={classroom.id}
               onChange={(e) => setClassroomName(e.target.value)}
@@ -103,18 +105,10 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
             >
-              <option value="select">Select Grade</option>
-              <option value="3">grade 3</option>
-              <option value="4">grade 4</option>
-              <option value="5">grade 5</option>
-              <option value="6">grade 6</option>
-              <option value="7">grade 7</option>
-              <option value="8">grade 8</option>
-              <option value="9">grade 9</option>
-              <option value="10">grade 10</option>
-              <option value="11">grade 11</option>
-              <option value="12">grade 12</option>
-              <option value="13">grade 13</option>
+              <option value="select">{t('selectGrade')}</option>
+              {Array.from({ length: 10 }, (_, i) => i + 3).map((grade) => (
+  <option key={grade} value={grade}>{t('grade')} {grade}</option>
+))}
             </select>
 
             <DialogFooter>
@@ -122,9 +116,9 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
                 variant="outline"
                 onClick={() => handleEditClass(classroomId)}
               >
-                Update Class
+                {t('update')}
               </Button>
-              <Button onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleClose}>{t('cancel')}</Button>
             </DialogFooter>
           </DialogContent>
           
