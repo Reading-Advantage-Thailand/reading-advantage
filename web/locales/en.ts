@@ -1,4 +1,8 @@
-import { assign } from "lodash";
+import { error, warn } from "console";
+import { assign, create, last } from "lodash";
+import { arch } from "os";
+import { title } from "process";
+import { toast } from "react-toastify";
 
 export default {
   pages: {
@@ -224,7 +228,7 @@ export default {
       type: "type",
       genre: "genre",
       subGenre: "sub-genre",
-      article: "article"
+      article: "article",
     },
     articleCard: {
       raLevel: "Reading Advantage level is {raLevel}",
@@ -291,6 +295,7 @@ export default {
     },
     menu: "Menu",
     loginButton: "Login",
+
     passages: {
       heading: "Passages",
       type: "Type",
@@ -300,7 +305,200 @@ export default {
       selectGenre: "Select Genre",
       selectSubGenre: "Select Subgenre",
       level: "Level",
-      search: "Search...",
-    }
+    },
+    myClasses: {
+      title: "My Classes",
+      search: "Search class name...",
+      className: "Class Name",
+      classCode: "Class Code",
+      studentCount: "No. of Students",
+      actions: "Actions",
+      detail: "Detail",
+      roster: "Roster",
+      reports: "Reports",
+
+      createNewClass: {
+        button: "Create New Class",
+        title: "Create a new class",
+        description: "Fill in the details to create a new class",
+        className: "Class Name",
+        selectGrade: "Select Grade",
+        grade: "Grade",
+        create: "Create Class",
+        cancel: "Cancel",
+        toast: {
+          attention: "Attention",
+          attentionDescription: "All fields must be filled out!",
+          successCreate: "Success",
+          successDescription: "Class created successfully",
+        },
+      },
+
+      edit: {
+        title: "Edit Class Details",
+        description: "Update the class details below",
+        className: "Class Name",
+        selectGrade: "Select Grade",
+        grade: "Grade",
+        toast: {
+          attention: "Attention",
+          attentionDescription: "All fields must be filled out!",
+          successUpdate: "Update Successfully",
+          successUpdateDescription: "Class updated successfully",
+        },
+        update: "Update Class",
+        cancel: "Cancel",
+      },
+
+      archieve: {
+        title: "Archive Class",
+        descriptionBefore: "Do you want to archive ",
+        descriptionAfter: " class?",
+        archive: "Archive",
+        cancel: "Cancel",
+        toast: {
+          successArchive: "Class archived",
+          successArchiveDescription: "Class has been archived successfully!",
+          errorArchive: "Error",
+          errorArchiveDescription:
+            "An error occurred while archiving the class",
+        },
+      },
+
+      delete: {
+        title: "Delete Classroom",
+        descriptionBefore: "Do you want to delete ",
+        descriptionAfter: " classroom?",  
+        delete: "Delete",
+        cancel: "Cancel",
+        toast: {
+          successDelete: "Class deleted",
+          successDeleteDescription: "Class has been deleted successfully",
+          errorDelete: "Error",
+          errorDeleteDescription: "An error occurred while deleting the class",
+        },
+        },
+      },
+
+    myStudent: {
+      title: "My Students",
+      name: "Name",
+      email: "Email",
+      searchName: "Search name...",
+      actions: "Actions",
+      progress: "Progress",
+      enroll: "Enroll",
+      unEnroll: "Unenroll",
+      resetProgress: "Reset Progress",
+      resetTitle: "Reset all XP progress",
+      resetDescription: "Are you sure you want to reset all progress?",
+      reset: "Reset",
+      cancelReset: "Cancel",
+
+      enrollPage: {
+        title: "Available enrolled class for {studentName}",
+        add: "Add",
+        search: "Search...",
+        className: "Class Name",
+        enroll: "Enroll",
+        toast: {
+          successEnrollment: "Successfully enrolled",
+          successEnrollDescription: "Student has been enrolled in the class",
+          errorEnrollment: "Enrollment Failed",
+          errorEnrollDescription: "Student has not been enrolled in the class",
+        }
+
+      }, 
+      unEnrollPage: {
+        title: "Unenroll classes for {studentName}",
+        remove: "Remove",
+        search: "Search...",
+        className: "Class Name",
+        unEnroll: "Unenroll",
+        toast: {
+          successUnenrollment: "Successfully removed",
+          successUnenrollDescription: "Student has been removed from class",
+          errorUnenrollment: "Unenrollment Failed",
+          errorUnenrollDescription: "Student has not been removed from the class",
+        }
+      },
+    },
+
+    classRoster: {
+      title: "Roster for classroom: {className}",
+      description: "Please select class from My Classes",
+      name: "Name",
+      lastActivity: "Last Activity",
+      actions: "Actions",
+      search: "Search name...",
+      noStudent: "No student in this class",
+      addStudentButton: "Add new students",
+      toast: {
+        successResetProgress: "Successfully reset progress",
+        successResetProgressDescription: "All progress has been reset",
+      },
+
+      addNewStudent: {
+        title: "Add new Students to {className}",
+        description: "Add new students to the classroom by entering their email addresses.",
+        email: "Email: ",
+        placeholder: "Enter email address",
+        addStudent: "Add new student",
+        warning: "To add a student, please fill in the required fields above.",
+        saveButton: "SAVE AND CONTINUE",
+        toast: {
+          successAddStudent: "Student added",
+          successAddStudentDescription: "Student successfully added to this class.",
+          errorAddStudent: "Failed to add student",
+          errorAddStudentDescription: "Failed to add student to this class.",
+          emailNotFound: "Email not found",
+          emailNotFoundDescription: "This email address isn't associated with any account. Please check the spelling or try a different email address.",  
+        }
+      },
+    },
+
+    reports: {
+      title: "Class Reports: {className}",
+      averageLevel: "Average Level:",
+      name: "Name",
+      xp: "XP",
+      level: "Level",
+      search: "Search name...",
+      lastActivity: "Last Activity",
+      actions: "Actions",
+      detail: "Detail",
+      viewDetails: "View Details",
+      noStudent: "No student in this class",
+      noStudentDescription: "Please select class from My Classes",
+
+      editStudent: {
+        title: "Edit Student Details",
+        description: "Update the student detail below",
+        placeholder: "Student name",
+        update: "Update Student",
+        cancel: "Cancel",
+        toast: {
+          successUpdate: "Update Successful",
+          successUpdateDescription: "Student information updated successfully",
+          attentionUpdate: "Attention", 
+          attentionUpdateDescription: "Please fill in information",
+          errorUpdate: "Update Failed",
+          errorUpdateDescription: "Failed to update student information",
+        }
+      },
+      removeStudent: {
+        title: "Remove Student",
+        descriptionBefore: "Do you want to remove ",
+        descriptionAfter: " from this classroom?",
+        remove: "Remove",
+        cancel: "Cancel",
+        toast: {
+          successRemove: "Student successfully removed",
+          successRemoveDescription: "Student has been removed successfully",
+          errorRemove: "Error",
+          errorRemoveDescription: "Error removing student in this class",
+        }
+      },
+    },
   },
 } as const;

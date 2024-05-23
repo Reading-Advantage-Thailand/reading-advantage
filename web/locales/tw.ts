@@ -273,7 +273,200 @@ export default {
     selectGenre: "選擇類型",
     selectSubGenre: "選擇子流派",
     level: "級別",
-    search: "搜尋...",
     },
+
+    myClasses: {
+      title: "我的班級",
+      search: "搜尋班級名稱...",
+      className: "班級名稱",
+      classCode: "班級代碼",
+      studentCount: "學生人數",
+      actions: "操作",
+      detail: "詳情",
+      roster: "名單",
+      reports: "報告",
+    
+      createNewClass: {
+        button: "創建新班級",
+        title: "創建新班級",
+        description: "填寫資料以創建新班級",
+        className: "班級名稱",
+        selectGrade: "選擇年級",
+        grade: "年級",
+        create: "創建班級",
+        cancel: "取消",
+        toast: {
+          attention: "注意",
+          attentionDescription: "所有欄位必須填寫！",
+          successCreate: "成功",
+          successDescription: "班級創建成功",
+        },
+      },
+    
+      edit: {
+        title: "編輯班級詳情",
+        description: "更新下方的班級詳情",
+        className: "班級名稱",
+        selectGrade: "選擇年級",
+        grade: "年級",
+        toast: {
+          attention: "注意",
+          attentionDescription: "所有欄位必須填寫！",
+          successUpdate: "更新成功",
+          successUpdateDescription: "班級更新成功",
+        },
+        update: "更新班級",
+        cancel: "取消",
+      },
+    
+      archieve: {
+        title: "歸檔班級",
+        descriptionBefore: "您是否要歸檔",
+        descriptionAfter: "班級？",
+        archive: "歸檔",
+        cancel: "取消",
+        toast: {
+          successArchive: "班級已歸檔",
+          successArchiveDescription: "班級已成功歸檔！",
+          errorArchive: "錯誤",
+          errorArchiveDescription: "歸檔班級時發生錯誤",
+        },
+      },
+    
+      delete: {
+        title: "刪除班級",
+        descriptionBefore: "您是否要刪除",
+        descriptionAfter: "班級？",
+        delete: "刪除",
+        cancel: "取消",
+        toast: {
+          successDelete: "班級已刪除",
+          successDeleteDescription: "班級已成功刪除",
+          errorDelete: "錯誤",
+          errorDeleteDescription: "刪除班級時發生錯誤",
+        },
+      },
+    },
+
+    myStudent: {
+      title: "我的學生",
+      name: "姓名",
+      email: "電子郵件",
+      searchName: "搜尋姓名...",
+      actions: "操作",
+      progress: "進度",
+      enroll: "註冊",
+      unEnroll: "取消註冊",
+      resetProgress: "重置進度",
+      resetTitle: "重置所有XP進度",
+      resetDescription: "您確定要重置所有進度嗎？",
+      reset: "重置",
+      cancelReset: "取消",
+    
+      enrollPage: {
+        title: "{studentName}可註冊的班級",
+        add: "添加",
+        search: "搜尋...",
+        className: "班級名稱",
+        enroll: "註冊",
+        toast: {
+          successEnrollment: "註冊成功",
+          successEnrollDescription: "學生已註冊到班級",
+          errorEnrollment: "註冊失敗",
+          errorEnrollDescription: "學生未能註冊到班級",
+        }
+      }, 
+      unEnrollPage: {
+        title: "{studentName}取消註冊的班級",
+        remove: "移除",
+        search: "搜尋...",
+        className: "班級名稱",
+        unEnroll: "取消註冊",
+        toast: {
+          successUnenrollment: "移除成功",
+          successUnenrollDescription: "學生已從班級移除",
+          errorUnenrollment: "取消註冊失敗",
+          errorUnenrollDescription: "學生未能從班級移除",
+        }
+      },
+    },
+
+    classRoster: {
+      title: "班級名單：{className}",
+      description: "請從我的班級中選擇班級",
+      name: "姓名",
+      lastActivity: "最後活動",
+      actions: "操作",
+      search: "搜尋姓名...",
+      noStudent: "此班級中沒有學生",
+      addStudentButton: "添加新學生",
+      toast: {
+        successResetProgress: "成功重置進度",
+        successResetProgressDescription: "所有進度已重置",
+      },
+    
+      addNewStudent: {
+        title: "添加新學生到 {className}",
+        description: "通過輸入他們的電子郵件地址將新學生添加到班級。",
+        email: "電子郵件：",
+        placeholder: "輸入電子郵件地址",
+        addStudent: "添加新學生",
+        warning: "要添加學生，請填寫上面的必填字段。",
+        saveButton: "保存並繼續",
+        toast: {
+          successAddStudent: "學生已添加",
+          successAddStudentDescription: "學生已成功添加到此班級。",
+          errorAddStudent: "添加學生失敗",
+          errorAddStudentDescription: "未能將學生添加到此班級。",
+          emailNotFound: "未找到電子郵件",
+          emailNotFoundDescription: "此電子郵件地址未關聯任何賬戶。請檢查拼寫或嘗試不同的電子郵件地址。",
+        }
+      },
+    },
+    
+    reports: {
+      title: "班級報告：{className}",
+      averageLevel: "平均等級：",
+      name: "姓名",
+      xp: "XP",
+      level: "等級",
+      search: "搜索姓名...",
+      lastActivity: "最後活動",
+      actions: "操作",
+      detail: "詳情",
+      viewDetails: "查看詳情",
+      noStudent: "此班級中沒有學生",
+      noStudentDescription: "請從我的班級中選擇班級",
+    
+      editStudent: {
+        title: "編輯學生詳情",
+        description: "更新以下學生詳情",
+        placeholder: "學生姓名",
+        update: "更新學生",
+        cancel: "取消",
+        toast: {
+          successUpdate: "更新成功",
+          successUpdateDescription: "學生信息更新成功",
+          attentionUpdate: "注意",
+          attentionUpdateDescription: "請填寫信息",
+          errorUpdate: "更新失敗",
+          errorUpdateDescription: "更新學生信息失敗",
+        }
+      },
+      removeStudent: {
+        title: "移除學生",
+        descriptionBefore: "你想要移除",
+        descriptionAfter: "從這個班級嗎？",
+        remove: "移除",
+        cancel: "取消",
+        toast: {
+          successRemove: "學生移除成功",
+          successRemoveDescription: "學生已成功移除",
+          errorRemove: "錯誤",
+          errorRemoveDescription: "移除學生時出錯",
+        }
+      },
+    },
+    
   },
 } as const;
