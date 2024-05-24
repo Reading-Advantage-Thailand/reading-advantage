@@ -42,6 +42,22 @@ async function getGeneralDescription(userLevel: number) {
   return res.json();
 }
 
+async function getAllStudentData() {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom/students`,
+      {
+        method: "GET",
+        headers: headers(),
+      }
+    );
+    
+    return res.json();
+  } catch (error) {
+    console.error("Failed to parse JSON", error);
+  }
+}
+
 export default async function ProgressPage({params}: {params: {studentId: string}}) {
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
@@ -49,12 +65,18 @@ export default async function ProgressPage({params}: {params: {studentId: string
   const resGeneralDescription = await getGeneralDescription(user.level);
   const t = await getScopedI18n('pages.teacher.studentProgressPage');
 
-  console.log('resStudentProgress', resStudentProgress.results);
-  
-  const userLevel = user?.level?? 0;  
+  const allStudent = await getAllStudentData(); 
   
   let nameOfStudent = '';
   let studentLevel: number = 0;
+
+  allStudent.students.forEach((student: { id: string; name: string; level: number; }) => {
+    if (student.id === params.studentId) {
+      nameOfStudent = student.name;
+      studentLevel = student.level;
+    }
+  }
+  );
 
   return (
     <>
@@ -74,7 +96,7 @@ export default async function ProgressPage({params}: {params: {studentId: string
       <CardHeader>
         <CardTitle>{t('level')}</CardTitle>
         <CardDescription>
-          {t('levelDescription', {level: user.level})}
+          {t('levelDescription', {level: studentLevel})}
         </CardDescription>
       </CardHeader>
       <CardContent>
