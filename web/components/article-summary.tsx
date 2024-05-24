@@ -25,11 +25,13 @@ async function getTranslate(
 }
 
 export function ArticleSummary({ article, articleId }: Props) {
-  React.useEffect(() => {
-    handleTranslateSummary();
-  }, [article]);
   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
   const locale = useCurrentLocale();
+
+  React.useEffect(() => {
+    handleTranslateSummary();
+  }, [article, locale]);
+  
   async function handleTranslateSummary() {
     if (!locale || locale === "en") {
       return;

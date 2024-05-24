@@ -24,14 +24,12 @@ async function getTranslate(
 
 // export default async function ArticleShowcaseCard({ article }: Props) {
 const ArticleShowcaseCard = ({ article }: Props) => {
+  const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
+  const locale = useCurrentLocale();
 
   React.useEffect(() => {
     handleTranslateSummary();
-  }, [article]);
-
-  const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
-  
-  const locale = useCurrentLocale();
+  }, [article, locale]);
 
   async function handleTranslateSummary(){
     
