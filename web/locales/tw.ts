@@ -117,6 +117,16 @@ export default {
         },
       },
     },
+    teacher: {
+      studentProgressPage: {
+        activity: "活動",
+        level: "等級",
+        levelDescription: "您當前的等級是 {level}",
+        progressOf: "{nameOfStudent} 的進度",
+        noUserProgress: "沒有用戶進度，因為學生從未閱讀過文章或進行其他活動。",
+      },
+    }
+    
   },
   components: {
     mainNav: {

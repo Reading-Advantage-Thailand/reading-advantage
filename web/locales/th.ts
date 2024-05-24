@@ -131,6 +131,16 @@ export default {
         },
       },
     },
+    teacher: {
+      studentProgressPage: {
+        activity: "กิจกรรม",
+        level: "ระดับ",
+        levelDescription: "ระดับปัจจุบันของคุณคือ {level}",
+        progressOf: "ความคืบหน้าของ {nameOfStudent}",
+        noUserProgress: "ไม่มีความคืบหน้าของผู้ใช้เนื่องจากนักเรียนไม่เคยอ่านบทความหรือกิจกรรมอื่น ๆ",
+      },
+    }
+    
   },
   components: {
     mainNav: {
@@ -344,16 +354,16 @@ export default {
       },
     
       archieve: {
-        title: "เก็บถาวรชั้นเรียน",
-        descriptionBefore: "คุณต้องการเก็บถาวร ",
-        descriptionAfter: " ชั้นเรียนหรือไม่?",
+        title: "จัดเก็บชั้นเรียนอย่างถาวร",
+        descriptionBefore: "คุณต้องการเก็บชั้นเรียน ",
+        descriptionAfter: " อย่างถาวรหรือไม่?",
         archive: "เก็บถาวร",
         cancel: "ยกเลิก",
         toast: {
-          successArchive: "เก็บถาวรชั้นเรียน",
-          successArchiveDescription: "เก็บถาวรชั้นเรียนเรียบร้อยแล้ว!",
-          errorArchive: "ข้อผิดพลาด",
-          errorArchiveDescription: "เกิดข้อผิดพลาดขณะเก็บถาวรชั้นเรียน",
+          successArchive: "ชั้นเรียนถูกเก็บอย่างถาวร",
+          successArchiveDescription: "เก็บชั้นเรียนอย่างถาวรเรียบร้อยแล้ว!",
+          errorArchive: "เกิดข้อผิดพลาด",
+          errorArchiveDescription: "เกิดข้อผิดพลาดขณะเก็บชั้นเรียนอย่างถาวร",
         },
       },
     
@@ -366,7 +376,7 @@ export default {
         toast: {
           successDelete: "ลบชั้นเรียนเรียบร้อยแล้ว",
           successDeleteDescription: "ลบชั้นเรียนเรียบร้อยแล้ว",
-          errorDelete: "ข้อผิดพลาด",
+          errorDelete: "เกิดข้อผิดพลาด",
           errorDeleteDescription: "เกิดข้อผิดพลาดขณะลบชั้นเรียน",
         },
       },

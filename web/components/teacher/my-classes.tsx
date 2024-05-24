@@ -226,7 +226,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
 
   return (
     <>
-      <div className="font-bold text-3xl">My Classes</div>
+      <div className="font-bold text-3xl">{tc('title')}</div>
       <div className="flex justify-between">
         <Input
           placeholder={tc("search")}

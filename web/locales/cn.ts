@@ -115,6 +115,16 @@ export default {
         },
       },
     },
+    teacher: {
+      studentProgressPage: {
+        activity: "活动",
+        level: "等级",
+        levelDescription: "您当前的等级是 {level}",
+        progressOf: "{nameOfStudent} 的进度",
+        noUserProgress: "没有用户进度，因为学生从未阅读过文章或进行其他活动。",
+      },
+    }
+    
   },
   components: {
     mainNav: {

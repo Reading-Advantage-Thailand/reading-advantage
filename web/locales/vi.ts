@@ -126,6 +126,16 @@ export default {
         },
       },
     },
+    teacher: {
+      studentProgressPage: {
+        activity: "Hoạt Động",
+        level: "Cấp Độ",
+        levelDescription: "Cấp độ hiện tại của bạn là {level}",
+        progressOf: "Tiến Độ Của {nameOfStudent}",
+        noUserProgress: "Không có tiến độ người dùng do học sinh chưa từng đọc bài viết hoặc hoạt động khác.",
+      },
+    }
+    
   },
   components: {
     mainNav: {

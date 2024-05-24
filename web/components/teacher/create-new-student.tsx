@@ -81,15 +81,15 @@ export default function CreateNewStudent({
 
         if (response.status === 200) {
           toast({
-            title: "Student Added",
-            description: "Student successfully added to this class.",
+            title: t('toast.successAddStudent'),
+            description: t('toast.successAddStudentDescription'),
             variant: "default",
           })
         } else {
           console.log("add failed with status: ", response.status);
           toast({
-            title: "Failed to add student",
-            description: "Failed to add student to this class.",
+            title: t('toast.errorAddStudent'),
+            description: t('toast.errorAddStudentDescription'),
             variant: "destructive",
           })
         }
@@ -112,9 +112,9 @@ export default function CreateNewStudent({
       }
     } else {
       toast({
-        title: "Email Not Found",
+        title: t('toast.emailNotFound'),
         description:
-          "This email address isn't associated with any account. Please check the spelling or try a different email address.",
+          t('toast.emailNotFoundDescription'),
         variant: "destructive",
       });
     }
@@ -149,7 +149,7 @@ export default function CreateNewStudent({
                 <Input
                   type="email"
                   name="email"
-                  placeholder="Enter email address"
+                  placeholder={t("placeholder")}
                   className="hover:border-none border-b p-2 m-2 focus:outline-none focus:border-transparent overflow-x-auto"
                 />
               </div>
@@ -158,7 +158,7 @@ export default function CreateNewStudent({
                 key={index}
                   type="email"
                   name="email"
-                  placeholder={t('placeholder')}
+                  placeholder={t("placeholder")}
                   className="hover:border-none border-b p-2 m-2 ml-12 focus:outline-none focus:border-transparent overflow-x-auto w-[77%]"
                 />
               ))}

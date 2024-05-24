@@ -140,7 +140,17 @@ export default {
         },
       },
     },
+    teacher: {
+      studentProgressPage: {
+        activity: "Activity",
+        level: "Level",
+        levelDescription: "Your current level is {level}",
+        progressOf: "Progress of {nameOfStudent}",
+        noUserProgress: "No user progress available due to the student has never been read article or other activity.",
+      },
+    },
   },
+
   components: {
     mainNav: {
       home: "Home",
