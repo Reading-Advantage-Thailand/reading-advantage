@@ -16,17 +16,17 @@ import { articleShowcaseType } from "@/types";
 import axios from "axios";
 import { useCurrentLocale } from "@/locales/client";
 
-async function getTranslate(
- sentences: string[],
- articleId: string,
- language: string
-) {
- const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
-   sentences,
-   language,
- });
- return res.data;
-}
+// async function getTranslate(
+//  sentences: string[],
+//  articleId: string,
+//  language: string
+// ) {
+//  const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
+//    sentences,
+//    language,
+//  });
+//  return res.data;
+// }
 
 type Props = {
   user: {
@@ -49,7 +49,7 @@ export default function Select({ user }: Props) {
   const t = useScopedI18n("components.select");
   const ta = useScopedI18n("components.article");
   const locale = useCurrentLocale();
-  // const tf: string | any = useScopedI18n("components.types");
+  const tf: string | any = useScopedI18n("selectType.types");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -135,7 +135,7 @@ export default function Select({ user }: Props) {
                 disabled={loading}
               >
                 {locale == "en" 
-                  ? type.replace(/_/g, " ") : type.replace(/_/g, " ")
+                  ? type.replace(/_/g, " ") : tf(type.replace(/_/g, " "))
                 }        
               </Button>
                )
