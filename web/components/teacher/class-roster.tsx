@@ -56,11 +56,18 @@ type Student = {
   email: string;
 };
 
-type MyRosterProps = {
-  studentInClass: Student[];
+type Classrooms = {
+  id: string;
+  classroomName: string;
+  student: Student[];
 };
 
-export default function ClassRoster({ studentInClass }: MyRosterProps) {
+type MyRosterProps = {
+  studentInClass: Student[];
+  classrooms: Classrooms[];  
+};
+
+export default function ClassRoster({ studentInClass, classrooms }: MyRosterProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -281,6 +288,7 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
           </DialogContent>
         </Dialog>
       )}
+
       {studentInClass.length > 0 ? (
         <div className="font-bold text-3xl">
           {tr('title', {className: studentInClass[0].classroomName})} 
@@ -291,6 +299,7 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
          {tr('description')}
       </div>
       )}
+
       <div className="flex justify-between">
         <Input
           placeholder={tr('search')}
@@ -302,14 +311,22 @@ export default function ClassRoster({ studentInClass }: MyRosterProps) {
           }
           className="max-w-sm mt-4"
         />
-        <div className="max-w-sm mt-4">
+        {/* <div className="max-w-sm mt-4">
               <Link href={studentInClass && studentInClass.length > 0 ? `/teacher/class-roster/${studentInClass[0].classroomId}/create-new-student`: '#'}>
             <Button variant="outline">
               <Icons.add />
               &nbsp; {tr('addStudentButton')}
             </Button>
               </Link>
-      </div>
+      </div> */}
+          <div className="max-w-sm mt-4">
+                <Link href={`/teacher/class-roster/${classrooms[0].id}/create-new-student` }>
+              <Button variant="outline">
+                <Icons.add />
+                &nbsp; {tr('addStudentButton')}
+              </Button>
+                </Link>
+        </div>
       </div>
       <div className="rounded-md border mt-4">
         <Table>

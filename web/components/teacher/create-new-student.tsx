@@ -27,43 +27,63 @@ type Student = {
   email: string;
 };
 
+type Classrooms = {
+  id: string;
+  classroomName: string;
+};
+
 type CreateNewStudentProps = {
   studentDataInClass: Student[];
   allStudentEmail: any;
   studentInEachClass: any;
+  classrooms: Classrooms[];
 };
 
 export default function CreateNewStudent({
   studentDataInClass,
   allStudentEmail,
   studentInEachClass,
+  classrooms
 }: CreateNewStudentProps) {
   const router = useRouter();
   const [inputs, setInputs] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const t = useScopedI18n("components.classRoster.addNewStudent");
 
-  const classroomId = studentDataInClass[0].classroomsId;
+  // const classroomId = studentDataInClass[0].classroomsId;
+  const classroomId = studentDataInClass && studentDataInClass.length > 0 
+  ? studentDataInClass[0].classroomsId 
+  : classrooms[0].id;
+
+  const className = studentDataInClass && studentDataInClass.length > 0
+  ? studentDataInClass[0].classroomName
+  : classrooms[0].classroomName;
 
   const handleAddStudent = async (classroomId: string, email: string) => {
+    console.log('classroomId', classroomId);
+    
     let studentEmail = allStudentEmail.map(
       (student: { email: string; studentId: string }) => student.email
     );
     const studentIdToAdd = () => {
       allStudentEmail.forEach(
         (student: { email: string; studentId: string }) => {
-            studentInEachClass.forEach((studentId: string) => {
-                if (student.email === email) {
-                  if (studentId !== student.studentId && !studentInEachClass.includes(student.studentId)) {
-                    studentInEachClass.push(student.studentId);
-                  }
+            // studentInEachClass.forEach((studentId: string) => {
+                // if (student.email === email) {
+                //   if (studentId !== student.studentId && !studentInEachClass.includes(student.studentId)) {
+                //     studentInEachClass.push(student.studentId);
+                //   }
+                // }
+                if (student.email === email && !studentInEachClass.includes(student.studentId)) {
+                  studentInEachClass.push(student.studentId);
                 }
-            });
+            // });
         }
       );
       return studentInEachClass;
     };
     const studentId = studentIdToAdd();
+console.log('studentId', studentId);
 
     const updateStudentListBuilder = studentId.map((id: string) => ({
       studentId: id,
@@ -134,7 +154,7 @@ export default function CreateNewStudent({
     <div>
       <Card className="flex flex-col items-center justify-center">
         <CardTitle className="mt-10 mb-4 text-3xl ">
-          {t('title', { className: studentDataInClass[0].classroomName })} 
+          {t('title', { className: className })} 
         </CardTitle>
         <CardDescription className="text-base mb-4">
           {t('description')}
