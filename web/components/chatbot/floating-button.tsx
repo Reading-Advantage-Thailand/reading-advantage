@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useState, useRef, useEffect } from "react";
+import axios from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,7 @@ export default function FloatingChatButton() {
   const [userInput, setUserInput] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSendMessage = useCallback(() => {
+  const handleSendMessage = useCallback(async () => {
     if (userInput) {
       const newMessage: Message = {
         text: userInput,
@@ -25,8 +26,15 @@ export default function FloatingChatButton() {
       setMessages([...messages, newMessage]);
       // Send userInput to an OpenAI API or other backend here
       // Simulate a response for this example
+      const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
+        newMessage
+      });
+
+      console.log("resOpenAi: ", resOpenAi);
+
+
       const response: Message = {
-        text: ` : ${userInput}`,
+        text: ` : ${resOpenAi?.data?.text}`,
         sender: "bot",
       };
       setMessages((messages) => [...messages, response]);
