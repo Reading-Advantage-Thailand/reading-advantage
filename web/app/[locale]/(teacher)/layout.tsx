@@ -10,6 +10,7 @@ import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle";
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher";
 import ProgressBar from "@/components/progress-bar-xp";
 import { SidebarTeacherNav } from "@/components/teacher/sidebar-teacher-nav";
+import FloatingChatButton from '@/components/chatbot/floating-button'
 
 interface TeacherHomeLayoutProps {
   children?: React.ReactNode;
@@ -53,6 +54,7 @@ export default async function TeacherHomeLayout({
         <main className="flex w-full flex-1 flex-col overflow-hidden">
           {children}
         </main>
+        <FloatingChatButton />
       </div>
     </div>
   );

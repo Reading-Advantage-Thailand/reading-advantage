@@ -10,6 +10,7 @@ import ProgressBar from '@/components/progress-bar-xp';
 import { getCurrentUser } from '@/lib/session';
 import { UserAccountNav } from '@/components/user-account-nav';
 import axios from 'axios';
+import FloatingChatButton from '@/components/chatbot/floating-button'
 
 export default async function Layout({ children }: { children: ReactNode }) {
     const t = await getScopedI18n('components')
@@ -17,27 +18,28 @@ export default async function Layout({ children }: { children: ReactNode }) {
 
     if (!user) {
         return (
-            <div className="flex min-h-screen flex-col">
-                <header className="container z-40 bg-background">
-                    <div className="flex h-20 items-center justify-between py-6">
-                        <MainNav items={indexPageConfig.mainNav} />
-                        <nav>
-                            <Link
-                                href="/auth/signin"
-                                className={cn(
-                                    buttonVariants({ variant: "secondary", size: "sm" }),
-                                    "px-4"
-                                )}
-                            >
-                                {t('loginButton')}
-                            </Link>
-                        </nav>
-                    </div>
-                </header>
-                <main className="flex-1">{children}</main>
-                <Footer />
-            </div>
-    )};
+          <div className="flex min-h-screen flex-col">
+            <header className="container z-40 bg-background">
+              <div className="flex h-20 items-center justify-between py-6">
+                <MainNav items={indexPageConfig.mainNav} />
+                <nav>
+                  <Link
+                    href="/auth/signin"
+                    className={cn(
+                      buttonVariants({ variant: "secondary", size: "sm" }),
+                      "px-4"
+                    )}
+                  >
+                    {t("loginButton")}
+                  </Link>
+                </nav>
+              </div>
+            </header>
+            <main className="flex-1">{children}</main>
+            <FloatingChatButton />
+            <Footer />
+          </div>
+        );};
 
     if (user && user.cefrLevel === "" && user.level === 0 && user.xp === 0) {
         return (
@@ -62,6 +64,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
                     </div>
                 </header>
                 <main className="flex-1">{children}</main>
+                <FloatingChatButton />
                 <Footer />
             </div>
         ); 
@@ -88,6 +91,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
                     </div>
                 </header>
                 <main className="flex-1">{children}</main>
+                <FloatingChatButton />
                 <Footer />
             </div>
         );
