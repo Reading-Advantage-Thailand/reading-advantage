@@ -84,12 +84,20 @@ export default function ClassRoster({ studentInClass, classrooms }: MyRosterProp
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [hasRefreshed, setHasRefreshed] = useState(false);
 
   let action = "";
 
   const closeDialog = () => {
     setIsOpen(false);
   };
+
+useEffect(() => {
+  if (!hasRefreshed && studentInClass) {
+    router.refresh();
+    setHasRefreshed(true);
+  }
+}, [studentInClass, hasRefreshed]);
 
   useEffect(() => {
     if (redirectUrl) {
@@ -311,14 +319,6 @@ export default function ClassRoster({ studentInClass, classrooms }: MyRosterProp
           }
           className="max-w-sm mt-4"
         />
-        {/* <div className="max-w-sm mt-4">
-              <Link href={studentInClass && studentInClass.length > 0 ? `/teacher/class-roster/${studentInClass[0].classroomId}/create-new-student`: '#'}>
-            <Button variant="outline">
-              <Icons.add />
-              &nbsp; {tr('addStudentButton')}
-            </Button>
-              </Link>
-      </div> */}
           <div className="max-w-sm mt-4">
                 <Link href={`/teacher/class-roster/${classrooms[0].id}/create-new-student` }>
               <Button variant="outline">

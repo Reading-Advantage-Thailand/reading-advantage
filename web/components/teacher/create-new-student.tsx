@@ -50,7 +50,6 @@ export default function CreateNewStudent({
   const formRef = useRef<HTMLFormElement>(null);
   const t = useScopedI18n("components.classRoster.addNewStudent");
 
-  // const classroomId = studentDataInClass[0].classroomsId;
   const classroomId = studentDataInClass && studentDataInClass.length > 0 
   ? studentDataInClass[0].classroomsId 
   : classrooms[0].id;
@@ -60,30 +59,20 @@ export default function CreateNewStudent({
   : classrooms[0].classroomName;
 
   const handleAddStudent = async (classroomId: string, email: string) => {
-    console.log('classroomId', classroomId);
-    
     let studentEmail = allStudentEmail.map(
       (student: { email: string; studentId: string }) => student.email
     );
     const studentIdToAdd = () => {
       allStudentEmail.forEach(
         (student: { email: string; studentId: string }) => {
-            // studentInEachClass.forEach((studentId: string) => {
-                // if (student.email === email) {
-                //   if (studentId !== student.studentId && !studentInEachClass.includes(student.studentId)) {
-                //     studentInEachClass.push(student.studentId);
-                //   }
-                // }
                 if (student.email === email && !studentInEachClass.includes(student.studentId)) {
                   studentInEachClass.push(student.studentId);
                 }
-            // });
         }
       );
       return studentInEachClass;
     };
     const studentId = studentIdToAdd();
-console.log('studentId', studentId);
 
     const updateStudentListBuilder = studentId.map((id: string) => ({
       studentId: id,
