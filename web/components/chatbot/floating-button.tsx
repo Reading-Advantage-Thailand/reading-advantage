@@ -1,28 +1,34 @@
 "use client";
 import { useState } from "react";
+import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
 
 export default function FloatingChatButton() {
+  const t = useScopedI18n("components.chatBot");
    const [isOpen, setIsOpen] = useState(false);
-   const toggleChat = () => setIsOpen(!isOpen);
+
    return (
-     <>
+     <div className="fixed bottom-4 right-4 flex items-center space-x-2 z-50">
+       {!isOpen && (
+         <span className="bg-blue-500 text-white text-sm py-2 px-4 rounded-full shadow-lg">
+           {`👋 ${t("textSuggestion")}`}
+         </span>
+       )}
        <Button
-         className="fixed bottom-4 right-4 flex items-center justify-center w-12 h-12 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
-         onClick={toggleChat}
+         onClick={() => setIsOpen(!isOpen)}
+         className={`text-white ${
+           isOpen ? "bg-red-500" : "bg-blue-500 hover:bg-blue-600 "
+         } p-2 rounded-full focus:outline-none shadow-lg transition-colors`}
        >
-         <MessageSquare className="w-6 h-6" />
+         {isOpen ? "Close" : <MessageSquare className="w-6 h-6" />}
        </Button>
        {isOpen && (
-         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-50">
-           {/* Chat interface goes here */}
-           <div className="absolute bottom-0 right-4 w-96 h-80 bg-white rounded-lg p-4 shadow-lg">
-             {/* Content of chat interface */}
-             <p>Chat content here...</p>
-           </div>
+         <div className="absolute bottom-12 right-0 w-72 h-96 bg-white border border-gray-300 p-4 shadow-xl rounded-lg">
+           <p>Hello, how can I help you?</p>
+           {/* Additional chat functionality goes here */}
          </div>
        )}
-     </>
+     </div>
    );
 }
