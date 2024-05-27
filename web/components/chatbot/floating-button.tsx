@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useState, useRef, useEffect } from "react";
 import axios from "axios";
+import Image from "next/image";
 import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,11 +28,10 @@ export default function FloatingChatButton() {
       // Send userInput to an OpenAI API or other backend here
       // Simulate a response for this example
       const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
-        newMessage
+        newMessage,
       });
 
       console.log("resOpenAi: ", resOpenAi);
-
 
       const response: Message = {
         text: ` : ${resOpenAi?.data?.text}`,
@@ -49,14 +49,22 @@ export default function FloatingChatButton() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  
+
   return (
     <>
       <div className="fixed bottom-4 right-4 flex items-center space-x-2 z-50">
         {!isOpen && (
-          <span className="bg-blue-500 text-white text-sm py-2 px-4 rounded-full shadow-lg">
-            {`👋 ${t("textSuggestion")}`}
-          </span>
+          <div className="flex bg-blue-500 rounded-full shadow-lg py-2 px-4 items-center">
+            <Image
+              src={"/magic-wand-and-hat.svg"}
+              alt="Magic wand and hat"
+              width={30}
+              height={30}
+            />
+            <span className=" text-white text-sm ml-4">
+              {`${t("textSuggestion")}`}
+            </span>
+          </div>
         )}
         <Button
           onClick={() => {

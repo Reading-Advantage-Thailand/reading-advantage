@@ -36,7 +36,6 @@ export default async function Layout({ children }: { children: ReactNode }) {
               </div>
             </header>
             <main className="flex-1">{children}</main>
-            <FloatingChatButton />
             <Footer />
           </div>
         );};
@@ -64,7 +63,6 @@ export default async function Layout({ children }: { children: ReactNode }) {
                     </div>
                 </header>
                 <main className="flex-1">{children}</main>
-                <FloatingChatButton />
                 <Footer />
             </div>
         ); 
@@ -91,7 +89,6 @@ export default async function Layout({ children }: { children: ReactNode }) {
                     </div>
                 </header>
                 <main className="flex-1">{children}</main>
-                <FloatingChatButton />
                 <Footer />
             </div>
         );
