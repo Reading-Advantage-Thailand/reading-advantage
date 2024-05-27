@@ -75,6 +75,6 @@ export async function POST(req: Request, res: Response) {
       */
   } catch (error) {
     console.log("error", error);
-    return error;
+    //return error;
   }
 }
