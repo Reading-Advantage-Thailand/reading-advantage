@@ -131,6 +131,16 @@ export default {
         },
       },
     },
+    teacher: {
+      studentProgressPage: {
+        activity: "กิจกรรม",
+        level: "ระดับ",
+        levelDescription: "ระดับปัจจุบันของคุณคือ {level}",
+        progressOf: "ความคืบหน้าของ {nameOfStudent}",
+        noUserProgress: "ไม่มีความคืบหน้าของผู้ใช้เนื่องจากนักเรียนไม่เคยอ่านบทความหรือกิจกรรมอื่น ๆ",
+      },
+    }
+    
   },
   components: {
     mainNav: {
@@ -287,6 +297,7 @@ export default {
     },
     menu: "เมนู",
     loginButton: "เข้าสู่ระบบ",
+
     passages: {
       heading: "บทความ",
       type: "ประเภท",
@@ -296,12 +307,211 @@ export default {
       selectGenre: "เลือกประเภท",
       selectSubGenre: "เลือกประเภทย่อย",
       level: "ระดับ",
+      sortBy: "เรียงลำดับโดย",
+      rating: "คะแนน",
+      date: "วันที่",
+    },
+
+    myClasses: {
+      title: "ชั้นเรียนของฉัน",
+      search: "ค้นหาชื่อชั้นเรียน...",
+      className: "ชื่อชั้นเรียน",
+      classCode: "รหัสชั้นเรียน",
+      studentCount: "จำนวนนักเรียน",
+      actions: "การดำเนินการ",
+      detail: "รายละเอียด",
+      roster: "รายชื่อ",
+      reports: "รายงาน",
+    
+      createNewClass: {
+        button: "สร้างชั้นเรียนใหม่",
+        title: "สร้างชั้นเรียนใหม่",
+        description: "กรอกข้อมูลเพื่อสร้างชั้นเรียนใหม่",
+        className: "ชื่อชั้นเรียน",
+        selectGrade: "เลือกเกรด",
+        grade: "เกรด",
+        create: "สร้างชั้นเรียน",
+        cancel: "ยกเลิก",
+        toast: {
+          attention: "ความสนใจ",
+          attentionDescription: "ต้องกรอกข้อมูลทุกช่อง!",
+          successCreate: "สำเร็จ",
+          successDescription: "สร้างชั้นเรียนเรียบร้อยแล้ว",
+        },
+      },
+    
+      edit: {
+        title: "แก้ไขรายละเอียดชั้นเรียน",
+        description: "อัปเดตรายละเอียดชั้นเรียนด้านล่าง",
+        className: "ชื่อชั้นเรียน",
+        selectGrade: "เลือกเกรด",
+        grade: "เกรด",
+        toast: {
+          attention: "ความสนใจ",
+          attentionDescription: "ต้องกรอกข้อมูลทุกช่อง!",
+          successUpdate: "อัปเดตสำเร็จ",
+          successUpdateDescription: "อัปเดตรายละเอียดชั้นเรียนเรียบร้อยแล้ว",
+        },
+        update: "อัปเดตชั้นเรียน",
+        cancel: "ยกเลิก",
+      },
+    
+      archieve: {
+        title: "จัดเก็บชั้นเรียนอย่างถาวร",
+        descriptionBefore: "คุณต้องการเก็บชั้นเรียน ",
+        descriptionAfter: " อย่างถาวรหรือไม่?",
+        archive: "เก็บถาวร",
+        cancel: "ยกเลิก",
+        toast: {
+          successArchive: "ชั้นเรียนถูกเก็บอย่างถาวร",
+          successArchiveDescription: "เก็บชั้นเรียนอย่างถาวรเรียบร้อยแล้ว!",
+          errorArchive: "เกิดข้อผิดพลาด",
+          errorArchiveDescription: "เกิดข้อผิดพลาดขณะเก็บชั้นเรียนอย่างถาวร",
+        },
+      },
+    
+      delete: {
+        title: "ลบชั้นเรียน",
+        descriptionBefore: "คุณต้องการลบ ",
+        descriptionAfter: " ชั้นเรียนหรือไม่?",
+        delete: "ลบ",
+        cancel: "ยกเลิก",
+        toast: {
+          successDelete: "ลบชั้นเรียนเรียบร้อยแล้ว",
+          successDeleteDescription: "ลบชั้นเรียนเรียบร้อยแล้ว",
+          errorDelete: "เกิดข้อผิดพลาด",
+          errorDeleteDescription: "เกิดข้อผิดพลาดขณะลบชั้นเรียน",
+        },
+      },
+    },
+
+    myStudent: {
+      title: "นักเรียนของฉัน",
+      name: "ชื่อ",
+      email: "อีเมล",
+      searchName: "ค้นหาชื่อ...",
+      actions: "การดำเนินการ",
+      progress: "ความคืบหน้า",
+      enroll: "ลงทะเบียน",
+      unEnroll: "ยกเลิกการลงทะเบียน",
+      resetProgress: "รีเซ็ตความคืบหน้า",
+      resetTitle: "รีเซ็ตความคืบหน้า XP ทั้งหมด",
+      resetDescription: "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ตความคืบหน้าทั้งหมด?",
+      reset: "รีเซ็ต",
+      cancelReset: "ยกเลิก",
+    
+      enrollPage: {
+        title: "ชั้นเรียนที่ลงทะเบียนได้สำหรับ {studentName}",
+        add: "เพิ่ม",
+        search: "ค้นหา...",
+        className: "ชื่อชั้นเรียน",
+        enroll: "ลงทะเบียน",
+        toast: {
+          successEnrollment: "ลงทะเบียนสำเร็จ",
+          successEnrollDescription: "นักเรียนได้ลงทะเบียนในชั้นเรียน",
+          errorEnrollment: "การลงทะเบียนล้มเหลว",
+          errorEnrollDescription: "นักเรียนไม่ได้ลงทะเบียนในชั้นเรียน",
+        }
+      }, 
+      unEnrollPage: {
+        title: "ยกเลิกการลงทะเบียนชั้นเรียนสำหรับ {studentName}",
+        remove: "ลบ",
+        search: "ค้นหา...",
+        className: "ชื่อชั้นเรียน",
+        unEnroll: "ยกเลิกการลงทะเบียน",
+        toast: {
+          successUnenrollment: "ลบสำเร็จ",
+          successUnenrollDescription: "นักเรียนได้ถูกลบออกจากชั้นเรียน",
+          errorUnenrollment: "การยกเลิกการลงทะเบียนล้มเหลว",
+          errorUnenrollDescription: "นักเรียนไม่ได้ถูกลบออกจากชั้นเรียน",
+        }
+      },
+    },
+
+    classRoster: {
+      title: "รายชื่อนักเรียนสำหรับห้องเรียน: {className}",
+      description: "กรุณาเลือกชั้นเรียนจากชั้นเรียนของฉัน",
+      name: "ชื่อ",
+      lastActivity: "กิจกรรมล่าสุด",
+      actions: "การดำเนินการ",
+      search: "ค้นหาชื่อ...",
+      noStudent: "ไม่มีนักเรียนในชั้นนี้",
+      addStudentButton: "เพิ่มนักเรียนใหม่",
+      toast: {
+        successResetProgress: "รีเซ็ตความคืบหน้าสำเร็จ",
+        successResetProgressDescription: "ความคืบหน้าทั้งหมดถูกรีเซ็ตแล้ว",
+      },
+    
+      addNewStudent: {
+        title: "เพิ่มนักเรียนใหม่ไปยัง {className}",
+        description: "เพิ่มนักเรียนใหม่ในห้องเรียนโดยป้อนที่อยู่อีเมลของพวกเขา",
+        email: "อีเมล: ",
+        placeholder: "ป้อนที่อยู่อีเมล",
+        addStudent: "เพิ่มนักเรียนใหม่",
+        warning: "ในการเพิ่มนักเรียน กรุณากรอกข้อมูลที่จำเป็นข้างต้น",
+        saveButton: "บันทึกและดำเนินการต่อ",
+        toast: {
+          successAddStudent: "เพิ่มนักเรียนแล้ว",
+          successAddStudentDescription: "นักเรียนถูกเพิ่มในชั้นเรียนนี้เรียบร้อยแล้ว",
+          errorAddStudent: "เพิ่มนักเรียนล้มเหลว",
+          errorAddStudentDescription: "ไม่สามารถเพิ่มนักเรียนในชั้นเรียนนี้",
+          emailNotFound: "ไม่พบอีเมล",
+          emailNotFoundDescription: "ที่อยู่อีเมลนี้ไม่มีบัญชีที่เกี่ยวข้อง กรุณาตรวจสอบการสะกดหรือทดลองใช้อีเมลอื่น",
+        }
+      },
+    },
+
+    reports: {
+      title: "รายงานชั้นเรียน: {className}",
+      averageLevel: "ระดับเฉลี่ย:",
+      name: "ชื่อ",
+      xp: "XP",
+      level: "ระดับ",
+      search: "ค้นหาชื่อ...",
+      lastActivity: "กิจกรรมล่าสุด",
+      actions: "การดำเนินการ",
+      detail: "รายละเอียด",
+      viewDetails: "ดูรายละเอียด",
+      noStudent: "ไม่มีนักเรียนในชั้นนี้",
+      noStudentDescription: "กรุณาเลือกชั้นเรียนจากชั้นเรียนของฉัน",
+    
+      editStudent: {
+        title: "แก้ไขรายละเอียดนักเรียน",
+        description: "อัปเดตรายละเอียดนักเรียนด้านล่าง",
+        placeholder: "ชื่อนักเรียน",
+        update: "อัปเดตนักเรียน",
+        cancel: "ยกเลิก",
+        toast: {
+          successUpdate: "อัปเดตสำเร็จ",
+          successUpdateDescription: "อัปเดตข้อมูลนักเรียนสำเร็จ",
+          attentionUpdate: "ความสนใจ",
+          attentionUpdateDescription: "กรุณากรอกข้อมูล",
+          errorUpdate: "อัปเดตล้มเหลว",
+          errorUpdateDescription: "ไม่สามารถอัปเดตข้อมูลนักเรียน",
+        }
+      },
+      removeStudent: {
+        title: "ลบนักเรียน",
+        descriptionBefore: "คุณต้องการลบ",
+        descriptionAfter: "ออกจากชั้นเรียนนี้หรือไม่?",
+        remove: "ลบ",
+        cancel: "ยกเลิก",
+        toast: {
+          successRemove: "ลบนักเรียนสำเร็จ",
+          successRemoveDescription: "ลบนักเรียนสำเร็จ",
+          errorRemove: "ข้อผิดพลาด",
+          errorRemoveDescription: "เกิดข้อผิดพลาดในการลบนักเรียนในชั้นเรียนนี้",
+        }
+      },
+    },
+    
       search: "ค้นหา...",
+      
+      chatBot: {
+        textSuggestion: "ผมอยู่ที่นี่เพื่อช่วยคุณ",
+      },
     },
-    chatBot: {
-      textSuggestion: "ผมอยู่ที่นี่เพื่อช่วยคุณ",
-    },
-  },
+    
   selectType: {
     types: {
       nonfiction: "สารคดี",

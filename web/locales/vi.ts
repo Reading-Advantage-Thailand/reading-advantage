@@ -127,6 +127,16 @@ export default {
         },
       },
     },
+    teacher: {
+      studentProgressPage: {
+        activity: "Hoạt Động",
+        level: "Cấp Độ",
+        levelDescription: "Cấp độ hiện tại của bạn là {level}",
+        progressOf: "Tiến Độ Của {nameOfStudent}",
+        noUserProgress: "Không có tiến độ người dùng do học sinh chưa từng đọc bài viết hoặc hoạt động khác.",
+      },
+    }
+    
   },
   components: {
     mainNav: {
@@ -293,12 +303,211 @@ export default {
       selectGenre: "Chọn thể loại",
       selectSubGenre: "Chọn thể loại con",
       level: "Cấp độ",
+      sortBy: "Sắp xếp theo",
+      rating: "Xếp hạng",
+      date: "Ngày",
+    },
+
+    myClasses: {
+      title: "Lớp Học Của Tôi",
+      search: "Tìm kiếm tên lớp...",
+      className: "Tên Lớp",
+      classCode: "Mã Lớp",
+      studentCount: "Số Lượng Học Sinh",
+      actions: "Hành Động",
+      detail: "Chi Tiết",
+      roster: "Danh Sách",
+      reports: "Báo Cáo",
+    
+      createNewClass: {
+        button: "Tạo Lớp Học Mới",
+        title: "Tạo lớp học mới",
+        description: "Điền thông tin để tạo lớp học mới",
+        className: "Tên Lớp",
+        selectGrade: "Chọn Khối",
+        grade: "Khối",
+        create: "Tạo Lớp",
+        cancel: "Hủy",
+        toast: {
+          attention: "Chú Ý",
+          attentionDescription: "Tất cả các trường phải được điền!",
+          successCreate: "Thành Công",
+          successDescription: "Tạo lớp học thành công",
+        },
+      },
+    
+      edit: {
+        title: "Chỉnh Sửa Chi Tiết Lớp",
+        description: "Cập nhật chi tiết lớp học dưới đây",
+        className: "Tên Lớp",
+        selectGrade: "Chọn Khối",
+        grade: "Khối",
+        toast: {
+          attention: "Chú Ý",
+          attentionDescription: "Tất cả các trường phải được điền!",
+          successUpdate: "Cập Nhật Thành Công",
+          successUpdateDescription: "Cập nhật lớp học thành công",
+        },
+        update: "Cập Nhật Lớp",
+        cancel: "Hủy",
+      },
+    
+      archieve: {
+        title: "Lưu Trữ Lớp Học",
+        descriptionBefore: "Bạn có muốn lưu trữ lớp ",
+        descriptionAfter: " không?",
+        archive: "Lưu Trữ",
+        cancel: "Hủy",
+        toast: {
+          successArchive: "Lớp học đã được lưu trữ",
+          successArchiveDescription: "Lớp học đã được lưu trữ thành công!",
+          errorArchive: "Lỗi",
+          errorArchiveDescription: "Đã xảy ra lỗi khi lưu trữ lớp học",
+        },
+      },
+    
+      delete: {
+        title: "Xóa Lớp Học",
+        descriptionBefore: "Bạn có muốn xóa lớp ",
+        descriptionAfter: " không?",
+        delete: "Xóa",
+        cancel: "Hủy",
+        toast: {
+          successDelete: "Lớp học đã được xóa",
+          successDeleteDescription: "Lớp học đã được xóa thành công",
+          errorDelete: "Lỗi",
+          errorDeleteDescription: "Đã xảy ra lỗi khi xóa lớp học",
+        },
+      },
+    },
+
+    myStudent: {
+      title: "Học Sinh Của Tôi",
+      name: "Tên",
+      email: "Email",
+      searchName: "Tìm kiếm tên...",
+      actions: "Hành Động",
+      progress: "Tiến Trình",
+      enroll: "Ghi Danh",
+      unEnroll: "Hủy Ghi Danh",
+      resetProgress: "Đặt Lại Tiến Trình",
+      resetTitle: "Đặt lại tất cả tiến trình XP",
+      resetDescription: "Bạn có chắc chắn muốn đặt lại tất cả tiến trình không?",
+      reset: "Đặt Lại",
+      cancelReset: "Hủy",
+    
+      enrollPage: {
+        title: "Lớp học có sẵn cho {studentName} ghi danh",
+        add: "Thêm",
+        search: "Tìm kiếm...",
+        className: "Tên Lớp",
+        enroll: "Ghi Danh",
+        toast: {
+          successEnrollment: "Ghi danh thành công",
+          successEnrollDescription: "Học sinh đã được ghi danh vào lớp",
+          errorEnrollment: "Ghi danh thất bại",
+          errorEnrollDescription: "Học sinh chưa được ghi danh vào lớp",
+        }
+      }, 
+      unEnrollPage: {
+        title: "Hủy ghi danh lớp học cho {studentName}",
+        remove: "Xóa",
+        search: "Tìm kiếm...",
+        className: "Tên Lớp",
+        unEnroll: "Hủy Ghi Danh",
+        toast: {
+          successUnenrollment: "Hủy ghi danh thành công",
+          successUnenrollDescription: "Học sinh đã được hủy ghi danh khỏi lớp",
+          errorUnenrollment: "Hủy ghi danh thất bại",
+          errorUnenrollDescription: "Học sinh chưa được hủy ghi danh khỏi lớp",
+        }
+      },
+    },
+
+    classRoster: {
+      title: "Danh Sách Học Sinh Của Lớp: {className}",
+      description: "Vui lòng chọn lớp từ Lớp Học Của Tôi",
+      name: "Tên",
+      lastActivity: "Hoạt Động Gần Đây",
+      actions: "Hành Động",
+      search: "Tìm kiếm tên...",
+      noStudent: "Không có học sinh trong lớp này",
+      addStudentButton: "Thêm học sinh mới",
+      toast: {
+        successResetProgress: "Đặt lại tiến trình thành công",
+        successResetProgressDescription: "Tất cả tiến trình đã được đặt lại",
+      },
+    
+      addNewStudent: {
+        title: "Thêm học sinh mới vào {className}",
+        description: "Thêm học sinh mới vào lớp bằng cách nhập địa chỉ email của họ.",
+        email: "Email: ",
+        placeholder: "Nhập địa chỉ email",
+        addStudent: "Thêm học sinh mới",
+        warning: "Để thêm học sinh, vui lòng điền vào các trường bắt buộc ở trên.",
+        saveButton: "LƯU VÀ TIẾP TỤC",
+        toast: {
+          successAddStudent: "Đã thêm học sinh",
+          successAddStudentDescription: "Học sinh đã được thêm thành công vào lớp này.",
+          errorAddStudent: "Thêm học sinh thất bại",
+          errorAddStudentDescription: "Không thể thêm học sinh vào lớp này.",
+          emailNotFound: "Không tìm thấy email",
+          emailNotFoundDescription: "Địa chỉ email này không được liên kết với bất kỳ tài khoản nào. Vui lòng kiểm tra chính tả hoặc thử một địa chỉ email khác.",
+        }
+      },
+    },
+
+    reports: {
+      title: "Báo Cáo Lớp Học: {className}",
+      averageLevel: "Mức Trung Bình:",
+      name: "Tên",
+      xp: "XP",
+      level: "Cấp Độ",
+      search: "Tìm kiếm tên...",
+      lastActivity: "Hoạt Động Gần Đây",
+      actions: "Hành Động",
+      detail: "Chi Tiết",
+      viewDetails: "Xem Chi Tiết",
+      noStudent: "Không có học sinh trong lớp này",
+      noStudentDescription: "Vui lòng chọn lớp từ Lớp Học Của Tôi",
+    
+      editStudent: {
+        title: "Chỉnh Sửa Chi Tiết Học Sinh",
+        description: "Cập nhật chi tiết học sinh dưới đây",
+        placeholder: "Tên học sinh",
+        update: "Cập Nhật Học Sinh",
+        cancel: "Hủy",
+        toast: {
+          successUpdate: "Cập Nhật Thành Công",
+          successUpdateDescription: "Thông tin học sinh được cập nhật thành công",
+          attentionUpdate: "Chú Ý",
+          attentionUpdateDescription: "Vui lòng điền thông tin",
+          errorUpdate: "Cập Nhật Thất Bại",
+          errorUpdateDescription: "Không thể cập nhật thông tin học sinh",
+        }
+      },
+      removeStudent: {
+        title: "Xóa Học Sinh",
+        descriptionBefore: "Bạn có muốn xóa",
+        descriptionAfter: "khỏi lớp học này không?",
+        remove: "Xóa",
+        cancel: "Hủy",
+        toast: {
+          successRemove: "Xóa học sinh thành công",
+          successRemoveDescription: "Học sinh đã được xóa thành công",
+          errorRemove: "Lỗi",
+          errorRemoveDescription: "Lỗi khi xóa học sinh khỏi lớp này",
+        }
+      },
+    },
+    
       search: "kiếm...",
+      
+      chatBot: {
+        textSuggestion: "Tôi ở đây để giúp bạn.",
+      },
     },
-    chatBot: {
-      textSuggestion: "Tôi ở đây để giúp bạn.",
-    },
-  },
+    
   selectType: {
     types: {
       nonfiction: "Nội dung không phải tiểu thuyết",

@@ -21,11 +21,12 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Checkbox, Radio, TableHead } from "@mui/material";
+import { Checkbox, TableHead } from "@mui/material";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { toast } from "../ui/use-toast";
 
 type Student = {
   id: string;
@@ -65,6 +66,7 @@ export default function MyEnrollClasses({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
+  const te = useScopedI18n("components.myStudent.enrollPage");
   const router = useRouter();
   const [classroomId, setClassroomId] = useState("");
   const [isCheck, setIsCheck] = useState(false);
@@ -108,9 +110,17 @@ export default function MyEnrollClasses({
       });
 
       if (response.status === 200) {
-        console.log("add success");
+        toast({
+          title: te('toast.successEnrollment'),
+          description: te('toast.successEnrollDescription'), 
+        })
       } else {
         console.log("add failed with status: ", response.status);
+        toast({
+          title: te('toast.errorEnrollment'),
+          description: te('toast.errorEnrollDescription'),
+          variant: "destructive",
+        })
       }
 
       return new Response(
@@ -140,7 +150,7 @@ export default function MyEnrollClasses({
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Class Name
+            {te('className')}
             <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -157,7 +167,7 @@ export default function MyEnrollClasses({
     {
       accessorKey: "id",
       header: ({ column }) => {
-        return <Button variant="ghost">Enroll</Button>;
+        return <Button variant="ghost">{te('enroll')}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza ml-2">
@@ -195,11 +205,11 @@ export default function MyEnrollClasses({
   return (
     <>
       <div className="font-bold text-3xl">
-        Enrolled Classes for {matchedStudents[0].name}
+        {te('title', {studentName: matchedStudents[0].name })} 
       </div>
       <div className="flex items-center justify-between">
         <Input
-          placeholder={"Search..."}
+          placeholder={te("search")}
           value={
             (table.getColumn("classroomName")?.getFilterValue() as string) ?? ""
           }
@@ -213,7 +223,7 @@ export default function MyEnrollClasses({
           className="max-w-sm mt-4"
           onClick={() => handleStudentEnrollment(classroomId, enrolledClasses)}
         >
-          Add
+          {te("add")}
         </Button>
       </div>
       <div className="rounded-md border mt-4">

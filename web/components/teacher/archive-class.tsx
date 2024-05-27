@@ -11,10 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import axios from "axios";
-import { toast } from '../ui/use-toast';
+import { toast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
+import { useScopedI18n } from "@/locales/client";
 
-interface ArchiveClassProps { 
+interface ArchiveClassProps {
   classroomData: Classes[];
   title: string;
   classroomId: string;
@@ -30,33 +31,37 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
   const [open, setOpen] = useState(false);
   const [archiveClass, setArchiveClass] = useState(false);
   const router = useRouter();
-  const classroom = classroomData.find((classroom) => classroom.id === classroomId);
+  const classroom = classroomData.find(
+    (classroom) => classroom.id === classroomId
+  );
+  const t = useScopedI18n("components.myClasses.archieve");
 
   const handleArchiveClass = async (classroomId: string) => {
     setOpen(true);
     try {
-      const response = await axios.patch(`/api/classroom/${ classroomId }/archived`,
+      const response = await axios.patch(
+        `/api/classroom/${classroomId}/archived`,
         { archived: true }
-        );
+      );
 
       if (response.status === 200) {
         setArchiveClass(true);
         toast({
-          title: "Class archived", 
-          description: "Class has been archived successfully!",
+          title: t("toast.successArchive"),
+          description: t("toast.successArchiveDescription"),
           variant: "default",
         });
         router.refresh();
       } else {
-        throw new Error('Failed to archive class');
+        throw new Error("Failed to archive class");
       }
     } catch (error) {
       console.error(error);
       toast({
-        title: "Error", 
-        description: "An error occurred while archiving the class",
+        title: t("toast.errorArchive"),
+        description: t("toast.errorArchiveDescription"),
         variant: "default",
-    })
+      });
     }
     router.refresh();
     setOpen(false);
@@ -72,24 +77,29 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <span title="archive class">
-          <Icons.archive
-                    className="h-4 w-4 cursor-pointer"
-                    aria-label="archive class"
-                  />
+              <Icons.archive
+                className="h-4 w-4 cursor-pointer"
+                aria-label="archive class"
+              />
             </span>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Archive Class</DialogTitle>
+              <DialogTitle>{t("title")}</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Do you want to archive <span className="font-bold">{classroom?.classroomName}</span> class?
+              {t("descriptionBefore")}
+              <span className="font-bold">{classroom?.classroomName}</span>
+              {t("descriptionAfter")}
             </DialogDescription>
             <DialogFooter>
-              <Button variant="secondary" onClick={() => handleArchiveClass(classroomId)}>
-                Archive
+              <Button
+                variant="secondary"
+                onClick={() => handleArchiveClass(classroomId)}
+              >
+                {t("archive")}
               </Button>
-              <Button onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleClose}>{t('cancel')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
