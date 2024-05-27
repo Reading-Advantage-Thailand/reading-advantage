@@ -282,6 +282,9 @@ export default {
       selectGenre: "選擇類型",
       selectSubGenre: "選擇子流派",
       level: "級別",
+      sortBy: "排序依據",
+      rating: "評級",
+      date: "日期",
     },
     
     search: "搜尋...",

@@ -303,6 +303,9 @@ export default {
       selectGenre: "Chọn thể loại",
       selectSubGenre: "Chọn thể loại con",
       level: "Cấp độ",
+      sortBy: "Sắp xếp theo",
+      rating: "Xếp hạng",
+      date: "Ngày",
     },
 
     myClasses: {

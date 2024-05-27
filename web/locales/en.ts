@@ -315,6 +315,9 @@ export default {
       selectGenre: "Select Genre",
       selectSubGenre: "Select Subgenre",
       level: "Level",
+      sortBy: "Sort By",
+      rating: "Rating",
+      date: "Date",
     },
     myClasses: {
       title: "My Classes",

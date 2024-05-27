@@ -307,6 +307,9 @@ export default {
       selectGenre: "เลือกประเภท",
       selectSubGenre: "เลือกประเภทย่อย",
       level: "ระดับ",
+      sortBy: "เรียงลำดับโดย",
+      rating: "คะแนน",
+      date: "วันที่",
     },
 
     myClasses: {

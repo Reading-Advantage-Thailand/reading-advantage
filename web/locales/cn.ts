@@ -280,6 +280,9 @@ export default {
       selectGenre: "选择类型",
       selectSubGenre: "选择子流派",
       level: "级别",
+      sortBy: "排序方式",
+      rating: "评分",
+      date: "日期",
     },
     myClasses: {
       title: '我的课程',
