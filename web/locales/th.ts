@@ -137,10 +137,10 @@ export default {
         level: "ระดับ",
         levelDescription: "ระดับปัจจุบันของคุณคือ {level}",
         progressOf: "ความคืบหน้าของ {nameOfStudent}",
-        noUserProgress: "ไม่มีความคืบหน้าของผู้ใช้เนื่องจากนักเรียนไม่เคยอ่านบทความหรือกิจกรรมอื่น ๆ",
+        noUserProgress:
+          "ไม่มีความคืบหน้าของผู้ใช้เนื่องจากนักเรียนไม่เคยอ่านบทความหรือกิจกรรมอื่น ๆ",
       },
-    }
-    
+    },
   },
   components: {
     mainNav: {
@@ -322,7 +322,7 @@ export default {
       detail: "รายละเอียด",
       roster: "รายชื่อ",
       reports: "รายงาน",
-    
+
       createNewClass: {
         button: "สร้างชั้นเรียนใหม่",
         title: "สร้างชั้นเรียนใหม่",
@@ -339,7 +339,7 @@ export default {
           successDescription: "สร้างชั้นเรียนเรียบร้อยแล้ว",
         },
       },
-    
+
       edit: {
         title: "แก้ไขรายละเอียดชั้นเรียน",
         description: "อัปเดตรายละเอียดชั้นเรียนด้านล่าง",
@@ -355,7 +355,7 @@ export default {
         update: "อัปเดตชั้นเรียน",
         cancel: "ยกเลิก",
       },
-    
+
       archieve: {
         title: "จัดเก็บชั้นเรียนอย่างถาวร",
         descriptionBefore: "คุณต้องการเก็บชั้นเรียน ",
@@ -369,7 +369,7 @@ export default {
           errorArchiveDescription: "เกิดข้อผิดพลาดขณะเก็บชั้นเรียนอย่างถาวร",
         },
       },
-    
+
       delete: {
         title: "ลบชั้นเรียน",
         descriptionBefore: "คุณต้องการลบ ",
@@ -399,7 +399,7 @@ export default {
       resetDescription: "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ตความคืบหน้าทั้งหมด?",
       reset: "รีเซ็ต",
       cancelReset: "ยกเลิก",
-    
+
       enrollPage: {
         title: "ชั้นเรียนที่ลงทะเบียนได้สำหรับ {studentName}",
         add: "เพิ่ม",
@@ -411,8 +411,8 @@ export default {
           successEnrollDescription: "นักเรียนได้ลงทะเบียนในชั้นเรียน",
           errorEnrollment: "การลงทะเบียนล้มเหลว",
           errorEnrollDescription: "นักเรียนไม่ได้ลงทะเบียนในชั้นเรียน",
-        }
-      }, 
+        },
+      },
       unEnrollPage: {
         title: "ยกเลิกการลงทะเบียนชั้นเรียนสำหรับ {studentName}",
         remove: "ลบ",
@@ -424,7 +424,7 @@ export default {
           successUnenrollDescription: "นักเรียนได้ถูกลบออกจากชั้นเรียน",
           errorUnenrollment: "การยกเลิกการลงทะเบียนล้มเหลว",
           errorUnenrollDescription: "นักเรียนไม่ได้ถูกลบออกจากชั้นเรียน",
-        }
+        },
       },
     },
 
@@ -441,7 +441,7 @@ export default {
         successResetProgress: "รีเซ็ตความคืบหน้าสำเร็จ",
         successResetProgressDescription: "ความคืบหน้าทั้งหมดถูกรีเซ็ตแล้ว",
       },
-    
+
       addNewStudent: {
         title: "เพิ่มนักเรียนใหม่ไปยัง {className}",
         description: "เพิ่มนักเรียนใหม่ในห้องเรียนโดยป้อนที่อยู่อีเมลของพวกเขา",
@@ -452,12 +452,14 @@ export default {
         saveButton: "บันทึกและดำเนินการต่อ",
         toast: {
           successAddStudent: "เพิ่มนักเรียนแล้ว",
-          successAddStudentDescription: "นักเรียนถูกเพิ่มในชั้นเรียนนี้เรียบร้อยแล้ว",
+          successAddStudentDescription:
+            "นักเรียนถูกเพิ่มในชั้นเรียนนี้เรียบร้อยแล้ว",
           errorAddStudent: "เพิ่มนักเรียนล้มเหลว",
           errorAddStudentDescription: "ไม่สามารถเพิ่มนักเรียนในชั้นเรียนนี้",
           emailNotFound: "ไม่พบอีเมล",
-          emailNotFoundDescription: "ที่อยู่อีเมลนี้ไม่มีบัญชีที่เกี่ยวข้อง กรุณาตรวจสอบการสะกดหรือทดลองใช้อีเมลอื่น",
-        }
+          emailNotFoundDescription:
+            "ที่อยู่อีเมลนี้ไม่มีบัญชีที่เกี่ยวข้อง กรุณาตรวจสอบการสะกดหรือทดลองใช้อีเมลอื่น",
+        },
       },
     },
 
@@ -474,7 +476,7 @@ export default {
       viewDetails: "ดูรายละเอียด",
       noStudent: "ไม่มีนักเรียนในชั้นนี้",
       noStudentDescription: "กรุณาเลือกชั้นเรียนจากชั้นเรียนของฉัน",
-    
+
       editStudent: {
         title: "แก้ไขรายละเอียดนักเรียน",
         description: "อัปเดตรายละเอียดนักเรียนด้านล่าง",
@@ -488,7 +490,7 @@ export default {
           attentionUpdateDescription: "กรุณากรอกข้อมูล",
           errorUpdate: "อัปเดตล้มเหลว",
           errorUpdateDescription: "ไม่สามารถอัปเดตข้อมูลนักเรียน",
-        }
+        },
       },
       removeStudent: {
         title: "ลบนักเรียน",
@@ -501,17 +503,17 @@ export default {
           successRemoveDescription: "ลบนักเรียนสำเร็จ",
           errorRemove: "ข้อผิดพลาด",
           errorRemoveDescription: "เกิดข้อผิดพลาดในการลบนักเรียนในชั้นเรียนนี้",
-        }
+        },
       },
     },
-    
-      search: "ค้นหา...",
-      
-      chatBot: {
-        textSuggestion: "ผมอยู่ที่นี่เพื่อช่วยคุณ",
-      },
+
+    search: "ค้นหา...",
+
+    chatBot: {
+      textSuggestion: "ถามคำถาม",
     },
-    
+  },
+
   selectType: {
     types: {
       nonfiction: "สารคดี",

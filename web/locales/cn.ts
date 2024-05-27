@@ -123,8 +123,7 @@ export default {
         progressOf: "{nameOfStudent} 的进度",
         noUserProgress: "没有用户进度，因为学生从未阅读过文章或进行其他活动。",
       },
-    }
-    
+    },
   },
   components: {
     mainNav: {
@@ -285,72 +284,72 @@ export default {
       date: "日期",
     },
     myClasses: {
-      title: '我的课程',
-      search: '搜索班级名称...',
-      className: '班级名称',
-      classCode: '班级代码',
-      studentCount: '学生人数',
-      actions: '操作',
-      detail: '细节',
-      roster: '名册',
-      reports: '报告',
+      title: "我的课程",
+      search: "搜索班级名称...",
+      className: "班级名称",
+      classCode: "班级代码",
+      studentCount: "学生人数",
+      actions: "操作",
+      detail: "细节",
+      roster: "名册",
+      reports: "报告",
       createNewClass: {
-        button: '创建新类',
-        title: '创建新类',
-        description: '填写详细信息以创建新课程',
-        className: '班级名称',
-        selectGrade: '选择年级',
-        grade: '年级',
-        create: '创建班级',
-        cancel: '取消',
+        button: "创建新类",
+        title: "创建新类",
+        description: "填写详细信息以创建新课程",
+        className: "班级名称",
+        selectGrade: "选择年级",
+        grade: "年级",
+        create: "创建班级",
+        cancel: "取消",
         toast: {
-          attention: '注意力',
-          attentionDescription: '所有字段必须填写！',
-          successCreate: '成功',
-          successDescription: '班级创建成功'
-        }
+          attention: "注意力",
+          attentionDescription: "所有字段必须填写！",
+          successCreate: "成功",
+          successDescription: "班级创建成功",
+        },
       },
       edit: {
-        title: '编辑班级详细信息',
-        description: '更新以下课程详细信息',
-        className: '班级名称',
-        selectGrade: '选择年级',
-        grade: '年级',
+        title: "编辑班级详细信息",
+        description: "更新以下课程详细信息",
+        className: "班级名称",
+        selectGrade: "选择年级",
+        grade: "年级",
         toast: {
-          attention: '注意力',
-          attentionDescription: '所有字段必须填写！',
-          successUpdate: '更新成功',
-          successUpdateDescription: '课程更新成功'
+          attention: "注意力",
+          attentionDescription: "所有字段必须填写！",
+          successUpdate: "更新成功",
+          successUpdateDescription: "课程更新成功",
         },
-        update: '更新类',
-        cancel: '取消'
+        update: "更新类",
+        cancel: "取消",
       },
       archieve: {
-        title: '存档类',
-        descriptionBefore: '是否要存档',
-        descriptionAfter: ' 班级？',
-        archive: '档案',
-        cancel: '取消',
+        title: "存档类",
+        descriptionBefore: "是否要存档",
+        descriptionAfter: " 班级？",
+        archive: "档案",
+        cancel: "取消",
         toast: {
-          successArchive: '课程已归档',
-          successArchiveDescription: '课程已成功存档！',
-          errorArchive: '错误',
-          errorArchiveDescription: '归档课程时出错'
-        }
+          successArchive: "课程已归档",
+          successArchiveDescription: "课程已成功存档！",
+          errorArchive: "错误",
+          errorArchiveDescription: "归档课程时出错",
+        },
       },
       delete: {
-        title: '删除课堂',
-        descriptionBefore: '是否要删除',
-        descriptionAfter: '教室？',
-        delete: '删除',
-        cancel: '取消',
+        title: "删除课堂",
+        descriptionBefore: "是否要删除",
+        descriptionAfter: "教室？",
+        delete: "删除",
+        cancel: "取消",
         toast: {
-          successDelete: '课程已删除',
-          successDeleteDescription: '课程已成功删除',
-          errorDelete: '错误',
-          errorDeleteDescription: '删除课程时出错'
-        }
-      }
+          successDelete: "课程已删除",
+          successDeleteDescription: "课程已成功删除",
+          errorDelete: "错误",
+          errorDeleteDescription: "删除课程时出错",
+        },
+      },
     },
 
     myStudent: {
@@ -367,7 +366,7 @@ export default {
       resetDescription: "您确定要重置所有进度吗？",
       reset: "重置",
       cancelReset: "取消",
-    
+
       enrollPage: {
         title: "{studentName}可注册的班级",
         add: "添加",
@@ -379,8 +378,8 @@ export default {
           successEnrollDescription: "学生已注册到班级",
           errorEnrollment: "注册失败",
           errorEnrollDescription: "学生未能注册到班级",
-        }
-      }, 
+        },
+      },
       unEnrollPage: {
         title: "{studentName}取消注册的班级",
         remove: "移除",
@@ -392,7 +391,7 @@ export default {
           successUnenrollDescription: "学生已从班级移除",
           errorUnenrollment: "取消注册失败",
           errorUnenrollDescription: "学生未能从班级移除",
-        }
+        },
       },
     },
 
@@ -409,7 +408,7 @@ export default {
         successResetProgress: "成功重置进度",
         successResetProgressDescription: "所有进度已重置",
       },
-    
+
       addNewStudent: {
         title: "添加新学生到 {className}",
         description: "通过输入他们的电子邮件地址将新学生添加到班级。",
@@ -424,8 +423,9 @@ export default {
           errorAddStudent: "添加学生失败",
           errorAddStudentDescription: "未能将学生添加到此班级。",
           emailNotFound: "未找到电子邮件",
-          emailNotFoundDescription: "此电子邮件地址未关联任何账户。请检查拼写或尝试不同的电子邮件地址。",
-        }
+          emailNotFoundDescription:
+            "此电子邮件地址未关联任何账户。请检查拼写或尝试不同的电子邮件地址。",
+        },
       },
     },
 
@@ -442,7 +442,7 @@ export default {
       viewDetails: "查看详情",
       noStudent: "此班级中没有学生",
       noStudentDescription: "请从我的班级中选择班级",
-    
+
       editStudent: {
         title: "编辑学生详情",
         description: "更新以下学生详情",
@@ -456,7 +456,7 @@ export default {
           attentionUpdateDescription: "请填写信息",
           errorUpdate: "更新失败",
           errorUpdateDescription: "更新学生信息失败",
-        }
+        },
       },
       removeStudent: {
         title: "移除学生",
@@ -469,18 +469,17 @@ export default {
           successRemoveDescription: "学生已成功移除",
           errorRemove: "错误",
           errorRemoveDescription: "移除学生时出错",
-        }
+        },
       },
     },
 
-      search: "搜索...",
-      
-      chatBot: {
-        textSuggestion: "我在这里帮你。",
-      },
+    search: "搜索...",
 
+    chatBot: {
+      textSuggestion: "提一个问题",
     },
- 
+  },
+
   selectType: {
     types: {
       nonfiction: "非小说",
