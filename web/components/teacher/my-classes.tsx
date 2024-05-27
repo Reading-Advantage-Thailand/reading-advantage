@@ -60,6 +60,7 @@ type MyClassesProps = {
   userName: string;
   classrooms: Classes[];
 };
+
 export default function MyStudents({ userId, classrooms, userName }: MyClassesProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -69,6 +70,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
+  const tc = useScopedI18n("components.myClasses");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const router = useRouter();
   const [redirectUrl, setRedirectUrl] = useState("");
@@ -104,7 +106,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Class Name
+            {tc("className")}
             <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -117,7 +119,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
     {
       accessorKey: "classCode",
       header: ({ column }) => {
-        return <Button variant="ghost">Class Code</Button>;
+        return <Button variant="ghost">{tc("classCode")}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza ml-4">{row.getValue("classCode")}</div>
@@ -133,7 +135,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
     {
       accessorKey: "student.lenght",
       header: ({ column }) => {
-        return <Button variant="ghost">No. of Students</Button>;
+        return <Button variant="ghost">{tc("studentCount")}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza ml-4">{row.original?.student?.length || 0}</div>
@@ -142,13 +144,13 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
     {
       accessorKey: "action",
       header: ({ column }) => {
-        return <Button variant="ghost">Action</Button>;
+        return <Button variant="ghost">{tc("actions")}</Button>;
       },
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="default" className="ml-auto">
-              Actions <ChevronDownIcon className="ml-2 h-4 w-4" />
+              {tc("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -159,7 +161,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
                   handleActionSelected("roster", row.getValue("id"))
                 }
               >
-                Roster
+               {tc("roster")}
               </Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem>
@@ -169,7 +171,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
                   handleActionSelected("reports", row.getValue("id"))
                 }
               >
-                Reports
+                {tc("reports")}
               </Link>
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
@@ -179,7 +181,7 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
     {
       accessorKey: "detail",
       header: ({ column }) => {
-        return <Button variant="ghost">Detail</Button>;
+        return <Button variant="ghost">{tc("detail")}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza flex gap-2" >
@@ -225,10 +227,10 @@ export default function MyStudents({ userId, classrooms, userName }: MyClassesPr
 
   return (
     <>
-      <div className="font-bold text-3xl">My Classes</div>
+      <div className="font-bold text-3xl">{tc('title')}</div>
       <div className="flex justify-between">
         <Input
-          placeholder={"Search..."}
+          placeholder={tc("search")}
           value={(table.getColumn("classroomName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("classroomName")?.setFilterValue(event.target.value)

@@ -13,13 +13,21 @@ import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
+import { useScopedI18n } from "@/locales/client";
 
-function CreateNewClass({ userId, userName }: { userId: string, userName: string}) {
+function CreateNewClass({
+  userId,
+  userName,
+}: {
+  userId: string;
+  userName: string;
+}) {
   const [classroomName, setClassroomName] = useState("");
   const [grade, setGrade] = useState("");
   const [classCode, setClassCode] = useState("");
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const t = useScopedI18n("components.myClasses.createNewClass");
 
   const handleCreateClass = async () => {
     setOpen(true);
@@ -30,15 +38,14 @@ function CreateNewClass({ userId, userName }: { userId: string, userName: string
         classroomName: classroomName,
         description: "description",
         grade: grade,
-        // student: [{ studentId: "", lastActivity: new Date() }],
         student: [],
         title: `${userName}'s Classes`,
       };
 
-      if (!userId || !classCode || !classroomName || !grade ) {
+      if (!userId || !classCode || !classroomName || !grade) {
         toast({
-          title: "Attention",
-          description: "All fields must be filled out!",
+          title: t('toast.attention'),
+          description: t('toast.attentionDescription'),
           variant: "destructive",
         });
         return;
@@ -51,8 +58,8 @@ function CreateNewClass({ userId, userName }: { userId: string, userName: string
       console.error(error);
     }
     toast({
-      title: "Success",
-      description: "Class created successfully",
+      title: t('toast.successCreate'),
+      description: t('toast.successDescription'),
     });
     router.refresh();
     setOpen(false);
@@ -66,7 +73,7 @@ function CreateNewClass({ userId, userName }: { userId: string, userName: string
     return Math.random().toString(36).substring(2, 8);
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     setClassCode(generateRandomCode());
   }, []);
 
@@ -77,25 +84,28 @@ function CreateNewClass({ userId, userName }: { userId: string, userName: string
           <DialogTrigger asChild>
             <Button variant="outline">
               <Icons.add />
-              &nbsp; Create New Class
+              &nbsp; {t("button")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create a new class</DialogTitle>
+              <DialogTitle>{t("title")}</DialogTitle>
             </DialogHeader>
-            <DialogDescription>
-              Fill in the details to create a new class
-            </DialogDescription>
+            <DialogDescription>{t("description")}</DialogDescription>
             <input
               type="text"
               className="w-full border rounded-md p-2"
-              placeholder="Class name"
+              placeholder={t("className")}
               value={classroomName}
               onChange={(e) => setClassroomName(e.target.value)}
             />
             <div className="flex w-full border rounded-md p-2">
-              <input type="text" value={classCode} readOnly className="flex-grow cursor-pointer"/>
+              <input
+                type="text"
+                value={classCode}
+                readOnly
+                className="flex-grow cursor-pointer"
+              />
             </div>
             <select
               className="w-full border rounded-md p-2"
@@ -104,23 +114,18 @@ function CreateNewClass({ userId, userName }: { userId: string, userName: string
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
             >
-              <option value="select">Select Grade</option>
-              <option value="3">grade 3</option>
-              <option value="4">grade 4</option>
-              <option value="5">grade 5</option>
-              <option value="6">grade 6</option>
-              <option value="7">grade 7</option>
-              <option value="8">grade 8</option>
-              <option value="9">grade 9</option>
-              <option value="10">grade 10</option>
-              <option value="11">grade 11</option>
-              <option value="12">grade 12</option>
+              <option value="select">{t("selectGrade")}</option>
+              {Array.from({ length: 10 }, (_, i) => i + 3).map((grade) => (
+                <option key={grade} value={grade}>
+                  {t("grade")} {grade}
+                </option>
+              ))}
             </select>
             <DialogFooter>
               <Button variant="outline" onClick={() => handleCreateClass()}>
-                Create Class
+                {t("create")}
               </Button>
-              <Button onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleClose}>{t("cancel")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -1,22 +1,9 @@
-import {
-  render,
-  fireEvent,
-  screen,
-  cleanup,
-  renderHook,
-} from "@testing-library/react";
+import { render } from "@testing-library/react";
 import Passages from "@/components/teacher/passages";
-import { useCurrentLocale, useScopedI18n } from "@/locales/client";
-import ArticleShowcaseCard from "@/components/article-showcase-card";
-import { ArticleShowcase } from "@/components/models/article-model";
-import { use } from "react";
-import * as I18nModule from "@/locales/client";
-import { after } from "lodash";
-import { I18nProviderClient } from "@/locales/client";
-import userEvent from '@testing-library/user-event';
 
 jest.mock("../locales/client", () => ({
-  useScopedI18n: () => jest.fn().mockReturnValue(('Passages' || 'Search...' || 'Fiction')),
+  useScopedI18n: () =>
+    jest.fn().mockReturnValue("Passages" || "Search..." || "Fiction"),
   useCurrentLocale: () => "en",
 }));
 
@@ -64,21 +51,29 @@ type Passage = {
 };
 
 function filterPassages(
-    currentItems: Passage[],
-    searchTerm: string,
-    type: string,
-    selectedGenre: string,
-    selectedSubgenre: string,
-    selectedLevels: string[]
+  currentItems: Passage[],
+  searchTerm: string,
+  type: string,
+  selectedGenre: string,
+  selectedSubgenre: string,
+  selectedLevels: string[]
 ): Passage[] {
-    return currentItems.filter((passage) => {
-        const isTitleMatch = passage.title.toLowerCase().includes(searchTerm.toLowerCase());
-        const isTypeMatch = passage.type === type;
-        const isGenreMatch = passage.genre === selectedGenre;
-        const isSubgenreMatch = passage.subgenre === selectedSubgenre;
-        const isLevelMatch = selectedLevels.includes(passage.ra_level);
-        return isTitleMatch && isTypeMatch && isGenreMatch && isSubgenreMatch && isLevelMatch;
-    });
+  return currentItems.filter((passage) => {
+    const isTitleMatch = passage.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const isTypeMatch = passage.type === type;
+    const isGenreMatch = passage.genre === selectedGenre;
+    const isSubgenreMatch = passage.subgenre === selectedSubgenre;
+    const isLevelMatch = selectedLevels.includes(passage.ra_level);
+    return (
+      isTitleMatch &&
+      isTypeMatch &&
+      isGenreMatch &&
+      isSubgenreMatch &&
+      isLevelMatch
+    );
+  });
 }
 
 describe("Passages", () => {
@@ -91,33 +86,74 @@ describe("Passages", () => {
     });
   });
 
-  it('displays only passages that match the search term', async () => {
-    const searchTerm = 'Test'; 
+  it("displays only passages that match the search term", async () => {
+    const searchTerm = "Test";
 
-    const isTestPassageIncluded = passages.some(passages => 
+    const isTestPassageIncluded = passages.some((passages) =>
       passages.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  
+
     expect(isTestPassageIncluded).toBe(true);
+  });
 
-      });
-
-it('filters passages correctly', () => {
+  it("filters passages correctly", () => {
     const currentItems = [
-      { title: 'Title 1', type: 'fiction', genre: 'Genre 1', subgenre: 'Subgenre 1', ra_level: '1', searchTerm: '', id: '1', is_read: false, cefr_level: '', summary: '', average_rating: 0 },
-      { title: 'Title 2', type: 'non-fiction', genre: 'Genre 2', subgenre: 'Subgenre 2', ra_level: '2', searchTerm: '', id: '2', is_read: false, cefr_level: '', summary: '', average_rating: 0 },
+      {
+        title: "Title 1",
+        type: "fiction",
+        genre: "Genre 1",
+        subgenre: "Subgenre 1",
+        ra_level: "1",
+        searchTerm: "",
+        id: "1",
+        is_read: false,
+        cefr_level: "",
+        summary: "",
+        average_rating: 0,
+      },
+      {
+        title: "Title 2",
+        type: "non-fiction",
+        genre: "Genre 2",
+        subgenre: "Subgenre 2",
+        ra_level: "2",
+        searchTerm: "",
+        id: "2",
+        is_read: false,
+        cefr_level: "",
+        summary: "",
+        average_rating: 0,
+      },
     ];
-    const searchTerm = 'Title 1';
-    const type = 'fiction';
-    const selectedGenre = 'Genre 1';
-    const selectedSubgenre = 'Subgenre 1';
-    const selectedLevels = ['1'];
+    const searchTerm = "Title 1";
+    const type = "fiction";
+    const selectedGenre = "Genre 1";
+    const selectedSubgenre = "Subgenre 1";
+    const selectedLevels = ["1"];
 
-   const result = filterPassages(currentItems, searchTerm, type, selectedGenre, selectedSubgenre, selectedLevels);
-    
+    const result = filterPassages(
+      currentItems,
+      searchTerm,
+      type,
+      selectedGenre,
+      selectedSubgenre,
+      selectedLevels
+    );
+
     expect(result).toEqual([
-      { title: 'Title 1', type: 'fiction', genre: 'Genre 1', subgenre: 'Subgenre 1', ra_level: '1', searchTerm: '', id: '1', is_read: false, cefr_level: '', summary: '', average_rating: 0 },
+      {
+        title: "Title 1",
+        type: "fiction",
+        genre: "Genre 1",
+        subgenre: "Subgenre 1",
+        ra_level: "1",
+        searchTerm: "",
+        id: "1",
+        is_read: false,
+        cefr_level: "",
+        summary: "",
+        average_rating: 0,
+      },
     ]);
   });
-
-  });
+});

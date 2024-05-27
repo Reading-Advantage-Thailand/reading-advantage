@@ -10,65 +10,106 @@ import {
 } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/session";
 import { headers } from "next/headers";
-import React from "react";
-import ResetDialog from "@/components/reset-xp-dialog";
+import React, { use } from "react";
+import { getScopedI18n } from "@/locales/server";
+import { fetchData } from "@/utils/fetch-data";
+import { redirect } from "next/navigation";
 
-async function getStudentProgress(studentId: string) {
-    const res = await fetch (
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/students/${studentId}/progress-article-record`,
-        {
+// async function getStudentProgress(studentId: string) {
+//     const res = await fetch (
+//         `${process.env.NEXT_PUBLIC_BASE_URL}/api/students/${studentId}/progress-article-record`,
+//         {
+//         method: "GET",
+//         headers: headers(),
+//         }
+//     );
+    
+//     return res.json();
+//     }
+
+async function getUserArticleRecords(userId: string) {
+  return fetchData(`/api/v1/users/${userId}/records`);
+}
+
+async function getGeneralDescription(userLevel: number) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/master-data/level-mean/${userLevel}`,
+    {
+      method: "GET",
+      headers: headers(),
+    }
+  );
+  return res.json();
+}
+
+async function getAllStudentData() {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom/students`,
+      {
         method: "GET",
         headers: headers(),
-        }
+      }
     );
     
     return res.json();
-    }
+  } catch (error) {
+    console.error("Failed to parse JSON", error);
+  }
+}
 
 export default async function ProgressPage({params}: {params: {studentId: string}}) {
   const user = await getCurrentUser();
-  const resStudentProgress = await getStudentProgress(params.studentId);
-  const userId = user?.id ?? '';  
+  if (!user) return redirect("/auth/signin");
+  const resStudentProgress = await getUserArticleRecords(params.studentId);
+  const resGeneralDescription = await getGeneralDescription(user.level);
+  const t = await getScopedI18n('pages.teacher.studentProgressPage');
+
+  const allStudent = await getAllStudentData(); 
+  
   let nameOfStudent = '';
   let studentLevel: number = 0;
 
-  if (userId === resStudentProgress.articles[0]?.userId) {
-    nameOfStudent = user?.name?? 'Unknown';
-    studentLevel = user?.level ?? 0;
+  allStudent.students.forEach((student: { id: string; name: string; level: number; }) => {
+    if (student.id === params.studentId) {
+      nameOfStudent = student.name;
+      studentLevel = student.level;
+    }
   }
+  );
 
   return (
     <>
-{resStudentProgress.articles[0]?.userId ? (
+{resStudentProgress.results ? (
   <div>
-<Header heading={`Progress of ${nameOfStudent}`} />
+<Header heading={t('progressOf', {nameOfStudent: nameOfStudent})} />
   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4 mb-10">
     <Card className="md:col-span-4">
       <CardHeader>
-        <CardTitle>Activity</CardTitle>
+        <CardTitle>{t('activity')}</CardTitle>
       </CardHeader>
       <CardContent className="pl-2">
-        <UserActivityChart data={resStudentProgress.articles} />
+        <UserActivityChart data={resStudentProgress.results} />
       </CardContent>
     </Card>
     <Card className="md:col-span-3">
       <CardHeader>
-        <CardTitle>Level</CardTitle>
+        <CardTitle>{t('level')}</CardTitle>
         <CardDescription>
-          Your current level is {studentLevel}
+          {t('levelDescription', {level: studentLevel})}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <UserLevelChart
-          data={resStudentProgress.articles}
-          resGeneralDescription={resStudentProgress}
+          data={resStudentProgress.results}
+          resGeneralDescription={resGeneralDescription}
         />
       </CardContent>
     </Card>
   </div>
   </div>
 ) : (
-  <p className="text-center">No user progress available due to the student has never been read article or other activity.</p>
+  <p className="text-center">{t('noUserProgress')}</p>
 )}
     </>
   );

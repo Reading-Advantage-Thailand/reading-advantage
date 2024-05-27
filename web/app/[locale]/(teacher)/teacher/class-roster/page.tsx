@@ -155,7 +155,7 @@ export default async function RosterPage(params: {
 
   return (
     <div>
-      <ClassRoster studentInClass={studentsMapped} />
+      <ClassRoster studentInClass={studentsMapped} classrooms={classrooms}/>
     </div>
   );
 }

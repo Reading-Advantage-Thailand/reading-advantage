@@ -162,7 +162,7 @@ const teacher = teacherId();
 
   return (
     <>
-  <CreateNewStudent studentDataInClass={studentsMapped} allStudentEmail={studentEmail} studentInEachClass={studentInEachClass}/>
+  <CreateNewStudent studentDataInClass={studentsMapped} allStudentEmail={studentEmail} studentInEachClass={studentInEachClass} classrooms={classrooms}/>
     </>
   )
 }

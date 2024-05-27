@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect, } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Input } from "../ui/input";
 import { Checkbox } from "@mui/material";
 import { Button } from "../ui/button";
@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
@@ -32,6 +33,7 @@ type Passage = {
   cefr_level: string;
   summary: string;
   average_rating: number;
+  created_at: string;
 };
 
 type PassagesProps = {
@@ -70,10 +72,10 @@ export default function Passages({ passages }: PassagesProps) {
   const itemsPerPage = 10;
   const [selectedItems, setSelectedItems] = useState(0);
   const currentItems = passages;
-  const formRef = useRef<HTMLFormElement>(null);
+  // const formRef = useRef<HTMLFormElement>(null);
   const t = useScopedI18n("components.articleRecordsTable");
   const tp = useScopedI18n("components.passages");
-
+  const [sortOption, setSortOption] = useState("Select Sort Option");
 
   const getGenres = () => {
     let genresData: Set<string> = new Set();
@@ -92,9 +94,9 @@ export default function Passages({ passages }: PassagesProps) {
     return Array.from(subgenresData);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-  };
+  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  // };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -103,8 +105,6 @@ export default function Passages({ passages }: PassagesProps) {
   const handleTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setType(event.target.value);
   };
-
-
 
   const handleSelectionChange = (level: string) => {
     setSelectedLevels((prevLevels) => {
@@ -116,6 +116,29 @@ export default function Passages({ passages }: PassagesProps) {
     });
   };
 
+  // const handleSortChange = (event: {
+  //   target: { value: React.SetStateAction<string> };
+  // }) => {
+  //   setSortOption(event.target.value);
+  // };
+
+  const handleSortChange = (value: string) => {
+    setSortOption(value);
+  };
+
+  const sortPassages = (passages: any[]) => {
+    return passages.sort((a, b) => {
+      if (sortOption === "Rating") {
+        return b.average_rating - a.average_rating;
+      } else if (sortOption === "Date") {
+        return (
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      } else {
+        return 0;
+      }
+    });
+  };
   const filterPassages = (
     currentItems: Passage[],
     searchTerm: string,
@@ -209,119 +232,149 @@ export default function Passages({ passages }: PassagesProps) {
     setPrevSelectedGenre(selectedGenre);
   }, [selectedGenre]);
 
-
   return (
     <>
       <Header heading={tp("heading")} />
-            <Input
-              placeholder={tp("search")}
-              className="w-full mt-4"
-              value={searchTerm}
-              onChange={handleSearchChange}
-            />
+      <Input
+        placeholder={t("search")}
+        className="w-full mt-4"
+        value={searchTerm}
+        onChange={handleSearchChange}
+      />
       <div className="grid grid-cols-1 md:grid-cols-2 mt-4 gap-4">
-          <form ref={formRef} onSubmit={handleSubmit} className="md:pr-4">
-            <div className="mb-4">
-              <p className="font-bold">{tp('type')}</p>
-              <div className="ml-4">
-                <div className="flex items-center">
-                  <Checkbox
-                    value="fiction"
-                    checked={type === "fiction"}
-                    onChange={handleTypeChange}
-                  />
-                  <p>{tp('fiction')}</p>
-                </div>
-                <div className="flex items-center">
-                  <Checkbox
-                    value="non-fiction"
-                    checked={type === "non-fiction"}
-                    onChange={handleTypeChange}
-                  />
-                  <p>{tp('nonFiction')}</p>
-                </div>
+        <div className="md:pr-4">
+          <div className="mb-4">
+            <DropdownMenu>
+              <p className="font-bold">{tp('sortBy')}</p>
+              <DropdownMenuTrigger>
+                <Button variant="ghost">
+                  {sortOption || "Select Sort Option"}
+                  <ChevronDownIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
+                {[tp('rating'), tp('date')].map((option) => (
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setSortOption(option);
+                      handleSortChange(option);
+                    }}
+                    key={option}
+                  >
+                    {option}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="mb-4">
+            <p className="font-bold">{tp("type")}</p>
+            <div className="ml-4">
+              <div className="flex items-center">
+                <Checkbox
+                  value="fiction"
+                  checked={type === "fiction"}
+                  onChange={handleTypeChange}
+                />
+                <p>{tp("fiction")}</p>
+              </div>
+              <div className="flex items-center">
+                <Checkbox
+                  value="non-fiction"
+                  checked={type === "non-fiction"}
+                  onChange={handleTypeChange}
+                />
+                <p>{tp("nonFiction")}</p>
               </div>
             </div>
+          </div>
 
-            <div className="mb-4">
-              <p className="font-bold">{tp('topic')}</p>
-              <div className="flex flex-col w-full md:w-[50%] items-start ml-4">
+          <div className="mb-4">
+            <p className="font-bold">{tp("topic")}</p>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button variant="ghost">
+                  {selectedGenre || tp("selectGenre")}
+                  <ChevronDownIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
+                {genres.map((genre) => (
+                  <DropdownMenuItem
+                    onSelect={() => setSelectedGenre(genre)}
+                    key={genre}
+                  >
+                    {genre}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <div className="flex flex-col w-full md:w-[50%] items-start ml-4">
+              {selectedGenre && (
                 <DropdownMenu>
                   <DropdownMenuTrigger>
                     <Button variant="ghost">
-                      {selectedGenre || tp('selectGenre')}
+                      {selectedSubgenre || tp("selectSubGenre")}
                       <ChevronDownIcon className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
-                    {genres.map((genre) => (
+                    {getSubgenres(selectedGenre).map((subgenre) => (
                       <DropdownMenuItem
-                        onSelect={() => setSelectedGenre(genre)}
-                        key={genre}
+                        onSelect={() => setSelectedSubgenre(subgenre)}
+                        key={subgenre}
                       >
-                        {genre}
+                        {subgenre}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {selectedGenre && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <Button variant="ghost">
-                        {selectedSubgenre || tp('selectSubGenre')}
-                        <ChevronDownIcon className="ml-2 h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
-                      {getSubgenres(selectedGenre).map((subgenre) => (
-                        <DropdownMenuItem
-                          onSelect={() => setSelectedSubgenre(subgenre)}
-                          key={subgenre}
-                        >
-                          {subgenre}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
+              )}
             </div>
+          </div>
 
-            <div className="">
-              <p className="font-bold">{tp('level')}</p>
-              <div className="grid grid-cols-7 w-full text-center">
-                {Array.from({ length: 26 }, (_, i) => i + 1).map((level) => (
-                  <CustomCheckbox
-                    key={level}
-                    label={String(level)}
-                    selected={selectedLevels.includes(String(level))}
-                    onSelectionChange={handleSelectionChange}
-                  />
-                ))}
-              </div>
+          <div className="">
+            <p className="font-bold">{tp("level")}</p>
+            <div className="grid grid-cols-7 w-full text-center">
+              {Array.from({ length: 26 }, (_, i) => i + 1).map((level) => (
+                <CustomCheckbox
+                  key={level}
+                  label={String(level)}
+                  selected={selectedLevels.includes(String(level))}
+                  onSelectionChange={handleSelectionChange}
+                />
+              ))}
             </div>
-          </form>
+          </div>
+        </div>
 
         {/* data card */}
         {isFiltered ? (
           <div className="grid grid-cols-1">
-            {filteredPassages
+            {sortPassages(filteredPassages)
               .slice((currentPage - 1) * 10, currentPage * 10)
               .map((passage: Passage, index: number) => {
                 return (
-                  <div key={index} className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4">
-                  <ArticleShowcaseCard key={index} article={passage} />
+                  <div
+                    key={index}
+                    className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4"
+                  >
+                    <ArticleShowcaseCard key={index} article={passage} />
                   </div>
                 );
               })}
           </div>
         ) : (
           <div className="grid grid-cols-1">
-            {passages
+            {sortPassages(passages)
               .slice((currentPage - 1) * 10, currentPage * 10)
               .map((passage: Passage, index: number) => {
                 return (
-                  <div key={index} className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4">
+                  <div
+                    key={index}
+                    className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4"
+                  >
                     <ArticleShowcaseCard key={index} article={passage} />
                   </div>
                 );

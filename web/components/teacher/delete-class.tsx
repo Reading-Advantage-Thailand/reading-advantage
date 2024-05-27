@@ -13,6 +13,7 @@ import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from '../ui/use-toast';
 import { useRouter } from "next/navigation";
+import { useScopedI18n } from "@/locales/client";
 
 interface DeleteClassProps { 
   classroomData: Classes[];
@@ -30,21 +31,22 @@ function DeleteClass ({ classroomData, classroomId, title}: DeleteClassProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const classroom = classroomData.find((classroom) => classroom.id === classroomId);
+  const t = useScopedI18n("components.myClasses.delete");
 
   const handleDeleteClass = async (classroomId: string) => {
     setOpen(true);
     try {
         await axios.delete(`/api/classroom/${classroomId}`);
         toast({
-          title: "Class deleted", 
-          description: "Class has been deleted successfully",
+          title: t("toast.successDelete"), 
+          description: t("toast.successDeleteDescription"),
           variant: "default",
       })
     } catch (error) {
         console.error(error);
         toast({
-            title: "Error", 
-            description: "Error deleting class",
+            title: t("toast.errorDelete"), 
+            description: t("toast.errorDeleteDescription"),
             variant: "destructive",
         })
     } finally {
@@ -70,16 +72,16 @@ function DeleteClass ({ classroomData, classroomId, title}: DeleteClassProps) {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Delete Classroom</DialogTitle>
+              <DialogTitle>{t('title')}</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Do you want to delete <span className="font-bold">{classroom?. classroomName}</span> classroom ?
+              {t('descriptionBefore')} <span className="font-bold">{classroom?. classroomName}</span> {t('descriptionAfter')}
             </DialogDescription>
             <DialogFooter>
               <Button variant="destructive" onClick={() => handleDeleteClass(classroomId)}>
-                Delete
+                {t('delete')}
               </Button>
-              <Button onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleClose}>{t('cancel')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

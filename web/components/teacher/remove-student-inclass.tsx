@@ -13,6 +13,7 @@ import { Icons } from "@/components/icons";
 import axios from "axios";
 import { toast } from '../ui/use-toast';
 import { useRouter } from "next/navigation";
+import { useScopedI18n } from "@/locales/client";
 
 interface RemoveStudentProps { 
   studentInClass: Classes[];
@@ -35,6 +36,7 @@ function RemoveStudent ({ studentInClass, classroomIdSelected, studentIdSelected
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const studentName = studentInClass.find((student) => student.studentId === studentIdSelected);
+  const t = useScopedI18n('components.reports.removeStudent');
 
   const handleRemoveStudentInClass = async (classroomIdSelected: string, studentIdSelected: string, studentInClass: any) => {
     const removedStudentInClass: any[]= [];
@@ -56,15 +58,15 @@ const updateStudentListBuilder = removedStudentInClass.map((student) => ({
             studentId: studentIdSelected,
         });
         toast({
-          title: "Student successfully removed", 
-          description: "Student has been removed successfully",
+          title: t('toast.successRemove'), 
+          description: t('toast.successRemoveDescription'),
           variant: "default",
       })
     } catch (error) {
         console.error(error);
         toast({
-            title: "Error", 
-            description: "Error removing student in this class",
+            title: t('toast.errorRemove'), 
+            description: t('toast.errorRemoveDescription'),
             variant: "destructive",
         })
     } finally {
@@ -91,16 +93,16 @@ const updateStudentListBuilder = removedStudentInClass.map((student) => ({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Remove Student</DialogTitle>
+              <DialogTitle>{t('title')}</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              Do you want to remove <span className="font-bold">{studentName?.studentName}</span> from this classroom ?
+              {t('descriptionBefore')} <span className="font-bold">{studentName?.studentName}</span> {t('descriptionAfter')}
             </DialogDescription>
             <DialogFooter>
               <Button variant="destructive" onClick={() => handleRemoveStudentInClass(classroomIdSelected, studentIdSelected, studentInClass)}>
-                Remove
+                {t('remove')}
               </Button>
-              <Button onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleClose}>{t('cancel')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
