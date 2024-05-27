@@ -125,8 +125,7 @@ export default {
         progressOf: "{nameOfStudent} 的進度",
         noUserProgress: "沒有用戶進度，因為學生從未閱讀過文章或進行其他活動。",
       },
-    }
-    
+    },
   },
   components: {
     mainNav: {
@@ -286,12 +285,6 @@ export default {
       rating: "評級",
       date: "日期",
     },
-    
-    search: "搜尋...",
-    
-    chatBot: {
-      textSuggestion: "我在這裡幫你。",
-    },
 
     myClasses: {
       title: "我的班級",
@@ -303,7 +296,7 @@ export default {
       detail: "詳情",
       roster: "名單",
       reports: "報告",
-    
+
       createNewClass: {
         button: "創建新班級",
         title: "創建新班級",
@@ -320,7 +313,7 @@ export default {
           successDescription: "班級創建成功",
         },
       },
-    
+
       edit: {
         title: "編輯班級詳情",
         description: "更新下方的班級詳情",
@@ -336,7 +329,7 @@ export default {
         update: "更新班級",
         cancel: "取消",
       },
-    
+
       archieve: {
         title: "歸檔班級",
         descriptionBefore: "您是否要歸檔",
@@ -350,7 +343,7 @@ export default {
           errorArchiveDescription: "歸檔班級時發生錯誤",
         },
       },
-    
+
       delete: {
         title: "刪除班級",
         descriptionBefore: "您是否要刪除",
@@ -380,7 +373,7 @@ export default {
       resetDescription: "您確定要重置所有進度嗎？",
       reset: "重置",
       cancelReset: "取消",
-    
+
       enrollPage: {
         title: "{studentName}可註冊的班級",
         add: "添加",
@@ -392,8 +385,8 @@ export default {
           successEnrollDescription: "學生已註冊到班級",
           errorEnrollment: "註冊失敗",
           errorEnrollDescription: "學生未能註冊到班級",
-        }
-      }, 
+        },
+      },
       unEnrollPage: {
         title: "{studentName}取消註冊的班級",
         remove: "移除",
@@ -405,7 +398,7 @@ export default {
           successUnenrollDescription: "學生已從班級移除",
           errorUnenrollment: "取消註冊失敗",
           errorUnenrollDescription: "學生未能從班級移除",
-        }
+        },
       },
     },
 
@@ -422,7 +415,7 @@ export default {
         successResetProgress: "成功重置進度",
         successResetProgressDescription: "所有進度已重置",
       },
-    
+
       addNewStudent: {
         title: "添加新學生到 {className}",
         description: "通過輸入他們的電子郵件地址將新學生添加到班級。",
@@ -437,11 +430,12 @@ export default {
           errorAddStudent: "添加學生失敗",
           errorAddStudentDescription: "未能將學生添加到此班級。",
           emailNotFound: "未找到電子郵件",
-          emailNotFoundDescription: "此電子郵件地址未關聯任何賬戶。請檢查拼寫或嘗試不同的電子郵件地址。",
-        }
+          emailNotFoundDescription:
+            "此電子郵件地址未關聯任何賬戶。請檢查拼寫或嘗試不同的電子郵件地址。",
+        },
       },
     },
-    
+
     reports: {
       title: "班級報告：{className}",
       averageLevel: "平均等級：",
@@ -455,7 +449,7 @@ export default {
       viewDetails: "查看詳情",
       noStudent: "此班級中沒有學生",
       noStudentDescription: "請從我的班級中選擇班級",
-    
+
       editStudent: {
         title: "編輯學生詳情",
         description: "更新以下學生詳情",
@@ -469,7 +463,7 @@ export default {
           attentionUpdateDescription: "請填寫信息",
           errorUpdate: "更新失敗",
           errorUpdateDescription: "更新學生信息失敗",
-        }
+        },
       },
       removeStudent: {
         title: "移除學生",
@@ -482,10 +476,15 @@ export default {
           successRemoveDescription: "學生已成功移除",
           errorRemove: "錯誤",
           errorRemoveDescription: "移除學生時出錯",
-        }
+        },
       },
     },
-    
+
+    search: "搜尋...",
+
+    chatBot: {
+      textSuggestion: "提問一個問題",
+    },
   },
   selectType: {
     types: {

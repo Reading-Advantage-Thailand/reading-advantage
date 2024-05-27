@@ -146,7 +146,8 @@ export default {
         level: "Level",
         levelDescription: "Your current level is {level}",
         progressOf: "Progress of {nameOfStudent}",
-        noUserProgress: "No user progress available due to the student has never been read article or other activity.",
+        noUserProgress:
+          "No user progress available due to the student has never been read article or other activity.",
       },
     },
   },
@@ -381,7 +382,7 @@ export default {
       delete: {
         title: "Delete Classroom",
         descriptionBefore: "Do you want to delete ",
-        descriptionAfter: " classroom?",  
+        descriptionAfter: " classroom?",
         delete: "Delete",
         cancel: "Cancel",
         toast: {
@@ -390,8 +391,8 @@ export default {
           errorDelete: "Error",
           errorDeleteDescription: "An error occurred while deleting the class",
         },
-        },
       },
+    },
 
     myStudent: {
       title: "My Students",
@@ -419,9 +420,8 @@ export default {
           successEnrollDescription: "Student has been enrolled in the class",
           errorEnrollment: "Enrollment Failed",
           errorEnrollDescription: "Student has not been enrolled in the class",
-        }
-
-      }, 
+        },
+      },
       unEnrollPage: {
         title: "Unenroll classes for {studentName}",
         remove: "Remove",
@@ -432,8 +432,9 @@ export default {
           successUnenrollment: "Successfully removed",
           successUnenrollDescription: "Student has been removed from class",
           errorUnenrollment: "Unenrollment Failed",
-          errorUnenrollDescription: "Student has not been removed from the class",
-        }
+          errorUnenrollDescription:
+            "Student has not been removed from the class",
+        },
       },
     },
 
@@ -453,7 +454,8 @@ export default {
 
       addNewStudent: {
         title: "Add new Students to {className}",
-        description: "Add new students to the classroom by entering their email addresses.",
+        description:
+          "Add new students to the classroom by entering their email addresses.",
         email: "Email: ",
         placeholder: "Enter email address",
         addStudent: "Add new student",
@@ -461,12 +463,14 @@ export default {
         saveButton: "SAVE AND CONTINUE",
         toast: {
           successAddStudent: "Student added",
-          successAddStudentDescription: "Student successfully added to this class.",
+          successAddStudentDescription:
+            "Student successfully added to this class.",
           errorAddStudent: "Failed to add student",
           errorAddStudentDescription: "Failed to add student to this class.",
           emailNotFound: "Email not found",
-          emailNotFoundDescription: "This email address isn't associated with any account. Please check the spelling or try a different email address.",  
-        }
+          emailNotFoundDescription:
+            "This email address isn't associated with any account. Please check the spelling or try a different email address.",
+        },
       },
     },
 
@@ -493,11 +497,11 @@ export default {
         toast: {
           successUpdate: "Update Successful",
           successUpdateDescription: "Student information updated successfully",
-          attentionUpdate: "Attention", 
+          attentionUpdate: "Attention",
           attentionUpdateDescription: "Please fill in information",
           errorUpdate: "Update Failed",
           errorUpdateDescription: "Failed to update student information",
-        }
+        },
       },
       removeStudent: {
         title: "Remove Student",
@@ -510,16 +514,16 @@ export default {
           successRemoveDescription: "Student has been removed successfully",
           errorRemove: "Error",
           errorRemoveDescription: "Error removing student in this class",
-        }
+        },
       },
     },
     search: "Search...",
 
     chatBot: {
-      textSuggestion: "I'm here to help you.",
+      textSuggestion: "Ask a question",
     },
   },
-    
+
   selectType: {
     types: {
       nonfiction: "Nonfiction",

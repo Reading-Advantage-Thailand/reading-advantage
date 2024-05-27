@@ -133,10 +133,10 @@ export default {
         level: "Cấp Độ",
         levelDescription: "Cấp độ hiện tại của bạn là {level}",
         progressOf: "Tiến Độ Của {nameOfStudent}",
-        noUserProgress: "Không có tiến độ người dùng do học sinh chưa từng đọc bài viết hoặc hoạt động khác.",
+        noUserProgress:
+          "Không có tiến độ người dùng do học sinh chưa từng đọc bài viết hoặc hoạt động khác.",
       },
-    }
-    
+    },
   },
   components: {
     mainNav: {
@@ -318,7 +318,7 @@ export default {
       detail: "Chi Tiết",
       roster: "Danh Sách",
       reports: "Báo Cáo",
-    
+
       createNewClass: {
         button: "Tạo Lớp Học Mới",
         title: "Tạo lớp học mới",
@@ -335,7 +335,7 @@ export default {
           successDescription: "Tạo lớp học thành công",
         },
       },
-    
+
       edit: {
         title: "Chỉnh Sửa Chi Tiết Lớp",
         description: "Cập nhật chi tiết lớp học dưới đây",
@@ -351,7 +351,7 @@ export default {
         update: "Cập Nhật Lớp",
         cancel: "Hủy",
       },
-    
+
       archieve: {
         title: "Lưu Trữ Lớp Học",
         descriptionBefore: "Bạn có muốn lưu trữ lớp ",
@@ -365,7 +365,7 @@ export default {
           errorArchiveDescription: "Đã xảy ra lỗi khi lưu trữ lớp học",
         },
       },
-    
+
       delete: {
         title: "Xóa Lớp Học",
         descriptionBefore: "Bạn có muốn xóa lớp ",
@@ -392,10 +392,11 @@ export default {
       unEnroll: "Hủy Ghi Danh",
       resetProgress: "Đặt Lại Tiến Trình",
       resetTitle: "Đặt lại tất cả tiến trình XP",
-      resetDescription: "Bạn có chắc chắn muốn đặt lại tất cả tiến trình không?",
+      resetDescription:
+        "Bạn có chắc chắn muốn đặt lại tất cả tiến trình không?",
       reset: "Đặt Lại",
       cancelReset: "Hủy",
-    
+
       enrollPage: {
         title: "Lớp học có sẵn cho {studentName} ghi danh",
         add: "Thêm",
@@ -407,8 +408,8 @@ export default {
           successEnrollDescription: "Học sinh đã được ghi danh vào lớp",
           errorEnrollment: "Ghi danh thất bại",
           errorEnrollDescription: "Học sinh chưa được ghi danh vào lớp",
-        }
-      }, 
+        },
+      },
       unEnrollPage: {
         title: "Hủy ghi danh lớp học cho {studentName}",
         remove: "Xóa",
@@ -420,7 +421,7 @@ export default {
           successUnenrollDescription: "Học sinh đã được hủy ghi danh khỏi lớp",
           errorUnenrollment: "Hủy ghi danh thất bại",
           errorUnenrollDescription: "Học sinh chưa được hủy ghi danh khỏi lớp",
-        }
+        },
       },
     },
 
@@ -437,23 +438,27 @@ export default {
         successResetProgress: "Đặt lại tiến trình thành công",
         successResetProgressDescription: "Tất cả tiến trình đã được đặt lại",
       },
-    
+
       addNewStudent: {
         title: "Thêm học sinh mới vào {className}",
-        description: "Thêm học sinh mới vào lớp bằng cách nhập địa chỉ email của họ.",
+        description:
+          "Thêm học sinh mới vào lớp bằng cách nhập địa chỉ email của họ.",
         email: "Email: ",
         placeholder: "Nhập địa chỉ email",
         addStudent: "Thêm học sinh mới",
-        warning: "Để thêm học sinh, vui lòng điền vào các trường bắt buộc ở trên.",
+        warning:
+          "Để thêm học sinh, vui lòng điền vào các trường bắt buộc ở trên.",
         saveButton: "LƯU VÀ TIẾP TỤC",
         toast: {
           successAddStudent: "Đã thêm học sinh",
-          successAddStudentDescription: "Học sinh đã được thêm thành công vào lớp này.",
+          successAddStudentDescription:
+            "Học sinh đã được thêm thành công vào lớp này.",
           errorAddStudent: "Thêm học sinh thất bại",
           errorAddStudentDescription: "Không thể thêm học sinh vào lớp này.",
           emailNotFound: "Không tìm thấy email",
-          emailNotFoundDescription: "Địa chỉ email này không được liên kết với bất kỳ tài khoản nào. Vui lòng kiểm tra chính tả hoặc thử một địa chỉ email khác.",
-        }
+          emailNotFoundDescription:
+            "Địa chỉ email này không được liên kết với bất kỳ tài khoản nào. Vui lòng kiểm tra chính tả hoặc thử một địa chỉ email khác.",
+        },
       },
     },
 
@@ -470,7 +475,7 @@ export default {
       viewDetails: "Xem Chi Tiết",
       noStudent: "Không có học sinh trong lớp này",
       noStudentDescription: "Vui lòng chọn lớp từ Lớp Học Của Tôi",
-    
+
       editStudent: {
         title: "Chỉnh Sửa Chi Tiết Học Sinh",
         description: "Cập nhật chi tiết học sinh dưới đây",
@@ -479,12 +484,13 @@ export default {
         cancel: "Hủy",
         toast: {
           successUpdate: "Cập Nhật Thành Công",
-          successUpdateDescription: "Thông tin học sinh được cập nhật thành công",
+          successUpdateDescription:
+            "Thông tin học sinh được cập nhật thành công",
           attentionUpdate: "Chú Ý",
           attentionUpdateDescription: "Vui lòng điền thông tin",
           errorUpdate: "Cập Nhật Thất Bại",
           errorUpdateDescription: "Không thể cập nhật thông tin học sinh",
-        }
+        },
       },
       removeStudent: {
         title: "Xóa Học Sinh",
@@ -497,17 +503,17 @@ export default {
           successRemoveDescription: "Học sinh đã được xóa thành công",
           errorRemove: "Lỗi",
           errorRemoveDescription: "Lỗi khi xóa học sinh khỏi lớp này",
-        }
+        },
       },
     },
-    
-      search: "kiếm...",
-      
-      chatBot: {
-        textSuggestion: "Tôi ở đây để giúp bạn.",
-      },
+
+    search: "kiếm...",
+
+    chatBot: {
+      textSuggestion: "Hỏi một câu hỏi",
     },
-    
+  },
+
   selectType: {
     types: {
       nonfiction: "Nội dung không phải tiểu thuyết",

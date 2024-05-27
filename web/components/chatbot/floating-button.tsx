@@ -61,7 +61,7 @@ export default function FloatingChatButton() {
               width={30}
               height={30}
             />
-            <span className=" text-white text-sm ml-4">
+            <span className=" text-white text-sm ml-2">
               {`${t("textSuggestion")}`}
             </span>
           </div>
