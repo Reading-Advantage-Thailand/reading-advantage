@@ -83,11 +83,10 @@ export default function FloatingChatButton() {
                         : "bg-gray-500 self-start"
                     }`}
                   >
-                   
                     {message.sender === "bot" && message.text.length <= 200 && (
                       <Bot className="mr-2 text-white" />
                     )}
-                    <p>{message.text}</p>                  
+                    <p>{message.text}</p>
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
@@ -98,10 +97,11 @@ export default function FloatingChatButton() {
                     placeholder="Type your message..."
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
+                    className="dark:text-black"
                   />
                   <Button
                     onClick={handleSendMessage}
-                    className="ml-2 bg-blue-500 text-white p-2 rounded-lg focus:outline-none"
+                    className="ml-2 bg-blue-500 dark:bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 focus:outline-none"
                   >
                     Send
                   </Button>
