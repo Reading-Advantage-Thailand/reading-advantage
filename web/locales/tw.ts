@@ -288,6 +288,7 @@ export default {
     },
     
     search: "搜尋...",
+    
     chatBot: {
       textSuggestion: "我在這裡幫你。",
     },

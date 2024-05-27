@@ -514,10 +514,11 @@ export default {
       },
     },
     search: "Search...",
-  },
+
     chatBot: {
       textSuggestion: "I'm here to help you.",
     },
+  },
     
   selectType: {
     types: {

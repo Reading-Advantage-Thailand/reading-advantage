@@ -506,9 +506,10 @@ export default {
     },
     
       search: "ค้นหา...",
-    },
-    chatBot: {
-      textSuggestion: "ผมอยู่ที่นี่เพื่อช่วยคุณ",
+      
+      chatBot: {
+        textSuggestion: "ผมอยู่ที่นี่เพื่อช่วยคุณ",
+      },
     },
     
   selectType: {

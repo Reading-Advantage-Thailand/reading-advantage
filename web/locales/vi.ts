@@ -502,9 +502,10 @@ export default {
     },
     
       search: "kiếm...",
-    },
-    chatBot: {
-      textSuggestion: "Tôi ở đây để giúp bạn.",
+      
+      chatBot: {
+        textSuggestion: "Tôi ở đây để giúp bạn.",
+      },
     },
     
   selectType: {

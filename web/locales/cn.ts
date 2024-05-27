@@ -474,9 +474,11 @@ export default {
     },
 
       search: "搜索...",
-    },
-    chatBot: {
-      textSuggestion: "我在这里帮你。",
+      
+      chatBot: {
+        textSuggestion: "我在这里帮你。",
+      },
+
     },
  
   selectType: {

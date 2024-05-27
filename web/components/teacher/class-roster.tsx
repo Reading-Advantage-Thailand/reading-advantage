@@ -97,7 +97,7 @@ useEffect(() => {
     router.refresh();
     setHasRefreshed(true);
   }
-}, [studentInClass, hasRefreshed]);
+}, [studentInClass, hasRefreshed, router]);
 
   useEffect(() => {
     if (redirectUrl) {
