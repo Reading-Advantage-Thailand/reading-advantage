@@ -8,7 +8,7 @@ import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { useScopedI18n } from "@/locales/client";
-import "animate.css";
+// import "animate.css";
 import Image from "next/image";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
