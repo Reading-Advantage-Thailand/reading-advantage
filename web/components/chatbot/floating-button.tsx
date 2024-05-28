@@ -6,12 +6,17 @@ import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bot, MessageSquare } from "lucide-react";
+import { Article } from "@/components/models/article-model";
 
 interface Message {
   text: string;
   sender: "user" | "bot";
 }
-export default function FloatingChatButton() {
+
+interface Props {
+  article: Article;
+}
+export default function FloatingChatButton({ article }: Props) {
   const t = useScopedI18n("components.chatBot");
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -29,9 +34,8 @@ export default function FloatingChatButton() {
       // Simulate a response for this example
       const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
         newMessage,
+        article,
       });
-
-      console.log("resOpenAi: ", resOpenAi);
 
       const response: Message = {
         text: ` : ${resOpenAi?.data?.text}`,
@@ -40,7 +44,7 @@ export default function FloatingChatButton() {
       setMessages((messages) => [...messages, response]);
       setUserInput(""); // Clear input after sending
     }
-  }, [messages, userInput]);
+  }, [messages, userInput, article]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -91,9 +95,12 @@ export default function FloatingChatButton() {
                         : "bg-gray-500 self-start"
                     }`}
                   >
-                    {message.sender === "bot" && message.text.length <= 200 && (
-                      <Bot className="mr-2 text-white" />
+                    {message.sender === "bot" && (
+                      <div>
+                        <Bot className="mr-2 text-white" />
+                      </div>
                     )}
+
                     <p>{message.text}</p>
                   </div>
                 ))}
