@@ -101,7 +101,7 @@ export default function ClozeTest({ userId }: Props) {
 
   const getArticle = async (articleId: string, sn: number) => {
     const res = await axios.get(`/api/articles/${articleId}`);
-    const textList = await splitTextIntoSentences(res.data.article.content);
+    const textList = await splitTextIntoSentences(res.data.article.passage);
 
     // step 3 : find data split text, text count max level, position text max level, position text for show and replace dropdown
     const dataSplit = [sn].map((index) => {

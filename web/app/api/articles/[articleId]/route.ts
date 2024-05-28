@@ -28,16 +28,22 @@ export async function GET(
         const userLevel = session.user.level;
 
         // Use the articleId as the document ID to fetch the article
-        const articleSnapshot = await db.collection('articles').doc(articleId).get();
-
+        const articleSnapshot = await db.collection('new-articles').doc(articleId)
+            .get();
+        if(!articleSnapshot){
+            return new Response(JSON.stringify({
+                message: 'Article not found',
+            }), { status: 404 })
+        }
+       
         if (!articleSnapshot.exists) {
             return new Response(JSON.stringify({
                 message: 'Article not found',
             }), { status: 404 })
         }
-
+         
         const article = articleSnapshot.data();
-
+        
         // If the article does not have questions, return the article as is
         if (!article?.questions) {
             return new Response(JSON.stringify({

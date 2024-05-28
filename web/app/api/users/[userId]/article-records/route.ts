@@ -19,7 +19,7 @@ export async function GET(req: Request, res: Response) {
         const userId = session.user.id;
 
         // get all user-article-records of user
-        const userArticleRecords = db.collection('user-article-records')
+        const userArticleRecords = db.collection('users')
             .where('userId', '==', userId)
             .orderBy('createdAt', 'desc')
 
@@ -130,19 +130,101 @@ export async function PATCH(req: Request, res: Response) {
             });
         console.log('new level', userLevel + (rating - 3));
 
-        const article = await db.collection('articles').doc(articleId).get();
+        const article = await db.collection('new-articles').doc(articleId).get();
+        // const ratingSnapshot = await db.collection('users')
+        //     .get()
+        //     // .where('userId', '==', userId)
+        //     // .where('articleId', '==', articleId).get()
+        
+        // const total = ratingSnapshot.docs
+        // let totalRating: number = 0;
+        // let totalUser: number = 0;
+        // for(let i=0; i<total.length; i++){
+        //     const doc = total[i]
+        //     totalRating = totalRating + doc.data().rating    
+        //     totalUser = totalUser + 1          
+        // }
 
-        const averageRating = article.data()?.averageRating || 0;
-        const totalRating = article.data()?.totalRatings || 0;
-        const newAverageRating = (averageRating * totalRating + rating) / (totalRating + 1);
-        const newTotalRatings = totalRating + 1;
-        // update article
-        const articleRef = db.collection('articles')
+        // async function averageRating(
+        //     articleIdInput: string, rateCurr: number
+        // ): Promise<number>{
+        const userSnapshot = await db.collection('users').get();
+        const userDocs = userSnapshot.docs;
+        const arrData: number[] = [];
+        for(let i=0; i<userDocs.length; i++){
+            const doc = userDocs[i]
+            const userId = doc.data().id
+            // arr.push(data.id)
+            const articleRecord = await db.collection('users').doc(userId)
+             .collection('article-records').get()
+            const recordsDoc = articleRecord.docs
+           
+            for(let j=0; j<recordsDoc.length; j++){
+             const docArticle = recordsDoc[j]
+             const fetchArticleId = docArticle.data().id
+             if(fetchArticleId === articleId){
+             // console.log(docArticle.data())
+                if(docArticle.data().rated !== 0){
+                    arrData.push(docArticle.data().rated)
+                } 
+             }
+            }
+        }
+           
+        let summaryRating = arrData.reduce((acc, rate) => acc + rate, 0)
+    
+        let averageRatingData = 0;
+        if(arrData.length === 0){
+            averageRatingData = rating
+        } else{
+            averageRatingData = (summaryRating + rating) / (arrData.length + 1)
+        }         
+        // return result
+    // }
+        interface ArticleData{
+            type: string;
+            genre: string;
+            subgenre: string;
+        }
+        const articleSnapshot = await db.collection('new-articles')
+            .doc(articleId).get();
+        const articleData = articleSnapshot.data() as ArticleData | undefined
+        if(articleData){
+            const type = articleData.type
+            const genre = articleData.genre.replace(/ /g, "_")
+            const subgenre = articleData.subgenre.replace(/ /g, "_")
+
+            const selectSnapshot = await db.collection('article-selection').doc(userLevel.toString())
+            .collection('types').doc(type)
+            .collection('genres').doc(genre)
+            .collection('subgenres').doc(subgenre)
+            .collection('articles').doc(articleId)
+            .update({
+                average_rating: averageRatingData,
+                // totalRatings: newTotalRatings,
+            });
+        }
+        const articleRef = db.collection('new-articles')
             .doc(articleId)
             .update({
-                averageRating: newAverageRating,
-                totalRatings: newTotalRatings,
-            });
+                average_rating: averageRatingData,
+                // totalRatings: newTotalRatings,
+        });
+
+        // const averageRating = article.data()?.average_rating || 0;
+        // const newAverageRating = (averageRating * totalRating + rating) / (totalUser + 1);
+        // const totalRating = article.data()?.totalRatings || 0;
+        // const newAverageRating = (averageRating * totalRating + rating) / (totalRating + 1);
+        // const newTotalRatings = totalRating + 1;
+        // update article
+        
+
+        // const ratingRef = db.collection('users')
+        // .doc(userId).collection('article-records')
+        //     .doc(`${userId}-${articleId}`)
+        //     .update({
+        //         rated: rating
+        //     });
 
         // update user level
         const userArticleRecord = db.collection('user-article-records').doc(`${userId}-${articleId}`);
@@ -177,14 +259,15 @@ export async function PATCH(req: Request, res: Response) {
         console.log('userLevel', userLevel);
         console.log('newLevel', newLevel);
         // update user-article-record
-        const userArticleRecordRef = db.collection('user-article-records')
-            .doc(`${userId}-${articleId}`)
+        const userArticleRecordRef = db.collection('users')
+            .doc(userId).collection('article-records')
+            .doc(articleId)
             .update({
-                rating: rating,
-                status: RecordStatus.COMPLETED,
-                userLevel: userLevel,
-                updatedLevel: newLevel,
-                updatedAt: new Date(),
+                rated: rating,
+                // status: RecordStatus.COMPLETED,
+                // userLevel: userLevel,
+                // updatedLevel: newLevel,
+                updated_at: new Date(),
             });
         return new Response(JSON.stringify({
             message: 'success',

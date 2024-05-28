@@ -13,5 +13,6 @@ export default async function PracticePage({}: Props) {
   if (user.cefrLevel === "" && user.level === 0) {
     return redirect("/level");
   }
-  return <TabsPractice userId={user.id} />;
+  return (
+  <><TabsPractice userId={user.id} /></>);
 }

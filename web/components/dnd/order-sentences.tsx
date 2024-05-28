@@ -68,7 +68,7 @@ export default function OrderSentences({ userId }: Props) {
 
   const getArticle = async (articleId: string, sn: number) => {
     const res = await axios.get(`/api/articles/${articleId}`);
-    const textList = await splitTextIntoSentences(res.data.article.content);
+    const textList = await splitTextIntoSentences(res.data.article.passage);
 
     const dataSplit = [sn].map((index) => {
       let result: any[] = [];
