@@ -9,6 +9,7 @@ import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
 import AssignDialog from "@/components/teacher/assign-dialog";
 import FloatingChatButton from "@/components/chatbot/floating-button";
+import { Article } from "@/components/models/article-model";
 
 export const metadata = {
   title: "Article",
@@ -33,6 +34,7 @@ export default async function ArticleQuizPage({
   if (articleResponse.message)
     return <CustomError message={articleResponse.message} />;
 
+
   return (
     <>
       <div className="md:flex md:flex-row md:gap-3 md:mb-5">
@@ -54,7 +56,7 @@ export default async function ArticleQuizPage({
           <SAQuestionCard userId={user.id} articleId={params.articleId} />
         </div>
       </div>
-      <FloatingChatButton />
+      <FloatingChatButton article={articleResponse?.article as Article} />
     </>
   );
 }
