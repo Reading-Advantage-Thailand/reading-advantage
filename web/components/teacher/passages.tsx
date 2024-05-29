@@ -11,9 +11,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
+import { CaretSortIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "../article-showcase-card";
+import { set } from "lodash";
 
 interface CustomCheckboxProps {
   label: string;
@@ -72,38 +73,25 @@ export default function Passages({ passages }: PassagesProps) {
   const itemsPerPage = 10;
   const [selectedItems, setSelectedItems] = useState(0);
   const currentItems = passages;
-  // const formRef = useRef<HTMLFormElement>(null);
   const t = useScopedI18n("components.articleRecordsTable");
   const tp = useScopedI18n("components.passages");
-  const [sortOption, setSortOption] = useState("Select Sort Option");
-
-  const getGenres = () => {
-    let genresData: Set<string> = new Set();
-    passages.forEach((passage) => {
-      genresData.add(passage.genre);
-    });
-    return Array.from(genresData);
-  };
-  const genres = getGenres();
+  const [sortOption, setSortOption] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const getSubgenres = (selectedGenre: string) => {
     let subgenresData: Set<string> = new Set();
-    passages.forEach((passage) => {
+    filteredPassages.forEach((passage) => {
       if (passage.genre === selectedGenre) subgenresData.add(passage.subgenre);
     });
     return Array.from(subgenresData);
   };
-
-  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  // };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
   const handleTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setType(event.target.value);
+    setType(prevType => prevType === event.target.value ? "" : event.target.value);
   };
 
   const handleSelectionChange = (level: string) => {
@@ -116,29 +104,28 @@ export default function Passages({ passages }: PassagesProps) {
     });
   };
 
-  // const handleSortChange = (event: {
-  //   target: { value: React.SetStateAction<string> };
-  // }) => {
-  //   setSortOption(event.target.value);
-  // };
-
   const handleSortChange = (value: string) => {
+    if (sortOption === value) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortOrder("asc");
+    }
     setSortOption(value);
   };
 
   const sortPassages = (passages: any[]) => {
     return passages.sort((a, b) => {
-      if (sortOption === "Rating") {
-        return b.average_rating - a.average_rating;
-      } else if (sortOption === "Date") {
-        return (
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+      if (sortOption === "rating") {
+        return sortOrder === 'asc' ? a.average_rating - b.average_rating : b.average_rating - a.average_rating;
+      } else if (sortOption === "date") {
+        return sortOrder === 'asc' ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime() : new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       } else {
         return 0;
       }
     });
   };
+
+
   const filterPassages = (
     currentItems: Passage[],
     searchTerm: string,
@@ -241,33 +228,27 @@ export default function Passages({ passages }: PassagesProps) {
         value={searchTerm}
         onChange={handleSearchChange}
       />
+
       <div className="grid grid-cols-1 md:grid-cols-2 mt-4 gap-4">
         <div className="md:pr-4">
+          {/* sort date and rating */}
           <div className="mb-4">
-            <DropdownMenu>
-              <p className="font-bold">{tp('sortBy')}</p>
-              <DropdownMenuTrigger>
-                <Button variant="ghost">
-                  {sortOption || "Select Sort Option"}
-                  <ChevronDownIcon className="ml-2 h-4 w-4" />
+              <p className="font-bold">{tp("sortBy")}</p>
+                <Button variant="ghost" onClick={() => {
+                      handleSortChange('rating');
+                }}>
+                  {tp("rating")}
+                  <CaretSortIcon className="ml-2 h-4 w-4" />               
+                   </Button>
+                <Button variant="ghost" onClick={() => {
+                    handleSortChange('date');
+                }}>
+                  {tp("date")}
+                  <CaretSortIcon className="ml-2 h-4 w-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
-                {[tp('rating'), tp('date')].map((option) => (
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      setSortOption(option);
-                      handleSortChange(option);
-                    }}
-                    key={option}
-                  >
-                    {option}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
 
+          {/* Fitered by type */}
           <div className="mb-4">
             <p className="font-bold">{tp("type")}</p>
             <div className="ml-4">
@@ -290,6 +271,7 @@ export default function Passages({ passages }: PassagesProps) {
             </div>
           </div>
 
+          {/* Filtered by topic */}
           <div className="mb-4">
             <p className="font-bold">{tp("topic")}</p>
             <DropdownMenu>
@@ -300,7 +282,11 @@ export default function Passages({ passages }: PassagesProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
-                {genres.map((genre) => (
+                {[
+                  ...new Set(
+                    filteredPassages.map((passages) => passages.genre)
+                  ),
+                ].map((genre) => (
                   <DropdownMenuItem
                     onSelect={() => setSelectedGenre(genre)}
                     key={genre}
@@ -328,12 +314,33 @@ export default function Passages({ passages }: PassagesProps) {
                         {subgenre}
                       </DropdownMenuItem>
                     ))}
+
+{selectedSubgenre && (
+            <DropdownMenuItem
+              onSelect={() => setSelectedSubgenre('')}
+            >
+             reset subgenre
+            </DropdownMenuItem>
+          )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
             </div>
+            {selectedGenre && (
+    <Button variant="default" onClick={() => setSelectedGenre('')}>
+      {/* {tp("resetGenre")} */}
+      reset genre
+    </Button>
+  )}
+  {selectedSubgenre && (
+    <Button variant="default" onClick={() => setSelectedSubgenre('')}>
+      {/* {tp("resetSubGenre")} */}
+      reset subgenre
+    </Button>
+  )}
           </div>
 
+          {/* Filtered by level */}
           <div className="">
             <p className="font-bold">{tp("level")}</p>
             <div className="grid grid-cols-7 w-full text-center">
