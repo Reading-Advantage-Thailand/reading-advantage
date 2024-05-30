@@ -113,6 +113,17 @@ export default function Passages({ passages }: PassagesProps) {
     setSortOption(value);
   };
 
+  // const handleSortChange = (value: string) => {
+  //   if (value === 'rating' || value === 'date') {
+  //     setSortOrder('asc');
+  //   } else if (sortOption === value) {
+  //     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  //   } else {
+  //     setSortOrder('asc');
+  //   }
+  //   setSortOption(value);
+  // };
+
   const sortPassages = (passages: any[]) => {
     return passages.sort((a, b) => {
       if (sortOption === "rating") {
@@ -233,7 +244,7 @@ export default function Passages({ passages }: PassagesProps) {
         <div className="md:pr-4">
           {/* sort date and rating */}
           <div className="mb-4">
-              <p className="font-bold">{tp("sortBy")}</p>
+              <p className="font-bold">{tp("sortBy")} {sortOrder}</p>
                 <Button variant="ghost" onClick={() => {
                       handleSortChange('rating');
                 }}>
@@ -241,7 +252,7 @@ export default function Passages({ passages }: PassagesProps) {
                   <CaretSortIcon className="ml-2 h-4 w-4" />               
                    </Button>
                 <Button variant="ghost" onClick={() => {
-                    handleSortChange('date');
+                  handleSortChange('date');
                 }}>
                   {tp("date")}
                   <CaretSortIcon className="ml-2 h-4 w-4" />
