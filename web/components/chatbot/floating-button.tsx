@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Bot, MessageSquare } from "lucide-react";
 import { Article } from "@/components/models/article-model";
 
@@ -18,10 +19,12 @@ interface Props {
 }
 export default function FloatingChatButton({ article }: Props) {
   const t = useScopedI18n("components.chatBot");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
 
   const handleSendMessage = useCallback(async () => {
     if (userInput) {
@@ -30,8 +33,9 @@ export default function FloatingChatButton({ article }: Props) {
         sender: "user",
       };
       setMessages([...messages, newMessage]);
-      // Send userInput to an OpenAI API or other backend here
-      // Simulate a response for this example
+      setLoading(true); // Start loading     
+
+    try {
       const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
         newMessage,
         article,
@@ -42,6 +46,15 @@ export default function FloatingChatButton({ article }: Props) {
         sender: "bot",
       };
       setMessages((messages) => [...messages, response]);
+    } catch (error) {
+      setMessages((msgs) => [
+        ...msgs,
+        { text: "Error: Could not fetch response.", sender: "bot" },
+      ]);
+    } finally {
+      setLoading(false); // Stop loading
+    }
+
       setUserInput(""); // Clear input after sending
     }
   }, [messages, userInput, article]);
@@ -104,9 +117,18 @@ export default function FloatingChatButton({ article }: Props) {
                     <p>{message.text}</p>
                   </div>
                 ))}
+                {loading && (
+                  <div className="flex items-center space-x-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-[250px]" />
+                      <Skeleton className="h-4 w-[200px]" />
+                    </div>
+                  </div>
+                )}
                 <div ref={messagesEndRef} />
               </div>
-              {messages.length !== 2 && (
+              {messages.length !== 2 && !loading && (
                 <div className="shrink-0 flex m-2">
                   <Input
                     placeholder="Type your message..."
