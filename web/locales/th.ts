@@ -310,6 +310,8 @@ export default {
       sortBy: "เรียงลำดับโดย",
       rating: "คะแนน",
       date: "วันที่",
+      resetGenre: "รีเซ็ตประเภท",
+      resetSubGenre: "รีเซ็ตประเภทย่อย",
     },
 
     myClasses: {

@@ -282,6 +282,8 @@ export default {
       sortBy: "排序方式",
       rating: "评分",
       date: "日期",
+      resetGenre: "重置类型",
+      resetSubGenre: "重置子类型",
     },
     myClasses: {
       title: "我的课程",

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "../ui/input";
 import { Checkbox } from "@mui/material";
 import { Button } from "../ui/button";
@@ -8,13 +8,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { CaretSortIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "../article-showcase-card";
-import { set } from "lodash";
 
 interface CustomCheckboxProps {
   label: string;
@@ -67,7 +65,7 @@ export default function Passages({ passages }: PassagesProps) {
   const [prevSelectedGenre, setPrevSelectedGenre] = useState(selectedGenre);
   const [searchTerm, setSearchTerm] = useState("");
   const [type, setType] = useState("");
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [selectedItems, setSelectedItems] = useState(0);
@@ -75,7 +73,10 @@ export default function Passages({ passages }: PassagesProps) {
   const t = useScopedI18n("components.articleRecordsTable");
   const tp = useScopedI18n("components.passages");
   const [sortOption, setSortOption] = useState("");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortOrder, setSortOrder] = useState('Ascending');
+
+  const FICTION = "fiction";
+  const NON_FICTION = "nonfiction";
 
   const getSubgenres = (selectedGenre: string) => {
     let subgenresData: Set<string> = new Set();
@@ -90,7 +91,9 @@ export default function Passages({ passages }: PassagesProps) {
   };
 
   const handleTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setType(prevType => prevType === event.target.value ? "" : event.target.value);
+    setType((prevType) =>
+      prevType === event.target.value ? "" : event.target.value
+    );
   };
 
   const handleSelectionChange = (level: string) => {
@@ -105,119 +108,72 @@ export default function Passages({ passages }: PassagesProps) {
 
   const handleSortChange = (value: string) => {
     if (sortOption === value) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setSortOrder(sortOrder === "Ascending" ? 'Descending' : 'Ascending');
     } else {
-      setSortOrder("asc");
+      setSortOrder('Ascending');
     }
     setSortOption(value);
   };
 
-
   const sortPassages = (passages: any[]) => {
     return passages.sort((a, b) => {
       if (sortOption === "rating") {
-        return sortOrder === 'asc' ? a.average_rating - b.average_rating : b.average_rating - a.average_rating;
+        return sortOrder === "Ascending"
+          ? a.average_rating - b.average_rating
+          : b.average_rating - a.average_rating;
       } else if (sortOption === "date") {
-        return sortOrder === 'asc' ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime() : new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return sortOrder === "Ascending"
+          ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          : new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       } else {
         return 0;
       }
     });
   };
 
-  // const filterPassages = (
-  //   currentItems: Passage[],
-  //   searchTerm: string,
-  //   type: string,
-  //   selectedGenre: string,
-  //   selectedSubgenre: string,
-  //   selectedLevels: string[]
-  // ) => {
-  //   let filteredPassages = [...currentItems];
-
-  //   if (searchTerm) {
-  //     filteredPassages = filteredPassages.filter((passage) =>
-  //       passage.title.toLowerCase().includes(searchTerm.toLowerCase())
-  //     );
-  //   }
-
-  //   if (type) {
-  //     filteredPassages = filteredPassages.filter((passage) => {
-  //       if (type.toLowerCase() === "fiction") {
-  //         return passage.type.toLowerCase() === "fiction";
-  //       }
-  //       if (type.toLowerCase() === "non-fiction") {
-  //         return passage.type.toLowerCase() === "nonfiction";
-  //       }
-  //       return false;
-  //     });
-  //   }
-
-  //   if (selectedGenre) {
-  //     filteredPassages = filteredPassages.filter(
-  //       (passage) => passage.genre.toLowerCase() === selectedGenre.toLowerCase()
-  //     );
-  //   }
-
-  //   if (selectedSubgenre) {
-  //     filteredPassages = filteredPassages.filter(
-  //       (passage) =>
-  //         passage.subgenre.toLowerCase() === selectedSubgenre.toLowerCase()
-  //     );
-  //   }
-
-  //   if (selectedLevels.length > 0) {
-  //     filteredPassages = filteredPassages.filter((passage) =>
-  //       selectedLevels.includes(passage.ra_level.toString())
-  //     );
-  //   }
-
-  //   if (selectedLevels.length > 0 && searchTerm) {
-  //     filteredPassages = currentItems.filter((passage) => {
-  //       const levelMatch = selectedLevels.includes(passage.ra_level.toString());
-  //       const titleMatch = passage.title
-  //         .toLowerCase()
-  //         .includes(searchTerm.toLowerCase());
-  //       return levelMatch && titleMatch;
-  //     });
-  //   }
-  
-  //   return filteredPassages;
-  // };
-
   const displayedItems = isFiltered
     ? filteredPassages.slice((currentPage - 1) * 10, currentPage * 10)
     : passages.slice((currentPage - 1) * 10, currentPage * 10);
 
-  const FICTION = "fiction";
-const NON_FICTION = "nonfiction";
+  const filterPassages = (
+    currentItems: Passage[],
+    searchTerm: string,
+    type: string,
+    selectedGenre: string,
+    selectedSubgenre: string,
+    selectedLevels: string[]
+  ) => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const lowerCaseType = type.toLowerCase();
+    const lowerCaseSelectedGenre = selectedGenre.toLowerCase();
+    const lowerCaseSelectedSubgenre = selectedSubgenre.toLowerCase();
 
-const filterPassages = (
-  currentItems: Passage[],
-  searchTerm: string,
-  type: string,
-  selectedGenre: string,
-  selectedSubgenre: string,
-  selectedLevels: string[]
-) => {
-  const lowerCaseSearchTerm = searchTerm.toLowerCase();
-  const lowerCaseType = type.toLowerCase();
-  const lowerCaseSelectedGenre = selectedGenre.toLowerCase();
-  const lowerCaseSelectedSubgenre = selectedSubgenre.toLowerCase();
+    const filteredItems = currentItems.filter((passage) => {
+      const titleMatch =
+        !searchTerm ||
+        passage.title.toLowerCase().includes(lowerCaseSearchTerm);
+      const typeMatch =
+        !type ||
+        passage.type.toLowerCase() ===
+          (lowerCaseType === FICTION ? FICTION : NON_FICTION);
+      const genreMatch =
+        !selectedGenre ||
+        passage.genre.toLowerCase() === lowerCaseSelectedGenre;
+      const subgenreMatch =
+        !selectedSubgenre ||
+        passage.subgenre.toLowerCase() === lowerCaseSelectedSubgenre;
+      const levelMatch =
+        selectedLevels.length === 0 ||
+        selectedLevels.includes(passage.ra_level.toString());
 
-  const filteredItems = currentItems.filter((passage) => {
-    const titleMatch = !searchTerm || passage.title.toLowerCase().includes(lowerCaseSearchTerm);
-    const typeMatch = !type || passage.type.toLowerCase() === (lowerCaseType === FICTION ? FICTION : NON_FICTION);
-    const genreMatch = !selectedGenre || passage.genre.toLowerCase() === lowerCaseSelectedGenre;
-    const subgenreMatch = !selectedSubgenre || passage.subgenre.toLowerCase() === lowerCaseSelectedSubgenre;
-    const levelMatch = selectedLevels.length === 0 || selectedLevels.includes(passage.ra_level.toString());
-
-    return titleMatch && typeMatch && genreMatch && subgenreMatch && levelMatch;
-  });
-  setCurrentPage(1);
-  setSelectedItems(filteredItems.length);
-  return filteredItems;
-};
+      return (
+        titleMatch && typeMatch && genreMatch && subgenreMatch && levelMatch
+      );
+    });
+    setCurrentPage(1);
+    setSelectedItems(filteredItems.length);
+    return filteredItems;
+  };
 
   useEffect(() => {
     if (prevSelectedGenre !== selectedGenre) {
@@ -262,19 +218,27 @@ const filterPassages = (
         <div className="md:pr-4">
           {/* sort date and rating */}
           <div className="mb-4">
-              <p className="font-bold">{tp("sortBy")} {sortOrder}</p>
-                <Button variant="ghost" onClick={() => {
-                      handleSortChange('rating');
-                }}>
-                  {tp("rating")}
-                  <CaretSortIcon className="ml-2 h-4 w-4" />               
-                   </Button>
-                <Button variant="ghost" onClick={() => {
-                  handleSortChange('date');
-                }}>
-                  {tp("date")}
-                  <CaretSortIcon className="ml-2 h-4 w-4" />
-                </Button>
+            <p className="font-bold">
+              {tp("sortBy")} {sortOrder}
+            </p>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                handleSortChange("rating");
+              }}
+            >
+              {tp("rating")}
+              <CaretSortIcon className="ml-2 h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                handleSortChange("date");
+              }}
+            >
+              {tp("date")}
+              <CaretSortIcon className="ml-2 h-4 w-4" />
+            </Button>
           </div>
 
           {/* Fitered by type */}
@@ -325,7 +289,7 @@ const filterPassages = (
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <div className="flex flex-col w-full md:w-[50%] items-start ml-4">
+            {/* <div className=""> */}
               {selectedGenre && (
                 <DropdownMenu>
                   <DropdownMenuTrigger>
@@ -343,30 +307,22 @@ const filterPassages = (
                         {subgenre}
                       </DropdownMenuItem>
                     ))}
-
-{selectedSubgenre && (
-            <DropdownMenuItem
-              onSelect={() => setSelectedSubgenre('')}
-            >
-             reset subgenre
-            </DropdownMenuItem>
-          )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-            </div>
+            {/* </div> */}
+            <div className="mt-4 flex gap-2">
             {selectedGenre && (
-    <Button variant="default" onClick={() => setSelectedGenre('')}>
-      {/* {tp("resetGenre")} */}
-      reset genre
-    </Button>
-  )}
-  {selectedSubgenre && (
-    <Button variant="default" onClick={() => setSelectedSubgenre('')}>
-      {/* {tp("resetSubGenre")} */}
-      reset subgenre
-    </Button>
-  )}
+              <Button variant="default" onClick={() => setSelectedGenre("")}>
+                {tp("resetGenre")}
+              </Button>
+            )}
+            {selectedSubgenre && (
+              <Button variant="default" onClick={() => setSelectedSubgenre("")}>
+                {tp("resetSubGenre")}
+              </Button>
+            )}
+            </div>
           </div>
 
           {/* Filtered by level */}
@@ -433,15 +389,8 @@ const filterPassages = (
             size="sm"
             onClick={() => {
               setCurrentPage(currentPage > 1 ? currentPage - 1 : 1);
-              // setSelectedItems(
-              //   currentPage > 1
-              //     ? selectedItems - displayedItems.length
-              //     : isFiltered
-              //     ? filteredPassages.length
-              //     : passages.length
-              // );
               setSelectedItems(
-                currentPage > 1 ? currentPage -1 : 1 - (1) * itemsPerPage
+                currentPage > 1 ? currentPage - 1 : 1 - 1 * itemsPerPage
               );
             }}
             disabled={currentPage === 1}
@@ -474,17 +423,18 @@ const filterPassages = (
                   : passages.length
               );
             }}
-            disabled={ currentPage === Math.ceil(
-              (isFiltered ? filteredPassages.length : passages.length) /
-                itemsPerPage
-            )
+            disabled={
+              currentPage ===
+              Math.ceil(
+                (isFiltered ? filteredPassages.length : passages.length) /
+                  itemsPerPage
+              )
             }
           >
             {t("next")}
           </Button>
         </div>
       </div>
-
     </>
   );
 }

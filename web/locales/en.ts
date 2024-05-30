@@ -319,6 +319,8 @@ export default {
       sortBy: "Sort By",
       rating: "Rating",
       date: "Date",
+      resetGenre: "Reset Genre",
+      resetSubGenre: "Reset Subgenre",
     },
     myClasses: {
       title: "My Classes",

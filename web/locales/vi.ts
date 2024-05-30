@@ -306,6 +306,8 @@ export default {
       sortBy: "Sắp xếp theo",
       rating: "Xếp hạng",
       date: "Ngày",
+      resetGenre: "Đặt lại thể loại",
+      resetSubGenre: "Đặt lại thể loại phụ",
     },
 
     myClasses: {

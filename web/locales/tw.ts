@@ -284,6 +284,8 @@ export default {
       sortBy: "排序依據",
       rating: "評級",
       date: "日期",
+      resetGenre: "重置類型",
+      resetSubGenre: "重置子類型",
     },
 
     myClasses: {
