@@ -65,10 +65,9 @@ export default function Passages({ passages }: PassagesProps) {
   const [isFiltered, setIsFiltered] = useState(false);
   const [filteredPassages, setFilteredPassages] = useState<Passage[]>([]);
   const [prevSelectedGenre, setPrevSelectedGenre] = useState(selectedGenre);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [type, setType] = useState("");
-
+  
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [selectedItems, setSelectedItems] = useState(0);
@@ -113,16 +112,6 @@ export default function Passages({ passages }: PassagesProps) {
     setSortOption(value);
   };
 
-  // const handleSortChange = (value: string) => {
-  //   if (value === 'rating' || value === 'date') {
-  //     setSortOrder('asc');
-  //   } else if (sortOption === value) {
-  //     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-  //   } else {
-  //     setSortOrder('asc');
-  //   }
-  //   setSortOption(value);
-  // };
 
   const sortPassages = (passages: any[]) => {
     return passages.sort((a, b) => {
@@ -136,70 +125,99 @@ export default function Passages({ passages }: PassagesProps) {
     });
   };
 
+  // const filterPassages = (
+  //   currentItems: Passage[],
+  //   searchTerm: string,
+  //   type: string,
+  //   selectedGenre: string,
+  //   selectedSubgenre: string,
+  //   selectedLevels: string[]
+  // ) => {
+  //   let filteredPassages = [...currentItems];
 
-  const filterPassages = (
-    currentItems: Passage[],
-    searchTerm: string,
-    type: string,
-    selectedGenre: string,
-    selectedSubgenre: string,
-    selectedLevels: string[]
-  ) => {
-    let filteredPassages = [...currentItems];
+  //   if (searchTerm) {
+  //     filteredPassages = filteredPassages.filter((passage) =>
+  //       passage.title.toLowerCase().includes(searchTerm.toLowerCase())
+  //     );
+  //   }
 
-    if (searchTerm) {
-      filteredPassages = filteredPassages.filter((passage) =>
-        passage.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+  //   if (type) {
+  //     filteredPassages = filteredPassages.filter((passage) => {
+  //       if (type.toLowerCase() === "fiction") {
+  //         return passage.type.toLowerCase() === "fiction";
+  //       }
+  //       if (type.toLowerCase() === "non-fiction") {
+  //         return passage.type.toLowerCase() === "nonfiction";
+  //       }
+  //       return false;
+  //     });
+  //   }
 
-    if (type) {
-      filteredPassages = filteredPassages.filter((passage) => {
-        if (type.toLowerCase() === "fiction") {
-          return passage.type.toLowerCase() === "fiction";
-        }
-        if (type.toLowerCase() === "non-fiction") {
-          return passage.type.toLowerCase() === "nonfiction";
-        }
-        return false;
-      });
-    }
+  //   if (selectedGenre) {
+  //     filteredPassages = filteredPassages.filter(
+  //       (passage) => passage.genre.toLowerCase() === selectedGenre.toLowerCase()
+  //     );
+  //   }
 
-    if (selectedGenre) {
-      filteredPassages = filteredPassages.filter(
-        (passage) => passage.genre.toLowerCase() === selectedGenre.toLowerCase()
-      );
-    }
+  //   if (selectedSubgenre) {
+  //     filteredPassages = filteredPassages.filter(
+  //       (passage) =>
+  //         passage.subgenre.toLowerCase() === selectedSubgenre.toLowerCase()
+  //     );
+  //   }
 
-    if (selectedSubgenre) {
-      filteredPassages = filteredPassages.filter(
-        (passage) =>
-          passage.subgenre.toLowerCase() === selectedSubgenre.toLowerCase()
-      );
-    }
+  //   if (selectedLevels.length > 0) {
+  //     filteredPassages = filteredPassages.filter((passage) =>
+  //       selectedLevels.includes(passage.ra_level.toString())
+  //     );
+  //   }
 
-    if (selectedLevels.length > 0) {
-      filteredPassages = filteredPassages.filter((passage) =>
-        selectedLevels.includes(passage.ra_level.toString())
-      );
-    }
-
-    if (selectedLevels.length > 0 && searchTerm) {
-      filteredPassages = currentItems.filter((passage) => {
-        const levelMatch = selectedLevels.includes(passage.ra_level.toString());
-        const titleMatch = passage.title
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-        return levelMatch && titleMatch;
-      });
-    }
-
-    return filteredPassages;
-  };
+  //   if (selectedLevels.length > 0 && searchTerm) {
+  //     filteredPassages = currentItems.filter((passage) => {
+  //       const levelMatch = selectedLevels.includes(passage.ra_level.toString());
+  //       const titleMatch = passage.title
+  //         .toLowerCase()
+  //         .includes(searchTerm.toLowerCase());
+  //       return levelMatch && titleMatch;
+  //     });
+  //   }
+  
+  //   return filteredPassages;
+  // };
 
   const displayedItems = isFiltered
     ? filteredPassages.slice((currentPage - 1) * 10, currentPage * 10)
     : passages.slice((currentPage - 1) * 10, currentPage * 10);
+
+  const FICTION = "fiction";
+const NON_FICTION = "nonfiction";
+
+const filterPassages = (
+  currentItems: Passage[],
+  searchTerm: string,
+  type: string,
+  selectedGenre: string,
+  selectedSubgenre: string,
+  selectedLevels: string[]
+) => {
+  const lowerCaseSearchTerm = searchTerm.toLowerCase();
+  const lowerCaseType = type.toLowerCase();
+  const lowerCaseSelectedGenre = selectedGenre.toLowerCase();
+  const lowerCaseSelectedSubgenre = selectedSubgenre.toLowerCase();
+
+  const filteredItems = currentItems.filter((passage) => {
+    const titleMatch = !searchTerm || passage.title.toLowerCase().includes(lowerCaseSearchTerm);
+    const typeMatch = !type || passage.type.toLowerCase() === (lowerCaseType === FICTION ? FICTION : NON_FICTION);
+    const genreMatch = !selectedGenre || passage.genre.toLowerCase() === lowerCaseSelectedGenre;
+    const subgenreMatch = !selectedSubgenre || passage.subgenre.toLowerCase() === lowerCaseSelectedSubgenre;
+    const levelMatch = selectedLevels.length === 0 || selectedLevels.includes(passage.ra_level.toString());
+
+    return titleMatch && typeMatch && genreMatch && subgenreMatch && levelMatch;
+  });
+  setCurrentPage(1);
+  setSelectedItems(filteredItems.length);
+  return filteredItems;
+};
 
   useEffect(() => {
     if (prevSelectedGenre !== selectedGenre) {
@@ -405,7 +423,7 @@ export default function Passages({ passages }: PassagesProps) {
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {t("select", {
-            selected: selectedItems,
+            selected: displayedItems.length + (currentPage - 1) * 10,
             total: isFiltered ? filteredPassages.length : passages.length,
           })}
         </div>
@@ -415,12 +433,15 @@ export default function Passages({ passages }: PassagesProps) {
             size="sm"
             onClick={() => {
               setCurrentPage(currentPage > 1 ? currentPage - 1 : 1);
+              // setSelectedItems(
+              //   currentPage > 1
+              //     ? selectedItems - displayedItems.length
+              //     : isFiltered
+              //     ? filteredPassages.length
+              //     : passages.length
+              // );
               setSelectedItems(
-                currentPage > 1
-                  ? selectedItems - displayedItems.length
-                  : isFiltered
-                  ? filteredPassages.length
-                  : passages.length
+                currentPage > 1 ? currentPage -1 : 1 - (1) * itemsPerPage
               );
             }}
             disabled={currentPage === 1}
@@ -453,12 +474,17 @@ export default function Passages({ passages }: PassagesProps) {
                   : passages.length
               );
             }}
-            disabled={currentPage === selectedItems}
+            disabled={ currentPage === Math.ceil(
+              (isFiltered ? filteredPassages.length : passages.length) /
+                itemsPerPage
+            )
+            }
           >
             {t("next")}
           </Button>
         </div>
       </div>
+
     </>
   );
 }
