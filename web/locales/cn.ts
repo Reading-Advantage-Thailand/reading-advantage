@@ -399,12 +399,13 @@ export default {
 
     classRoster: {
       title: "班级名单：{className}",
-      description: "请从我的班级中选择班级",
       name: "姓名",
       lastActivity: "最后活动",
       actions: "操作",
       search: "搜索姓名...",
       noStudent: "此班级中没有学生",
+      noClassroom: "没有选择班级。请先选择一个班级。",
+      noClassroomDescription: "请从我的班级中选择班级",
       addStudentButton: "添加新学生",
       toast: {
         successResetProgress: "成功重置进度",

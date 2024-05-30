@@ -64,10 +64,13 @@ type Classrooms = {
 
 type MyRosterProps = {
   studentInClass: Student[];
-  classrooms: Classrooms[];  
+  classrooms: Classrooms[];
 };
 
-export default function ClassRoster({ studentInClass, classrooms }: MyRosterProps) {
+export default function ClassRoster({
+  studentInClass,
+  classrooms,
+}: MyRosterProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -85,6 +88,9 @@ export default function ClassRoster({ studentInClass, classrooms }: MyRosterProp
   const [redirectUrl, setRedirectUrl] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [hasRefreshed, setHasRefreshed] = useState(false);
+  const [selectedClassroom, setSelectedClassroom] = useState<Classrooms | null>(
+    null
+  );
 
   let action = "";
 
@@ -92,12 +98,12 @@ export default function ClassRoster({ studentInClass, classrooms }: MyRosterProp
     setIsOpen(false);
   };
 
-useEffect(() => {
-  if (!hasRefreshed && studentInClass) {
-    router.refresh();
-    setHasRefreshed(true);
-  }
-}, [studentInClass, hasRefreshed, router]);
+  useEffect(() => {
+    if (!hasRefreshed && studentInClass) {
+      router.refresh();
+      setHasRefreshed(true);
+    }
+  }, [studentInClass, hasRefreshed, router]);
 
   useEffect(() => {
     if (redirectUrl) {
@@ -139,10 +145,10 @@ useEffect(() => {
           cefrLevel: "",
         }),
       });
-     toast({
-        title: tr('toast.successResetProgress'),
-        description: tr('toast.successResetProgressDescription'),
-     })
+      toast({
+        title: tr("toast.successResetProgress"),
+        description: tr("toast.successResetProgressDescription"),
+      });
       return new Response(
         JSON.stringify({
           message: "success",
@@ -171,7 +177,7 @@ useEffect(() => {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            {tr('name')}
+            {tr("name")}
             <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -183,7 +189,7 @@ useEffect(() => {
     {
       accessorKey: "lastActivity",
       header: ({ column }) => {
-        return <Button variant="ghost">{tr('lastActivity')}</Button>;
+        return <Button variant="ghost">{tr("lastActivity")}</Button>;
       },
       cell: ({ row }) => {
         const lastActivity = row.getValue("lastActivity");
@@ -218,13 +224,13 @@ useEffect(() => {
     {
       accessorKey: "action",
       header: ({ column }) => {
-        return <Button variant="ghost">{tr('actions')}</Button>;
+        return <Button variant="ghost">{tr("actions")}</Button>;
       },
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="default" className="ml-auto">
-              {tr('actions')} <ChevronDownIcon className="ml-2 h-4 w-4" />
+              {tr("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -233,19 +239,19 @@ useEffect(() => {
                 handleActionSelected("progress", row.getValue("studentId"))
               }
             >
-              <Link href={redirectUrl}>{ts('progress')}</Link>
+              <Link href={redirectUrl}>{ts("progress")}</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               onClick={() =>
                 handleActionSelected("enroll", row.getValue("studentId"))
               }
             >
-              <Link href={redirectUrl}>{ts('enroll')}</Link>
+              <Link href={redirectUrl}>{ts("enroll")}</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               onClick={() => openResetModal(row.getValue("studentId"))}
             >
-              {ts('resetProgress')}
+              {ts("resetProgress")}
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -277,40 +283,44 @@ useEffect(() => {
         <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{ts('resetTitle')}</DialogTitle>
+              <DialogTitle>{ts("resetTitle")}</DialogTitle>
             </DialogHeader>
-            <DialogDescription>
-              {ts('resetDescription')}
-            </DialogDescription>
+            <DialogDescription>{ts("resetDescription")}</DialogDescription>
             <DialogFooter>
               <Button variant="outline" onClick={() => closeResetModal()}>
-                {ts('cancelReset')}
+                {ts("cancelReset")}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => handleResetProgress(selectedStudentId ?? "")}
               >
-                {ts('reset')}
+                {ts("reset")}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
 
-      {studentInClass.length > 0 ? (
-        <div className="font-bold text-3xl">
-          {tr('title', {className: studentInClass[0].classroomName})} 
-        </div>
+      {classrooms.length ? (
+        studentInClass.length ? (
+          <div className="font-bold text-3xl">
+            {tr("title", { className: studentInClass[0].classroomName })}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <Header heading={tr("noStudent")} />
+          </div>
+        )
       ) : (
         <div className="flex flex-col gap-2">
-        <Header heading={tr('noStudent')} />
-         {tr('description')}
-      </div>
+          <Header heading={tr("noClassroom")} />
+          {tr("noClassroomDescription")}
+        </div>
       )}
 
       <div className="flex justify-between">
         <Input
-          placeholder={tr('search')}
+          placeholder={tr("search")}
           value={
             (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
           }
@@ -319,14 +329,18 @@ useEffect(() => {
           }
           className="max-w-sm mt-4"
         />
-          <div className="max-w-sm mt-4">
-                <Link href={`/teacher/class-roster/${classrooms[0].id}/create-new-student` }>
-              <Button variant="outline">
-                <Icons.add />
-                &nbsp; {tr('addStudentButton')}
-              </Button>
-                </Link>
-        </div>
+        {classrooms.length > 0 ? (
+          <Link
+            href={`/teacher/class-roster/${classrooms[0].id}/create-new-student`}
+          >
+            <Button variant="outline">
+              <Icons.add />
+              &nbsp; {tr("addStudentButton")}
+            </Button>
+          </Link>
+        ) : (
+          ""
+        )}
       </div>
       <div className="rounded-md border mt-4">
         <Table>

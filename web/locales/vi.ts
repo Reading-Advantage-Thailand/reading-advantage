@@ -429,12 +429,13 @@ export default {
 
     classRoster: {
       title: "Danh Sách Học Sinh Của Lớp: {className}",
-      description: "Vui lòng chọn lớp từ Lớp Học Của Tôi",
       name: "Tên",
       lastActivity: "Hoạt Động Gần Đây",
       actions: "Hành Động",
       search: "Tìm kiếm tên...",
       noStudent: "Không có học sinh trong lớp này",
+      noClassroom: "Không có lớp học",
+      noClassroomDescription: "Vui lòng chọn lớp từ Lớp Học Của Tôi",
       addStudentButton: "Thêm học sinh mới",
       toast: {
         successResetProgress: "Đặt lại tiến trình thành công",
