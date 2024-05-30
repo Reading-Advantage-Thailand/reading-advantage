@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "../ui/input";
 import { Checkbox } from "@mui/material";
 import { Button } from "../ui/button";
@@ -8,10 +8,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
+import { CaretSortIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "../article-showcase-card";
 
@@ -64,7 +63,6 @@ export default function Passages({ passages }: PassagesProps) {
   const [isFiltered, setIsFiltered] = useState(false);
   const [filteredPassages, setFilteredPassages] = useState<Passage[]>([]);
   const [prevSelectedGenre, setPrevSelectedGenre] = useState(selectedGenre);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [type, setType] = useState("");
 
@@ -72,38 +70,30 @@ export default function Passages({ passages }: PassagesProps) {
   const itemsPerPage = 10;
   const [selectedItems, setSelectedItems] = useState(0);
   const currentItems = passages;
-  // const formRef = useRef<HTMLFormElement>(null);
   const t = useScopedI18n("components.articleRecordsTable");
   const tp = useScopedI18n("components.passages");
-  const [sortOption, setSortOption] = useState("Select Sort Option");
+  const [sortOption, setSortOption] = useState("");
+  const [sortOrder, setSortOrder] = useState('Ascending');
 
-  const getGenres = () => {
-    let genresData: Set<string> = new Set();
-    passages.forEach((passage) => {
-      genresData.add(passage.genre);
-    });
-    return Array.from(genresData);
-  };
-  const genres = getGenres();
+  const FICTION = "fiction";
+  const NON_FICTION = "nonfiction";
 
   const getSubgenres = (selectedGenre: string) => {
     let subgenresData: Set<string> = new Set();
-    passages.forEach((passage) => {
+    filteredPassages.forEach((passage) => {
       if (passage.genre === selectedGenre) subgenresData.add(passage.subgenre);
     });
     return Array.from(subgenresData);
   };
-
-  // const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  // };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
   const handleTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setType(event.target.value);
+    setType((prevType) =>
+      prevType === event.target.value ? "" : event.target.value
+    );
   };
 
   const handleSelectionChange = (level: string) => {
@@ -116,29 +106,35 @@ export default function Passages({ passages }: PassagesProps) {
     });
   };
 
-  // const handleSortChange = (event: {
-  //   target: { value: React.SetStateAction<string> };
-  // }) => {
-  //   setSortOption(event.target.value);
-  // };
-
   const handleSortChange = (value: string) => {
+    if (sortOption === value) {
+      setSortOrder(sortOrder === "Ascending" ? 'Descending' : 'Ascending');
+    } else {
+      setSortOrder('Ascending');
+    }
     setSortOption(value);
   };
 
   const sortPassages = (passages: any[]) => {
     return passages.sort((a, b) => {
-      if (sortOption === "Rating") {
-        return b.average_rating - a.average_rating;
-      } else if (sortOption === "Date") {
-        return (
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+      if (sortOption === "rating") {
+        return sortOrder === "Ascending"
+          ? a.average_rating - b.average_rating
+          : b.average_rating - a.average_rating;
+      } else if (sortOption === "date") {
+        return sortOrder === "Ascending"
+          ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          : new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       } else {
         return 0;
       }
     });
   };
+
+  const displayedItems = isFiltered
+    ? filteredPassages.slice((currentPage - 1) * 10, currentPage * 10)
+    : passages.slice((currentPage - 1) * 10, currentPage * 10);
+
   const filterPassages = (
     currentItems: Passage[],
     searchTerm: string,
@@ -147,61 +143,37 @@ export default function Passages({ passages }: PassagesProps) {
     selectedSubgenre: string,
     selectedLevels: string[]
   ) => {
-    let filteredPassages = [...currentItems];
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const lowerCaseType = type.toLowerCase();
+    const lowerCaseSelectedGenre = selectedGenre.toLowerCase();
+    const lowerCaseSelectedSubgenre = selectedSubgenre.toLowerCase();
 
-    if (searchTerm) {
-      filteredPassages = filteredPassages.filter((passage) =>
-        passage.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredItems = currentItems.filter((passage) => {
+      const titleMatch =
+        !searchTerm ||
+        passage.title.toLowerCase().includes(lowerCaseSearchTerm);
+      const typeMatch =
+        !type ||
+        passage.type.toLowerCase() ===
+          (lowerCaseType === FICTION ? FICTION : NON_FICTION);
+      const genreMatch =
+        !selectedGenre ||
+        passage.genre.toLowerCase() === lowerCaseSelectedGenre;
+      const subgenreMatch =
+        !selectedSubgenre ||
+        passage.subgenre.toLowerCase() === lowerCaseSelectedSubgenre;
+      const levelMatch =
+        selectedLevels.length === 0 ||
+        selectedLevels.includes(passage.ra_level.toString());
+
+      return (
+        titleMatch && typeMatch && genreMatch && subgenreMatch && levelMatch
       );
-    }
-
-    if (type) {
-      filteredPassages = filteredPassages.filter((passage) => {
-        if (type.toLowerCase() === "fiction") {
-          return passage.type.toLowerCase() === "fiction";
-        }
-        if (type.toLowerCase() === "non-fiction") {
-          return passage.type.toLowerCase() === "nonfiction";
-        }
-        return false;
-      });
-    }
-
-    if (selectedGenre) {
-      filteredPassages = filteredPassages.filter(
-        (passage) => passage.genre.toLowerCase() === selectedGenre.toLowerCase()
-      );
-    }
-
-    if (selectedSubgenre) {
-      filteredPassages = filteredPassages.filter(
-        (passage) =>
-          passage.subgenre.toLowerCase() === selectedSubgenre.toLowerCase()
-      );
-    }
-
-    if (selectedLevels.length > 0) {
-      filteredPassages = filteredPassages.filter((passage) =>
-        selectedLevels.includes(passage.ra_level.toString())
-      );
-    }
-
-    if (selectedLevels.length > 0 && searchTerm) {
-      filteredPassages = currentItems.filter((passage) => {
-        const levelMatch = selectedLevels.includes(passage.ra_level.toString());
-        const titleMatch = passage.title
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-        return levelMatch && titleMatch;
-      });
-    }
-
-    return filteredPassages;
+    });
+    setCurrentPage(1);
+    setSelectedItems(filteredItems.length);
+    return filteredItems;
   };
-
-  const displayedItems = isFiltered
-    ? filteredPassages.slice((currentPage - 1) * 10, currentPage * 10)
-    : passages.slice((currentPage - 1) * 10, currentPage * 10);
 
   useEffect(() => {
     if (prevSelectedGenre !== selectedGenre) {
@@ -241,33 +213,35 @@ export default function Passages({ passages }: PassagesProps) {
         value={searchTerm}
         onChange={handleSearchChange}
       />
+
       <div className="grid grid-cols-1 md:grid-cols-2 mt-4 gap-4">
         <div className="md:pr-4">
+          {/* sort date and rating */}
           <div className="mb-4">
-            <DropdownMenu>
-              <p className="font-bold">{tp('sortBy')}</p>
-              <DropdownMenuTrigger>
-                <Button variant="ghost">
-                  {sortOption || "Select Sort Option"}
-                  <ChevronDownIcon className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
-                {[tp('rating'), tp('date')].map((option) => (
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      setSortOption(option);
-                      handleSortChange(option);
-                    }}
-                    key={option}
-                  >
-                    {option}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <p className="font-bold">
+              {tp("sortBy")} {sortOrder}
+            </p>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                handleSortChange("rating");
+              }}
+            >
+              {tp("rating")}
+              <CaretSortIcon className="ml-2 h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                handleSortChange("date");
+              }}
+            >
+              {tp("date")}
+              <CaretSortIcon className="ml-2 h-4 w-4" />
+            </Button>
           </div>
 
+          {/* Fitered by type */}
           <div className="mb-4">
             <p className="font-bold">{tp("type")}</p>
             <div className="ml-4">
@@ -290,6 +264,7 @@ export default function Passages({ passages }: PassagesProps) {
             </div>
           </div>
 
+          {/* Filtered by topic */}
           <div className="mb-4">
             <p className="font-bold">{tp("topic")}</p>
             <DropdownMenu>
@@ -300,7 +275,11 @@ export default function Passages({ passages }: PassagesProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
-                {genres.map((genre) => (
+                {[
+                  ...new Set(
+                    filteredPassages.map((passages) => passages.genre)
+                  ),
+                ].map((genre) => (
                   <DropdownMenuItem
                     onSelect={() => setSelectedGenre(genre)}
                     key={genre}
@@ -310,7 +289,7 @@ export default function Passages({ passages }: PassagesProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <div className="flex flex-col w-full md:w-[50%] items-start ml-4">
+            {/* <div className=""> */}
               {selectedGenre && (
                 <DropdownMenu>
                   <DropdownMenuTrigger>
@@ -331,9 +310,22 @@ export default function Passages({ passages }: PassagesProps) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
+            {/* </div> */}
+            <div className="mt-4 flex gap-2">
+            {selectedGenre && (
+              <Button variant="default" onClick={() => setSelectedGenre("")}>
+                {tp("resetGenre")}
+              </Button>
+            )}
+            {selectedSubgenre && (
+              <Button variant="default" onClick={() => setSelectedSubgenre("")}>
+                {tp("resetSubGenre")}
+              </Button>
+            )}
             </div>
           </div>
 
+          {/* Filtered by level */}
           <div className="">
             <p className="font-bold">{tp("level")}</p>
             <div className="grid grid-cols-7 w-full text-center">
@@ -387,7 +379,7 @@ export default function Passages({ passages }: PassagesProps) {
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {t("select", {
-            selected: selectedItems,
+            selected: displayedItems.length + (currentPage - 1) * 10,
             total: isFiltered ? filteredPassages.length : passages.length,
           })}
         </div>
@@ -398,11 +390,7 @@ export default function Passages({ passages }: PassagesProps) {
             onClick={() => {
               setCurrentPage(currentPage > 1 ? currentPage - 1 : 1);
               setSelectedItems(
-                currentPage > 1
-                  ? selectedItems - displayedItems.length
-                  : isFiltered
-                  ? filteredPassages.length
-                  : passages.length
+                currentPage > 1 ? currentPage - 1 : 1 - 1 * itemsPerPage
               );
             }}
             disabled={currentPage === 1}
@@ -435,7 +423,13 @@ export default function Passages({ passages }: PassagesProps) {
                   : passages.length
               );
             }}
-            disabled={currentPage === selectedItems}
+            disabled={
+              currentPage ===
+              Math.ceil(
+                (isFiltered ? filteredPassages.length : passages.length) /
+                  itemsPerPage
+              )
+            }
           >
             {t("next")}
           </Button>

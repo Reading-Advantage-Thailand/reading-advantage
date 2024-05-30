@@ -284,6 +284,8 @@ export default {
       sortBy: "排序依據",
       rating: "評級",
       date: "日期",
+      resetGenre: "重置類型",
+      resetSubGenre: "重置子類型",
     },
 
     myClasses: {
@@ -404,12 +406,13 @@ export default {
 
     classRoster: {
       title: "班級名單：{className}",
-      description: "請從我的班級中選擇班級",
       name: "姓名",
       lastActivity: "最後活動",
       actions: "操作",
       search: "搜尋姓名...",
       noStudent: "此班級中沒有學生",
+      noClassroom: "沒有選擇班級",
+      noClassroomDescription: "請從我的班級中選擇班級",
       addStudentButton: "添加新學生",
       toast: {
         successResetProgress: "成功重置進度",

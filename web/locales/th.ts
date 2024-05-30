@@ -310,6 +310,8 @@ export default {
       sortBy: "เรียงลำดับโดย",
       rating: "คะแนน",
       date: "วันที่",
+      resetGenre: "รีเซ็ตประเภท",
+      resetSubGenre: "รีเซ็ตประเภทย่อย",
     },
 
     myClasses: {
@@ -430,12 +432,13 @@ export default {
 
     classRoster: {
       title: "รายชื่อนักเรียนสำหรับห้องเรียน: {className}",
-      description: "กรุณาเลือกชั้นเรียนจากชั้นเรียนของฉัน",
       name: "ชื่อ",
       lastActivity: "กิจกรรมล่าสุด",
       actions: "การดำเนินการ",
       search: "ค้นหาชื่อ...",
       noStudent: "ไม่มีนักเรียนในชั้นนี้",
+      noClassroom: "ไม่มีชั้นเรียนที่เลือก",
+      noClassroomDescription: "กรุณาเลือกชั้นเรียนจากชั้นเรียนของฉัน",
       addStudentButton: "เพิ่มนักเรียนใหม่",
       toast: {
         successResetProgress: "รีเซ็ตความคืบหน้าสำเร็จ",
