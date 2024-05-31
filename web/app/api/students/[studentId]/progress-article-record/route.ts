@@ -75,7 +75,7 @@ export async function PATCH(req: Request, res: Response) {
       });
     console.log("new level", userLevel + (rating - 3));
 
-    const article = await db.collection("articles").doc(articleId).get();
+    const article = await db.collection("new-articles").doc(articleId).get();
 
     const averageRating = article.data()?.averageRating || 0;
     const totalRating = article.data()?.totalRatings || 0;
@@ -83,7 +83,7 @@ export async function PATCH(req: Request, res: Response) {
       (averageRating * totalRating + rating) / (totalRating + 1);
     const newTotalRatings = totalRating + 1;
     // update article
-    const articleRef = db.collection("articles").doc(articleId).update({
+    const articleRef = db.collection("new-articles").doc(articleId).update({
       averageRating: newAverageRating,
       totalRatings: newTotalRatings,
     });

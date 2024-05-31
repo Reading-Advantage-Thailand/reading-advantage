@@ -319,6 +319,8 @@ export default {
       sortBy: "Sort By",
       rating: "Rating",
       date: "Date",
+      resetGenre: "Reset Genre",
+      resetSubGenre: "Reset Subgenre",
     },
     myClasses: {
       title: "My Classes",
@@ -440,12 +442,13 @@ export default {
 
     classRoster: {
       title: "Roster for classroom: {className}",
-      description: "Please select class from My Classes",
       name: "Name",
       lastActivity: "Last Activity",
       actions: "Actions",
       search: "Search name...",
       noStudent: "No student in this class",
+      noClassroom: "No classroom selected",
+      noClassroomDescription: "No classroom selected. Please select a classroom first.",
       addStudentButton: "Add new students",
       toast: {
         successResetProgress: "Successfully reset progress",

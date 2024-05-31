@@ -43,7 +43,7 @@ export async function GET(req: Request, res: Response) {
       console.log("setsdc");
       // Start with a base query
       const articlesQuery = db
-        .collection("articles")
+        .collection("new-articles")
         .where("raLevel", ">=", levelInt - 1)
         .where("raLevel", "<=", levelInt + 1)
         .where("type", "==", type);
@@ -71,7 +71,7 @@ export async function GET(req: Request, res: Response) {
       console.log("testttttt");
       // Start with a base query
       const articlesQuery = db
-        .collection("articles")
+        .collection("new-articles")
         .where("raLevel", ">=", levelInt - 1)
         .where("raLevel", "<=", levelInt + 1)
         .where("type", "==", type)
@@ -109,7 +109,7 @@ export async function GET(req: Request, res: Response) {
 
       // Start with a base query
       const articlesQuery = db
-        .collection("articles")
+        .collection("new-articles")
         .where("raLevel", ">=", levelInt - 1)
         .where("raLevel", "<=", levelInt + 1)
         .where("type", "==", type)
@@ -173,7 +173,7 @@ export async function GET(req: Request, res: Response) {
       //         // status: userArticleRecord?.status,
       //     });
       // });
-      console.log("articles", articles);
+      console.log("new-articles", articles);
 
       return new Response(
         JSON.stringify({

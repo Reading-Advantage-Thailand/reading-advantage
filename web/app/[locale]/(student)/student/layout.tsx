@@ -49,7 +49,7 @@ export default async function StudentHomeLayout({
           <SidebarNav items={studentPageConfig.sidebarNav} />
         </aside>
         <main className="flex w-full flex-1 flex-col overflow-hidden">
-          {children}
+          {children} 
         </main>
       </div>
     </div>
