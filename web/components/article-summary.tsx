@@ -31,7 +31,7 @@ export function ArticleSummary({ article, articleId }: Props) {
   React.useEffect(() => {
     handleTranslateSummary();
   }, [article, locale]);
-  
+
   async function handleTranslateSummary() {
     if (!locale || locale === "en") {
       return;
@@ -51,9 +51,5 @@ export function ArticleSummary({ article, articleId }: Props) {
     setSummarySentence(res.translation);
   }
 
-  return (
-    <div>
-      {locale == "en" ? <p>{article.summary}</p> : <p>{summarySentence}</p>}
-    </div>
-  );
+  return <>{locale == "en" ? article.summary : summarySentence}</>;
 }

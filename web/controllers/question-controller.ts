@@ -87,7 +87,7 @@ export async function getMCQuestions(
                 progress,
                 results: mcq,
             },
-            { status: 501 }
+            { status: 200 }
         );
     } catch (error) {
         console.error(error);
