@@ -17,7 +17,7 @@ interface Message {
 interface Props {
   article: Article;
 }
-export default function FloatingChatButton({ article }: Props) {
+export default function ChatBotFloatingChatButton({ article }: Props) {
   const t = useScopedI18n("components.chatBot");
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);

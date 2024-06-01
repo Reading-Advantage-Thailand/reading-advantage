@@ -488,6 +488,9 @@ export default {
     chatBot: {
       textSuggestion: "提問一個問題",
     },
+    wordList: {
+      title: "詞彙列表",
+    },
   },
   selectType: {
     types: {

@@ -515,6 +515,9 @@ export default {
     chatBot: {
       textSuggestion: "ถามคำถาม",
     },
+    wordList: {
+      title: "รายการคำศัพท์",
+    },
   },
 
   selectType: {
