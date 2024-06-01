@@ -98,7 +98,7 @@ export default function FloatingChatButton({ article }: Props) {
         {isOpen && (
           <div className="fixed bottom-14 right-5 w-96 h-96 bg-white border border-gray-300 p-4 shadow-xl rounded-lg overflow-hidden">
             <div className="flex flex-col justify-between h-full overflow-hidden">
-              <div className="overflow-y-auto flex-1 break-all">
+              <div className="overflow-y-auto flex-1">
                 {messages.map((message, index) => (
                   <div
                     key={index}
@@ -114,7 +114,7 @@ export default function FloatingChatButton({ article }: Props) {
                       </div>
                     )}
 
-                    <p>{message.text}</p>
+                    <span>{message.text}</span>
                   </div>
                 ))}
                 {loading && (
