@@ -481,6 +481,9 @@ export default {
     chatBot: {
       textSuggestion: "提一个问题",
     },
+    wordList: {
+      title: "词汇列表",
+    },
   },
 
   selectType: {

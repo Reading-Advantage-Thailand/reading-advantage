@@ -10,7 +10,6 @@ import ProgressBar from '@/components/progress-bar-xp';
 import { getCurrentUser } from '@/lib/session';
 import { UserAccountNav } from '@/components/user-account-nav';
 import axios from 'axios';
-import FloatingChatButton from '@/components/chatbot/floating-button'
 
 export default async function Layout({ children }: { children: ReactNode }) {
     const t = await getScopedI18n('components')

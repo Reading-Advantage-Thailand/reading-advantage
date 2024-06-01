@@ -8,7 +8,8 @@ import CustomError from "./custom-error";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
 import AssignDialog from "@/components/teacher/assign-dialog";
-import FloatingChatButton from "@/components/chatbot/floating-button";
+import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
+import WordList from "@/components/word-list";
 import { Article } from "@/components/models/article-model";
 
 export const metadata = {
@@ -44,19 +45,24 @@ export default async function ArticleQuizPage({
           userId={user.id}
         />
         <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
-          {user.role.includes("TEACHER") && (
-            <AssignDialog
-              article={articleResponse.article}
-              articleId={params.articleId}
-              userId={user.id}
-            />
-          )}
+          <div className="flex gap-4">
+            {user.role.includes("TEACHER") && (
+              <AssignDialog
+                article={articleResponse.article}
+                articleId={params.articleId}
+                userId={user.id}
+              />
+            )}
+            <WordList />
+          </div>
 
           <MCQuestionCard userId={user.id} articleId={params.articleId} />
           <SAQuestionCard userId={user.id} articleId={params.articleId} />
         </div>
       </div>
-      <FloatingChatButton article={articleResponse?.article as Article} />
+      <ChatBotFloatingChatButton
+        article={articleResponse?.article as Article}
+      />
     </>
   );
 }

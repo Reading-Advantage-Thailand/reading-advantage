@@ -525,6 +525,9 @@ export default {
     chatBot: {
       textSuggestion: "Ask a question",
     },
+    "wordList": {
+     "title": "Word List",
+    }
   },
 
   selectType: {

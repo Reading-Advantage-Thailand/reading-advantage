@@ -515,6 +515,9 @@ export default {
     chatBot: {
       textSuggestion: "Hỏi một câu hỏi",
     },
+    wordList: {
+      title: "danh sách từ vựng",
+    },
   },
 
   selectType: {
