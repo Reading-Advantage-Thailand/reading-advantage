@@ -1,5 +1,5 @@
 import { error, warn } from "console";
-import { assign, create, last } from "lodash";
+import { assign, create, first, last } from "lodash";
 import { arch } from "os";
 import { title } from "process";
 import { toast } from "react-toastify";
@@ -226,6 +226,20 @@ export default {
       congratulations: "Congratulations! ",
       upLevel: "You've achieved a new level.",
       close: "Close",
+    },
+    firstRoleSelection: {
+      heading: "What you want to do?",
+      description: "Please select your role",
+      studentButton: "I want to learn",
+      teacherButton: "I want to teach",
+      save: "Save",
+      toast: {
+        title: "Role updated",
+        studentDescription: "You are now a student",
+        teacherDescription: "You are now a teacher",
+        adminDescription: "You are now an admin",
+        systemDescription: "You are now a system user",
+      }
     },
     // use this for article selection page
     // this is the select component
@@ -525,8 +539,8 @@ export default {
     chatBot: {
       textSuggestion: "Ask a question",
     },
-    "wordList": {
-     "title": "Word List",
+    wordList: {
+     title: "Word List",
     }
   },
 

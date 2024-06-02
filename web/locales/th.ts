@@ -218,6 +218,21 @@ export default {
       upLevel: "คุณได้รับระดับใหม่แล้ว!",
       close: "ปิด",
     },
+
+    firstRoleSelection: {
+      heading: "คุณต้องการทำอะไร?",
+      description: "โปรดเลือกบทบาทของคุณ",
+      studentButton: "ฉันต้องการเรียนรู้",
+      teacherButton: "ฉันต้องการสอน",
+      save: "บันทึก",
+      toast: {
+        title: "บทบาทได้รับการอัปเดต",
+        studentDescription: "ตอนนี้คุณเป็นนักเรียนแล้ว",
+        teacherDescription: "ตอนนี้คุณเป็นครูแล้ว",
+        adminDescription: "ตอนนี้คุณเป็นผู้ดูแลระบบแล้ว",
+        systemDescription: "ตอนนี้คุณเป็นผู้ใช้ระบบแล้ว",
+     }
+   },
     // use this for article selection page
     // this is the select component
     select: {

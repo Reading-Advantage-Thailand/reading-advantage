@@ -201,6 +201,22 @@ export default {
       upLevel: "您已获得新级别!",
       close: "關閉",
     },
+
+    firstRoleSelection: {
+      heading: "你想做什麼？",
+      description: "請選擇你的角色",
+      studentButton: "我想學習",
+      teacherButton: "我想教書",
+      save: "保存",
+      toast: {
+        title: "角色已更新",
+        studentDescription: "你現在是學生",
+        teacherDescription: "你現在是教師",
+        adminDescription: "你現在是管理員",
+        systemDescription: "你現在是系統用戶",
+     }
+   },
+   
     select: {
       articleChoose: "請選擇您想閱讀的 {article}",
       articleChooseDescription:

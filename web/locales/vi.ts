@@ -214,6 +214,22 @@ export default {
       upLevel: "Bạn đã nhận được một cấp độ mới!",
       close: "đóng",
     },
+
+    firstRoleSelection: {
+      heading: "Bạn muốn làm gì?",
+      description: "Vui lòng chọn vai trò của bạn",
+      studentButton: "Tôi muốn học",
+      teacherButton: "Tôi muốn dạy",
+      save: "Lưu",
+      toast: {
+        title: "Vai trò đã được cập nhật",
+        studentDescription: "Bạn hiện là sinh viên",
+        teacherDescription: "Bạn hiện là giáo viên",
+        adminDescription: "Bạn hiện là quản trị viên",
+        systemDescription: "Bạn hiện là người dùng hệ thống",
+     }
+   },
+   
     // Sử dụng cho trang chọn bài viết
     // Đây là thành phần chọn
     select: {
