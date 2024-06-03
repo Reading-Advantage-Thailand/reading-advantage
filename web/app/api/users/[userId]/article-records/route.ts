@@ -103,6 +103,7 @@ export async function GET(req: Request, res: Response) {
 const userArticleRecordSchema = z.object({
     articleId: z.string(),
     rating: z.number(),
+    xpAward: z.number(),
 })
 // update user level
 export async function PATCH(req: Request, res: Response) {
@@ -118,6 +119,7 @@ export async function PATCH(req: Request, res: Response) {
         const body = userArticleRecordSchema.parse(json);
         const articleId = body.articleId;
         const rating = body.rating;
+        const xpAward = body.xpAward;
 
         const userId = session.user.id;
         const userLevel = session.user.level;
@@ -170,17 +172,14 @@ export async function PATCH(req: Request, res: Response) {
              }
             }
         }
-           
-        let summaryRating = arrData.reduce((acc, rate) => acc + rate, 0)
-    
+        let summaryRating = arrData.reduce((acc, rate) => acc + rate, 0)  
         let averageRatingData = 0;
         if(arrData.length === 0){
             averageRatingData = rating
         } else{
             averageRatingData = (summaryRating + rating) / (arrData.length + 1)
         }         
-        // return result
-    // }
+        
         interface ArticleData{
             type: string;
             genre: string;
@@ -209,7 +208,23 @@ export async function PATCH(req: Request, res: Response) {
             .update({
                 average_rating: averageRatingData,
                 // totalRatings: newTotalRatings,
-        });
+            });
+
+        // update newXp 
+        interface UserData{
+            xp: number;
+        }
+        const userIdSnapshot = await db.collection('users')
+            .doc(userId).get();
+        const xpUserIdData = userIdSnapshot.data() as UserData | undefined;
+        if(xpUserIdData){
+            const xp = xpUserIdData.xp
+            const newXp = xp + xpAward
+            const xpReviewRef = db.collection('users').doc(userId)
+            .update({
+                xp: newXp    
+            })
+        }
 
         // const averageRating = article.data()?.average_rating || 0;
         // const newAverageRating = (averageRating * totalRating + rating) / (totalUser + 1);
