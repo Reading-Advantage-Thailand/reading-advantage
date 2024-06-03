@@ -25,7 +25,8 @@ export async function GET(
         const userId = session.user.id;
         const { params } = routeContextSchema.parse(context);
         const articleId = params.articleId;
-        const userArticleRecordRef = db.collection('user-article-records').doc(`${userId}-${articleId}`);
+        const userArticleRecordRef = db.collection('users').doc(userId)
+            .collection('article-records').doc(articleId);
         const userArticleRecordSnapshot = await userArticleRecordRef.get();
         const userArticleRecord = userArticleRecordSnapshot.data();
         // Check if the article exists

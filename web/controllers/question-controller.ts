@@ -374,6 +374,14 @@ export async function rateArticle(
 ) {
     try {
         const { rating } = await req.json();
+        const newXp = req.session?.user.xp as number + rating
+
+        await db
+            .collection("users")
+            .doc(req.session?.user.id as string)         
+            .update({
+                xp: newXp
+            });
 
         // Update user record
         await db
@@ -401,6 +409,34 @@ export async function rateArticle(
         );
     }
 }
+
+// Review rated receive xp === rated star
+// export async function xpAwardRated(
+//     req: ExtendedNextRequest
+// ){
+//     try{
+//         const { rating } = await req.json();
+//         const newXp = req.session?.user.xp as number + rating
+
+//         await db
+//             .collection("users")
+//             .doc(req.session?.user.id as string)         
+//             .update({
+//                 xp: newXp
+//             });
+//         return NextResponse.json(
+//             { message: "xpAward" },
+//             { status: 200 }
+//         );      
+//     }catch(error){
+//         console.error(error);
+//         return NextResponse.json(
+//             { message: "Internal server error" },
+//             { status: 500 }
+//         );
+//     }
+// }
+
 //Retake quiz
 export async function retakeMCQuestion(
     req: ExtendedNextRequest,
