@@ -23,29 +23,59 @@ export default function RatingPopup({
  const [value, setValue] = React.useState<number | null>(-1);
  const [modalIsOpen, setModalIsOpen] = React.useState<boolean>(false);
  const [loading, setLoading] = React.useState<boolean>(false);
+ const [oldRating, setOldRating] = React.useState(0);
 
  const instance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
   // timeout: 1000,
  });
 
+ React.useEffect(() => {
+  ratedFetch();
+ }, [userId, articleId]);
+
+ const ratedFetch = async() => {
+    const result = await axios.get(`/api/users/${userId}/article-records/${articleId}`);
+    const data = result.data.userArticleRecord.rated;
+    setOldRating(data);
+ }
+
  const onUpdateUser = async() => {
   if(value === -1) return;
-  const response = await instance.patch(`/api/users/${userId}/article-records`, {
-    articleId,
-    rating: value
-  })
-  const data = await response.data;
-  console.log(data);
-  console.log(data.message === 'success')
-  if(data.message === 'success'){
-    toast({
-      title: t('toast.success'),
-      
+  if(value !== 0 && oldRating === 0){
+    const response = await instance.patch(`/api/users/${userId}/article-records`, {
+      articleId,
+      rating: value,
+      xpAward: 10
     });
-    setModalIsOpen(false);
+    const data = await response.data;
+    console.log(data);
+    console.log(data.message === 'success')
+    if(data.message === 'success'){
+      toast({
+        title: t('toast.success'),      
+      });
+      setModalIsOpen(false);
+    }
+    setLoading(false);
   }
-  setLoading(false);
+  else if(value !== 0 && oldRating !== 0){
+    const response = await instance.patch(`/api/users/${userId}/article-records`, {
+      articleId,
+      rating: value,
+      xpAward: 0
+    });
+    const data = await response.data;
+    console.log(data);
+    console.log(data.message === 'success')
+    if(data.message === 'success'){
+      toast({
+        title: t('toast.success'), 
+      });
+      setModalIsOpen(false);
+    }
+    setLoading(false);
+  }
 }
 
  const handleChange = (
@@ -70,7 +100,7 @@ export default function RatingPopup({
     onClick={toggleModal}
     className='cursor-pointer'
     >
-      Rate this article
+      Rate this article 
     </h1>        
     <Stack 
     onClick={toggleModal}
