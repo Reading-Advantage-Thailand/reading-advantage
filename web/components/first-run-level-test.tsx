@@ -52,18 +52,14 @@ export default function FirstRunLevelTest({
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[][]>([]);
   const [xp, setXp] = useState(0);
   const [correctAnswer, setCorrectAnswer] = React.useState<string[]>([]);
-  // const [checked, setChecked] = useState(false);
   const [formkey, setFormKey] = useState(0);
   const [countOfRightAnswers, setCountOfRightAnswers] = useState(0);
-  // const [hasAnsweredCorrectly, setHasAnsweredCorrectly] = useState(false);
   const [isQuestionAnswered, setIsQuestionAnswered] = useState(
     new Array(
       language_placement_test[currentSectionIndex].questions.length
     ).fill(false)
   );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  // const [rightAnswersCounts, setRightAnswersCounts] = useState<number[]>([]);
-  // const [sectionAnswerCount, setSectionAnswerCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const answerOptionIndexArray: number[] = [];
@@ -151,10 +147,7 @@ export default function FirstRunLevelTest({
             newIsQuestionAnswered[questionIndexArray[i]] = true;
             setIsQuestionAnswered(newIsQuestionAnswered);
           }
-          // setHasAnsweredCorrectly(true);
-        } else {
-          // setHasAnsweredCorrectly(false);
-        }
+        } 
       }
       setXp(
         (prevScore: number) =>
@@ -164,19 +157,11 @@ export default function FirstRunLevelTest({
       );
       if (correctSelectedAnswer.length >= 2) {
         if (currentPage < shuffledQuestions.length - 1) {
-          // Save the count of correct answers for the current section
-          // setRightAnswersCounts((prevCounts) => [
-          //   ...prevCounts,
-          //   correctSelectedAnswer.length,
-          // ]);
-          // Proceed to the next page
           setCurrentPage(currentPage + 1);
           setCurrentSectionIndex(currentSectionIndex + 1);
           setFormKey(formkey + 1);
-          // setChecked(false);
           setCurrentQuestionIndex(currentQuestionIndex + 1);
           setCountOfRightAnswers(0);
-          // setSectionAnswerCount(0); // Reset sectionAnswerCount to 0 for the new section
         } else {
           onFinishTest();
         }
