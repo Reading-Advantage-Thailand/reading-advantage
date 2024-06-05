@@ -8,6 +8,8 @@ import { NextPage, NextPageContext } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
 import RoleSelected from './components/teacher/role-selected';
+import { log } from 'console';
+import { has } from 'lodash';
 
 const I18nMiddleware = createI18nMiddleware(localeConfig);
 
@@ -20,13 +22,19 @@ function doesPathMatchPages(req: NextRequest, pages: string[]) {
 
 export default withAuth(async function onSuccess(req) {
     const token = await getToken({ req });
+    console.log('token', token);
+
     const authLocales = localeConfig.locales;
     const locale = authLocales.find((loc) => req.nextUrl.pathname.startsWith(`/${loc}/auth`)) || '/en';
+    
     const isAuth = !!token;
-    // const isNoLevel = token?.level === 0;
     const isNoLevel = token?.cefrLevel === "";
-    const teacherRole = token?.role?.includes('TEACHER') || 'STUDENT';
+    const teacherRole = token?.role?.includes('TEACHER');
     const isTeacher = token && token.role ? teacherRole : false;
+    const isNoRole = !token?.role || token.role.length === 0;
+
+    const isStudentArea = req.nextUrl.pathname.startsWith('/student');
+    const isTeacherArea = req.nextUrl.pathname.startsWith('/teacher');
 
     if (req.nextUrl.pathname.startsWith('/api')) {
         if (true) return NextResponse.next();
@@ -42,9 +50,9 @@ export default withAuth(async function onSuccess(req) {
 
     if (authLocales.includes(locale)) {
         if (isAuth) {
-            if (isNoLevel && !isTeacher) return NextResponse.redirect(new URL(`/level`, req.url));
-            if (isNoLevel) return NextResponse.redirect(new URL(`/role-selection`, req.url));
-            // if (isTeacher) return NextResponse.redirect(new URL(`/teacher/my-classes`, req.url));
+            // if (isNoLevel) return NextResponse.redirect(new URL(`/level`, req.url));
+            if (isNoRole && isNoLevel) return NextResponse.redirect(new URL(`/role-selection`, req.url));
+            if (isTeacher) return NextResponse.redirect(new URL(`/teacher/my-classes`, req.url));
             return NextResponse.redirect(new URL(`/student/read`, req.url));
         }
         return null;
