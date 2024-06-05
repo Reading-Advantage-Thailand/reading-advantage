@@ -4,11 +4,11 @@ import { UserRole } from "@/types/constants";
 import axios from "axios";
 import { SelectedRoleContext } from "../../contexts/userRole-context";
 import { useContext } from "react";
-import { Button, buttonVariants } from "../../components/ui/button";
+import { Button } from "../../components/ui/button";
+import { toast } from "../ui/use-toast";
 
 type Props = {
   userId: string;
-  role: string;
 };
 
 const RoleSelected: React.FC<Props> = ({ userId }) => {
@@ -48,10 +48,17 @@ const RoleSelected: React.FC<Props> = ({ userId }) => {
       if (response.status !== 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+      toast({
+        title: "Role updated successfully",
+        description: `${selectedRole} role has been updated successfully`,
+      });
       const data = response.data;
     } catch (error) {
       console.error("Failed to update user role", error);
+      toast({
+        title: "Failed to update user role",
+        description: "Failed to update user role",
+      });
     }
   };
 

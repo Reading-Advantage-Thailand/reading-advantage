@@ -14,7 +14,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { useScopedI18n } from "@/locales/client";
 import { Icons } from "./icons";
 import { SelectedRoleContext } from "../contexts/userRole-context";
-import { useState, useContext } from "react";
+import { useContext } from "react";
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
   user: Pick<User, "name" | "image" | "email"> & {
@@ -27,8 +27,8 @@ interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
   const [selectedRole] = useContext(SelectedRoleContext);
-
   const t = useScopedI18n("components.userAccountNav");
+console.log('selectedRole', selectedRole);
 
   return (
     <DropdownMenu>
@@ -88,7 +88,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
           ))}
 
         {selectedRole &&
-          selectedRole.filter((role: string) => role === "ADMIN")
+          selectedRole.filter((role: string) => role === "ADMINISTRATOR")
             .length > 0 && (
             <DropdownMenuItem asChild>
               <Link href="/admin">{"Admin dashboard"}</Link>
