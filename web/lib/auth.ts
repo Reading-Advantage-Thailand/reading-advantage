@@ -81,7 +81,7 @@ export const authOptions: NextAuthOptions = {
               verified: user.verified,
               xp: 0,
               cefrLevel: "",
-              role: "STUDENT",
+              role: [],
             });
         }
         return token;

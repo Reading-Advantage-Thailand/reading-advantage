@@ -5,6 +5,7 @@ import { CardContent } from "@mui/material";
 import { redirect } from "next/navigation";
 import ResetDialog from "@/components/reset-xp-dialog";
 import RoleSelected from "@/components/teacher/role-selected";
+import axios from "axios";
 
 type Props = {};
 
@@ -19,6 +20,7 @@ export default async function UserProfileSettingsPage({}: Props) {
   // if (user.cefrLevel === "" && user.role.includes('TEACHER')) {
   //   return redirect("/teacher/my-classes");
   // }
+
 
   return (
     <Card className="mt-4">
@@ -82,7 +84,7 @@ export default async function UserProfileSettingsPage({}: Props) {
           <SettingInfo
             title="Select role"
             description="Select your role as teacher, student or administrator."
-            data={<RoleSelected userId={user.id} role={""}/>}
+            data={<RoleSelected userId={user.id} />}
             isEdit={false}
           />
         </div>
