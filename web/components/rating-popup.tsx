@@ -35,18 +35,24 @@ export default function RatingPopup({
  }, [userId, articleId]);
 
  const ratedFetch = async() => {
-    const result = await axios.get(`/api/users/${userId}/article-records/${articleId}`);
+  try{
+    const result = await instance.get(`/api/users/${userId}/article-records/${articleId}`);
     const data = result.data.userArticleRecord.rated;
     setOldRating(data);
+  }catch(error){
+    console.log('Error fetching rating: ', error);
+  }
  }
 
  const onUpdateUser = async() => {
+  let xp;
   if(value === -1) return;
   if(value !== 0 && oldRating === 0){
+    xp  = 10;
     const response = await instance.patch(`/api/users/${userId}/article-records`, {
       articleId,
       rating: value,
-      xpAward: 10
+      xpAward: xp
     });
     const data = await response.data;
     console.log(data);
@@ -60,10 +66,11 @@ export default function RatingPopup({
     setLoading(false);
   }
   else if(value !== 0 && oldRating !== 0){
+    xp = 0;
     const response = await instance.patch(`/api/users/${userId}/article-records`, {
       articleId,
       rating: value,
-      xpAward: 0
+      xpAward: xp
     });
     const data = await response.data;
     console.log(data);
@@ -140,6 +147,12 @@ export default function RatingPopup({
             <p className='mx-4'>{t('content')}</p>
             <div className='flex justify-center mt-6'>
               <Rating
+                // sx={{
+                //   // change unselected color
+                //   "& .MuiRating-iconEmpty": {
+                //     color: "#f6a904",
+                //   },
+                // }}
                 value={value} 
                 onChange={handleChange}
                 precision={0.5}
