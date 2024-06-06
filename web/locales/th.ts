@@ -450,6 +450,7 @@ export default {
       name: "ชื่อ",
       lastActivity: "กิจกรรมล่าสุด",
       actions: "การดำเนินการ",
+      history: "ประวัติ",
       search: "ค้นหาชื่อ...",
       noStudent: "ไม่มีนักเรียนในชั้นนี้",
       noClassroom: "ไม่มีชั้นเรียนที่เลือก",

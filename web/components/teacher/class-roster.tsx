@@ -261,8 +261,7 @@ export default function ClassRoster({
               handleActionSelected("history", row.getValue("studentId"))
             }
             >
-              {/* {ts("resetProgress")} */}
-              History
+              {tr("history")}
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>

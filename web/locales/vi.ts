@@ -448,6 +448,7 @@ export default {
       name: "Tên",
       lastActivity: "Hoạt Động Gần Đây",
       actions: "Hành Động",
+      history: "Lịch Sử",
       search: "Tìm kiếm tên...",
       noStudent: "Không có học sinh trong lớp này",
       noClassroom: "Không có lớp học",

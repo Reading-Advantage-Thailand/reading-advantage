@@ -459,6 +459,7 @@ export default {
       name: "Name",
       lastActivity: "Last Activity",
       actions: "Actions",
+      history: "History",
       search: "Search name...",
       noStudent: "No student in this class",
       noClassroom: "No classroom selected",
