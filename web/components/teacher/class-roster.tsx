@@ -119,6 +119,9 @@ export default function ClassRoster({
       case "enroll":
         setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
         break;
+      case "history":
+        setRedirectUrl(`/teacher/class-roster/history/${studentId}`);
+        break;
       default:
         console.log("default");
         break;
@@ -252,6 +255,14 @@ export default function ClassRoster({
               onClick={() => openResetModal(row.getValue("studentId"))}
             >
               {ts("resetProgress")}
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+             onClick={() =>
+              handleActionSelected("history", row.getValue("studentId"))
+            }
+            >
+              {/* {ts("resetProgress")} */}
+              History
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
