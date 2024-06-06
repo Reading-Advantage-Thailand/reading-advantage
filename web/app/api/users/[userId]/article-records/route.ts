@@ -123,6 +123,7 @@ export async function PATCH(req: Request, res: Response) {
 
         const userId = session.user.id;
         const userLevel = session.user.level;
+        const userXp = session.user.xp;
 
         // update user level
         const userRef = db.collection('users')
@@ -184,6 +185,7 @@ export async function PATCH(req: Request, res: Response) {
             type: string;
             genre: string;
             subgenre: string;
+            ra_level: number;
         }
         const articleSnapshot = await db.collection('new-articles')
             .doc(articleId).get();
@@ -192,8 +194,9 @@ export async function PATCH(req: Request, res: Response) {
             const type = articleData.type
             const genre = articleData.genre.replace(/ /g, "_")
             const subgenre = articleData.subgenre.replace(/ /g, "_")
+            const level = articleData.ra_level.toString()
 
-            const selectSnapshot = await db.collection('article-selection').doc(userLevel.toString())
+            const selectSnapshot = await db.collection('article-selection').doc(level)
             .collection('types').doc(type)
             .collection('genres').doc(genre)
             .collection('subgenres').doc(subgenre)
@@ -209,22 +212,49 @@ export async function PATCH(req: Request, res: Response) {
                 average_rating: averageRatingData,
                 // totalRatings: newTotalRatings,
             });
-
-        // update newXp 
-        interface UserData{
-            xp: number;
-        }
-        const userIdSnapshot = await db.collection('users')
-            .doc(userId).get();
-        const xpUserIdData = userIdSnapshot.data() as UserData | undefined;
-        if(xpUserIdData){
-            const xp = xpUserIdData.xp
-            const newXp = xp + xpAward
-            const xpReviewRef = db.collection('users').doc(userId)
-            .update({
-                xp: newXp    
+        
+         // update user-article-record
+        const ratedRef = db.collection('users')
+         .doc(userId).collection('article-records')
+         .doc(articleId);
+        const ratedDoc = await ratedRef.get();
+         if(!ratedDoc.exists){
+            console.log('No such documents rated');
+            await ratedRef.set({
+                rated: rating,   
+                updated_at: new Date().toISOString(),
+            }, { merge: true })
+        }else{
+            await ratedRef.update({
+                rated: rating,
+                updated_at: new Date().toISOString(),
             })
         }
+
+        //  .update({
+        //      rated: rating,
+        //      // status: RecordStatus.COMPLETED,
+        //      // userLevel: userLevel,
+        //      // updatedLevel: newLevel,
+        //      updated_at: new Date().toISOString(),
+        //  });    
+
+        // update newXp   
+        const xp = userXp
+        const newXp = xp + xpAward
+        const xpReviewRef = db.collection('users').doc(userId)
+        const xpDoc = await xpReviewRef.get();
+        if(!xpDoc.exists){
+            console.log('No such documents xp');
+            await xpReviewRef.set({
+                xp: newXp    
+            }, { merge: true })
+        }else{
+            await xpReviewRef.update({
+                xp: newXp
+            })
+        }
+        
 
         // const averageRating = article.data()?.average_rating || 0;
         // const newAverageRating = (averageRating * totalRating + rating) / (totalUser + 1);
@@ -273,17 +303,7 @@ export async function PATCH(req: Request, res: Response) {
         console.log('article.data()?.raLevel', article.data()?.raLevel);
         console.log('userLevel', userLevel);
         console.log('newLevel', newLevel);
-        // update user-article-record
-        const userArticleRecordRef = db.collection('users')
-            .doc(userId).collection('article-records')
-            .doc(articleId)
-            .update({
-                rated: rating,
-                // status: RecordStatus.COMPLETED,
-                // userLevel: userLevel,
-                // updatedLevel: newLevel,
-                updated_at: new Date(),
-            });
+       
         return new Response(JSON.stringify({
             message: 'success',
             level: newLevel,
