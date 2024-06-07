@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
-import { RosterPage } from '@/lib/teacher-utils';
+import { ClassroomData } from '@/lib/teacher-utils';
 
 
 async function getUserArticleRecords(studentId: string) {
@@ -38,7 +38,7 @@ export default async function StudentHistoryForTeacher( params : {params:{studen
     const t = await getScopedI18n("pages.student.historyPage");
 
     let userName = "";
-    const studentsMapped = await RosterPage({params: {classroomId: params.params.classroomId}});
+    const studentsMapped = await ClassroomData({params: {classroomId: params.params.classroomId}});
     
     studentsMapped.forEach((student: { studentId: string; studentName: string; }) => {
       if (student.studentId === params.params.studentId) {
