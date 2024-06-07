@@ -111,7 +111,7 @@ export default function ClassRoster({
     }
   }, [selectedStudentId, action, redirectUrl, router]);
 
-  const handleActionSelected = (action: string, studentId: string) => {
+  const handleActionSelected = (action: string, studentId: string, classroomId: string) => {
     switch (action) {
       case "progress":
         setRedirectUrl(`/teacher/student-progress/${studentId}`);
@@ -120,7 +120,7 @@ export default function ClassRoster({
         setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
         break;
       case "history":
-        setRedirectUrl(`/teacher/class-roster/history/${studentId}`);
+        setRedirectUrl(`/teacher/class-roster/${classroomId}/history/${studentId}`);
         break;
       default:
         console.log("default");
@@ -225,6 +225,13 @@ export default function ClassRoster({
       cell: ({ row }) => null,
     },
     {
+      accessorKey: "classroomId",
+      header: ({ column }) => {
+        return null;
+      },
+      cell: ({ row }) => null,
+    },
+    {
       accessorKey: "action",
       header: ({ column }) => {
         return <Button variant="ghost">{tr("actions")}</Button>;
@@ -239,14 +246,14 @@ export default function ClassRoster({
           <DropdownMenuContent align="start">
             <DropdownMenuCheckboxItem
               onClick={() =>
-                handleActionSelected("progress", row.getValue("studentId"))
+                handleActionSelected("progress", row.getValue("studentId"), row.getValue("classroomId"))
               }
             >
               <Link href={redirectUrl}>{ts("progress")}</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               onClick={() =>
-                handleActionSelected("enroll", row.getValue("studentId"))
+                handleActionSelected("enroll", row.getValue("studentId"), row.getValue("classroomId"))
               }
             >
               <Link href={redirectUrl}>{ts("enroll")}</Link>
@@ -258,7 +265,7 @@ export default function ClassRoster({
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
              onClick={() =>
-              handleActionSelected("history", row.getValue("studentId"))
+              handleActionSelected("history", row.getValue("studentId"), row.getValue("classroomId"))
             }
             >
               {tr("history")}
