@@ -45,6 +45,7 @@ export default {
         },
       },
       historyPage: {
+        title: "為 {userName} 的歷史",
         reminderToReread: "重讀提醒",
         articleRecords: "文章記錄",
         reminderToRereadDescription:

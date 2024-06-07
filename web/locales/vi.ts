@@ -49,6 +49,7 @@ export default {
         },
       },
       historyPage: {
+        title: "Lịch sử cho {userName}",
         // Headings
         reminderToReread: "Lời nhắc đọc lại",
         articleRecords: "Hồ sơ bài viết",

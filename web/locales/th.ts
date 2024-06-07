@@ -52,6 +52,7 @@ export default {
         },
       },
       historyPage: {
+        title: "ประวัติสำหรับ {userName}",
         //Headings
         reminderToReread: "เตือนในการอ่านซ้ำ",
         articleRecords: "บทความที่อ่านแล้ว",

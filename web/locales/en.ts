@@ -58,6 +58,7 @@ export default {
         },
       },
       historyPage: {
+        title: "History for {userName}",
         //Headings
         reminderToReread: "Reminder to read",
         articleRecords: "Article Records",
