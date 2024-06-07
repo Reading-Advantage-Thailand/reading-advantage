@@ -153,7 +153,8 @@ export async function ClassroomData(params: {
         }
       ): []
     );
-    return studentsMapped;  
+    // return studentsMapped;  
+    return {studentsMapped, allClassroom, allStudent, allTeachers, teacherId, teacher, studentInEachClass, matchedStudents, classrooms};  
 }
 
 
