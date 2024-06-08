@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useState, useRef, useEffect } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { Book } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
@@ -15,8 +15,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { toast } from "./ui/use-toast";
+import { error } from 'console';
 interface Props {
-  article?: Article;
+  article: Article;
+  articleId: string;
+  userId: string;
 }
 
 interface WordList {
@@ -30,11 +34,34 @@ interface WordList {
   };
 }
 
-export default function WordList({ article }: Props) {
+export default function WordList({ article, articleId, userId }: Props) {
   const t = useScopedI18n("components.wordList");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [wordList, setWordList] = useState<WordList[]>([]);
 
   // Get the current locale
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
+
+  const handleWordList = useCallback(async () => {
+    console.log("article :", article);
+    try {
+      const resWordlist = await axios.post(`/api/assistant/wordlist`, {
+        article,
+        articleId,
+        userId,
+      });
+      console.log("resWordlist :", resWordlist);
+      
+    } catch (error: any) {      
+       toast({
+         title: "Something went wrong.",
+         description: `${error?.message}`,
+         variant: "destructive",
+       });      
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  }, [article, articleId, userId]);
 
   const wordSample = [
     {
@@ -64,7 +91,7 @@ export default function WordList({ article }: Props) {
     <>
       <Dialog>
         <DialogTrigger asChild>
-          <Button onClick={() => {}} className="mb-4 ml-3">
+          <Button onClick={handleWordList} className="mb-4 ml-3">
             {t("title")}
           </Button>
         </DialogTrigger>
@@ -77,11 +104,8 @@ export default function WordList({ article }: Props) {
               </div>
             </DialogTitle>
           </DialogHeader>
-          {wordSample.map((word, index) => (
-            <div
-              key={index}
-              className="pb-4 border-b-2"
-            >
+          {wordList?.map((word, index) => (
+            <div key={index} className="pb-4 border-b-2">
               <span className="font-bold text-cyan-500">
                 {word.vocabulary}:{" "}
               </span>
