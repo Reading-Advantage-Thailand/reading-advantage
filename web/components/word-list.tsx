@@ -6,6 +6,7 @@ import { Book } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -16,7 +17,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { toast } from "./ui/use-toast";
-import { error } from 'console';
+
 interface Props {
   article: Article;
   articleId: string;
@@ -37,7 +38,7 @@ interface WordList {
 export default function WordList({ article, articleId, userId }: Props) {
   const t = useScopedI18n("components.wordList");
   const [loading, setLoading] = useState<boolean>(false);
-  const [wordList, setWordList] = useState<WordList[]>([]);
+  const [wordList, setWordList] = useState<any[]>([]);//useState<WordList[]>([]);
 
   // Get the current locale
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
@@ -45,17 +46,19 @@ export default function WordList({ article, articleId, userId }: Props) {
   const handleWordList = useCallback(async () => {
     console.log("article :", article);
     try {
+      setLoading(true); // Start loading
       const resWordlist = await axios.post(`/api/assistant/wordlist`, {
         article,
         articleId,
         userId,
       });
-      console.log("resWordlist :", resWordlist);
-      
-    } catch (error: any) {      
+      console.log("resWordlist :", resWordlist?.data?.wordList);
+      setWordList(resWordlist?.data?.wordList);
+    } catch (error: any) {     
+      console.log(error); 
        toast({
          title: "Something went wrong.",
-         description: `${error?.message}`,
+         description: `${error?.response?.data?.message || error?.message}`,
          variant: "destructive",
        });      
     } finally {
@@ -104,14 +107,23 @@ export default function WordList({ article, articleId, userId }: Props) {
               </div>
             </DialogTitle>
           </DialogHeader>
-          {wordList?.map((word, index) => (
+          {loading && (
+            <div className="flex items-center space-x-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[300px]" />
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </div>
+            </div>
+          )}
+          {/* {wordList?.map((word, index) => (
             <div key={index} className="pb-4 border-b-2">
               <span className="font-bold text-cyan-500">
                 {word.vocabulary}:{" "}
               </span>
               <span>{word.definition[currentLocale]}</span>
             </div>
-          ))}
+          ))} */}
 
           <DialogFooter>
             <DialogClose asChild>
