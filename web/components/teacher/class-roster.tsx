@@ -88,9 +88,6 @@ export default function ClassRoster({
   const [redirectUrl, setRedirectUrl] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [hasRefreshed, setHasRefreshed] = useState(false);
-  const [selectedClassroom, setSelectedClassroom] = useState<Classrooms | null>(
-    null
-  );
 
   let action = "";
 
