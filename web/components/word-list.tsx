@@ -38,13 +38,12 @@ interface WordList {
 export default function WordList({ article, articleId, userId }: Props) {
   const t = useScopedI18n("components.wordList");
   const [loading, setLoading] = useState<boolean>(false);
-  const [wordList, setWordList] = useState<any[]>([]);//useState<WordList[]>([]);
+  const [wordList, setWordList] = useState<WordList[]>([]);
 
   // Get the current locale
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
 
   const handleWordList = useCallback(async () => {
-    console.log("article :", article);
     try {
       setLoading(true); // Start loading
       const resWordlist = await axios.post(`/api/assistant/wordlist`, {
@@ -52,10 +51,10 @@ export default function WordList({ article, articleId, userId }: Props) {
         articleId,
         userId,
       });
-      console.log("resWordlist :", resWordlist?.data?.wordList);
-      setWordList(resWordlist?.data?.wordList);
-    } catch (error: any) {     
-      console.log(error); 
+     
+      setWordList(resWordlist?.data?.word_list);
+
+    } catch (error: any) {          
        toast({
          title: "Something went wrong.",
          description: `${error?.response?.data?.message || error?.message}`,
@@ -65,30 +64,6 @@ export default function WordList({ article, articleId, userId }: Props) {
       setLoading(false); // Stop loading
     }
   }, [article, articleId, userId]);
-
-  const wordSample = [
-    {
-      vocabulary: "variety",
-      definition: {
-        en: "A number of different types of things.",
-        th: "ความหลากหลาย",
-        cn: "多样",
-        tw: "多樣",
-        vi: "sự đa dạng",
-      },
-    },
-    {
-      vocabulary: "purposes",
-      definition: {
-        en: "The reasons for which something is done.",
-        th: "วัตถุประสงค์",
-        cn: "目的",
-        tw: "目的",
-        vi: "mục đích",
-      },
-    },
-    // ... up to ten entries
-  ];
 
   return (
     <>
@@ -107,7 +82,7 @@ export default function WordList({ article, articleId, userId }: Props) {
               </div>
             </DialogTitle>
           </DialogHeader>
-          {loading && (
+          {loading ? (
             <div className="flex items-center space-x-4">
               <div className="space-y-2">
                 <Skeleton className="h-4 w-[300px]" />
@@ -115,16 +90,15 @@ export default function WordList({ article, articleId, userId }: Props) {
                 <Skeleton className="h-4 w-[200px]" />
               </div>
             </div>
-          )}
-          {/* {wordList?.map((word, index) => (
+          ) : wordList?.map((word, index) => (
             <div key={index} className="pb-4 border-b-2">
               <span className="font-bold text-cyan-500">
                 {word.vocabulary}:{" "}
               </span>
               <span>{word.definition[currentLocale]}</span>
             </div>
-          ))} */}
-
+          ))}
+          
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button">Close</Button>
