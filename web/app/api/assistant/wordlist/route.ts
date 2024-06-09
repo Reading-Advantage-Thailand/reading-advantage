@@ -13,14 +13,13 @@ export async function POST(req: Request, res: Response) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const prompt_user = `Extract the ten most difficult vocabulary words, phrases, or idioms from the following passage: ${param.article.passage} }`;
+    const prompt_user = `Extract the ten most difficult vocabulary words, phrases, or idioms from the following passage: ${param.article.passage}`;
     const schema = {
       type: "object",
       properties: {
         passage: {
           type: "string",
-          description:
-            "The passage text from which difficult vocabulary will be extracted.",
+          description: ` ${param.article.passage}`, //"The passage text from which difficult vocabulary will be extracted.",
         },
         responses: {
           "200": {
@@ -96,7 +95,7 @@ export async function POST(req: Request, res: Response) {
           },
         },
       },
-      required: ["passage", "responses","400"],
+      required: ["passage", "responses", "400"],
     };
 
     const response = await openai.chat.completions.create({
