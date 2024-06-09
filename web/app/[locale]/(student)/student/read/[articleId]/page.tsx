@@ -53,7 +53,11 @@ export default async function ArticleQuizPage({
                 userId={user.id}
               />
             )}
-            <WordList />
+            <WordList
+              article={articleResponse.article}
+              articleId={params.articleId}
+              userId={user.id}
+            />
           </div>
 
           <MCQuestionCard userId={user.id} articleId={params.articleId} />
