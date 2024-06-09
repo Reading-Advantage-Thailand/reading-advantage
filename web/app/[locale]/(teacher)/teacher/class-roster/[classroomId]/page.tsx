@@ -7,7 +7,6 @@ import { ClassroomData } from '@/lib/classroom-utils';
 export default async function RosterPage(params: {
   params: {classroomId: string;}
 }) {
-  console.log('params', params.params.classroomId);
   
   const user = await getCurrentUser();
   if (!user) {

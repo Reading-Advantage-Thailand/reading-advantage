@@ -6,8 +6,6 @@ import { ClassroomData } from '@/lib/classroom-utils';
 
 
 export default async function AddNewStudent(params: { params: { classroomId: string; }}) {
-  console.log('params at create new student', params.params.classroomId);
-  
   const user = await getCurrentUser();
 if (!user) {
   return redirect("/auth/signin");
