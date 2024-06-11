@@ -73,7 +73,7 @@ export default function WordList({ article, articleId, userId }: Props) {
             {t("title")}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[450px]">
+        <DialogContent className="sm:max-w-[450px] h-96">
           <DialogHeader>
             <DialogTitle>
               <div className="flex items-center">
@@ -90,15 +90,19 @@ export default function WordList({ article, articleId, userId }: Props) {
                 <Skeleton className="h-4 w-[200px]" />
               </div>
             </div>
-          ) : wordList?.map((word, index) => (
-            <div key={index} className="pb-4 border-b-2">
-              <span className="font-bold text-cyan-500">
-                {word.vocabulary}:{" "}
-              </span>
-              <span>{word.definition[currentLocale]}</span>
+          ) : (
+            <div className=" overflow-auto">
+              {wordList?.map((word, index) => (
+                <div key={index} className="pb-4 border-b-2">
+                  <span className="font-bold text-cyan-500">
+                    {word.vocabulary}:{" "}
+                  </span>
+                  <span>{word.definition[currentLocale]}</span>
+                </div>
+              ))}
             </div>
-          ))}
-          
+          )}
+
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button">Close</Button>
