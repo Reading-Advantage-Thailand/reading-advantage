@@ -64,7 +64,6 @@ const RoleSelected: React.FC<Props> = ({ userId }) => {
 
   return (
     <div>
-    
       <div className="w-full">
         {Object.values(UserRole).map((role, index) => (
           <div key={index}>
