@@ -24,26 +24,34 @@ export default async function StudentHistoryForTeacher( params : {params:{studen
     if (user.cefrLevel === "" && user.level === 0) {
       return redirect("/level");
     }
-    const res = await getUserArticleRecords(params.params.studentId);
-    
-    // articles that have been read
-    // put the articles that have rating lower than 3 in the reminder table
-    const reminderArticles = res.results.filter(
-      (article: any) => article.rated < 3
-    );
-    //   // put the results that have rating higher than 3 in the article records table
-    const articleRecords = res.results.filter(
-      (article: any) => article.rated >= 3
-    );
+    let reminderArticles: any[] = [];
+    let articleRecords: any[] = [];
+
+    if (params && params.params) {
+      const res = await getUserArticleRecords(params.params.studentId);
+      
+      // articles that have been read
+      // put the articles that have rating lower than 3 in the reminder table
+      const reminderArticles = res.results.filter(
+        (article: any) => article.rated < 3
+      );
+      //   // put the results that have rating higher than 3 in the article records table
+      const articleRecords = res.results.filter(
+        (article: any) => article.rated >= 3
+      );
+    }
+
     const t = await getScopedI18n("pages.student.historyPage");
 
     let userName = "";
-    const classroomRes = await ClassroomData({params: {classroomId: params.params.classroomId}});
-    
-    classroomRes.studentsMapped.forEach((student: { studentId: string; studentName: string; }) => {
-      if (student.studentId === params.params.studentId) {
-        userName = student.studentName;
-        }});
+    if (params && params.params) {
+      const classroomRes = await ClassroomData({params: {classroomId: params.params.classroomId}});
+      
+      classroomRes.studentsMapped.forEach((student: { studentId: string; studentName: string; }) => {
+        if (student.studentId === params.params.studentId) {
+          userName = student.studentName;
+          }});
+    }
         
   return (
     <div>
