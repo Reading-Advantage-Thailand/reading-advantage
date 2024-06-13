@@ -17,13 +17,11 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { toast } from "./ui/use-toast";
-
 interface Props {
   article: Article;
   articleId: string;
   userId: string;
 }
-
 interface WordList {
   vocabulary: string;
   definition: {
@@ -42,7 +40,6 @@ export default function WordList({ article, articleId, userId }: Props) {
 
   // Get the current locale
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
-
   const handleWordList = useCallback(async () => {
     try {
       setLoading(true); // Start loading
@@ -51,15 +48,14 @@ export default function WordList({ article, articleId, userId }: Props) {
         articleId,
         userId,
       });
-     
-      setWordList(resWordlist?.data?.word_list);
 
-    } catch (error: any) {          
-       toast({
-         title: "Something went wrong.",
-         description: `${error?.response?.data?.message || error?.message}`,
-         variant: "destructive",
-       });      
+      setWordList(resWordlist?.data?.word_list);
+    } catch (error: any) {
+      toast({
+        title: "Something went wrong.",
+        description: `${error?.response?.data?.message || error?.message}`,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false); // Stop loading
     }
