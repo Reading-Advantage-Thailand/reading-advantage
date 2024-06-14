@@ -131,16 +131,6 @@
          ]
       },
       {
-         "Name":"Textbooks",
-         "Subgenres":[
-            "Academic Textbooks",
-            "Educational Manuals",
-            "Study Guides",
-            "Curriculum Development",
-            "Subject-specific Textbooks"
-         ]
-      },
-      {
          "Name":"Health and Wellness",
          "Subgenres":[
             "Stress Management",
