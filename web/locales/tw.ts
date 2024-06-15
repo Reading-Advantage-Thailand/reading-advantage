@@ -45,6 +45,7 @@ export default {
         },
       },
       historyPage: {
+        title: "為 {userName} 的歷史",
         reminderToReread: "重讀提醒",
         articleRecords: "文章記錄",
         reminderToRereadDescription:
@@ -425,6 +426,7 @@ export default {
       name: "姓名",
       lastActivity: "最後活動",
       actions: "操作",
+      history: "歷史",
       search: "搜尋姓名...",
       noStudent: "此班級中沒有學生",
       noClassroom: "沒有選擇班級",

@@ -52,6 +52,7 @@ export default {
         },
       },
       historyPage: {
+        title: "ประวัติสำหรับ {userName}",
         //Headings
         reminderToReread: "เตือนในการอ่านซ้ำ",
         articleRecords: "บทความที่อ่านแล้ว",
@@ -450,6 +451,7 @@ export default {
       name: "ชื่อ",
       lastActivity: "กิจกรรมล่าสุด",
       actions: "การดำเนินการ",
+      history: "ประวัติ",
       search: "ค้นหาชื่อ...",
       noStudent: "ไม่มีนักเรียนในชั้นนี้",
       noClassroom: "ไม่มีชั้นเรียนที่เลือก",

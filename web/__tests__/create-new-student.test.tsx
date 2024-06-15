@@ -102,8 +102,7 @@ describe("CreateNewStudent", () => {
       <CreateNewStudent
         studentDataInClass={mockStudentData}
         allStudentEmail={mockAllStudentEmail}
-        studentInEachClass={mockStudentInEachClass}
-      />
+        studentInEachClass={mockStudentInEachClass} classrooms={[]}      />
     );
     const emailInput = utils.getByPlaceholderText("Enter email address");
     const saveButton = utils.getByText("SAVE AND CONTINUE");
