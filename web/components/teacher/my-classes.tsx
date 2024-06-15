@@ -61,7 +61,7 @@ type MyClassesProps = {
   classrooms: Classes[];
 };
 
-export default function MyStudents({ userId, classrooms, userName }: MyClassesProps) {
+export default function MyClasses({ userId, classrooms, userName }: MyClassesProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []

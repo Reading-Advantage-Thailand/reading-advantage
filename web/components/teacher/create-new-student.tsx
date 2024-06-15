@@ -50,9 +50,14 @@ export default function CreateNewStudent({
   const formRef = useRef<HTMLFormElement>(null);
   const t = useScopedI18n("components.classRoster.addNewStudent");
 
-  const classroomId = studentDataInClass && studentDataInClass.length > 0 
-  ? studentDataInClass[0].classroomsId 
-  : classrooms[0].id;
+let classroomId: string = '';
+if (studentDataInClass && studentDataInClass.length > 0 && 'classroomsId' in studentDataInClass[0]) {
+  classroomId = studentDataInClass[0].classroomsId;
+} else if (classrooms && classrooms.length > 0 && 'id' in classrooms[0]) {
+  classroomId = classrooms[0].id;
+} else {
+  console.log('Unable to determine classroomId');
+}
 
   const className = studentDataInClass && studentDataInClass.length > 0
   ? studentDataInClass[0].classroomName
