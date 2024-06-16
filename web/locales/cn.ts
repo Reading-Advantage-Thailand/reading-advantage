@@ -43,6 +43,7 @@ export default {
         },
       },
       historyPage: {
+        title: "为 {userName} 的历史",
         reminderToReread: "重读提醒",
         articleRecords: "文章记录",
         reminderToRereadDescription:
@@ -419,6 +420,7 @@ export default {
       name: "姓名",
       lastActivity: "最后活动",
       actions: "操作",
+      history: "历史",
       search: "搜索姓名...",
       noStudent: "此班级中没有学生",
       noClassroom: "没有选择班级。请先选择一个班级。",
