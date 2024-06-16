@@ -7,6 +7,7 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -88,9 +89,13 @@ export default function WordList({ article, articleId, userId }: Props) {
             </div>
           ) : (
             <div className=" overflow-auto">
+              <span className="font-bold">
+                Select vocabulary and save for later practice.
+              </span>
               {wordList?.map((word, index) => (
-                <div key={index} className="pb-4 border-b-2">
-                  <span className="font-bold text-cyan-500">
+                <div key={index} className="p-4 border-b-2">
+                  <Checkbox id="terms" />
+                  <span className="font-bold text-cyan-500 ml-2">
                     {word.vocabulary}:{" "}
                   </span>
                   <span>{word.definition[currentLocale]}</span>
@@ -101,7 +106,12 @@ export default function WordList({ article, articleId, userId }: Props) {
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button">Close</Button>
+              <div>
+                <Button type="button">Close</Button>
+                <Button type="submit" className="ml-2">
+                  Save
+                </Button>
+              </div>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
