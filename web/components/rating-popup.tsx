@@ -59,7 +59,9 @@ export default function RatingPopup({
     console.log(data.message === 'success')
     if(data.message === 'success'){
       toast({
-        title: t('toast.success'),      
+        title: t('toast.success'),
+        imgSrc: '/xpBox.webp', 
+        description: 'Congratulations, you earned 10 XP.'     
       });
       setModalIsOpen(false);
     }
@@ -78,6 +80,8 @@ export default function RatingPopup({
     if(data.message === 'success'){
       toast({
         title: t('toast.success'), 
+        imgSrc: '/xpBox.webp',
+        description: 'you not earned XP.'  
       });
       setModalIsOpen(false);
     }
