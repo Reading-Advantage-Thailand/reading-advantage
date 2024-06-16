@@ -4,10 +4,23 @@ import axios, { AxiosError } from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { Book } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
 import { Button } from "./ui/button";
 import {
   Dialog,
