@@ -213,10 +213,9 @@ export default {
         teacherDescription: "你现在是教师",
         adminDescription: "你现在是管理员",
         systemDescription: "你现在是系统用户",
-     }
-     
-   },
-   
+      },
+    },
+
     select: {
       articleChoose: "请选择您想阅读的 {article}",
       articleChooseDescription:
@@ -502,6 +501,9 @@ export default {
     },
     wordList: {
       title: "词汇列表",
+      closeButton: "关闭",
+      saveButton: "保存",
+      detail: "选择词汇并保存以便日后练习。",
     },
   },
 

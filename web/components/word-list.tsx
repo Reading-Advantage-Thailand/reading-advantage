@@ -89,12 +89,10 @@ export default function WordList({ article, articleId, userId }: Props) {
             </div>
           ) : (
             <div className=" overflow-auto">
-              <span className="font-bold">
-                Select vocabulary and save for later practice.
-              </span>
+              <span className="font-bold">{t("detail")}</span>
               {wordList?.map((word, index) => (
                 <div key={index} className="p-4 border-b-2">
-                  <Checkbox id="terms" />
+                  <Checkbox id={`${word.vocabulary}`} />
                   <span className="font-bold text-cyan-500 ml-2">
                     {word.vocabulary}:{" "}
                   </span>
@@ -107,9 +105,9 @@ export default function WordList({ article, articleId, userId }: Props) {
           <DialogFooter>
             <DialogClose asChild>
               <div>
-                <Button type="button">Close</Button>
-                <Button type="submit" className="ml-2">
-                  Save
+                <Button type="button" variant="secondary">{t("closeButton")}</Button>
+                <Button className="ml-2" onClick={()=> {alert("sss")}}>
+                  {t("saveButton")}
                 </Button>
               </div>
             </DialogClose>
