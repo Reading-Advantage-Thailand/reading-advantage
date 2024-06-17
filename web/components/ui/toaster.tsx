@@ -9,7 +9,6 @@ import {
   ToastViewport,
 } from "@/components/ui/toast"
 import { useToast } from "@/components/ui/use-toast"
-import img from '../../public/xpBox.webp'
 import Image from "next/image"
 
 export function Toaster() {
@@ -20,24 +19,34 @@ export function Toaster() {
       {toasts.map(function ({ id, title, description, action, imgSrc, ...props }) {
         return (
           <Toast key={id} {...props}>
-            <div className="grid grid-cols-[1fr_2fr] gap-1">
+            {imgSrc ? <div className="grid grid-cols-[1fr_2fr] gap-1">
               <div>
-                {title && <ToastTitle>{title}</ToastTitle>}
+                {title && <ToastTitle className={`${imgSrc ? "mb-1 flex justify-center items-center" : ""}`}>{title}</ToastTitle>}
                 {imgSrc && (
                   <Image src={imgSrc.toString() as string} width={120} height={120} alt="XP Box" />
                 )}
               </div>
               {(description as string)?.startsWith("Congratulations") 
                 ? (                  
-                  <ToastDescription>
+                  <ToastDescription
+                   className={`${imgSrc ? "font-bold text-center flex justify-center items-center" : ""}`}
+                  >
                     Congratulations,<br/>
                     {(description as string).slice((description as string).indexOf(",") + 2)}
                   </ToastDescription>             
                 ) : (
-                  <ToastDescription>{(description as string)}</ToastDescription>
+                  <ToastDescription
+                    className={`${imgSrc ? "font-bold text-center flex justify-center items-center" : ""}`}
+                  >{(description as string)}</ToastDescription>
                 )
               }
-            </div>
+            </div> :
+            <div className="grid gap-1">
+              {title && <ToastTitle>{title}</ToastTitle>}
+              {description && (
+                <ToastDescription>{description}</ToastDescription>
+              )}
+            </div>}
             {action}
             <ToastClose />
           </Toast>
@@ -45,5 +54,6 @@ export function Toaster() {
       })}
       <ToastViewport />
     </ToastProvider>
+    
   )
 }
