@@ -28,7 +28,7 @@ interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
 export function UserAccountNav({ user }: UserAccountNavProps) {
   const [selectedRole] = useContext(SelectedRoleContext);
   const t = useScopedI18n("components.userAccountNav");
-  console.log("selectedRole", selectedRole);
+console.log('selectedRole', selectedRole);
 
   return (
     <DropdownMenu>
@@ -67,13 +67,12 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         </div>
 
         <DropdownMenuSeparator />
-        {selectedRole &&
-          selectedRole.filter((role: string) => role === "TEACHER").length >
-            0 && (
-            <DropdownMenuItem asChild>
-              <Link href="/teacher/my-classes">{"Teacher dashboard"}</Link>
-            </DropdownMenuItem>
-          )}
+        {selectedRole && selectedRole.filter((role: string) => role === "TEACHER").length >
+          0 && (
+          <DropdownMenuItem asChild>
+            <Link href="/teacher/my-classes">{"Teacher dashboard"}</Link>
+          </DropdownMenuItem>
+        )}
 
         {selectedRole &&
           selectedRole.filter((role: string) => role === "STUDENT").length >
@@ -96,8 +95,16 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
             </DropdownMenuItem>
           )}
 
+        {/* {selectedRole &&
+          selectedRole.filter((role: string) => role === "SYSTEM").length >
+            0 && (
+            <DropdownMenuItem asChild>
+              <Link href="/system">{"System dashboard"}</Link>
+            </DropdownMenuItem>
+          )} */}
+          
         {selectedRole &&
-        !selectedRole.includes("STUDENT") && (
+          !selectedRole.includes("STUDENT") && (
             <DropdownMenuItem asChild>
               <Link href="/system">{"System dashboard"}</Link>
             </DropdownMenuItem>
