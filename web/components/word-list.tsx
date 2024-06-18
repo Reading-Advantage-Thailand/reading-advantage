@@ -75,6 +75,7 @@ export default function WordList({ article, articleId, userId }: Props) {
       });
 
       setWordList(resWordlist?.data?.word_list);
+      form.reset();
     } catch (error: any) {
       toast({
         title: "Something went wrong.",
@@ -99,112 +100,110 @@ export default function WordList({ article, articleId, userId }: Props) {
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[450px] h-96">
-          <DialogHeader>
-            <DialogTitle>
-              <div className="flex items-center">
-                <Book />
-                <div className="ml-2">{t("title")}</div>
-              </div>
-            </DialogTitle>
-          </DialogHeader>
-          {loading ? (
-            <div className="flex items-center space-x-4">
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[300px]" />
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          ) : (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="overflow-auto"
-              >
-                <span className="font-bold">{t("detail")}</span>
-                <FormField
-                  control={form.control}
-                  name="items"
-                  render={() => {
-                    return (
-                      <FormItem>
-                        <>
-                          {wordList?.map((word, index) => (
-                            <FormField
-                              key={index}
-                              control={form.control}
-                              name="items"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem key={word?.vocabulary}>
-                                    <FormControl>
-                                      <div
-                                        key={index}
-                                        className="p-4 border-b-2"
-                                      >
-                                        <Checkbox
-                                          checked={field?.value?.includes(
-                                            word?.vocabulary
-                                          )}
-                                          onCheckedChange={(checked) => {
-                                            if (Array.isArray(field.value)) {
-                                              return checked
-                                                ? field.onChange([
-                                                    ...field.value,
-                                                    word.vocabulary,
-                                                  ])
-                                                : field.onChange(
-                                                    field.value.filter(
-                                                      (value) =>
-                                                        value !==
-                                                        word.vocabulary
-                                                    )
-                                                  );
-                                            } else {
-                                              return field.onChange(
-                                                checked ? [word.vocabulary] : []
-                                              );
-                                            }
-                                          }}
-                                        />
-                                        <span className="font-bold text-cyan-500 ml-2">
-                                          {word.vocabulary}:{" "}
-                                        </span>
-                                        <span>
-                                          {word.definition[currentLocale]}
-                                        </span>
-                                      </div>
-                                    </FormControl>
-                                  </FormItem>
-                                );
-                              }}
-                            />
-                          ))}
-                        </>
-                      </FormItem>
-                    );
-                  }}
-                />
-              </form>
-            </Form>
-          )}
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <div>
-                <Button type="button" variant="secondary">
-                  {t("closeButton")}
-                </Button>
-                <Button
-                  className="ml-2"
-                 type="submit"
-                >
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="overflow-auto"
+            >
+              <DialogHeader>
+                <DialogTitle>
+                  <div className="flex items-center">
+                    <Book />
+                    <div className="ml-2">{t("title")}</div>
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
+              {loading ? (
+                <div className="flex items-center space-x-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-[300px]" />
+                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="mt-5">
+                    <span className="font-bold">{t("detail")}</span>
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="items"
+                    render={() => {
+                      return (
+                        <FormItem>
+                          <>
+                            {wordList?.map((word, index) => (
+                              <FormField
+                                key={index}
+                                control={form.control}
+                                name="items"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem key={word?.vocabulary}>
+                                      <FormControl>
+                                        <div
+                                          key={index}
+                                          className="p-4 border-b-2"
+                                        >
+                                          <Checkbox
+                                            checked={field?.value?.includes(
+                                              word?.vocabulary
+                                            )}
+                                            onCheckedChange={(checked) => {
+                                              if (Array.isArray(field.value)) {
+                                                return checked
+                                                  ? field.onChange([
+                                                      ...field.value,
+                                                      word.vocabulary,
+                                                    ])
+                                                  : field.onChange(
+                                                      field.value.filter(
+                                                        (value) =>
+                                                          value !==
+                                                          word.vocabulary
+                                                      )
+                                                    );
+                                              } else {
+                                                return field.onChange(
+                                                  checked
+                                                    ? [word.vocabulary]
+                                                    : []
+                                                );
+                                              }
+                                            }}
+                                          />
+                                          <span className="font-bold text-cyan-500 ml-2">
+                                            {word.vocabulary}:{" "}
+                                          </span>
+                                          <span>
+                                            {word.definition[currentLocale]}
+                                          </span>
+                                        </div>
+                                      </FormControl>
+                                    </FormItem>
+                                  );
+                                }}
+                              />
+                            ))}
+                          </>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                </>
+              )}
+              
+              <div className="flex justify-end mt-5">
+                <Button className="ml-2" type="submit">
                   {t("saveButton")}
                 </Button>
               </div>
-            </DialogClose>
-          </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
+
+       
       </Dialog>
     </>
   );
