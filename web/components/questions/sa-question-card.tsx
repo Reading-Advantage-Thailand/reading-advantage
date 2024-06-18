@@ -30,6 +30,8 @@ import {
 } from "../ui/dialog";
 import Rating from "@mui/material/Rating";
 
+import { toast } from "../ui/use-toast";
+
 type Props = {
   userId: string;
   articleId: string;
@@ -211,6 +213,7 @@ function SAQuestion({
   type FormData = z.infer<typeof shortAnswerSchema>;
 
   const t = useScopedI18n("components.mcq");
+  const tf = useScopedI18n('components.rate');
   const { timer, setPaused } = useContext(QuizContext);
   const [isCompleted, setIsCompleted] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -255,6 +258,13 @@ function SAQuestion({
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
+        if(data){
+          toast({
+            title: tf('toast.success'), 
+            imgSrc: '/xpBox.webp',
+            description: `Congratulations, you earned ${rating}XP.`  
+          })
+        }
         handleCompleted();
       })
       .finally(() => {
