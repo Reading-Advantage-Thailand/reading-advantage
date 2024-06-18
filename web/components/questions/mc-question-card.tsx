@@ -286,7 +286,8 @@ function MCQeustion({
           )}
           {5 - resp.results.length + 1 + index < resp.total
             ? "Next Question"
-            : "Submit Quiz"}
+            : "Submit Quiz"        
+          }
         </Button>
       }
     </CardContent>
