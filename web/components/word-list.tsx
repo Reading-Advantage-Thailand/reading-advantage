@@ -85,7 +85,8 @@ export default function WordList({ article, articleId, userId }: Props) {
     } finally {
       setLoading(false); // Stop loading
     }
-  }, [article, articleId, userId]);
+  }, [article, articleId, form, userId]);
+  console.log("form : ", form.watch("items"));
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     console.log("onSubmit : ", data);
@@ -193,17 +194,25 @@ export default function WordList({ article, articleId, userId }: Props) {
                   />
                 </>
               )}
-              
-              <div className="flex justify-end mt-5">
-                <Button className="ml-2" type="submit">
-                  {t("saveButton")}
-                </Button>
-              </div>
+              <DialogFooter className="fixed bottom-0 left-0 w-full bg-white p-4">
+                <div className="flex justify-end mt-5">
+                  <DialogClose asChild>
+                    <Button type="button" variant="secondary">
+                      {t("closeButton")}
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    className="ml-2"
+                    type="submit"
+                    disabled={form.watch("items").length === 0}
+                  >
+                    {t("saveButton")}
+                  </Button>
+                </div>
+              </DialogFooter>
             </form>
           </Form>
         </DialogContent>
-
-       
       </Dialog>
     </>
   );
