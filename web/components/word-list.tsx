@@ -204,7 +204,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                   <Button
                     className="ml-2"
                     type="submit"
-                    disabled={form.watch("items").length === 0}
+                    disabled={form.watch("items")?.length === 0 || form.watch("items") === undefined}
                   >
                     {t("saveButton")}
                   </Button>
