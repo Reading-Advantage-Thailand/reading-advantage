@@ -240,7 +240,7 @@ export default {
         teacherDescription: "You are now a teacher",
         adminDescription: "You are now an admin",
         systemDescription: "You are now a system user",
-      }
+      },
     },
     // use this for article selection page
     // this is the select component
@@ -464,7 +464,8 @@ export default {
       search: "Search name...",
       noStudent: "No student in this class",
       noClassroom: "No classroom selected",
-      noClassroomDescription: "No classroom selected. Please select a classroom first.",
+      noClassroomDescription:
+        "No classroom selected. Please select a classroom first.",
       addStudentButton: "Add new students",
       toast: {
         successResetProgress: "Successfully reset progress",
@@ -542,8 +543,11 @@ export default {
       textSuggestion: "Ask a question",
     },
     wordList: {
-     title: "Word List",
-    }
+      title: "Word List",
+      closeButton: "Close",
+      saveButton: "Save",
+      detail: "Select vocabulary and save for later practice.",
+    },
   },
 
   selectType: {

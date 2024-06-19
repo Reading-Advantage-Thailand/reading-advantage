@@ -215,9 +215,9 @@ export default {
         teacherDescription: "你現在是教師",
         adminDescription: "你現在是管理員",
         systemDescription: "你現在是系統用戶",
-     }
-   },
-   
+      },
+    },
+
     select: {
       articleChoose: "請選擇您想閱讀的 {article}",
       articleChooseDescription:
@@ -508,6 +508,9 @@ export default {
     },
     wordList: {
       title: "詞彙列表",
+      closeButton: "關閉",
+      saveButton: "保存",
+      detail: "選擇詞彙並保存以便後續練習。",
     },
   },
   selectType: {

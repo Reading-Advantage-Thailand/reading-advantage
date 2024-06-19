@@ -16,7 +16,7 @@
     "@google-cloud/storage": "^7.5.0",
     "@google-cloud/translate": "^8.0.2",
     "@hello-pangea/dnd": "^16.5.0",
-    "@hookform/resolvers": "^3.3.2",
+    "@hookform/resolvers": "^3.6.0",
     "@mui/material": "^5.14.12",
     "@radix-ui/colors": "^3.0.0",
     "@radix-ui/react-alert-dialog": "^1.0.5",
@@ -61,7 +61,7 @@
     "react-confetti": "^6.1.0",
     "react-dom": "^18",
     "react-heatmap-grid": "^0.9.0",
-    "react-hook-form": "^7.47.0",
+    "react-hook-form": "^7.52.0",
     "react-quizlet-flashcard": "^3.0.0",
     "react-router-dom": "^6.22.1",
     "react-tailwindcss-datepicker": "^1.6.6",
@@ -75,7 +75,7 @@
     "text-readability-ts": "^1.0.11",
     "ts-fsrs": "^3.3.0",
     "uuid": "^9.0.1",
-    "zod": "^3.22.4"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",

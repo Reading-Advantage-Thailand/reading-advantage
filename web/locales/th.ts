@@ -232,8 +232,8 @@ export default {
         teacherDescription: "ตอนนี้คุณเป็นครูแล้ว",
         adminDescription: "ตอนนี้คุณเป็นผู้ดูแลระบบแล้ว",
         systemDescription: "ตอนนี้คุณเป็นผู้ใช้ระบบแล้ว",
-     }
-   },
+      },
+    },
     // use this for article selection page
     // this is the select component
     select: {
@@ -534,6 +534,9 @@ export default {
     },
     wordList: {
       title: "รายการคำศัพท์",
+      closeButton: "ปิด",
+      saveButton: "บันทึก",
+      detail: "เลือกคำศัพท์และบันทึกเพื่อฝึกฝนในภายหลัง",
     },
   },
 
