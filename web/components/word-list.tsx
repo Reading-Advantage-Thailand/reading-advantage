@@ -7,6 +7,7 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { createEmptyCard, Card } from "ts-fsrs";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,11 +32,13 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { toast } from "./ui/use-toast";
+
 interface Props {
   article: Article;
   articleId: string;
   userId: string;
 }
+
 interface WordList {
   vocabulary: string;
   definition: {
@@ -86,10 +89,19 @@ export default function WordList({ article, articleId, userId }: Props) {
       setLoading(false); // Stop loading
     }
   }, [article, articleId, form, userId]);
-  console.log("form : ", form.watch("items"));
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     console.log("onSubmit : ", data);
+    try {
+      let card: Card = createEmptyCard();
+      console.log("card : ", card);
+      console.log("wordList : ", wordList);
+      // articleId,
+      // saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
+      //  ...card,
+      // userId;
+      // wordList
+    } catch (error: any) {}
   };
 
   return (
@@ -116,7 +128,7 @@ export default function WordList({ article, articleId, userId }: Props) {
               </DialogHeader>
               {loading ? (
                 <div className="flex items-center space-x-4">
-                  <div className="space-y-2">
+                  <div className="space-y-5">
                     <Skeleton className="h-4 w-[300px]" />
                     <Skeleton className="h-4 w-[250px]" />
                     <Skeleton className="h-4 w-[200px]" />
@@ -204,7 +216,10 @@ export default function WordList({ article, articleId, userId }: Props) {
                   <Button
                     className="ml-2"
                     type="submit"
-                    disabled={form.watch("items")?.length === 0 || form.watch("items") === undefined}
+                    disabled={
+                      form.watch("items")?.length === 0 ||
+                      form.watch("items") === undefined
+                    }
                   >
                     {t("saveButton")}
                   </Button>
