@@ -209,4 +209,5 @@ export type articleShowcaseType = {
     summary: string,
     title: string,
     is_read: boolean,
+    is_approved: boolean,   
 }

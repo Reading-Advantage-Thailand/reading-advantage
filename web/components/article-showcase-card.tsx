@@ -60,7 +60,8 @@ const ArticleShowcaseCard = ({ article }: Props) => {
         style={{
           backgroundImage: `url('https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${article.id}.png')`,
           boxShadow: "inset 80px 10px 90px 10px rgba(0, 0, 0, 0.9)",
-          opacity: article.is_read ? 0.3 : 1,
+          // opacity: article.is_read ? 0.3 : 1,
+          opacity: (article.is_read || article.is_approved) ? 0.3 : 1,
         }}
       >
         <Badge className="shadow-lg max-w-max" variant="destructive">
@@ -93,6 +94,14 @@ const ArticleShowcaseCard = ({ article }: Props) => {
           </Badge>
         </div>
       )}
+
+      {article.is_approved && (
+        <div className="flex justify-center">
+          <Badge className="relative m-auto -top-[11rem] text-md left-0 right-0 shadow-lg max-w-max bg-slate-200 text-slate-900">
+            Approved
+            </Badge>
+            </div>
+            )}
     </Link>
   );
 }

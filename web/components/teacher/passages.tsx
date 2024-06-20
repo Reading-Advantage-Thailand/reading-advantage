@@ -33,6 +33,7 @@ type Passage = {
   summary: string;
   average_rating: number;
   created_at: string;
+  is_approved: boolean;
 };
 
 type PassagesProps = {
