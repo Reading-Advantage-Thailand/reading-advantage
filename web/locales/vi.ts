@@ -228,9 +228,9 @@ export default {
         teacherDescription: "Bạn hiện là giáo viên",
         adminDescription: "Bạn hiện là quản trị viên",
         systemDescription: "Bạn hiện là người dùng hệ thống",
-     }
-   },
-   
+      },
+    },
+
     // Sử dụng cho trang chọn bài viết
     // Đây là thành phần chọn
     select: {
@@ -535,6 +535,9 @@ export default {
     },
     wordList: {
       title: "danh sách từ vựng",
+      closeButton: "Đóng",
+      saveButton: "Lưu",
+      detail: "Chọn từ vựng và lưu lại để luyện tập sau này.",
     },
   },
 
