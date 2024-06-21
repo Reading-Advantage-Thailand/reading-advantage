@@ -22,7 +22,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -92,41 +91,44 @@ export default function WordList({ article, articleId, userId }: Props) {
   }, [article, articleId, form, userId]);
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    console.log("onSubmit : ", data);
     try {
       let card: Card = createEmptyCard();
-      const foundWords = await filter(wordList, (vocab, index) =>
+      const foundWordsList = await filter(wordList, (vocab) =>
         includes(data?.items, vocab?.vocabulary)
       );
-      if (foundWords.length > 0) {
-        forEach(foundWords, async (word, index) => {
-          const param = {
-            ...card,
-            articleId: articleId,
-            userId: userId,
-            saveToFlashcard: true,
-            word: word,
-          };
-          console.log("param : ", param);
+      if (foundWordsList.length > 0) {
+        const param = {
+          ...card,
+          articleId: articleId,
+          saveToFlashcard: true,
+          foundWordsList: foundWordsList,
+        };
 
-          const res = await axios.post(`/api/word-list/${userId}`, param);
-
-          if(foundWords.length-1 === index) {
-            toast({
-              title: "Success",
-              description: `You have saved ${foundWords.length} words to flashcard`,
-            });
-          }
-
-          // toast({
-          //   title: "Success",
-          //   description: `You have saved "${
-          //     text[selectedSentence as number].text
-          //   }" to flashcard`,
-          // });
+        const res = await axios.post(`/api/word-list/${userId}`, param);
+        if (res?.status === 200) {
+          toast({
+            title: "Success",
+            description: `You have saved ${foundWordsList.length} words to flashcard`,
+          });
+        }
+      }
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        if (error?.response?.status === 400) {
+          toast({
+            title: "Word already saved",
+            description: `${error?.response?.data?.message}`,
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Something went wrong.",
+          description: "Your word was not saved. Please try again.",
+          variant: "destructive",
         });
       }
-    } catch (error: any) {}
+    }
   };
 
   return (
@@ -231,7 +233,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                   />
                 </>
               )}
-              <DialogFooter className="fixed bottom-0 left-0 w-full bg-white p-4">
+              <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4">
                 <div className="flex justify-end mt-5">
                   <DialogClose asChild>
                     <Button type="button" variant="secondary">

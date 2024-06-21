@@ -2,6 +2,16 @@ import db from "@/configs/firestore-config";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 
+interface WordList {
+  vocabulary: string;
+  definition: {
+    en: string;
+    th: string;
+    cn: string;
+    tw: string;
+    vi: string;
+  };
+}
 export async function POST(req: Request, res: Response) {
   try {
     const session = await getServerSession(authOptions);
@@ -24,94 +34,64 @@ export async function POST(req: Request, res: Response) {
       lapses,
       state,
       articleId,
-      userId,
       saveToFlashcard,
-      word
+      foundWordsList,
     } = await req.json();
 
-     // Get user id from token
+    // Get user id from token
     const sub = session.user.id;
-    console.log("userId", userId);
-    console.log("sub", sub);
+    const wordAllReadySaved: string[] = [];
 
-    /*
-    {
-    "due": "2024-06-21T03:56:43.788Z",
-    "stability": 0,
-    "difficulty": 0,
-    "elapsed_days": 0,
-    "scheduled_days": 0,
-    "reps": 0,
-    "lapses": 0,
-    "state": 0,
-    "articleId": "j3J4uUf1oVWNlKtQcam7",
-    "userId": "w9FZImkGDmTPPn7x5urEtSr7Ch12",
-    "saveToFlashcard": true,
-    "word": {
-        "vocabulary": "photos",
-        "definition": {
-            "tw": "照片",
-            "vi": "hình ảnh",
-            "th": "รูปถ่าย",
-            "en": "pictures taken with a camera",
-            "cn": "照片"
+    await Promise.all(
+      foundWordsList.map(async (word: WordList) => {
+        const userWordRecord = await db
+          .collection("user-word-records")
+          .where("userId", "==", sub)
+          .where("articleId", "==", articleId)
+          .where("word.vocabulary", "==", word.vocabulary)
+          .limit(1)
+          .get();
+
+        if (!userWordRecord.empty) {
+          wordAllReadySaved.push(word.vocabulary);
+        } else {
+          await db.collection("user-word-records").add({
+            userId: sub,
+            articleId,
+            saveToFlashcard,
+            word,
+            createdAt: new Date(),
+            difficulty,
+            due,
+            elapsed_days,
+            lapses,
+            reps,
+            scheduled_days,
+            stability,
+            state,
+          });
         }
-    }
-}
-    
-    */
+      })
+    );
 
-   
-    /*
-    // Check if user has already saved this sentence
-    const userWordRecord = await db
-      .collection("user-word-records")
-      .where("userId", "==", sub)
-      .where("articleId", "==", articleId)
-      .where("sn", "==", sn)
-      .limit(1)
-      .get();
-
-    if (!userWordRecord.empty) {
+    if (wordAllReadySaved.length > 0) {
       return new Response(
         JSON.stringify({
-          message: "Sentence already saved",
+          message: `Word already saved
+          ${wordAllReadySaved.join(", ")}`,
         }),
         { status: 400 }
       );
+    } else {
+      return new Response(
+        JSON.stringify({
+          message: "Word saved",
+        }),
+        { status: 200 }
+      );
     }
-    // Create user article record
-    const userWordRecordRef = await db
-      .collection("user-word-records")
-      .add({
-        userId: sub,
-        articleId,
-        sentence,
-        translation,
-        sn,
-        timepoint,
-        endTimepoint,
-        createdAt: new Date(),
-        difficulty,
-        due,
-        elapsed_days,
-        lapses,
-        reps,
-        scheduled_days,
-        stability,
-        state,
-      });
-      */
-
-    // Create response
-    return new Response(
-      JSON.stringify({
-        message: "Sentence saved",
-      }),
-      { status: 200 }
-    );
   } catch (error: any) {
-    console.log("error", error);
+ 
     return new Response(
       JSON.stringify({
         message: "Internal server error",
