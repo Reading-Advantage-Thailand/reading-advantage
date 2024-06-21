@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { createEmptyCard, Card } from "ts-fsrs";
+import { filter, forEach, includes } from "lodash";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -94,13 +95,37 @@ export default function WordList({ article, articleId, userId }: Props) {
     console.log("onSubmit : ", data);
     try {
       let card: Card = createEmptyCard();
-      console.log("card : ", card);
-      console.log("wordList : ", wordList);
-      // articleId,
-      // saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
-      //  ...card,
-      // userId;
-      // wordList
+      const foundWords = await filter(wordList, (vocab, index) =>
+        includes(data?.items, vocab?.vocabulary)
+      );
+      if (foundWords.length > 0) {
+        forEach(foundWords, async (word, index) => {
+          const param = {
+            ...card,
+            articleId: articleId,
+            userId: userId,
+            saveToFlashcard: true,
+            word: word,
+          };
+          console.log("param : ", param);
+
+          const res = await axios.post(`/api/word-list/${userId}`, param);
+
+          if(foundWords.length-1 === index) {
+            toast({
+              title: "Success",
+              description: `You have saved ${foundWords.length} words to flashcard`,
+            });
+          }
+
+          // toast({
+          //   title: "Success",
+          //   description: `You have saved "${
+          //     text[selectedSentence as number].text
+          //   }" to flashcard`,
+          // });
+        });
+      }
     } catch (error: any) {}
   };
 
@@ -127,7 +152,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                 </DialogTitle>
               </DialogHeader>
               {loading ? (
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 mt-5">
                   <div className="space-y-5">
                     <Skeleton className="h-4 w-[300px]" />
                     <Skeleton className="h-4 w-[250px]" />
