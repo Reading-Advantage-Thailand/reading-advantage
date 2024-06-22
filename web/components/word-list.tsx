@@ -7,6 +7,8 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { createEmptyCard, Card } from "ts-fsrs";
+import { filter, forEach, includes } from "lodash";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,7 +22,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -31,11 +32,13 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { toast } from "./ui/use-toast";
+
 interface Props {
   article: Article;
   articleId: string;
   userId: string;
 }
+
 interface WordList {
   vocabulary: string;
   definition: {
@@ -86,10 +89,46 @@ export default function WordList({ article, articleId, userId }: Props) {
       setLoading(false); // Stop loading
     }
   }, [article, articleId, form, userId]);
-  console.log("form : ", form.watch("items"));
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    console.log("onSubmit : ", data);
+    try {
+      let card: Card = createEmptyCard();
+      const foundWordsList = await filter(wordList, (vocab) =>
+        includes(data?.items, vocab?.vocabulary)
+      );
+      if (foundWordsList.length > 0) {
+        const param = {
+          ...card,
+          articleId: articleId,
+          saveToFlashcard: true,
+          foundWordsList: foundWordsList,
+        };
+
+        const res = await axios.post(`/api/word-list/${userId}`, param);
+        if (res?.status === 200) {
+          toast({
+            title: "Success",
+            description: `You have saved ${foundWordsList.length} words to flashcard`,
+          });
+        }
+      }
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        if (error?.response?.status === 400) {
+          toast({
+            title: "Word already saved",
+            description: `${error?.response?.data?.message}`,
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Something went wrong.",
+          description: "Your word was not saved. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (
@@ -115,8 +154,8 @@ export default function WordList({ article, articleId, userId }: Props) {
                 </DialogTitle>
               </DialogHeader>
               {loading ? (
-                <div className="flex items-center space-x-4">
-                  <div className="space-y-2">
+                <div className="flex items-center space-x-4 mt-5">
+                  <div className="space-y-5">
                     <Skeleton className="h-4 w-[300px]" />
                     <Skeleton className="h-4 w-[250px]" />
                     <Skeleton className="h-4 w-[200px]" />
@@ -194,7 +233,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                   />
                 </>
               )}
-              <DialogFooter className="fixed bottom-0 left-0 w-full bg-white p-4">
+              <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4">
                 <div className="flex justify-end mt-5">
                   <DialogClose asChild>
                     <Button type="button" variant="secondary">
@@ -204,7 +243,10 @@ export default function WordList({ article, articleId, userId }: Props) {
                   <Button
                     className="ml-2"
                     type="submit"
-                    disabled={form.watch("items")?.length === 0 || form.watch("items") === undefined}
+                    disabled={
+                      form.watch("items")?.length === 0 ||
+                      form.watch("items") === undefined
+                    }
                   >
                     {t("saveButton")}
                   </Button>
