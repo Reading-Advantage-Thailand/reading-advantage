@@ -33,20 +33,20 @@ export type TeacherPageConfig = {
 
 
 export type SidebarNavItem = {
-    title: "read" | "sentences" | "reports" | "history",
-    disabled?: boolean
-    external?: boolean
-    icon?: keyof typeof Icons
+  title: "read" | "sentences" | "vocabulary" | "reports" | "history";
+  disabled?: boolean;
+  external?: boolean;
+  icon?: keyof typeof Icons;
 } & (
-        | {
-            href: string
-            items?: never
-        }
-        | {
-            href?: string
-            items: NavLink[]
-        }
-    )
+  | {
+      href: string;
+      items?: never;
+    }
+  | {
+      href?: string;
+      items: NavLink[];
+    }
+);
 
 export type SidebarTeacherNavItem = {
     title: "myClasses" | "myStudent" | "classRoster" | "reports" | "passages" | "assignments",

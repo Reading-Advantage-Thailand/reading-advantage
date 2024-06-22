@@ -511,6 +511,10 @@ export default {
       closeButton: "關閉",
       saveButton: "保存",
       detail: "選擇詞彙並保存以便後續練習。",
+      tab: {
+        flashcard: "單詞卡",
+        matching: "配對",
+      },
     },
   },
   selectType: {
