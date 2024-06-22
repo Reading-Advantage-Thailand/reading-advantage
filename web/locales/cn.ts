@@ -504,6 +504,10 @@ export default {
       closeButton: "关闭",
       saveButton: "保存",
       detail: "选择词汇并保存以便日后练习。",
+      tab: {
+        flashcard: "单词卡",
+        matching: "匹配",
+      },
     },
   },
 

@@ -537,6 +537,10 @@ export default {
       closeButton: "ปิด",
       saveButton: "บันทึก",
       detail: "เลือกคำศัพท์และบันทึกเพื่อฝึกฝนในภายหลัง",
+      tab: {
+        flashcard: "การ์ดคำศัพท์",
+        matching: "การจับคู่",
+      },
     },
   },
 
