@@ -538,6 +538,10 @@ export default {
       closeButton: "Đóng",
       saveButton: "Lưu",
       detail: "Chọn từ vựng và lưu lại để luyện tập sau này.",
+      tab: {
+        flashcard: "Thẻ học",
+        matching: "Ghép cặp",
+      },
     },
   },
 

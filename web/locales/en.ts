@@ -1,3 +1,4 @@
+import { match } from "assert";
 import { error, warn } from "console";
 import { assign, create, first, last } from "lodash";
 import { arch } from "os";
@@ -182,6 +183,7 @@ export default {
       sentences: "Sentences",
       reports: "Reports",
       history: "History",
+      vocabulary: "Vocabulary",
     },
     sidebarTeacherNav: {
       myClasses: "My Classes",
@@ -547,6 +549,10 @@ export default {
       closeButton: "Close",
       saveButton: "Save",
       detail: "Select vocabulary and save for later practice.",
+      tab: {
+        flashcard: "Flashcard",
+        matching: "Matching",
+      },
     },
   },
 
