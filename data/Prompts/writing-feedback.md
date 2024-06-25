@@ -19,11 +19,11 @@ You will receive the following information:
    - Complexity and Structure
    - Content and Development
 3. Scoring guidelines:
-   - 5 points: The writing meets or exceeds the CEFR level expectations for the level above the student's currect target level.
-   - 4 points: The writing fully meets the CEFR level expectations for the student's currect target level.
-   - 3 points: The writing partially meets the CEFR level expectations for the student's currect target level.
-   - 2 points: The writing meets the CEFR level expectations for the level below the student's currect target level.
-   - 1 points: The writing falls significantly below the CEFR level expectations for the level below the student's currect target level.
+   - 5 points: The writing meets or exceeds the CEFR level expectations for the level above the student's current target level.
+   - 4 points: The writing fully meets the CEFR level expectations for the student's current target level.
+   - 3 points: The writing partially meets the CEFR level expectations for the student's current target level.
+   - 2 points: The writing meets the CEFR level expectations for the level below the student's current target level.
+   - 1 points: The writing falls significantly below the CEFR level expectations for the level below the student's current target level.
 4. Use the following rubric to guide your scoring:
 
 ## 5x5 Rubric for CEFR Writing Descriptors (Including A0)
