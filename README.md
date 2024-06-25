@@ -43,13 +43,13 @@ Detailing challenges like AI service integration and user data security, along w
 6. [x] Translation Pane | บานหน้าต่างการแปล
 7. [x] Sentence Saving | การบันทึกประโยค
 8. [x] Sentence SRS Practice | การฝึกประโยชน์ SRS
-8. [ ] Article vocabulary lists
+8. [x] Article vocabulary lists
 8. [ ] Vocabulary SRS Practice | การฝึกฝนคำศัพท์ SRS
 9. [x] MC and SA Comprehension Questions | คำถามความเข้าใจ
 9. [ ] First-run tour
-9. [ ] "Ask questions about the language in this article" Chatbot.
+9. [x] "Ask questions about the language in this article" Chatbot.
 10. [ ] LA Writing Prompts and Feedback | คำแนะนำในการเขียน
 11. [ ] Running Records | การบันทึกการวิ่ง
-12. [ ] Teacher & Classroom Management | การจัดการครูและห้องเรียน
+12. [x] Teacher & Classroom Management | การจัดการครูและห้องเรียน
 13. [ ] School Admin Management | การจัดการผู้ดูแลโรงเรียน
-14. [ ] App Admin Functions | ฟังก์ชั่นผู้ดูแลแอป
+14. [x] App Admin Functions | ฟังก์ชั่นผู้ดูแลแอป
