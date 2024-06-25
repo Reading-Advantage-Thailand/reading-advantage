@@ -8,7 +8,7 @@ You will receive the following information:
 2. Student's target CEFR level
 3. Reading passage
 4. Writing assignment (prompt) based on the reading passage
-5. Student's first draft
+5. Student's response
 
 ## Evaluation Process
 1. Carefully read the provided materials.
