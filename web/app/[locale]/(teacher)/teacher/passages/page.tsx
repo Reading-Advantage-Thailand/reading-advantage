@@ -22,10 +22,11 @@ export default async function PassagesPage() {
         headers: headers(),
       }
     );
-    
-    return response.json();
+    const res = await response.json();
+    return res;
   }
   const passages = await getPassages();
+console.log('passages in passages page', passages);
 
   return (
     <div>

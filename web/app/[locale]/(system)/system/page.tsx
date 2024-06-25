@@ -22,10 +22,14 @@ export default async function SystemPage() {
         headers: headers(),
       }
     );
+    const res = await response.json();
+    console.log('res in system page', res);
     
-    return response.json();
+    return res;
   }
   const passages = await getPassages();
+  // console.log('passages', passages);
+  
   return (
     <div className='px-[10%]'>
       <Header heading="System Dashboard"/>
