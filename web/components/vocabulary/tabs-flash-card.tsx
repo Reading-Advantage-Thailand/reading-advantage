@@ -11,17 +11,14 @@ import { v4 as uuidv4 } from "uuid";
 import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
 import { useRouter } from "next/navigation";
-
 import { ReloadIcon } from "@radix-ui/react-icons";
-import AudioButton from "./audio-button";
-import FlashCardPracticeButton from "./flash-card-practice-button";
-import FlipCardPracticeButton from "./flip-card-button";
 
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { updateScore } from "@/lib/utils";
-import { Header } from "./header";
-import { toast } from "./ui/use-toast";
+import { Header } from "../header";
+import { toast } from "../ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
+import FlipCardPracticeButton from "../flip-card-button";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -32,14 +29,14 @@ type Props = {
   setShowButton: Function;
 };
 
-export type Sentence = {
+export type Word = {
   articleId: string;
   createdAt: { _seconds: number; _nanoseconds: number };
   endTimepoint: number;
-  sentence: string;
+//   sentence: string;
   sn: number;
   timepoint: number;
-  translation: { th: string };
+//   translation: { th: string };
   userId: string;
   id: string;
   due: Date; // Date when the card is next due for review
@@ -67,22 +64,22 @@ export default function FlashCard({
   const currentCardFlipRef = useRef<any>();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [sentences, setSentences] = useState<Sentence[]>([]);
+  const [words, setWords] = useState<Word[]>([]);
 
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
       const startOfDay = date_scheduler(new Date(), 0, true);
       const filteredData = await res.data.sentences
-        .filter((record: Sentence) => {
+        .filter((record: Word) => {
           const dueDate = new Date(record.due);
           return record.state === 0 || dueDate < startOfDay;
         })
-        .sort((a: Sentence, b: Sentence) => {
+        .sort((a: Word, b: Word) => {
           return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
         });
 
-      setSentences(filteredData);
+      setWords(filteredData);
 
       if (filteredData.length === 0) {
         setShowButton(false);
@@ -125,35 +122,35 @@ export default function FlashCard({
     getUserSentenceSaved();
   }, []);
 
-  const cards = sentences.map((sentence, index) => {
+  const cards = words.map((word, index) => {
     return {
       id: index,
       frontHTML: (
         <div className="flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground">
-          {sentence.sentence}
+          {/* {sentence.sentence} */}
         </div>
       ),
       backHTML: (
         <div className="flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground">
-          {sentence.translation.th}
+          {/* {sentence.translation.th} */}
         </div>
       ),
     };
   });
 
   const handleDeleteAll = async () => {
-    let idSentences = sentences.map((sentence) => sentence.id);
+    let idWord = words.map((word) => word.id);
     try {
       setLoading(true);
       // loop for delete all sentences
-      for (let i = 0; i < idSentences.length; i++) {
+      for (let i = 0; i < idWord.length; i++) {
         const res = await axios.delete(`/api/users/${userId}/sentences`, {
           data: {
-            sentenceId: idSentences[i],
+            sentenceId: idWord[i],
           },
         });
 
-        if (i === idSentences.length - 1) {
+        if (i === idWord.length - 1) {
           setLoading(false);
           getUserSentenceSaved();
           toast({
@@ -177,7 +174,7 @@ export default function FlashCard({
     <>
       <Header heading={t("flashcard")} text={t("flashcardDescription")} />
       <div className="flex flex-col items-center justify-center space-y-2 mt-4">
-        {sentences.length != 0 && (
+        {words.length != 0 && (
           <>
             <FlashcardArray
               cards={cards}
@@ -194,34 +191,18 @@ export default function FlashCard({
                 {currentCardIndex + 1} / {cards.length}
               </p>
             </div>
-            {sentences.map((sentence, index) => {
-              if (index === currentCardIndex) {
-                return (
-                  <div className="flex space-x-3" key={uuidv4()}>
-                    <AudioButton
-                      key={sentence.id}
-                      audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${sentence.articleId}.mp3`}
-                      startTimestamp={sentence.timepoint}
-                      endTimestamp={sentence.endTimepoint}
-                    />
-                    <FlipCardPracticeButton
-                      currentCard={() => currentCardFlipRef.current()}
-                    />
-                  </div>
-                );
-              }
-            })}
+           
           </>
         )}
-        {sentences.length != 0 && (
+        {words.length != 0 && (
           <>
-            <FlashCardPracticeButton
+            {/* <FlashCardPracticeButton
               index={currentCardIndex}
               nextCard={() => controlRef.current.nextCard()}
               sentences={sentences}
               showButton={showButton}
               setShowButton={setShowButton}
-            />
+            /> */}
             <div>
               {loading ? (
                 <Button className="ml-auto font-medium" disabled>
