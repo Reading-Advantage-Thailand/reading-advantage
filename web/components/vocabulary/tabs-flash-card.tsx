@@ -18,6 +18,7 @@ import { updateScore } from "@/lib/utils";
 import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
+// import FlashCardPracticeButton from "./flash-card-practice-button";
 import FlipCardPracticeButton from "../flip-card-button";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
@@ -32,21 +33,28 @@ type Props = {
 export type Word = {
   articleId: string;
   createdAt: { _seconds: number; _nanoseconds: number };
-  endTimepoint: number;
-//   sentence: string;
-  sn: number;
-  timepoint: number;
-//   translation: { th: string };
-  userId: string;
-  id: string;
-  due: Date; // Date when the card is next due for review
-  stability: number; // A measure of how well the information is retained
   difficulty: number; // Reflects the inherent difficulty of the card content
+  due: Date; // Date when the card is next due for review
   elapsed_days: number; // Days since the card was last reviewed
-  scheduled_days: number; // The interval at which the card is next scheduled
-  reps: number; // Total number of times the card has been reviewed
   lapses: number; // Times the card was forgotten or remembered incorrectly
+  reps: number; // Total number of times the card has been reviewed
+  scheduled_days: number; // The interval at which the card is next scheduled
+  stability: number; // A measure of how well the information is retained
   state: State; // The current state of the card (New, Learning, Review, Relearning)
+  userId: string;
+  word: {
+    vocabulary: string;
+    definition: {
+      en: string;
+      th: string;
+      cn: string;
+      tw: string;
+      vi: string;
+    };
+    sn: number;
+    timepoint: number;
+  };
+  id?: string;
   last_review?: Date; // The most recent review date, if applicable
 };
 
@@ -191,7 +199,6 @@ export default function FlashCard({
                 {currentCardIndex + 1} / {cards.length}
               </p>
             </div>
-           
           </>
         )}
         {words.length != 0 && (
