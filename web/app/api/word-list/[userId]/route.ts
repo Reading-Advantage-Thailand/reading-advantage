@@ -100,3 +100,45 @@ export async function POST(req: Request, res: Response) {
     );
   }
 }
+
+export async function GET(_req: Request, _res: Response) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return new Response(
+        JSON.stringify({
+          message: "Unauthorized",
+        }),
+        { status: 403 }
+      );
+    }
+    // Get user id from token
+    const sub = session.user.id;
+
+    // Get sentences
+    const userWordRecord = db
+      .collection("user-word-records")
+      .where("userId", "==", sub)
+      .orderBy("createdAt", "desc");
+      
+    const wordSnapshot = await userWordRecord.get();
+    const word = wordSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return new Response(
+      JSON.stringify({
+        message: "User word retrieved",
+        word,
+      }),
+      { status: 200 }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        message: "Internal server error",
+      }),
+      { status: 500 }
+    );
+  }
+}
