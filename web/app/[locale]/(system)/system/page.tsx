@@ -22,18 +22,16 @@ export default async function SystemPage() {
         headers: headers(),
       }
     );
-    const res = await response.json();
-    console.log('res in system page', res);
     
-    return res;
+    return response.json();
   }
   const passages = await getPassages();
-  // console.log('passages', passages);
+  console.log('passages', passages);
   
   return (
     <div className='px-[10%]'>
       <Header heading="System Dashboard"/>
-      <Passages passages={passages.passages} />
+      <Passages passages={passages.data} />
     </div>
   )
 }

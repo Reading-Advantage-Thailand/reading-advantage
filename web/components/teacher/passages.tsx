@@ -79,6 +79,46 @@ export default function Passages({ passages }: PassagesProps) {
   const FICTION = "fiction";
   const NON_FICTION = "nonfiction";
 
+
+  //   const filteredAndSortedPassages = useMemo(() => {
+//     let result = passages.filter(passage => 
+//       passage.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) &&
+//       (!selectedGenre || passage.genre === selectedGenre) &&
+//       (!selectedSubgenre || passage.subgenre === selectedSubgenre) &&
+//       (selectedLevels.length === 0 || selectedLevels.includes(passage.ra_level.toString()))
+//     );
+
+//     if (sortOption) {
+//       result.sort((a, b) => {
+//         const compareValue = sortOption === "rating" 
+//           ? a.average_rating - b.average_rating
+//           : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+//         return sortOrder === "Ascending" ? compareValue : -compareValue;
+//       });
+//     }
+
+//     return result;
+//   }, [passages, debouncedSearchTerm, selectedGenre, selectedSubgenre, selectedLevels, sortOption, sortOrder]);
+
+//   const currentItems = useMemo(() => {
+//     const startIndex = (currentPage - 1) * itemsPerPage;
+//     return filteredAndSortedPassages.slice(startIndex, startIndex + itemsPerPage);
+//   }, [filteredAndSortedPassages, currentPage]);
+
+//   const handleSortChange = useCallback((value: React.SetStateAction<string>) => {
+//     setSortOption(value);
+//     setSortOrder(prevOrder => prevOrder === "Ascending" ? 'Descending' : 'Ascending');
+//   }, []);
+
+//   const handleSelectionChange = useCallback((level: string) => {
+//     setSelectedLevels(prevLevels => 
+//       prevLevels.includes(level)
+//         ? prevLevels.filter(l => l !== level)
+//         : [...prevLevels, level]
+//     );
+//   }, []);
+
+
   const getSubgenres = (selectedGenre: string) => {
     let subgenresData: Set<string> = new Set();
     filteredPassages.forEach((passage) => {
@@ -439,3 +479,120 @@ export default function Passages({ passages }: PassagesProps) {
     </>
   );
 }
+
+console.log('hello world');
+
+// 'use client'
+// import React, { useState, useCallback, useMemo } from "react";
+// import { useDebounce } from "use-debounce";
+// import { Input } from "../ui/input";
+// import { Button } from "../ui/button";
+// import { Header } from "../header";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "../ui/dropdown-menu";
+// import { CaretSortIcon, ChevronDownIcon } from "@radix-ui/react-icons";
+// import { useScopedI18n } from "@/locales/client";
+// import ArticleShowcaseCard from "../article-showcase-card";
+
+// // ... (keep the type definitions)
+// type Passage = {
+//   searchTerm: string;
+//   id: string;
+//   title: string;
+//   type: string;
+//   ra_level: string;
+//   genre: string;
+//   subgenre: string;
+//   is_read: boolean;
+//   cefr_level: string;
+//   summary: string;
+//   average_rating: number;
+//   created_at: string;
+//   is_approved: boolean;
+// };
+
+// type PassagesProps = {
+//   passages: Passage[];
+// };
+
+
+// export default function OptimizedPassages({ passages }: PassagesProps) {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+//   const [selectedGenre, setSelectedGenre] = useState("");
+//   const [selectedSubgenre, setSelectedSubgenre] = useState("");
+//   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [sortOption, setSortOption] = useState("");
+//   const [sortOrder, setSortOrder] = useState('Ascending');
+
+//   const itemsPerPage = 10;
+//   const t = useScopedI18n("components.articleRecordsTable");
+//   const tp = useScopedI18n("components.passages");
+
+//   const filteredAndSortedPassages = useMemo(() => {
+//     let result = passages.filter(passage => 
+//       passage.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) &&
+//       (!selectedGenre || passage.genre === selectedGenre) &&
+//       (!selectedSubgenre || passage.subgenre === selectedSubgenre) &&
+//       (selectedLevels.length === 0 || selectedLevels.includes(passage.ra_level.toString()))
+//     );
+
+//     if (sortOption) {
+//       result.sort((a, b) => {
+//         const compareValue = sortOption === "rating" 
+//           ? a.average_rating - b.average_rating
+//           : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+//         return sortOrder === "Ascending" ? compareValue : -compareValue;
+//       });
+//     }
+
+//     return result;
+//   }, [passages, debouncedSearchTerm, selectedGenre, selectedSubgenre, selectedLevels, sortOption, sortOrder]);
+
+//   const currentItems = useMemo(() => {
+//     const startIndex = (currentPage - 1) * itemsPerPage;
+//     return filteredAndSortedPassages.slice(startIndex, startIndex + itemsPerPage);
+//   }, [filteredAndSortedPassages, currentPage]);
+
+//   const handleSortChange = useCallback((value: React.SetStateAction<string>) => {
+//     setSortOption(value);
+//     setSortOrder(prevOrder => prevOrder === "Ascending" ? 'Descending' : 'Ascending');
+//   }, []);
+
+//   const handleSelectionChange = useCallback((level: string) => {
+//     setSelectedLevels(prevLevels => 
+//       prevLevels.includes(level)
+//         ? prevLevels.filter(l => l !== level)
+//         : [...prevLevels, level]
+//     );
+//   }, []);
+
+//   // ... (render JSX, keeping most of the existing structure but using the optimized variables and functions)
+
+//   return (
+//     <>
+//       <Header heading={tp("heading")} />
+//       <Input
+//         placeholder={t("search")}
+//         className="w-full mt-4"
+//         value={searchTerm}
+//         onChange={(e) => setSearchTerm(e.target.value)}
+//       />
+
+//       {/* ... (rest of the JSX, updated to use the new optimized variables and functions) */}
+
+//       <div className="grid grid-cols-1">
+//         {currentItems.map((passage, index) => (
+//           <ArticleShowcaseCard key={passage.id} article={passage} />
+//         ))}
+//       </div>
+
+//       {/* ... (pagination controls, updated to use filteredAndSortedPassages.length) */}
+//     </>
+//   );
+// }
