@@ -1,11 +1,11 @@
+import Passages from '@/components/teacher/passages'
 import React from 'react'
 import { headers } from 'next/headers'
-import Passages from '@/components/teacher/passages';
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
+import { Header } from '@/components/header'
 
-
-export default async function PassagesPage() {
+export default async function SystemPage() {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
@@ -22,15 +22,16 @@ export default async function PassagesPage() {
         headers: headers(),
       }
     );
-    const res = await response.json();
-    return res;
+    
+    return response.json();
   }
   const passages = await getPassages();
-console.log('passages in passages page', passages);
-
+  console.log('passages', passages);
+  
   return (
-    <div>
-      <Passages passages={passages.passages} />
+    <div className='px-[10%]'>
+      <Header heading="System Dashboard"/>
+      <Passages passages={passages.data} />
     </div>
   )
 }

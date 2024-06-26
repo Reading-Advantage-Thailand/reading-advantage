@@ -94,9 +94,17 @@ console.log('selectedRole', selectedRole);
               <Link href="/admin">{"Admin dashboard"}</Link>
             </DropdownMenuItem>
           )}
-        {selectedRole &&
+
+        {/* {selectedRole &&
           selectedRole.filter((role: string) => role === "SYSTEM").length >
             0 && (
+            <DropdownMenuItem asChild>
+              <Link href="/system">{"System dashboard"}</Link>
+            </DropdownMenuItem>
+          )} */}
+          
+        {selectedRole &&
+          !selectedRole.includes("STUDENT") && (
             <DropdownMenuItem asChild>
               <Link href="/system">{"System dashboard"}</Link>
             </DropdownMenuItem>

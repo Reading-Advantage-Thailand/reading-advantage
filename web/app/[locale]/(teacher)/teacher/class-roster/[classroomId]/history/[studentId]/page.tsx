@@ -24,10 +24,6 @@ export default async function StudentHistoryForTeacher( params : {params:{studen
     if (user.cefrLevel === "" && user.level === 0) {
       return redirect("/level");
     }
-    let reminderArticles: any[] = [];
-    let articleRecords: any[] = [];
-
-    if (params && params.params) {
       const res = await getUserArticleRecords(params.params.studentId);
       
       // articles that have been read
@@ -39,7 +35,6 @@ export default async function StudentHistoryForTeacher( params : {params:{studen
       const articleRecords = res.results.filter(
         (article: any) => article.rated >= 3
       );
-    }
 
     const t = await getScopedI18n("pages.student.historyPage");
 
