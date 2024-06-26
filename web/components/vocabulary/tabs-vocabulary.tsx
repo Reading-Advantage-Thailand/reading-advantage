@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScopedI18n } from "@/locales/client";
-
+import FlashCard from "@/components/vocabulary/tabs-flash-card";
 type Props = {
   userId: string;
 };
@@ -18,11 +18,11 @@ export default function TabsVocabulary({ userId }: Props) {
                  <TabsTrigger value="tab5">{t("matching").toString()}</TabsTrigger>
         </TabsList>
         <TabsContent className="space-y-2" value="tab1">
-          {/* <FlashCard
+          <FlashCard
             userId={userId}
             showButton={showButton}
             setShowButton={setShowButton}
-          /> */}
+          />
         </TabsContent>
        
        
