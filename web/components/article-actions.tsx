@@ -72,7 +72,7 @@ export default function ArticleActions({ article, articleId }: Props) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete article "{article.title}"</DialogTitle>
+            <DialogTitle>Delete article &quot;{article.title}&quot;</DialogTitle>
           </DialogHeader>
           <DialogDescription>
             Are you sure you want to delete this article?
