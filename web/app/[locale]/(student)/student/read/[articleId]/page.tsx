@@ -65,8 +65,6 @@ export default async function ArticleQuizPage({
                 <ArticleActions
                 article={articleResponse.article}
                 articleId={params.articleId}
-                userId={user.id}
-                userRole={user.role}  
                 />
                 </div>
                 )
