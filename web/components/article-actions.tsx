@@ -17,11 +17,9 @@ import axios from 'axios';
 type Props = {
     article: Article;
     articleId: string;
-    userId: string;
-    userRole: string;   
   };
 
-export default function ArticleActions({ article, articleId, userId, userRole }: Props) {
+export default function ArticleActions({ article, articleId }: Props) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
 
@@ -29,7 +27,7 @@ export default function ArticleActions({ article, articleId, userId, userRole }:
         setOpen(false);
       };
 
-    const handleOpen = (articleId: string) => {
+    const handleOpen = () => {
         setOpen(true);
       } 
 
@@ -64,7 +62,7 @@ export default function ArticleActions({ article, articleId, userId, userRole }:
 
   return (
     <div className='flex gap-4 mb-4 ml-4'>
-      <Button onClick={()=> {handleOpen(articleId)}}>
+      <Button onClick={()=> {handleOpen()}}>
         Delete
       </Button>
       <Button onClick={() => handleApprove(articleId)}>

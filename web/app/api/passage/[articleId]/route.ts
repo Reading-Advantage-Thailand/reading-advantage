@@ -31,11 +31,19 @@ const articleId = params.articleId;
         const userId = session.user.id;
         const userRole = session.user.role;
        const articlesRef = db.collection('new-articles');
+    //    const articlesRef = db.collection('test-collection');
        const articleToDelete = await articlesRef.doc(articleId).get();
-       console.log('articleToDelete', articleToDelete);
-       // const snapshot = await articlesRef.get();
-       // const articles = snapshot.docs.map(doc => doc.data());
+
+       const mcSubcollection = await articleToDelete.ref.collection('mc-questions').get();
+       mcSubcollection.docs.forEach(doc => {
+        doc.ref.delete().then(() => console.log(`Deleted doc: ${doc.id} from mc-questions`));
+    });
        
+       const saSubcollection = await articleToDelete.ref.collection('sa-questions').get();
+       saSubcollection.docs.forEach(doc => {
+        doc.ref.delete().then(() => console.log(`Deleted doc: ${doc.id} from sa-questions`));
+    });
+
        if (userId && userRole.includes("SYSTEM")) {
         if (!articleToDelete.exists) {
 return new Response(JSON.stringify({ message: "No such article found" }), { status: 404 })
