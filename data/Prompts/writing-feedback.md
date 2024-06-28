@@ -89,8 +89,8 @@ Provide feedback in the following structure:
 3. **Detailed Feedback**: For each category:
    a. Explain what the student did well.
    b. Identify areas for improvement.
-   c. Provide specific examples from the student's writing to illustrate your points.
-   d. Offer constructive suggestions for improvement.
+   c. Provide specific examples from the student's writing to illustrate your areas for improvement in this category.
+   d. Offer constructive suggestions for improvement in this category.
 
 4. **Example Revisions**: Provide 2-3 examples of how the student could revise specific sentences or paragraphs to improve their writing, based on your feedback.
 
