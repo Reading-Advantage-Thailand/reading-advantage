@@ -16,15 +16,16 @@ export default async function uploadToBucket(
 
         // make the file public
         if (isPublic) {
-        await storage.bucket('artifacts.reading-advantage.appspot.com')
-            .file(destination)
-            .makePublic();
+            await storage.bucket('artifacts.reading-advantage.appspot.com')
+                .file(destination)
+                .makePublic();
         }
 
         // delete the file from the local file system
         if (isDeleteLocal) {
             fs.unlinkSync(localPath);
         }
+        console.log('SUCCESS UPLOADING TO BUCKET: ', destination);
     } catch (error) {
         console.error('ERROR UPLOADING TO BUCKET: ', error);
         throw error;

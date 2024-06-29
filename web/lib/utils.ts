@@ -76,12 +76,17 @@ export function camelToSentenceCase(str: string) {
  * @param {string} content - The content to split into sentences.
  * @returns {string[]} An array of sentences.
  */
-export function splitTextIntoSentences(content: string): string[] {
+export function splitTextIntoSentences(content: string, allowEnd: boolean = false): string[] {
   // If content contains \n 
   const regex = /(\n\n|\n|\\n\\n|\\n)/g;
   if (content.match(regex)) {
-    const replaced = content.replace(regex, '')
-    const sentences = replaced.split(/(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./).filter((sentence) => sentence.length > 0);
+    content = content.replace(regex, allowEnd ? "~~" : "");
+    const sentences = content.split(/(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./).filter((sentence) => sentence.length > 0);
+
+    // add . to the end of each sentence
+    if (allowEnd) {
+      return sentences.map((sentence) => sentence + ".");
+    }
     return sentences;
   } else {
     const tokenizer = new Tokenizer();

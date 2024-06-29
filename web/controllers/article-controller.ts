@@ -156,7 +156,7 @@ export async function getArticle(
                         image_description: !article.image_description,
                         passage: !article.passage,
                         created_at: !article.created_at,
-                        average_rating: !article.average_rating,
+                        average_rating: !article.average_rating && article.average_rating !== 0,
                         timepoints: !article.timepoints,
                         type: !article.type,
                         title: !article.title,

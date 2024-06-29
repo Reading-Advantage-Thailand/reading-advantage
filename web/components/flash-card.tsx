@@ -51,6 +51,7 @@ export type Sentence = {
   lapses: number; // Times the card was forgotten or remembered incorrectly
   state: State; // The current state of the card (New, Learning, Review, Relearning)
   last_review?: Date; // The most recent review date, if applicable
+  audioUrl?: string;
 };
 
 export default function FlashCard({
@@ -72,6 +73,7 @@ export default function FlashCard({
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
+      console.log(res.data.sentences);
       const startOfDay = date_scheduler(new Date(), 0, true);
       const filteredData = await res.data.sentences
         .filter((record: Sentence) => {
@@ -200,7 +202,11 @@ export default function FlashCard({
                   <div className="flex space-x-3" key={uuidv4()}>
                     <AudioButton
                       key={sentence.id}
-                      audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${sentence.articleId}.mp3`}
+                      audioUrl={
+                        sentence.audioUrl
+                          ? sentence.audioUrl
+                          : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${sentence.articleId}.mp3`
+                      }
                       startTimestamp={sentence.timepoint}
                       endTimestamp={sentence.endTimepoint}
                     />

@@ -30,5 +30,7 @@ export interface Article {
 export interface Timepoint {
     timeSeconds: number;
     markName: string;
+    file: string;
+    index: number;
 }
 

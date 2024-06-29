@@ -17,20 +17,21 @@ export async function POST(req: Request, res: Response) {
             }), { status: 403 });
         }
         const {
-          articleId,
-          sentence,
-          translation,
-          sn,
-          timepoint,
-          endTimepoint,
-          difficulty,
-          due,
-          elapsed_days,
-          lapses,
-          reps,
-          scheduled_days,
-          stability,
-          state,
+            articleId,
+            sentence,
+            translation,
+            sn,
+            timepoint,
+            endTimepoint,
+            difficulty,
+            due,
+            elapsed_days,
+            lapses,
+            reps,
+            scheduled_days,
+            stability,
+            state,
+            audioUrl,
         } = await req.json();
         console.log("translation", translation);
         // Get user id from token
@@ -55,25 +56,26 @@ export async function POST(req: Request, res: Response) {
         }
         // Create user article record
         const userSentenceRecordRef = await db
-          .collection("user-sentence-records")
-          .add({
-            userId: sub,
-            articleId,
-            sentence,
-            translation,
-            sn,
-            timepoint,
-            endTimepoint,
-            createdAt: new Date(),
-            difficulty,
-            due,
-            elapsed_days,
-            lapses,
-            reps,
-            scheduled_days,
-            stability,
-            state,
-          });
+            .collection("user-sentence-records")
+            .add({
+                userId: sub,
+                articleId,
+                sentence,
+                translation,
+                sn,
+                timepoint,
+                endTimepoint,
+                createdAt: new Date(),
+                difficulty,
+                due,
+                elapsed_days,
+                lapses,
+                reps,
+                scheduled_days,
+                stability,
+                state,
+                audioUrl,
+            });
 
         // Create response
         return new Response(JSON.stringify({

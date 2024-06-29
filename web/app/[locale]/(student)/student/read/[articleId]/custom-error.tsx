@@ -1,6 +1,12 @@
 import Image from "next/image";
 
-export default function Error({ message }: { message: string }) {
+export default function Error({
+  message,
+  resp,
+}: {
+  message: string;
+  resp: any;
+}) {
   return (
     <div className="mt-20 flex flex-col items-center justify-center h-full space-y-4">
       <Image
@@ -14,6 +20,8 @@ export default function Error({ message }: { message: string }) {
       </h2>
       <p className="text-center text-red-500 dark:text-red-300">
         Error message: {message}
+        <br />
+        Invalids: {JSON.stringify(resp)}
       </p>
     </div>
   );

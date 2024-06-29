@@ -1,21 +1,17 @@
 "use client";
-import React from "react";
-import Tokenizer from "sentence-tokenizer";
-import { cn } from "@/lib/utils";
-import axios from "axios";
-import { toast } from "./ui/use-toast";
+import React, { useState, useEffect, useRef } from "react";
+import { Article } from "./models/article-model";
+import { cn, splitTextIntoSentences } from "@/lib/utils";
+import { useCurrentLocale, useScopedI18n } from "@/locales/client";
+import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
 import { createEmptyCard, Card } from "ts-fsrs";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { Icons } from "./icons";
-import { useCurrentLocale, useScopedI18n } from "@/locales/client";
-import { ArticleType } from "@/types";
-import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
+} from "./ui/context-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +21,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import { Article } from "./models/article-model";
+import axios from "axios";
+import { toast } from "./ui/use-toast";
+
+type Props = {
+  article: Article;
+  articleId: string;
+  userId: string;
+  className?: string;
+};
+
+type Sentence = {
+  sentence: string;
+  index: number;
+  startTime: number;
+  endTime: number;
+  audioUrl: string;
+};
 
 async function getTranslate(
   sentences: string[],
@@ -39,119 +51,152 @@ async function getTranslate(
   return res.data;
 }
 
-interface ITextAudio {
-  text: string;
-  begin?: number;
-}
-
-type Props = {
-  article: Article;
-  className?: string;
-  articleId: string;
-  userId: string;
-};
 export default function ArticleContent({
   article,
-  articleId,
+  className = "",
   userId,
-  className,
 }: Props) {
+  console.log("article", article);
   const t = useScopedI18n("components.articleContent");
-  const [text, setText] = React.useState<ITextAudio[]>([]);
-  const [highlightedWordIndex, setHighlightedWordIndex] = React.useState(-1);
-  const [isplaying, setIsPlaying] = React.useState(false);
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  const textContainer = React.useRef<HTMLParagraphElement | null>(null);
-  const [isSplit, setIsSplit] = React.useState(false);
+  const sentences = splitTextIntoSentences(article.passage, true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+
+  const sentenceList: Sentence[] = article.timepoints.map(
+    (timepoint, index) => {
+      const startTime = timepoint.timeSeconds;
+      const endTime =
+        index === article.timepoints.length - 1
+          ? timepoint.timeSeconds + 10
+          : article.timepoints[index + 1].timeSeconds - 0.3;
+      return {
+        sentence: sentences[index],
+        index: timepoint.index,
+        startTime,
+        endTime,
+        audioUrl: timepoint.file
+          ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}`
+          : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3`,
+      };
+    }
+  );
+
+  const handlePlayPause = async () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        try {
+          await audioRef.current.play();
+        } catch (error) {
+          console.log("Error playing audio: ", error);
+        }
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+      const currentSentence = sentenceList[currentAudioIndex];
+      if (audioRef.current.currentTime >= currentSentence.endTime) {
+        handleAudioEnded();
+      }
+    }
+  };
+
+  const handleSentenceClick = (startTime: number, audioIndex: number) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setCurrentAudioIndex(audioIndex);
+      audioRef.current.src = sentenceList[audioIndex].audioUrl;
+      audioRef.current.currentTime = startTime;
+      const playAudio = () => {
+        audioRef.current!.play().catch((error) => {
+          console.log("Error playing audio: ", error);
+        });
+        audioRef.current!.removeEventListener("canplaythrough", playAudio);
+      };
+      audioRef.current.addEventListener("canplaythrough", playAudio);
+      audioRef.current.load();
+      if (!isPlaying) {
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const handleAudioEnded = () => {
+    if (currentAudioIndex < sentenceList.length - 1) {
+      const nextAudioIndex = currentAudioIndex + 1;
+      setCurrentAudioIndex(nextAudioIndex);
+      if (audioRef.current) {
+        audioRef.current.src = sentenceList[nextAudioIndex].audioUrl;
+        audioRef.current.load();
+        const playAudio = () => {
+          audioRef.current!.currentTime =
+            sentenceList[nextAudioIndex].startTime;
+          audioRef.current!.play().catch((error) => {
+            console.log("Error playing audio: ", error);
+          });
+          audioRef.current!.removeEventListener("canplaythrough", playAudio);
+        };
+        audioRef.current.addEventListener("canplaythrough", playAudio);
+      }
+    } else {
+      setIsPlaying(false);
+    }
+  };
+
+  const getHighlightedClass = (index: number) =>
+    cn(
+      "cursor-pointer text-muted-foreground hover:bg-blue-200 hover:dark:bg-blue-900 hover:text-primary rounded-md",
+      currentAudioIndex === index &&
+        isPlaying &&
+        "bg-red-200 dark:bg-red-900 text-primary"
+    );
+
+  const renderSentence = (sentence: string, i: number) => {
+    // if (!sentence) {
+    //   return "";
+    // }
+    return sentence.split("~~").map((line, index, array) => (
+      <span
+        key={index}
+        onClick={() => {
+          setSelectedSentence(i);
+          setSelectedIndex(i);
+          console.log(i);
+        }}
+      >
+        {line}
+        {(index !== array.length - 1 || /[.!?]$/.test(line)) && " "}
+        {index !== array.length - 1 && <div className="mt-3" />}
+      </span>
+    ));
+  };
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.src = sentenceList[currentAudioIndex].audioUrl;
+      audioRef.current.currentTime = sentenceList[currentAudioIndex].startTime;
+      audioRef.current.load();
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, [currentAudioIndex]);
+
   const [selectedSentence, setSelectedSentence] = React.useState<Number>(-1);
   const [loading, setLoading] = React.useState(false);
   const [translate, setTranslate] = React.useState<string[]>([]);
   const [isTranslate, setIsTranslate] = React.useState(false);
   const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!isSplit) {
-      splitToText(article.passage);
-      setIsSplit(true);
-    }
-  }, [article, isSplit]);
-
-  const handleHighlight = (audioCurrentTime: number) => {
-    const lastIndex = text.length - 1;
-
-    if (audioCurrentTime >= text[lastIndex].begin!) {
-      setHighlightedWordIndex(lastIndex);
-    } else {
-      const index = text.findIndex((word) => word.begin! >= audioCurrentTime);
-      setHighlightedWordIndex(index - 1);
-    }
-
-    if (textContainer.current && highlightedWordIndex !== -1) {
-      const highlightedWordElement = textContainer.current.children[
-        highlightedWordIndex
-      ] as HTMLElement;
-      if (highlightedWordElement) {
-        highlightedWordElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    }
-  };
-
-  const handlePause = () => {
-    setIsPlaying(!isplaying);
-    if (audioRef.current === null) return;
-    if (isplaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-  };
-
-  const splitToText = (passage: string) => {
-    console.log("article", passage);
-    const regex = /(\n\n|\n|\\n\\n|\\n)/g;
-    // if contains \n\n or \n or \\n\\n or \\n then replace with ''
-    if (passage.match(regex)) {
-      // just replace \n\n and \\n\\n
-      const content = passage.replace(regex, "~~");
-      // split . but except for Mr. Mrs. Dr. Ms. and other abbreviations
-      const sentences = content
-        .split(
-          /(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./
-        )
-        .filter((sentence) => sentence.length > 0);
-      const result = sentences.map((sentence) => sentence.trim());
-      console.log("result", result);
-      setText([]);
-
-      for (let i = 0; i < article.timepoints.length; i++) {
-        setText((prev) => [
-          ...prev,
-          { text: result[i], begin: article.timepoints[i].timeSeconds },
-        ]);
-      }
-    } else {
-      // use tokenizer to split sentence
-      const tokenizer = new Tokenizer();
-      tokenizer.setEntry(passage);
-      const sentences = tokenizer.getSentences();
-      setText([]);
-      for (let i = 0; i < article.timepoints.length; i++) {
-        setText((prev) => [
-          ...prev,
-          { text: sentences[i], begin: article.timepoints[i].timeSeconds },
-        ]);
-      }
-    }
-  };
-
-  const handleSkipToSentence = (time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-    }
-  };
 
   const saveToFlashcard = async () => {
     //translate before save
@@ -161,30 +206,36 @@ export default function ArticleContent({
       try {
         let card: Card = createEmptyCard();
         let endTimepoint = 0;
-        if (selectedSentence !== text.length - 1) {
-          endTimepoint = text[(selectedSentence as number) + 1].begin as number;
+        if (selectedSentence !== -1) {
+          endTimepoint = sentenceList[selectedSentence as number].endTime;
         } else {
           endTimepoint = audioRef.current?.duration as number;
         }
-
         const res = await axios.post(`/api/users/${userId}/sentences`, {
-          sentence: text[selectedSentence as number].text,
+          sentence: sentenceList[selectedSentence as number].sentence.replace(
+            "~~",
+            ""
+          ),
           sn: selectedSentence,
-          articleId: articleId,
+          articleId: article.id,
           translation: {
             th: translate[selectedSentence as number],
           },
-          timepoint: text[selectedSentence as number].begin,
+          audioUrl: sentenceList[selectedSentence as number].audioUrl,
+          timepoint: sentenceList[selectedSentence as number].startTime,
           endTimepoint: endTimepoint,
           saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
           ...card,
         });
-
+        console.log(
+          "audioUrl",
+          sentenceList[selectedSentence as number].audioUrl
+        );
         toast({
           title: "Success",
-          description: `You have saved "${
-            text[selectedSentence as number].text
-          }" to flashcard`,
+          description: `You have saved "${sentenceList[
+            selectedSentence as number
+          ].sentence.replace("~~", "")}" to flashcard`,
         });
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -211,8 +262,8 @@ export default function ArticleContent({
     setLoading(true);
     try {
       //remove ~~ from text
-      const sentences = text.map((sentence) =>
-        sentence.text.replace(/~~/g, "")
+      const sentences = sentenceList.map((sentence) =>
+        sentence.sentence.replace(/~~/g, "")
       );
       // const sentences = text.map((sentence) => sentence.text);
       // get language from local
@@ -232,7 +283,7 @@ export default function ArticleContent({
           break;
       }
 
-      const res = await getTranslate(sentences, articleId, localeTarget);
+      const res = await getTranslate(sentences, article.id, localeTarget);
 
       if (res.message) {
         setIsTranslateOpen(false);
@@ -273,18 +324,14 @@ export default function ArticleContent({
       setIsTranslateClicked(!isTranslateClicked);
     }
   };
+
   return (
-    <>
+    <div>
       <div className="flex flex-wrap gap-3 items-center">
         <div className="flex items-center gap-2">
           <p>{t("voiceAssistant")}</p>
-          <Button size="sm" variant="secondary" onClick={handlePause}>
-            {isplaying ? (
-              <Icons.pause className="mr-1" size={12} />
-            ) : (
-              <Icons.play className="mr-1" size={12} />
-            )}
-            {isplaying ? t("soundButton.pause") : t("soundButton.play")}
+          <Button size="sm" variant="secondary" onClick={handlePlayPause}>
+            {isPlaying ? t("soundButton.pause") : t("soundButton.play")}
           </Button>
         </div>
         {locale !== "en" && (
@@ -308,19 +355,13 @@ export default function ArticleContent({
         <div className="h-32 md:h-24 flex flex-col justify-between items-center">
           <Separator />
           {/* กรณีกดเล่นเสียง และกดแปล */}
-          {isplaying === true ? (
-            highlightedWordIndex === -1 ? (
-              <p className="text-center text-green-500">
-                Your translate sentence will be here
-              </p>
-            ) : (
-              <p className="text-center text-green-500">
-                {translate[highlightedWordIndex]}
-              </p>
-            )
+          {isPlaying === true ? (
+            <p className="text-center text-green-500">
+              {translate[currentAudioIndex]}
+            </p>
           ) : (
             <p className="text-center text-green-500">
-              {translate[highlightedWordIndex + 1]}
+              {translate[currentAudioIndex]}
             </p>
           )}
           <Separator />
@@ -328,46 +369,25 @@ export default function ArticleContent({
       )}
       <ContextMenu>
         <ContextMenuTrigger>
-          {/* show content ที่เป็น eng และ hightlight ตามคำพูด */}
-          {text.map((sentence, index) => (
-            <p
-              key={index}
+          {sentenceList.map((sentence, index) => (
+            <span
+              key={sentence.index}
               className={cn(
-                "inline text-muted-foreground hover:bg-blue-200 dark:hover:bg-blue-600 select-none cursor-pointer",
-                isplaying === true
-                  ? highlightedWordIndex === index
-                    ? "bg-yellow-50"
-                    : "bg-transparent"
-                  : highlightedWordIndex + 1 === index
-                  ? "bg-yellow-50"
-                  : "bg-transparent"
+                selectedIndex === index && "bg-blue-200 dark:bg-blue-900",
+                `${getHighlightedClass(index)}`
               )}
-              onMouseEnter={() => {
-                setSelectedSentence(index);
-                setSelectedIndex(index);
-              }}
-              onClick={() => handleSkipToSentence(sentence.begin ?? 0)}
+              onClick={() => handleSentenceClick(sentence.startTime, index)}
             >
-              {
-                // if start with ~~ then add break line
-                sentence.text.split("~~").map((line, index) => (
-                  <span key={index}>
-                    {line +
-                      (index !== sentence.text.split("~~").length - 1
-                        ? " "
-                        : line.endsWith(".") ||
-                          line.endsWith("!") ||
-                          line.endsWith("?")
-                        ? " "
-                        : ". ")}
-                    {index !== sentence.text.split("~~").length - 1 && (
-                      <div className="mt-3" />
-                    )}
-                  </span>
-                ))
-              }
-            </p>
+              {renderSentence(sentence.sentence, index)}
+            </span>
           ))}
+          <audio
+            ref={audioRef}
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={handleAudioEnded}
+          >
+            <source src={sentenceList[currentAudioIndex].audioUrl} />
+          </audio>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64">
           {loading ? (
@@ -405,7 +425,10 @@ export default function ArticleContent({
             <AlertDialogDescription>
               <p>
                 {selectedSentence !== -1
-                  ? text[selectedSentence as number].text
+                  ? sentenceList[selectedSentence as number].sentence.replace(
+                      "~~",
+                      ""
+                    )
                   : ""}
               </p>
               <p className="text-green-500 mt-3">{translate[selectedIndex]}</p>
@@ -418,16 +441,6 @@ export default function ArticleContent({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <audio
-        ref={audioRef}
-        onTimeUpdate={() =>
-          handleHighlight(audioRef.current ? audioRef.current.currentTime : 0)
-        }
-      >
-        <source
-          src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${articleId}.mp3`}
-        />
-      </audio>
-    </>
+    </div>
   );
 }
