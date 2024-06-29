@@ -74,7 +74,58 @@ export default function FlashCard({
   const [loading, setLoading] = useState(false);
   const [words, setWords] = useState<Word[]>([]);
 
+  // Helper function to convert Firebase timestamp to JavaScript Date object
+  const convertTimestampToDate = ({
+    _seconds,
+    _nanoseconds,
+  }: {
+    _seconds: number;
+    _nanoseconds: number;
+  }) => {
+    return new Date(_seconds * 1000 + _nanoseconds / 1000000);
+  };
+
+  // Convert string date to Date object
+  const parseDateString = (dateString: string) => {
+    return new Date(dateString);
+  };
+
+  const sortData = (
+    data: {
+      type: "timestamp" | "dateString";
+      value: any; // 'any' should ideally be replaced with a more specific type depending on your data structure.
+    }[]
+  ) => {
+    return data.sort((a, b) => {
+      let dateA: any =
+        a.type === "timestamp"
+          ? convertTimestampToDate(a.value)
+          : parseDateString(a.value);
+      let dateB: any =
+        b.type === "timestamp"
+          ? convertTimestampToDate(b.value)
+          : parseDateString(b.value);
+      return dateA - dateB;
+    });
+  };
+
   const getUserSentenceSaved = async () => {
+    try {
+      const res = await axios.get(`/api/word-list/${userId}`);
+
+      // order by creatAtDate
+      const result = await sortData(res?.data?.word);
+      console.log("result : ", result);
+
+      console.log("res.data : ", res.data);
+    } catch (error) {
+      toast({
+        title: "Something went wrong.",
+        description: "Your word was not saved. Please try again.",
+        variant: "destructive",
+      });
+    }
+    /*
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
       const startOfDay = date_scheduler(new Date(), 0, true);
@@ -96,7 +147,8 @@ export default function FlashCard({
       // updateScore
       let filterDataUpdateScore = await filter(res.data.sentences, (param) => {
         const dueDate = new Date(param.due);
-        return (param.state === 2 || param.state === 3) && dueDate < startOfDay;
+        const state = param.state || 0; // Assign a default value of 0 if param.state is undefined or falsy
+        return (state === 2 || state === 3) && dueDate < startOfDay;
       });
 
       if (filterDataUpdateScore?.length > 0) {
@@ -124,11 +176,8 @@ export default function FlashCard({
     } catch (error) {
       console.log(error);
     }
+    */
   };
-
-  useEffect(() => {
-    getUserSentenceSaved();
-  }, []);
 
   const cards = words.map((word, index) => {
     return {
@@ -177,6 +226,10 @@ export default function FlashCard({
       });
     }
   };
+
+  useEffect(() => {
+    getUserSentenceSaved();
+  }, []);
 
   return (
     <>

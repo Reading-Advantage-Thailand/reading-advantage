@@ -98,8 +98,7 @@ export async function GET(req: Request, res: Response) {
         }
         // Get user id from token
         const sub = session.user.id;
-        const username = session.user.name;
-        const email = session.user.email;
+
         // Get sentences
         const sentencesRef = db.collection("user-sentence-records")
             .where("userId", "==", sub)

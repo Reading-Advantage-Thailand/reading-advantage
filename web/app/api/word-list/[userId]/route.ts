@@ -115,17 +115,17 @@ export async function GET(_req: Request, _res: Response) {
     // Get user id from token
     const sub = session.user.id;
 
-    // Get sentences
-    const userWordRecord = db
+    // Get words        
+    const wordSnapshot = await db
       .collection("user-word-records")
       .where("userId", "==", sub)
-      .orderBy("createdAt", "desc");
-      
-    const wordSnapshot = await userWordRecord.get();
+      .get();
+
     const word = wordSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
+
     return new Response(
       JSON.stringify({
         message: "User word retrieved",
@@ -133,6 +133,7 @@ export async function GET(_req: Request, _res: Response) {
       }),
       { status: 200 }
     );
+    
   } catch (error) {
     return new Response(
       JSON.stringify({
