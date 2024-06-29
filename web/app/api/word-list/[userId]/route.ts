@@ -143,3 +143,39 @@ export async function GET(_req: Request, _res: Response) {
     );
   }
 }
+
+export async function DELETE(req: Request, res: Response) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return new Response(
+        JSON.stringify({
+          message: "Unauthorized",
+        }),
+        { status: 403 }
+      );
+    }
+
+    // Access request body
+    const { idWord } = await req.json();
+
+    // Delete sentence
+    const wordRef = db.collection("user-word-records").doc(idWord);
+    await wordRef.delete();
+
+    // Create response
+    return new Response(
+      JSON.stringify({
+        message: "Sentence deleted",
+      }),
+      { status: 200 }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        message: "Internal server error",
+      }),
+      { status: 500 }
+    );
+  }
+}

@@ -17,9 +17,10 @@ import { Button } from "../ui/button";
 import { updateScore } from "@/lib/utils";
 import { Header } from "../header";
 import { toast } from "../ui/use-toast";
-import { useScopedI18n } from "@/locales/client";
-// import FlashCardPracticeButton from "./flash-card-practice-button";
+import { useCurrentLocale, useScopedI18n } from "@/locales/client";
+import FlashCardVocabularyPracticeButton from "./flash-card-vocabulary-practice-button";
 import FlipCardPracticeButton from "../flip-card-button";
+import { Timestamp } from "firebase/firestore";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -32,7 +33,7 @@ type Props = {
 
 export type Word = {
   articleId: string;
-  createdAt: { _seconds: number; _nanoseconds: number };
+  createdAt?: { _seconds: number; _nanoseconds: number };
   difficulty: number; // Reflects the inherent difficulty of the card content
   due: Date; // Date when the card is next due for review
   elapsed_days: number; // Days since the card was last reviewed
@@ -74,62 +75,15 @@ export default function FlashCard({
   const [loading, setLoading] = useState(false);
   const [words, setWords] = useState<Word[]>([]);
 
-  // Helper function to convert Firebase timestamp to JavaScript Date object
-  const convertTimestampToDate = ({
-    _seconds,
-    _nanoseconds,
-  }: {
-    _seconds: number;
-    _nanoseconds: number;
-  }) => {
-    return new Date(_seconds * 1000 + _nanoseconds / 1000000);
-  };
+  const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
 
-  // Convert string date to Date object
-  const parseDateString = (dateString: string) => {
-    return new Date(dateString);
-  };
-
-  const sortData = (
-    data: {
-      type: "timestamp" | "dateString";
-      value: any; // 'any' should ideally be replaced with a more specific type depending on your data structure.
-    }[]
-  ) => {
-    return data.sort((a, b) => {
-      let dateA: any =
-        a.type === "timestamp"
-          ? convertTimestampToDate(a.value)
-          : parseDateString(a.value);
-      let dateB: any =
-        b.type === "timestamp"
-          ? convertTimestampToDate(b.value)
-          : parseDateString(b.value);
-      return dateA - dateB;
-    });
-  };
+    
 
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/word-list/${userId}`);
-
-      // order by creatAtDate
-      const result = await sortData(res?.data?.word);
-      console.log("result : ", result);
-
-      console.log("res.data : ", res.data);
-    } catch (error) {
-      toast({
-        title: "Something went wrong.",
-        description: "Your word was not saved. Please try again.",
-        variant: "destructive",
-      });
-    }
-    /*
-    try {
-      const res = await axios.get(`/api/users/${userId}/sentences`);
       const startOfDay = date_scheduler(new Date(), 0, true);
-      const filteredData = await res.data.sentences
+      const filteredData = await res?.data?.word
         .filter((record: Word) => {
           const dueDate = new Date(record.due);
           return record.state === 0 || dueDate < startOfDay;
@@ -138,6 +92,7 @@ export default function FlashCard({
           return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
         });
 
+      console.log("filteredData : ", filteredData);
       setWords(filteredData);
 
       if (filteredData.length === 0) {
@@ -145,7 +100,8 @@ export default function FlashCard({
       }
 
       // updateScore
-      let filterDataUpdateScore = await filter(res.data.sentences, (param) => {
+      
+       let filterDataUpdateScore = await filter(res.data.sentences, (param) => {
         const dueDate = new Date(param.due);
         const state = param.state || 0; // Assign a default value of 0 if param.state is undefined or falsy
         return (state === 2 || state === 3) && dueDate < startOfDay;
@@ -157,7 +113,11 @@ export default function FlashCard({
             if (!filterDataUpdateScore[i]?.update_score) {
               const updateDatabase = await axios.post(
                 `/api/ts-fsrs-test/${filterDataUpdateScore[i]?.id}/flash-card`,
-                { ...filterDataUpdateScore[i], update_score: true }
+                {
+                  ...filterDataUpdateScore[i],
+                  update_score: true,
+                  page: "vocabulary",
+                }
               );
               const updateScrore = await updateScore(15, userId);
               if (updateScrore?.status === 201) {
@@ -173,10 +133,14 @@ export default function FlashCard({
           }
         }
       }
+      
     } catch (error) {
-      console.log(error);
-    }
-    */
+      toast({
+        title: "Something went wrong.",
+        description: "Your word was not saved. Please try again.",
+        variant: "destructive",
+      });
+    }   
   };
 
   const cards = words.map((word, index) => {
@@ -184,12 +148,12 @@ export default function FlashCard({
       id: index,
       frontHTML: (
         <div className="flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground">
-          {/* {sentence.sentence} */}
+          {word.word.vocabulary}
         </div>
       ),
       backHTML: (
         <div className="flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground">
-          {/* {sentence.translation.th} */}
+          {word.word.definition[currentLocale]}
         </div>
       ),
     };
@@ -199,11 +163,11 @@ export default function FlashCard({
     let idWord = words.map((word) => word.id);
     try {
       setLoading(true);
-      // loop for delete all sentences
+      // loop for delete all words
       for (let i = 0; i < idWord.length; i++) {
-        const res = await axios.delete(`/api/users/${userId}/sentences`, {
+        const res = await axios.delete(`/api/word-list/${userId}`, {
           data: {
-            sentenceId: idWord[i],
+            idWord: idWord[i],
           },
         });
 
@@ -252,17 +216,29 @@ export default function FlashCard({
                 {currentCardIndex + 1} / {cards.length}
               </p>
             </div>
+            {words.map((_, index) => {
+              if (index === currentCardIndex) {
+                return (
+                  <div className="flex space-x-3" key={uuidv4()}>
+                    
+                    <FlipCardPracticeButton
+                      currentCard={() => currentCardFlipRef.current()}
+                    />
+                  </div>
+                );
+              }
+            })}
           </>
         )}
         {words.length != 0 && (
           <>
-            {/* <FlashCardPracticeButton
+            <FlashCardVocabularyPracticeButton
               index={currentCardIndex}
               nextCard={() => controlRef.current.nextCard()}
-              sentences={sentences}
+              words={words}
               showButton={showButton}
               setShowButton={setShowButton}
-            /> */}
+            />
             <div>
               {loading ? (
                 <Button className="ml-auto font-medium" disabled>
