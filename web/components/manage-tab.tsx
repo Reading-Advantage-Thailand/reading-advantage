@@ -1,12 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import * as React from "react";
 import { toast } from "./ui/use-toast";
 import axios from "axios";
 import { formatDate, formatTimestamp, updateScore } from "@/lib/utils";
@@ -15,6 +8,33 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { State } from "ts-fsrs";
 import { useRouter } from "next/navigation";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  CaretSortIcon,
+  ChevronDownIcon,
+  DotsHorizontalIcon,
+} from "@radix-ui/react-icons";
+import { Input } from "@/components/ui/input";
+import { Header } from "@/components/header";
 
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -60,7 +80,14 @@ export default function ManageTab({ userId }: Props) {
   );
 
   const router = useRouter();
-  const [sentences, setSentences] = useState<Sentence[]>([]);
+  const [sentences, setSentences] = React.useState<Sentence[]>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
 
   const getUserSentenceSaved = async () => {
     try {
@@ -110,9 +137,97 @@ export default function ManageTab({ userId }: Props) {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     getUserSentenceSaved();
-  }, [getUserSentenceSaved]);
+  }, []);
+
+  const columns: ColumnDef<Sentence>[] = [
+    {
+      accessorKey: "sentence",
+      header: "Sentence",
+      cell: ({ row }) => (
+        <div
+          className="captoliza cursor-pointer"
+          onClick={() => handleNavigateToArticle(row.original.articleId)}
+        >
+          {row.getValue("sentence")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Date
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const createdAt = row.getValue("due") as string;
+        const date = new Date(createdAt).toLocaleString();
+        return <div>{date}</div>;
+      },
+    },
+    {
+      accessorKey: "due",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Due
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const due = row.getValue("due") as string;
+        const date = formatDate(due);
+        return <div className="text-center font-medium">{date}</div>;
+      },
+    },
+    {
+      accessorKey: "delete",
+      header: "",
+      cell: ({ row }) => {
+        return (
+          <Button
+            className="ml-auto font-medium"
+            size="sm"
+            variant="destructive"
+            onClick={() => handleDelete(row.original.id)}
+          >
+            Delete
+          </Button>
+        );
+      },
+    },
+  ];
+
+  const table = useReactTable({
+    data: sentences,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
+  });
+
+  const handleNavigateToArticle = (articleId: string) => {
+    router.push(`/student/read/${articleId}`);
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -121,11 +236,20 @@ export default function ManageTab({ userId }: Props) {
           sentenceId: id,
         },
       });
-      getUserSentenceSaved();
-      toast({
-        title: t("toast.success"),
-        description: t("toast.successDescription"),
-      });
+      if (res.status === 200) {
+        const updateSentences = sentences.filter((item) => item.id !== id);
+        setSentences(updateSentences);
+        toast({
+          title: t("toast.success"),
+          description: t("toast.successDescription"),
+        });
+      } else {
+        toast({
+          title: t("toast.error"),
+          description: t("toast.errorDescription"),
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.log(error);
       toast({
@@ -138,54 +262,82 @@ export default function ManageTab({ userId }: Props) {
 
   return (
     <>
-      <Card className="col-span-3 mt-4 mb-10">
-        <CardHeader>
-          <div className="flex flex-row -mx-4 p-2">
-            <div>
-              <CardTitle>{t("savedSentences")}</CardTitle>
-              <CardDescription>
-                {sentences.length == 0
-                  ? t("noSavedSentences")
-                  : t("savedSentencesDescription", {
-                      total: sentences.length,
-                    })}
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {sentences.length != 0 &&
-            sentences.map((sentence, index) => {
-              return (
-                <div
-                  key={sentence.id}
-                  className="-mx-4 flex items-center rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground cursor-pointer gap-3"
-                >
-                  <Link href={`/student/read/${sentence.articleId}`}>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {sentence.sentence}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {t("added", {
-                          date: formatTimestamp(sentence.createdAt),
-                        })}
-                      </p>
-                    </div>
-                  </Link>
-                  <Button
-                    className="ml-auto font-medium"
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(sentence.id)}
+      <Header
+        heading={t("savedSentences")}
+        text={
+          sentences.length == 0
+            ? t("noSavedSentences")
+            : t("savedSentencesDescription", {
+                total: sentences.length,
+              })
+        }
+      />
+      <div className="w-full">
+        <div className="flex items-center py-4">
+          <Input
+            placeholder={"Search..."}
+            value={
+              (table.getColumn("sentence")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("sentence")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        </div>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
                   >
-                    {t("deleteButton")}
-                  </Button>
-                </div>
-              );
-            })}
-        </CardContent>
-      </Card>
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Empty
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
       {/* )}  */}
     </>
   );
