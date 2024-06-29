@@ -147,7 +147,7 @@ export default function ManageTab({ userId }: Props) {
       header: "Sentence",
       cell: ({ row }) => (
         <div
-          className="captoliza cursor-pointer"
+          className="capitalize cursor-pointer"
           onClick={() => handleNavigateToArticle(row.original.articleId)}
         >
           {row.getValue("sentence")}
