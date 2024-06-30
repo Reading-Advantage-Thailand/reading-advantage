@@ -5,23 +5,15 @@ import { buttonVariants } from "./ui/button";
 import { useScopedI18n } from "@/locales/client";
 import { Sentence } from "@/components/flash-card";
 import {
-  createEmptyCard,
-  formatDate,
   fsrs,
   generatorParameters,
   Rating,
-  Grades,
   Card,
-  FSRSParameters,
   FSRS,
-  RecordLog,
   State,
-  ReviewLog,
 } from "ts-fsrs";
 import { ColumnDef } from "@tanstack/react-table";
 import axios from "axios";
-import { DataTable } from "@/components/data-table-flash-card";
-import { toast } from "./ui/use-toast";
 
 type Props = {
   index: number;
@@ -177,14 +169,6 @@ export default function FlashCardPracticeButton({
         ...newCards[index],
       }
     );
-
-    // toast({
-    //   title: "Success",
-    //   description: `You have saved "${truncateText(
-    //     newCards[index].sentence,
-    //     20
-    //   )}" to Fsrs`,
-    // });
 
     if (index + 1 === sentences.length) {
       setShowButton(false);

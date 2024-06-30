@@ -1,10 +1,3 @@
-import { match } from "assert";
-import { error, warn } from "console";
-import { assign, create, first, last } from "lodash";
-import { arch } from "os";
-import { title } from "process";
-import { toast } from "react-toastify";
-
 export default {
   pages: {
     indexPage: {
@@ -71,7 +64,7 @@ export default {
       },
       practicePage: {
         //Headings
-        flashcard: "Flashcard",
+        flashcard: "Sentence card",
         manage: "Manage",
         orderSentences: "Order Sentences",
         clozeTest: "Cloze Test",
@@ -79,7 +72,7 @@ export default {
         matching: "Matching",
         //descriptions
         flashcardDescription:
-          "You can practice your reading skills with flashcards. and your saved sentences will be displayed here.",
+          "You can practice your reading skills with sentence cards. The ones you have saved will appear here.",
         savedSentences: "Saved Sentences",
         noSavedSentences: "You have no saved sentences.",
         savedSentencesDescription: "Your have {total} saved sentences.",
@@ -553,6 +546,11 @@ export default {
         flashcard: "Flashcard",
         matching: "Matching",
       },
+      flashcard: {
+        neverPracticeButton: "Do not practice this word anymore",
+        description:
+          "คุณสามารถฝึกทักษะการอ่านของคุณด้วยการ์ดคำศัพท์ ที่คุณบันทึกไว้จะปรากฏที่นี่",
+      }
     },
   },
 

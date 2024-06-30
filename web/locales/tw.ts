@@ -1,5 +1,3 @@
-import { assign } from "lodash";
-
 export default {
   pages: {
     indexPage: {
@@ -53,14 +51,14 @@ export default {
         articleRecordsDescription: "您的閱讀記錄將在這裡顯示。",
       },
       practicePage: {
-        flashcard: "單詞卡",
+        flashcard: "句子卡片",
         manage: "管理",
         orderSentences: "排列句子",
         clozeTest: "填空測試",
         orderWords: "排序單詞",
         matching: "匹配",
         flashcardDescription:
-          "您可以使用單詞卡來練習您的閱讀技能，您保存的句子將在這裡顯示。",
+          "你可以通過句子卡片來練習你的閱讀技巧。你保存的卡片會顯示在這裡。",
         savedSentences: "保存的句子",
         noSavedSentences: "您沒有保存的句子。",
         savedSentencesDescription: "您有 {total} 個保存的句子。",
@@ -157,6 +155,7 @@ export default {
       history: "歷史",
       sentences: "句子",
       reports: "報告",
+      vocabulary: "詞彙",
     },
     sidebarTeacherNav: {
       myClasses: "我的課程",
@@ -514,6 +513,11 @@ export default {
       tab: {
         flashcard: "單詞卡",
         matching: "配對",
+      },
+      flashcard: {
+        neverPracticeButton: "不再練習這個詞彙",
+        description:
+          "你可以通過你保存的詞彙卡片來練習你的閱讀技巧，這些詞彙卡片會顯示在這裡",
       },
     },
   },

@@ -1,6 +1,3 @@
-import OrderWords from "@/components/order-words";
-import { match } from "assert";
-
 export default {
   pages: {
     indexPage: {
@@ -63,7 +60,7 @@ export default {
       },
       practicePage: {
         //Headings
-        flashcard: "การ์ดคำศัพท์",
+        flashcard: "การ์ดประโยค",
         manage: "จัดการ",
         orderSentences: "เรียงประโยค",
         clozeTest: "ทดสอบเติมคำในช่องว่าง",
@@ -71,7 +68,7 @@ export default {
         matching: "การจับคู่",
         //descriptions
         flashcardDescription:
-          "คุณสามารถฝึกทักษะการอ่านของคุณด้วยการ์ดคำศัพท์ และประโยคที่คุณบันทึกไว้จะปรากฏที่นี่",
+          "คุณสามารถฝึกทักษะการอ่านของคุณด้วยการ์ดประโยคที่คุณบันทึกไว้จะปรากฏที่นี่",
         savedSentences: "ประโยคที่บันทึกไว้",
         noSavedSentences: "คุณยังไม่มีประโยคที่บันทึกไว้",
         savedSentencesDescription: "คุณมีประโยคที่บันทึกไว้ {total} ประโยค",
@@ -172,6 +169,7 @@ export default {
       history: "ประวัติ",
       sentences: "ประโยค",
       reports: "รายงาน",
+      vocabulary: "คำศัพท์",
     },
     sidebarTeacherNav: {
       myClasses: "ชั้นเรียนของฉัน",
@@ -540,6 +538,11 @@ export default {
       tab: {
         flashcard: "การ์ดคำศัพท์",
         matching: "การจับคู่",
+      },
+      flashcard: {
+        neverPracticeButton: "ไม่ต้องฝึกคำศัพท์นี้อีก",
+        description:
+          "คุณสามารถฝึกทักษะการอ่านของคุณด้วยการ์ดคำศัพท์ ที่คุณบันทึกไว้จะปรากฏที่นี่",
       },
     },
   },
