@@ -4,7 +4,6 @@ import Passages from '@/components/teacher/passages';
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 
-
 export default async function PassagesPage() {
   const user = await getCurrentUser();
   if (!user) {
@@ -13,6 +12,7 @@ export default async function PassagesPage() {
   if (user.cefrLevel === "" && user.level === 0) {
     return redirect("/level");
   }
+
 
   async function getPassages() {
     const response = await fetch(
@@ -26,10 +26,10 @@ export default async function PassagesPage() {
     return res;
   }
   const passages = await getPassages();
-console.log('passages in passages page', passages);
 
   return (
     <div>
+
       <Passages passages={passages.passages} />
     </div>
   )
