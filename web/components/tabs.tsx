@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-// import * as Tabs from "@radix-ui/react-tabs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FlashCard from "@/components/flash-card";
 import OrderSentences from "@/components/dnd/order-sentences";

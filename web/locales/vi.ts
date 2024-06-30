@@ -60,7 +60,7 @@ export default {
       },
       practicePage: {
         // Headings
-        flashcard: "Thẻ học",
+        flashcard: "Thẻ câu",
         manage: "quản lý",
         orderSentences: "Sắp xếp câu",
         clozeTest: "Bài kiểm tra lỗ hổng",
@@ -68,7 +68,7 @@ export default {
         matching: "Kết hợp",
         // Descriptions
         flashcardDescription:
-          "Bạn có thể luyện tập kỹ năng đọc của mình với thẻ học. Và các câu đoạn đã lưu của bạn sẽ được hiển thị ở đây.",
+          "Bạn có thể luyện kỹ năng đọc của mình với các thẻ câu. Các thẻ bạn đã lưu sẽ hiển thị ở đây.",
         savedSentences: "Câu đoạn đã lưu",
         noSavedSentences: "Bạn chưa lưu câu đoạn nào.",
         savedSentencesDescription: "Bạn đã lưu {total} câu đoạn.",
@@ -168,6 +168,7 @@ export default {
       history: "Lịch sử",
       sentences: "Câu",
       reports: "Báo cáo",
+      vocabulary: "từ vựng",
     },
     sidebarTeacherNav: {
       myClasses: "Lớp học của tôi",
@@ -541,6 +542,11 @@ export default {
       tab: {
         flashcard: "Thẻ học",
         matching: "Ghép cặp",
+      },
+      flashcard: {
+        neverPracticeButton: "Không luyện tập từ này nữa",
+        description:
+          "Bạn có thể luyện kỹ năng đọc của mình với các thẻ từ vựng mà bạn đã lưu. Chúng sẽ hiển thị ở đây.",
       },
     },
   },
