@@ -548,8 +548,8 @@ export default {
       },
       flashcard: {
         neverPracticeButton: "Do not practice this word anymore",
-        description:
-          "คุณสามารถฝึกทักษะการอ่านของคุณด้วยการ์ดคำศัพท์ ที่คุณบันทึกไว้จะปรากฏที่นี่",
+        description: "You can practice your reading skills with vocabulary cards. The ones you have saved will appear here."
+
       }
     },
   },
