@@ -13,7 +13,7 @@ import { splitTextIntoSentences } from "@/lib/utils";
 import base64 from "base64-js";
 import { calculateLevel } from "@/lib/calculateLevel";
 import { retry } from "@/utils/retry";
-import { sendDiscordWebhook, Status } from "@/utils/sendDiscordWebhook";
+import { sendDiscordWebhook, Status } from "@/utils/send-discord-webhook";
 
 interface GenreType {
     id: string;
@@ -503,13 +503,7 @@ export async function test(passage: string, articleId: string) {
             },
             {
                 params: { key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY },
-                // params: { key: "ya29.a0AXooCgsgPXjerNss4R4PnFs7qNn-dv414C6LCVKATf1DdQfKJk0j8ZCSnCcK3IUgQbnbWYBmsEZvQ_ryz64tytwdCu9guD85cUnOsIuP_CDOW_U83N67mSRfAP1ShH-J3vsT2FOjwD9KHpXayjDhs7eJh7YpzUB-byMo68xUlBBcWOdQUgXxjcu5mv1Dazc7XNXjRlyU6T7Iil50x93CcymCZZwHoqV9Eekq5ZG4wTeMx9fxNXJA9oarxx_REcp-g-62iPCQ8QxoU9EWjW5RmqG1ysSLxoKvooGntjoNMvfR08oItsal3oCKph_yruRGPB730FmK1bwmwZuRwQ4D1_BeITNpufMGAQAFT_xzekEcwI0OraogWf4aePuxOrULRtBro9k5b0FtTnJOIAo9XBQjrK1XO_4aCgYKAecSARASFQHGX2Miogrc-OOJh8If55-uIg00XA0422" },
             }
-            // {
-            //     headers: {
-            //         Authorization: `Bearer ${await getAccessToken()}`,
-            //     },
-            // }
         );
 
         console.log(JSON.stringify(response));
