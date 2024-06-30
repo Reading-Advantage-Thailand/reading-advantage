@@ -13,6 +13,7 @@ import { splitTextIntoSentences } from "@/lib/utils";
 import base64 from "base64-js";
 import { calculateLevel } from "@/lib/calculateLevel";
 import { retry } from "@/utils/retry";
+import { sendDiscordWebhook, Status } from "@/utils/send-discord-webhook";
 
 interface GenreType {
     id: string;
@@ -63,8 +64,28 @@ type CefrLevelType = {
     userPromptTemplate: string,
 }
 
+
 export async function generateQueue(req: ExtendedNextRequest) {
     try {
+        const userAgent = req.headers.get('user-agent') || '';
+        const url = req.url;
+        const webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
+
+        const payload = {
+            embeds: [
+                {
+                    title: `Details (${process.env.NODE_ENV} mode)`,
+                    description: `**status**: ${Status.START} 60 articles \n**triggered at**: <t:${Math.floor(Date.now() / 1000)}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n`,
+                    color: 880808,
+                },
+            ],
+        };
+
+        await axios.post(webhookUrl, payload);
+
+        // Send a message to Discord that the generation has started
+        // await sendDiscordWebhook(Status.START, userAgent, url, webhookUrl);
+
         // Function to generate queue for a given genre
         const generateForGenre = async (genre: Type) => {
             const randomResp = await retry(() => randomGenre(genre));
@@ -91,14 +112,72 @@ export async function generateQueue(req: ExtendedNextRequest) {
         // Combine results from both genres
         const combinedResults = [...fictionResults, ...nonfictionResults];
 
+        // Send a message to Discord with the results
+        // await sendDiscordWebhook(
+        //     Status.END,
+        //     userAgent,
+        //     url,
+        //     webhookUrl,
+        //     undefined,
+        //     `**total**: ${combinedResults.length} \n**fiction**: ${fictionResults.length} \n**nonfiction**: ${nonfictionResults.length}`,
+        // );
+
+        const payload2 = {
+            embeds: [
+                {
+                    title: `Details (${process.env.NODE_ENV} mode)`,
+                    description: `**status**: ${Status.END} \n**completed at**: <t:${Math.floor(Date.now() / 1000)}:R>`,
+                    color: 880808,
+                },
+                {
+                    title: 'Results',
+                    description: `**total**: ${combinedResults.length} \n**fiction**: ${fictionResults.length} \n**nonfiction**: ${nonfictionResults.length}`,
+                    color: 65280,
+                },
+            ],
+        };
+
+        await axios.post(webhookUrl, payload2);
+
         return NextResponse.json({
             message: "Successfully generated queue",
             length: combinedResults.length,
             nonfictionResults: nonfictionResults.length,
             fictionResults: fictionResults.length,
-            result: combinedResults,
+            // result: combinedResults,
         });
+
     } catch (error) {
+
+        const webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
+        // Send a message to Discord that the generation has failed
+        const userAgent = req.headers.get('user-agent') || '';
+        const url = req.url;
+
+        const payload = {
+            embeds: [
+                {
+                    title: `Details (${process.env.NODE_ENV} mode)`,
+                    description: `**status**: ${Status.ERROR} \n**triggered at**: <t:${Math.floor(Date.now() / 1000)}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n`,
+                    color: 880808,
+                },
+                {
+                    title: 'Error Details',
+                    description: error,
+                    color: 16711680,
+                },
+            ],
+        };
+
+        await axios.post(webhookUrl, payload);
+        // await sendDiscordWebhook(
+        //     Status.ERROR,
+        //     req.headers.get('user-agent') || '',
+        //     req.url,
+        //     webhookUrl,
+        //     `Failed to generate queue: ${error}`
+        // );
+
         return NextResponse.json({
             message: `Failed to generate queue: ${error}`
         }, { status: 500 });
@@ -106,60 +185,64 @@ export async function generateQueue(req: ExtendedNextRequest) {
 }
 
 async function queue(type: Type, genre: string, subgenre: string, topic: string, level: LevelType) {
-    console.log("TYPE:", type, "GENRE:", genre, "SUBGENRE:", subgenre, "TOPIC:", topic, "LEVEL:", level)
-    const articleResp = await retry(() => generateArticle(type, genre, subgenre, topic, level));
-    console.log("GENERATED ARTICLE");
-    const mcResp = await retry(() => generateMC(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
-    console.log("GENERATED MC");
-    const saResp = await retry(() => generateSA(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
-    console.log("GENERATED SA");
-    const laResp = await retry(() => generateLA(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
-    console.log("GENERATED LA");
+    try {
+        console.log("TYPE:", type, "GENRE:", genre, "SUBGENRE:", subgenre, "TOPIC:", topic, "LEVEL:", level)
+        const articleResp = await retry(() => generateArticle(type, genre, subgenre, topic, level));
+        console.log("GENERATED ARTICLE");
+        const mcResp = await retry(() => generateMC(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
+        console.log("GENERATED MC");
+        const saResp = await retry(() => generateSA(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
+        console.log("GENERATED SA");
+        const laResp = await retry(() => generateLA(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
+        console.log("GENERATED LA");
 
-    const { cefrLevel, raLevel } = calculateLevel(articleResp.passage);
-    // save to db
-    const articleDoc = await db.collection("new-articles").add({
-        average_rating: 0,
-        cefr_level: cefrLevel,
-        created_at: new Date().toISOString(),
-        genre,
-        image_description: articleResp.imageDesc,
-        passage: articleResp.passage,
-        ra_level: raLevel,
-        read_count: 0,
-        subgenre,
-        summary: articleResp.summary,
-        thread_id: "",
-        title: articleResp.title,
-        type,
-    });
+        const { cefrLevel, raLevel } = calculateLevel(articleResp.passage);
+        // save to db
+        const articleDoc = await db.collection("new-articles").add({
+            average_rating: 0,
+            cefr_level: cefrLevel,
+            created_at: new Date().toISOString(),
+            genre,
+            image_description: articleResp.imageDesc,
+            passage: articleResp.passage,
+            ra_level: raLevel,
+            read_count: 0,
+            subgenre,
+            summary: articleResp.summary,
+            thread_id: "",
+            title: articleResp.title,
+            type,
+        });
 
-    // update mcq
-    for (let i = 0; i < mcResp.questions.length; i++) {
-        db.collection("new-articles").doc(articleDoc.id).collection("mc-questions").add(mcResp.questions[i]);
+        // update mcq
+        for (let i = 0; i < mcResp.questions.length; i++) {
+            db.collection("new-articles").doc(articleDoc.id).collection("mc-questions").add(mcResp.questions[i]);
+        }
+
+        // update saq
+        for (let i = 0; i < saResp.questions.length; i++) {
+            db.collection("new-articles").doc(articleDoc.id).collection("sa-questions").add(saResp.questions[i]);
+        }
+
+        // update laq
+        db.collection("new-articles").doc(articleDoc.id).collection("la-questions").add(laResp);
+
+        const audioResp = await retry(() => generateAudio(articleResp.passage, articleDoc.id));
+        console.log("GENERATED AUDIO");
+        const imageResp = await retry(() => generateImage(articleResp.imageDesc, articleDoc.id));
+        console.log("GENERATED IMAGE");
+
+        return {
+            articleResp,
+            mcResp,
+            saResp,
+            laResp,
+            imageResp,
+            audioResp,
+        };
+    } catch (error) {
+        return `Failed to queue: ${error}`;
     }
-
-    // update saq
-    for (let i = 0; i < saResp.questions.length; i++) {
-        db.collection("new-articles").doc(articleDoc.id).collection("sa-questions").add(saResp.questions[i]);
-    }
-
-    // update laq
-    db.collection("new-articles").doc(articleDoc.id).collection("la-questions").add(laResp);
-
-    const audioResp = await retry(() => generateAudio(articleResp.passage, articleDoc.id));
-    console.log("GENERATED AUDIO");
-    const imageResp = await retry(() => generateImage(articleResp.imageDesc, articleDoc.id));
-    console.log("GENERATED IMAGE");
-
-    return {
-        articleResp,
-        mcResp,
-        saResp,
-        laResp,
-        imageResp,
-        audioResp,
-    };
 }
 
 // random select 1 genre and 1 subgenre
@@ -468,13 +551,7 @@ export async function test(passage: string, articleId: string) {
             },
             {
                 params: { key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY },
-                // params: { key: "ya29.a0AXooCgsgPXjerNss4R4PnFs7qNn-dv414C6LCVKATf1DdQfKJk0j8ZCSnCcK3IUgQbnbWYBmsEZvQ_ryz64tytwdCu9guD85cUnOsIuP_CDOW_U83N67mSRfAP1ShH-J3vsT2FOjwD9KHpXayjDhs7eJh7YpzUB-byMo68xUlBBcWOdQUgXxjcu5mv1Dazc7XNXjRlyU6T7Iil50x93CcymCZZwHoqV9Eekq5ZG4wTeMx9fxNXJA9oarxx_REcp-g-62iPCQ8QxoU9EWjW5RmqG1ysSLxoKvooGntjoNMvfR08oItsal3oCKph_yruRGPB730FmK1bwmwZuRwQ4D1_BeITNpufMGAQAFT_xzekEcwI0OraogWf4aePuxOrULRtBro9k5b0FtTnJOIAo9XBQjrK1XO_4aCgYKAecSARASFQHGX2Miogrc-OOJh8If55-uIg00XA0422" },
             }
-            // {
-            //     headers: {
-            //         Authorization: `Bearer ${await getAccessToken()}`,
-            //     },
-            // }
         );
 
         console.log(JSON.stringify(response));

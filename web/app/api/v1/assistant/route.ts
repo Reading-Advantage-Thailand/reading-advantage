@@ -1,31 +1,15 @@
 import { generateQueue } from "@/controllers/assistant-controller";
-import { logRequest, protect } from "@/utils/middleware";
+import { logRequest, protect, restrictAccess } from "@/utils/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
 const router = createEdgeRouter<NextRequest, { params?: unknown }>();
 
 router.use(logRequest);
+router.use(restrictAccess);
+router.post(generateQueue);
 
-// Middleware
-// router.use(async (
-//     req: NextRequest,
-//     params: unknown,
-//     next: () => void
-// ) => {
-
-//     // Check level is be the same as the user's level
-//     const userLevel = session.user.level;
-//     const level = new Number(req.nextUrl.searchParams.get('level')).valueOf();
-//     if (level !== userLevel) {
-//         req.nextUrl.searchParams.set('level', userLevel.toString());
-//     }
-//     return next();
-// });
-
-router.get(generateQueue);
-
-export async function GET(request: NextRequest, ctx: { params?: unknown }): Promise<NextResponse> {
+export async function POST(request: NextRequest, ctx: { params?: unknown }): Promise<NextResponse> {
     const result = await router.run(request, ctx);
     if (result instanceof NextResponse) {
         return result;
