@@ -68,6 +68,7 @@ export default function FlashCard({
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
+  const tWordList = useScopedI18n("components.wordList");
   const router = useRouter();
   const controlRef = useRef<any>({});
   const currentCardFlipRef = useRef<any>();
@@ -76,10 +77,7 @@ export default function FlashCard({
   const [words, setWords] = useState<Word[]>([]);
 
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
-
-    
-
-  const getUserSentenceSaved = async () => {
+   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/word-list/${userId}`);
       const startOfDay = date_scheduler(new Date(), 0, true);
@@ -197,7 +195,10 @@ export default function FlashCard({
 
   return (
     <>
-      <Header heading={t("flashcard")} text={t("flashcardDescription")} />
+      <Header
+        heading={tWordList("tab.flashcard")}
+        text={tWordList("flashcard.description")}
+      />
       <div className="flex flex-col items-center justify-center space-y-2 mt-4">
         {words.length != 0 && (
           <>
@@ -220,7 +221,6 @@ export default function FlashCard({
               if (index === currentCardIndex) {
                 return (
                   <div className="flex space-x-3" key={uuidv4()}>
-                    
                     <FlipCardPracticeButton
                       currentCard={() => currentCardFlipRef.current()}
                     />
@@ -243,7 +243,7 @@ export default function FlashCard({
               {loading ? (
                 <Button className="ml-auto font-medium" disabled>
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                  {t("neverPracticeButton")}
+                  {tWordList("flashcard.neverPracticeButton")}
                 </Button>
               ) : (
                 <Button
@@ -252,7 +252,7 @@ export default function FlashCard({
                   variant="destructive"
                   onClick={() => handleDeleteAll()}
                 >
-                  {t("neverPracticeButton")}
+                  {tWordList("flashcard.neverPracticeButton")}
                 </Button>
               )}
             </div>

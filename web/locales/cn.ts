@@ -51,14 +51,14 @@ export default {
         articleRecordsDescription: "您的阅读记录将在这里显示。",
       },
       practicePage: {
-        flashcard: "单词卡",
+        flashcard: "句子卡片",
         manage: "管理",
         orderSentences: "排列句子",
         clozeTest: "填空测试",
         orderWords: "排序单词",
         matching: "匹配",
         flashcardDescription:
-          "您可以使用单词卡来练习您的阅读技能，您保存的句子将在这里显示。",
+          "你可以通过句子卡片来练习你的阅读技巧。你保存的卡片会显示在这里。",
         savedSentences: "保存的句子",
         noSavedSentences: "您没有保存的句子。",
         savedSentencesDescription: "您有 {total} 个保存的句子。",
@@ -155,6 +155,7 @@ export default {
       history: "历史",
       sentences: "句子",
       reports: "报告",
+      vocabulary: "词汇",
     },
     sidebarTeacherNav: {
       myClasses: "我的课程",
@@ -507,6 +508,11 @@ export default {
       tab: {
         flashcard: "单词卡",
         matching: "匹配",
+      },
+      flashcard: {
+        neverPracticeButton: "不再练习这个词汇",
+        description:
+          "你可以通过你保存的词汇卡片来练习你的阅读技巧，这些词汇卡片会显示在这里",
       },
     },
   },
