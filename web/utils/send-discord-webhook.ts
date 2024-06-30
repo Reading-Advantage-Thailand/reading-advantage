@@ -1,5 +1,6 @@
 // utils/sendDiscordWebhook.js
 import axios from 'axios';
+import { NextResponse } from 'next/server';
 
 export enum Status {
     START = 'starting generation',
@@ -39,7 +40,8 @@ export async function sendDiscordWebhook(
     try {
         await axios.post(webhookUrl, payload);
         console.log('Message sent to Discord successfully');
-    } catch (error) {
-        console.error('Error sending message to Discord:', error);
+    } catch (error: any) {
+        console.error('Error sending message to Discord:', error.message);
+        throw new Error(`Failed to send message to Discord: ${error}`);
     }
 }

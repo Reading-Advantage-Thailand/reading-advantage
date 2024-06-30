@@ -64,16 +64,27 @@ type CefrLevelType = {
     userPromptTemplate: string,
 }
 
-const webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
-
 
 export async function generateQueue(req: ExtendedNextRequest) {
     try {
         const userAgent = req.headers.get('user-agent') || '';
         const url = req.url;
+        const webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
+
+        const payload = {
+            embeds: [
+                {
+                    title: `Details (${process.env.NODE_ENV} mode)`,
+                    description: `**status**: ${Status.START} 60 articles \n**triggered at**: <t:${Math.floor(Date.now() / 1000)}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n`,
+                    color: 880808,
+                },
+            ],
+        };
+
+        await axios.post(webhookUrl, payload);
 
         // Send a message to Discord that the generation has started
-        await sendDiscordWebhook(Status.START, userAgent, url, webhookUrl);
+        // await sendDiscordWebhook(Status.START, userAgent, url, webhookUrl);
 
         // Function to generate queue for a given genre
         const generateForGenre = async (genre: Type) => {
@@ -102,14 +113,31 @@ export async function generateQueue(req: ExtendedNextRequest) {
         const combinedResults = [...fictionResults, ...nonfictionResults];
 
         // Send a message to Discord with the results
-        await sendDiscordWebhook(
-            Status.END,
-            userAgent,
-            url,
-            webhookUrl,
-            undefined,
-            `**total**: ${combinedResults.length} \n**fiction**: ${fictionResults.length} \n**nonfiction**: ${nonfictionResults.length}`,
-        );
+        // await sendDiscordWebhook(
+        //     Status.END,
+        //     userAgent,
+        //     url,
+        //     webhookUrl,
+        //     undefined,
+        //     `**total**: ${combinedResults.length} \n**fiction**: ${fictionResults.length} \n**nonfiction**: ${nonfictionResults.length}`,
+        // );
+
+        const payload2 = {
+            embeds: [
+                {
+                    title: `Details (${process.env.NODE_ENV} mode)`,
+                    description: `**status**: ${Status.END} \n**completed at**: <t:${Math.floor(Date.now() / 1000)}:R>`,
+                    color: 880808,
+                },
+                {
+                    title: 'Results',
+                    description: `**total**: ${combinedResults.length} \n**fiction**: ${fictionResults.length} \n**nonfiction**: ${nonfictionResults.length}`,
+                    color: 65280,
+                },
+            ],
+        };
+
+        await axios.post(webhookUrl, payload2);
 
         return NextResponse.json({
             message: "Successfully generated queue",
@@ -121,14 +149,34 @@ export async function generateQueue(req: ExtendedNextRequest) {
 
     } catch (error) {
 
+        const webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
         // Send a message to Discord that the generation has failed
-        await sendDiscordWebhook(
-            Status.ERROR,
-            req.headers.get('user-agent') || '',
-            req.url,
-            webhookUrl,
-            `Failed to generate queue: ${error}`
-        );
+        const userAgent = req.headers.get('user-agent') || '';
+        const url = req.url;
+
+        const payload = {
+            embeds: [
+                {
+                    title: `Details (${process.env.NODE_ENV} mode)`,
+                    description: `**status**: ${Status.ERROR} \n**triggered at**: <t:${Math.floor(Date.now() / 1000)}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n`,
+                    color: 880808,
+                },
+                {
+                    title: 'Error Details',
+                    description: error,
+                    color: 16711680,
+                },
+            ],
+        };
+
+        await axios.post(webhookUrl, payload);
+        // await sendDiscordWebhook(
+        //     Status.ERROR,
+        //     req.headers.get('user-agent') || '',
+        //     req.url,
+        //     webhookUrl,
+        //     `Failed to generate queue: ${error}`
+        // );
 
         return NextResponse.json({
             message: `Failed to generate queue: ${error}`
