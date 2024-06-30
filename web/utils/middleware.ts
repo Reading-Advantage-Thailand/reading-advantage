@@ -28,6 +28,8 @@ export interface ExtendedNextRequest extends NextRequest {
         };
     };
 }
+
+// Middleware to protect routes
 export const protect = async (
     req: ExtendedNextRequest,
     params: unknown,
@@ -42,3 +44,19 @@ export const protect = async (
     req.session = session;
     return next();
 };
+
+// Restrict access (requires access key) to a route
+export const restrictAccess = (
+    req: NextRequest,
+    params: unknown,
+    next: () => void
+) => {
+    const { headers } = req;
+    const accessKey = headers.get("Access-Key");
+    if (accessKey !== process.env.ACCESS_KEY) {
+        return NextResponse.json({
+            message: "Unauthorized: Access key is required",
+        }, { status: 403 });
+    }
+    return next();
+}

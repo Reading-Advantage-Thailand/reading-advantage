@@ -13,6 +13,7 @@ import { splitTextIntoSentences } from "@/lib/utils";
 import base64 from "base64-js";
 import { calculateLevel } from "@/lib/calculateLevel";
 import { retry } from "@/utils/retry";
+import { sendDiscordWebhook, Status } from "@/utils/sendDiscordWebhook";
 
 interface GenreType {
     id: string;
@@ -63,8 +64,17 @@ type CefrLevelType = {
     userPromptTemplate: string,
 }
 
+const webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
+
+
 export async function generateQueue(req: ExtendedNextRequest) {
     try {
+        const userAgent = req.headers.get('user-agent') || '';
+        const url = req.url;
+
+        // Send a message to Discord that the generation has started
+        await sendDiscordWebhook(Status.START, userAgent, url, webhookUrl);
+
         // Function to generate queue for a given genre
         const generateForGenre = async (genre: Type) => {
             const randomResp = await retry(() => randomGenre(genre));
@@ -91,14 +101,35 @@ export async function generateQueue(req: ExtendedNextRequest) {
         // Combine results from both genres
         const combinedResults = [...fictionResults, ...nonfictionResults];
 
+        // Send a message to Discord with the results
+        await sendDiscordWebhook(
+            Status.END,
+            userAgent,
+            url,
+            webhookUrl,
+            undefined,
+            `**total**: ${combinedResults.length} \n**fiction**: ${fictionResults.length} \n**nonfiction**: ${nonfictionResults.length}`,
+        );
+
         return NextResponse.json({
             message: "Successfully generated queue",
             length: combinedResults.length,
             nonfictionResults: nonfictionResults.length,
             fictionResults: fictionResults.length,
-            result: combinedResults,
+            // result: combinedResults,
         });
+
     } catch (error) {
+
+        // Send a message to Discord that the generation has failed
+        await sendDiscordWebhook(
+            Status.ERROR,
+            req.headers.get('user-agent') || '',
+            req.url,
+            webhookUrl,
+            `Failed to generate queue: ${error}`
+        );
+
         return NextResponse.json({
             message: `Failed to generate queue: ${error}`
         }, { status: 500 });
@@ -106,60 +137,64 @@ export async function generateQueue(req: ExtendedNextRequest) {
 }
 
 async function queue(type: Type, genre: string, subgenre: string, topic: string, level: LevelType) {
-    console.log("TYPE:", type, "GENRE:", genre, "SUBGENRE:", subgenre, "TOPIC:", topic, "LEVEL:", level)
-    const articleResp = await retry(() => generateArticle(type, genre, subgenre, topic, level));
-    console.log("GENERATED ARTICLE");
-    const mcResp = await retry(() => generateMC(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
-    console.log("GENERATED MC");
-    const saResp = await retry(() => generateSA(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
-    console.log("GENERATED SA");
-    const laResp = await retry(() => generateLA(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
-    console.log("GENERATED LA");
+    try {
+        console.log("TYPE:", type, "GENRE:", genre, "SUBGENRE:", subgenre, "TOPIC:", topic, "LEVEL:", level)
+        const articleResp = await retry(() => generateArticle(type, genre, subgenre, topic, level));
+        console.log("GENERATED ARTICLE");
+        const mcResp = await retry(() => generateMC(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
+        console.log("GENERATED MC");
+        const saResp = await retry(() => generateSA(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
+        console.log("GENERATED SA");
+        const laResp = await retry(() => generateLA(articleResp.cefrLevel, articleResp.type, articleResp.genre, articleResp.subgenre, articleResp.passage, articleResp.title, articleResp.summary, articleResp.imageDesc));
+        console.log("GENERATED LA");
 
-    const { cefrLevel, raLevel } = calculateLevel(articleResp.passage);
-    // save to db
-    const articleDoc = await db.collection("new-articles").add({
-        average_rating: 0,
-        cefr_level: cefrLevel,
-        created_at: new Date().toISOString(),
-        genre,
-        image_description: articleResp.imageDesc,
-        passage: articleResp.passage,
-        ra_level: raLevel,
-        read_count: 0,
-        subgenre,
-        summary: articleResp.summary,
-        thread_id: "",
-        title: articleResp.title,
-        type,
-    });
+        const { cefrLevel, raLevel } = calculateLevel(articleResp.passage);
+        // save to db
+        const articleDoc = await db.collection("new-articles").add({
+            average_rating: 0,
+            cefr_level: cefrLevel,
+            created_at: new Date().toISOString(),
+            genre,
+            image_description: articleResp.imageDesc,
+            passage: articleResp.passage,
+            ra_level: raLevel,
+            read_count: 0,
+            subgenre,
+            summary: articleResp.summary,
+            thread_id: "",
+            title: articleResp.title,
+            type,
+        });
 
-    // update mcq
-    for (let i = 0; i < mcResp.questions.length; i++) {
-        db.collection("new-articles").doc(articleDoc.id).collection("mc-questions").add(mcResp.questions[i]);
+        // update mcq
+        for (let i = 0; i < mcResp.questions.length; i++) {
+            db.collection("new-articles").doc(articleDoc.id).collection("mc-questions").add(mcResp.questions[i]);
+        }
+
+        // update saq
+        for (let i = 0; i < saResp.questions.length; i++) {
+            db.collection("new-articles").doc(articleDoc.id).collection("sa-questions").add(saResp.questions[i]);
+        }
+
+        // update laq
+        db.collection("new-articles").doc(articleDoc.id).collection("la-questions").add(laResp);
+
+        const audioResp = await retry(() => generateAudio(articleResp.passage, articleDoc.id));
+        console.log("GENERATED AUDIO");
+        const imageResp = await retry(() => generateImage(articleResp.imageDesc, articleDoc.id));
+        console.log("GENERATED IMAGE");
+
+        return {
+            articleResp,
+            mcResp,
+            saResp,
+            laResp,
+            imageResp,
+            audioResp,
+        };
+    } catch (error) {
+        return `Failed to queue: ${error}`;
     }
-
-    // update saq
-    for (let i = 0; i < saResp.questions.length; i++) {
-        db.collection("new-articles").doc(articleDoc.id).collection("sa-questions").add(saResp.questions[i]);
-    }
-
-    // update laq
-    db.collection("new-articles").doc(articleDoc.id).collection("la-questions").add(laResp);
-
-    const audioResp = await retry(() => generateAudio(articleResp.passage, articleDoc.id));
-    console.log("GENERATED AUDIO");
-    const imageResp = await retry(() => generateImage(articleResp.imageDesc, articleDoc.id));
-    console.log("GENERATED IMAGE");
-
-    return {
-        articleResp,
-        mcResp,
-        saResp,
-        laResp,
-        imageResp,
-        audioResp,
-    };
 }
 
 // random select 1 genre and 1 subgenre
