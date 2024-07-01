@@ -7,15 +7,13 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import { useScopedI18n } from "@/locales/client";
-// import "animate.css";
+import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import Image from "next/image";
-import { Header } from "./header";
-import { toast } from "./ui/use-toast";
-import { Skeleton } from "./ui/skeleton";
-import { Sentence } from "./dnd/types";
-import AudioButton from "./audio-button";
-import { updateScore } from '@/lib/utils';
+import { Header } from "../header";
+import { toast } from "../ui/use-toast";
+import { Skeleton } from "../ui/skeleton";
+import { Word } from "./tab-flash-card";
+import { updateScore } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -24,26 +22,88 @@ type Props = {
   userId: string;
 };
 
-type Word = {
+type Matching = {
   text: string;
   match: string;
-  timepoint: number;
-  endTimepoint: number;
-  articleId: string;
 };
 
-export default function Matching({ userId }: Props) {
+export default function MatchingWords({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
-  const router = useRouter();
-  const [articleMatching, setArticleMatching] = useState<Word[]>([]);
-  const [selectedCard, setSelectedCard] = useState<Word | null>(null);
+  const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
 
-  const [correctMatches, setCorrectMatches] = useState<string[]>([]);
-  const [words, setWords] = useState<Word[]>([]);
+  const router = useRouter();
+
   const [animateShake, setAnimateShake] = useState<string>("");
+  const [articleMatching, setArticleMatching] = useState<Matching[]>([]);
+  const [selectedCard, setSelectedCard] = useState<Matching | null>(null);
+  const [correctMatches, setCorrectMatches] = useState<string[]>([]);
+  const [words, setWords] = useState<Matching[]>([]);
+
+  const getUserSentenceSaved = async () => {
+    try {
+      const res = await axios.get(`/api/word-list/${userId}`);
+      console.log("res: ", res?.data?.word);
+
+      // step 1 : sort Article sentence: ID and SN due date expired
+      const matching = res.data.word.sort((a: Word, b: Word) => {
+        return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
+      });
+
+      const initialWords: Matching[] = [];
+
+      for (const article of matching) {
+        initialWords.push({
+          text: article?.word?.vocabulary,
+          match: article?.word?.definition[currentLocale],
+        });
+      }
+      setArticleMatching(
+        initialWords.length > 5 ? initialWords.slice(0, 5) : initialWords
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const shuffleWords = (words: Matching[]): Matching[] => {
+    const rawData: Matching[] = JSON.parse(JSON.stringify(words));
+    return rawData
+      .map((word) => ({ ...word, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ text, match }) => ({
+        text,
+        match,
+      }));
+  };
+
+  const getCardStyle = (word: Matching) => {
+    let styles = {
+      backgroundColor: selectedCard?.text === word.text ? "#edefff" : "", // Change to a light yellow on wrong select
+      border:
+        selectedCard?.text === word.text
+          ? "2px solid #425fff"
+          : "1px solid #ced4da", // Change to orange on wrong select
+    };
+
+    return styles;
+  };
+
+  const handleCardClick = async (word: Matching) => {
+    if (selectedCard === null) {
+      setSelectedCard(word);
+    } else if (selectedCard.text === word.match) {
+      setCorrectMatches([...correctMatches, selectedCard.text, word.text]);
+      setSelectedCard(null);
+      setAnimateShake(""); // Clear any previous shakes
+    } else {
+      setAnimateShake("animate__animated animate__wobble"); // Trigger shake
+      setTimeout(() => setAnimateShake(""), 2000); // Clear shake effect after 1 second
+      setSelectedCard(null);
+    }
+  };
 
   useEffect(() => {
     getUserSentenceSaved();
@@ -55,9 +115,6 @@ export default function Matching({ userId }: Props) {
       shuffleWords([
         ...articleMatching,
         ...articleMatching.map((word) => ({
-          articleId: word.articleId,
-          timepoint: word.timepoint,
-          endTimepoint: word.endTimepoint,
           text: word.match,
           match: word.text,
         })),
@@ -86,86 +143,17 @@ export default function Matching({ userId }: Props) {
         }
       }
     };
-    updateScoreCorrectMatches()
-
+    updateScoreCorrectMatches();
   }, [correctMatches]);
-
-  const getUserSentenceSaved = async () => {
-    try {
-      const res = await axios.get(`/api/users/${userId}/sentences`);
-
-      // step 1 : sort Article sentence: ID and SN due date expired
-      const matching = res.data.sentences.sort((a: Sentence, b: Sentence) => {
-        return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
-      });
-
-      const initialWords: Word[] = [];
-
-      for (const article of matching) {
-        initialWords.push({
-          text: article?.sentence,
-          match: article?.translation?.th,
-          timepoint: article?.timepoint,
-          endTimepoint: article?.endTimepoint,
-          articleId: article?.articleId,
-        });
-      }
-      setArticleMatching(
-        initialWords.length > 5 ? initialWords.slice(0, 5) : initialWords
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const shuffleWords = (words: Word[]): Word[] => {
-    const rawData: Word[] = JSON.parse(JSON.stringify(words));
-    return rawData
-      .map((word) => ({ ...word, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ text, match, timepoint, endTimepoint, articleId }) => ({
-        articleId,
-        timepoint,
-        endTimepoint,
-        text,
-        match,
-      }));
-  };
-
-  const handleCardClick = async (word: Word) => {
-    if (selectedCard === null) {
-      setSelectedCard(word);
-    } else if (selectedCard.text === word.match) {
-      setCorrectMatches([...correctMatches, selectedCard.text, word.text]);
-      setSelectedCard(null);
-      setAnimateShake(""); // Clear any previous shakes
-      
-      
-    } else {
-      setAnimateShake("animate__animated animate__wobble"); // Trigger shake
-      setTimeout(() => setAnimateShake(""), 2000); // Clear shake effect after 1 second
-      setSelectedCard(null);
-    }
-  };
-
-  const getCardStyle = (word: Word) => {
-    let styles = {
-      backgroundColor: selectedCard?.text === word.text ? "#edefff" : "", // Change to a light yellow on wrong select
-      border:
-        selectedCard?.text === word.text
-          ? "2px solid #425fff"
-          : "1px solid #ced4da", // Change to orange on wrong select
-    };
-
-    return styles;
-  };
 
   return (
     <>
-      <Header
-        heading={t("matchingPractice.matching")}
-        text={t("matchingPractice.matchingDescription")}
-      />
+      <div className="mt-5">
+        <Header
+          heading={t("matchingPractice.matching")}
+          text={t("matchingPractice.matchingDescription")}
+        />
+      </div>
       <div className="mt-10">
         {articleMatching.length === 0 ? (
           <>
@@ -196,16 +184,6 @@ export default function Matching({ userId }: Props) {
               `}
                         style={getCardStyle(word)}
                       >
-                        <div className="mb-5">
-                          {new RegExp(/^[a-zA-Z\s,.']+$/).test(word.text) && (
-                            <AudioButton
-                              key={word?.text}
-                              audioUrl={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${word?.articleId}.mp3`}
-                              startTimestamp={word?.timepoint}
-                              endTimestamp={word?.endTimepoint}
-                            />
-                          )}
-                        </div>
                         <div onClick={() => handleCardClick(word)}>
                           {word.text}
                         </div>

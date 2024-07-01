@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScopedI18n } from "@/locales/client";
-import FlashCard from "@/components/vocabulary/tabs-flash-card";
+import FlashCard from "./tab-flash-card";
+import MatchingWords from "./tab-matching-words";
 type Props = {
   userId: string;
 };
@@ -26,7 +27,7 @@ export default function TabsVocabulary({ userId }: Props) {
       </TabsContent>
 
       <TabsContent className="space-y-2" value="tab5">
-        {/* <Matching userId={userId} /> */}
+        <MatchingWords userId={userId} />
       </TabsContent>
     </Tabs>
   );

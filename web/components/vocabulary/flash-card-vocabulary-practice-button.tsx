@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { buttonVariants } from "../ui/button";
 import { useScopedI18n } from "@/locales/client";
-import { Word } from "./tabs-flash-card";
+import { Word } from "./tab-flash-card";
 import {
   createEmptyCard,
   formatDate,

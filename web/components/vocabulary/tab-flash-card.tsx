@@ -90,7 +90,6 @@ export default function FlashCard({
           return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
         });
 
-      console.log("filteredData : ", filteredData);
       setWords(filteredData);
 
       if (filteredData.length === 0) {
@@ -179,7 +178,6 @@ export default function FlashCard({
         }
       }
     } catch (error) {
-      console.log(error);
       setLoading(false);
       toast({
         title: t("toast.error"),
@@ -195,10 +193,12 @@ export default function FlashCard({
 
   return (
     <>
-      <Header
-        heading={tWordList("tab.flashcard")}
-        text={tWordList("flashcard.description")}
-      />
+      <div className="mt-5">
+        <Header
+          heading={tWordList("tab.flashcard")}
+          text={tWordList("flashcard.description")}
+        />
+      </div>      
       <div className="flex flex-col items-center justify-center space-y-2 mt-4">
         {words.length != 0 && (
           <>
