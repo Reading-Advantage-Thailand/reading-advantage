@@ -67,15 +67,25 @@ type CefrLevelType = {
 
 export async function generateQueue(req: ExtendedNextRequest) {
     try {
+        const timeTaken = Date.now();
         const userAgent = req.headers.get('user-agent') || '';
         const url = req.url;
         const webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
 
+        const { amount_per_genre } = await req.json();
+
+        if (!amount_per_genre) {
+            throw new Error("amount_per_genre is required");
+        }
+
+        // calculate the number of articles to generate
+        const totalArticles = parseInt(amount_per_genre) * 6 * 2; // 6 levels, 2 types
+
         const payload = {
             embeds: [
                 {
-                    title: `Details (${process.env.NODE_ENV} mode)`,
-                    description: `**status**: ${Status.START} 60 articles \n**triggered at**: <t:${Math.floor(Date.now() / 1000)}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n`,
+                    title: `Generate Queue (${process.env.NODE_ENV} mode)`,
+                    description: `**status**: ${Status.START} \n**triggered at**: <t:${Math.floor(Date.now() / 1000)}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n**total articles**: ${totalArticles}`,
                     color: 880808,
                 },
             ],
@@ -89,7 +99,7 @@ export async function generateQueue(req: ExtendedNextRequest) {
         // Function to generate queue for a given genre
         const generateForGenre = async (genre: Type) => {
             const randomResp = await retry(() => randomGenre(genre));
-            const topicResp = await retry(() => generateTopic(genre, randomResp.genre, randomResp.subgenre));
+            const topicResp = await retry(() => generateTopic(genre, randomResp.genre, randomResp.subgenre, amount_per_genre));
 
             // Process each topic concurrently
             const results = await Promise.all(topicResp.topics.map(async (topic) => {
@@ -112,6 +122,12 @@ export async function generateQueue(req: ExtendedNextRequest) {
         // Combine results from both genres
         const combinedResults = [...fictionResults, ...nonfictionResults];
 
+        // count failed results
+        const failedResults = combinedResults.filter((result) => typeof result === 'string');
+        const failedCount = failedResults.length;
+
+        // calculate taken time
+        const timeTakenMinutes = (Date.now() - timeTaken) / 1000 / 60;
         // Send a message to Discord with the results
         // await sendDiscordWebhook(
         //     Status.END,
@@ -125,13 +141,13 @@ export async function generateQueue(req: ExtendedNextRequest) {
         const payload2 = {
             embeds: [
                 {
-                    title: `Details (${process.env.NODE_ENV} mode)`,
+                    title: `Generate Queue (${process.env.NODE_ENV} mode)`,
                     description: `**status**: ${Status.END} \n**completed at**: <t:${Math.floor(Date.now() / 1000)}:R>`,
                     color: 880808,
                 },
                 {
                     title: 'Results',
-                    description: `**total**: ${combinedResults.length} \n**fiction**: ${fictionResults.length} \n**nonfiction**: ${nonfictionResults.length}`,
+                    description: `**total**: ${combinedResults.length} \n**fiction**: ${fictionResults.length} \n**nonfiction**: ${nonfictionResults.length} \n**failed**: ${failedCount} \n**time taken**: ${timeTakenMinutes.toFixed(2)} minutes`,
                     color: 65280,
                 },
             ],
@@ -157,7 +173,7 @@ export async function generateQueue(req: ExtendedNextRequest) {
         const payload = {
             embeds: [
                 {
-                    title: `Details (${process.env.NODE_ENV} mode)`,
+                    title: `Generate Queue (${process.env.NODE_ENV} mode)`,
                     description: `**status**: ${Status.ERROR} \n**triggered at**: <t:${Math.floor(Date.now() / 1000)}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n`,
                     color: 880808,
                 },
@@ -269,10 +285,15 @@ async function randomGenre(type: Type): Promise<RandomGenreOutput> {
     }
 }
 
-async function generateTopic(type: Type, genre: string, subgenre: string): Promise<GenerateTopicOutput> {
+async function generateTopic(
+    type: Type,
+    genre: string,
+    subgenre: string,
+    amount_per_genre: string,
+): Promise<GenerateTopicOutput> {
     const prompts = {
-        fiction: `Please provide ten reading passage topics in the ${type} ${genre} genre and ${subgenre} subgenre. Output as a JSON array.`,
-        nonfiction: `Please provide ten reading passage topics in the ${type} ${genre} genre and ${subgenre} subgenre. Output as a JSON array.`,
+        fiction: `Please provide ${amount_per_genre} reading passage topics in the ${type} ${genre} genre and ${subgenre} subgenre. Output as a JSON array.`,
+        nonfiction: `Please provide ${amount_per_genre} reading passage topics in the ${type} ${genre} genre and ${subgenre} subgenre. Output as a JSON array.`,
     };
 
     const generate = async () => {
@@ -481,6 +502,8 @@ async function generateContent<T>(
 }
 
 export async function generateImage(imageDesc: string, articleId: string) {
+    // console.log("id:", articleId)
+    // console.log("prompt: ", imageDesc)
     const generate = async () => {
         const response = await openaiUtils.images.generate({
             model: "dall-e-3",

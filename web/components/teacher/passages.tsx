@@ -74,50 +74,49 @@ export default function Passages({ passages }: PassagesProps) {
   const t = useScopedI18n("components.articleRecordsTable");
   const tp = useScopedI18n("components.passages");
   const [sortOption, setSortOption] = useState("");
-  const [sortOrder, setSortOrder] = useState('Ascending');
+  const [sortOrder, setSortOrder] = useState("Ascending");
 
   const FICTION = "fiction";
   const NON_FICTION = "nonfiction";
 
-
+  // const isSystemPathOrRole = router.pathname === "/system";
   //   const filteredAndSortedPassages = useMemo(() => {
-//     let result = passages.filter(passage => 
-//       passage.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) &&
-//       (!selectedGenre || passage.genre === selectedGenre) &&
-//       (!selectedSubgenre || passage.subgenre === selectedSubgenre) &&
-//       (selectedLevels.length === 0 || selectedLevels.includes(passage.ra_level.toString()))
-//     );
+  //     let result = passages.filter(passage =>
+  //       passage.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) &&
+  //       (!selectedGenre || passage.genre === selectedGenre) &&
+  //       (!selectedSubgenre || passage.subgenre === selectedSubgenre) &&
+  //       (selectedLevels.length === 0 || selectedLevels.includes(passage.ra_level.toString()))
+  //     );
 
-//     if (sortOption) {
-//       result.sort((a, b) => {
-//         const compareValue = sortOption === "rating" 
-//           ? a.average_rating - b.average_rating
-//           : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-//         return sortOrder === "Ascending" ? compareValue : -compareValue;
-//       });
-//     }
+  //     if (sortOption) {
+  //       result.sort((a, b) => {
+  //         const compareValue = sortOption === "rating"
+  //           ? a.average_rating - b.average_rating
+  //           : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  //         return sortOrder === "Ascending" ? compareValue : -compareValue;
+  //       });
+  //     }
 
-//     return result;
-//   }, [passages, debouncedSearchTerm, selectedGenre, selectedSubgenre, selectedLevels, sortOption, sortOrder]);
+  //     return result;
+  //   }, [passages, debouncedSearchTerm, selectedGenre, selectedSubgenre, selectedLevels, sortOption, sortOrder]);
 
-//   const currentItems = useMemo(() => {
-//     const startIndex = (currentPage - 1) * itemsPerPage;
-//     return filteredAndSortedPassages.slice(startIndex, startIndex + itemsPerPage);
-//   }, [filteredAndSortedPassages, currentPage]);
+  //   const currentItems = useMemo(() => {
+  //     const startIndex = (currentPage - 1) * itemsPerPage;
+  //     return filteredAndSortedPassages.slice(startIndex, startIndex + itemsPerPage);
+  //   }, [filteredAndSortedPassages, currentPage]);
 
-//   const handleSortChange = useCallback((value: React.SetStateAction<string>) => {
-//     setSortOption(value);
-//     setSortOrder(prevOrder => prevOrder === "Ascending" ? 'Descending' : 'Ascending');
-//   }, []);
+  //   const handleSortChange = useCallback((value: React.SetStateAction<string>) => {
+  //     setSortOption(value);
+  //     setSortOrder(prevOrder => prevOrder === "Ascending" ? 'Descending' : 'Ascending');
+  //   }, []);
 
-//   const handleSelectionChange = useCallback((level: string) => {
-//     setSelectedLevels(prevLevels => 
-//       prevLevels.includes(level)
-//         ? prevLevels.filter(l => l !== level)
-//         : [...prevLevels, level]
-//     );
-//   }, []);
-
+  //   const handleSelectionChange = useCallback((level: string) => {
+  //     setSelectedLevels(prevLevels =>
+  //       prevLevels.includes(level)
+  //         ? prevLevels.filter(l => l !== level)
+  //         : [...prevLevels, level]
+  //     );
+  //   }, []);
 
   const getSubgenres = (selectedGenre: string) => {
     let subgenresData: Set<string> = new Set();
@@ -149,9 +148,9 @@ export default function Passages({ passages }: PassagesProps) {
 
   const handleSortChange = (value: string) => {
     if (sortOption === value) {
-      setSortOrder(sortOrder === "Ascending" ? 'Descending' : 'Ascending');
+      setSortOrder(sortOrder === "Ascending" ? "Descending" : "Ascending");
     } else {
-      setSortOrder('Ascending');
+      setSortOrder("Ascending");
     }
     setSortOption(value);
   };
@@ -331,38 +330,41 @@ export default function Passages({ passages }: PassagesProps) {
               </DropdownMenuContent>
             </DropdownMenu>
             {/* <div className=""> */}
-              {selectedGenre && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <Button variant="ghost">
-                      {selectedSubgenre || tp("selectSubGenre")}
-                      <ChevronDownIcon className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
-                    {getSubgenres(selectedGenre).map((subgenre) => (
-                      <DropdownMenuItem
-                        onSelect={() => setSelectedSubgenre(subgenre)}
-                        key={subgenre}
-                      >
-                        {subgenre}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+            {selectedGenre && (
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Button variant="ghost">
+                    {selectedSubgenre || tp("selectSubGenre")}
+                    <ChevronDownIcon className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
+                  {getSubgenres(selectedGenre).map((subgenre) => (
+                    <DropdownMenuItem
+                      onSelect={() => setSelectedSubgenre(subgenre)}
+                      key={subgenre}
+                    >
+                      {subgenre}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             {/* </div> */}
             <div className="mt-4 flex gap-2">
-            {selectedGenre && (
-              <Button variant="default" onClick={() => setSelectedGenre("")}>
-                {tp("resetGenre")}
-              </Button>
-            )}
-            {selectedSubgenre && (
-              <Button variant="default" onClick={() => setSelectedSubgenre("")}>
-                {tp("resetSubGenre")}
-              </Button>
-            )}
+              {selectedGenre && (
+                <Button variant="default" onClick={() => setSelectedGenre("")}>
+                  {tp("resetGenre")}
+                </Button>
+              )}
+              {selectedSubgenre && (
+                <Button
+                  variant="default"
+                  onClick={() => setSelectedSubgenre("")}
+                >
+                  {tp("resetSubGenre")}
+                </Button>
+              )}
             </div>
           </div>
 
@@ -393,7 +395,11 @@ export default function Passages({ passages }: PassagesProps) {
                     key={index}
                     className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4"
                   >
-                    <ArticleShowcaseCard key={index} article={passage} />
+                    <ArticleShowcaseCard
+                      key={index}
+                      article={passage}
+                      // isSystemPathOrRole={isSystemPathOrRole}
+                    />
                   </div>
                 );
               })}
@@ -408,7 +414,11 @@ export default function Passages({ passages }: PassagesProps) {
                     key={index}
                     className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4"
                   >
-                    <ArticleShowcaseCard key={index} article={passage} />
+                    <ArticleShowcaseCard
+                      key={index}
+                      article={passage}
+                      // isSystemPathOrRole={isSystemPathOrRole}
+                    />
                   </div>
                 );
               })}
@@ -480,7 +490,6 @@ export default function Passages({ passages }: PassagesProps) {
   );
 }
 
-console.log('hello world');
 
 // 'use client'
 // import React, { useState, useCallback, useMemo } from "react";
@@ -519,7 +528,6 @@ console.log('hello world');
 //   passages: Passage[];
 // };
 
-
 // export default function OptimizedPassages({ passages }: PassagesProps) {
 //   const [searchTerm, setSearchTerm] = useState("");
 //   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
@@ -535,7 +543,7 @@ console.log('hello world');
 //   const tp = useScopedI18n("components.passages");
 
 //   const filteredAndSortedPassages = useMemo(() => {
-//     let result = passages.filter(passage => 
+//     let result = passages.filter(passage =>
 //       passage.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) &&
 //       (!selectedGenre || passage.genre === selectedGenre) &&
 //       (!selectedSubgenre || passage.subgenre === selectedSubgenre) &&
@@ -544,7 +552,7 @@ console.log('hello world');
 
 //     if (sortOption) {
 //       result.sort((a, b) => {
-//         const compareValue = sortOption === "rating" 
+//         const compareValue = sortOption === "rating"
 //           ? a.average_rating - b.average_rating
 //           : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
 //         return sortOrder === "Ascending" ? compareValue : -compareValue;
@@ -565,7 +573,7 @@ console.log('hello world');
 //   }, []);
 
 //   const handleSelectionChange = useCallback((level: string) => {
-//     setSelectedLevels(prevLevels => 
+//     setSelectedLevels(prevLevels =>
 //       prevLevels.includes(level)
 //         ? prevLevels.filter(l => l !== level)
 //         : [...prevLevels, level]
