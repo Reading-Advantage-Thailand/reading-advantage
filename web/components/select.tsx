@@ -93,11 +93,9 @@ export default function Select({ user }: Props) {
       if (response.results.length === 0) {
         router.push("?");
       }
-      if (selectedType && selectedGenre && selectedSubgenre) {
-        setArticleShowcaseData(response.results);
-      } else {
-        setArticleTypesData(response.results);  
-      }
+
+      setArticleShowcaseData(response.results);
+      setArticleTypesData(response.selectionType);
       setLoading(false);
     }
     fetchData();
@@ -120,27 +118,34 @@ export default function Select({ user }: Props) {
       </CardHeader>
       <CardContent>
         {selectedType && selectedGenre && selectedSubgenre ? (
-          <div className="grid sm:grid-cols-2 grid-flow-row gap-4">
+          <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
             {articleShowcaseData.map((article, index) => (
               <ArticleShowcaseCard key={index} article={article} />
             ))}
           </div>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {articleTypesData.map((type, index) => {                          
-              return (
-              <Button
-                key={index}
-                onClick={() => handleButtonClick(type)}
-                disabled={loading}
-              >
-                {locale == "en" 
-                  ? type.replace(/_/g, " ") : tf(type.replace(/_/g, " "))
-                }        
-              </Button>
-               )
-            })}
-          </div>
+          <>
+            <div className="flex flex-wrap gap-2">
+              {articleTypesData.map((type, index) => {
+                return (
+                  <Button
+                    key={index}
+                    onClick={() => handleButtonClick(type)}
+                    disabled={loading}
+                  >
+                    {locale == "en"
+                      ? type.replace(/_/g, " ")
+                      : tf(type.replace(/_/g, " "))}
+                  </Button>
+                );
+              })}
+            </div>
+            <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
+              {articleShowcaseData.map((article, index) => (
+                <ArticleShowcaseCard key={index} article={article} />
+              ))}
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
