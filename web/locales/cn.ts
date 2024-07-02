@@ -514,6 +514,9 @@ export default {
         description:
           "你可以通过你保存的词汇卡片来练习你的阅读技巧，这些词汇卡片会显示在这里",
       },
+      matching: {
+        description: "将词汇与其翻译进行匹配。如果你正确匹配所有词汇，你将获得 5 XP."
+      }
     },
   },
 

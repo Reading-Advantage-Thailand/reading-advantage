@@ -32,6 +32,7 @@ export default function MatchingWords({ userId }: Props) {
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
   );
+  const tWordList = useScopedI18n("components.wordList");
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
 
   const router = useRouter();
@@ -45,7 +46,6 @@ export default function MatchingWords({ userId }: Props) {
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/word-list/${userId}`);
-      console.log("res: ", res?.data?.word);
 
       // step 1 : sort Article sentence: ID and SN due date expired
       const matching = res.data.word.sort((a: Word, b: Word) => {
@@ -151,7 +151,7 @@ export default function MatchingWords({ userId }: Props) {
       <div className="mt-5">
         <Header
           heading={t("matchingPractice.matching")}
-          text={t("matchingPractice.matchingDescription")}
+          text={tWordList("matching.description")}
         />
       </div>
       <div className="mt-10">
