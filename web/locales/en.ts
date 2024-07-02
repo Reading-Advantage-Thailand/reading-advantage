@@ -548,9 +548,13 @@ export default {
       },
       flashcard: {
         neverPracticeButton: "Do not practice this word anymore",
-        description: "You can practice your reading skills with vocabulary cards. The ones you have saved will appear here."
-
-      }
+        description:
+          "You can practice your reading skills with vocabulary cards. The ones you have saved will appear here.",
+      },
+      matching: {
+        description:
+          "Match the vocabulary with its translation. If you match all the words correctly, you will receive 5 XP.",
+      },
     },
   },
 
