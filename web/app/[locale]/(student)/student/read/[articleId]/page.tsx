@@ -12,6 +12,7 @@ import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
 import WordList from "@/components/word-list";
 import { Article } from "@/components/models/article-model";
 import ArticleActions from "@/components/article-actions";
+import LAQuestionCard from "@/components/questions/laq-question-card";
 
 export const metadata = {
   title: "Article",
@@ -60,21 +61,20 @@ export default async function ArticleQuizPage({
               articleId={params.articleId}
               userId={user.id}
             />
-            
-          {user.role.includes("SYSTEM") && (
-            <div className="flex gap-4">
-                <ArticleActions
-                article={articleResponse.article}
-                articleId={params.articleId}
-                />
-                </div>
-                )
-                }
-          </div>
 
+            {user.role.includes("SYSTEM") && (
+              <div className="flex gap-4">
+                <ArticleActions
+                  article={articleResponse.article}
+                  articleId={params.articleId}
+                />
+              </div>
+            )}
+          </div>
 
           <MCQuestionCard userId={user.id} articleId={params.articleId} />
           <SAQuestionCard userId={user.id} articleId={params.articleId} />
+          <LAQuestionCard userId={user.id} articleId={params.articleId} />
         </div>
       </div>
       <ChatBotFloatingChatButton

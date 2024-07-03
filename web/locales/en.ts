@@ -556,6 +556,14 @@ export default {
           "Match the vocabulary with its translation. If you match all the words correctly, you will receive 5 XP.",
       },
     },
+    laq: {
+      practiceButton: "Practice Writing",
+      successButton: "Practice Completed",
+      cancleButton: "Cancle",
+      feedbackButton: "Get Feedback",
+      submitButton: "Submit",
+      elapsedTime: "{time} seconds elapsed",
+    },
   },
 
   selectType: {
