@@ -19,6 +19,10 @@ export interface SARecord {
   suggested_answer: string;
 }
 
+export interface LARecord {
+  question: string;
+}
+
 export enum AnswerStatus {
   CORRECT = 0,
   INCORRECT = 1,
