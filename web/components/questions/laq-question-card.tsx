@@ -121,7 +121,7 @@ export default function LAQuestionCard({ userId, articleId }: Props) {
           </DialogHeader>
           <div className="flex-grow overflow-y-auto pr-4">
             <p>
-              Great job! Here's your final feedback on your writing submission.
+              Great job! Here`s your final feedback on your writing submission.
             </p>
             {/* Add more detailed feedback here */}
           </div>
