@@ -217,7 +217,6 @@ export default {
       upLevel: "คุณได้รับระดับใหม่แล้ว!",
       close: "ปิด",
     },
-
     firstRoleSelection: {
       heading: "คุณต้องการทำอะไร?",
       description: "โปรดเลือกบทบาทของคุณ",
@@ -548,6 +547,14 @@ export default {
         description:
           "จับคู่คำศัพท์กับการแปลของมัน ถ้าคุณจับคู่ทุกคำศัพท์ถูกต้อง คุณจะได้รับ 5 XP.",
       },
+    },
+    laq: {
+      practiceButton: "ฝึกซ้อม",
+      successButton: "ฝึกซ้อมสำเร็จ",
+      cancleButton: "ยกเลิก",
+      feedbackButton: "รับคำติชม",
+      submitButton: "ส่ง",
+      elapsedTime: "ใช้เวลาไป {time} วินาที",
     },
   },
 
