@@ -520,8 +520,17 @@ export default {
           "你可以通過你保存的詞彙卡片來練習你的閱讀技巧，這些詞彙卡片會顯示在這裡",
       },
       matching: {
-        description: "將詞彙與其翻譯進行配對。如果你正確配對所有詞彙，你將獲得 5 XP."
-      }
+        description:
+          "將詞彙與其翻譯進行配對。如果你正確配對所有詞彙，你將獲得 5 XP.",
+      },
+    },
+    laq: {
+      practiceButton: "练习写作",
+      successButton: "练习完成",
+      cancleButton: "取消",
+      feedbackButton: "得到反馈",
+      submitButton: "提交",
+      elapsedTime: "已用時間 {time} 秒",
     },
   },
   selectType: {

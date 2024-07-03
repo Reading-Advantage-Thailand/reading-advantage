@@ -1,57 +1,61 @@
 // Firebase Firestore data model for questions
 export interface QuestionsRecord {
-    multiple_choice_questions: MCQRecord[];
-    short_answer_questions: SARecord[];
+  multiple_choice_questions: MCQRecord[];
+  short_answer_questions: SARecord[];
 }
 
 export interface MCQRecord {
-    question_number: number;
-    question: string;
-    correct_answer: string;
-    distractor_1: string;
-    distractor_2: string;
-    distractor_3: string;
+  question_number: number;
+  question: string;
+  correct_answer: string;
+  distractor_1: string;
+  distractor_2: string;
+  distractor_3: string;
 }
 
 export interface SARecord {
-    question_number: number;
-    question: string;
-    suggested_answer: string;
+  question_number: number;
+  question: string;
+  suggested_answer: string;
 }
 
 export enum AnswerStatus {
-    CORRECT = 0,
-    INCORRECT = 1,
-    UNANSWERED = 2,
+  CORRECT = 0,
+  INCORRECT = 1,
+  UNANSWERED = 2,
 }
 
 export enum QuestionState {
-    LOADING = 0,
-    INCOMPLETE = 1,
-    COMPLETED = 2,
+  LOADING = 0,
+  INCOMPLETE = 1,
+  COMPLETED = 2,
 }
 
 export enum QuizStatus {
-    READED = 0,
-    COMPLETED_MCQ = 1,
-    COMPLETED_SAQ = 2,
-    UNRATED = 3,
+  READED = 0,
+  COMPLETED_MCQ = 1,
+  COMPLETED_SAQ = 2,
+  UNRATED = 3,
 }
 
 // Web data model for questions
 export interface Questions {
-    mcqs: MultipleChoiceQuestion[];
-    shortAnswer: ShortAnswerQuestion;
+  mcqs: MultipleChoiceQuestion[];
+  shortAnswer: ShortAnswerQuestion;
 }
 
 export interface MultipleChoiceQuestion {
-    id: string;
-    question: string;
-    options: string[];
+  id: string;
+  question: string;
+  options: string[];
 }
 
 export interface ShortAnswerQuestion {
-    id: string;
-    question: string;
+  id: string;
+  question: string;
 }
 
+export interface LongAnswerQuestion {
+  id: string;
+  question: string;
+}
