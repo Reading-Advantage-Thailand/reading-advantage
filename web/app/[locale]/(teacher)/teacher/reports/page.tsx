@@ -3,7 +3,7 @@ import Reports from "@/components/teacher/reports";
 import React from "react";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { ClassroomData } from "@/lib/classroom-utils";
+import  ClassroomData  from "@/lib/classroom-utils";
 
 export default async function ReportsPage(params: {
   params: { classroomId: string };

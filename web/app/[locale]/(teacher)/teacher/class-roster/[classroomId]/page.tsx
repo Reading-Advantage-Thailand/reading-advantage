@@ -2,7 +2,8 @@ import ClassRoster from "@/components/teacher/class-roster";
 import React from "react";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { ClassroomData } from '@/lib/classroom-utils';
+import  ClassroomData  from '@/lib/classroom-utils';
+import { ClassesData } from '@/lib/classroom-utils';
 
 export default async function RosterPage(params: {
   params: {classroomId: string;}
@@ -20,9 +21,12 @@ export default async function RosterPage(params: {
   const studentsMapped = res.studentsMapped;
   const classrooms = res.classrooms;
 
+  const classesRes = await ClassesData(); 
+  const classes = classesRes.classes;
+
   return (
     <div>
-      <ClassRoster studentInClass={studentsMapped} classrooms={classrooms}/>
+      <ClassRoster studentInClass={studentsMapped} classrooms={classrooms} classes={classes}/>
     </div>
   );
 }
