@@ -2,7 +2,7 @@ import React from 'react'
 import CreateNewStudent from '@/components/teacher/create-new-student';
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { ClassroomData } from '@/lib/classroom-utils';
+import  ClassroomData  from '@/lib/classroom-utils';
 
 
 export default async function AddNewStudent(params: { params: { classroomId: string; }}) {
