@@ -4,6 +4,7 @@ import React from "react";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import  ClassroomData  from "@/lib/classroom-utils";
+import { ClassesData } from "@/lib/classroom-utils";
 
 export default async function ReportsPage(params: {
   params: { classroomId: string };
@@ -18,11 +19,15 @@ export default async function ReportsPage(params: {
 
   const res = await ClassroomData({ params: { classroomId: params.params.classroomId } });
   const studentsMapped = res.studentsMapped;
+  const classrooms = res.classrooms;
+
+  const classesRes = await ClassesData(); 
+  const classes = classesRes.classes;
 
   return (
     <div>
       <NextAuthSessionProvider session={user}>
-        <Reports studentInClass={studentsMapped} userId={user.id} />
+        <Reports studentInClass={studentsMapped} userId={user.id} classrooms={classrooms} classes={classes}/>
       </NextAuthSessionProvider>
     </div>
   );
