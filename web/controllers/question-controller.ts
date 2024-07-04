@@ -4,6 +4,7 @@ import {
   QuestionState,
   QuizStatus,
   SARecord,
+  LARecord,
 } from "@/components/models/questions-model";
 import db from "@/configs/firestore-config";
 import { ExtendedNextRequest } from "@/utils/middleware";
@@ -486,7 +487,65 @@ export async function retakeMCQuestion(
 export async function getLAQuestion(
   req: ExtendedNextRequest,
   { params: { article_id } }: RequestContext
-) {}
+) {
+  try {
+    // Check user already answered
+    const record = await db
+      .collection("users")
+      .doc(req.session?.user.id as string)
+      .collection("article-records")
+      .doc(article_id)
+      .collection("laq-records")
+      .get();
+
+    if (record.docs.length > 0) {
+      const data = record.docs[0].data();
+      return NextResponse.json(
+        {
+          message: "User already answered",
+          result: {
+            id: record.docs[0].id,
+            question: data.question,
+          },
+          suggested_answer: data.suggested_answer,
+          state: QuestionState.COMPLETED,
+          answer: data.answer,
+        },
+        { status: 400 }
+      );
+    }
+
+    //have question article_id 0DOGZuAjdCX0HL0DpCfj
+    //have no question article_id q1qBgBUPF6lp35ugTC09
+
+    const questions = await db
+      .collection("new-articles")
+      .doc(article_id)
+      .collection("la-questions")
+      .get();
+
+    const data = questions.docs[0].data() as LARecord;
+
+    console.log("questions =>", questions.docs[0].data() as LARecord);
+
+    return NextResponse.json(
+      {
+        result: {
+          id: questions.docs[0].id,
+          question: data.question,
+        },
+        state: QuestionState.INCOMPLETE,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function answerLAQuestion(
   req: ExtendedNextRequest,

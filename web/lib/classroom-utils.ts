@@ -18,7 +18,7 @@ async function fetchData(endpoint: string) {
   }
 }
 
-export async function ClassroomData(params: {
+export default async function ClassroomData(params: {
   params: { classroomId: string };
 }) {
   const user = await getCurrentUser();

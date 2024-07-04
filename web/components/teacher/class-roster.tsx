@@ -43,6 +43,8 @@ import {
 import { Icons } from "@/components/icons";
 import { Header } from "@/components/header";
 import { toast } from "../ui/use-toast";
+import classroomData from "@/lib/classroom-utils";
+import { ClassesData } from "@/lib/classroom-utils";
 
 type Student = {
   studentId: string;
@@ -61,15 +63,36 @@ type Classrooms = {
   classroomName: string;
   student: Student[];
 };
+type Classes = {
+  classroomName: string;
+  classCode: string;
+  noOfStudents: number;
+  grade: string;
+  coTeacher: {
+    coTeacherId: string;
+    name: string;
+  };
+  id: string;
+  archived: boolean;
+  title: string;
+  student: [
+    {
+      studentId: string;
+      lastActivity: Date;
+    }
+  ];
+};
 
 type MyRosterProps = {
   studentInClass: Student[];
   classrooms: Classrooms[];
+  classes: Classes[];
 };
 
 export default function ClassRoster({
   studentInClass,
   classrooms,
+  classes,
 }: MyRosterProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -88,6 +111,7 @@ export default function ClassRoster({
   const [redirectUrl, setRedirectUrl] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [hasRefreshed, setHasRefreshed] = useState(false);
+  const [selectedClassroom, setSelectedClassroom] = useState("");
 
   let action = "";
 
@@ -108,7 +132,11 @@ export default function ClassRoster({
     }
   }, [selectedStudentId, action, redirectUrl, router]);
 
-  const handleActionSelected = (action: string, studentId: string, classroomId: string) => {
+  const handleActionSelected = (
+    action: string,
+    studentId: string,
+    classroomId: string
+  ) => {
     switch (action) {
       case "progress":
         setRedirectUrl(`/teacher/student-progress/${studentId}`);
@@ -117,7 +145,9 @@ export default function ClassRoster({
         setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
         break;
       case "history":
-        setRedirectUrl(`/teacher/class-roster/${classroomId}/history/${studentId}`);
+        setRedirectUrl(
+          `/teacher/class-roster/${classroomId}/history/${studentId}`
+        );
         break;
       default:
         console.log("default");
@@ -243,14 +273,22 @@ export default function ClassRoster({
           <DropdownMenuContent align="start">
             <DropdownMenuCheckboxItem
               onClick={() =>
-                handleActionSelected("progress", row.getValue("studentId"), row.getValue("classroomId"))
+                handleActionSelected(
+                  "progress",
+                  row.getValue("studentId"),
+                  row.getValue("classroomId")
+                )
               }
             >
               <Link href={redirectUrl}>{ts("progress")}</Link>
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               onClick={() =>
-                handleActionSelected("enroll", row.getValue("studentId"), row.getValue("classroomId"))
+                handleActionSelected(
+                  "enroll",
+                  row.getValue("studentId"),
+                  row.getValue("classroomId")
+                )
               }
             >
               <Link href={redirectUrl}>{ts("enroll")}</Link>
@@ -261,9 +299,13 @@ export default function ClassRoster({
               {ts("resetProgress")}
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
-             onClick={() =>
-              handleActionSelected("history", row.getValue("studentId"), row.getValue("classroomId"))
-            }
+              onClick={() =>
+                handleActionSelected(
+                  "history",
+                  row.getValue("studentId"),
+                  row.getValue("classroomId")
+                )
+              }
             >
               {tr("history")}
             </DropdownMenuCheckboxItem>
@@ -272,6 +314,11 @@ export default function ClassRoster({
       ),
     },
   ];
+
+  const fetchStudentDataOnClick = async (classroomId: string) => {
+    // <Link href={`/teacher/class-roster/${classroomId}`}></Link>;
+    setRedirectUrl(`/teacher/class-roster/${classroomId}`)
+  };
 
   const table = useReactTable({
     data: studentInClass,
@@ -326,9 +373,32 @@ export default function ClassRoster({
           </div>
         )
       ) : (
-        <div className="flex flex-col gap-2">
-          <Header heading={tr("noClassroom")} />
-          {tr("noClassroomDescription")}
+        <div>
+          <Header heading="Class Roster" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto mt-4">
+                {selectedClassroom === ""
+                  ? "Select a Classroom"
+                  : selectedClassroom}{" "}
+                <ChevronDownIcon className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {classes.map((classroom) => (
+                <DropdownMenuCheckboxItem
+                  key={classroom.id}
+                  className="capitalize"
+                  onSelect={() => {
+                    setSelectedClassroom(classroom.classroomName);
+                    fetchStudentDataOnClick(classroom.id);
+                  }}
+                >
+                  {classroom.classroomName}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
 
