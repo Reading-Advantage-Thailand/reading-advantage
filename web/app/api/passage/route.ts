@@ -1,4 +1,3 @@
-import { NextRequest, NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
@@ -64,7 +63,6 @@ export async function GET(req: Request, res: Response) {
   }
 }
 
-
 // export async function GET(req: NextRequest) {
 //     try {
 //       const { searchParams } = new URL(req.url);
@@ -76,40 +74,40 @@ export async function GET(req: Request, res: Response) {
 //       const pageSize = parseInt(searchParams.get("pageSize") || "10");
 //       const sortBy = searchParams.get("sortBy") || "raLevel";
 //       const sortOrder = searchParams.get("sortOrder") || "asc";
-  
+
 //       // Function to replace all dashes with spaces
 //       const replaceSpaces = (str: string) => str.replace(/-/g, " ");
-  
+
 //       // Base query
 //       let articlesQuery = db.collection("new-articles")
 //         .where("raLevel", ">=", level - 1)
 //         .where("raLevel", "<=", level + 1);
-  
+
 //       // Apply filters
 //       if (type) articlesQuery = articlesQuery.where('type', '==', type);
 //       if (genre) articlesQuery = articlesQuery.where('genre', '==', replaceSpaces(genre));
 //       if (subgenre) articlesQuery = articlesQuery.where('subGenre', '==', replaceSpaces(subgenre));
-  
+
 //       // Apply sorting
 //       articlesQuery = articlesQuery.orderBy(sortBy, sortOrder as 'asc' | 'desc');
-  
+
 //       // Get total count
 //       const totalCount = (await articlesQuery.count().get()).data().count;
-  
+
 //       // Apply pagination
 //       articlesQuery = articlesQuery.offset((page - 1) * pageSize).limit(pageSize);
-  
+
 //       const articlesSnapshot = await articlesQuery.get();
-      
+
 //       // If user is authenticated, get read status
 //       const session = await getServerSession(authOptions);
 //       const userId = session?.user?.id;
-  
+
 //       const articles = await Promise.all(articlesSnapshot.docs.map(async (doc) => {
 //         const articleData = doc.data();
 //         let isRead = false;
 //         let status = null;
-  
+
 //         if (userId) {
 //           const articleRecord = await db
 //             .collection("user-article-records")
@@ -119,7 +117,7 @@ export async function GET(req: Request, res: Response) {
 //           isRead = !!userArticleRecord;
 //           status = userArticleRecord?.status;
 //         }
-  
+
 //         return {
 //           articleId: doc.id,
 //           type: articleData.type,
@@ -137,7 +135,7 @@ export async function GET(req: Request, res: Response) {
 //           readCount: articleData.readCount
 //         };
 //       }));
-  
+
 //       return NextResponse.json({
 //         data: articles,
 //         pagination: {
@@ -147,7 +145,7 @@ export async function GET(req: Request, res: Response) {
 //           totalPages: Math.ceil(totalCount / pageSize)
 //         }
 //       });
-  
+
 //     } catch (error) {
 //       console.error('Error in /api/articles:', error);
 //       return NextResponse.json({ message: "Internal server error" }, { status: 500 });

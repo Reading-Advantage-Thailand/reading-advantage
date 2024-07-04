@@ -63,7 +63,7 @@
                     "options": {
                         "A": "My car is blue.",
                         "B": "My car is big.",
-                        "C": "I don’t have a car."
+                        "C": "I have a car."
                     }
                 },
                 {
@@ -95,7 +95,7 @@
                     "options": {
                         "A": "Yes, I love coffee.",
                         "B": "Coffee is bitter.",
-                        "C": "I drink tea."
+                        "C": "I don't drink tea."
                     }
                 },
                 {
@@ -125,7 +125,7 @@
                     "options": {
                         "A": "I don’t know yet.",
                         "B": "Parties was fun.",
-                        "C": "Friday I have to work."
+                        "C": "Friday I to work."
                     }
                 },
                 {
@@ -211,7 +211,7 @@
                     "options": {
                         "A": "For my job and to travel.",
                         "B": "English is use worldwide.",
-                        "C": "I like learning languages."
+                        "C": "I like learning language."
                     }
                 }
             ]
@@ -240,7 +240,7 @@
                     "prompt": "This book on psychology is quite complex.",
                     "options": {
                         "A": "Psychology is an interesting field.",
-                        "B": "You could try a simpler book.",
+                        "B": "You could to try a simpler book.",
                         "C": "Reading books are challenging."
                     }
                 },
@@ -249,7 +249,7 @@
                     "options": {
                         "A": "It has both positive and negative aspects.",
                         "B": "Social media are popular.",
-                        "C": "I uses social media often."
+                        "C": "I use social media often."
                     }
                 },
                 {

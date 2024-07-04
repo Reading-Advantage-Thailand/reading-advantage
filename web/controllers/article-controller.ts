@@ -39,14 +39,12 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       typeResult = typeResult.collection("genres").doc(genre);
     }
 
-    if (subgenre && genre && type && level) {
-      const snapshot = await data
-        .where("subgenre", "==", subgenre.replace(/_/g, " "))
-        .where("genre", "==", genre.replace(/_/g, " "))
-        .where("type", "==", type.replace(/_/g, " "))
-        .get();
+    const fetchArticles = async (query: any) => {
+      const snapshot = await query.get();
 
       const getDoc = snapshot.docs.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+      const results = [];
 
       for (const doc of getDoc) {
         const articleRecord = await db
@@ -55,76 +53,33 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
           .collection("article-records")
           .doc(doc.id)
           .get();
-        // If already read, add is_read field to the article
         if (articleRecord.exists) {
           results.push({ ...doc.data(), is_read: true });
         } else {
           results.push(doc.data());
         }
       }
-    } else if (!subgenre && genre && type && level) {
-      const snapshot = await data
-        .where("genre", "==", genre.replace(/_/g, " "))
-        .where("type", "==", type.replace(/_/g, " "))
-        .get();
 
-      const getDoc = snapshot.docs.sort(() => 0.5 - Math.random()).slice(0, 10);
+      return results;
+    };
 
-      for (const doc of getDoc) {
-        const articleRecord = await db
-          .collection("users")
-          .doc(userId)
-          .collection("article-records")
-          .doc(doc.id)
-          .get();
-        // If already read, add is_read field to the article
-        if (articleRecord.exists) {
-          results.push({ ...doc.data(), is_read: true });
-        } else {
-          results.push(doc.data());
-        }
+    const getArticles = async ({ subgenre, genre, type, level }: any) => {
+      let query = data;
+
+      if (subgenre) {
+        query = query.where("subgenre", "==", subgenre.replace(/_/g, " "));
       }
-    } else if (!subgenre && !genre && type && level) {
-      const snapshot = await data
-        .where("type", "==", type.replace(/_/g, " "))
-        .get();
-
-      const getDoc = snapshot.docs.sort(() => 0.5 - Math.random()).slice(0, 10);
-
-      for (const doc of getDoc) {
-        const articleRecord = await db
-          .collection("users")
-          .doc(userId)
-          .collection("article-records")
-          .doc(doc.id)
-          .get();
-        // If already read, add is_read field to the article
-        if (articleRecord.exists) {
-          results.push({ ...doc.data(), is_read: true });
-        } else {
-          results.push(doc.data());
-        }
+      if (genre) {
+        query = query.where("genre", "==", genre.replace(/_/g, " "));
       }
-    } else if (!subgenre && !genre && !type && level) {
-      const snapshot = await data.get();
-
-      const getDoc = snapshot.docs.sort(() => 0.5 - Math.random()).slice(0, 10);
-
-      for (const doc of getDoc) {
-        const articleRecord = await db
-          .collection("users")
-          .doc(userId)
-          .collection("article-records")
-          .doc(doc.id)
-          .get();
-        // If already read, add is_read field to the article
-        if (articleRecord.exists) {
-          results.push({ ...doc.data(), is_read: true });
-        } else {
-          results.push(doc.data());
-        }
+      if (type) {
+        query = query.where("type", "==", type.replace(/_/g, " "));
       }
-    }
+
+      return await fetchArticles(query);
+    };
+
+    results = await getArticles({ subgenre, genre, type, level });
 
     const snapType = await typeResult.get();
     selectionType = Object.entries(snapType.data() as any).map(

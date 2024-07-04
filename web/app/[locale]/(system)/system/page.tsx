@@ -26,23 +26,11 @@ export default async function SystemPage() {
     return res;
   }
   const passages = await getPassages();
-  console.log('passages', passages.data);
-
-  // async function fetchArticles(params: string) {
-  //   const response = await fetch(
-  //     `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/articles?${params}`
-  //   );
-  
-  //   const data = await response.json();
-  //   return data;
-  // }
-  // const passages = await fetchArticles('type=1&genre=1&subgenre=1');
   
   return (
     <div className='px-[10%]'>
       <Header heading="System Dashboard"/>
-      {/* <Passages passages={passages.data} /> */}
-      <Passages passages={passages.passages} />
+      <Passages passages={passages.passages}  />
     </div>
   )
 }

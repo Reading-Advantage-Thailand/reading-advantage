@@ -5,6 +5,7 @@ import { Rating } from "@mui/material";
 import { ArticleShowcase } from "./models/article-model";
 import axios from "axios";
 import { useCurrentLocale } from "@/locales/client";
+import { usePathname } from "next/navigation";
 
 type Props = {
   article: ArticleShowcase;
@@ -15,32 +16,35 @@ async function getTranslate(
   articleId: string,
   language: string
 ) {
-  const res = await axios.post(`/api/articles/${articleId}/translate/google/summary`, {
-    sentences,
-    language,
-  });
+  const res = await axios.post(
+    `/api/articles/${articleId}/translate/google/summary`,
+    {
+      sentences,
+      language,
+    }
+  );
   return res.data;
 }
 
-// export default async function ArticleShowcaseCard({ article }: Props) {
 const ArticleShowcaseCard = ({ article }: Props) => {
   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
   const locale = useCurrentLocale();
+  const pathName = usePathname();
+  const systemPathRegex = /\/(?:[a-z]{2}\/)?system\/?$/i;
 
   React.useEffect(() => {
     handleTranslateSummary();
   }, [article, locale]);
 
-  async function handleTranslateSummary(){
-    
+  async function handleTranslateSummary() {
     const articleId = article.id;
-    if(!locale || locale === "en"){
+    if (!locale || locale === "en") {
       return;
     }
     type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
     let localeTarget: ExtendedLocale = locale as ExtendedLocale;
 
-    switch(locale){
+    switch (locale) {
       case "cn":
         localeTarget = "zh-CN";
         break;
@@ -60,8 +64,11 @@ const ArticleShowcaseCard = ({ article }: Props) => {
         style={{
           backgroundImage: `url('https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${article.id}.png')`,
           boxShadow: "inset 80px 10px 90px 10px rgba(0, 0, 0, 0.9)",
-          // opacity: article.is_read ? 0.3 : 1,
-          opacity: (article.is_read || article.is_approved) ? 0.3 : 1,
+          opacity:
+            article.is_read ||
+            (article.is_approved && systemPathRegex.test(pathName))
+              ? 0.3
+              : 1,
         }}
       >
         <Badge className="shadow-lg max-w-max" variant="destructive">
@@ -78,12 +85,13 @@ const ArticleShowcaseCard = ({ article }: Props) => {
             {article.title}
           </p>
           <div className=" bg-black bg-opacity-40">
-          <p className="text-sm drop-shadow-lg line-clamp-4 text-white">
-            { locale == "en" 
-              ? <p>{article.summary}</p>
-              : <p>{summarySentence}</p>
-            } 
-          </p>
+            <p className="text-sm drop-shadow-lg line-clamp-4 text-white">
+              {locale == "en" ? (
+                <p>{article.summary}</p>
+              ) : (
+                <p>{summarySentence}</p>
+              )}
+            </p>
           </div>
         </div>
       </div>
@@ -95,14 +103,14 @@ const ArticleShowcaseCard = ({ article }: Props) => {
         </div>
       )}
 
-      {article.is_approved && (
+      {article.is_approved && systemPathRegex.test(pathName) && (
         <div className="flex justify-center">
           <Badge className="relative m-auto -top-[11rem] text-md left-0 right-0 shadow-lg max-w-max bg-slate-200 text-slate-900">
             Approved
-            </Badge>
-            </div>
-            )}
+          </Badge>
+        </div>
+      )}
     </Link>
   );
-}
+};
 export default React.memo(ArticleShowcaseCard);

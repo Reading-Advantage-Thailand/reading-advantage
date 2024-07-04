@@ -548,6 +548,18 @@ export default {
         description:
           "Bạn có thể luyện kỹ năng đọc của mình với các thẻ từ vựng mà bạn đã lưu. Chúng sẽ hiển thị ở đây.",
       },
+      matching: {
+        description:
+          "Ghép từ vựng với bản dịch của nó. Nếu bạn ghép đúng tất cả các từ, bạn sẽ nhận được 5 XP.",
+      },
+    },
+    laq: {
+      practiceButton: "Luyện viết",
+      successButton: "Thực hành đã hoàn thành",
+      cancleButton: "Hủy",
+      feedbackButton: "Nhận phản hồi",
+      submitButton: "Nộp",
+      elapsedTime: "{time} giây đã trôi qua",
     },
   },
 
