@@ -553,6 +553,14 @@ export default {
           "Ghép từ vựng với bản dịch của nó. Nếu bạn ghép đúng tất cả các từ, bạn sẽ nhận được 5 XP.",
       },
     },
+    laq: {
+      practiceButton: "Luyện viết",
+      successButton: "Thực hành đã hoàn thành",
+      cancleButton: "Hủy",
+      feedbackButton: "Nhận phản hồi",
+      submitButton: "Nộp",
+      elapsedTime: "{time} giây đã trôi qua",
+    },
   },
 
   selectType: {
