@@ -44,6 +44,7 @@ import { Icons } from "@/components/icons";
 import { Header } from "@/components/header";
 import { toast } from "../ui/use-toast";
 import classroomData from "@/lib/classroom-utils";
+import { ClassesData } from "@/lib/classroom-utils";
 
 type Student = {
   studentId: string;
@@ -314,7 +315,10 @@ export default function ClassRoster({
     },
   ];
 
-  
+  const fetchStudentDataOnClick = async (classroomId: string) => {
+    // <Link href={`/teacher/class-roster/${classroomId}`}></Link>;
+    setRedirectUrl(`/teacher/class-roster/${classroomId}`)
+  };
 
   const table = useReactTable({
     data: studentInClass,
@@ -387,11 +391,10 @@ export default function ClassRoster({
                   className="capitalize"
                   onSelect={() => {
                     setSelectedClassroom(classroom.classroomName);
+                    fetchStudentDataOnClick(classroom.id);
                   }}
                 >
-                  <Link href={`/teacher/class-roster/${classroom.id}`}>
-                    {classroom.classroomName}
-                  </Link>
+                  {classroom.classroomName}
                 </DropdownMenuCheckboxItem>
               ))}
             </DropdownMenuContent>
