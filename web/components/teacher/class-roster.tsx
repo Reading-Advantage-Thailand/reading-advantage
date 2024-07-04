@@ -316,8 +316,7 @@ export default function ClassRoster({
   ];
 
   const fetchStudentDataOnClick = async (classroomId: string) => {
-    // <Link href={`/teacher/class-roster/${classroomId}`}></Link>;
-    setRedirectUrl(`/teacher/class-roster/${classroomId}`)
+    setRedirectUrl(`/teacher/class-roster/${classroomId}`);
   };
 
   const table = useReactTable({

@@ -36,6 +36,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import EditStudent from "./edit-student";
 import RemoveStudent from "./remove-student-inclass";
 import { Header } from "@/components/header";
+import ClassroomData from "@/lib/classroom-utils";
+import { set } from "lodash";
 
 type Student = {
   studentId: string;
@@ -47,12 +49,24 @@ type Student = {
   xp: number;
 };
 
+type Classrooms = {
+  classroomId: string;
+  classroomName: string;
+};
+
+type Classes = {
+  id: string;
+  classroomName: string;
+};
+
 type MyStudentProps = {
   userId: string;
   studentInClass: Student[];
+  classrooms: Classrooms[];
+  classes: Classes[]; 
 };
 
-export default function Reports({ studentInClass, userId}: MyStudentProps) {
+export default function Reports({ studentInClass, userId, classrooms, classes}: MyStudentProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -65,6 +79,7 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const router = useRouter();
   const [redirectUrl, setRedirectUrl] = useState("");
+  const [selectedClassroom, setSelectedClassroom] = useState("");
 
   let action = "";
 
@@ -235,6 +250,10 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
     },
   ];
 
+  const fetchStudentDataOnClick = async (classroomId: string) => {
+    setRedirectUrl(`/teacher/reports/${classroomId}`);
+  }
+
   const table = useReactTable({
     data: studentInClass,
     columns,
@@ -256,16 +275,46 @@ export default function Reports({ studentInClass, userId}: MyStudentProps) {
 
   return (
     <>
-      {studentInClass.length > 0 ? (
-        <div className="font-bold text-3xl">
-          {trp('title', { className: studentInClass[0].classroomName})}
-        </div>
+     {classrooms.length ? (
+        studentInClass.length ? (
+          <div className="font-bold text-3xl">
+            {trp("title", { className: studentInClass[0].classroomName })}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <Header heading={trp("noStudent")} />
+          </div>
+        )
       ) : (
-        <div className="flex flex-col gap-2">
-          <Header heading={trp('noStudent')} />
-           {trp('noStudentDescription')}
+        <div>
+          <Header heading="Reports" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto mt-4">
+                {selectedClassroom === ""
+                  ? "Select a Classroom"
+                  : selectedClassroom}{" "}
+                <ChevronDownIcon className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {classes.map((classroom) => (
+                <DropdownMenuCheckboxItem
+                  key={classroom.id}
+                  className="capitalize"
+                  onSelect={() => {
+                    setSelectedClassroom(classroom.classroomName);
+                    fetchStudentDataOnClick(classroom.id);
+                  }}
+                >
+                  {classroom.classroomName}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
+
       <div className="grid grid-cols-2 items-end">
         <Input
           placeholder={trp('search')}
