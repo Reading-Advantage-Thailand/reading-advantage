@@ -3,7 +3,6 @@ import React from "react";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import  ClassroomData, {ClassesData } from '@/lib/classroom-utils';
-import EmptyClassRoster from "@/components/teacher/class-roster-noClass";
 
 export default async function RosterPage(params: {
   params: {classroomId: string;}
@@ -21,12 +20,11 @@ export default async function RosterPage(params: {
   const classrooms = res.classrooms;
 
   const classesRes = await ClassesData(); 
-const classes = classesRes.classes;
+  const classes = classesRes.classes;
 
   return (
     <div>
       <ClassRoster studentInClass={studentsMapped} classrooms={classrooms} classes={classes}/>
-      {/* <EmptyClassRoster studentInClass={studentsMapped} classrooms={classrooms} classes={classes}/> */}
     </div>
   );
 }
