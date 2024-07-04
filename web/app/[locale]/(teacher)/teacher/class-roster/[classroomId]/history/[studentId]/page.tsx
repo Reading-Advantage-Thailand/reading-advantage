@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
-import { ClassroomData } from '@/lib/classroom-utils';
+import  ClassroomData  from '@/lib/classroom-utils';
 
 
 async function getUserArticleRecords(studentId: string) {
