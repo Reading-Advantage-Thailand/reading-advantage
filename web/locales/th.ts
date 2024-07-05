@@ -551,7 +551,7 @@ export default {
     laq: {
       practiceButton: "ฝึกซ้อม",
       successButton: "ฝึกซ้อมสำเร็จ",
-      cancleButton: "ยกเลิก",
+      cancelButton: "ยกเลิก",
       feedbackButton: "รับคำติชม",
       submitButton: "ส่ง",
       elapsedTime: "ใช้เวลาไป {time} วินาที",

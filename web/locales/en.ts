@@ -559,7 +559,7 @@ export default {
     laq: {
       practiceButton: "Practice Writing",
       successButton: "Practice Completed",
-      cancleButton: "Cancle",
+      cancelButton: "Cancel",
       feedbackButton: "Get Feedback",
       submitButton: "Submit",
       elapsedTime: "{time} seconds elapsed",
