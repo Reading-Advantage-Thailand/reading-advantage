@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useContext, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import TextareaAutosize from "react-textarea-autosize";
 import {
   Dialog,
@@ -26,12 +25,11 @@ import { LongAnswerQuestion } from "../models/questions-model";
 import QuestionHeader from "./question-header";
 import { Skeleton } from "../ui/skeleton";
 import * as z from "zod";
-import { toast } from "../ui/use-toast";
 import { Icons } from "../icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCurrentLocale } from "@/locales/client";
-import { Locale, localeNames } from "@/configs/locale-config";
-import local from "next/font/local";
+import { localeNames } from "@/configs/locale-config";
+import { Button } from "@mui/material";
 
 interface Props {
   userId: string;
@@ -356,7 +354,7 @@ function LAQuestion({
           onChange={(e) => setStudentResponse(e.target.value)}
         />
         <div className="space-x-2">
-          <Button variant="outline" onClick={handleCancel}>
+          <Button variant="outlined" onClick={handleCancel}>
             {t("cancelButton")}
           </Button>
           <Dialog>
@@ -382,45 +380,63 @@ function LAQuestion({
                 <div className="flex flex-wrap gap-2 justify-center">
                   <Button
                     className="rounded-full"
-                    size="sm"
+                    size="small"
                     onClick={() => handleCategoryChange("vocabularyUse")}
-                    {...buttonToggle("vocabularyUse")}
+                    variant={
+                      selectedCategory === "vocabularyUse" ? "text" : "outlined"
+                    }
                   >
                     Vocabulary Use
                   </Button>
                   <Button
                     className="rounded-full"
-                    size="sm"
+                    size="small"
                     onClick={() => handleCategoryChange("grammarAccuracy")}
-                    {...buttonToggle("grammarAccuracy")}
+                    variant={
+                      selectedCategory === "grammarAccuracy"
+                        ? "text"
+                        : "outlined"
+                    }
                   >
                     Grammar Accuracy
                   </Button>
                   <Button
                     className="rounded-full"
-                    size="sm"
+                    size="small"
                     onClick={() => handleCategoryChange("clarityAndCoherence")}
-                    {...buttonToggle("clarityAndCoherence")}
+                    variant={
+                      selectedCategory === "clarityAndCoherence"
+                        ? "text"
+                        : "outlined"
+                    }
                   >
                     Clarity and Coherence
                   </Button>
                   <Button
                     className="rounded-full"
-                    size="sm"
+                    size="small"
                     onClick={() =>
                       handleCategoryChange("complexityAndStructure")
                     }
-                    {...buttonToggle("complexityAndStructure")}
+                    variant={
+                      selectedCategory === "complexityAndStructure"
+                        ? "text"
+                        : "outlined"
+                    }
                   >
                     Complexity and Structure
                   </Button>
                   <Button
                     className="rounded-full"
-                    size="sm"
+                    size="small"
                     onClick={() =>
                       handleCategoryChange("contentAndDevelopment")
                     }
-                    {...buttonToggle("contentAndDevelopment")}
+                    variant={
+                      selectedCategory === "contentAndDevelopment"
+                        ? "text"
+                        : "outlined"
+                    }
                   >
                     Content and Development
                   </Button>
@@ -450,7 +466,7 @@ function LAQuestion({
                     <p className="text-bold text-xl">Feedback Overall</p>
                     <p>{feedbackData.result.overallImpression}</p>
                     <p className="text-bold text-xl">Example Revisions</p>
-                    <p>{feedbackData.result.exampleRevisions[0]}</p>
+                    <p>{feedbackData.result.exampleRevisions.length}</p>
                   </div>
                 )}
 
