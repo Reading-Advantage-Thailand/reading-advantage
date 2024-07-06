@@ -5,9 +5,9 @@ const nextConfig = {
   // eslint: {
   //     ignoreDuringBuilds: true,
   // },
-  typescript: {
-      ignoreBuildErrors: true,
-  },
+  // typescript: {
+  //     ignoreBuildErrors: true,
+  // },
   // Uncomment to set base path
   // basePath: '/base',
   // Uncomment to use Static Export
