@@ -83,7 +83,7 @@ function formatStatusToEmoji(status: QuizStatus) {
       return "🔴";
     case QuizStatus.UNRATED:
       return "🟡";
-    case QuizStatus.READED:
+    case QuizStatus.READ:
       return "🟠";
     default:
       return "";

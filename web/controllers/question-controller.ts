@@ -27,7 +27,7 @@ interface SubRequestContext {
 
 interface Heatmap {
   [date: string]: {
-    readed: number;
+    read: number;
     completed: number;
   };
 }
@@ -340,7 +340,7 @@ export async function answerMCQuestion(
         if (data && data[dateString]) {
           await userHeatmapRef.update({
             [dateString]: {
-              readed: data[dateString].readed + 1,
+              read: data[dateString].read + 1,
               completed: data[dateString].completed + 1,
             },
           });
@@ -348,7 +348,7 @@ export async function answerMCQuestion(
           await userHeatmapRef.set(
             {
               [dateString]: {
-                readed: 1,
+                read: 1,
                 completed: 1,
               },
             },
@@ -358,7 +358,7 @@ export async function answerMCQuestion(
       } else {
         await userHeatmapRef.set({
           [dateString]: {
-            readed: 1,
+            read: 1,
             completed: 1,
           },
         });

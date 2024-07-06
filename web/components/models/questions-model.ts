@@ -37,7 +37,7 @@ export enum QuestionState {
 }
 
 export enum QuizStatus {
-  READED = 0,
+  READ = 0,
   COMPLETED_MCQ = 1,
   COMPLETED_SAQ = 2,
   UNRATED = 3,

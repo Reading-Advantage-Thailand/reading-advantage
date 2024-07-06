@@ -146,7 +146,7 @@ export async function getArticle(
           rated: 0,
           scores: 0,
           title: resp.data()?.title,
-          status: QuizStatus.READED,
+          status: QuizStatus.READ,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           level: req.session?.user.level,

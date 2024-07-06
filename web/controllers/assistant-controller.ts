@@ -14,8 +14,6 @@ import base64 from "base64-js";
 import { calculateLevel } from "@/lib/calculateLevel";
 import { retry } from "@/utils/retry";
 import { sendDiscordWebhook, Status } from "@/utils/send-discord-webhook";
-import { resolve } from "url";
-import { result } from "lodash";
 
 interface GenreType {
   id: string;
@@ -86,11 +84,10 @@ export async function generateQueue(req: ExtendedNextRequest) {
       embeds: [
         {
           title: `Generate Queue (${process.env.NODE_ENV} mode)`,
-          description: `**status**: ${
-            Status.START
-          } \n**triggered at**: <t:${Math.floor(
-            Date.now() / 1000
-          )}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n**total articles**: ${totalArticles}`,
+          description: `**status**: ${Status.START
+            } \n**triggered at**: <t:${Math.floor(
+              Date.now() / 1000
+            )}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n**total articles**: ${totalArticles}`,
           color: 880808,
         },
       ],
@@ -170,20 +167,17 @@ export async function generateQueue(req: ExtendedNextRequest) {
       embeds: [
         {
           title: `Generate Queue (${process.env.NODE_ENV} mode)`,
-          description: `**status**: ${
-            Status.END
-          } \n**completed at**: <t:${Math.floor(Date.now() / 1000)}:R>`,
+          description: `**status**: ${Status.END
+            } \n**completed at**: <t:${Math.floor(Date.now() / 1000)}:R>`,
           color: 880808,
         },
         {
           title: "Results",
-          description: `**total**: ${combinedResults.length} \n**fiction**: ${
-            fictionResults.length
-          } \n**nonfiction**: ${
-            nonfictionResults.length
-          } \n**failed**: ${failedCount} \n**time taken**: ${timeTakenMinutes.toFixed(
-            2
-          )} minutes`,
+          description: `**total**: ${combinedResults.length} \n**fiction**: ${fictionResults.length
+            } \n**nonfiction**: ${nonfictionResults.length
+            } \n**failed**: ${failedCount} \n**time taken**: ${timeTakenMinutes.toFixed(
+              2
+            )} minutes`,
           color: 65280,
         },
       ],
@@ -208,11 +202,10 @@ export async function generateQueue(req: ExtendedNextRequest) {
       embeds: [
         {
           title: `Generate Queue (${process.env.NODE_ENV} mode)`,
-          description: `**status**: ${
-            Status.ERROR
-          } \n**triggered at**: <t:${Math.floor(
-            Date.now() / 1000
-          )}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n`,
+          description: `**status**: ${Status.ERROR
+            } \n**triggered at**: <t:${Math.floor(
+              Date.now() / 1000
+            )}:R> \n**user-agent**: ${userAgent} \n**url**: ${url}\n`,
           color: 880808,
         },
         {
@@ -1003,6 +996,71 @@ export async function getFeedbackWritter(res: object) {
     return NextResponse.json(object.feedback, { status: 200 });
   } catch (error) {
     console.error("Error:", error);
+    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+  }
+}
+
+interface RequestContext {
+  params: {
+    article_id: string;
+  };
+}
+
+export async function generateSimpleLanguage(req: ExtendedNextRequest, { params: { article_id } }: RequestContext) {
+  const article = await db.collection("new-articles").doc(article_id).get();
+  const data = article.data();
+
+  if (!data) {
+    return NextResponse.json({ error: "Article not found" }, { status: 404 });
+  }
+
+  const sentences = splitTextIntoSentences(data.passage);
+
+  const schema = z.object({
+    translated_sentences: z.array(
+      z.object({
+        index: z.number(),
+        original_sentence: z.string(),
+        translated_sentence: z.string(),
+      })
+    ).length(sentences.length)
+      .describe("The translated passages"),
+  });
+
+  const prompt = "Please rephrase the following reading passage in the simplest language possible. Use multiple very simple sentences if necessary. number the original sentences, then provide the (multi-sentence) rephrasing for that sentence. Please output as strict JSON"
+  const mapJSON = sentences.map((sentence, i) => {
+    return {
+      index: i,
+      original_sentence: sentence,
+      translated_sentence: ""
+    }
+  });
+  // {
+  //   index: 0,
+  //   original_sentence: "The quick brown fox jumps over the lazy dog.",
+  //   translated_sentence: "The fast brown fox jumps over the lazy dog."
+  // }
+  const generate = async () => {
+    const { object } = await generateObject({
+      model: openai("gpt-3.5-turbo"),
+      schema: schema,
+      prompt: prompt + "\n\n" + JSON.stringify(mapJSON),
+    });
+
+    return object;
+  };
+
+  try {
+    const resp = await generate();
+    return NextResponse.json({
+      id: article_id,
+      level: data.cefr_level,
+      original_length: sentences.length,
+      translated_length: resp.translated_sentences.length,
+      original: sentences,
+      translated: resp.translated_sentences,
+    }, { status: 200 });
+  } catch (error) {
     return NextResponse.json({ error: "An error occurred" }, { status: 500 });
   }
 }
