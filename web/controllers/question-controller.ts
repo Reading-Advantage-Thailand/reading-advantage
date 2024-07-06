@@ -9,6 +9,8 @@ import {
 import db from "@/configs/firestore-config";
 import { ExtendedNextRequest } from "@/utils/middleware";
 import { NextResponse } from "next/server";
+import { generateLA, getFeedbackWritter } from "./assistant-controller";
+import { get } from "lodash";
 
 interface RequestContext {
   params: {
@@ -28,6 +30,10 @@ interface Heatmap {
     readed: number;
     completed: number;
   };
+}
+
+interface Data {
+  question: string;
 }
 
 export async function getMCQuestions(
@@ -515,8 +521,7 @@ export async function getLAQuestion(
       );
     }
 
-    //have question article_id 0DOGZuAjdCX0HL0DpCfj
-    //have no question article_id q1qBgBUPF6lp35ugTC09
+    let data: Data = { question: "" };
 
     const questions = await db
       .collection("new-articles")
@@ -524,9 +529,37 @@ export async function getLAQuestion(
       .collection("la-questions")
       .get();
 
-    const data = questions.docs[0].data() as LARecord;
+    //check laq have in db
+    if (questions.docs.length === 0) {
+      const getArticle = await db
+        .collection("new-articles")
+        .doc(article_id)
+        .get();
 
-    console.log("questions =>", questions.docs[0].data() as LARecord);
+      const getData = getArticle.data();
+
+      const generateLAQ = await generateLA(
+        getData?.cefr_level,
+        getData?.type,
+        getData?.genre,
+        getData?.subgenre,
+        getData?.passage,
+        getData?.title,
+        getData?.summary,
+        getData?.imageDesc
+      );
+
+      await db
+        .collection("new-articles")
+        .doc(article_id)
+        .collection("la-questions")
+        .add(generateLAQ);
+
+      data = generateLAQ;
+      //if laq have in db
+    } else {
+      data = questions.docs[0].data() as LARecord;
+    }
 
     return NextResponse.json(
       {
@@ -547,7 +580,99 @@ export async function getLAQuestion(
   }
 }
 
+export async function getFeedbackLAquestion(
+  req: ExtendedNextRequest,
+  { params: { article_id, question_id } }: SubRequestContext
+) {
+  const { answer, preferredLanguage } = await req.json();
+
+  const getQuestion = await db
+    .collection("new-articles")
+    .doc(article_id)
+    .collection("la-questions")
+    .doc(question_id)
+    .get();
+
+  const getArticle = await db.collection("new-articles").doc(article_id).get();
+
+  const getLaq = getQuestion.data() as LARecord;
+
+  const article = getArticle.data();
+
+  let cefrLevelReformatted = article?.cefr_level
+    .replace("+", "")
+    .replace("-", "");
+
+  const getFeedback = await getFeedbackWritter({
+    preferredLanguage,
+    targetCEFRLevel: cefrLevelReformatted,
+    readingPassage: article?.passage,
+    writingPrompt: getLaq.question,
+    studentResponse: answer,
+  });
+
+  const result = await getFeedback.json();
+
+  return NextResponse.json(
+    {
+      state: QuestionState.INCOMPLETE,
+      result,
+    },
+    { status: 200 }
+  );
+}
+
 export async function answerLAQuestion(
   req: ExtendedNextRequest,
   { params: { article_id, question_id } }: SubRequestContext
-) {}
+) {
+  const { answer, timeRecorded } = await req.json();
+
+  const question = await db
+    .collection("new-articles")
+    .doc(article_id)
+    .collection("la-questions")
+    .doc(question_id)
+    .get();
+
+  const data = question.data() as LARecord;
+
+  // Update user record
+  // await db
+  //   .collection("users")
+  //   .doc(req.session?.user.id as string)
+  //   .collection("article-records")
+  //   .doc(article_id)
+  //   .collection("laq-records")
+  //   .doc(question_id)
+  //   .set({
+  //     id: question_id,
+  //     time_recorded: timeRecorded,
+  //     question: data.question,
+  //     answer,
+  //     suggested_answer: data.suggested_answer,
+  //     created_at: new Date().toISOString(),
+  //   });
+
+  // Update records
+  // await db
+  //   .collection("users")
+  //   .doc(req.session?.user.id as string)
+  //   .collection("article-records")
+  //   .doc(article_id)
+  //   .set(
+  //     {
+  //       status: QuizStatus.COMPLETED_SAQ,
+  //       updated_at: new Date().toISOString(),
+  //     },
+  //     { merge: true }
+  //   );
+
+  // return NextResponse.json(
+  //   {
+  //     state: QuestionState.COMPLETED,
+  //     answer,
+  //   },
+  //   { status: 200 }
+  // );
+}

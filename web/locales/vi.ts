@@ -556,7 +556,7 @@ export default {
     laq: {
       practiceButton: "Luyện viết",
       successButton: "Thực hành đã hoàn thành",
-      cancleButton: "Hủy",
+      cancelButton: "Hủy",
       feedbackButton: "Nhận phản hồi",
       submitButton: "Nộp",
       elapsedTime: "{time} giây đã trôi qua",

@@ -192,15 +192,7 @@ router.post(async (req: NextRequest, context: RequestContext) => {
     }
 });
 
-export async function POST(request: NextRequest, ctx: RequestContext) {
-    const result = await router.run(request, ctx);
-    if (result instanceof NextResponse) {
-        return result;
-    }
-    throw new Error("Expected a NextResponse from router.run");
-}
-
-export async function regenerateImage(imageDesc: string, articleId: string): Promise<{ id: string, task: string, status: string }> {
+async function regenerateImage(imageDesc: string, articleId: string): Promise<{ id: string, task: string, status: string }> {
     try {
         const generate = async () => {
             const response = await openaiUtils.images.generate({
@@ -335,5 +327,12 @@ async function regenerateQuestions(
         error.task = collectionName;
         throw error;
     }
+}
 
+export async function POST(request: NextRequest, ctx: RequestContext) {
+    const result = await router.run(request, ctx);
+    if (result instanceof NextResponse) {
+        return result;
+    }
+    throw new Error("Expected a NextResponse from router.run");
 }

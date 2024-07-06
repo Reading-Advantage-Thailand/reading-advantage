@@ -2,6 +2,7 @@
 export interface QuestionsRecord {
   multiple_choice_questions: MCQRecord[];
   short_answer_questions: SARecord[];
+  long_answer_questions: LARecord[];
 }
 
 export interface MCQRecord {

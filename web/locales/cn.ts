@@ -522,7 +522,7 @@ export default {
     laq: {
       practiceButton: "练习写作",
       successButton: "练习完成",
-      cancleButton: "取消",
+      cancelButton: "取消",
       feedbackButton: "得到反馈",
       submitButton: "提交",
       elapsedTime: "已用时间 {time} 秒",
