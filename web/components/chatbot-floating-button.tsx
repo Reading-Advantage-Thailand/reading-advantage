@@ -79,8 +79,8 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
 
         const questionListMAQ = listMAQ.results.map((item) => item.question);
         const questionAll = [...questionListMAQ, listSAQ.result.question, listLAQ.result.question];
-        console.log("questionAll :", questionAll);
-        console.log("questionAll joint :", questionAll.join(", "));
+        // console.log("questionAll :", questionAll);
+        // console.log("questionAll joint :", questionAll.join(", "));
         const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
           newMessage,
           article,
