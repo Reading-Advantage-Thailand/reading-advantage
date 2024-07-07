@@ -56,12 +56,7 @@ export default async function ArticleQuizPage({
                 userId={user.id}
               />
             )}
-            <WordList
-              article={articleResponse.article}
-              articleId={params.articleId}
-              userId={user.id}
-            />
-
+            
             {user.role.includes("SYSTEM") && (
               <div className="flex gap-4">
                 <ArticleActions
@@ -70,6 +65,11 @@ export default async function ArticleQuizPage({
                 />
               </div>
             )}
+            <WordList
+              article={articleResponse.article}
+              articleId={params.articleId}
+              userId={user.id}
+            />
           </div>
 
           <MCQuestionCard userId={user.id} articleId={params.articleId} />
