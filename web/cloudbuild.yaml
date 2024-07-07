@@ -76,6 +76,19 @@ steps:
         "--allow-unauthenticated",
       ]
 
+  # Send a notification to Discord
+  - name: "gcr.io/cloud-builders/curl"
+    args:
+      [
+        "-X",
+        "POST",
+        "-H",
+        "Content-Type: application/json",
+        "-d",
+        '{"content": "# Build results \n**build status**: $BUILD_STATUS \n**project id**: $PROJECT_ID"',
+        "$DISCORD_WEBHOOK_URL",
+      ]
+
 images:
   - gcr.io/$PROJECT_ID/reading-advantage-web
 
