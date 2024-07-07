@@ -23,13 +23,19 @@ interface Props {
   article: Article;
 }
 
-type QuestionResponse = {
+
+
+type QuestionMAQResponse = {
   results: MultipleChoiceQuestion[];
   progress: AnswerStatus[];
   total: number;
   state: QuestionState;
 };
 
+type QuestionOtherResponse = {
+  result: MultipleChoiceQuestion;
+  state: QuestionState;
+};
 export default function ChatBotFloatingChatButton({ article }: Props) {
   const t = useScopedI18n("components.chatBot");
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -37,24 +43,26 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
   const [userInput, setUserInput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [listMAQ, setListMAQ] = useState<QuestionResponse>({
+  const [listMAQ, setListMAQ] = useState<QuestionMAQResponse>({
     results: [],
     progress: [],
     total: 0,
     state: QuestionState.LOADING,
   });
 
-  const [listSAQ, setListSAQ] = useState<QuestionResponse>({
-    results: [],
-    progress: [],
-    total: 0,
+  const [listSAQ, setListSAQ] = useState<QuestionOtherResponse>({
+    result: {
+      id: "",
+      question: "",
+    },   
     state: QuestionState.LOADING,
   });
 
-  const [listLAQ, setListLAQ] = useState<QuestionResponse>({
-    results: [],
-    progress: [],
-    total: 0,
+  const [listLAQ, setListLAQ] = useState<QuestionOtherResponse>({
+    result: {
+      id: "",
+      question: "",
+    },   
     state: QuestionState.LOADING,
   });
 
@@ -67,14 +75,16 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
       setMessages([...messages, newMessage]);
       setLoading(true); // Start loading
      
-
       try {
+
+        const questionListMAQ = listMAQ.results.map((item) => item.question);
+        const questionAll = [...questionListMAQ, listSAQ.result.question, listLAQ.result.question];
+        console.log("questionAll :", questionAll);
+        console.log("questionAll joint :", questionAll.join(", "));
         const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
           newMessage,
           article,
-          listMAQ,
-          listSAQ,
-          listLAQ,
+          questionAll
         });
 
         const response: Message = {

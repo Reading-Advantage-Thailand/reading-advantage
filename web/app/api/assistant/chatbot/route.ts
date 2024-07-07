@@ -9,13 +9,10 @@ export async function POST(req: Request, res: Response) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    console.log("listMAQ :", param.listMAQ?.results);
-    console.log("listSAQ :", param.listSAQ?.result);
-    console.log("listLAQ :", param.listLAQ?.result);
-    //   "question": ${param?.listLAQ?.result?.question}
+   console.log("param?.questionAll : ", param?.questionAll);
 
     const stream = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo",    
       messages: [
         {
           role: "system",
@@ -24,8 +21,8 @@ export async function POST(req: Request, res: Response) {
           "title": ${param?.article?.title},
           "passage": ${param?.article?.passage},
           "summary": ${param?.article?.summary},
-          "image-description": ${param?.article?.image_description},       
-          "questions": ${param?.listLAQ?.results?.question}
+          "image-description": ${param?.article?.image_description},   
+          "questions": ${JSON.stringify(param?.questionAll.join(","))}
           }`,
         },
         { role: "user", content: param?.newMessage?.text },
