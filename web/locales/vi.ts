@@ -259,7 +259,7 @@ export default {
         pause: "Tạm dừng âm thanh",
       },
       // button translate
-      translateฺButton: {
+      translateButton: {
         open: "Dịch",
         close: "Đóng cửa sổ dịch",
       },

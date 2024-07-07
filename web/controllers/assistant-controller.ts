@@ -192,10 +192,12 @@ export async function generateQueue(req: ExtendedNextRequest) {
       fictionResults: fictionResults.length,
       // result: combinedResults,
     });
+
   } catch (error) {
-    const webhookUrl = process.env.DISCORD_WEBHOOK_URL || "";
+
+    const webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
     // Send a message to Discord that the generation has failed
-    const userAgent = req.headers.get("user-agent") || "";
+    const userAgent = req.headers.get('user-agent') || '';
     const url = req.url;
 
     const payload = {
@@ -810,12 +812,9 @@ export async function generateAudio(passage: string, articleId: string) {
       timepoints: allTimepoints,
       id: articleId,
     });
+
   } catch (error: any) {
-    throw new Error(
-      `Failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
-        error.response.data
-      )}`
-    );
+    throw new Error(`Failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(error.response.data)}`);
   }
 }
 
@@ -1004,63 +1003,4 @@ interface RequestContext {
   params: {
     article_id: string;
   };
-}
-
-export async function generateSimpleLanguage(req: ExtendedNextRequest, { params: { article_id } }: RequestContext) {
-  const article = await db.collection("new-articles").doc(article_id).get();
-  const data = article.data();
-
-  if (!data) {
-    return NextResponse.json({ error: "Article not found" }, { status: 404 });
-  }
-
-  const sentences = splitTextIntoSentences(data.passage);
-
-  const schema = z.object({
-    translated_sentences: z.array(
-      z.object({
-        index: z.number(),
-        original_sentence: z.string(),
-        translated_sentence: z.string(),
-      })
-    ).length(sentences.length)
-      .describe("The translated passages"),
-  });
-
-  const prompt = "Please rephrase the following reading passage in the simplest language possible. Use multiple very simple sentences if necessary. number the original sentences, then provide the (multi-sentence) rephrasing for that sentence. Please output as strict JSON"
-  const mapJSON = sentences.map((sentence, i) => {
-    return {
-      index: i,
-      original_sentence: sentence,
-      translated_sentence: ""
-    }
-  });
-  // {
-  //   index: 0,
-  //   original_sentence: "The quick brown fox jumps over the lazy dog.",
-  //   translated_sentence: "The fast brown fox jumps over the lazy dog."
-  // }
-  const generate = async () => {
-    const { object } = await generateObject({
-      model: openai("gpt-3.5-turbo"),
-      schema: schema,
-      prompt: prompt + "\n\n" + JSON.stringify(mapJSON),
-    });
-
-    return object;
-  };
-
-  try {
-    const resp = await generate();
-    return NextResponse.json({
-      id: article_id,
-      level: data.cefr_level,
-      original_length: sentences.length,
-      translated_length: resp.translated_sentences.length,
-      original: sentences,
-      translated: resp.translated_sentences,
-    }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
-  }
 }

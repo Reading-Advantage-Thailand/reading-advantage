@@ -64,36 +64,11 @@ export default async function ArticleCard({
         </CardHeader>
         <ArticleFooter />
       </Card>
-
       <RatingPopup
         userId={userId}
         averageRating={article.average_rating}
         articleId={articleId}
       />
-      {/* part question */}
-      {/* {(article.questions && ( */}
-      {/* <Questions
-          className="flex flex-col mt-4 mb-40 md:mb-0 md:basis-2/5"
-          questions={article.questions}
-          articleId={articleId}
-          userId={userId}
-          articleTitle={article.title}
-        /> */}
-      {/* )) || (
-        
-      <Card className="flex flex-col mt-4 mb-40 md:mb-0 md:basis-2/5">
-        <CardHeader>
-          <CardTitle>Generating Questions</CardTitle>
-          <CardDescription>
-            Generating questions for this article. Please wait a moment.
-          </CardDescription>
-          <Skeleton className="h-[80px] w-full my-3" />
-          <Skeleton className="h-[40px] w-full mb-3" />
-          <Skeleton className="h-[20px] w-full mb-3" />
-          <Skeleton className="h-[70px] w-full mb-3" />
-        </CardHeader>
-      </Card>
-      )} */}
     </div>
   );
 }

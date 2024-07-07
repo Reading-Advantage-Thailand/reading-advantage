@@ -240,7 +240,7 @@ export default {
         pause: "暫停聲音",
       },
       // button translate
-      translateฺButton: {
+      translateButton: {
         open: "翻譯",
         close: "關閉翻譯視窗",
       },
