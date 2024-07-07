@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bot, MessageSquare } from "lucide-react";
 import { Article } from "@/components/models/article-model";
+import {
+  AnswerStatus,
+  MultipleChoiceQuestion,
+  QuestionState,
+} from "./models/questions-model";
 
 interface Message {
   text: string;
@@ -17,6 +22,14 @@ interface Message {
 interface Props {
   article: Article;
 }
+
+type QuestionResponse = {
+  results: MultipleChoiceQuestion[];
+  progress: AnswerStatus[];
+  total: number;
+  state: QuestionState;
+};
+
 export default function ChatBotFloatingChatButton({ article }: Props) {
   const t = useScopedI18n("components.chatBot");
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -24,7 +37,26 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
   const [userInput, setUserInput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+  const [listMAQ, setListMAQ] = useState<QuestionResponse>({
+    results: [],
+    progress: [],
+    total: 0,
+    state: QuestionState.LOADING,
+  });
+
+  const [listSAQ, setListSAQ] = useState<QuestionResponse>({
+    results: [],
+    progress: [],
+    total: 0,
+    state: QuestionState.LOADING,
+  });
+
+  const [listLAQ, setListLAQ] = useState<QuestionResponse>({
+    results: [],
+    progress: [],
+    total: 0,
+    state: QuestionState.LOADING,
+  });
 
   const handleSendMessage = useCallback(async () => {
     if (userInput) {
@@ -33,27 +65,31 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
         sender: "user",
       };
       setMessages([...messages, newMessage]);
-      setLoading(true); // Start loading     
+      setLoading(true); // Start loading
+     
 
-    try {
-      const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
-        newMessage,
-        article,
-      });
+      try {
+        const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
+          newMessage,
+          article,
+          listMAQ,
+          listSAQ,
+          listLAQ,
+        });
 
-      const response: Message = {
-        text: ` : ${resOpenAi?.data?.text}`,
-        sender: "bot",
-      };
-      setMessages((messages) => [...messages, response]);
-    } catch (error) {
-      setMessages((msgs) => [
-        ...msgs,
-        { text: "Error: Could not fetch response.", sender: "bot" },
-      ]);
-    } finally {
-      setLoading(false); // Stop loading
-    }
+        const response: Message = {
+          text: ` : ${resOpenAi?.data?.text}`,
+          sender: "bot",
+        };
+        setMessages((messages) => [...messages, response]);
+      } catch (error) {
+        setMessages((msgs) => [
+          ...msgs,
+          { text: "Error: Could not fetch response.", sender: "bot" },
+        ]);
+      } finally {
+        setLoading(false); // Stop loading
+      }
 
       setUserInput(""); // Clear input after sending
     }
@@ -66,6 +102,30 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const resMCQ = await axios.get(
+        `/api/v1/articles/${article?.id}/questions/mcq`
+      );
+      const resSAQ = await axios.get(
+        `/api/v1/articles/${article?.id}/questions/sa`
+      );
+      const resLAQ = await axios.get(
+        `/api/v1/articles/${article?.id}/questions/laq`
+      );
+      if (resMCQ?.data) {       
+        setListMAQ(resMCQ.data);
+      }
+      if (resSAQ?.data) {       
+        setListSAQ(resSAQ.data);
+      }
+      if (resLAQ?.data) {      
+        setListLAQ(resLAQ.data);
+      }
+    };
+    fetchData();
+  }, [article.id]);
 
   return (
     <>

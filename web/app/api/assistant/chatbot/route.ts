@@ -4,10 +4,15 @@ import { promptChatBot } from "@/data/prompt-chatbot";
 export async function POST(req: Request, res: Response) {
   try {
     const param = await req.json();
-    
+
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
+
+    console.log("listMAQ :", param.listMAQ?.results);
+    console.log("listSAQ :", param.listSAQ?.result);
+    console.log("listLAQ :", param.listLAQ?.result);
+    //   "question": ${param?.listLAQ?.result?.question}
 
     const stream = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -19,7 +24,8 @@ export async function POST(req: Request, res: Response) {
           "title": ${param?.article?.title},
           "passage": ${param?.article?.passage},
           "summary": ${param?.article?.summary},
-          "image-description": ${param?.article?.image_description},
+          "image-description": ${param?.article?.image_description},       
+          "questions": ${param?.listLAQ?.results?.question}
           }`,
         },
         { role: "user", content: param?.newMessage?.text },
