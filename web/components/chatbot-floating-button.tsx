@@ -23,8 +23,6 @@ interface Props {
   article: Article;
 }
 
-
-
 type QuestionMAQResponse = {
   results: MultipleChoiceQuestion[];
   progress: AnswerStatus[];
@@ -54,7 +52,8 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
     result: {
       id: "",
       question: "",
-    },   
+      options: [],
+    },
     state: QuestionState.LOADING,
   });
 
@@ -62,7 +61,8 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
     result: {
       id: "",
       question: "",
-    },   
+      options: [],
+    },
     state: QuestionState.LOADING,
   });
 
@@ -74,17 +74,20 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
       };
       setMessages([...messages, newMessage]);
       setLoading(true); // Start loading
-     
-      try {
 
+      try {
         const questionListMAQ = listMAQ.results.map((item) => item.question);
-        const questionAll = [...questionListMAQ, listSAQ.result.question, listLAQ.result.question];
+        const questionAll = [
+          ...questionListMAQ,
+          listSAQ.result.question,
+          listLAQ.result.question,
+        ];
         // console.log("questionAll :", questionAll);
         // console.log("questionAll joint :", questionAll.join(", "));
         const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
           newMessage,
           article,
-          questionAll
+          questionAll,
         });
 
         const response: Message = {
@@ -124,13 +127,13 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
       const resLAQ = await axios.get(
         `/api/v1/articles/${article?.id}/questions/laq`
       );
-      if (resMCQ?.data) {       
+      if (resMCQ?.data) {
         setListMAQ(resMCQ.data);
       }
-      if (resSAQ?.data) {       
+      if (resSAQ?.data) {
         setListSAQ(resSAQ.data);
       }
-      if (resLAQ?.data) {      
+      if (resLAQ?.data) {
         setListLAQ(resLAQ.data);
       }
     };
