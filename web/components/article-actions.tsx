@@ -81,7 +81,7 @@ export default function ArticleActions({ article, articleId }: Props) {
             <Button variant="destructive" onClick={() => handleDelete(articleId)}>
               Delete
             </Button>
-            <Button onClick={handleClose}>Cancle</Button>
+            <Button onClick={handleClose}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
