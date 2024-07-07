@@ -1,5 +1,5 @@
 import { translate } from "@/controllers/translation-controller";
-import { logRequest, protect, restrictAccess } from "@/utils/middleware";
+import { logRequest, protect } from "@/utils/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -11,7 +11,7 @@ interface RequestContext {
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
-router.use(restrictAccess);
+router.use(protect);
 router.post(translate);
 
 export async function POST(request: NextRequest, ctx: RequestContext) {
