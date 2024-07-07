@@ -1,4 +1,3 @@
-import { generateQueue, generateSimpleLanguage } from "@/controllers/assistant-controller";
 import { translate } from "@/controllers/translation-controller";
 import { logRequest, protect, restrictAccess } from "@/utils/middleware";
 import { createEdgeRouter } from "next-connect";
