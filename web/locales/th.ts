@@ -259,7 +259,7 @@ export default {
         pause: "หยุดเสียง",
       },
       // button translate
-      translateฺButton: {
+      translateButton: {
         open: "แปล",
         close: "ปิดหน้าต่างการแปล",
       },

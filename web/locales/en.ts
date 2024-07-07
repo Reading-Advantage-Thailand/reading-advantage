@@ -265,9 +265,9 @@ export default {
         pause: "Pause sound",
       },
       // button translate
-      translateฺButton: {
-        open: "",
-        close: "",
+      translateButton: {
+        open: "Translate",
+        close: "Close translate panel",
       },
     },
     mcq: {

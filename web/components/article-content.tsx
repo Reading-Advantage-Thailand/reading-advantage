@@ -39,16 +39,18 @@ type Sentence = {
   audioUrl: string;
 };
 
-async function getTranslate(
-  sentences: string[],
+async function getTranslateSentence(
   articleId: string,
-  language: string
-) {
-  const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
-    sentences,
-    language,
-  });
-  return res.data;
+  targetLanguage: string
+): Promise<{ message: string; translated_sentences: string[] }> {
+  try {
+    const res = await axios.post(`/api/v1/assistant/translate/${articleId}`, {
+      targetLanguage,
+    });
+    return res.data as { message: string; translated_sentences: string[] };
+  } catch (error) {
+    return { message: "error", translated_sentences: [] };
+  }
 }
 
 export default function ArticleContent({
@@ -201,7 +203,7 @@ export default function ArticleContent({
   const saveToFlashcard = async () => {
     //translate before save
     if (!isTranslate) {
-      await handleTranslateSentence();
+      await handleTranslate();
     } else {
       try {
         let card: Card = createEmptyCard();
@@ -260,54 +262,31 @@ export default function ArticleContent({
 
   async function handleTranslateSentence() {
     setLoading(true);
-    try {
-      //remove ~~ from text
-      const sentences = sentenceList.map((sentence) =>
-        sentence.sentence.replace(/~~/g, "")
-      );
-      // const sentences = text.map((sentence) => sentence.text);
-      // get language from local
-      if (!locale || locale === "en") {
-        return;
-      }
-
-      type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
-      let localeTarget: ExtendedLocale = locale as ExtendedLocale;
-
-      switch (locale) {
-        case "cn":
-          localeTarget = "zh-CN";
-          break;
-        case "tw":
-          localeTarget = "zh-TW";
-          break;
-      }
-
-      const res = await getTranslate(sentences, article.id, localeTarget);
-
-      if (res.message) {
-        setIsTranslateOpen(false);
-        toast({
-          title: "Something went wrong.",
-          description: res.message,
-          variant: "destructive",
-        });
-        return;
-      } else {
-        setIsTranslateOpen(!isTranslateOpen);
-        setTranslate(res.translation);
-        setIsTranslate(true);
-      }
-    } catch (error) {
-      console.log(error);
+    type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
+    let targetLanguage: ExtendedLocale = locale as ExtendedLocale;
+    switch (locale) {
+      case "cn":
+        targetLanguage = "zh-CN";
+        break;
+      case "tw":
+        targetLanguage = "zh-TW";
+        break;
+    }
+    const response = await getTranslateSentence(article.id, targetLanguage);
+    if (response.message === "error") {
       setIsTranslate(false);
       setIsTranslateOpen(false);
+      setLoading(false);
       toast({
         title: "Something went wrong.",
         description: "Your sentence was not translated. Please try again.",
         variant: "destructive",
       });
-    } finally {
+      return;
+    } else {
+      setTranslate(response.translated_sentences);
+      setIsTranslateOpen(!isTranslateOpen);
+      setIsTranslate(true);
       setLoading(false);
     }
   }
@@ -316,10 +295,11 @@ export default function ArticleContent({
 
   const handleTranslate = async () => {
     //if not translate, translate
-    if (!isTranslate) {
+    if (isTranslate === false) {
       await handleTranslateSentence();
       setIsTranslateClicked(!isTranslateClicked);
     } else {
+      console.log("isTranslate", isTranslate);
       //if translate, set isTranslate to false
       setIsTranslateClicked(!isTranslateClicked);
     }
@@ -334,20 +314,18 @@ export default function ArticleContent({
             {isPlaying ? t("soundButton.pause") : t("soundButton.play")}
           </Button>
         </div>
-        {locale !== "en" && (
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={handleTranslateSentence}
-            disabled={loading}
-          >
-            {loading
-              ? "Loading"
-              : isTranslate && isTranslateOpen
-              ? t("translateฺButton.close")
-              : t("translateฺButton.open")}
-          </Button>
-        )}
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={handleTranslateSentence}
+          disabled={loading}
+        >
+          {loading
+            ? "Loading"
+            : isTranslate && isTranslateOpen
+            ? t("translateButton.close")
+            : t("translateButton.open")}
+        </Button>
       </div>
 
       {/* show ที่แปลภาษาทีละประโยค */}
@@ -407,10 +385,8 @@ export default function ArticleContent({
               </ContextMenuItem>
               <ContextMenuItem
                 inset
-                onClick={() => {
-                  handleTranslate();
-                }}
-                disabled={loading || locale === "en"}
+                onClick={handleTranslate}
+                disabled={loading}
               >
                 Translate
               </ContextMenuItem>
