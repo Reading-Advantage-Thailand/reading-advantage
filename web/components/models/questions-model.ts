@@ -52,7 +52,7 @@ export interface Questions {
 export interface MultipleChoiceQuestion {
   id: string;
   question: string;
-  options: string[];
+  options?: string[];
 }
 
 export interface ShortAnswerQuestion {
