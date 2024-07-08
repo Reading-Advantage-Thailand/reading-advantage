@@ -40,8 +40,8 @@ export enum QuizStatus {
   READ = 0,
   COMPLETED_MCQ = 1,
   COMPLETED_SAQ = 2,
-  UNRATED = 3,
-  COMPLETED_LAQ = 4,
+  COMPLETED_LAQ = 3,
+  UNRATED = 4,
 }
 
 // Web data model for questions
