@@ -29,10 +29,12 @@ import { Icons } from "../icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCurrentLocale } from "@/locales/client";
 import { localeNames } from "@/configs/locale-config";
-import { Button } from "@mui/material";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { Button } from "../ui/button";
 
 interface Props {
   userId: string;
+  userLevel: number;
   articleId: string;
 }
 
@@ -47,6 +49,10 @@ interface DetailedFeedback {
   [key: string]: FeedbackDetails;
 }
 
+interface ScoreCategoty {
+  [key: string]: number;
+}
+
 type QuestionResponse = {
   result: LongAnswerQuestion;
   state: QuestionState;
@@ -55,23 +61,23 @@ type QuestionResponse = {
 type AnswerResponse = {
   state: QuestionState;
   answer: string;
-  suggested_answer: string;
+  feedback: {
+    detailedFeedback: DetailedFeedback;
+    exampleRevisions: string;
+    nextSteps: [];
+    overallImpression: string;
+    scores: ScoreCategoty;
+  };
 };
 
 type FeedbackResponse = {
   state: QuestionState;
   result: {
     detailedFeedback: DetailedFeedback;
-    exampleRevisions: [];
+    exampleRevisions: string;
     nextSteps: [];
     overallImpression: string;
-    score: {
-      clarityAndCoherence: number;
-      complexityAndStructure: number;
-      contentAndDevelopment: number;
-      grammarAccuracy: number;
-      vocabularyUse: number;
-    };
+    scores: ScoreCategoty;
   };
 };
 
@@ -82,7 +88,11 @@ enum QuestionState {
   ERROR = 3,
 }
 
-export default function LAQuestionCard({ userId, articleId }: Props) {
+export default function LAQuestionCard({
+  userId,
+  userLevel,
+  articleId,
+}: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     result: {
@@ -119,6 +129,7 @@ export default function LAQuestionCard({ userId, articleId }: Props) {
       return (
         <QuestionCardIncomplete
           resp={data}
+          userLevel={userLevel}
           articleId={articleId}
           handleCompleted={handleCompleted}
           handleCancel={handleCancel}
@@ -155,12 +166,9 @@ function QuestionCardComplete({ resp }: { resp: QuestionResponse }) {
         </CardTitle>
         <CardDescription>
           You already completed the long answer question.
-          <p className="font-bold text-lg mt-4">Question</p>
-          <p>{resp.result.question}</p>
-          <p className="font-bold text-lg mt-4">Suggested Answer</p>
-          <p></p>
-          <p className="font-bold text-lg mt-4">Your Answer</p>
-          <p className="text-green-500 dark:text-green-400 inline font-bold mt-2"></p>
+          <Button className="mt-4" disabled={true}>
+            Practice Completed
+          </Button>
         </CardDescription>
       </CardHeader>
     </Card>
@@ -186,11 +194,13 @@ function QuestionCardLoading() {
 
 function QuestionCardIncomplete({
   resp,
+  userLevel,
   articleId,
   handleCompleted,
   handleCancel,
 }: {
   resp: QuestionResponse;
+  userLevel: number;
   articleId: string;
   handleCompleted: () => void;
   handleCancel: () => void;
@@ -206,6 +216,7 @@ function QuestionCardIncomplete({
         <QuizContextProvider>
           <LAQuestion
             resp={resp}
+            userLevel={userLevel}
             articleId={articleId}
             handleCompleted={handleCompleted}
             handleCancel={handleCancel}
@@ -218,11 +229,13 @@ function QuestionCardIncomplete({
 
 function LAQuestion({
   resp,
+  userLevel,
   articleId,
   handleCompleted,
   handleCancel,
 }: {
   resp: QuestionResponse;
+  userLevel: number;
   articleId: string;
   handleCompleted: () => void;
   handleCancel: () => void;
@@ -240,78 +253,140 @@ function LAQuestion({
   type FormData = z.infer<typeof longAnswerSchema>;
 
   const t = useScopedI18n("components.laq");
+  const tf = useScopedI18n("components.rate");
   const { timer, setPaused } = useContext(QuizContext);
   const [isCompleted, setIsCompleted] = React.useState<boolean>(false);
   const [isLoadingFeedback, setIsLoadingFeedback] =
     React.useState<boolean>(false);
   const [isLoadingSubmit, setIsLoadingSubmit] = React.useState<boolean>(false);
+  const [rating, setRating] = React.useState<number>(3);
   const [data, setData] = useState<AnswerResponse>({
     state: QuestionState.LOADING,
     answer: "",
-    suggested_answer: "",
+    feedback: {
+      detailedFeedback: {},
+      exampleRevisions: "",
+      nextSteps: [],
+      overallImpression: "",
+      scores: {},
+    },
   });
   const [studentResponse, setStudentResponse] = useState("");
-  const [isComplete, setIsComplete] = useState(false);
+  const [errorText, setErrorText] = useState("");
   const [feedbackData, setFeedbackData] = useState<FeedbackResponse>({
     state: QuestionState.INCOMPLETE,
     result: {
       detailedFeedback: {},
-      exampleRevisions: [],
+      exampleRevisions: "",
       nextSteps: [],
       overallImpression: "",
-      score: {
-        clarityAndCoherence: 0,
-        complexityAndStructure: 0,
-        contentAndDevelopment: 0,
-        grammarAccuracy: 0,
-        vocabularyUse: 0,
-      },
+      scores: {},
     },
   });
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const currentLocale = useCurrentLocale();
 
+  const minimumCharacter = 30 * (userLevel + 1);
+
   const { register, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(longAnswerSchema),
   });
 
   const handleGetFeedback = (studentResponse: string) => {
-    setIsLoadingFeedback(true);
+    if (studentResponse === "") {
+      setErrorText("Please Enter Text...");
+    } else if (studentResponse.length < minimumCharacter) {
+      setErrorText(`Please Enter minimum ${minimumCharacter} character...`);
+    } else {
+      setIsLoadingFeedback(true);
+      setErrorText("");
+      fetch(
+        `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            answer: studentResponse,
+            preferredLanguage: localeNames[currentLocale],
+          }),
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => setFeedbackData(data))
+        .finally(() => setIsLoadingFeedback(false));
+    }
+  };
+
+  async function onSubmitted(data: FormData) {
+    if (data.answer.length === 0) {
+      setErrorText("Please Enter Text...");
+    } else if (data.answer.length < minimumCharacter) {
+      setErrorText(`Please Enter minimum ${minimumCharacter} character...`);
+    } else {
+      console.log("data => ", data.answer);
+      setIsLoadingSubmit(true);
+      setPaused(true);
+      fetch(
+        `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            answer: data.answer,
+            preferredLanguage: localeNames[currentLocale],
+          }),
+        }
+      )
+        .then((res) => res.json())
+        .then((feedback) => {
+          setFeedbackData(feedback);
+          return fetch(
+            `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                answer: data.answer,
+                feedback: feedbackData.result,
+                timeRecorded: timer,
+              }),
+            }
+          )
+            .then((res) => res.json())
+            .then((data) => {
+              setData(data);
+              setRating(data.sumScores);
+            })
+            .finally(() => {
+              setIsLoadingSubmit(false);
+            });
+        });
+    }
+  }
+
+  async function onGetExp() {
+    setIsLoadingSubmit(true);
     fetch(
-      `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
+      `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/getxp`,
       {
         method: "POST",
         body: JSON.stringify({
-          answer: studentResponse,
-          preferredLanguage: localeNames[currentLocale],
+          rating,
         }),
       }
     )
       .then((res) => res.json())
-      .then((data) => setFeedbackData(data))
-      .finally(() => setIsLoadingFeedback(false));
-  };
-
-  async function onSubmitted(data: FormData) {
-    setIsLoadingSubmit(true);
-    setPaused(true);
-    // fetch(`/api/v1/articles/${articleId}/questions/la/${resp.result.id}`, {
-    //   method: "POST",
-    //   body: JSON.stringify({
-    //     answer: data.answer,
-    //     timeRecorded: timer,
-    //   }),
-    // })
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     console.log(data);
-    //     setData(data);
-    //   })
-    //   .finally(() => {
-    //     setIsLoading(false);
-    //   });
-    setIsLoadingSubmit(false);
+      .then((data) => {
+        if (data) {
+          toast({
+            title: tf("toast.success"),
+            imgSrc: "/xpBox.webp",
+            description: `Congratulations, you earned ${rating} XP.`,
+          });
+        }
+        handleCompleted();
+      })
+      .finally(() => {
+        setIsLoadingSubmit(false);
+      });
   }
 
   const handleCategoryChange = (category: string) => {
@@ -320,12 +395,13 @@ function LAQuestion({
 
   const Category = feedbackData.result.detailedFeedback[selectedCategory];
 
-  const buttonToggle = (category: string) => ({
-    variant: selectedCategory === category ? "default" : "outline",
-  });
+  const finalCategory = data.feedback.detailedFeedback[selectedCategory];
 
-  console.log("feedbackData => ", feedbackData);
+  const scoreOfCategoty = feedbackData.result.scores[selectedCategory];
 
+  const finalScoreOfCategoty = data.feedback.scores[selectedCategory];
+
+  console.log("user level => ", userLevel);
   return (
     <CardContent>
       <form onSubmit={handleSubmit(onSubmitted)}>
@@ -349,12 +425,18 @@ function LAQuestion({
           minRows={5}
           maxRows={5}
           placeholder="Type your answer here..."
-          className="w-full my-3 p-3 rounded-sm resize-none appearance-none overflow-hidden bg-gray-100 dark:bg-gray-900 focus:outline-none"
+          className="w-full mt-3 p-3 rounded-sm resize-none appearance-none overflow-hidden bg-gray-100 dark:bg-gray-900 focus:outline-none"
           {...register("answer")}
           onChange={(e) => setStudentResponse(e.target.value)}
         />
+<<<<<<< HEAD
         <div className="space-x-2">
           <Button variant="outlined" onClick={handleCancel}>
+=======
+        {errorText && <p className="text-red-500">{errorText}</p>}
+        <div className="space-x-2 mt-3">
+          <Button variant="outline" onClick={handleCancel}>
+>>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
             {t("cancelButton")}
           </Button>
           <Dialog>
@@ -370,7 +452,7 @@ function LAQuestion({
                 {t("feedbackButton")}
               </Button>
             </DialogTrigger>
-            {!isLoadingFeedback && (
+            {!isLoadingFeedback && !errorText && (
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader className="text-left">
                   <DialogTitle className="font-bold text-2xl">
@@ -383,7 +465,13 @@ function LAQuestion({
                     size="small"
                     onClick={() => handleCategoryChange("vocabularyUse")}
                     variant={
+<<<<<<< HEAD
                       selectedCategory === "vocabularyUse" ? "text" : "outlined"
+=======
+                      selectedCategory === "vocabularyUse"
+                        ? "default"
+                        : "outline"
+>>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Vocabulary Use
@@ -394,8 +482,13 @@ function LAQuestion({
                     onClick={() => handleCategoryChange("grammarAccuracy")}
                     variant={
                       selectedCategory === "grammarAccuracy"
+<<<<<<< HEAD
                         ? "text"
                         : "outlined"
+=======
+                        ? "default"
+                        : "outline"
+>>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Grammar Accuracy
@@ -406,8 +499,13 @@ function LAQuestion({
                     onClick={() => handleCategoryChange("clarityAndCoherence")}
                     variant={
                       selectedCategory === "clarityAndCoherence"
+<<<<<<< HEAD
                         ? "text"
                         : "outlined"
+=======
+                        ? "default"
+                        : "outline"
+>>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Clarity and Coherence
@@ -420,8 +518,13 @@ function LAQuestion({
                     }
                     variant={
                       selectedCategory === "complexityAndStructure"
+<<<<<<< HEAD
                         ? "text"
                         : "outlined"
+=======
+                        ? "default"
+                        : "outline"
+>>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Complexity and Structure
@@ -434,44 +537,68 @@ function LAQuestion({
                     }
                     variant={
                       selectedCategory === "contentAndDevelopment"
+<<<<<<< HEAD
                         ? "text"
                         : "outlined"
+=======
+                        ? "default"
+                        : "outline"
+>>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Content and Development
                   </Button>
                 </div>
                 {selectedCategory && (
-                  <DialogDescription className="flex flex-col gap-2">
+                  <>
+                    <DialogDescription className="flex flex-col gap-2">
+                      <div>
+                        <p className="text-lg text-white">
+                          Area for impovement
+                        </p>
+                        <p>{Category?.areasForImprovement}</p>
+                      </div>
+                      <div>
+                        <p className="text-lg text-white">Examples</p>
+                        <p>{Category?.examples}</p>
+                      </div>
+                      <div>
+                        <p className="text-lg text-white">Strength</p>
+                        <p>{Category?.strengths}</p>
+                      </div>
+                      <div>
+                        <p className="text-lg text-white">Suggestions</p>
+                        <p>{Category?.suggestions}</p>
+                      </div>
+                    </DialogDescription>
                     <div>
-                      <p className="text-lg">Area for impovement</p>
-                      <p>{Category.areasForImprovement}</p>
+                      <p className="text-green-500 dark:text-green-400 inline font-bold">
+                        Score is {scoreOfCategoty}
+                      </p>
                     </div>
-                    <div>
-                      <p className="text-lg">Examples</p>
-                      <p>{Category.examples}</p>
-                    </div>
-                    <div>
-                      <p className="text-lg">Strength</p>
-                      <p>{Category.strengths}</p>
-                    </div>
-                    <div>
-                      <p className="text-lg">Suggestions</p>
-                      <p>{Category.suggestions}</p>
-                    </div>
-                  </DialogDescription>
+                  </>
                 )}
                 {!selectedCategory && (
-                  <div className="flex-grow overflow-y-auto pr-4">
+                  <div className="flex flex-col flex-grow overflow-y-auto pr-4 gap-2">
                     <p className="text-bold text-xl">Feedback Overall</p>
-                    <p>{feedbackData.result.overallImpression}</p>
+                    <p className="text-sm text-gray-300">
+                      {feedbackData.result.overallImpression}
+                    </p>
                     <p className="text-bold text-xl">Example Revisions</p>
+<<<<<<< HEAD
                     <p>{feedbackData.result.exampleRevisions.length}</p>
+=======
+                    <p className="text-sm text-gray-300">
+                      {feedbackData.result.exampleRevisions}
+                    </p>
+>>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                   </div>
                 )}
 
                 <DialogFooter className="flex-shrink-0">
-                  <Button>Revise Your Response</Button>
+                  <DialogClose>
+                    <Button>Revise Your Response</Button>
+                  </DialogClose>
                 </DialogFooter>
               </DialogContent>
             )}
@@ -488,19 +615,132 @@ function LAQuestion({
                 {t("submitButton")}
               </Button>
             </DialogTrigger>
-            {!isLoadingSubmit && (
+            {!isLoadingSubmit && !errorText && (
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader className="flex-shrink-0">
                   <DialogTitle>Final Feedback</DialogTitle>
                 </DialogHeader>
-                <div className="flex-grow overflow-y-auto pr-4">
-                  <p>
-                    Great job! Here`s your final feedback on your writing
-                    submission.
-                  </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Button
+                    className="rounded-full"
+                    size="sm"
+                    onClick={() => handleCategoryChange("vocabularyUse")}
+                    variant={
+                      selectedCategory === "vocabularyUse"
+                        ? "default"
+                        : "outline"
+                    }
+                  >
+                    Vocabulary Use
+                  </Button>
+                  <Button
+                    className="rounded-full"
+                    size="sm"
+                    onClick={() => handleCategoryChange("grammarAccuracy")}
+                    variant={
+                      selectedCategory === "grammarAccuracy"
+                        ? "default"
+                        : "outline"
+                    }
+                  >
+                    Grammar Accuracy
+                  </Button>
+                  <Button
+                    className="rounded-full"
+                    size="sm"
+                    onClick={() => handleCategoryChange("clarityAndCoherence")}
+                    variant={
+                      selectedCategory === "clarityAndCoherence"
+                        ? "default"
+                        : "outline"
+                    }
+                  >
+                    Clarity and Coherence
+                  </Button>
+                  <Button
+                    className="rounded-full"
+                    size="sm"
+                    onClick={() =>
+                      handleCategoryChange("complexityAndStructure")
+                    }
+                    variant={
+                      selectedCategory === "complexityAndStructure"
+                        ? "default"
+                        : "outline"
+                    }
+                  >
+                    Complexity and Structure
+                  </Button>
+                  <Button
+                    className="rounded-full"
+                    size="sm"
+                    onClick={() =>
+                      handleCategoryChange("contentAndDevelopment")
+                    }
+                    variant={
+                      selectedCategory === "contentAndDevelopment"
+                        ? "default"
+                        : "outline"
+                    }
+                  >
+                    Content and Development
+                  </Button>
                 </div>
+                {selectedCategory && (
+                  <>
+                    <DialogDescription className="flex flex-col gap-2">
+                      <div>
+                        <p className="text-lg text-white">
+                          Area for impovement
+                        </p>
+                        <p>{finalCategory?.areasForImprovement}</p>
+                      </div>
+                      <div>
+                        <p className="text-lg text-white">Examples</p>
+                        <p>{finalCategory?.examples}</p>
+                      </div>
+                      <div>
+                        <p className="text-lg text-white">Strength</p>
+                        <p>{finalCategory?.strengths}</p>
+                      </div>
+                      <div>
+                        <p className="text-lg text-white">Suggestions</p>
+                        <p>{finalCategory?.suggestions}</p>
+                      </div>
+                    </DialogDescription>
+                    <div>
+                      <p className="text-green-500 dark:text-green-400 inline font-bold">
+                        Score is {finalScoreOfCategoty}
+                      </p>
+                    </div>
+                  </>
+                )}
+                {!selectedCategory && (
+                  <div className="flex flex-col flex-grow overflow-y-auto pr-4 gap-2">
+                    <p className="text-bold text-xl">Feedback Overall</p>
+                    <p className="text-sm text-gray-300">
+                      {data.feedback.overallImpression}
+                    </p>
+                    <p className="text-bold text-xl">Next Step</p>
+                    <div className="text-sm text-gray-300">
+                      {data.feedback.nextSteps.map((item, index) => (
+                        <p key={index}>
+                          {index + 1}.{item}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <DialogFooter className="flex-shrink-0">
-                  <Button>Get your XP!</Button>
+                  <Button
+                    disabled={isLoadingSubmit}
+                    onClick={() => {
+                      setIsCompleted(true);
+                      onGetExp();
+                    }}
+                  >
+                    Get your XP!
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             )}
