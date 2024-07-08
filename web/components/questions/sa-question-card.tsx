@@ -174,7 +174,7 @@ function QuestionCardIncomplete({
     <Card className="mt-3">
       <QuestionHeader
         heading="Short Answer Question"
-        description="The short answer question is unlocked after you complete the quiz."
+        description="Write a few sentences."
         buttonLabel="Start Writing"
         disabled={false}
       >
