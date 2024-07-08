@@ -611,7 +611,14 @@ export async function getFeedbackLAquestion(
     studentResponse: answer,
   });
 
-  const result = await getFeedback.json();
+  const getData = await getFeedback.json();
+
+  const randomExamples =
+    getData.exampleRevisions[
+      Math.floor(Math.random() * getData.exampleRevisions.length)
+    ];
+
+  const result = { ...getData, exampleRevisions: randomExamples };
 
   return NextResponse.json(
     {
@@ -626,7 +633,7 @@ export async function answerLAQuestion(
   req: ExtendedNextRequest,
   { params: { article_id, question_id } }: SubRequestContext
 ) {
-  const { answer, timeRecorded } = await req.json();
+  const { answer, feedback, timeRecorded } = await req.json();
 
   const question = await db
     .collection("new-articles")
@@ -637,42 +644,48 @@ export async function answerLAQuestion(
 
   const data = question.data() as LARecord;
 
-  // Update user record
-  // await db
-  //   .collection("users")
-  //   .doc(req.session?.user.id as string)
-  //   .collection("article-records")
-  //   .doc(article_id)
-  //   .collection("laq-records")
-  //   .doc(question_id)
-  //   .set({
-  //     id: question_id,
-  //     time_recorded: timeRecorded,
-  //     question: data.question,
-  //     answer,
-  //     suggested_answer: data.suggested_answer,
-  //     created_at: new Date().toISOString(),
-  //   });
+  //Update user record
+  await db
+    .collection("users")
+    .doc(req.session?.user.id as string)
+    .collection("article-records")
+    .doc(article_id)
+    .collection("laq-records")
+    .doc(question_id)
+    .set({
+      id: question_id,
+      time_recorded: timeRecorded,
+      question: data.question,
+      answer,
+      feedback,
+      created_at: new Date().toISOString(),
+    });
 
   // Update records
-  // await db
-  //   .collection("users")
-  //   .doc(req.session?.user.id as string)
-  //   .collection("article-records")
-  //   .doc(article_id)
-  //   .set(
-  //     {
-  //       status: QuizStatus.COMPLETED_SAQ,
-  //       updated_at: new Date().toISOString(),
-  //     },
-  //     { merge: true }
-  //   );
+  await db
+    .collection("users")
+    .doc(req.session?.user.id as string)
+    .collection("article-records")
+    .doc(article_id)
+    .set(
+      {
+        status: QuizStatus.COMPLETED_LAQ,
+        updated_at: new Date().toISOString(),
+      },
+      { merge: true }
+    );
 
-  // return NextResponse.json(
-  //   {
-  //     state: QuestionState.COMPLETED,
-  //     answer,
-  //   },
-  //   { status: 200 }
-  // );
+  const scores: number[] = Object.values(feedback.scores);
+
+  const sumScores = scores.reduce<number>((a, b) => a + b, 0);
+
+  return NextResponse.json(
+    {
+      state: QuestionState.COMPLETED,
+      answer,
+      feedback,
+      sumScores,
+    },
+    { status: 200 }
+  );
 }
