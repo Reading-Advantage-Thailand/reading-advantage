@@ -210,7 +210,7 @@ function QuestionCardIncomplete({
     <Card className="mt-3">
       <QuestionHeader
         heading="Long Answer Question"
-        description="The long answer question is unlocked after you complete the quiz."
+        description="Write an essay."
         buttonLabel="Practice Writing"
         disabled={false}
       >
