@@ -30,7 +30,7 @@ export default async function ArticleCard({
     <div className="mt-4 md:basis-3/5">
       <Card>
         <CardHeader>
-          <CardTitle className="font-bold text-3xl md:text-3xl bg-black bg-opacity-50">
+          <CardTitle className="font-bold text-3xl md:text-3xl">
             {article.title}
           </CardTitle>
           <div className="flex flex-wrap gap-3">
