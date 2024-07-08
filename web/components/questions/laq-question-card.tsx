@@ -31,6 +31,7 @@ import { useCurrentLocale } from "@/locales/client";
 import { localeNames } from "@/configs/locale-config";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
+import { toast } from "../ui/use-toast";
 
 interface Props {
   userId: string;
@@ -401,7 +402,6 @@ function LAQuestion({
 
   const finalScoreOfCategoty = data.feedback.scores[selectedCategory];
 
-  console.log("user level => ", userLevel);
   return (
     <CardContent>
       <form onSubmit={handleSubmit(onSubmitted)}>
@@ -429,14 +429,9 @@ function LAQuestion({
           {...register("answer")}
           onChange={(e) => setStudentResponse(e.target.value)}
         />
-<<<<<<< HEAD
-        <div className="space-x-2">
-          <Button variant="outlined" onClick={handleCancel}>
-=======
         {errorText && <p className="text-red-500">{errorText}</p>}
         <div className="space-x-2 mt-3">
           <Button variant="outline" onClick={handleCancel}>
->>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
             {t("cancelButton")}
           </Button>
           <Dialog>
@@ -462,88 +457,64 @@ function LAQuestion({
                 <div className="flex flex-wrap gap-2 justify-center">
                   <Button
                     className="rounded-full"
-                    size="small"
+                    size="sm"
                     onClick={() => handleCategoryChange("vocabularyUse")}
                     variant={
-<<<<<<< HEAD
-                      selectedCategory === "vocabularyUse" ? "text" : "outlined"
-=======
                       selectedCategory === "vocabularyUse"
                         ? "default"
                         : "outline"
->>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Vocabulary Use
                   </Button>
                   <Button
                     className="rounded-full"
-                    size="small"
+                    size="sm"
                     onClick={() => handleCategoryChange("grammarAccuracy")}
                     variant={
                       selectedCategory === "grammarAccuracy"
-<<<<<<< HEAD
-                        ? "text"
-                        : "outlined"
-=======
                         ? "default"
                         : "outline"
->>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Grammar Accuracy
                   </Button>
                   <Button
                     className="rounded-full"
-                    size="small"
+                    size="sm"
                     onClick={() => handleCategoryChange("clarityAndCoherence")}
                     variant={
                       selectedCategory === "clarityAndCoherence"
-<<<<<<< HEAD
-                        ? "text"
-                        : "outlined"
-=======
                         ? "default"
                         : "outline"
->>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Clarity and Coherence
                   </Button>
                   <Button
                     className="rounded-full"
-                    size="small"
+                    size="sm"
                     onClick={() =>
                       handleCategoryChange("complexityAndStructure")
                     }
                     variant={
                       selectedCategory === "complexityAndStructure"
-<<<<<<< HEAD
-                        ? "text"
-                        : "outlined"
-=======
                         ? "default"
                         : "outline"
->>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Complexity and Structure
                   </Button>
                   <Button
                     className="rounded-full"
-                    size="small"
+                    size="sm"
                     onClick={() =>
                       handleCategoryChange("contentAndDevelopment")
                     }
                     variant={
                       selectedCategory === "contentAndDevelopment"
-<<<<<<< HEAD
-                        ? "text"
-                        : "outlined"
-=======
                         ? "default"
                         : "outline"
->>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                     }
                   >
                     Content and Development
@@ -585,13 +556,9 @@ function LAQuestion({
                       {feedbackData.result.overallImpression}
                     </p>
                     <p className="text-bold text-xl">Example Revisions</p>
-<<<<<<< HEAD
-                    <p>{feedbackData.result.exampleRevisions.length}</p>
-=======
                     <p className="text-sm text-gray-300">
                       {feedbackData.result.exampleRevisions}
                     </p>
->>>>>>> 8acbdc3 (feat:record user answer and feedback and get xp from scores)
                   </div>
                 )}
 
