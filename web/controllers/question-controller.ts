@@ -510,7 +510,7 @@ export async function getLAQuestion(
         {
           message: "User already answered",
           result: {
-            id: record.docs[0].id,
+            id: record.docs[0]?.id,
             question: data.question,
           },
           suggested_answer: data.suggested_answer,
@@ -564,7 +564,7 @@ export async function getLAQuestion(
     return NextResponse.json(
       {
         result: {
-          id: questions.docs[0].id,
+          id: questions.docs[0]?.id,
           question: data.question,
         },
         state: QuestionState.INCOMPLETE,
