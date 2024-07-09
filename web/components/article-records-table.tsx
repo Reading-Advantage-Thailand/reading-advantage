@@ -114,6 +114,7 @@ export const columns: ColumnDef<ArticleRecord>[] = [
         [QuizStatus.READ]: "Read",
         [QuizStatus.COMPLETED_MCQ]: "Completed MCQ",
         [QuizStatus.COMPLETED_SAQ]: "Completed SAQ",
+        [QuizStatus.COMPLETED_LAQ]: "Completed LAQ",
         [QuizStatus.UNRATED]: "Unrated",
       };
       return <div className="text-center font-medium">{map[status]}</div>;

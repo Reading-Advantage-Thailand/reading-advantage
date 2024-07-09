@@ -74,7 +74,11 @@ export default async function ArticleQuizPage({
 
           <MCQuestionCard userId={user.id} articleId={params.articleId} />
           <SAQuestionCard userId={user.id} articleId={params.articleId} />
-          <LAQuestionCard userId={user.id} articleId={params.articleId} />
+          <LAQuestionCard
+            userId={user.id}
+            userLevel={user.level}
+            articleId={params.articleId}
+          />
         </div>
       </div>
       <ChatBotFloatingChatButton
