@@ -1,153 +1,139 @@
-import db from "@/configs/firestore-config";
-import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
+// original
+// import db from "@/configs/firestore-config";
+// import { authOptions } from "@/lib/auth";
+// import { getServerSession } from "next-auth";
+// import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: Request, res: Response) {
+// export async function GET(req: Request, res: Response) {
+//   try {
+//     const session = await getServerSession(authOptions);
+//     if (!session) {
+//       return new Response(
+//         JSON.stringify({
+//           message: "Unauthorized",
+//         }),
+//         { status: 403 }
+//       );
+//     }
+//     let results: any[] = [];
+
+//     const userId = session.user.id;
+//     const articlesRef = db.collection("new-articles");
+//     const snapshot = await articlesRef.get();
+//     const articles = snapshot.docs.map((doc) => doc.data());
+
+//     for (const article of articles) {
+//       if (
+//         typeof article.id === "string" &&
+//         article.id.trim() !== "" &&
+//         article.id !== undefined
+//       ) {
+//         const articleRecord = await db
+//           .collection("users")
+//           .doc(userId)
+//           .collection("article-records")
+//           .doc(article.id)
+//           .get();
+
+//         // If the article record exists and is the same as the article, add is_approved field to the article
+//         if (
+//           articleRecord.data() !== undefined &&
+//           articleRecord.data()?.id === article.id &&
+//           !results.includes(articleRecord.data())
+//         ) {
+//           results.push({ ...article, is_approved: true });
+//         } else {
+//           results.push(article);
+//         }
+//       }
+//     }
+
+//     return new Response(
+//       JSON.stringify({
+//         passages: results,
+//       }),
+//       { status: 200 }
+//     );
+//   } catch (error: any) {
+//     return new Response(
+//       JSON.stringify({
+//         message: "Internal server error",
+//         error: error.message || error.toString(),
+//       }),
+//       { status: 500 }
+//     );
+//   }
+// }
+
+// test 2
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import  db  from "@/configs/firestore-config";
+
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
-      return new Response(
-        JSON.stringify({
-          message: "Unauthorized",
-        }),
-        { status: 403 }
-      );
+      return new Response(JSON.stringify({ message: "Unauthorized" }), { status: 403 });
     }
-    let results: any[] = [];
 
     const userId = session.user.id;
-    const articlesRef = db.collection("new-articles");
-    const snapshot = await articlesRef.get();
-    const articles = snapshot.docs.map((doc) => doc.data());
+    const url = new URL(req.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    // const pageSize = 1000; // Adjust based on your needs
+    const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
 
-    for (const article of articles) {
-      if (
-        typeof article.id === "string" &&
-        article.id.trim() !== "" &&
-        article.id !== undefined
-      ) {
-        const articleRecord = await db
-          .collection("users")
-          .doc(userId)
-          .collection("article-records")
-          .doc(article.id)
-          .get();
+    const type = url.searchParams.get('type');
+    const genre = url.searchParams.get('genre');
+    const subgenre = url.searchParams.get('subgenre');
+    const level = url.searchParams.get('level');
 
-        // If the article record exists and is the same as the article, add is_approved field to the article
-        if (
-          articleRecord.data() !== undefined &&
-          articleRecord.data()?.id === article.id &&
-          !results.includes(articleRecord.data())
-        ) {
-          results.push({ ...article, is_approved: true });
-        } else {
-          results.push(article);
-        }
-      }
-    }
+    // 1. Use pagination
+    let query = db.collection("new-articles")
+      .orderBy("id")
+      .limit(pageSize)
+      .offset((page - 1) * pageSize);
 
-    return new Response(
-      JSON.stringify({
-        passages: results,
-      }),
-      { status: 200 }
+    // 2. Implement efficient querying
+    if (type) query = query.where("type", "==", type);
+    if (genre) query = query.where("genre", "==", genre);
+    if (subgenre) query = query.where("subgenre", "==", subgenre);
+    if (level) query = query.where("level", "==", level);
+
+    const snapshot = await query.get();
+    const articles = snapshot.docs.map(doc => doc.data());
+
+    // 3. Use batch processing for user-specific data
+    const batch = db.batch();
+    const userArticleRefs = articles.map(article => 
+      db.collection("users").doc(userId).collection("article-records").doc(article.id)
     );
+
+    const userArticles = await db.getAll(...userArticleRefs);
+
+    const results = articles.map((article, index) => {
+      const userArticle = userArticles[index].data();
+      return userArticle && userArticle.id === article.id
+        ? { ...article, is_approved: true }
+        : article;
+    });
+
+    // 4. Get total count for pagination
+    const countSnapshot = await db.collection("new-articles").count().get();
+    const totalCount = countSnapshot.data().count;
+
+    return new Response(JSON.stringify({
+      passages: results,
+      totalPages: Math.ceil(totalCount / pageSize),
+      currentPage: page
+    }), { status: 200 });
+
   } catch (error: any) {
-    return new Response(
-      JSON.stringify({
-        message: "Internal server error",
-        error: error.message || error.toString(),
-      }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({
+      message: "Internal server error",
+      error: error.message || error.toString(),
+    }), { status: 500 });
   }
 }
 
-// export async function GET(req: NextRequest) {
-//     try {
-//       const { searchParams } = new URL(req.url);
-//       const level = parseInt(searchParams.get("level") || "1");
-//       const type = searchParams.get("type");
-//       const genre = searchParams.get("genre");
-//       const subgenre = searchParams.get("subgenre");
-//       const page = parseInt(searchParams.get("page") || "1");
-//       const pageSize = parseInt(searchParams.get("pageSize") || "10");
-//       const sortBy = searchParams.get("sortBy") || "raLevel";
-//       const sortOrder = searchParams.get("sortOrder") || "asc";
 
-//       // Function to replace all dashes with spaces
-//       const replaceSpaces = (str: string) => str.replace(/-/g, " ");
-
-//       // Base query
-//       let articlesQuery = db.collection("new-articles")
-//         .where("raLevel", ">=", level - 1)
-//         .where("raLevel", "<=", level + 1);
-
-//       // Apply filters
-//       if (type) articlesQuery = articlesQuery.where('type', '==', type);
-//       if (genre) articlesQuery = articlesQuery.where('genre', '==', replaceSpaces(genre));
-//       if (subgenre) articlesQuery = articlesQuery.where('subGenre', '==', replaceSpaces(subgenre));
-
-//       // Apply sorting
-//       articlesQuery = articlesQuery.orderBy(sortBy, sortOrder as 'asc' | 'desc');
-
-//       // Get total count
-//       const totalCount = (await articlesQuery.count().get()).data().count;
-
-//       // Apply pagination
-//       articlesQuery = articlesQuery.offset((page - 1) * pageSize).limit(pageSize);
-
-//       const articlesSnapshot = await articlesQuery.get();
-
-//       // If user is authenticated, get read status
-//       const session = await getServerSession(authOptions);
-//       const userId = session?.user?.id;
-
-//       const articles = await Promise.all(articlesSnapshot.docs.map(async (doc) => {
-//         const articleData = doc.data();
-//         let isRead = false;
-//         let status = null;
-
-//         if (userId) {
-//           const articleRecord = await db
-//             .collection("user-article-records")
-//             .doc(`${userId}-${doc.id}`)
-//             .get();
-//           const userArticleRecord = articleRecord.data();
-//           isRead = !!userArticleRecord;
-//           status = userArticleRecord?.status;
-//         }
-
-//         return {
-//           articleId: doc.id,
-//           type: articleData.type,
-//           subgenre: articleData.subGenre,
-//           genre: articleData.genre,
-//           raLevel: articleData.raLevel,
-//           title: articleData.title,
-//           cefrLevel: articleData.cefrLevel,
-//           summary: 'wait for summary',
-//           isRead,
-//           status,
-//           averageRating: articleData.averageRating,
-//           totalRatings: articleData.totalRatings,
-//           topic: articleData.topic,
-//           readCount: articleData.readCount
-//         };
-//       }));
-
-//       return NextResponse.json({
-//         data: articles,
-//         pagination: {
-//           page,
-//           pageSize,
-//           totalCount,
-//           totalPages: Math.ceil(totalCount / pageSize)
-//         }
-//       });
-
-//     } catch (error) {
-//       console.error('Error in /api/articles:', error);
-//       return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-//     }
-//   }
