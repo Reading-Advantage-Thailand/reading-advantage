@@ -166,7 +166,7 @@ function QuestionCardComplete({ resp }: { resp: QuestionResponse }) {
           Long Answer Question
         </CardTitle>
         <CardDescription>
-          You already completed the long answer question.
+          <p>You already completed the long answer question.</p>
           <Button className="mt-4" disabled={true}>
             Practice Completed
           </Button>
@@ -423,13 +423,13 @@ function LAQuestion({
           disabled={isCompleted}
           id="long-answer"
           minRows={5}
-          maxRows={5}
           placeholder="Type your answer here..."
           className="w-full mt-3 p-3 rounded-sm resize-none appearance-none overflow-hidden bg-gray-100 dark:bg-gray-900 focus:outline-none"
           {...register("answer")}
           onChange={(e) => setStudentResponse(e.target.value)}
         />
-        {errorText && <p className="text-red-500">{errorText}</p>}
+        {errorText ||
+          (!studentResponse && <p className="text-red-500">{errorText}</p>)}
         <div className="space-x-2 mt-3">
           <Button variant="outline" onClick={handleCancel}>
             {t("cancelButton")}
@@ -524,21 +524,19 @@ function LAQuestion({
                   <>
                     <DialogDescription className="flex flex-col gap-2">
                       <div>
-                        <p className="text-lg text-white">
-                          Area for impovement
-                        </p>
+                        <p className="text-lg ">Area for impovement</p>
                         <p>{Category?.areasForImprovement}</p>
                       </div>
                       <div>
-                        <p className="text-lg text-white">Examples</p>
+                        <p className="text-lg ">Examples</p>
                         <p>{Category?.examples}</p>
                       </div>
                       <div>
-                        <p className="text-lg text-white">Strength</p>
+                        <p className="text-lg ">Strength</p>
                         <p>{Category?.strengths}</p>
                       </div>
                       <div>
-                        <p className="text-lg text-white">Suggestions</p>
+                        <p className="text-lg ">Suggestions</p>
                         <p>{Category?.suggestions}</p>
                       </div>
                     </DialogDescription>
@@ -552,11 +550,11 @@ function LAQuestion({
                 {!selectedCategory && (
                   <div className="flex flex-col flex-grow overflow-y-auto pr-4 gap-2">
                     <p className="text-bold text-xl">Feedback Overall</p>
-                    <p className="text-sm text-gray-300">
+                    <p className="text-sm ">
                       {feedbackData.result.overallImpression}
                     </p>
                     <p className="text-bold text-xl">Example Revisions</p>
-                    <p className="text-sm text-gray-300">
+                    <p className="text-sm ">
                       {feedbackData.result.exampleRevisions}
                     </p>
                   </div>
@@ -564,7 +562,9 @@ function LAQuestion({
 
                 <DialogFooter className="flex-shrink-0">
                   <DialogClose>
-                    <Button>Revise Your Response</Button>
+                    <Button onClick={() => setSelectedCategory("")}>
+                      Revise Your Response
+                    </Button>
                   </DialogClose>
                 </DialogFooter>
               </DialogContent>
@@ -657,21 +657,19 @@ function LAQuestion({
                   <>
                     <DialogDescription className="flex flex-col gap-2">
                       <div>
-                        <p className="text-lg text-white">
-                          Area for impovement
-                        </p>
+                        <p className="text-lg ">Area for impovement</p>
                         <p>{finalCategory?.areasForImprovement}</p>
                       </div>
                       <div>
-                        <p className="text-lg text-white">Examples</p>
+                        <p className="text-lg ">Examples</p>
                         <p>{finalCategory?.examples}</p>
                       </div>
                       <div>
-                        <p className="text-lg text-white">Strength</p>
+                        <p className="text-lg ">Strength</p>
                         <p>{finalCategory?.strengths}</p>
                       </div>
                       <div>
-                        <p className="text-lg text-white">Suggestions</p>
+                        <p className="text-lg ">Suggestions</p>
                         <p>{finalCategory?.suggestions}</p>
                       </div>
                     </DialogDescription>
@@ -685,11 +683,11 @@ function LAQuestion({
                 {!selectedCategory && (
                   <div className="flex flex-col flex-grow overflow-y-auto pr-4 gap-2">
                     <p className="text-bold text-xl">Feedback Overall</p>
-                    <p className="text-sm text-gray-300">
+                    <p className="text-sm ">
                       {data.feedback.overallImpression}
                     </p>
                     <p className="text-bold text-xl">Next Step</p>
-                    <div className="text-sm text-gray-300">
+                    <div className="text-sm ">
                       {data.feedback.nextSteps.map((item, index) => (
                         <p key={index}>
                           {index + 1}.{item}
