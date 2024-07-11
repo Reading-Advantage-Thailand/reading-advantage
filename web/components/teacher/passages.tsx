@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Input } from "../ui/input";
 import { Checkbox } from "@mui/material";
 import { Button } from "../ui/button";
@@ -13,6 +13,8 @@ import {
 import { CaretSortIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "../article-showcase-card";
+import axios from "axios";
+import { useDebounce } from "use-debounce";
 
 interface CustomCheckboxProps {
   label: string;
@@ -57,6 +59,11 @@ const CustomCheckbox: React.FC<CustomCheckboxProps> = ({
   );
 };
 
+const fetchArticles = async (params: any) => {
+  const { data } = await axios.get("/api/articles", { params });
+  return data;
+};
+
 export default function Passages({ passages }: PassagesProps) {
   const [selectedGenre, setSelectedGenre] = useState("");
   const [selectedSubgenre, setSelectedSubgenre] = useState("");
@@ -75,48 +82,49 @@ export default function Passages({ passages }: PassagesProps) {
   const tp = useScopedI18n("components.passages");
   const [sortOption, setSortOption] = useState("");
   const [sortOrder, setSortOrder] = useState("Ascending");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
   const FICTION = "fiction";
   const NON_FICTION = "nonfiction";
 
-  // const isSystemPathOrRole = router.pathname === "/system";
-  //   const filteredAndSortedPassages = useMemo(() => {
-  //     let result = passages.filter(passage =>
-  //       passage.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) &&
-  //       (!selectedGenre || passage.genre === selectedGenre) &&
-  //       (!selectedSubgenre || passage.subgenre === selectedSubgenre) &&
-  //       (selectedLevels.length === 0 || selectedLevels.includes(passage.ra_level.toString()))
-  //     );
+  // const filteredAndSortedPassages = useMemo(() => {
+  //   let result = passages.filter(passage =>
+  //     passage.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) &&
+  //     (!selectedGenre || passage.genre === selectedGenre) &&
+  //     (!selectedSubgenre || passage.subgenre === selectedSubgenre) &&
+  //     (selectedLevels.length === 0 || selectedLevels.includes(passage.ra_level.toString()))&&
+  //     (!type || passage.type === type)
+  //   );
 
-  //     if (sortOption) {
-  //       result.sort((a, b) => {
-  //         const compareValue = sortOption === "rating"
-  //           ? a.average_rating - b.average_rating
-  //           : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-  //         return sortOrder === "Ascending" ? compareValue : -compareValue;
-  //       });
-  //     }
+  //   if (sortOption) {
+  //     result.sort((a, b) => {
+  //       const compareValue = sortOption === "rating"
+  //         ? a.average_rating - b.average_rating
+  //         : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  //       return sortOrder === "Ascending" ? compareValue : -compareValue;
+  //     });
+  //   }
 
-  //     return result;
-  //   }, [passages, debouncedSearchTerm, selectedGenre, selectedSubgenre, selectedLevels, sortOption, sortOrder]);
+  //   return result;
+  // }, [passages, debouncedSearchTerm, selectedGenre, selectedSubgenre, selectedLevels, sortOption, sortOrder]);
 
-  //   const currentItems = useMemo(() => {
-  //     const startIndex = (currentPage - 1) * itemsPerPage;
-  //     return filteredAndSortedPassages.slice(startIndex, startIndex + itemsPerPage);
-  //   }, [filteredAndSortedPassages, currentPage]);
+  // const currentItems = useMemo(() => {
+  //   const startIndex = (currentPage - 1) * itemsPerPage;
+  //   return filteredAndSortedPassages.slice(startIndex, startIndex + itemsPerPage);
+  // }, [filteredAndSortedPassages, currentPage]);
 
-  //   const handleSortChange = useCallback((value: React.SetStateAction<string>) => {
-  //     setSortOption(value);
-  //     setSortOrder(prevOrder => prevOrder === "Ascending" ? 'Descending' : 'Ascending');
-  //   }, []);
+  // const handleSortChange = useCallback((value: React.SetStateAction<string>) => {
+  //   setSortOption(value);
+  //   setSortOrder(prevOrder => prevOrder === "Ascending" ? 'Descending' : 'Ascending');
+  // }, []);
 
-  //   const handleSelectionChange = useCallback((level: string) => {
-  //     setSelectedLevels(prevLevels =>
-  //       prevLevels.includes(level)
-  //         ? prevLevels.filter(l => l !== level)
-  //         : [...prevLevels, level]
-  //     );
-  //   }, []);
+  // const handleSelectionChange = useCallback((level: string) => {
+  //   setSelectedLevels(prevLevels =>
+  //     prevLevels.includes(level)
+  //       ? prevLevels.filter(l => l !== level)
+  //       : [...prevLevels, level]
+  //   );
+  // }, []);
 
   const getSubgenres = (selectedGenre: string) => {
     let subgenresData: Set<string> = new Set();
@@ -156,7 +164,7 @@ export default function Passages({ passages }: PassagesProps) {
   };
 
   const sortPassages = (passages: any[]) => {
-    return passages.sort((a, b) => {
+    return (passages || []).sort((a, b) => {
       if (sortOption === "rating") {
         return sortOrder === "Ascending"
           ? a.average_rating - b.average_rating
@@ -171,9 +179,19 @@ export default function Passages({ passages }: PassagesProps) {
     });
   };
 
-  const displayedItems = isFiltered
-    ? filteredPassages.slice((currentPage - 1) * 10, currentPage * 10)
-    : passages.slice((currentPage - 1) * 10, currentPage * 10);
+  // const displayedItems = isFiltered
+  //   ? filteredPassages.slice((currentPage - 1) * 10, currentPage * 10)
+  //   : passages.slice((currentPage - 1) * 10, currentPage * 10);
+
+  let displayedItems = [];
+  if (isFiltered && filteredPassages) {
+    displayedItems = filteredPassages.slice(
+      (currentPage - 1) * 10,
+      currentPage * 10
+    );
+  } else if (passages) {
+    displayedItems = passages.slice((currentPage - 1) * 10, currentPage * 10);
+  }
 
   const filterPassages = (
     currentItems: Passage[],
@@ -188,7 +206,7 @@ export default function Passages({ passages }: PassagesProps) {
     const lowerCaseSelectedGenre = selectedGenre.toLowerCase();
     const lowerCaseSelectedSubgenre = selectedSubgenre.toLowerCase();
 
-    const filteredItems = currentItems.filter((passage) => {
+    const filteredItems = (currentItems || []).filter((passage) => {
       const titleMatch =
         !searchTerm ||
         passage.title.toLowerCase().includes(lowerCaseSearchTerm);
@@ -229,7 +247,7 @@ export default function Passages({ passages }: PassagesProps) {
       selectedLevels
     );
     setFilteredPassages(filtered);
-    setIsFiltered(currentItems.length !== filtered.length);
+    setIsFiltered((currentItems || []).length !== filtered.length);
   }, [
     selectedGenre,
     currentItems,
@@ -431,7 +449,9 @@ export default function Passages({ passages }: PassagesProps) {
         <div className="flex-1 text-sm text-muted-foreground">
           {t("select", {
             selected: displayedItems.length + (currentPage - 1) * 10,
-            total: isFiltered ? filteredPassages.length : passages.length,
+            total: isFiltered
+              ? filteredPassages.length
+              : (passages || []).length,
           })}
         </div>
         <div className="space-x-2">
@@ -456,8 +476,9 @@ export default function Passages({ passages }: PassagesProps) {
               setCurrentPage(
                 currentPage <
                   Math.ceil(
-                    (isFiltered ? filteredPassages.length : passages.length) /
-                      itemsPerPage
+                    (isFiltered
+                      ? filteredPassages.length
+                      : (passages || []).length) / itemsPerPage
                   )
                   ? currentPage + 1
                   : currentPage
@@ -465,20 +486,22 @@ export default function Passages({ passages }: PassagesProps) {
               setSelectedItems(
                 currentPage <
                   Math.ceil(
-                    (isFiltered ? filteredPassages.length : passages.length) /
-                      itemsPerPage
+                    (isFiltered
+                      ? filteredPassages.length
+                      : (passages || []).length) / itemsPerPage
                   )
                   ? selectedItems + displayedItems.length
                   : isFiltered
                   ? filteredPassages.length
-                  : passages.length
+                  : (passages || []).length
               );
             }}
             disabled={
               currentPage ===
               Math.ceil(
-                (isFiltered ? filteredPassages.length : passages.length) /
-                  itemsPerPage
+                (isFiltered
+                  ? filteredPassages.length
+                  : (passages || []).length) / itemsPerPage
               )
             }
           >
@@ -490,6 +513,7 @@ export default function Passages({ passages }: PassagesProps) {
   );
 }
 
+// console.log("Passages");
 
 // 'use client'
 // import React, { useState, useCallback, useMemo } from "react";
@@ -506,8 +530,8 @@ export default function Passages({ passages }: PassagesProps) {
 // import { CaretSortIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 // import { useScopedI18n } from "@/locales/client";
 // import ArticleShowcaseCard from "../article-showcase-card";
+// import axios from "axios";
 
-// // ... (keep the type definitions)
 // type Passage = {
 //   searchTerm: string;
 //   id: string;
@@ -528,6 +552,11 @@ export default function Passages({ passages }: PassagesProps) {
 //   passages: Passage[];
 // };
 
+// const fetchArticles = async (params: any) => {
+//   const { data } = await axios.get('/api/articles', { params });
+//   return data;
+// };
+
 // export default function OptimizedPassages({ passages }: PassagesProps) {
 //   const [searchTerm, setSearchTerm] = useState("");
 //   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
@@ -543,7 +572,7 @@ export default function Passages({ passages }: PassagesProps) {
 //   const tp = useScopedI18n("components.passages");
 
 //   const filteredAndSortedPassages = useMemo(() => {
-//     let result = passages.filter(passage =>
+//     let result = (passages || []).filter(passage =>
 //       passage.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) &&
 //       (!selectedGenre || passage.genre === selectedGenre) &&
 //       (!selectedSubgenre || passage.subgenre === selectedSubgenre) &&

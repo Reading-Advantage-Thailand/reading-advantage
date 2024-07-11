@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import { Button } from "./ui/button";
 import { Article } from "@/components/models/article-model";
 import { toast } from './ui/use-toast';
-import { useRouter } from 'next/navigation';
 import {
     Dialog,
     DialogContent,
@@ -20,7 +19,6 @@ type Props = {
   };
 
 export default function ArticleActions({ article, articleId }: Props) {
-    const router = useRouter();
     const [open, setOpen] = useState(false);
 
     const handleClose = () => {
@@ -40,7 +38,6 @@ export default function ArticleActions({ article, articleId }: Props) {
             title: "Article Deleted",
             description: `The article with title: ${article.title} has been deleted`,
         });
-        router.push('/system');
     } catch (error) {
         console.error(`Failed to delete article with ID: ${articleId}`, error);
         toast({
@@ -57,7 +54,6 @@ export default function ArticleActions({ article, articleId }: Props) {
             title: "Article Approved",
             description: "The  article has been approved",
         })
-    router.push('/system')
       };
 
   return (
