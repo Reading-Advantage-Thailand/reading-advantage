@@ -15,15 +15,22 @@ export default async function SystemPage() {
   }
 
   async function getPassages() {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/passage`,
-      {
-        method: "GET",
-        headers: headers(),
-      }
-    );
-    const res = await response.json();
-    return res;
+    try{
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/passage`,
+        {
+          method: "GET",
+          headers: headers(),
+        }
+      );
+      const res = await response.json();
+      return res;
+      // return res.data;
+    } catch (error) {
+      console.error('failed to fetch passages: ', error);
+      return [];
+    }
+
   }
   const passages = await getPassages();
   

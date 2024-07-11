@@ -79,9 +79,11 @@ export async function GET(req: Request) {
 
     const userId = session.user.id;
     const url = new URL(req.url);
+    console.log('url', url);
+    
     const page = parseInt(url.searchParams.get('page') || '1');
-    // const pageSize = 1000; // Adjust based on your needs
-    const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
+    const pageSize = 50;
+    // const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
 
     const type = url.searchParams.get('type');
     const genre = url.searchParams.get('genre');
