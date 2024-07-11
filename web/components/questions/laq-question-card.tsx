@@ -32,6 +32,7 @@ import { localeNames } from "@/configs/locale-config";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
+import { isEmpty } from "lodash";
 
 interface Props {
   userId: string;
@@ -244,6 +245,7 @@ function LAQuestion({
   const longAnswerSchema = z.object({
     answer: z
       .string()
+      .trim()
       .min(1, {
         message: "Answer is required",
       })
@@ -429,8 +431,7 @@ function LAQuestion({
           {...register("answer")}
           onChange={(e) => setStudentResponse(e.target.value)}
         />
-        {errorText ||
-          (!studentResponse && <p className="text-red-500">{errorText}</p>)}
+        {errorText && <p className="text-red-500">{errorText}</p>}
         <div className="space-x-2 mt-3">
           <Button variant="outline" onClick={handleCancel}>
             {t("cancelButton")}
@@ -575,7 +576,11 @@ function LAQuestion({
             <DialogTrigger asChild>
               <Button
                 type="submit"
-                disabled={isLoadingSubmit || isLoadingFeedback}
+                disabled={
+                  isLoadingSubmit ||
+                  isLoadingFeedback ||
+                  isEmpty(studentResponse)
+                }
               >
                 {isLoadingSubmit && (
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
