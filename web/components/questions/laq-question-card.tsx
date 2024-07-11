@@ -324,42 +324,43 @@ function LAQuestion({
     } else if (data.answer.length < minimumCharacter) {
       setErrorText(`Please Enter minimum ${minimumCharacter} character...`);
     } else {
-      console.log("data => ", data.answer);
       setIsLoadingSubmit(true);
       setPaused(true);
-      fetch(
-        `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            answer: data.answer,
-            preferredLanguage: localeNames[currentLocale],
-          }),
-        }
-      )
-        .then((res) => res.json())
-        .then((feedback) => {
-          setFeedbackData(feedback);
-          return fetch(
-            `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}`,
-            {
-              method: "POST",
-              body: JSON.stringify({
-                answer: data.answer,
-                feedback: feedbackData.result,
-                timeRecorded: timer,
-              }),
-            }
-          )
-            .then((res) => res.json())
-            .then((data) => {
-              setData(data);
-              setRating(data.sumScores);
-            })
-            .finally(() => {
-              setIsLoadingSubmit(false);
-            });
-        });
+
+      try {
+        const feedbackResponse = await fetch(
+          `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              answer: data.answer,
+              preferredLanguage: localeNames[currentLocale],
+            }),
+          }
+        );
+
+        const feedback = await feedbackResponse.json();
+        setFeedbackData(feedback);
+        const submitAnswer = await fetch(
+          `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              answer: data.answer,
+              feedback: feedback.result, // use feedback instead of feedbackData
+              timeRecorded: timer,
+            }),
+          }
+        );
+
+        const finalFeedback = await submitAnswer.json();
+        setData(finalFeedback);
+        setRating(finalFeedback.sumScores);
+      } catch (error) {
+        console.error("Error submitting feedback:", error);
+      } finally {
+        setIsLoadingSubmit(false);
+      }
     }
   }
 
