@@ -32,7 +32,6 @@ import { localeNames } from "@/configs/locale-config";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
-import { isEmpty } from "lodash";
 
 interface Props {
   userId: string;
@@ -63,17 +62,6 @@ type QuestionResponse = {
 type AnswerResponse = {
   state: QuestionState;
   answer: string;
-  feedback: {
-    detailedFeedback: DetailedFeedback;
-    exampleRevisions: string;
-    nextSteps: [];
-    overallImpression: string;
-    scores: ScoreCategoty;
-  };
-};
-
-type FeedbackResponse = {
-  state: QuestionState;
   result: {
     detailedFeedback: DetailedFeedback;
     exampleRevisions: string;
@@ -242,42 +230,15 @@ function LAQuestion({
   handleCompleted: () => void;
   handleCancel: () => void;
 }) {
-  const longAnswerSchema = z.object({
-    answer: z
-      .string()
-      .trim()
-      .min(1, {
-        message: "Answer is required",
-      })
-      .max(1000, {
-        message: "Answer must be less than 1000 characters",
-      }),
-  });
-  type FormData = z.infer<typeof longAnswerSchema>;
-
   const t = useScopedI18n("components.laq");
   const tf = useScopedI18n("components.rate");
   const { timer, setPaused } = useContext(QuizContext);
   const [isCompleted, setIsCompleted] = React.useState<boolean>(false);
-  const [isLoadingFeedback, setIsLoadingFeedback] =
-    React.useState<boolean>(false);
-  const [isLoadingSubmit, setIsLoadingSubmit] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [rating, setRating] = React.useState<number>(3);
   const [data, setData] = useState<AnswerResponse>({
     state: QuestionState.LOADING,
     answer: "",
-    feedback: {
-      detailedFeedback: {},
-      exampleRevisions: "",
-      nextSteps: [],
-      overallImpression: "",
-      scores: {},
-    },
-  });
-  const [studentResponse, setStudentResponse] = useState("");
-  const [errorText, setErrorText] = useState("");
-  const [feedbackData, setFeedbackData] = useState<FeedbackResponse>({
-    state: QuestionState.INCOMPLETE,
     result: {
       detailedFeedback: {},
       exampleRevisions: "",
@@ -286,70 +247,62 @@ function LAQuestion({
       scores: {},
     },
   });
+
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const currentLocale = useCurrentLocale();
 
-  const minimumCharacter = 30 * (userLevel + 1);
+  const minimumCharacters = 30 * (userLevel + 1);
 
-  const { register, handleSubmit } = useForm<FormData>({
+  const longAnswerSchema = z.object({
+    answer: z
+      .string()
+      .trim()
+      .min(minimumCharacters, {
+        message: `Please Enter minimum ${minimumCharacters} character...`,
+      })
+      .max(2000, { message: "Answer must be less than 2000 characters..." }),
+    method: z.string(),
+  });
+
+  type FormData = z.infer<typeof longAnswerSchema>;
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(longAnswerSchema),
   });
 
-  const handleGetFeedback = (studentResponse: string) => {
-    if (studentResponse === "") {
-      setErrorText("Please Enter Text...");
-    } else if (studentResponse.length < minimumCharacter) {
-      setErrorText(`Please Enter minimum ${minimumCharacter} character...`);
-    } else {
-      setIsLoadingFeedback(true);
-      setErrorText("");
-      fetch(
+  async function onSubmitted(dataForm: FormData) {
+    setIsLoading(true);
+
+    try {
+      const feedbackResponse = await fetch(
         `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
         {
           method: "POST",
           body: JSON.stringify({
-            answer: studentResponse,
+            answer: dataForm.answer,
             preferredLanguage: localeNames[currentLocale],
           }),
         }
-      )
-        .then((res) => res.json())
-        .then((data) => setFeedbackData(data))
-        .finally(() => setIsLoadingFeedback(false));
-    }
-  };
+      );
 
-  async function onSubmitted(data: FormData) {
-    if (data.answer.length === 0) {
-      setErrorText("Please Enter Text...");
-    } else if (data.answer.length < minimumCharacter) {
-      setErrorText(`Please Enter minimum ${minimumCharacter} character...`);
-    } else {
-      setIsLoadingSubmit(true);
-      setPaused(true);
+      const feedback = await feedbackResponse.json();
+      setData({ ...feedback, answer: dataForm.answer });
 
-      try {
-        const feedbackResponse = await fetch(
-          `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              answer: data.answer,
-              preferredLanguage: localeNames[currentLocale],
-            }),
-          }
-        );
-
-        const feedback = await feedbackResponse.json();
-        setFeedbackData(feedback);
+      if (dataForm.method === "submit") {
         const submitAnswer = await fetch(
           `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}`,
           {
             method: "POST",
             body: JSON.stringify({
-              answer: data.answer,
-              feedback: feedback.result, // use feedback instead of feedbackData
+              answer: dataForm.answer,
+              feedback: feedback.result,
               timeRecorded: timer,
             }),
           }
@@ -358,16 +311,16 @@ function LAQuestion({
         const finalFeedback = await submitAnswer.json();
         setData(finalFeedback);
         setRating(finalFeedback.sumScores);
-      } catch (error) {
-        console.error("Error submitting feedback:", error);
-      } finally {
-        setIsLoadingSubmit(false);
       }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function onGetExp() {
-    setIsLoadingSubmit(true);
+    setIsLoading(true);
     fetch(
       `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/getxp`,
       {
@@ -389,21 +342,13 @@ function LAQuestion({
         handleCompleted();
       })
       .finally(() => {
-        setIsLoadingSubmit(false);
+        setIsLoading(false);
       });
   }
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(selectedCategory === category ? "" : category);
   };
-
-  const Category = feedbackData.result.detailedFeedback[selectedCategory];
-
-  const finalCategory = data.feedback.detailedFeedback[selectedCategory];
-
-  const scoreOfCategoty = feedbackData.result.scores[selectedCategory];
-
-  const finalScoreOfCategoty = data.feedback.scores[selectedCategory];
 
   return (
     <CardContent>
@@ -429,31 +374,49 @@ function LAQuestion({
           placeholder="Type your answer here..."
           className="w-full mt-3 p-3 rounded-sm resize-none appearance-none overflow-hidden bg-gray-100 dark:bg-gray-900 focus:outline-none"
           {...register("answer")}
-          onChange={(e) => setStudentResponse(e.target.value)}
         />
-        {errorText && <p className="text-red-500">{errorText}</p>}
+        {errors.answer?.message && (
+          <p className="text-red-500">{errors.answer?.message}</p>
+        )}
         <div className="space-x-2 mt-3">
           <Button variant="outline" onClick={handleCancel}>
             {t("cancelButton")}
           </Button>
           <Dialog>
-            <DialogTrigger asChild>
+            <DialogTrigger className="space-x-2">
               <Button
-                type="button"
-                disabled={isLoadingFeedback || isLoadingSubmit}
-                onClick={() => handleGetFeedback(studentResponse)}
+                type="submit"
+                disabled={isLoading}
+                {...register("method")}
+                onClick={() => setValue("method", "feedback")}
               >
-                {isLoadingFeedback && (
+                {isLoading && getValues("method") === "feedback" && (
                   <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 {t("feedbackButton")}
               </Button>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                {...register("method")}
+                onClick={() => {
+                  setPaused(true);
+                  setValue("method", "submit");
+                }}
+              >
+                {isLoading && getValues("method") === "submit" && (
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {t("submitButton")}
+              </Button>
             </DialogTrigger>
-            {!isLoadingFeedback && !errorText && (
+            {!isLoading && data.answer && (
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader className="text-left">
                   <DialogTitle className="font-bold text-2xl">
-                    Writing Feedback
+                    {getValues("method") === "feedback"
+                      ? "Writing Feedback"
+                      : "Final Feedback"}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-wrap gap-2 justify-center">
@@ -527,24 +490,44 @@ function LAQuestion({
                     <DialogDescription className="flex flex-col gap-2">
                       <div>
                         <p className="text-lg ">Area for impovement</p>
-                        <p>{Category?.areasForImprovement}</p>
+                        <p>
+                          {
+                            data.result?.detailedFeedback[selectedCategory]
+                              ?.areasForImprovement
+                          }
+                        </p>
                       </div>
                       <div>
                         <p className="text-lg ">Examples</p>
-                        <p>{Category?.examples}</p>
+                        <p>
+                          {
+                            data.result?.detailedFeedback[selectedCategory]
+                              ?.examples
+                          }
+                        </p>
                       </div>
                       <div>
                         <p className="text-lg ">Strength</p>
-                        <p>{Category?.strengths}</p>
+                        <p>
+                          {
+                            data.result?.detailedFeedback[selectedCategory]
+                              ?.strengths
+                          }
+                        </p>
                       </div>
                       <div>
                         <p className="text-lg ">Suggestions</p>
-                        <p>{Category?.suggestions}</p>
+                        <p>
+                          {
+                            data.result?.detailedFeedback[selectedCategory]
+                              ?.suggestions
+                          }
+                        </p>
                       </div>
                     </DialogDescription>
                     <div>
                       <p className="text-green-500 dark:text-green-400 inline font-bold">
-                        Score is {scoreOfCategoty}
+                        Score is {data.result?.scores[selectedCategory]}
                       </p>
                     </div>
                   </>
@@ -552,166 +535,47 @@ function LAQuestion({
                 {!selectedCategory && (
                   <div className="flex flex-col flex-grow overflow-y-auto pr-4 gap-2">
                     <p className="text-bold text-xl">Feedback Overall</p>
-                    <p className="text-sm ">
-                      {feedbackData.result.overallImpression}
-                    </p>
-                    <p className="text-bold text-xl">Example Revisions</p>
-                    <p className="text-sm ">
-                      {feedbackData.result.exampleRevisions}
-                    </p>
+                    <p className="text-sm ">{data.result?.overallImpression}</p>
+                    {getValues("method") === "feedback" ? (
+                      <>
+                        <p className="text-bold text-xl">Example Revisions</p>
+                        <p className="text-sm ">
+                          {data.result?.exampleRevisions}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-bold text-xl">Next Step</p>
+                        <div className="text-sm ">
+                          {data.result?.nextSteps.map((item, index) => (
+                            <p key={index}>
+                              {index + 1}.{item}
+                            </p>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
                 <DialogFooter className="flex-shrink-0">
                   <DialogClose>
-                    <Button onClick={() => setSelectedCategory("")}>
-                      Revise Your Response
-                    </Button>
+                    {getValues("method") === "feedback" ? (
+                      <Button onClick={() => setSelectedCategory("")}>
+                        Revise Your Response
+                      </Button>
+                    ) : (
+                      <Button
+                        disabled={isLoading}
+                        onClick={() => {
+                          setIsCompleted(true);
+                          onGetExp();
+                        }}
+                      >
+                        Get your XP!
+                      </Button>
+                    )}
                   </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            )}
-          </Dialog>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                type="submit"
-                disabled={
-                  isLoadingSubmit ||
-                  isLoadingFeedback ||
-                  isEmpty(studentResponse)
-                }
-              >
-                {isLoadingSubmit && (
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {t("submitButton")}
-              </Button>
-            </DialogTrigger>
-            {!isLoadingSubmit && !errorText && (
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader className="flex-shrink-0">
-                  <DialogTitle>Final Feedback</DialogTitle>
-                </DialogHeader>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() => handleCategoryChange("vocabularyUse")}
-                    variant={
-                      selectedCategory === "vocabularyUse"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Vocabulary Use
-                  </Button>
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() => handleCategoryChange("grammarAccuracy")}
-                    variant={
-                      selectedCategory === "grammarAccuracy"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Grammar Accuracy
-                  </Button>
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() => handleCategoryChange("clarityAndCoherence")}
-                    variant={
-                      selectedCategory === "clarityAndCoherence"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Clarity and Coherence
-                  </Button>
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() =>
-                      handleCategoryChange("complexityAndStructure")
-                    }
-                    variant={
-                      selectedCategory === "complexityAndStructure"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Complexity and Structure
-                  </Button>
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() =>
-                      handleCategoryChange("contentAndDevelopment")
-                    }
-                    variant={
-                      selectedCategory === "contentAndDevelopment"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Content and Development
-                  </Button>
-                </div>
-                {selectedCategory && (
-                  <>
-                    <DialogDescription className="flex flex-col gap-2">
-                      <div>
-                        <p className="text-lg ">Area for impovement</p>
-                        <p>{finalCategory?.areasForImprovement}</p>
-                      </div>
-                      <div>
-                        <p className="text-lg ">Examples</p>
-                        <p>{finalCategory?.examples}</p>
-                      </div>
-                      <div>
-                        <p className="text-lg ">Strength</p>
-                        <p>{finalCategory?.strengths}</p>
-                      </div>
-                      <div>
-                        <p className="text-lg ">Suggestions</p>
-                        <p>{finalCategory?.suggestions}</p>
-                      </div>
-                    </DialogDescription>
-                    <div>
-                      <p className="text-green-500 dark:text-green-400 inline font-bold">
-                        Score is {finalScoreOfCategoty}
-                      </p>
-                    </div>
-                  </>
-                )}
-                {!selectedCategory && (
-                  <div className="flex flex-col flex-grow overflow-y-auto pr-4 gap-2">
-                    <p className="text-bold text-xl">Feedback Overall</p>
-                    <p className="text-sm ">
-                      {data.feedback.overallImpression}
-                    </p>
-                    <p className="text-bold text-xl">Next Step</p>
-                    <div className="text-sm ">
-                      {data.feedback.nextSteps.map((item, index) => (
-                        <p key={index}>
-                          {index + 1}.{item}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <DialogFooter className="flex-shrink-0">
-                  <Button
-                    disabled={isLoadingSubmit}
-                    onClick={() => {
-                      setIsCompleted(true);
-                      onGetExp();
-                    }}
-                  >
-                    Get your XP!
-                  </Button>
                 </DialogFooter>
               </DialogContent>
             )}
