@@ -20,14 +20,14 @@ import {
   QuestionState,
 } from "../models/questions-model";
 import { Icons } from "../icons";
-import { set } from "lodash";
+import {useQuestionStore} from '@/store/question-store'
 
 type Props = {
   userId: string;
   articleId: string;
 };
 
-type QuestionResponse = {
+export type QuestionResponse = {
   results: MultipleChoiceQuestion[];
   progress: AnswerStatus[];
   total: number;
@@ -49,6 +49,7 @@ export default function MCQuestionCard({ userId, articleId }: Props) {
       .then((data) => {
         setData(data);
         setState(data.state);
+        useQuestionStore.setState({mcQuestion: data});
       });
   }, [state, articleId]);
 

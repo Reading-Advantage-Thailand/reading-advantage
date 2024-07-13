@@ -9,21 +9,6 @@ export async function POST(req: Request, res: Response) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-   console.log("param?.questionAll : ", param?.questionAll);
-   console.log("param?.JSON : ", JSON.stringify(param?.questionAll.join(", ")));
-
-  /*
-   param?.questionAll :  [
-  'What does Tom pack in his bag?',
-  'What is inside the door Tom finds?',
-  'What does Tom find at the top of the hill?',
-  'What does Tom do with the water?',
-  'What does Tom find at the bottom of the stairs?',
-  'Where does Tom live?',
-  "Write about Tom's journey to find water. What did he see? What did he do? How did he feel? Do you like adventures? Why or why not?"
-]
-   */
-
     const stream = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [

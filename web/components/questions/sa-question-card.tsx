@@ -29,15 +29,15 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import Rating from "@mui/material/Rating";
-
 import { toast } from "../ui/use-toast";
+import { useQuestionStore } from "@/store/question-store";
 
 type Props = {
   userId: string;
   articleId: string;
 };
 
-type QuestionResponse = {
+export type QuestionResponse = {
   result: ShortAnswerQuestion;
   suggested_answer: string;
   state: QuestionState;
@@ -76,6 +76,7 @@ export default function SAQuestionCard({ userId, articleId }: Props) {
         console.log("data", data);
         setData(data);
         setState(data.state);
+        useQuestionStore.setState({ saQuestion: data });
       })
       .catch((error) => {
         console.error("error: ", error);
