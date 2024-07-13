@@ -8,11 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bot, MessageSquare } from "lucide-react";
 import { Article } from "@/components/models/article-model";
-import {
-  AnswerStatus,
-  MultipleChoiceQuestion,
-  QuestionState,
-} from "./models/questions-model";
+import { useQuestionStore } from "@/store/question-store";
 
 interface Message {
   text: string;
@@ -23,17 +19,7 @@ interface Props {
   article: Article;
 }
 
-type QuestionMAQResponse = {
-  results: MultipleChoiceQuestion[];
-  progress: AnswerStatus[];
-  total: number;
-  state: QuestionState;
-};
 
-type QuestionOtherResponse = {
-  result: MultipleChoiceQuestion;
-  state: QuestionState;
-};
 export default function ChatBotFloatingChatButton({ article }: Props) {
   const t = useScopedI18n("components.chatBot");
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -41,30 +27,14 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
   const [userInput, setUserInput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [listMAQ, setListMAQ] = useState<QuestionMAQResponse>({
-    results: [],
-    progress: [],
-    total: 0,
-    state: QuestionState.LOADING,
-  });
+  
+  const { mcQuestion, saQuestion, laqQuestion } = useQuestionStore();
+  
+  console.log("mcQuestion :", mcQuestion);
+  console.log("saQuestion :", saQuestion);
+  console.log("laqQuestion :", laqQuestion); 
 
-  const [listSAQ, setListSAQ] = useState<QuestionOtherResponse>({
-    result: {
-      id: "",
-      question: "",
-      options: [],
-    },
-    state: QuestionState.LOADING,
-  });
 
-  const [listLAQ, setListLAQ] = useState<QuestionOtherResponse>({
-    result: {
-      id: "",
-      question: "",
-      options: [],
-    },
-    state: QuestionState.LOADING,
-  });
 
   const handleSendMessage = useCallback(async () => {
     if (userInput) {
@@ -74,16 +44,24 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
       };
       setMessages([...messages, newMessage]);
       setLoading(true); // Start loading
+      const questionListMAQ = mcQuestion.results.map((item) => item.question);
+      const questionAll = [
+        ...questionListMAQ,
+        saQuestion?.result?.question,
+        laqQuestion?.result?.question,
+      ]; 
+      console.log(questionAll);
+
 
       try {
-        const questionListMAQ = listMAQ.results.map((item) => item.question);
+        const questionListMAQ = mcQuestion.results.map((item) => item.question);
         const questionAll = [
           ...questionListMAQ,
-          listSAQ.result.question,
-          listLAQ.result.question,
+          saQuestion?.result?.question,
+          laqQuestion?.result?.question,
         ];
-        // console.log("questionAll :", questionAll);
-        // console.log("questionAll joint :", questionAll.join(", "));
+        console.log("questionAll :", questionAll);
+        console.log("questionAll joint :", questionAll.join(", "));
         const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
           newMessage,
           article,
@@ -101,12 +79,12 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
           { text: "Error: Could not fetch response.", sender: "bot" },
         ]);
       } finally {
-        setLoading(false); // Stop loading
+      setLoading(false); // Stop loading
       }
 
       setUserInput(""); // Clear input after sending
     }
-  }, [messages, userInput, article]);
+  }, [userInput, messages, mcQuestion.results, saQuestion, laqQuestion]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -116,29 +94,7 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const resMCQ = await axios.get(
-        `/api/v1/articles/${article?.id}/questions/mcq`
-      );
-      const resSAQ = await axios.get(
-        `/api/v1/articles/${article?.id}/questions/sa`
-      );
-      const resLAQ = await axios.get(
-        `/api/v1/articles/${article?.id}/questions/laq`
-      );
-      if (resMCQ?.data) {
-        setListMAQ(resMCQ.data);
-      }
-      if (resSAQ?.data) {
-        setListSAQ(resSAQ.data);
-      }
-      if (resLAQ?.data) {
-        setListLAQ(resLAQ.data);
-      }
-    };
-    fetchData();
-  }, [article.id]);
+  
 
   return (
     <>

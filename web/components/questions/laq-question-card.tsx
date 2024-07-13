@@ -32,6 +32,7 @@ import { localeNames } from "@/configs/locale-config";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
+import { useQuestionStore } from "@/store/question-store";
 
 interface Props {
   userId: string;
@@ -54,7 +55,7 @@ interface ScoreCategoty {
   [key: string]: number;
 }
 
-type QuestionResponse = {
+export type QuestionResponse = {
   result: LongAnswerQuestion;
   state: QuestionState;
 };
@@ -98,6 +99,7 @@ export default function LAQuestionCard({
       .then((data) => {
         setData(data);
         setState(data.state);
+        useQuestionStore.setState({ laqQuestion: data });
       })
       .catch((error) => {
         setState(QuestionState.ERROR);
