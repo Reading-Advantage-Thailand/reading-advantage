@@ -235,6 +235,7 @@ function LAQuestion({
   const { timer, setPaused } = useContext(QuizContext);
   const [isCompleted, setIsCompleted] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [rating, setRating] = React.useState<number>(3);
   const [data, setData] = useState<AnswerResponse>({
     state: QuestionState.LOADING,
@@ -279,6 +280,8 @@ function LAQuestion({
 
   async function onSubmitted(dataForm: FormData) {
     setIsLoading(true);
+    setOpenModal(false);
+    setSelectedCategory("");
 
     try {
       const feedbackResponse = await fetch(
@@ -316,6 +319,7 @@ function LAQuestion({
       console.error("Error submitting feedback:", error);
     } finally {
       setIsLoading(false);
+      setOpenModal(true);
     }
   }
 
@@ -382,205 +386,194 @@ function LAQuestion({
           <Button variant="outline" onClick={handleCancel}>
             {t("cancelButton")}
           </Button>
-          <Dialog>
-            <DialogTrigger className="space-x-2">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            {...register("method")}
+            onClick={() => {
+              setOpenModal(false);
+              setValue("method", "feedback");
+            }}
+          >
+            {isLoading && getValues("method") === "feedback" && (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {t("feedbackButton")}
+          </Button>
+          <Button
+            type="submit"
+            disabled={isLoading}
+            {...register("method")}
+            onClick={() => {
+              setOpenModal(false);
+              setPaused(true);
+              setValue("method", "submit");
+            }}
+          >
+            {isLoading && getValues("method") === "submit" && (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {t("submitButton")}
+          </Button>
+        </div>
+        <Dialog open={openModal} onOpenChange={setOpenModal}>
+          <DialogTrigger asChild></DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader className="text-left">
+              <DialogTitle className="font-bold text-2xl">
+                {getValues("method") === "feedback"
+                  ? "Writing Feedback"
+                  : "Final Feedback"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-wrap gap-2 justify-center">
               <Button
-                type="submit"
-                disabled={isLoading}
-                {...register("method")}
-                onClick={() => setValue("method", "feedback")}
+                className="rounded-full"
+                size="sm"
+                onClick={() => handleCategoryChange("vocabularyUse")}
+                variant={
+                  selectedCategory === "vocabularyUse" ? "default" : "outline"
+                }
               >
-                {isLoading && getValues("method") === "feedback" && (
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {t("feedbackButton")}
+                Vocabulary Use
               </Button>
               <Button
-                type="submit"
-                disabled={isLoading}
-                {...register("method")}
-                onClick={() => {
-                  setPaused(true);
-                  setValue("method", "submit");
-                }}
+                className="rounded-full"
+                size="sm"
+                onClick={() => handleCategoryChange("grammarAccuracy")}
+                variant={
+                  selectedCategory === "grammarAccuracy" ? "default" : "outline"
+                }
               >
-                {isLoading && getValues("method") === "submit" && (
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {t("submitButton")}
+                Grammar Accuracy
               </Button>
-            </DialogTrigger>
-            {!isLoading && data.answer && (
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader className="text-left">
-                  <DialogTitle className="font-bold text-2xl">
-                    {getValues("method") === "feedback"
-                      ? "Writing Feedback"
-                      : "Final Feedback"}
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() => handleCategoryChange("vocabularyUse")}
-                    variant={
-                      selectedCategory === "vocabularyUse"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Vocabulary Use
-                  </Button>
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() => handleCategoryChange("grammarAccuracy")}
-                    variant={
-                      selectedCategory === "grammarAccuracy"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Grammar Accuracy
-                  </Button>
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() => handleCategoryChange("clarityAndCoherence")}
-                    variant={
-                      selectedCategory === "clarityAndCoherence"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Clarity and Coherence
-                  </Button>
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() =>
-                      handleCategoryChange("complexityAndStructure")
-                    }
-                    variant={
-                      selectedCategory === "complexityAndStructure"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Complexity and Structure
-                  </Button>
-                  <Button
-                    className="rounded-full"
-                    size="sm"
-                    onClick={() =>
-                      handleCategoryChange("contentAndDevelopment")
-                    }
-                    variant={
-                      selectedCategory === "contentAndDevelopment"
-                        ? "default"
-                        : "outline"
-                    }
-                  >
-                    Content and Development
-                  </Button>
+              <Button
+                className="rounded-full"
+                size="sm"
+                onClick={() => handleCategoryChange("clarityAndCoherence")}
+                variant={
+                  selectedCategory === "clarityAndCoherence"
+                    ? "default"
+                    : "outline"
+                }
+              >
+                Clarity and Coherence
+              </Button>
+              <Button
+                className="rounded-full"
+                size="sm"
+                onClick={() => handleCategoryChange("complexityAndStructure")}
+                variant={
+                  selectedCategory === "complexityAndStructure"
+                    ? "default"
+                    : "outline"
+                }
+              >
+                Complexity and Structure
+              </Button>
+              <Button
+                className="rounded-full"
+                size="sm"
+                onClick={() => handleCategoryChange("contentAndDevelopment")}
+                variant={
+                  selectedCategory === "contentAndDevelopment"
+                    ? "default"
+                    : "outline"
+                }
+              >
+                Content and Development
+              </Button>
+            </div>
+            {selectedCategory && (
+              <>
+                <DialogDescription className="flex flex-col gap-2">
+                  <div>
+                    <p className="text-lg ">Area for impovement</p>
+                    <p>
+                      {
+                        data.result?.detailedFeedback[selectedCategory]
+                          ?.areasForImprovement
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-lg ">Examples</p>
+                    <p>
+                      {
+                        data.result?.detailedFeedback[selectedCategory]
+                          ?.examples
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-lg ">Strength</p>
+                    <p>
+                      {
+                        data.result?.detailedFeedback[selectedCategory]
+                          ?.strengths
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-lg ">Suggestions</p>
+                    <p>
+                      {
+                        data.result?.detailedFeedback[selectedCategory]
+                          ?.suggestions
+                      }
+                    </p>
+                  </div>
+                </DialogDescription>
+                <div>
+                  <p className="text-green-500 dark:text-green-400 inline font-bold">
+                    Score is {data.result?.scores[selectedCategory]}
+                  </p>
                 </div>
-                {selectedCategory && (
+              </>
+            )}
+            {!selectedCategory && (
+              <div className="flex flex-col flex-grow overflow-y-auto pr-4 gap-2">
+                <p className="text-bold text-xl">Feedback Overall</p>
+                <p className="text-sm ">{data.result?.overallImpression}</p>
+                {getValues("method") === "feedback" ? (
                   <>
-                    <DialogDescription className="flex flex-col gap-2">
-                      <div>
-                        <p className="text-lg ">Area for impovement</p>
-                        <p>
-                          {
-                            data.result?.detailedFeedback[selectedCategory]
-                              ?.areasForImprovement
-                          }
+                    <p className="text-bold text-xl">Example Revisions</p>
+                    <p className="text-sm ">{data.result?.exampleRevisions}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-bold text-xl">Next Step</p>
+                    <div className="text-sm ">
+                      {data.result?.nextSteps.map((item, index) => (
+                        <p key={index}>
+                          {index + 1}.{item}
                         </p>
-                      </div>
-                      <div>
-                        <p className="text-lg ">Examples</p>
-                        <p>
-                          {
-                            data.result?.detailedFeedback[selectedCategory]
-                              ?.examples
-                          }
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-lg ">Strength</p>
-                        <p>
-                          {
-                            data.result?.detailedFeedback[selectedCategory]
-                              ?.strengths
-                          }
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-lg ">Suggestions</p>
-                        <p>
-                          {
-                            data.result?.detailedFeedback[selectedCategory]
-                              ?.suggestions
-                          }
-                        </p>
-                      </div>
-                    </DialogDescription>
-                    <div>
-                      <p className="text-green-500 dark:text-green-400 inline font-bold">
-                        Score is {data.result?.scores[selectedCategory]}
-                      </p>
+                      ))}
                     </div>
                   </>
                 )}
-                {!selectedCategory && (
-                  <div className="flex flex-col flex-grow overflow-y-auto pr-4 gap-2">
-                    <p className="text-bold text-xl">Feedback Overall</p>
-                    <p className="text-sm ">{data.result?.overallImpression}</p>
-                    {getValues("method") === "feedback" ? (
-                      <>
-                        <p className="text-bold text-xl">Example Revisions</p>
-                        <p className="text-sm ">
-                          {data.result?.exampleRevisions}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-bold text-xl">Next Step</p>
-                        <div className="text-sm ">
-                          {data.result?.nextSteps.map((item, index) => (
-                            <p key={index}>
-                              {index + 1}.{item}
-                            </p>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-
-                <DialogFooter className="flex-shrink-0">
-                  <DialogClose>
-                    {getValues("method") === "feedback" ? (
-                      <Button onClick={() => setSelectedCategory("")}>
-                        Revise Your Response
-                      </Button>
-                    ) : (
-                      <Button
-                        disabled={isLoading}
-                        onClick={() => {
-                          setIsCompleted(true);
-                          onGetExp();
-                        }}
-                      >
-                        Get your XP!
-                      </Button>
-                    )}
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
+              </div>
             )}
-          </Dialog>
-        </div>
+
+            <DialogFooter className="flex-shrink-0">
+              <DialogClose>
+                {getValues("method") === "feedback" ? (
+                  <Button>Revise Your Response</Button>
+                ) : (
+                  <Button
+                    disabled={isLoading}
+                    onClick={() => {
+                      setIsCompleted(true);
+                      onGetExp();
+                    }}
+                  >
+                    Get your XP!
+                  </Button>
+                )}
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </form>
     </CardContent>
   );
