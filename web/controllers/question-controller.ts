@@ -10,7 +10,7 @@ import db from "@/configs/firestore-config";
 import { ExtendedNextRequest } from "@/utils/middleware";
 import { NextResponse } from "next/server";
 import { generateLA, getFeedbackWritter } from "./assistant-controller";
-import { get } from "lodash";
+import { get, result } from "lodash";
 
 interface RequestContext {
   params: {
@@ -683,7 +683,7 @@ export async function answerLAQuestion(
     {
       state: QuestionState.COMPLETED,
       answer,
-      feedback,
+      result: feedback,
       sumScores,
     },
     { status: 200 }
