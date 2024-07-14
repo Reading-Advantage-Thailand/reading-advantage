@@ -138,11 +138,6 @@ export default async function IndexPage({}: Props) {
           </div>
         </div>
       </section>
-      <div className="flex flex-wrap items-center justify-center gap-10 mt-[-3rem] mb-20">
-        {bookData.map((book, index) => (
-          <BookComp key={index} {...book} />
-        ))}
-      </div>
       <svg viewBox="0 0 800 23" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
           fillRule="evenodd"
