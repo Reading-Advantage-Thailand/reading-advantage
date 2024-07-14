@@ -1,9 +1,26 @@
 import OpenAI from "openai";
+import { z } from 'zod';
+import { NextResponse } from "next/server";
 import { promptChatBot } from "@/data/prompt-chatbot";
+
+// Define the schema for the request body
+const createChatbotSchema = z.object({
+  title: z.string(),
+  passage: z.string(),
+  summary: z.string(),
+  image_description: z.string(),
+  blacklistedQuestions: z.array(z.string()),
+  newMessage: z.object({
+    text: z.string(),
+    sender: z.string(),
+  })
+});
 
 export async function POST(req: Request, res: Response) {
   try {
     const param = await req.json();
+    const validatedData = createChatbotSchema.parse(param);
+    console.log({validatedData});   
 
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -16,20 +33,19 @@ export async function POST(req: Request, res: Response) {
           role: "system",
           content: `${promptChatBot}
           {
-          "title": ${param?.article?.title},
-          "passage": ${param?.article?.passage},
-          "summary": ${param?.article?.summary},
-          "image-description": ${param?.article?.image_description},   
-          "blacklisted-questions": ${param?.questionAll}
+          "title": ${validatedData?.title},
+          "passage": ${validatedData?.passage},
+          "summary": ${validatedData?.summary},
+          "image-description": ${validatedData?.image_description},   
+          "blacklisted-questions": ${validatedData?.blacklistedQuestions}
           }`,
         },
-        { role: "user", content: param?.newMessage?.text },
+        { role: "user", content: validatedData?.newMessage?.text },
       ],
       stream: true,
     });
 
     const messages = [];
-
     for await (const chunk of stream) {
       messages.push(chunk.choices[0]?.delta?.content);
     }
@@ -39,20 +55,17 @@ export async function POST(req: Request, res: Response) {
     );
     const fullMessage = filteredMessages.join("");
 
-    return new Response(
-      JSON.stringify({
-        messages: "success",
-        sender: "bot",
-        text: fullMessage,
-      }),
-      { status: 200 }
-    );
+     return NextResponse.json(
+       { messages: "success", sender: "bot", text: fullMessage },
+       { status: 201 }
+     );
   } catch (error) {
-    return new Response(
-      JSON.stringify({
-        message: "Internal server error",
-      }),
-      { status: 500 }
-    );
+     if (error instanceof z.ZodError) {
+       return NextResponse.json({ errors: error.errors }, { status: 400 });
+     }
+     return NextResponse.json(
+       { error: "Internal Server Error" },
+       { status: 500 }
+     );
   }
 }

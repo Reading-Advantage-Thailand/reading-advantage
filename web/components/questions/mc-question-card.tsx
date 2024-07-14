@@ -199,7 +199,6 @@ function MCQeustion({
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         setCorrectAnswer(data.correct_answer);
         setSelectedOption(i);
         setProgress(data.progress);
