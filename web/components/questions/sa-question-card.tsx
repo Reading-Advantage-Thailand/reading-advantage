@@ -262,7 +262,7 @@ function SAQuestion({
         if(data){
           toast({
             title: tf('toast.success'), 
-            imgSrc: '/xpBox.webp',
+            imgSrc: true,
             description: `Congratulations, you earned ${rating}XP.`  
           })
         }
