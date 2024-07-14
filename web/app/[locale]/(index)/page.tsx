@@ -32,7 +32,8 @@ type Props = {};
 const features = [
   {
     title: "AI-Powered Learning",
-    description: "Personalized learning paths adapted to each student's needs",
+    description:
+      "Personalized learning paths adapted to each student&apos;s needs",
     icon: Bot,
   },
   {
@@ -93,7 +94,7 @@ const bookData = [
   {
     title: "The Secret Code in the Old Mansion",
     summary:
-      "Attorney Evelyn Harper unravels the mystery of a wealthy businessman's disappearance by decoding a secret message in an old mansion, uncovering a web of corruption and deceit.",
+      "Attorney Evelyn Harper unravels the mystery of a wealthy businessman&apos;s disappearance by decoding a secret message in an old mansion, uncovering a web of corruption and deceit.",
     level: 13,
     cefr: "B2+",
     src: book1Optimized.src,
@@ -202,7 +203,7 @@ export default async function IndexPage({}: Props) {
       <section id="contact-us" className="container py-8 md:py-12 lg:py-24">
         <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
           <h2 className="font-heading text-white animate-glow text-3xl leading-[1.1] sm:text-3xl md:text-6xl">
-            Let's Get in Touch
+            Let&apos;s Get in Touch
           </h2>
           <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
             Have a question or need more information? Contact us today to learn
