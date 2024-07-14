@@ -60,7 +60,7 @@ export default function RatingPopup({
     if(data.message === 'success'){
       toast({
         title: t('toast.success'),
-        imgSrc: '/xpBox.webp', 
+        imgSrc: true, 
         description: 'Congratulations, you earned 10 XP.'     
       });
       setModalIsOpen(false);
@@ -80,7 +80,7 @@ export default function RatingPopup({
     if(data.message === 'success'){
       toast({
         title: t('toast.success'), 
-        imgSrc: '/xpBox.webp',
+        imgSrc: true,
         description: 'you not earned XP.'  
       });
       setModalIsOpen(false);
