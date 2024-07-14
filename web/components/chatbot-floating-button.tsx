@@ -19,7 +19,6 @@ interface Props {
   article: Article;
 }
 
-
 export default function ChatBotFloatingChatButton({ article }: Props) {
   const t = useScopedI18n("components.chatBot");
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -27,14 +26,7 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
   const [userInput, setUserInput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
   const { mcQuestion, saQuestion, laqQuestion } = useQuestionStore();
-  
-  console.log("mcQuestion :", mcQuestion);
-  console.log("saQuestion :", saQuestion);
-  console.log("laqQuestion :", laqQuestion); 
-
-
 
   const handleSendMessage = useCallback(async () => {
     if (userInput) {
@@ -44,28 +36,22 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
       };
       setMessages([...messages, newMessage]);
       setLoading(true); // Start loading
-      const questionListMAQ = mcQuestion.results.map((item) => item.question);
-      const questionAll = [
-        ...questionListMAQ,
-        saQuestion?.result?.question,
-        laqQuestion?.result?.question,
-      ]; 
-      console.log(questionAll);
-
 
       try {
         const questionListMAQ = mcQuestion.results.map((item) => item.question);
-        const questionAll = [
+        const blacklistedQuestions = [
           ...questionListMAQ,
           saQuestion?.result?.question,
           laqQuestion?.result?.question,
         ];
-        console.log("questionAll :", questionAll);
-        console.log("questionAll joint :", questionAll.join(", "));
+
         const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
           newMessage,
-          article,
-          questionAll,
+          title: article.title,
+          passage: article.passage,
+          summary: article.summary,
+          image_description: article.image_description,
+          blacklistedQuestions,
         });
 
         const response: Message = {
@@ -79,12 +65,12 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
           { text: "Error: Could not fetch response.", sender: "bot" },
         ]);
       } finally {
-      setLoading(false); // Stop loading
+        setLoading(false); // Stop loading
       }
 
       setUserInput(""); // Clear input after sending
     }
-  }, [userInput, messages, mcQuestion.results, saQuestion, laqQuestion]);
+  }, [userInput, messages, mcQuestion.results, saQuestion?.result?.question, laqQuestion?.result?.question, article.title, article.passage, article.summary, article.image_description]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -93,8 +79,6 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  
 
   return (
     <>
