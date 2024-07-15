@@ -1,11 +1,13 @@
 import { MainNav } from "@/components/main-navbar"
 import { getCurrentUser } from "@/lib/session"
 import { redirect } from "next/navigation"
-import { studentPageConfig } from "@/configs/student-page-config"
+import { systemPageConfig } from "@/configs/system-page-config"
 import { UserAccountNav } from "@/components/user-account-nav"
 import ProgressBar from "@/components/progress-bar-xp"
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher"
 import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle"
+import { SystemSidebarNav } from "@/components/system/system-sidebar-nav"
+import { studentPageConfig } from "@/configs/student-page-config"
 
 interface RoleLayoutProps {
     children?: React.ReactNode
@@ -43,6 +45,7 @@ export default async function StudentHomeLayout({
                 </div>
             </header>
             <div className="container grid flex-1 gap-12">
+                <SystemSidebarNav items={systemPageConfig.systemSidebarNav} />
                 <main className="flex w-full flex-1 flex-col overflow-hidden">
                     {children}
                 </main>
