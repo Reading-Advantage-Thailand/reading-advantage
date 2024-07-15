@@ -21,6 +21,8 @@ import {
 } from "../models/questions-model";
 import { Icons } from "../icons";
 import {useQuestionStore} from '@/store/question-store'
+import { set } from "lodash";
+import { toast } from "../ui/use-toast";
 
 type Props = {
   userId: string;
@@ -207,6 +209,27 @@ function MCQeustion({
         setLoadingAnswer(false);
       });
   };
+
+  useEffect(() => {
+    let count = 0;
+    let countTest = 0;
+    progress.forEach((status) => {
+      if (status == AnswerStatus.CORRECT) {
+        count += 2;
+        countTest++;
+      }
+      else if(status == AnswerStatus.INCORRECT){
+        countTest++;
+      } 
+      if(countTest == 5){
+        toast({
+          title: 'Success',
+          imgSrc: true,
+          description: `Congratulations, you earned a total ${count} XP.`,
+        });
+      }    
+    });
+  }, [progress, QuestionState]);
 
   return (
     <CardContent>

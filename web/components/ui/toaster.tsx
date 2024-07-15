@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/toast"
 import { useToast } from "@/components/ui/use-toast"
 import Image from "next/image"
+import imgBox from '../../public/xpBox.webp';
 
 export function Toaster() {
   const { toasts } = useToast()
@@ -19,11 +20,11 @@ export function Toaster() {
       {toasts.map(function ({ id, title, description, action, imgSrc, ...props }) {
         return (
           <Toast key={id} {...props}>
-            {imgSrc ? <div className="grid grid-cols-[1fr_2fr] gap-1">
+            {imgSrc == true ? <div className="grid grid-cols-[1fr_2fr] gap-1">
               <div>
                 {title && <ToastTitle className={`${imgSrc ? "mb-1 flex justify-center items-center" : ""}`}>{title}</ToastTitle>}
                 {imgSrc && (
-                  <Image src={imgSrc.toString() as string} width={120} height={120} alt="XP Box" />
+                  <Image src={imgBox} width={120} height={120} alt="XP Box" />
                 )}
               </div>
               {(description as string)?.startsWith("Congratulations") 
