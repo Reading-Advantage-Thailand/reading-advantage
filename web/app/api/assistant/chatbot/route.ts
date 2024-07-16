@@ -1,5 +1,6 @@
-import OpenAI from "openai";
-import { z } from 'zod';
+import { streamText } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { z } from "zod";
 import { NextResponse } from "next/server";
 import { promptChatBot } from "@/data/prompt-chatbot";
 
@@ -13,26 +14,21 @@ const createChatbotSchema = z.object({
   newMessage: z.object({
     text: z.string(),
     sender: z.string(),
-  })
+  }),
 });
 
 export async function POST(req: Request, res: Response) {
   try {
     const param = await req.json();
     const validatedData = createChatbotSchema.parse(param);
-    console.log({validatedData});   
-
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-
-    const stream = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+    const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const { textStream } = await streamText({
+      model: openai("gpt-3.5-turbo"),
       messages: [
         {
           role: "system",
           content: `${promptChatBot}
-          {
+          {                                                                  
           "title": ${validatedData?.title},
           "passage": ${validatedData?.passage},
           "summary": ${validatedData?.summary},
@@ -42,30 +38,31 @@ export async function POST(req: Request, res: Response) {
         },
         { role: "user", content: validatedData?.newMessage?.text },
       ],
-      stream: true,
     });
 
     const messages = [];
-    for await (const chunk of stream) {
-      messages.push(chunk.choices[0]?.delta?.content);
+    for await (const textPart of textStream) {
+      messages.push(textPart);
     }
 
     const filteredMessages = messages.filter(
-      (item) => item !== undefined && item !== ""
+      (item) =>
+        item !== undefined && item !== "" && item !== "}" && item !== "{"
     );
     const fullMessage = filteredMessages.join("");
 
-     return NextResponse.json(
-       { messages: "success", sender: "bot", text: fullMessage },
-       { status: 201 }
-     );
+    return NextResponse.json(
+      { messages: "success", sender: "bot", text: fullMessage },
+      { status: 201 }
+    );
   } catch (error) {
-     if (error instanceof z.ZodError) {
-       return NextResponse.json({ errors: error.errors }, { status: 400 });
-     }
-     return NextResponse.json(
-       { error: "Internal Server Error" },
-       { status: 500 }
-     );
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ errors: error.errors }, { status: 400 });
+    }
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
+  
 }
