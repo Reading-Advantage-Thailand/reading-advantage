@@ -106,7 +106,7 @@ console.log('selectedRole', selectedRole);
         {selectedRole &&
           !selectedRole.includes("STUDENT") && (
             <DropdownMenuItem asChild>
-              <Link href="/system">{"System dashboard"}</Link>
+              <Link href="/system/dashboard">{"System dashboard"}</Link>
             </DropdownMenuItem>
           )}
 

@@ -30,6 +30,10 @@ export type TeacherPageConfig = {
     mainNav: MainNavItem[];
     teacherSidebarNav: teacherSidebarNav[];
 }
+export type SystemPageConfig = {
+    mainNav: MainNavItem[];
+    systemSidebarNav: systemSidebarNav[];
+}
 
 
 export type SidebarNavItem = {
@@ -50,6 +54,21 @@ export type SidebarNavItem = {
 
 export type SidebarTeacherNavItem = {
     title: "myClasses" | "myStudent" | "classRoster" | "reports" | "passages" | "assignments",
+    disabled?: boolean
+    external?: boolean
+    icon?: keyof typeof Icons
+} & (
+        | {
+            href: string
+            items?: never
+        }
+        | {
+            href?: string
+            items: NavLink[]
+        }
+    )
+export type SystemSidebarNavItem = {
+    title: "system dashboard" | "handle passages",
     disabled?: boolean
     external?: boolean
     icon?: keyof typeof Icons

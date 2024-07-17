@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { Header } from '@/components/header'
 
-export default async function SystemPage() {
+export default async function HandlePassagesPage() {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
@@ -35,7 +35,7 @@ export default async function SystemPage() {
   const passages = await getPassages();
   
   return (
-    <div className='px-[10%]'>
+    <div>
       <Header heading="System Dashboard"/>
       <Passages passages={passages.passages}  />
     </div>
