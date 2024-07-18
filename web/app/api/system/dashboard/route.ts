@@ -1,23 +1,38 @@
-import db from '@/configs/firestore-config';
+import db from "@/configs/firestore-config";
 
-export async function GET (req: Request) {
-  const collectionRef = db.collection('new-articles');
-  const allArticlesSnapshot = await collectionRef.get();
-
+export async function GET(req: Request) {
+  const levels = [
+    "A0-",
+    "A0",
+    "A0+",
+    "A1",
+    "A1+",
+    "A2-",
+    "A2",
+    "A2+",
+    "B1-",
+    "B1",
+    "B1+",
+    "B2-",
+    "B2",
+    "B2+",
+    "C1-",
+    "C1",
+    "C1+",
+    "C2-",
+    "C2",
+  ];
   const articlesByLevel: { [key: string]: number } = {};
 
-    allArticlesSnapshot.forEach(doc => {
-        const article = doc.data();
-        const level = article.cefr_level;
-        if (!articlesByLevel[level]) {
-        articlesByLevel[level] = 1;
-        } else {
-            articlesByLevel[level]++;
-        }
-    });
+  for (const level of levels) {
+    const query = db
+      .collection("new-articles")
+      .where("cefr_level", "==", level);
+    const countResult = await query.count().get(); 
 
-// const query = collectionRef.where('cefr_level', '==', 'A0');
-// const snapshot = await query.count().get();
+    const count = countResult.data().count;
+    articlesByLevel[level] = count; 
+  }
 
   return new Response(
     JSON.stringify({
@@ -25,6 +40,4 @@ export async function GET (req: Request) {
     }),
     { status: 200 }
   );
-
 }
-
