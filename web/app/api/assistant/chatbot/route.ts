@@ -23,7 +23,7 @@ export async function POST(req: Request, res: Response) {
     const validatedData = createChatbotSchema.parse(param);
     const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const { textStream } = await streamText({
-      model: openai("gpt-3.5-turbo"),
+      model: openai("gpt-4o-mini"),
       messages: [
         {
           role: "system",
