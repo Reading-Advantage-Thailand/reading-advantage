@@ -394,7 +394,6 @@ export default function System({ fetchMoreData }: PassagesProps) {
 
   return (
     <>
-      <Header heading={tp("heading")} />
       <Input
         placeholder={t("search")}
         className="w-full mt-4"

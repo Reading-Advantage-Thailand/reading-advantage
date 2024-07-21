@@ -41,7 +41,7 @@ export default async function SystemPage({
 
   return (
     <div className="px-[10%]">
-      <Header heading="System Dashboard" />
+      <Header heading="Handle Passages" />
       <System fetchMoreData={fetchMoreArticles} />
     </div>
   );
