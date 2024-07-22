@@ -9,8 +9,8 @@
 5. Interest: Within A1 constraints, is the content engaging and well-presented?
 
 Rate the text on a scale of 1 to 5, where:
-1 = Poor (significantly below A1 level or uninteresting)
-2 = Fair (slightly below A1 level or somewhat uninteresting)
+1 = Poor (significantly different to A1 level or uninteresting or inappropriate for secondary school students)
+2 = Fair (slightly different to A1 level or somewhat uninteresting)
 3 = Good (meets A1 level and is moderately interesting)
 4 = Very Good (solidly at A1 level and quite interesting)
 5 = Excellent (perfectly pitched at A1 level and highly engaging)
@@ -27,8 +27,8 @@ Output only the numerical rating (1-5) with no explanation."
 5. Interest: Within A2 constraints, is the content engaging and well-presented?
 
 Rate the text on a scale of 1 to 5, where:
-1 = Poor (significantly below A2 level or uninteresting)
-2 = Fair (slightly below A2 level or somewhat uninteresting)
+1 = Poor (significantly different to A2 level or uninteresting or inappropriate for secondary school students)
+2 = Fair (slightly different to A2 level or somewhat uninteresting)
 3 = Good (meets A2 level and is moderately interesting)
 4 = Very Good (solidly at A2 level and quite interesting)
 5 = Excellent (perfectly pitched at A2 level and highly engaging)
@@ -45,8 +45,8 @@ Output only the numerical rating (1-5) with no explanation."
 5. Interest: Within B1 constraints, is the content engaging, well-structured, and thought-provoking?
 
 Rate the text on a scale of 1 to 5, where:
-1 = Poor (significantly below B1 level or uninteresting)
-2 = Fair (slightly below B1 level or somewhat uninteresting)
+1 = Poor (significantly different to B1 level or uninteresting or inappropriate for secondary school students)
+2 = Fair (slightly differnt to B1 level or somewhat uninteresting)
 3 = Good (meets B1 level and is moderately interesting)
 4 = Very Good (solidly at B1 level and quite interesting)
 5 = Excellent (perfectly pitched at B1 level and highly engaging)
@@ -63,8 +63,8 @@ Output only the numerical rating (1-5) with no explanation."
 5. Interest: Within B2 constraints, is the content engaging, well-argued, and thought-provoking?
 
 Rate the text on a scale of 1 to 5, where:
-1 = Poor (significantly below B2 level or uninteresting)
-2 = Fair (slightly below B2 level or somewhat uninteresting)
+1 = Poor (significantly different to B2 level or uninteresting or inappropriate for secondary school students)
+2 = Fair (slightly different to B2 level or somewhat uninteresting)
 3 = Good (meets B2 level and is moderately interesting)
 4 = Very Good (solidly at B2 level and quite interesting)
 5 = Excellent (perfectly pitched at B2 level and highly engaging)
@@ -81,8 +81,8 @@ Output only the numerical rating (1-5) with no explanation."
 5. Interest: Within C1 constraints, is the content sophisticated, engaging, and intellectually stimulating?
 
 Rate the text on a scale of 1 to 5, where:
-1 = Poor (significantly below C1 level or uninteresting)
-2 = Fair (slightly below C1 level or somewhat uninteresting)
+1 = Poor (significantly different to C1 level or uninteresting or inappropriate for secondary school students)
+2 = Fair (slightly different to C1 level or somewhat uninteresting)
 3 = Good (meets C1 level and is moderately interesting)
 4 = Very Good (solidly at C1 level and quite interesting)
 5 = Excellent (perfectly pitched at C1 level and highly engaging)
@@ -99,7 +99,7 @@ Output only the numerical rating (1-5) with no explanation."
 5. Interest: Within C2 constraints, is the content highly sophisticated, nuanced, and intellectually challenging?
 
 Rate the text on a scale of 1 to 5, where:
-1 = Poor (significantly below C2 level or uninteresting)
+1 = Poor (significantly below C2 level or uninteresting or inappropriate for secondary school students)
 2 = Fair (slightly below C2 level or somewhat uninteresting)
 3 = Good (meets C2 level and is moderately interesting)
 4 = Very Good (solidly at C2 level and quite interesting)

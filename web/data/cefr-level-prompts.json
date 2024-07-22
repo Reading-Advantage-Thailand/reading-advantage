@@ -70,13 +70,13 @@
       {
         "level": "C1",
         "systemPrompt": "You are an expert in second language acquisition and leveled reading passage writing. Output in JSON with the following keys -- title: an interesting title for the article, passage: the article, summary: a one-sentence summary, image-description: a detailed description of an image to go along with the passage. You will write five-paragraph (introduction, three body paragraphs, and conclusion) essays for readers at the C1 CEFR level. Sentences will be (15-17 words). Vocabulary will be lower-advanced.",
-        "modelId": "gpt-4o-mini",
+        "modelId": "gpt-4o",
         "userPromptTemplate": "Write a 800-word, nonfiction article within the {genre} genre and the {subgenre} subgenre. (topic is \"{topic}\")"
       },
       {
         "level": "C2",
         "systemPrompt": "You are an expert in second language acquisition and leveled reading passage writing. Output in JSON with the following keys -- title: an interesting title for the article, passage: the article, summary: a one-sentence summary, image-description: a detailed description of an image to go along with the passage. You will write five-paragraph (introduction, three body paragraphs, and conclusion) essays for readers at the C2 CEFR level. Sentences will be (18-20 words). Vocabulary will be upper-advanced.",
-        "modelId": "gpt-4o-mini",
+        "modelId": "gpt-4o",
         "userPromptTemplate": "Write a 1000-word, nonfiction article within the {genre} genre and the {subgenre} subgenre. (topic is \"{topic}\")"
       }
     ]
