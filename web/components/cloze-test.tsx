@@ -383,6 +383,7 @@ export default function ClozeTest({ userId }: Props) {
         text={t("clozeTestPractice.clozeTestDescription")}
       />
       <div className="mt-5">
+        {/* <Image src={"/ninja.svg"} alt="Man" width={92} height={115} /> */}
         {articleClozeTest.length === 0 ? (
           <div className="grid w-full gap-10">
             <div className="mx-auto w-[800px] space-y-6">
