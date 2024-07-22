@@ -9,6 +9,7 @@ import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import Image from "next/image";
+import "animate.css";
 import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";

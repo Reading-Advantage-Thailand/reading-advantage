@@ -10,6 +10,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import Image from "next/image";
+import "animate.css";
 import { useScopedI18n } from "@/locales/client";
 import { Header } from "../header";
 import { Button } from "../ui/button";
@@ -258,9 +260,20 @@ export default function OrderSentences({ userId }: Props) {
                 <div className="bg-[#2684FFß] flex max-w-screen-lg">
                   <div className="flex flex-col h-full overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
                     <div className="flex justify-between items-center">
-                      <h4 className="py-4 pl-5">
+                      <div className="p-5">
+                        <Image
+                          src={"/knight.svg"}
+                          alt="Man"
+                          width={92}
+                          height={115}
+                          className="animate__animated animate__backInRight"
+                          title="Drag the sentences to reorder them!"
+                        />
+                      </div>
+
+                      <span className="py-4 pr-5 font-bold">
                         {articleRandom[currentArticleIndex]?.title}
-                      </h4>
+                      </span>
                       <div className="mr-5">
                         <Button
                           size="sm"
@@ -319,16 +332,16 @@ export default function OrderSentences({ userId }: Props) {
               >
                 {t("orderSentencesPractice.saveOrder")}
               </Button>
-            ) : (
-              <Button
-                className="mt-4"
-                variant="outline"
-                disabled={true}
-                size="sm"
-                onClick={onNextArticle}
-              >
-                {t("orderSentencesPractice.saveOrder")}
-              </Button>
+            ) : (             
+              <div className="flex flex-wrap justify-center mt-10 ">
+                <Image
+                  src={"/winners.svg"}
+                  alt="winners"
+                  width={250}
+                  height={100}
+                  className="animate__animated animate__jackInTheBox"
+                />
+              </div>
             )}
           </>
         )}
