@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-// "use client";
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -13,6 +11,7 @@ import subtlex from "subtlex-word-frequencies";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import styled from "@emotion/styled";
+import "animate.css";
 import { Header } from "./header";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
@@ -364,7 +363,7 @@ export default function ClozeTest({ userId }: Props) {
 
     setTimeout(() => {
       setLoading(false);
-    }, 1000);
+    }, 500);
   };
 
   const onNextPassage = async () => {
@@ -383,8 +382,19 @@ export default function ClozeTest({ userId }: Props) {
         text={t("clozeTestPractice.clozeTestDescription")}
       />
       <div className="mt-5">
-        {/* <Image src={"/ninja.svg"} alt="Man" width={92} height={115} /> */}
-        {articleClozeTest.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center h-screen bg-white">
+            <div className="flex flex-wrap justify-center">
+              <Image
+                src={"/ninja-star.svg"}
+                alt="winners"
+                width={250}
+                height={100}
+                className="animate__animated animate__jackInTheBox"
+              />
+            </div>
+          </div>
+        ) : articleClozeTest.length === 0 ? (
           <div className="grid w-full gap-10">
             <div className="mx-auto w-[800px] space-y-6">
               <Skeleton className="h-[200px] w-full" />
@@ -400,6 +410,15 @@ export default function ClozeTest({ userId }: Props) {
                 <div className="bg-[#2684FFß] flex max-w-screen-lg">
                   <div className="flex flex-col h-full w-screen overflow-auto  bg-[#DEEBFF] dark:text-white dark:bg-[#1E293B]">
                     <div className="flex justify-between items-center">
+                      <div className="mx-3">
+                        <Image
+                          src={"/ninja.svg"}
+                          alt="Man"
+                          width={92}
+                          height={115}
+                          className="animate__animated animate__backInRight"
+                        />
+                      </div>
                       <h4 className="py-4 pl-5 font-bold">
                         {articleClozeTest[currentArticleIndex]?.title}
                       </h4>
@@ -546,7 +565,15 @@ export default function ClozeTest({ userId }: Props) {
                 )}
               </>
             ) : (
-              <></>
+              <div className="flex flex-wrap justify-center mt-10 ">
+                <Image
+                  src={"/ninja-star.svg"}
+                  alt="winners"
+                  width={250}
+                  height={100}
+                  className="animate__animated animate__jackInTheBox"
+                />
+              </div>
             )}
           </>
         )}
