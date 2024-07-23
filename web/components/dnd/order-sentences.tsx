@@ -265,7 +265,7 @@ export default function OrderSentences({ userId }: Props) {
                           alt="Man"
                           width={92}
                           height={115}
-                          className="animate__animated animate__backInRight"
+                          className="animate__animated animate__backInLeft"
                           title="Drag the sentences to reorder them!"
                         />
                       </div>

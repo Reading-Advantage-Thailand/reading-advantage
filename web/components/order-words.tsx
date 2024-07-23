@@ -11,6 +11,7 @@ import { useScopedI18n } from "@/locales/client";
 import Image from "next/image";
 import styled from "@emotion/styled";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import "animate.css";
 import { Header } from "./header";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
@@ -184,6 +185,7 @@ export default function OrderWords({ userId }: Props) {
                         alt="Man"
                         width={92}
                         height={115}
+                        className="animate__animated animate__tada"
                       />
                       <div className="relative ml-2 w-fit rounded-2xl border-2 border-gray-200 p-4">
                         {articleOrderWords[currentArticleIndex]?.translationTh}

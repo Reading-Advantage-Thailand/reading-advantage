@@ -8,7 +8,7 @@ import utc from "dayjs/plugin/utc";
 import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { useScopedI18n } from "@/locales/client";
-// import "animate.css";
+import "animate.css";
 import Image from "next/image";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
@@ -166,6 +166,29 @@ export default function Matching({ userId }: Props) {
         heading={t("matchingPractice.matching")}
         text={t("matchingPractice.matchingDescription")}
       />
+      {correctMatches.length !== 10 && (
+        <div className="flex">
+          <div className="w-1/2">
+            <Image
+              src={"/ninja.svg"}
+              alt="Man"
+              width={92}
+              height={115}
+              className="animate__animated animate__fadeInTopLeft animate__fast"
+            />
+          </div>
+          <div className="w-1/2 flex justify-end">
+            <Image
+              src={"/knight.svg"}
+              alt="Man"
+              width={92}
+              height={115}
+              className="animate__animated animate__fadeInTopRight animate__fast"
+            />
+          </div>
+        </div>
+      )}
+
       <div className="mt-10">
         {articleMatching.length === 0 ? (
           <>
