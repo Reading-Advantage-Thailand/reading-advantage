@@ -208,9 +208,10 @@ export default function OrderSentences({ userId }: Props) {
         const updateScrore = await updateScore(15, userId);
         if (updateScrore?.status === 201) {
           toast({
-            title: t("toast.success"),
-            description: tUpdateScore("yourXp", { xp: 5 }),
-          });
+          title: t("toast.success"),
+          imgSrc: true,
+          description: tUpdateScore("yourXp", { xp: 5 }),
+        });
           setCurrentArticleIndex(currentArticleIndex + 1);
           router.refresh();
           setIsPlaying(false);
