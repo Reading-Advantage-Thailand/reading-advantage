@@ -74,6 +74,7 @@ export default function Matching({ userId }: Props) {
             router.refresh();
             toast({
               title: t("toast.success"),
+              imgSrc: true,
               description: tUpdateScore("yourXp", { xp: 5 }),
             });
           }
