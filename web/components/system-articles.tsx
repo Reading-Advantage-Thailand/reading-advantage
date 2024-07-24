@@ -1,3 +1,4 @@
+//Back up system-articles v.2 sticky
 "use client";
 import React, {
   useState,
@@ -394,179 +395,189 @@ export default function System({ fetchMoreData }: PassagesProps) {
 
   return (
     <>
-      <Input
-        placeholder={t("search")}
-        className="w-full mt-4"
-        value={searchTerm}
-        onChange={handleSearchChange}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 mt-4 gap-4">
-        <div className="md:pr-4">
-          {/* sort date and rating */}
-          <div className="mb-4">
-            <p className="font-bold">
-              {tp("sortBy")} {sortOrder}
-            </p>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                handleSortChange("rating");
-              }}
-            >
-              {tp("rating")}
-              <CaretSortIcon className="ml-2 h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                handleSortChange("date");
-              }}
-            >
-              {tp("date")}
-              <CaretSortIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Fitered by type */}
-          <div className="mb-4">
-            <p className="font-bold">{tp("type")}</p>
-            <div className="ml-4">
-              <div className="flex items-center">
-                <Checkbox
-                  value="fiction"
-                  checked={type === "fiction"}
-                  onChange={handleTypeChange}
-                />
-                <p>{tp("fiction")}</p>
-              </div>
-              <div className="flex items-center">
-                <Checkbox
-                  value="nonfiction"
-                  checked={type === "nonfiction"}
-                  onChange={handleTypeChange}
-                />
-                <p>{tp("nonFiction")}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Filtered by topic */}
-          <div className="mb-4">
-            <p className="font-bold">{tp("topic")}</p>
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Button variant="ghost">
-                  {selectedGenre || tp("selectGenre")}
-                  <ChevronDownIcon className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
-                {[
-                  ...new Set(
-                    filteredPassages.map((passages) => passages.genre)
-                  ),
-                ].map((genre) => (
-                  <DropdownMenuItem
-                    onSelect={() => setSelectedGenre(genre)}
-                    key={genre}
-                  >
-                    {genre}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {/* <div className=""> */}
-            {selectedGenre && (
-              <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Button variant="ghost">
-                    {selectedSubgenre || tp("selectSubGenre")}
-                    <ChevronDownIcon className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
-                  {getSubgenres(selectedGenre).map((subgenre) => (
-                    <DropdownMenuItem
-                      onSelect={() => setSelectedSubgenre(subgenre)}
-                      key={subgenre}
-                    >
-                      {subgenre}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-            {/* </div> */}
-            <div className="mt-4 flex gap-2">
-              {selectedGenre && (
-                <Button variant="default" onClick={() => setSelectedGenre("")}>
-                  {tp("resetGenre")}
-                </Button>
-              )}
-              {selectedSubgenre && (
+      <div className="flex flex-col h-full">
+        <Input
+          placeholder={t("search")}
+          className="w-full mt-4 px-3 py-2"
+          value={searchTerm}
+          onChange={handleSearchChange}
+        />
+        <div className="flex-grow overflow-hidden mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 h-full gap-4">
+            <div className="md:pr-4">
+              {/* sort date and rating */}
+              <div className="mb-4">
+                <p className="font-bold">
+                  {tp("sortBy")} {sortOrder}
+                </p>
                 <Button
-                  variant="default"
-                  onClick={() => setSelectedSubgenre("")}
+                  variant="ghost"
+                  onClick={() => {
+                    handleSortChange("rating");
+                  }}
                 >
-                  {tp("resetSubGenre")}
+                  {tp("rating")}
+                  <CaretSortIcon className="ml-2 h-4 w-4" />
                 </Button>
-              )}
-            </div>
-          </div>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    handleSortChange("date");
+                  }}
+                >
+                  {tp("date")}
+                  <CaretSortIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
 
-          {/* Filtered by level */}
-          <div className="">
-            <p className="font-bold">{tp("level")}</p>
-            <div className="grid grid-cols-7 w-full text-center">
-              {Array.from({ length: 26 }, (_, i) => i + 1).map((level) => (
-                <CustomCheckbox
-                  key={level}
-                  label={String(level)}
-                  selected={selectedLevels.includes(String(level))}
-                  onSelectionChange={handleSelectionChange}
-                />
-              ))}
+              {/* Fitered by type */}
+              <div className="mb-4">
+                <p className="font-bold">{tp("type")}</p>
+                <div className="ml-4">
+                  <div className="flex items-center">
+                    <Checkbox
+                      value="fiction"
+                      checked={type === "fiction"}
+                      onChange={handleTypeChange}
+                    />
+                    <p>{tp("fiction")}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Checkbox
+                      value="nonfiction"
+                      checked={type === "nonfiction"}
+                      onChange={handleTypeChange}
+                    />
+                    <p>{tp("nonFiction")}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Filtered by topic */}
+              <div className="mb-4">
+                <p className="font-bold">{tp("topic")}</p>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button variant="ghost">
+                      {selectedGenre || tp("selectGenre")}
+                      <ChevronDownIcon className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
+                    {[
+                      ...new Set(
+                        filteredPassages.map((passages) => passages.genre)
+                      ),
+                    ].map((genre) => (
+                      <DropdownMenuItem
+                        onSelect={() => setSelectedGenre(genre)}
+                        key={genre}
+                      >
+                        {genre}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {/* <div className=""> */}
+                {selectedGenre && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <Button variant="ghost">
+                        {selectedSubgenre || tp("selectSubGenre")}
+                        <ChevronDownIcon className="ml-2 h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="overflow-y-auto max-h-[300px] w-[200px]">
+                      {getSubgenres(selectedGenre).map((subgenre) => (
+                        <DropdownMenuItem
+                          onSelect={() => setSelectedSubgenre(subgenre)}
+                          key={subgenre}
+                        >
+                          {subgenre}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+                {/* </div> */}
+                <div className="mt-4 flex gap-2">
+                  {selectedGenre && (
+                    <Button
+                      variant="default"
+                      onClick={() => setSelectedGenre("")}
+                    >
+                      {tp("resetGenre")}
+                    </Button>
+                  )}
+                  {selectedSubgenre && (
+                    <Button
+                      variant="default"
+                      onClick={() => setSelectedSubgenre("")}
+                    >
+                      {tp("resetSubGenre")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Filtered by level */}
+              <div className="">
+                <p className="font-bold">{tp("level")}</p>
+                <div className="grid grid-cols-7 w-full text-center">
+                  {Array.from({ length: 26 }, (_, i) => i + 1).map((level) => (
+                    <CustomCheckbox
+                      key={level}
+                      label={String(level)}
+                      selected={selectedLevels.includes(String(level))}
+                      onSelectionChange={handleSelectionChange}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* data card */}
+            <div className="overflow-y-auto">
+              {isFiltered ? (
+                <div className="grid grid-cols-1 h-full">
+                  {sortPassages(filteredPassages).map(
+                    (passage: Passage, index: number) => {
+                      return (
+                        <div
+                          key={index}
+                          className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4 "
+                        >
+                          <ArticleShowcaseCard
+                            key={index}
+                            article={passage}
+                            // isSystemPathOrRole={isSystemPathOrRole}
+                          />
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1">
+                  {sortPassages(passages).map(
+                    (passage: Passage, index: number) => {
+                      return (
+                        <div
+                          key={index}
+                          className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4"
+                        >
+                          <ArticleShowcaseCard key={index} article={passage} />
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
-
-        {/* data card */}
-        {isFiltered ? (
-          <div className="grid grid-cols-1">
-            {sortPassages(filteredPassages).map(
-              (passage: Passage, index: number) => {
-                return (
-                  <div
-                    key={index}
-                    className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4"
-                  >
-                    <ArticleShowcaseCard
-                      key={index}
-                      article={passage}
-                      // isSystemPathOrRole={isSystemPathOrRole}
-                    />
-                  </div>
-                );
-              }
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1">
-            {sortPassages(passages).map((passage: Passage, index: number) => {
-              return (
-                <div
-                  key={index}
-                  className="captoliza ml-4 mb-4 grid sm:grid-cols-1 grid-flow-row gap-4"
-                >
-                  <ArticleShowcaseCard key={index} article={passage} />
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <div ref={sentinelRef}>{hasMore ? "Loading more articles..." : ""}</div>
       </div>
-      <div ref={sentinelRef}>{hasMore ? "Loading more articles..." : ""}</div>
     </>
   );
 }

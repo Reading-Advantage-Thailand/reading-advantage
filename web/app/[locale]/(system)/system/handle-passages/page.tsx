@@ -40,9 +40,10 @@ export default async function SystemPage({
   // console.log("searchTermParams: ", searchTermParams);
 
   return (
-    <div className="px-[10%]">
-      <Header heading="Handle Passages" />
+    <div className="sticky h-[calc(100vh_-_80px)] z-[10]">
+      <Header heading="Handle Passages"/>
       <System fetchMoreData={fetchMoreArticles} />
     </div>
+ 
   );
 }
