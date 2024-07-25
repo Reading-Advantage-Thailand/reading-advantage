@@ -1,8 +1,9 @@
-import React from 'react'
-import { headers } from 'next/headers'
-import Passages from '@/components/teacher/passages';
+import React from "react";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
+import System from "@/components/system-articles";
+import { fetchMoreArticles } from "@/lib/fetchMoreArticles";
+import { Header } from "@/components/header";
 
 export default async function PassagesPage() {
   const user = await getCurrentUser();
@@ -13,24 +14,14 @@ export default async function PassagesPage() {
     return redirect("/level");
   }
 
-
-  async function getPassages() {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/passage`,
-      {
-        method: "GET",
-        headers: headers(),
-      }
-    );
-    const res = await response.json();
-    return res;
-  }
-  const passages = await getPassages();
-
   return (
-    <div>
-
-      <Passages passages={passages.passages} />
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto px-4">
+        <Header heading="Passages" />
+      </div>
+      <main className="container mx-auto px-4 flex-1 py-6">
+        <System fetchMoreData={fetchMoreArticles} />
+      </main>
     </div>
-  )
+  );
 }
