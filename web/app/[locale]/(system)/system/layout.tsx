@@ -47,7 +47,7 @@ export default async function StudentHomeLayout({ children }: RoleLayoutProps) {
         <aside className="lg:w-[200px] lg:flex-col lg:flex sticky top-[80px] h-[calc(100vh_-_80px)] z-[10]">
           <SystemSidebarNav items={systemPageConfig.systemSidebarNav} />
         </aside>
-        <main className="flex w-full flex-1 flex-col overflow-hidden">
+        <main className="flex w-full flex-1 flex-col">
           {children}
         </main>
       </div>

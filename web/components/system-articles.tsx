@@ -395,7 +395,7 @@ export default function System({ fetchMoreData }: PassagesProps) {
 
   return (
     <>
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-[85vh]">
         <Input
           placeholder={t("search")}
           className="w-full mt-4 px-3 py-2"
@@ -573,10 +573,10 @@ export default function System({ fetchMoreData }: PassagesProps) {
                   )}
                 </div>
               )}
+        <div ref={sentinelRef}>{hasMore ? "Loading more articles..." : ""}</div>
             </div>
           </div>
         </div>
-        <div ref={sentinelRef}>{hasMore ? "Loading more articles..." : ""}</div>
       </div>
     </>
   );
