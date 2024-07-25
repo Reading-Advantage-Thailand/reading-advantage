@@ -46,8 +46,8 @@ export default async function TeacherHomeLayout({
           </div>
         </div>
       </header>
-      <div className="container mx-auto px-4 lg:grid lg:flex-1 gap-12 lg:grid-cols-[200px_1fr]">
-        <aside className="lg:w-[200px] lg:flex-col lg:flex">
+      <div className="container mx-auto px-4 flex flex-col lg:grid gap-6 lg:grid-cols-[200px_1fr] lg:gap-12">
+        <aside className="lg:w-[200px] lg:flex-col lg:flex md:sticky lg:sticky top-[80px] lg:h-[calc(100vh_-_80px)] z-[10]">
           <SidebarTeacherNav items={teacherPageConfig.teacherSidebarNav} />
         </aside>
         <main className="flex w-full flex-1 flex-col overflow-hidden">
