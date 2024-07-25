@@ -18,25 +18,6 @@ export default async function SystemPage({
     return redirect("/level");
   }
 
-  // const params =
-  //   searchParams instanceof URLSearchParams
-  //     ? searchParams
-  //     : new URLSearchParams(searchParams);
-  // const lastDocId = params.get("lastDocId") || "";
-  // const typeParams = params.get("type") || "";
-  // const genreParams = params.get("genre") || "";
-  // const subgenreParams = params.get("subgenre") || "";
-  // const levelParams = params.get("level") || "";
-  // const searchTermParams = params.get("searchTerm") || "";
-
-  // console.log("==================pages.tsx==================");
-  // console.log("lastDocId: ", lastDocId);
-  // console.log("typeParams: ", typeParams);
-  // console.log("genreParams: ", genreParams);
-  // console.log("subgenreParams: ", subgenreParams);
-  // console.log("levelParams: ", levelParams);
-  // console.log("searchTermParams: ", searchTermParams);
-
   return (
     <div className="min-h-screen flex flex-col">
       <div className="container mx-auto px-4">

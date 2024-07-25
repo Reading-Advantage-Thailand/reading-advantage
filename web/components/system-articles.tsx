@@ -1,4 +1,3 @@
-// Back up system-articles v.3 merged
 "use client";
 import React, {
   useState,
@@ -83,8 +82,6 @@ export default function System({ fetchMoreData }: PassagesProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [type, setType] = useState("");
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedItems, setSelectedItems] = useState(0);
   const [passages, setPassages] = useState<Passage[]>([]);
   let currentItems = passages;
   const t = useScopedI18n("components.articleRecordsTable");
@@ -318,8 +315,6 @@ export default function System({ fetchMoreData }: PassagesProps) {
         titleMatch && typeMatch && genreMatch && subgenreMatch && levelMatch
       );
     });
-    setCurrentPage(1);
-    setSelectedItems(filteredItems.length);
     return filteredItems;
   };
 
@@ -437,7 +432,6 @@ export default function System({ fetchMoreData }: PassagesProps) {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {/* <div className=""> */}
                 {selectedGenre && (
                   <DropdownMenu>
                     <DropdownMenuTrigger>
@@ -458,7 +452,6 @@ export default function System({ fetchMoreData }: PassagesProps) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                {/* </div> */}
                 <div className="mt-4 flex gap-2">
                   {selectedGenre && (
                     <Button
@@ -532,7 +525,6 @@ export default function System({ fetchMoreData }: PassagesProps) {
                   )}
                 </div>
               )}
-        {/* <div ref={sentinelRef}>{hasMore ? "Loading more articles..." : ""}</div> */}
         <div ref={sentinelRef}>{hasMore ? "Loading more articles..." : ""}</div>
             </div>
           </div>
