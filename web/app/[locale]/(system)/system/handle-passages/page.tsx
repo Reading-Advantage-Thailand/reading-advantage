@@ -1,6 +1,4 @@
-import Passages from "@/components/teacher/passages";
 import React from "react";
-import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/header";
@@ -40,10 +38,13 @@ export default async function SystemPage({
   // console.log("searchTermParams: ", searchTermParams);
 
   return (
-    <div className="">
-      <Header heading="Handle Passages"/>
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto px-4">
+        <Header heading="Handle Passages" />
+      </div>
+    <main className="container mx-auto px-4 flex-1 py-6">
       <System fetchMoreData={fetchMoreArticles} />
-    </div>
- 
+    </main>
+  </div>
   );
 }

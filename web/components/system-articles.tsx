@@ -1,16 +1,14 @@
-//Back up system-articles v.2 sticky
+// Back up system-articles v.3 merged
 "use client";
 import React, {
   useState,
   useEffect,
   useCallback,
-  useMemo,
   useRef,
 } from "react";
 import { Input } from "./ui/input";
 import { Checkbox } from "@mui/material";
 import { Button } from "./ui/button";
-import { Header } from "./header";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,10 +18,6 @@ import {
 import { CaretSortIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "./article-showcase-card";
-// import axios from "axios";
-// import { useDebounce } from "use-debounce";
-// import SystemPage from "@/app/[locale]/(system)/system/page";
-// import { setDoc } from "firebase/firestore";
 
 interface CustomCheckboxProps {
   label: string;
@@ -97,11 +91,8 @@ export default function System({ fetchMoreData }: PassagesProps) {
   const tp = useScopedI18n("components.passages");
   const [sortOption, setSortOption] = useState("");
   const [sortOrder, setSortOrder] = useState("Ascending");
-  // const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [loading, setLoading] = useState(false);
-  const [articles, setArticles] = useState<Passage[]>([]);
   const [hasMore, setHasMore] = useState(false);
-  const [page, setPage] = useState(1);
   const sentinelRef = useRef(null);
   const FICTION = "fiction";
   const NON_FICTION = "nonfiction";
@@ -275,25 +266,6 @@ export default function System({ fetchMoreData }: PassagesProps) {
     );
   };
 
-  // const handleSelectionChange = (level: string) => {
-  //   setSelectedLevels((prevLevels) => {
-  //     if (prevLevels.includes(level)) {
-  //       return prevLevels.filter((lvl) => lvl !== level);
-  //     } else {
-  //       return [...prevLevels, level];
-  //     }
-  //   });
-  // };
-
-  // const handleSortChange = (value: string) => {
-  //   if (sortOption === value) {
-  //     setSortOrder(sortOrder === "Ascending" ? "Descending" : "Ascending");
-  //   } else {
-  //     setSortOrder("Ascending");
-  //   }
-  //   setSortOption(value);
-  // };
-
   const sortPassages = (passages: any[]) => {
     return (passages || []).sort((a, b) => {
       if (sortOption === "rating") {
@@ -310,19 +282,6 @@ export default function System({ fetchMoreData }: PassagesProps) {
     });
   };
 
-  // const displayedItems = isFiltered
-  //   ? filteredPassages.slice((currentPage - 1) * 10, currentPage * 10)
-  //   : passages.slice((currentPage - 1) * 10, currentPage * 10);
-
-  let displayedItems = [];
-  if (isFiltered && filteredPassages) {
-    displayedItems = filteredPassages.slice(
-      (currentPage - 1) * 10,
-      currentPage * 10
-    );
-  } else if (passages) {
-    displayedItems = passages.slice((currentPage - 1) * 10, currentPage * 10);
-  }
 
   const filterPassages = (
     currentItems: Passage[],
@@ -395,7 +354,7 @@ export default function System({ fetchMoreData }: PassagesProps) {
 
   return (
     <>
-      <div className="flex flex-col h-[85vh]">
+      <div className="flex flex-col lg:h-screen">
         <Input
           placeholder={t("search")}
           className="w-full mt-4 px-3 py-2"
@@ -404,7 +363,7 @@ export default function System({ fetchMoreData }: PassagesProps) {
         />
         <div className="flex-grow overflow-hidden mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 h-full gap-4">
-            <div className="md:pr-4">
+            <div className="md:pr-4 ">
               {/* sort date and rating */}
               <div className="mb-4">
                 <p className="font-bold">
@@ -537,7 +496,7 @@ export default function System({ fetchMoreData }: PassagesProps) {
             </div>
 
             {/* data card */}
-            <div className="overflow-y-auto">
+            <div className="overflow-auto">
               {isFiltered ? (
                 <div className="grid grid-cols-1 h-full">
                   {sortPassages(filteredPassages).map(
@@ -573,6 +532,7 @@ export default function System({ fetchMoreData }: PassagesProps) {
                   )}
                 </div>
               )}
+        {/* <div ref={sentinelRef}>{hasMore ? "Loading more articles..." : ""}</div> */}
         <div ref={sentinelRef}>{hasMore ? "Loading more articles..." : ""}</div>
             </div>
           </div>

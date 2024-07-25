@@ -1,14 +1,11 @@
-//Back Up layout for system
 import { MainNav } from "@/components/main-navbar";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { systemPageConfig } from "@/configs/system-page-config";
 import { UserAccountNav } from "@/components/user-account-nav";
-import ProgressBar from "@/components/progress-bar-xp";
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher";
 import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle";
 import { SystemSidebarNav } from "@/components/system/system-sidebar-nav";
-import { studentPageConfig } from "@/configs/student-page-config";
 
 interface RoleLayoutProps {
   children?: React.ReactNode;
@@ -43,8 +40,8 @@ export default async function StudentHomeLayout({ children }: RoleLayoutProps) {
           </div>
         </div>
       </header>
-      <div className="container mx-auto px-4 lg:grid lg:flex-1 gap-12 lg:grid-cols-[200px_1fr]">
-        <aside className="lg:w-[200px] lg:flex-col lg:flex sticky top-[80px] h-[calc(100vh_-_80px)] z-[10]">
+      <div className="container mx-auto px-4 flex flex-col lg:grid gap-6 lg:grid-cols-[200px_1fr] lg:gap-12">
+        <aside className="lg:w-[200px] lg:flex-col lg:flex md:sticky lg:sticky top-[80px] lg:h-[calc(100vh_-_80px)] z-[10]">
           <SystemSidebarNav items={systemPageConfig.systemSidebarNav} />
         </aside>
         <main className="flex w-full flex-1 flex-col">
