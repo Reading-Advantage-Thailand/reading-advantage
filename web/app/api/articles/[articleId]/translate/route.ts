@@ -88,7 +88,7 @@ export async function POST(
                 },
             ];
             const completion = await openai.chat.completions.create({
-                model: 'gpt-3.5-turbo-16k-0613',
+                model: 'gpt-4o-mini',
                 messages: messages,
                 functions: functions,
                 function_call: {
