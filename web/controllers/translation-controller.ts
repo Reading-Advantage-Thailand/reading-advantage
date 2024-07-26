@@ -129,7 +129,7 @@ async function translatePassageWithGPT(sentences: string[]): Promise<string[]> {
 
     const generate = async () => {
         const { object } = await generateObject({
-            model: openai("gpt-3.5-turbo"),
+            model: openai("gpt-4o-mini"),
             schema: schema,
             prompt: prompt + "\n\n" + JSON.stringify(mapJSON),
         });
