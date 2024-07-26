@@ -521,7 +521,7 @@ export async function generateMC(
     summary,
     imageDesc,
     "prompts-combined-MC.json",
-    "gpt-4o",
+    "gpt-4o-mini",
     schema
   );
 }
@@ -558,7 +558,7 @@ export async function generateSA(
     summary,
     imageDesc,
     "prompts-combined-SA.json",
-    "gpt-4o",
+    "gpt-4o-mini",
     schema
   );
 }
@@ -586,7 +586,7 @@ export async function generateLA(
     summary,
     imageDesc,
     "prompts-combined-LA.json",
-    "gpt-4o",
+    "gpt-4o-mini",
     schema
   );
 }
@@ -987,7 +987,7 @@ export async function getFeedbackWritter(res: object) {
     `;
 
     const { object } = await generateObject({
-      model: openai("gpt-4o"),
+      model: openai("gpt-4o-mini"),
       schema: outputSchema,
       prompt: prompt,
     });
