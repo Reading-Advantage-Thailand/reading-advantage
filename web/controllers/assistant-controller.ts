@@ -398,7 +398,7 @@ async function generateTopic(
 
   const generate = async () => {
     const response = await generateText({
-      model: openai("gpt-40-mini"),
+      model: openai("gpt-4o-mini"),
       prompt: prompts[type],
     });
     return JSON.parse(response.text);
