@@ -30,7 +30,7 @@ const ArticleShowcaseCard = ({ article }: Props) => {
   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
   const locale = useCurrentLocale();
   const pathName = usePathname();
-  const systemPathRegex = /\/(?:[a-z]{2}\/)?system\/?$/i;
+  const systemPathRegex = /\/(?:[a-z]{2}\/)?system\/.*\/?$/i;
 
   React.useEffect(() => {
     handleTranslateSummary();
