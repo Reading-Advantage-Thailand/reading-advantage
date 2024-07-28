@@ -1,17 +1,14 @@
 import { getToken } from 'next-auth/jwt';
 import withAuth from 'next-auth/middleware';
 import { createI18nMiddleware } from 'next-international/middleware';
-import local from 'next/font/local';
 import { NextRequest, NextResponse } from 'next/server';
 import { localeConfig } from './configs/locale-config';
-import { NextPage, NextPageContext } from 'next';
-import { useRouter } from 'next/router';
-import React from 'react';
-import RoleSelected from './components/teacher/role-selected';
-import { log } from 'console';
-import { has } from 'lodash';
 
-const I18nMiddleware = createI18nMiddleware(localeConfig);
+const I18nMiddleware = createI18nMiddleware({
+    locales: localeConfig.locales,
+    defaultLocale: localeConfig.defaultLocale,
+    urlMappingStrategy: "rewriteDefault",
+});
 
 const authPages = ['auth/signin', 'auth/signup', 'auth/forgot-password'];
 const publicPages = [''];
@@ -22,11 +19,11 @@ function doesPathMatchPages(req: NextRequest, pages: string[]) {
 
 export default withAuth(async function onSuccess(req) {
     const token = await getToken({ req });
-    console.log('token', token);
+    console.log('middleware: token', token);
 
     const authLocales = localeConfig.locales;
     const locale = authLocales.find((loc) => req.nextUrl.pathname.startsWith(`/${loc}/auth`)) || '/en';
-    
+
     const isAuth = !!token;
     const isNoLevel = token?.cefrLevel === "";
     const teacherRole = token?.role?.includes('TEACHER');
@@ -37,7 +34,19 @@ export default withAuth(async function onSuccess(req) {
     const isTeacherArea = req.nextUrl.pathname.startsWith('/teacher');
 
     if (req.nextUrl.pathname.startsWith('/api')) {
-        if (true) return NextResponse.next();
+        return NextResponse.next();
+    }
+
+    if (req.nextUrl.pathname.startsWith('/session')) {
+        return NextResponse.redirect(new URL(`/api/auth/session`, req.url));
+    }
+
+    if (req.nextUrl.pathname.startsWith('/csrf')) {
+        return NextResponse.redirect(new URL(`/api/auth/csrf`, req.url));
+    }
+
+    if (req.nextUrl.pathname.startsWith('/signout')) {
+        return NextResponse.redirect(new URL(`/api/auth/signout`, req.url));
     }
 
     if (!token) {

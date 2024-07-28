@@ -1,5 +1,6 @@
-import { getSAQuestion } from "@/controllers/question-controller";
-import { logRequest, protect } from "@/utils/middleware";
+import { protect } from "@/server/controllers/auth-controller";
+import { getSAQuestion } from "@/server/controllers/question-controller";
+import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
