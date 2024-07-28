@@ -12,11 +12,10 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { Role } from "@/server/models/enum";
-import { set } from "lodash";
 import { UserCircle, GraduationCap, School } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 
 type Props = {
   userId: string;

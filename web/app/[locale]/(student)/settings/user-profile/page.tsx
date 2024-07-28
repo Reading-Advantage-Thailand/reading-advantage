@@ -1,27 +1,28 @@
-import { getCurrentUser } from "@/lib/session";
-import { CardContent } from "@mui/material";
-import { redirect } from "next/navigation";
-import { Icons } from "@/components/icons";
-import { Separator } from "@/components/ui/separator";
 import { Header } from "@/components/header";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ChangeUsernameForm } from "./change-username-form";
-import { UserCircle, School, GraduationCap, BadgeCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ChangeUsernameForm } from "./change-username-form";
 import { UpdateUserLicenseForm } from "./update-user-license";
-import ChangeRole from "./change-role";
+import ChangeRole from "@/components/shared/change-role";
+import { BadgeCheck } from "lucide-react";
+import { Icons } from "@/components/icons";
+import WithAuth, { BaseWithAuthProps } from "@/components/shared/with-auth";
+import { Role } from "@/server/models/enum";
 
-type Props = {};
-
-export default async function UserProfileSettingsPage({}: Props) {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return redirect("/auth/signin");
-  }
-
+export default async function UserProfileSettingsPage({
+  user,
+}: BaseWithAuthProps) {
   return (
-    <>
+    <WithAuth>
+      <Page user={user} />
+    </WithAuth>
+  );
+}
+
+function Page({ user }: BaseWithAuthProps) {
+  return (
+    <div>
       <Header
         heading="Personal information"
         text="Information about your personal profile"
@@ -34,7 +35,7 @@ export default async function UserProfileSettingsPage({}: Props) {
             title="Email"
             data={user.email}
             verified={user.email_verified}
-            showVerified={true}
+            showVerified
           />
           <DisplaySettingInfo
             title="Reading advantage level"
@@ -52,12 +53,12 @@ export default async function UserProfileSettingsPage({}: Props) {
           />
         </div>
         <ChangeRole
-          className="md:max-w-sm"
+          className="md:w-[38rem]"
           userId={user.id}
           userRole={user.role}
         />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -77,43 +78,39 @@ const DisplaySettingInfo: React.FC<DisplaySettingInfoProps> = ({
   badge,
   verified,
   showVerified = false,
-}) => {
-  return (
-    <>
-      <div className="text-sm font-medium mt-3">
-        {title}
-        {badge && (
-          <Badge className="ml-2" variant="secondary">
-            {badge}
-          </Badge>
-        )}
-      </div>
-      {desc && (
-        <p className="text-[0.8rem] text-muted-foreground mt-2">{desc}</p>
+}) => (
+  <>
+    <div className="text-sm font-medium mt-3">
+      {title}
+      {badge && (
+        <Badge className="ml-2" variant="secondary">
+          {badge}
+        </Badge>
       )}
-      <div className="flex justify-between items-center text-[0.8rem] text-muted-foreground rounded-lg border bg-card shadow px-3 py-2 my-2">
-        <p>{data}</p>
-        {showVerified && (
-          <div className="flex items-center gap-1">
-            {verified ? (
-              <span className="text-green-800 dark:text-green-300 flex items-center gap-1">
-                <BadgeCheck size={16} />
-                Verified
-              </span>
-            ) : (
-              <span className="text-red-800 dark:text-red-300 flex items-center gap-1">
-                <Icons.unVerified size={16} />
-                Not verified
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-      {showVerified && verified && (
-        <Button variant="secondary" size="sm">
-          Resend verification email
-        </Button>
+    </div>
+    {desc && <p className="text-[0.8rem] text-muted-foreground mt-2">{desc}</p>}
+    <div className="flex justify-between items-center text-[0.8rem] text-muted-foreground rounded-lg border bg-card shadow px-3 py-2 my-2">
+      <p>{data}</p>
+      {showVerified && (
+        <div className="flex items-center gap-1">
+          {verified ? (
+            <span className="text-green-800 dark:text-green-300 flex items-center gap-1">
+              <BadgeCheck size={16} />
+              Verified
+            </span>
+          ) : (
+            <span className="text-red-800 dark:text-red-300 flex items-center gap-1">
+              <Icons.unVerified size={16} />
+              Not verified
+            </span>
+          )}
+        </div>
       )}
-    </>
-  );
-};
+    </div>
+    {showVerified && verified && (
+      <Button variant="secondary" size="sm">
+        Resend verification email
+      </Button>
+    )}
+  </>
+);

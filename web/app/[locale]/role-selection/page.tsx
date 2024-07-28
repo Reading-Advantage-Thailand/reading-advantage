@@ -1,28 +1,23 @@
-import FirstRoleSelection from '@/components/first-role-selection'
-import { NextAuthSessionProvider } from '@/components/providers/nextauth-session-provider';
-import { getCurrentUser } from '@/lib/session';
-import { log } from 'console';
-import { redirect } from 'next/navigation';
-import React from 'react'
+import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
+import ChangeRole from "@/components/shared/change-role";
+import { getCurrentUser } from "@/lib/session";
+import { redirect } from "next/navigation";
+import React from "react";
 
-async function FirstRoleSelectionPage() {
-    const user = await getCurrentUser();
-    
-    if (!user) {
-      return redirect("/auth/signin");
-    }
+export default async function FirstRoleSelectionPage() {
+  const user = await getCurrentUser();
 
-    if (user.cefrLevel !== "" && user.level >= 0) {
-        return redirect("/student/read");
-    }
-    
-    return (
-            <div>
-                     <NextAuthSessionProvider session={user}>
-                            <FirstRoleSelection userId={user.id} role={''} />
-                     </NextAuthSessionProvider>
-            </div>
-    )
+  if (!user) {
+    return redirect("/auth/signin");
+  }
+
+  return (
+    <div className="flex justify-center">
+      <ChangeRole
+        className="md:w-[40rem]"
+        userRole={user.role}
+        userId={user.id}
+      />
+    </div>
+  );
 }
-
-export default FirstRoleSelectionPage

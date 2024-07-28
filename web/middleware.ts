@@ -59,10 +59,20 @@ export default withAuth(async function onSuccess(req) {
 
     if (authLocales.includes(locale)) {
         if (isAuth) {
+            // if (token.role === Role.UNKNOWN && !startsWith('/role-selection', req)) {
+            //     console.log('middleware: redirect to role-selection');
+            //     return NextResponse.redirect(new URL(`/role-selection`, req.url));
+            // }
+
+            // level selection
+            // if (!req.nextUrl.pathname.startsWith('/level') && (token.level === undefined || token.level === null || token.level === 0)) {
+            //     console.log('middleware: redirect to level');
+            //     return NextResponse.redirect(new URL(`/level`, req.url));
+            // }
             // if (isNoLevel) return NextResponse.redirect(new URL(`/level`, req.url));
-            if (isNoRole && isNoLevel) return NextResponse.redirect(new URL(`/role-selection`, req.url));
-            if (isTeacher) return NextResponse.redirect(new URL(`/teacher/my-classes`, req.url));
-            return NextResponse.redirect(new URL(`/student/read`, req.url));
+            // if (isNoRole && isNoLevel) return NextResponse.redirect(new URL(`/role-selection`, req.url));
+            // if (isTeacher) return NextResponse.redirect(new URL(`/teacher/my-classes`, req.url));
+            // return NextResponse.redirect(new URL(`/student/read`, req.url));
         }
         return null;
     }
