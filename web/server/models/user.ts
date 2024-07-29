@@ -37,8 +37,8 @@ export const createUserModel = (decoded: DecodedIdToken, user: User | undefined)
             xp: user.xp || 0,
             sign_in_provider: decoded.firebase.sign_in_provider || "",
             expired_date: user.expired_date || "",
-            level: 0,
-            cefr_level: "",
+            level: user.level || 0,
+            cefr_level: user.cefr_level || "",
             expired: false,
         };
     } else {

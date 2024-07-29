@@ -16,6 +16,8 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     let selectionType: any[] = [];
     let results: any[] = [];
 
+    console.log("article controller level", level);
+
     if (!level) {
       return NextResponse.json(
         { message: "Level is required" },

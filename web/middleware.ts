@@ -19,7 +19,7 @@ function doesPathMatchPages(req: NextRequest, pages: string[]) {
 
 export default withAuth(async function onSuccess(req) {
     const token = await getToken({ req });
-    console.log('middleware: token', token);
+    // console.log('middleware: token', token);
 
     const authLocales = localeConfig.locales;
     const locale = authLocales.find((loc) => req.nextUrl.pathname.startsWith(`/${loc}/auth`)) || '/en';

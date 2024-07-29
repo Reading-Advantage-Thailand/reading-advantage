@@ -50,6 +50,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     jwt: async ({ token, user, account, profile, isNewUser, trigger, session }: any) => {
+      console.log("jwt callback", { token, user, account });
       if (trigger === "update" && session?.user) {
         console.log("session", session);
         Object.assign(token, session.user);
@@ -67,10 +68,21 @@ export const authOptions: NextAuthOptions = {
       // }
       return token;
     },
-    session: ({ session, token, trigger, newSession }) => {
+    session: ({ session, token, user }) => {
+      //   console.log("user-session", user);
       if (token) {
-        session.user = token as User;
+        session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.picture;
+        session.user.level = token.level;
+        session.user.email_verified = token.email_verified;
+        session.user.xp = token.xp;
+        session.user.cefr_level = token.cefr_level;
+        session.user.role = token.role;
       }
+      // console.log("session callback");
+      // console.log("session", session);
       return session;
     },
   },
