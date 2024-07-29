@@ -22,6 +22,7 @@ interface ArticleType {
     summary?: string;
     image_description?: string;
     id?: string;
+    rating?: number;
 }
 
 interface ValidationResponse {
@@ -97,14 +98,27 @@ export async function validateArticle(
     const regeneratedResults = results.filter((result) => result.validation.some((validation) => validation.status === "regenerated"));
     const failedResults = results.filter((result) => result.validation.some((validation) => validation.status === "failed"));
 
+    // calculate rating stat from passed results display by each cefr level
+    const ratingStats = passedResults.reduce((acc, result) => {
+        if (result.rating && result.cefr_level) {
+            acc[result.cefr_level] = acc[result.cefr_level] || { total: 0, sum: 0 };
+            acc[result.cefr_level].total++;
+            acc[result.cefr_level].sum += result.rating;
+        }
+        return acc;
+    }, {} as any);
+
 
     let embeds = {
         "date": filterByDate,
         "total": snapshot.docs.length,
-        "time taken": (Date.now() - timeTaken) / 1000 / 60 + " minutes",
+        "time taken": ((Date.now() - timeTaken) / 1000 / 60).toFixed(2) + " minutes",
         "passed": passedResults.length,
         "regenerated": regeneratedResults.length,
         "failed": failedResults.length + "\n",
+        "rating stats": Object.entries(ratingStats).map(([cefr_level, { total, sum }]: any) =>
+            `**cefr level**: *${cefr_level}*, **average rating**: *${(sum / total).toFixed(2)}*`
+        ).join("\n"),
     } as any;
 
     if (regeneratedResults.length > 0) {
@@ -153,7 +167,12 @@ export async function validateArticle(
 }
 
 
-async function validator(articleId: string): Promise<{ id: string, validation: ValidationResponse[] }> {
+async function validator(articleId: string): Promise<{
+    id: string,
+    validation: ValidationResponse[],
+    rating?: number,
+    cefr_level?: string,
+}> {
     const articleDoc = await db.collection("new-articles").doc(articleId).get();
     if (!articleDoc.exists) {
         throw new Error(`article ${articleId} not found in Firestore`);
@@ -176,9 +195,13 @@ async function validator(articleId: string): Promise<{ id: string, validation: V
             validateAudio(articleData.passage!, articleId),
         ]);
 
+        console.log('rating', articleData.rating);
+        console.log('cefr_level', articleData.cefr_level);
         return {
             id: articleId,
             validation: resp,
+            rating: articleData.rating || undefined,
+            cefr_level: articleData.cefr_level || undefined,
         };
     } catch (error: any) {
         return { id: articleId, validation: [{ id: articleId, task: error.task, status: "failed", errorMessage: error.message }] };

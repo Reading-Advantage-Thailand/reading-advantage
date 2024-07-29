@@ -1,5 +1,8 @@
 export enum DBCollection {
     NEWARTICLES = "new-articles",
+    NEWARTICLES_MC = "mc-questions",
+    NEWARTICLES_SA = "sa-questions",
+    NEWARTICLES_LA = "la-questions",
 
     USERS = "users",
 

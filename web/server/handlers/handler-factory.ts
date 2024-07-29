@@ -63,25 +63,25 @@ export const getAlls = <T extends DocumentData>(collection: DBCollection) =>
         });
     });
 
-export const filtered = <T extends DocumentData>(collection: DBCollection) =>
-    catchAsync(async (req: ExtendedNextRequest) => {
-        const filter = Object.fromEntries(req.nextUrl.searchParams.entries());
+// export const filtered = <T extends DocumentData>(collection: DBCollection) =>
+//     catchAsync(async (req: ExtendedNextRequest) => {
+//         const filter = Object.fromEntries(req.nextUrl.searchParams.entries());
 
-        if (!filter.orderBy || !filter.startAt || !filter.limit || !filter.select) {
-            return NextResponse.json({
-                message: "Invalid filter, must include orderBy, startAt, limit, and select",
-            }, { status: 400 });
-        }
-        const service = createFirestoreService<T>(collection);
-        const docs = await service.getFilteredDocs({
-            orderBy: filter.orderBy,
-            startAt: Number(filter.startAt),
-            limit: Number(filter.limit),
-            select: JSON.parse(decodeURIComponent(filter.select)),
-        });
+//         if (!filter.orderBy || !filter.startAt || !filter.limit || !filter.select) {
+//             return NextResponse.json({
+//                 message: "Invalid filter, must include orderBy, startAt, limit, and select",
+//             }, { status: 400 });
+//         }
+//         const service = createFirestoreService<T>(collection);
+//         const docs = await service.getFilteredDocs({
+//             orderBy: filter.orderBy,
+//             startAt: Number(filter.startAt),
+//             limit: Number(filter.limit),
+//             select: JSON.parse(decodeURIComponent(filter.select)),
+//         });
 
-        return NextResponse.json({
-            length: docs.length,
-            data: docs,
-        });
-    });
+//         return NextResponse.json({
+//             length: docs.length,
+//             data: docs,
+//         });
+//     });

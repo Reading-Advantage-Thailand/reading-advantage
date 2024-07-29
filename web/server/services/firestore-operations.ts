@@ -1,9 +1,12 @@
 import db from "@/configs/firestore-config";
 import { DocumentData } from "firebase/firestore";
 
-export const getDoc = async <T extends DocumentData>(collection: string, id: string, parent?: string): Promise<T | undefined> => {
+export const getDoc = async <T extends DocumentData>(collection: string, id: string, parent?: { subCollection: string, docId: string }): Promise<T | undefined> => {
     try {
-        const collectionRef = parent ? db.doc(parent).collection(collection) : db.collection(collection);
+        const collectionRef = parent
+            ? db.collection(collection).doc(parent.docId).collection(parent.subCollection)
+            : db.collection(collection);
+
         const docRef = collectionRef.doc(id);
         const doc = await docRef.get();
 
@@ -20,9 +23,12 @@ export const getDoc = async <T extends DocumentData>(collection: string, id: str
     }
 };
 
-export const setDoc = async <T extends DocumentData>(collection: string, id: string, data: T, parent?: string): Promise<void> => {
+export const setDoc = async <T extends DocumentData>(collection: string, id: string, data: T, parent?: { subCollection: string, docId: string }): Promise<void> => {
     try {
-        const collectionRef = parent ? db.doc(parent).collection(collection) : db.collection(collection);
+        const collectionRef = parent
+            ? db.collection(collection).doc(parent.docId).collection(parent.subCollection)
+            : db.collection(collection);
+
         const docRef = collectionRef.doc(id);
         await docRef.set(data);
         console.log(`Document created in collection "${collection}" with ID "${id}".`);
@@ -31,20 +37,26 @@ export const setDoc = async <T extends DocumentData>(collection: string, id: str
     }
 }
 
-export const updateDoc = async <T extends DocumentData>(collection: string, id: string, data: Partial<T>, parent?: string): Promise<void> => {
+export const updateDoc = async <T extends DocumentData>(collection: string, id: string, data: Partial<T>, parent?: { subCollection: string, docId: string }): Promise<void> => {
     try {
-        const collectionRef = parent ? db.doc(parent).collection(collection) : db.collection(collection);
+        const collectionRef = parent
+            ? db.collection(collection).doc(parent.docId).collection(parent.subCollection)
+            : db.collection(collection);
+
         const docRef = collectionRef.doc(id);
         await docRef.update(data);
-        console.log(`Document updated in collection "${collection}" with ID "${id}".`);
+        console.log(`updated "${collection}" ID "${id}" data: ${JSON.stringify(data)}`);
     } catch (error) {
         console.error(`Error updating document in collection "${collection}" with ID "${id}":`, error);
     }
 }
 
-export const createDoc = async <T extends DocumentData>(collection: string, data: Omit<T, "id">, parent?: string): Promise<void> => {
+export const createDoc = async <T extends DocumentData>(collection: string, data: Omit<T, "id">, parent?: { subCollection: string, docId: string }): Promise<void> => {
     try {
-        const collectionRef = parent ? db.doc(parent).collection(collection) : db.collection(collection);
+        const collectionRef = parent
+            ? db.collection(collection).doc(parent.docId).collection(parent.subCollection)
+            : db.collection(collection);
+
         const docRef = await collectionRef.add(data);
         await docRef.set({ id: docRef.id }, { merge: true });
         console.log(`Document created in collection "${collection}" with ID: ${docRef.id}`);
@@ -53,9 +65,12 @@ export const createDoc = async <T extends DocumentData>(collection: string, data
     }
 }
 
-export const deleteDoc = async (collection: string, id: string, parent?: string): Promise<void> => {
+export const deleteDoc = async (collection: string, id: string, parent?: { subCollection: string, docId: string }): Promise<void> => {
     try {
-        const collectionRef = parent ? db.doc(parent).collection(collection) : db.collection(collection);
+        const collectionRef = parent
+            ? db.collection(collection).doc(parent.docId).collection(parent.subCollection)
+            : db.collection(collection);
+
         const docRef = collectionRef.doc(id);
         await docRef.delete();
         console.log(`Document deleted from collection "${collection}" with ID "${id}".`);
@@ -64,13 +79,20 @@ export const deleteDoc = async (collection: string, id: string, parent?: string)
     }
 }
 
-export const getAllDocs = async <T extends DocumentData>(collection: string, filter?: { select?: string[] }, parent?: string,): Promise<T[]> => {
+export const getAllDocs = async <T extends DocumentData>(collection: string, filter?: { select?: string[], limit?: number }, parent?: { subCollection: string, docId: string }): Promise<T[]> => {
     try {
         const collectionRef = parent
-            ? db.doc(parent).collection(collection)
+            ? db.collection(collection).doc(parent.docId).collection(parent.subCollection)
             : db.collection(collection);
 
-        const query = filter?.select ? collectionRef.select(...filter.select) : collectionRef;
+        // select
+        let query = filter?.select ? collectionRef.select(...filter.select) : collectionRef;
+
+        // limit
+        if (filter?.limit) {
+            query = query.limit(Number(filter.limit));
+        }
+
         const snapshot = await query.get();
         const docs = snapshot.docs.map((doc) => doc.data() as T);
 

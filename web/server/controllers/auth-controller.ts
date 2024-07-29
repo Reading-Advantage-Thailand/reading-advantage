@@ -10,6 +10,7 @@ export interface ExtendedNextRequest extends NextRequest {
         user: User;
     };
 }
+
 // Middleware to protect routes
 export const protect = async (
     req: ExtendedNextRequest,
