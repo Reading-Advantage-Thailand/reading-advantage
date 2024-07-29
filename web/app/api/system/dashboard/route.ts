@@ -29,15 +29,15 @@ export async function GET(req: Request) {
   // const startDate = searchParams.get("startDate");
   // const endDate = searchParams.get("endDate");
   const startDate = "2024-07-23";
-  const endDate = "2024-07-25";
+  const endDate = "2024-07-23";
 
   // const start_date = startDate ? Timestamp.fromDate(new Date(startDate)) : null;
   // const end_date = endDate ? Timestamp.fromDate(new Date(endDate)) : null;
-  const start_date = startDate ? parseDate(startDate) : null;
-  const end_date = endDate ? parseDate(endDate, true) : null;
+  // const start_date = startDate ? parseDate(startDate) : null;
+  // const end_date = endDate ? parseDate(endDate, true) : null;
 
-  console.log('start_date', start_date);
-console.log('end_date', end_date);
+//   console.log('start_date', start_date);
+// console.log('end_date', end_date);
 
   const articlesByLevel: { [key: string]: number } = {};
 
@@ -46,17 +46,17 @@ console.log('end_date', end_date);
       .collection("new-articles")
       .where("cefr_level", "==", level);
       
-      if (start_date && end_date) {
-        query = query.where("created_at", ">=", start_date).where("created_at", "<=", end_date);
-      }
-
-      try {
-        const countResult = await query.count().get(); 
-        const count = countResult.data().count;
-        articlesByLevel[level] = count; 
-      } catch (error) {
-        console.error(`Error fetching count for level ${level}`, error)
-        articlesByLevel[level] = 0;
+      if (startDate && endDate) {
+        const snapshot = await query.get();
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const created_at = data.created_at;
+          const formattedCreatedAt = created_at.slice(0, 10);
+          if (formattedCreatedAt >= startDate && formattedCreatedAt <= endDate) {
+            articlesByLevel[level] = (articlesByLevel[level] || 0) + 1;
+          }
+        }
+        );
       }
     }
 
