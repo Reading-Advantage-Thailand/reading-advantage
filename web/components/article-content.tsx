@@ -57,8 +57,7 @@ export default function ArticleContent({
   article,
   className = "",
   userId,
-}: Props) {
-  console.log("article", article);
+}: Props) {  
   const t = useScopedI18n("components.articleContent");
   const sentences = splitTextIntoSentences(article.passage, true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
