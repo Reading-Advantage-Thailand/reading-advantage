@@ -1,6 +1,5 @@
 import db from "@/configs/firestore-config";
 import { Timestamp } from "firebase-admin/firestore";
-import { parse } from "path";
 
 export async function GET(req: Request) {
   const levels = [
@@ -33,13 +32,8 @@ export async function GET(req: Request) {
 
   const start_date = startDate ? Timestamp.fromDate(new Date(startDate)) : null;
   const end_date = endDate ? Timestamp.fromDate(new Date(endDate)) : null;
-  // const start = start_date ? getDateRange(startDate) : null;
-  // const end = end_date ? getDateRange(endDate, true) : null;
 
-  const { start, end } = getDateRange(start_date?.toDate()?.toISOString() ?? null, end_date?.toDate()?.toISOString() ?? null);
-
-  console.log('start_date', start);
-console.log('end_date', end);
+  const { formattedStartDate, formattedEndDate } = getDateRange(start_date?.toDate()?.toISOString() ?? null, end_date?.toDate()?.toISOString() ?? null);
 
   const articlesByLevel: { [key: string]: number } = {};
 
@@ -48,8 +42,8 @@ console.log('end_date', end);
       .collection("new-articles")
       .where("cefr_level", "==", level);
       
-      if (start && end) {
-        query = query.where("created_at", ">=", start).where("created_at", "<=", end);
+      if (startDate && endDate) {
+        query = query.where("created_at", ">=", formattedStartDate).where("created_at", "<=", formattedEndDate);
       }
 
       try {
@@ -74,15 +68,6 @@ console.log('end_date', end);
   );
 }
 
-// function parseDate(dateString: string, isEndDate: boolean = false): Date {
-//   const date = new Date(dateString);
-//   date.setHours(0, 0, 0, 0);
-
-//   if (isEndDate) {
-//     date.setHours(23, 59, 59, 999);
-//   }
-//   return date;
-// }
 function parseDate(dateString: string, isStartDate: boolean = true): string {
   const date = new Date(dateString);
   
@@ -98,11 +83,11 @@ function parseDate(dateString: string, isStartDate: boolean = true): string {
   return date.toISOString();
 }
 
-function getDateRange(startDate: string | null, endDate: string | null): { start: string, end: string } {
-  const start = startDate ? parseDate(startDate, true) : '';
-  const end = endDate ? parseDate(endDate, false) : '';
+function getDateRange(start_date: string | null, end_date: string | null): { formattedStartDate: string, formattedEndDate: string } {
+  const formattedStartDate = start_date ? parseDate(start_date, true) : '';
+  const formattedEndDate = end_date ? parseDate(end_date, false) : '';
   return {
-    start,
-    end
+    formattedStartDate,
+    formattedEndDate,
   };
 }
