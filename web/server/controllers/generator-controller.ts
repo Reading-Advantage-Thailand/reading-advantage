@@ -74,7 +74,7 @@ async function generateByGenre(
         ),
     ]);
 
-    return Promise.all(queue);
+    return Promise.allSettled(queue);
 }
 
 async function evaluateArticle(
@@ -183,7 +183,7 @@ async function processQueue(
         type,
     });
 
-    await Promise.all([
+    await Promise.allSettled([
         ...mcq.questions.map((question) =>
             db
                 .collection("new-articles")
