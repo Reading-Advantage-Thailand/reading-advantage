@@ -12,7 +12,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { Role } from "@/server/models/enum";
-import { UserCircle, GraduationCap, School } from "lucide-react";
+import { UserCircle, GraduationCap, School, Ghost } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -23,31 +23,42 @@ type Props = {
   className?: string;
 };
 
-const roles = [
-  {
-    title: "Student",
-    description:
-      "The Student role is designed for users who are enrolled in courses and participating in learning activities.",
-    icon: <UserCircle size={32} />,
-    value: Role.STUDENT,
-  },
-  {
-    title: "Teacher",
-    description:
-      "The Teacher role is intended for users who are responsible for delivering course content and evaluating student performance.",
-    icon: <GraduationCap size={32} />,
-    value: Role.TEACHER,
-  },
-  // {
-  //   title: "Admin",
-  //   description:
-  //     "The Admin role is for users who manage the overall system and have access to all administrative functions.",
-  //   icon: <School size={32} />,
-  //   value: Role.ADMIN,
-  // },
-];
-
 export default function ChangeRole({ userId, userRole, className }: Props) {
+  const roles = [
+    {
+      title: "Student",
+      description:
+        "The Student role is designed for users who are enrolled in courses and participating in learning activities.",
+      icon: <UserCircle size={32} />,
+      value: Role.STUDENT,
+      color: "blue",
+    },
+    {
+      title: "Teacher",
+      description:
+        "The Teacher role is intended for users who are responsible for delivering course content and evaluating student performance.",
+      icon: <GraduationCap size={32} />,
+      value: Role.TEACHER,
+      color: "blue",
+    },
+  ];
+
+  if (process.env.NODE_ENV === "development") {
+    roles.push({
+      title: "Admin",
+      description: "Display only in development mode. (School Admin)",
+      icon: <School size={32} />,
+      value: Role.ADMIN,
+      color: "red",
+    });
+    roles.push({
+      title: "God",
+      description: "Display only in development mode. (System Admin)",
+      icon: <Ghost size={32} />,
+      value: Role.SYSTEM,
+      color: "red",
+    });
+  }
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Role>(userRole);
   const { update } = useSession();
@@ -110,6 +121,7 @@ export default function ChangeRole({ userId, userRole, className }: Props) {
             key={index}
             {...role}
             isSelected={role.value === selectedRole}
+            color={role.color}
           />
         ))}
       </CardContent>
@@ -142,18 +154,20 @@ const RoleSelectionItem = ({
   icon,
   isSelected,
   onClick,
+  color,
 }: {
   title: string;
   description: string;
   icon: React.ReactNode;
   isSelected: boolean;
   onClick: () => void;
+  color: string;
 }) => (
   <div
     onClick={onClick}
     className={cn(
-      "relative overflow-hidden rounded-lg border shadow-2x hover:shadow-3x cursor-pointer hover:bg-secondary",
-      isSelected && "dark:bg-blue-900 hover:dark:bg-blue-800"
+      `relative overflow-hidden rounded-lg border shadow-2x hover:shadow-3x cursor-pointer hover:dark:bg-${color}-900`,
+      isSelected && `dark:bg-${color}-900 hover:dark:bg-${color}-800`
     )}
   >
     <div className="flex flex-col justify-between rounded-md p-3">

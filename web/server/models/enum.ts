@@ -1,7 +1,10 @@
 export enum DBCollection {
     NEWARTICLES = "new-articles",
+
     USERS = "users",
+
     LICENSES = "licenses",
+    LICENSE_RECORDS = "records",
 }
 
 export enum Role {

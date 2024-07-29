@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 interface AppLayoutProps {
   children?: React.ReactNode;
   mainNavConfig: NavItem[];
-  sidebarNavConfig: SidebarNavItem[];
+  sidebarNavConfig?: SidebarNavItem[];
   disableProgressBar?: boolean;
   disableSidebar?: boolean;
 }
@@ -63,7 +63,7 @@ export default async function AppLayout({
         >
           {!disableSidebar && (
             <aside className="lg:w-[200px] lg:flex-col lg:flex">
-              <SidebarNav items={sidebarNavConfig} />
+              <SidebarNav items={sidebarNavConfig || []} />
             </aside>
           )}
           <main className="flex w-full flex-1 flex-col overflow-hidden">

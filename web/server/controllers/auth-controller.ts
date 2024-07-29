@@ -35,7 +35,7 @@ export const restrictTo = (...allowedRoles: Role[]) => {
         next: () => void
     ) => {
         const session = await getServerSession(authOptions);
-
+        console.log('restrictTo -> session', session);
         // Check if session exists
         if (!session) {
             return NextResponse.json({ message: "Unauthorized - Please login to access this resource" }, { status: 403 });

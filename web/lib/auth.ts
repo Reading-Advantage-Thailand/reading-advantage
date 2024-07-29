@@ -1,6 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import { createUserModel, User } from "@/server/models/user";
-import { userService } from "@/server/services/firestore-services";
+import { userService } from "@/server/services/firestore-server-services";
 import { verifyIdToken } from "@/server/utils/verify-id-token";
 import { isUserExpired } from "@/server/utils/verify-user-expired";
 import { NextAuthOptions } from "next-auth";
