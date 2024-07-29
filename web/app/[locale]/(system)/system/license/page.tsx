@@ -1,6 +1,5 @@
-import WithAuth, { BaseWithAuthProps } from "@/components/shared/with-auth";
 import { Role } from "@/server/models/enum";
-import React, { useCallback } from "react";
+import React from "react";
 import { headers } from "next/headers";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -17,21 +16,9 @@ import { CreateLicenseForm } from "./craete-license-form";
 import { licenseService } from "@/client/services/firestore-client-services";
 import { columns } from "./columns";
 import { Header } from "@/components/header";
-
-interface LicenseProps extends BaseWithAuthProps {
-  params: {
-    page: string;
-    locale: string;
-  };
-}
-
-export default function CreateLicensePage({ user, params }: LicenseProps) {
-  return (
-    <WithAuth requiredRole={Role.SYSTEM}>
-      <Page user={user} params={params} />
-    </WithAuth>
-  );
-}
+import { getCurrentUser } from "@/lib/session";
+import { redirect } from "next/navigation";
+import UnauthorizedPage from "@/components/shared/unauthorized-page";
 
 async function getAllLicenses() {
   const response = await licenseService.licenses.fetchAllDocs(
@@ -51,8 +38,18 @@ async function getAllLicenses() {
   return response.data;
 }
 
-async function Page({ user, params }: LicenseProps) {
+export default async function LicensePage() {
+  const user = await getCurrentUser();
   const licenses = await getAllLicenses();
+
+  if (!user) {
+    return redirect("/auth/signin");
+  }
+
+  if (user.role !== Role.SYSTEM) {
+    return <UnauthorizedPage />;
+  }
+
   return (
     <div>
       <Header heading="System" text="Create a new license for school" />

@@ -38,7 +38,7 @@ export default async function HistoryPage({}: Props) {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.cefrLevel === "" && user.level === 0) {
+  if (user.cefr_level === "" && user.level === 0) {
     return redirect("/level");
   }
   const res = await getUserArticleRecords(user.id);

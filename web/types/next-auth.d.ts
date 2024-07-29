@@ -8,11 +8,11 @@ declare module "next-auth/jwt" {
         email: string;
         display_name: string;
         role: Role.UNKNOWN;
-        level?: number;
+        level: number;
         email_verified: boolean;
         picture: string;
         xp: number;
-        cefr_level?: string;
+        cefr_level: string;
         expired_date: string;
         expired?: boolean;
     }
@@ -25,11 +25,11 @@ declare module "next-auth" {
             email: string;
             display_name: string;
             role: Role;
-            level?: number;
+            level: number;
             email_verified: boolean;
             picture: string;
             xp: number;
-            cefr_level?: string;
+            cefr_level: string;
             expired_date: string;
             expired?: boolean;
         };
@@ -40,11 +40,11 @@ declare module "next-auth" {
         email: string;
         display_name: string;
         role: Role;
-        level?: number;
+        level: number;
         email_verified: boolean;
         picture: string;
         xp: number;
-        cefr_level?: string;
+        cefr_level: string;
         expired_date: string;
         expired?: boolean;
     }

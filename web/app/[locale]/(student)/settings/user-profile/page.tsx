@@ -7,20 +7,17 @@ import { UpdateUserLicenseForm } from "./update-user-license";
 import ChangeRole from "@/components/shared/change-role";
 import { BadgeCheck } from "lucide-react";
 import { Icons } from "@/components/icons";
-import WithAuth, { BaseWithAuthProps } from "@/components/shared/with-auth";
-import { Role } from "@/server/models/enum";
+import { getCurrentUser } from "@/lib/session";
+import { redirect } from "next/navigation";
 
-export default async function UserProfileSettingsPage({
-  user,
-}: BaseWithAuthProps) {
-  return (
-    <WithAuth>
-      <Page user={user} />
-    </WithAuth>
-  );
-}
+export default async function UserProfileSettingsPage() {
+  const user = await getCurrentUser();
 
-function Page({ user }: BaseWithAuthProps) {
+  // check if user is not logged in and redirect to signin page
+  if (!user) {
+    return redirect("/auth/signin");
+  }
+
   return (
     <div>
       <Header

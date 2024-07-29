@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
 import { Article } from "@/components/models/article-model";
 import { QuizStatus } from "@/components/models/questions-model";
-import { CloudFog } from "lucide-react";
-import { config } from "process";
 import { ExtendedNextRequest } from "./auth-controller";
 
 // GET search articles

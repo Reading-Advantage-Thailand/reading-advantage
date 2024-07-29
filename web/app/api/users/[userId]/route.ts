@@ -104,7 +104,7 @@ export async function PUT(req: Request, res: Response) {
     });
 
     // update user session
-    session.user.verified = true;
+    session.user.email_verified = true;
 
     return new Response(
       JSON.stringify({
@@ -153,7 +153,7 @@ export async function PATCH(req: Request, res: Response) {
     // update user session
     session.user.xp = xp;
     session.user.level = level;
-    session.user.cefrLevel = cefrLevel;
+    session.user.cefr_level = cefrLevel;
 
     return new Response(
       JSON.stringify({

@@ -1,4 +1,4 @@
-import { cloneElement, ReactElement, ReactNode } from "react";
+import { cloneElement, ReactElement } from "react";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { User } from "next-auth";

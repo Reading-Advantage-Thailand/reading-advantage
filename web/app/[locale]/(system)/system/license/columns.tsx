@@ -109,7 +109,7 @@ export const columns: ColumnDef<License>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const license = row.original;
-      const router = useRouter();
+      //   const router = useRouter();
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -123,7 +123,7 @@ export const columns: ColumnDef<License>[] = [
             <DropdownMenuItem
               onClick={() => {
                 apiDeleteLicense(license.id);
-                router.refresh();
+                // router.refresh();
               }}
             >
               Delete

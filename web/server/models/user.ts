@@ -9,11 +9,11 @@ export interface User extends DocumentData {
     role: Role.UNKNOWN;
     created_at: string; // ISO string
     updated_at: string; // ISO string
-    level?: number;
+    level: number;
     email_verified: boolean;
     picture: string;
     xp: number;
-    cefr_level?: string;
+    cefr_level: string;
     sign_in_provider: string;
     expired_date: string;
     expired?: boolean;
@@ -37,6 +37,8 @@ export const createUserModel = (decoded: DecodedIdToken, user: User | undefined)
             xp: user.xp || 0,
             sign_in_provider: decoded.firebase.sign_in_provider || "",
             expired_date: user.expired_date || "",
+            level: 0,
+            cefr_level: "",
         };
     } else {
         console.log("Creating new user model in Firestore");
@@ -51,9 +53,11 @@ export const createUserModel = (decoded: DecodedIdToken, user: User | undefined)
             email_verified: decoded.email_verified || false,
             picture: decoded.picture || "",
             xp: 0,
+            level: 0,
             sign_in_provider: decoded.firebase.sign_in_provider || "",
             // default trial period is 14 days
             expired_date: new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+            cefr_level: "",
         };
     }
 };

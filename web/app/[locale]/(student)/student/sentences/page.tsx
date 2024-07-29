@@ -10,9 +10,12 @@ export default async function PracticePage({}: Props) {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.cefrLevel === "" && user.level === 0) {
+  if (user.cefr_level === "" && user.level === 0) {
     return redirect("/level");
   }
   return (
-  <><TabsPractice userId={user.id} /></>);
+    <>
+      <TabsPractice userId={user.id} />
+    </>
+  );
 }

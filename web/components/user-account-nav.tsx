@@ -74,7 +74,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         {selectedRole &&
           selectedRole.filter((role: string) => role === "STUDENT").length >
             0 &&
-          (user.cefrLevel !== "" ? (
+          (user.cefr_level !== "" ? (
             <DropdownMenuItem asChild>
               <Link href="/student/read">{"Learner Home"}</Link>
             </DropdownMenuItem>
