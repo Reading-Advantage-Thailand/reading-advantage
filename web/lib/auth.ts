@@ -1,39 +1,41 @@
-import db from "@/configs/firestore-config";
-import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { firebaseAdmin } from "./firebaseAdmin";
+import { createUserModel, User } from "@/server/models/user";
+import { userService } from "@/server/services/firestore-server-services";
+import { verifyIdToken } from "@/server/utils/verify-id-token";
+import { isUserExpired } from "@/server/utils/verify-user-expired";
+import { NextAuthOptions } from "next-auth";
+import { Role } from "@/server/models/enum";
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       credentials: {},
-      authorize: async (
-        credentials: { idToken?: string } | undefined,
-        _req
-      ) => {
-        if (credentials && credentials.idToken) {
-          try {
-            const decoded = await firebaseAdmin
-              .auth()
-              .verifyIdToken(credentials.idToken);
-            // console.log("decoded", decoded);
-            // Convert the decoded token to a User object
-            const defaultName = decoded.name || decoded.email?.split("@")[0];
-            const user = {
-              id: decoded.uid,
-              name: decoded.name || defaultName,
-              email: decoded.email,
-              image: decoded.picture || "",
-              verified: decoded.email_verified,
-            };
-            // console.log("user", user);
-            return Promise.resolve(user);
-          } catch (err) {
-            console.error(err);
-            return Promise.resolve(null);
+      authorize: async (credentials: { idToken?: string } | undefined) => {
+        if (!credentials?.idToken) return null;
+        try {
+          const decoded = await verifyIdToken(credentials.idToken);
+          const userDoc = await userService.getDoc(decoded.uid);
+          // Create a user model based on the decoded token
+          // If the user exists in Firestore, use the existing user model
+          const userModel = createUserModel(decoded, userDoc);
+
+          if (!userDoc) {
+            // If the user does not exist in Firestore, create a new user model
+            // and save it to Firestore
+            await userService.setDoc(decoded.uid, userModel);
           }
+
+          const user = {
+            ...userModel,
+            // Check if the user is expired when they sign in
+            // expired: isUserExpired(userModel.expired_date),
+          }
+
+          return user;
+        } catch (error) {
+          console.error("error in credentials provider:", error);
+          return null;
         }
-        return Promise.resolve(null);
       },
     }),
   ],
@@ -47,47 +49,24 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
   },
   callbacks: {
-    jwt: async ({ token, user, profile }: any) => {
-      try {
-        // console.log("token", token);
-        const userdb = await db
-          .collection("users")
-          .doc(token.sub as string)
-          .get();
-        const userData = userdb.data();
-        if (userData) {
-          token.id = userData.id;
-          token.name = userData.name;
-          token.email = userData.email;
-          token.picture = userData.picture;
-          token.level = userData.level;
-          token.verified = userData.verified;
-          token.xp = userData.xp;
-          token.cefrLevel = userData.cefrLevel;
-          token.role = userData.role;
-        }
-        // create account if it doesn't exist
-        else {
-          await db
-            .collection("users")
-            .doc(token.sub as string)
-            .set({
-              id: token.sub,
-              name: token.name,
-              email: token.email,
-              picture: token.picture,
-              createAt: new Date(),
-              level: 0,
-              verified: user.verified,
-              xp: 0,
-              cefrLevel: "",
-              role: [],
-            });
-        }
-        return token;
-      } catch (error) {
-        return Promise.reject(error);
+    jwt: async ({ token, user, account, profile, isNewUser, trigger, session }: any) => {
+      console.log("jwt callback", { token, user, account });
+      if (trigger === "update" && session?.user) {
+        console.log("session", session);
+        Object.assign(token, session.user);
       }
+      if (user) {
+        token = { ...user }
+      }
+      // if (user) {
+      //   // Check if the user is expired when they sign in
+      //   if (isUserExpired(user.expired_date)) {
+      //     console.warn("User subscription or trial period has expired.");
+      //     return { ...token, expired: true };
+      //   }
+      //   return { ...token, ...user };
+      // }
+      return token;
     },
     session: ({ session, token, user }) => {
       //   console.log("user-session", user);
@@ -97,9 +76,9 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email;
         session.user.image = token.picture;
         session.user.level = token.level;
-        session.user.verified = token.verified;
+        session.user.email_verified = token.email_verified;
         session.user.xp = token.xp;
-        session.user.cefrLevel = token.cefrLevel;
+        session.user.cefr_level = token.cefr_level;
         session.user.role = token.role;
       }
       // console.log("session callback");

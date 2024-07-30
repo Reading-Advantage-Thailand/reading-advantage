@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
+import { Role } from "@/server/models/enum";
 
 async function fetchData(endpoint: string) {
   try {
@@ -25,7 +26,7 @@ export default async function ClassroomData(params: {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.role === "TEACHER") {
+  if (user.role === Role.TEACHER) {
     return redirect("/teacher/my-classes");
   }
 
@@ -56,8 +57,8 @@ export default async function ClassroomData(params: {
     .flatMap((classroom: { student: any }) =>
       classroom.student
         ? classroom.student.map((students: { studentId: string }) =>
-            students.studentId
-          )
+          students.studentId
+        )
         : ["No student in this class"]
     );
 
@@ -72,22 +73,22 @@ export default async function ClassroomData(params: {
   const studentsMapped = classrooms.flatMap((classStudent: { student: { studentId: string; lastActivity: any; }[]; classroomName: any; id: any; }) =>
     classStudent.student
       ? classStudent.student.map(
-          (studentData: { studentId: string; lastActivity: any }) => {
-            const matchedStudent = matchedStudents.find(
-              (s: { id: string; }) => s.id === studentData.studentId
-            );
-            return {
-              studentId: studentData.studentId,
-              lastActivity: studentData.lastActivity,
-              studentName: matchedStudent ? matchedStudent.name : "Unknown",
-              classroomName: classStudent.classroomName,
-              classroomId: classStudent.id,
-              email: matchedStudent ? matchedStudent.email : "Unknown",
-              xp: matchedStudent ? matchedStudent.xp : 0,
-              level: matchedStudent ? matchedStudent.level : 0,
-            };
-          }
-        )
+        (studentData: { studentId: string; lastActivity: any }) => {
+          const matchedStudent = matchedStudents.find(
+            (s: { id: string; }) => s.id === studentData.studentId
+          );
+          return {
+            studentId: studentData.studentId,
+            lastActivity: studentData.lastActivity,
+            studentName: matchedStudent ? matchedStudent.name : "Unknown",
+            classroomName: classStudent.classroomName,
+            classroomId: classStudent.id,
+            email: matchedStudent ? matchedStudent.email : "Unknown",
+            xp: matchedStudent ? matchedStudent.xp : 0,
+            level: matchedStudent ? matchedStudent.level : 0,
+          };
+        }
+      )
       : []
   );
 
@@ -123,7 +124,7 @@ export async function StudentsData({
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.role === "TEACHER") {
+  if (user.role === Role.TEACHER) {
     return redirect("/teacher/my-classes");
   }
 
@@ -288,8 +289,8 @@ export async function StudentsData({
       } else {
         return classroom && classroom.student
           ? classroom.student.map(
-              (student: { studentId: string }) => student.studentId
-            )
+            (student: { studentId: string }) => student.studentId
+          )
           : [];
       }
     }
@@ -329,7 +330,7 @@ export async function ClassesData() {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.role === "TEACHER") {
+  if (user.role === Role.TEACHER) {
     return redirect("/teacher/my-classes");
   }
 
