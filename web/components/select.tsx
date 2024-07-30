@@ -40,6 +40,7 @@ async function fetchArticles(params: string) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/articles?${params}`
   );
+  console.log(response);
 
   const data = await response.json();
   return data;
@@ -88,8 +89,9 @@ export default function Select({ user }: Props) {
   React.useEffect(() => {
     async function fetchData() {
       setLoading(true);
+      console.log(searchParams.toString());
       const response = await fetchArticles(searchParams.toString());
-
+      console.log(response);
       if (response.results.length === 0) {
         router.push("?");
       }

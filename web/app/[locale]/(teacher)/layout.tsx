@@ -32,17 +32,7 @@ export default async function TeacherHomeLayout({
           <div className="flex space-x-2">
             <LocaleSwitcher />
             <ThemeSwitcher />
-            <UserAccountNav
-              user={{
-                name: user.name || "",
-                image: user.image || "",
-                email: user.email || "",
-                level: user.level || 0,
-                verified: user.verified || false,
-                role: user.role || "",
-                cefrLevel: user.cefrLevel || "",
-              }}
-            />
+            <UserAccountNav user={user} />
           </div>
         </div>
       </header>

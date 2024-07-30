@@ -15,11 +15,6 @@ export default async function LevelPage() {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.cefrLevel !== "" && user.level >= 0) {
-    // return เมื่อทำเสร็จแล้ว
-    // ถ้่าทำเสร็จแล้วจะต้องมี cefrLevel ที่ไม่ใช่ค่าว่าง และ level ที่มากกว่า 0
-    return redirect("/student/read");
-  }
 
   async function getLevelTestData() {
     const res = await fetch(

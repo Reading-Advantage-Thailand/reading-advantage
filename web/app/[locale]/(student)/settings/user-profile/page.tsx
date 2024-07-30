@@ -1,94 +1,113 @@
-import SettingInfo from "@/components/setting-info";
-import { Card } from "@/components/ui/card";
+import { Header } from "@/components/header";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ChangeUsernameForm } from "./change-username-form";
+import { UpdateUserLicenseForm } from "./update-user-license";
+import ChangeRole from "@/components/shared/change-role";
+import { BadgeCheck } from "lucide-react";
+import { Icons } from "@/components/icons";
 import { getCurrentUser } from "@/lib/session";
-import { CardContent } from "@mui/material";
 import { redirect } from "next/navigation";
-import ResetDialog from "@/components/reset-xp-dialog";
-import RoleSelected from "@/components/teacher/role-selected";
-import axios from "axios";
 
-type Props = {};
-
-export default async function UserProfileSettingsPage({}: Props) {
+export default async function UserProfileSettingsPage() {
   const user = await getCurrentUser();
+
+  // check if user is not logged in and redirect to signin page
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.cefrLevel === "" && user.role.includes('STUDENT') && !user.role.includes('TEACHER')) {
-    return redirect("/level");
-  }
-  // if (user.cefrLevel === "" && user.role.includes('TEACHER')) {
-  //   return redirect("/teacher/my-classes");
-  // }
-
 
   return (
-    <Card className="mt-4">
-      <CardContent>
-        <h3 className="text-xl mb-4 font-semibold">Personal Information</h3>
-        <div className="grid lg:grid-flow-row-dense lg:grid-cols-3 gap-4">
-          {/* <div className="lg:col-span-2">
-                        <p>
-                            Photo
-                        </p>
-                        <p className="text-muted-foreground" >
-                            Upload a photo to personalize your account
-                        </p>
-                    </div>
-                    <Avatar className="w-40 h-40">
-                        {user.image ? (
-                            <AvatarImage alt="Picture" src={user.image} referrerPolicy="no-referrer" />
-                        ) : (
-                            <AvatarFallback>
-                                <span className="sr-only">{user.name}</span>
-                                <Icons.user className="h-24 w-24" />
-                            </AvatarFallback>
-                        )}
-                    </Avatar> */}
-          <SettingInfo
-            title="Username"
-            description="The username is use to represent themselves on a platform."
-            data={user.name}
-            isEdit={true}
-          />
-          <SettingInfo
+    <div>
+      <Header
+        heading="Personal information"
+        text="Information about your personal profile"
+      />
+      <Separator className="my-4" />
+      <div className="mx-2 flex gap-4 flex-col md:flex-row">
+        <div className="w-full">
+          <ChangeUsernameForm username={user.display_name} userId={user.id} />
+          <DisplaySettingInfo
             title="Email"
-            description={
-              user.verified
-                ? "Your email is verified"
-                : "Your email is not verified. Please verify your email by clicking on the button"
-            }
             data={user.email}
-            isEdit={false}
-            verifyButton={true}
-            isVerified={user.verified}
+            verified={user.email_verified}
+            showVerified
           />
-          <SettingInfo
-            title="Password"
-            description="You can change your password by clicking on the button"
-            data="********"
-            isEdit={true}
+          <DisplaySettingInfo
+            title="Reading advantage level"
+            data={user.cefr_level || "unknown"}
           />
-          <SettingInfo
-            title="Level"
-            description="Reading advantage level of user"
-            data={user.level.toString()}
-            isEdit={false}
+          <DisplaySettingInfo
+            title="Reading advantage XP"
+            desc="The XP is used to level up."
+            data={user.xp?.toString() || "0"}
           />
-          <SettingInfo
-            title="Reset all XP progress"
-            description="Reset your progress and take the level test again."
-            data={<ResetDialog />}
-            isEdit={false}
-          />
-          <SettingInfo
-            title="Select role"
-            description="Select your role as teacher, student or administrator."
-            data={<RoleSelected userId={user.id} />}
-            isEdit={false}
+          <Button variant="secondary">Reset XP</Button>
+          <UpdateUserLicenseForm
+            username={user.display_name}
+            userId={user.id}
           />
         </div>
-      </CardContent>
-    </Card>
+        <ChangeRole
+          className="md:w-[38rem]"
+          userId={user.id}
+          userRole={user.role}
+        />
+      </div>
+    </div>
   );
 }
+
+interface DisplaySettingInfoProps {
+  title: string;
+  desc?: string;
+  data: string;
+  badge?: string;
+  verified?: boolean;
+  showVerified?: boolean;
+}
+
+const DisplaySettingInfo: React.FC<DisplaySettingInfoProps> = ({
+  title,
+  desc,
+  data,
+  badge,
+  verified,
+  showVerified = false,
+}) => (
+  <>
+    <div className="text-sm font-medium mt-3">
+      {title}
+      {badge && (
+        <Badge className="ml-2" variant="secondary">
+          {badge}
+        </Badge>
+      )}
+    </div>
+    {desc && <p className="text-[0.8rem] text-muted-foreground mt-2">{desc}</p>}
+    <div className="flex justify-between items-center text-[0.8rem] text-muted-foreground rounded-lg border bg-card shadow px-3 py-2 my-2">
+      <p>{data}</p>
+      {showVerified && (
+        <div className="flex items-center gap-1">
+          {verified ? (
+            <span className="text-green-800 dark:text-green-300 flex items-center gap-1">
+              <BadgeCheck size={16} />
+              Verified
+            </span>
+          ) : (
+            <span className="text-red-800 dark:text-red-300 flex items-center gap-1">
+              <Icons.unVerified size={16} />
+              Not verified
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+    {showVerified && verified && (
+      <Button variant="secondary" size="sm">
+        Resend verification email
+      </Button>
+    )}
+  </>
+);

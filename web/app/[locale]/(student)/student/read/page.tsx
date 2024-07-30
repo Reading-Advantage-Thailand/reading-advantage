@@ -13,10 +13,10 @@ type Props = {
 export default async function ReadPage({ params, searchParams }: Props) {
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
-  
-  
-  if (user.role.length === 0 && user.cefrLevel === "" && user.level === 0) return redirect("/role-selection");
-  if (user.cefrLevel === "" && user.level === 0) return redirect("/level");
+
+  // if (user.role.length === 0 && user.cefr_level === "" && user.level === 0)
+  // return redirect("/role-selection");
+  // if (user.cefr_level === "" && user.level === 0) return redirect("/level");
   // if (user.role.includes("TEACHER")) return redirect("/teacher/my-classes");
 
   const t = await getScopedI18n("pages.student.readPage");
@@ -26,7 +26,7 @@ export default async function ReadPage({ params, searchParams }: Props) {
       <Select
         user={{
           level: user.level,
-          name: user.name,
+          name: user.display_name,
           id: user.id,
         }}
       />

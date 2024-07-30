@@ -1,45 +1,44 @@
-import { ReactElement, ReactNode } from 'react'
-import '@/styles/globals.css'
-import { siteConfig } from '@/configs/site-config'
-import { Metadata } from 'next'
-import { Inter as FontSans } from 'next/font/google'
-import { cn } from '@/lib/utils'
-import localFont from 'next/font/local'
-import { ThemeProvider } from '@/components/providers/theme-provider'
-import { Toaster } from '@/components/ui/toaster'
-import { TailwindIndicator } from '@/components/helpers/tailwind-indicator'
-import { LocaleProvider } from '@/components/providers/locale-provider'
-import { SelectedRoleProvider } from '@/contexts/userRole-context'
+import { ReactNode } from "react";
+import "@/styles/globals.css";
+import { siteConfig } from "@/configs/site-config";
+import { Metadata } from "next";
+import { Inter as FontSans } from "next/font/google";
+import { cn } from "@/lib/utils";
+import localFont from "next/font/local";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+import { TailwindIndicator } from "@/components/helpers/tailwind-indicator";
+import { LocaleProvider } from "@/components/providers/locale-provider";
 
 const cabinSketch = localFont({
-  src: '../../assets/fonts/CabinSketch-Regular.ttf',
-  variable: '--font-cabin-sketch',
-  weight: '400',
-})
+  src: "../../assets/fonts/CabinSketch-Regular.ttf",
+  variable: "--font-cabin-sketch",
+  weight: "400",
+});
 
 const cabinSketchBold = localFont({
-  src: '../../assets/fonts/CabinSketch-Bold.ttf',
-  variable: '--font-cabin-sketch-bold',
-  weight: '700',
-})
+  src: "../../assets/fonts/CabinSketch-Bold.ttf",
+  variable: "--font-cabin-sketch-bold",
+  weight: "700",
+});
 
 const fontSans = FontSans({
-  subsets: ['latin'],
-  variable: '--font-sans',
-})
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
-    template: '%s | ' + siteConfig.name,
+    template: "%s | " + siteConfig.name,
   },
   description: siteConfig.description,
   keywords: [
-    'reading advantage',
-    'reading',
-    'advantage',
-    'reading advantage app',
-    'reading advantage web',
+    "reading advantage",
+    "reading",
+    "advantage",
+    "reading advantage app",
+    "reading advantage web",
   ],
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
@@ -60,29 +59,36 @@ export const metadata: Metadata = {
   },
   manifest: `${siteConfig.url}/site.webmanifest`,
   // manifest: `http://localhost:3000/site.webmanifest`,
-}
-export default function RootLayout({ params: { locale }, children }: { params: { locale: string }; children: ReactNode }) {
+};
+
+export default function RootLayout({
+  params: { locale },
+  children,
+}: {
+  params: { locale: string };
+  children: ReactNode;
+}) {
   return (
-    <SelectedRoleProvider>
     <html lang="en" suppressHydrationWarning={true}>
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
           cabinSketch.variable,
           fontSans.variable,
-          cabinSketchBold.variable,
+          cabinSketchBold.variable
         )}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <LocaleProvider locale={locale}>
-            {children}
-          </LocaleProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <LocaleProvider locale={locale}>{children}</LocaleProvider>
           <Toaster />
           <TailwindIndicator />
         </ThemeProvider>
       </body>
     </html>
-    </SelectedRoleProvider>
   );
 }
-

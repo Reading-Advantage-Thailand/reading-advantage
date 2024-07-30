@@ -1,5 +1,6 @@
-import { getArticle, getSearchArticles } from "@/controllers/article-controller";
-import { logRequest, protect } from "@/utils/middleware";
+import { getArticle } from "@/server/controllers/article-controller";
+import { protect } from "@/server/controllers/auth-controller";
+import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
