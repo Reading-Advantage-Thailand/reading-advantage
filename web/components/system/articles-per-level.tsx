@@ -1,11 +1,9 @@
 "use client";
-import React, { use, useEffect, useState } from "react";
-import { TrendingUp } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -18,13 +16,11 @@ import {
 } from "@/components/ui/chart";
 
 interface ArticleLevel {
- data: {};
- articlesPerLevel: {
   data: {
     [key: string]: number;
   };
-  }
- }
+  [key: string]: any;
+}
 
 interface ArticlesPerLevelChartProps {
   articlesPerLevel: ArticleLevel;
@@ -37,94 +33,151 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerLevelChartProps) {
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [chartData, setChartData] = useState<any[]>([]);
 
-export default async function ArticlesPerLevelChart(articlesPerLevel: ArticlesPerLevelChartProps) {
-const dataResponse = articlesPerLevel.articlesPerLevel.data;
+  const processData = (data: { [key: string]: number }) => {
+    if (!data) return[];
+    const processedData = Object.entries(data).map(([key, value]) => ({
+      CEFR_Level: key,
+      numberOfArticles: value,
+    }));
 
-const chartData = Object.entries(dataResponse).map(([key, value]) => ({
-    CEFR_Level: key,
-    numberOfArticles: value,
-  }));
+    processedData.sort((a, b) => {
+      const getOrderValue = (cefr_Level: string) => {
+        if (cefr_Level.endsWith('-')) return 0;
+        if (cefr_Level.endsWith('+')) return 2;
+        return 1;
+      };
 
-chartData.sort((a, b) => {
-  const getOrderValue = (cefr_Level: string) => {
-    if (cefr_Level.endsWith('-')) return 0;
-    if (cefr_Level.endsWith('+')) return 2;
-    return 1; 
+      const extractParts = (cefr_Level: string) => {
+        const match = cefr_Level.match(/(.*?)([-+])?$/);
+        return {
+          base: match ? match[1] : cefr_Level,
+          suffix: match && match[2] ? match[2] : ''
+        };
+      };
+
+      const aParts = extractParts(a.CEFR_Level);
+      const bParts = extractParts(b.CEFR_Level);
+
+      const baseLevelComparison = aParts.base.localeCompare(bParts.base, undefined, {numeric: true, sensitivity: 'base'});
+      if (baseLevelComparison !== 0) {
+        return baseLevelComparison;
+      }
+
+      return getOrderValue(a.CEFR_Level) - getOrderValue(b.CEFR_Level);
+    });
+
+    setChartData(processedData);
   };
 
-  const extractParts = (cefr_Level: string) => {
-    const match = cefr_Level.match(/(.*?)([-+])?$/);
-    return {
-      base: match ? match[1] : cefr_Level, 
-      suffix: match && match[2] ? match[2] : ''
-    };
+  const handleSendDates = async () => {
+    if (startDate && endDate) {
+      const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/api/system/dashboard`);
+      
+      url.searchParams.append('startDate', startDate);
+      url.searchParams.append('endDate', endDate);
+
+      try {
+        const response = await fetch(url.toString(), {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+        
+        if (data.data && data.data) {
+          processData(data.data);
+        } 
+
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    } else {
+      alert('Please select both start and end dates.');
+    }
   };
 
-  const aParts = extractParts(a.CEFR_Level);
-  const bParts = extractParts(b.CEFR_Level);
+  useEffect(() => {
+    if (articlesPerLevel) {
+      processData(articlesPerLevel.data);
+    } else {
+      console.error('Unexpected data structure:', articlesPerLevel);
+    }
+  }, [articlesPerLevel]);
 
-  const baseLevelComparison = aParts.base.localeCompare(bParts.base, undefined, {numeric: true, sensitivity: 'base'});
-  if (baseLevelComparison !== 0) {
-    return baseLevelComparison;
-  }
+  useEffect(() => {
+    // Fetch new data when date range changes
+    if (startDate && endDate) {
+      handleSendDates();
+    }
+  }, [startDate, endDate]);
 
-  return getOrderValue(a.CEFR_Level) - getOrderValue(b.CEFR_Level);
-});
+  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>, setDate: React.Dispatch<React.SetStateAction<string>>) => {
+    setDate(event.target.value);
+  };
 
   return (
-    <>
-      <Card className="col-span-3">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold">
-            Articles per Level
-          </CardTitle>
-          <CardDescription>January - December 2023</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex space-x-2 mb-2">
-            <input
-              type="date"
-              className="flex-1/2 border p-2 rounded-sm"
-              defaultValue="2023-01-01"
+    <Card className="col-span-3">
+      <CardHeader>
+        <CardTitle className="text-lg font-bold">
+          Articles per Level
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex space-x-2 mb-2">
+          <input
+            type="date"
+            className="flex-1/2 border p-2 rounded-sm"
+            value={startDate}
+            onChange={(e) => handleDateChange(e, setStartDate)}
+          />
+          <input
+            type="date"
+            className="flex-1/2 border p-2"
+            value={endDate}
+            onChange={(e) => handleDateChange(e, setEndDate)}
+          />
+        </div>
+        <ChartContainer config={chartConfig}>
+          {chartData.length > 0 ? (
+          <BarChart data={chartData}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="CEFR_Level"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              tickFormatter={(value) => value.slice(0, 3)}
             />
-            <input
-              type="date"
-              className="flex-1/2 border p-2"
-              defaultValue="2023-12-31"
+            <ChartTooltip
+              content={<ChartTooltipContent indicator="dashed" />}
+              cursor={false}
             />
-          </div>
-          <div className="h-40 flex items-center justify-center">
-            Bar Chart: Articles per CEFR Level
-          </div>
-          <ChartContainer config={chartConfig}>
-            <BarChart data={chartData}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="CEFR_Level"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                tickFormatter={(value) => value.slice(0, 3)}
-              />
-              <ChartTooltip
-                content={<ChartTooltipContent indicator="dashed" />}
-                cursor={false}
-              />
-              <Bar
-                dataKey="numberOfArticles"
-                fill={chartConfig.articles.color}
-                radius={4}
-              />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-        <CardFooter className="flex-col items-start gap-2 text-sm">
-          <div className="leading-none text-muted-foreground">
-            Showing total articles for the selected period
-          </div>  
-        </CardFooter>
-      </Card>
-    </>
+            <Bar
+              dataKey="numberOfArticles"
+              fill={chartConfig.articles.color}
+              radius={4}
+            />
+          </BarChart>
+
+          ) : (
+            <div className="flex items-center justify-center h-32 text-muted-foreground">
+              No data available
+            </div>
+          )}
+        </ChartContainer>
+      </CardContent>
+      {/* <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="leading-none text-muted-foreground">
+          Showing total articles for the selected period
+        </div>
+      </CardFooter> */}
+    </Card>
   );
 }

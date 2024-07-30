@@ -25,10 +25,9 @@ export async function GET(req: Request) {
   ];
 
   const { searchParams } = new URL(req.url);
-  // const startDate = searchParams.get("startDate");
-  // const endDate = searchParams.get("endDate");
-  const startDate = "2024-07-23";
-  const endDate = "2024-07-25";
+  
+  const startDate = searchParams.get("startDate");
+  const endDate = searchParams.get("endDate");
 
   const start_date = startDate ? Timestamp.fromDate(new Date(startDate)) : null;
   const end_date = endDate ? Timestamp.fromDate(new Date(endDate)) : null;

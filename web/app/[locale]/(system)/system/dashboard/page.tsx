@@ -10,11 +10,18 @@ import ActiveUsersChart from "@/components/system/active-users";
 import ArticlesPerLevelChart from "@/components/system/articles-per-level";
 import { headers } from "next/headers";
 
-export default async function SystemDashboardPage() {
+export default async function SystemDashboardPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   const fetchArticlesCount = async () => {
     try {
+      const queryString = new URLSearchParams(
+        searchParams as Record<string, string>
+      ).toString();
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/system/dashboard`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/system/dashboard?${queryString}`,
         {
           method: "GET",
           headers: headers(),
@@ -33,28 +40,13 @@ export default async function SystemDashboardPage() {
     <>
       <Header heading="System Dashboard Page" />
       <div className="p-4 grid grid-cols-3 gap-4 auto-rows-auto">
-        {/* Activity Distribution */}
         <ActivityDistributionPieChart />
-
-        {/* License Usage */}
         <LicenseUsageChart />
-
-        {/* License Usage Over Time */}
         <LicenseUsageOverTimeChart />
-
-        {/* Most Challenging Questions */}
         <ChallengingQuestionsTable />
-
-        {/* Articles by Type and Genre */}
         <ArticlesByTypeAndGenreChart />
-
-        {/* Top Schools by XP Gained */}
         <TopSchoolByXPGainedChart />
-
-        {/* Articles per Level */}
         <ArticlesPerLevelChart articlesPerLevel={articlesPerLevel} />
-
-        {/* Active Users */}
         <ActiveUsersChart />
       </div>
     </>
