@@ -18,53 +18,75 @@ import {
 } from "@/components/ui/chart";
 
 const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 287, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 190, fill: "var(--color-other)" },
+  { activity: "MC", numberOfTimes: 200, fill: "var(--color-mc)" },
+  { activity: "SA", numberOfTimes: 287, fill: "var(--color-sa)" },
+  { activity: "LA", numberOfTimes: 275, fill: "var(--color-la)" },
+  { activity: "sentense flashcards", numberOfTimes: 275, fill: "var(--color-sentense_flashcards)" },
+  { activity: "vocabulary flashcards", numberOfTimes: 275, fill: "var(--color-vocabulary_flashcards)" },
+  { activity: "Sentense activities ", numberOfTimes: 275, fill: "var(--color-sentense_activities)" },
+  { activity: "Vocabulary activities", numberOfTimes: 275, fill: "var(--color-vocabulary_activities)" },
+  { activity: "Article reads", numberOfTimes: 275, fill: "var(--color-article_reads)" },
+  { activity: "Article rating", numberOfTimes: 275, fill: "var(--color-article_rating)" },
+  { activity: "Level test", numberOfTimes: 275, fill: "var(--color-level_test)" },
+
 ];
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
-    color: "#EF4444",
-  },
-  safari: {
-    label: "Safari",
-    color: "#3B82F6",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "#10B981",
-  },
-  edge: {
-    label: "Edge",
+  mc: {
+    label: "MC",
     color: "#6366F1",
   },
-  other: {
-    label: "Other",
+  sa: {
+    label: "SA",
     color: "#D97706",
+  },
+  la: {
+    label: "LA",
+    color: "#10B981",
+  },
+  article_read: {
+    label: "Article Reads",
+    color: "#e74c3c",
+  },
+  article_rating: {
+    label: "Article Rating",
+    color: "#3498db",
+  },
+  sentense_flashcards: {
+    label: "Level Test",
+    color: "#9b59b6",
+  },
+  vocabulary_flashcards: {
+    label: "Save Sentence",
+    color: "#f1c40f",
+  },
+  sentense_activities: {
+    label: "Save Vocabulary",
+    color: "#e67e22",
+  },
+  vocabulary_activities: {
+    label: "Sentence Cloze Test",
+    color: "#1abc9c",
+  },
+  level_test: {
+    label: "Sentence Matching",
+    color: "#34495e",
   },
 } satisfies ChartConfig;
 
 export default function ActivityDistributionPieChart() {
   const totalVisitors = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.visitors, 0);
+    return chartData.reduce((acc, curr) => acc + curr.numberOfTimes, 0);
   }, []);
 
   return (
     <>
-      {/* <Card className="col-span-1">
-        <CardHeader className="items-center pb-0">
-          <CardTitle className="text-lg font-bold">Activity Distribution</CardTitle>
-          <CardDescription>January - June 2024</CardDescription>
+       <Card className="col-span-1">
+        <CardHeader>
+          <CardTitle>Activity Distribution</CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 pb-0">
-          <ChartContainer
+        <CardContent>
+        <ChartContainer
             config={chartConfig}
             className="mx-auto aspect-square max-h-[250px]"
           >
@@ -75,8 +97,8 @@ export default function ActivityDistributionPieChart() {
               />
               <Pie
                 data={chartData}
-                dataKey="visitors"
-                nameKey="browser"
+                dataKey="numberOfTimes"
+                nameKey="activity"
                 innerRadius={60}
                 strokeWidth={5}
               >
@@ -97,13 +119,13 @@ export default function ActivityDistributionPieChart() {
                           >
                             {totalVisitors.toLocaleString()}
                           </tspan>
-                          <tspan
+                          {/* <tspan
                             x={viewBox.cx}
                             y={(viewBox.cy || 0) + 24}
                             className="fill-muted-foreground"
                           >
-                            Visitors
-                          </tspan>
+                            Total number of times activities
+                          </tspan> */}
                         </text>
                       );
                     }
@@ -112,24 +134,6 @@ export default function ActivityDistributionPieChart() {
               </Pie>
             </PieChart>
           </ChartContainer>
-        </CardContent>
-        <CardFooter className="flex-col gap-2 text-sm">
-          <div className="flex items-center gap-2 font-medium leading-none">
-            Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-          </div>
-          <div className="leading-none text-muted-foreground">
-            Showing total visitors for the last 6 months
-          </div>
-        </CardFooter>
-      </Card> */}
-       <Card className="col-span-1">
-        <CardHeader>
-          <CardTitle>Activity Distribution</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-40 flex items-center justify-center">
-            Pie Chart: Activity Types
-          </div>
         </CardContent>
       </Card>
     </>
