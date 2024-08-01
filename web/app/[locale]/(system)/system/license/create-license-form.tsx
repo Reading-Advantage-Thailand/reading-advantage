@@ -63,7 +63,7 @@ export function CreateLicenseForm() {
       setIsLoading(true);
 
       // Create the licenses
-      const response = await licenseService.licenses.createDocument({
+      const response = await licenseService.licenses.createDoc({
         total_licenses: data.total,
         subscription_level: data.subscription_level,
         school_name: data.school_name,

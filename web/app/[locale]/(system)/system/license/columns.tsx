@@ -18,7 +18,7 @@ import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const apiDeleteLicense = async (id: string) => {
-  await licenseService.licenses.deleteDocument(id);
+  await licenseService.licenses.deleteDoc(id);
 };
 
 const convertToReadableDate = (isoDateString: string): string => {
