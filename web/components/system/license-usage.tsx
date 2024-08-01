@@ -1,38 +1,39 @@
 "use client";
 import React from "react";
-import { TrendingUp } from "lucide-react";
-import { Label, Pie, PieChart } from "recharts";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import dynamic from "next/dynamic";
 
+const GaugeChart = dynamic( () => import("react-gauge-chart"), { ssr: false });
 
 export default function LicenseUsageChart() {
 
   return (
     <>
      {/* License Usage */}
-     <Card className="col-span-1">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold">License Usage</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-40 flex items-center justify-center">
-            Gauge Chart: 70% Used
-          </div>
-        </CardContent>
-      </Card>
+<Card className="col-span-1">
+      <CardHeader>
+        <CardTitle className="text-lg font-bold">License Usage</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-40 flex items-center justify-center">
+          <GaugeChart
+            id="gauge-chart"
+            nrOfLevels={30}
+            percent={0.7}
+            arcWidth={0.3}
+            textColor="#000000"
+            needleColor="gray"
+            needleBaseColor="gray"
+            colors={["#5BE12C", "#F5CD19", "#EA4228"]}
+          />
+        </div>
+      </CardContent>
+    </Card>
     </>
   );
 }
