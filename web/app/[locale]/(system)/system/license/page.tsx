@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CreateLicenseForm } from "./craete-license-form";
+import { CreateLicenseForm } from "./create-license-form";
 import { licenseService } from "@/client/services/firestore-client-services";
 import { columns } from "./columns";
 import { Header } from "@/components/header";
