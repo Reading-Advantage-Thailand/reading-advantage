@@ -16,8 +16,6 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     let selectionType: any[] = [];
     let results: any[] = [];
 
-    console.log("article controller level", level);
-
     if (!level) {
       return NextResponse.json(
         { message: "Level is required" },
@@ -28,7 +26,9 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     let data = db
       .collection("new-articles")
       .where("ra_level", ">=", Number(level) - 1)
-      .where("ra_level", "<=", Number(level) + 1);
+      .where("ra_level", "<=", Number(level) + 1)
+      .orderBy("created_at", "desc")
+      .limit(10);
 
     let typeResult = db.collection("article-selection").doc(level);
 
@@ -42,11 +42,12 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     const fetchArticles = async (query: any) => {
       const snapshot = await query.get();
 
-      const getDoc = snapshot.docs.sort(() => 0.5 - Math.random()).slice(0, 10);
+      //random article
+      // const getDoc = snapshot.docs.sort(() => 0.5 - Math.random()).slice(0, 10);
 
       const results = [];
 
-      for (const doc of getDoc) {
+      for (const doc of snapshot.docs) {
         const articleRecord = await db
           .collection("users")
           .doc(userId)
