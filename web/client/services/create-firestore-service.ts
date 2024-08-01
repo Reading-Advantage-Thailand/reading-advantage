@@ -13,7 +13,7 @@ const createFirestoreService = <T extends DocumentData>(collectionPath: string) 
                 title: "Failed to fetch document",
             });
         },
-        createDocument: async (data: Partial<T>, headers?: ReadonlyHeaders) => {
+        createDoc: async (data: Partial<T>, headers?: ReadonlyHeaders) => {
             return fetchData<void>(apiUrl, {
                 method: "POST",
                 headers: headers || undefined,
@@ -23,7 +23,7 @@ const createFirestoreService = <T extends DocumentData>(collectionPath: string) 
                 title: "Failed to create document",
             });
         },
-        updateDocument: async (docId: string, data: Partial<T>, headers: ReadonlyHeaders) => {
+        updateDoc: async (docId: string, data: Partial<T>, headers?: ReadonlyHeaders) => {
             const url = `${apiUrl}/${docId}`;
             return fetchData<void>(url, {
                 method: "PATCH",
@@ -34,7 +34,7 @@ const createFirestoreService = <T extends DocumentData>(collectionPath: string) 
                 title: "Failed to update document",
             });
         },
-        deleteDocument: async (docId: string, headers?: ReadonlyHeaders) => {
+        deleteDoc: async (docId: string, headers?: ReadonlyHeaders) => {
             const url = `${apiUrl}/${docId}`;
             return fetchData<void>(url, { method: "DELETE", headers: headers, cache: "no-store" }, {
                 title: "Failed to delete document",

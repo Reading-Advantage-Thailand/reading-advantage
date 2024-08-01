@@ -7,6 +7,8 @@ import { SidebarNav } from "@/components/sidebar-nav";
 import ProgressBar from "@/components/progress-bar-xp";
 import { NavItem, SidebarNavItem } from "@/types";
 import { cn } from "@/lib/utils";
+import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle";
+import { LocaleSwitcher } from "@/components/switchers/locale-switcher";
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -49,6 +51,8 @@ export default async function AppLayout({
               <ProgressBar progress={user.xp} level={user.level!} />
             )}
             <div className="flex space-x-2">
+              <LocaleSwitcher />
+              <ThemeSwitcher />
               <UserAccountNav user={user} />
             </div>
           </div>

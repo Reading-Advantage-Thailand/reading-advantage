@@ -4,7 +4,6 @@ import { settingsPageConfig } from "@/configs/settings-page-config";
 export default function SettingsPageLayout({ children }: BaseAppLayoutProps) {
   return (
     <AppLayout
-      disableProgressBar={true}
       mainNavConfig={settingsPageConfig.mainNav}
       sidebarNavConfig={settingsPageConfig.sidebarNav}
     >

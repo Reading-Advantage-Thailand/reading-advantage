@@ -33,7 +33,7 @@ export const createUserModel = (decoded: DecodedIdToken, user: User | undefined)
             created_at: user.created_at || "",
             updated_at: user.updated_at || "",
             email_verified: user.email_verified || false,
-            picture: decoded.picture || "",
+            picture: user.picture || decoded.picture || "",
             xp: user.xp || 0,
             sign_in_provider: decoded.firebase.sign_in_provider || "",
             expired_date: user.expired_date || "",
