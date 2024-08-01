@@ -10,9 +10,13 @@ import {
 } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/session";
 import { fetchData } from "@/utils/fetch-data";
+import { database } from "firebase-admin";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import React from "react";
+import { UserArticleRecord } from "@/components/models/user-article-record-model";
+import { DateField } from "@/components/ui/date-field";
+import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 // import HeatMap from "react-heatmap-grid";
 
 type Props = {};
@@ -30,7 +34,7 @@ type Props = {};
 // }
 
 async function getUserArticleRecords(userId: string) {
-  return fetchData(`/api/v1/users/${userId}/records`);
+  return fetchData(`/api/v1/users/${userId}/activitylog`);
 }
 
 async function getGeneralDescription(userLevel: number) {
@@ -55,6 +59,14 @@ export default async function ReportsPage({}: Props) {
   const res = await getUserArticleRecords(user.id);
   const resGeneralDescription = await getGeneralDescription(user.level);
 
+  const inProgressCount = res.results.filter(
+    (item: UserArticleRecord) => item.activityStatus === "in_progress"
+  ).length;
+
+  const completedCount = res.results.filter(
+    (item: UserArticleRecord) => item.activityStatus === "completed"
+  ).length;
+
   // const resHeatMap = await getHeatMapData(user.id);
   // const xLabels = Object.keys(resHeatMap.results);
   // const yLabels = ["completed", "read"];
@@ -63,17 +75,39 @@ export default async function ReportsPage({}: Props) {
   // );
   return (
     <>
-      <Header heading="Reports" />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4 mb-10">
+      <Header heading="User Activity" />
+      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1 mt-4 mb-10">
         <Card className="md:col-span-4">
           <CardHeader>
-            <CardTitle>Activity</CardTitle>
+            <CardTitle>Activity Progress</CardTitle>
           </CardHeader>
-          <CardContent className="pl-2">
-            <UserActivityChart data={res.results} />
+          <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-3">
+            <Card>
+              <CardContent className="py-2">
+                <CardTitle>In prograss</CardTitle>
+                <p className="font-bold text-2xl">{inProgressCount}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="py-2">
+                <CardTitle>Completed</CardTitle>
+                <p className="font-bold text-2xl">{completedCount}</p>
+              </CardContent>
+            </Card>
           </CardContent>
         </Card>
-        <Card className="md:col-span-3">
+        <Card className="md:col-span-4">
+          <CardHeader>
+            <CardTitle>XP Earn</CardTitle>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <UserLevelChart
+              data={res.results}
+              resGeneralDescription={resGeneralDescription}
+            />
+          </CardContent>
+        </Card>
+        {/* <Card className="md:col-span-3">
           <CardHeader>
             <CardTitle>Level</CardTitle>
             <CardDescription>
@@ -86,7 +120,7 @@ export default async function ReportsPage({}: Props) {
               resGeneralDescription={resGeneralDescription}
             />
           </CardContent>
-        </Card>
+        </Card> */}
         {/* <HeatMap xLabels={xLabels} yLabels={yLabels} data={matrixData} /> */}
       </div>
     </>

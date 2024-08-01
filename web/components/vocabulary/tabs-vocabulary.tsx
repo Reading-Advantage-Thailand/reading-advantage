@@ -6,9 +6,11 @@ import FlashCard from "./tab-flash-card";
 import MatchingWords from "./tab-matching-words";
 type Props = {
   userId: string;
+  userXP: number;
+  userLevel: number;
 };
 
-export default function TabsVocabulary({ userId }: Props) {
+export default function TabsVocabulary({ userId, userLevel, userXP }: Props) {
   const [showButton, setShowButton] = useState(true);
   const t = useScopedI18n("components.wordList.tab");
 
@@ -23,11 +25,13 @@ export default function TabsVocabulary({ userId }: Props) {
           userId={userId}
           showButton={showButton}
           setShowButton={setShowButton}
+          userXP={userXP}
+          userLevel={userLevel}
         />
       </TabsContent>
 
       <TabsContent className="space-y-2" value="tab5">
-        <MatchingWords userId={userId} />
+        <MatchingWords userId={userId} userXP={userXP} userLevel={userLevel} />
       </TabsContent>
     </Tabs>
   );

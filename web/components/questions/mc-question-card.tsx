@@ -20,13 +20,16 @@ import {
   QuestionState,
 } from "../models/questions-model";
 import { Icons } from "../icons";
-import {useQuestionStore} from '@/store/question-store'
+import { useQuestionStore } from "@/store/question-store";
 import { set } from "lodash";
 import { toast } from "../ui/use-toast";
+import { levelCalculation } from "@/lib/utils";
 
 type Props = {
   userId: string;
+  userLevel: number;
   articleId: string;
+  userXP: number;
 };
 
 export type QuestionResponse = {
@@ -36,7 +39,12 @@ export type QuestionResponse = {
   state: QuestionState;
 };
 
-export default function MCQuestionCard({ userId, articleId }: Props) {
+export default function MCQuestionCard({
+  userId,
+  articleId,
+  userLevel,
+  userXP,
+}: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     results: [],
@@ -51,7 +59,7 @@ export default function MCQuestionCard({ userId, articleId }: Props) {
       .then((data) => {
         setData(data);
         setState(data.state);
-        useQuestionStore.setState({mcQuestion: data});
+        useQuestionStore.setState({ mcQuestion: data });
       });
   }, [state, articleId]);
 
@@ -82,8 +90,11 @@ export default function MCQuestionCard({ userId, articleId }: Props) {
     case QuestionState.INCOMPLETE:
       return (
         <QuestionCardIncomplete
+          userId={userId}
           resp={data}
+          userLevel={userLevel}
           articleId={articleId}
+          userXP={userXP}
           handleCompleted={handleCompleted}
         />
       );
@@ -144,12 +155,18 @@ function QuestionCardLoading() {
 }
 
 function QuestionCardIncomplete({
+  userId,
   resp,
   articleId,
+  userLevel,
+  userXP,
   handleCompleted,
 }: {
+  userId: string;
   resp: QuestionResponse;
   articleId: string;
+  userLevel: number;
+  userXP: number;
   handleCompleted: () => void;
 }) {
   return (
@@ -158,13 +175,20 @@ function QuestionCardIncomplete({
         heading="Multiple Choice Questions"
         description="Take the quiz to check your understanding"
         buttonLabel="Start Quiz"
+        userId={userId}
+        articleId={articleId}
+        userLevel={userLevel}
         disabled={false}
+        userXP={userXP}
       >
         <QuizContextProvider>
           <MCQeustion
             articleId={articleId}
             resp={resp}
             handleCompleted={handleCompleted}
+            userXP={userXP}
+            userId={userId}
+            userLevel={userLevel}
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -176,10 +200,16 @@ function MCQeustion({
   articleId,
   resp,
   handleCompleted,
+  userId,
+  userXP,
+  userLevel,
 }: {
   articleId: string;
   resp: QuestionResponse;
   handleCompleted: () => void;
+  userId: string;
+  userXP: number;
+  userLevel: number;
 }) {
   const [progress, setProgress] = useState(resp.progress);
   const [isLoadingAnswer, setLoadingAnswer] = useState(false);
@@ -189,7 +219,7 @@ function MCQeustion({
   const { timer, setPaused } = useContext(QuizContext);
   const t = useScopedI18n("components.mcq");
 
-  const onSubmitted = (questionId: string, option: string, i: number) => {
+  const onSubmitted = async (questionId: string, option: string, i: number) => {
     setPaused(true);
     setLoadingAnswer(true);
     fetch(`/api/v1/articles/${articleId}/questions/mcq/${questionId}`, {
@@ -217,17 +247,34 @@ function MCQeustion({
       if (status == AnswerStatus.CORRECT) {
         count += 2;
         countTest++;
-      }
-      else if(status == AnswerStatus.INCORRECT){
+      } else if (status == AnswerStatus.INCORRECT) {
         countTest++;
-      } 
-      if(countTest == 5){
+      }
+      if (countTest == 5) {
+        fetch(`/api/v1/users/${userId}/activitylog`, {
+          method: "POST",
+          body: JSON.stringify({
+            articleId: articleId || "STSTEM",
+            activityType: "mc_question",
+            activityStatus: "completed",
+            timeTaken: timer,
+            xpEarned: count,
+            initialXp: userXP,
+            finalXp: userXP + count,
+            initialLevel: userLevel,
+            finalLevel: levelCalculation(userXP + count).raLevel,
+            details: {
+              correctAnswer,
+              progress,
+            },
+          }),
+        });
         toast({
-          title: 'Success',
+          title: "Success",
           imgSrc: true,
           description: `Congratulations, you earned a total ${count} XP.`,
         });
-      }    
+      }
     });
   }, [progress, QuestionState]);
 
@@ -309,8 +356,7 @@ function MCQeustion({
           )}
           {5 - resp.results.length + 1 + index < resp.total
             ? "Next Question"
-            : "Submit Quiz"        
-          }
+            : "Submit Quiz"}
         </Button>
       }
     </CardContent>

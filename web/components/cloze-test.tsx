@@ -27,12 +27,15 @@ import {
 } from "./ui/select";
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
+import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
+  userXP: number;
+  userLevel: number;
 };
 
 type RootObject = {
@@ -55,7 +58,7 @@ type TextArraySplit = {
   textSplit: string[];
 };
 
-export default function ClozeTest({ userId }: Props) {
+export default function ClozeTest({ userId, userLevel, userXP }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const tUpdateScore = useScopedI18n(
@@ -335,8 +338,24 @@ export default function ClozeTest({ userId }: Props) {
       async (item: ResultTextArray) => {
         if (item.correctWords) {
           try {
-            const result = await updateScore(2, userId);
-            if (result?.status === 201) {
+            // const result = await updateScore(2, userId);
+            const updateScrore = await fetch(
+              `/api/v1/users/${userId}/activitylog`,
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  articleId: "",
+                  activityType: "sentence_cloze_test",
+                  activityStatus: "completed",
+                  xpEarned: 2,
+                  initialXp: userXP,
+                  finalXp: userXP + 2,
+                  initialLevel: userLevel,
+                  finalLevel: levelCalculation(userXP + 2).raLevel,
+                }),
+              }
+            );
+            if (updateScrore?.status === 200) {
               router.refresh();
               toast({
                 title: t("toast.success"),

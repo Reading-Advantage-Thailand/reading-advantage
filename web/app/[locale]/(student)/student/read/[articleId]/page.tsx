@@ -46,6 +46,8 @@ export default async function ArticleQuizPage({
           article={articleResponse.article}
           articleId={params.articleId}
           userId={user.id}
+          userXP={user.xp}
+          userLevel={user.level}
         />
         <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
           <div className="flex justify-evently">
@@ -56,7 +58,7 @@ export default async function ArticleQuizPage({
                 userId={user.id}
               />
             )}
-            
+
             {user.role.includes("SYSTEM") && (
               <div className="flex gap-4">
                 <ArticleActions
@@ -69,15 +71,28 @@ export default async function ArticleQuizPage({
               article={articleResponse.article}
               articleId={params.articleId}
               userId={user.id}
+              userXP={user.xp}
+              userLevel={user.level}
             />
           </div>
 
-          <MCQuestionCard userId={user.id} articleId={params.articleId} />
-          <SAQuestionCard userId={user.id} articleId={params.articleId} />
+          <MCQuestionCard
+            userId={user.id}
+            articleId={params.articleId}
+            userLevel={user.level}
+            userXP={user.xp}
+          />
+          <SAQuestionCard
+            userId={user.id}
+            articleId={params.articleId}
+            userLevel={user.level}
+            userXP={user.xp}
+          />
           <LAQuestionCard
             userId={user.id}
-            userLevel={user.level}
             articleId={params.articleId}
+            userLevel={user.level}
+            userXP={user.xp}
           />
         </div>
       </div>

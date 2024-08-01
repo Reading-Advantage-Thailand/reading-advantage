@@ -14,13 +14,15 @@ import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
 import { Word } from "./tab-flash-card";
-import { updateScore } from "@/lib/utils";
+import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
+  userXP: number;
+  userLevel: number;
 };
 
 type Matching = {
@@ -28,7 +30,7 @@ type Matching = {
   match: string;
 };
 
-export default function MatchingWords({ userId }: Props) {
+export default function MatchingWords({ userId, userXP, userLevel }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
@@ -127,8 +129,24 @@ export default function MatchingWords({ userId }: Props) {
     const updateScoreCorrectMatches = async () => {
       if (correctMatches.length === 10) {
         try {
-          const result = await updateScore(5, userId);
-          if (result?.status === 201) {
+          // const result = await updateScore(5, userId);
+          const updateScrore = await fetch(
+            `/api/v1/users/${userId}/activitylog`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                articleId: "",
+                activityType: "vocabulary_matching",
+                activityStatus: "completed",
+                xpEarned: 5,
+                initialXp: userXP,
+                finalXp: userXP + 5,
+                initialLevel: userLevel,
+                finalLevel: levelCalculation(userXP + 5).raLevel,
+              }),
+            }
+          );
+          if (updateScrore?.status === 200) {
             router.refresh();
             toast({
               title: t("toast.success"),

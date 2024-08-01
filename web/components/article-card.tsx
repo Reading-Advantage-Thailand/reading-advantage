@@ -18,12 +18,16 @@ type Props = {
   article: Article;
   articleId: string;
   userId: string;
+  userXP: number;
+  userLevel: number;
 };
 
 export default async function ArticleCard({
   article,
   articleId,
   userId,
+  userXP,
+  userLevel,
 }: Props) {
   const t = await getScopedI18n("components.articleCard");
   return (
@@ -60,6 +64,8 @@ export default async function ArticleCard({
             article={article}
             articleId={articleId}
             userId={userId}
+            userXP={userXP}
+            userLevel={userLevel}
           />
         </CardHeader>
         <ArticleFooter />
@@ -68,6 +74,9 @@ export default async function ArticleCard({
         userId={userId}
         averageRating={article.average_rating}
         articleId={articleId}
+        article={article}
+        userXP={userXP}
+        userLevel={userLevel}
       />
     </div>
   );

@@ -28,6 +28,7 @@ export default async function ReadPage({ params, searchParams }: Props) {
           level: user.level,
           name: user.display_name,
           id: user.id,
+          xp: user.xp,
         }}
       />
     </>

@@ -33,11 +33,13 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
+import { levelCalculation } from "@/lib/utils";
 
 interface Props {
   userId: string;
   userLevel: number;
   articleId: string;
+  userXP: number;
 }
 
 interface FeedbackDetails {
@@ -83,6 +85,7 @@ export default function LAQuestionCard({
   userId,
   userLevel,
   articleId,
+  userXP,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -120,9 +123,11 @@ export default function LAQuestionCard({
     case QuestionState.INCOMPLETE:
       return (
         <QuestionCardIncomplete
+          userId={userId}
           resp={data}
           userLevel={userLevel}
           articleId={articleId}
+          userXP={userXP}
           handleCompleted={handleCompleted}
           handleCancel={handleCancel}
         />
@@ -185,15 +190,19 @@ function QuestionCardLoading() {
 }
 
 function QuestionCardIncomplete({
+  userId,
   resp,
   userLevel,
   articleId,
+  userXP,
   handleCompleted,
   handleCancel,
 }: {
+  userId: string;
   resp: QuestionResponse;
   userLevel: number;
   articleId: string;
+  userXP: number;
   handleCompleted: () => void;
   handleCancel: () => void;
 }) {
@@ -203,13 +212,19 @@ function QuestionCardIncomplete({
         heading="Long Answer Question"
         description="Write an essay."
         buttonLabel="Practice Writing"
+        userId={userId}
+        articleId={articleId}
+        userLevel={userLevel}
+        userXP={userXP}
         disabled={false}
       >
         <QuizContextProvider>
           <LAQuestion
+            userId={userId}
             resp={resp}
             userLevel={userLevel}
             articleId={articleId}
+            userXP={userXP}
             handleCompleted={handleCompleted}
             handleCancel={handleCancel}
           />
@@ -220,15 +235,19 @@ function QuestionCardIncomplete({
 }
 
 function LAQuestion({
+  userId,
   resp,
   userLevel,
   articleId,
+  userXP,
   handleCompleted,
   handleCancel,
 }: {
+  userId: string;
   resp: QuestionResponse;
   userLevel: number;
   articleId: string;
+  userXP: number;
   handleCompleted: () => void;
   handleCancel: () => void;
 }) {
@@ -238,7 +257,7 @@ function LAQuestion({
   const [isCompleted, setIsCompleted] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
-  const [rating, setRating] = React.useState<number>(3);
+  const [rating, setRating] = React.useState<number>(0);
   const [data, setData] = useState<AnswerResponse>({
     state: QuestionState.LOADING,
     answer: "",
@@ -268,7 +287,20 @@ function LAQuestion({
     method: z.string(),
   });
 
+  const createActivity = z.object({
+    activityType: z.string(),
+    activityStatus: z.string(),
+    timestamp: z.date(),
+    timeTaken: z.number(),
+    xpEarned: z.number(),
+    initialLevel: z.number(),
+    finalLevel: z.number(),
+    details: z.object({}),
+  });
+
   type FormData = z.infer<typeof longAnswerSchema>;
+
+  type createActivityLog = z.infer<typeof createActivity>;
 
   const {
     register,
@@ -301,6 +333,7 @@ function LAQuestion({
       setData({ ...feedback, answer: dataForm.answer });
 
       if (dataForm.method === "submit") {
+        setPaused(true);
         const submitAnswer = await fetch(
           `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}`,
           {
@@ -350,6 +383,21 @@ function LAQuestion({
       .finally(() => {
         setIsLoading(false);
       });
+    await fetch(`/api/v1/users/${userId}/activitylog`, {
+      method: "POST",
+      body: JSON.stringify({
+        articleId: articleId || "STSTEM",
+        activityType: "la_question",
+        activityStatus: "completed",
+        timeTaken: timer,
+        xpEarned: rating,
+        initialXp: userXP,
+        finalXp: userXP + rating,
+        initialLevel: userLevel,
+        finalLevel: levelCalculation(userXP + rating).raLevel,
+        details: data,
+      }),
+    });
   }
 
   const handleCategoryChange = (category: string) => {
@@ -408,7 +456,6 @@ function LAQuestion({
             {...register("method")}
             onClick={() => {
               setOpenModal(false);
-              setPaused(true);
               setValue("method", "submit");
             }}
           >

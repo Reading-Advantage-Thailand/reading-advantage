@@ -613,7 +613,7 @@ export async function getFeedbackLAquestion(
 
   const randomExamples =
     getData.exampleRevisions[
-    Math.floor(Math.random() * getData.exampleRevisions.length)
+      Math.floor(Math.random() * getData.exampleRevisions.length)
     ];
 
   const result = { ...getData, exampleRevisions: randomExamples };

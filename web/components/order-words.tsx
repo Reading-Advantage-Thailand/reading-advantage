@@ -19,15 +19,18 @@ import { Skeleton } from "./ui/skeleton";
 import { updateScore } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
 import AudioButton from "./audio-button";
+import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
+  userXP: number;
+  userLevel: number;
 };
 
-export default function OrderWords({ userId }: Props) {
+export default function OrderWords({ userId, userXP, userLevel }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const tUpdateScore = useScopedI18n(
@@ -131,8 +134,24 @@ export default function OrderWords({ userId }: Props) {
   const onNextPassage = async () => {
     if (resultOrderWords) {
       try {
-        const result = await updateScore(5, userId);
-        if (result?.status === 201) {
+        // const result = await updateScore(5, userId);
+        const updateScrore = await fetch(
+          `/api/v1/users/${userId}/activitylog`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              articleId: "",
+              activityType: "sentence_word_ordering",
+              activityStatus: "completed",
+              xpEarned: 5,
+              initialXp: userXP,
+              finalXp: userXP + 5,
+              initialLevel: userLevel,
+              finalLevel: levelCalculation(userXP + 5).raLevel,
+            }),
+          }
+        );
+        if (updateScrore?.status === 200) {
           router.refresh();
           toast({
             title: t("toast.success"),

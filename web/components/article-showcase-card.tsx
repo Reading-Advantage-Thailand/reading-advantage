@@ -9,6 +9,12 @@ import { usePathname } from "next/navigation";
 
 type Props = {
   article: ArticleShowcase;
+  user: {
+    level: number;
+    name: string;
+    id: string;
+    xp: number;
+  };
 };
 
 async function getTranslate(
@@ -26,7 +32,7 @@ async function getTranslate(
   return res.data;
 }
 
-const ArticleShowcaseCard = ({ article }: Props) => {
+const ArticleShowcaseCard = ({ article, user }: Props) => {
   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
   const locale = useCurrentLocale();
   const pathName = usePathname();
@@ -58,7 +64,29 @@ const ArticleShowcaseCard = ({ article }: Props) => {
   }
 
   return (
-    <Link href={`/student/read/${article.id}`}>
+    <Link
+      href={`/student/read/${article.id}`}
+      onClick={async () =>
+        await fetch(`/api/v1/users/${user.id}/activitylog`, {
+          method: "POST",
+          body: JSON.stringify({
+            articleId: article.id || "STSTEM",
+            activityType: "article_read",
+            activityStatus: "in_progress",
+            xpEarned: 0,
+            initialXp: user.xp,
+            finalXp: user.xp,
+            initialLevel: user.level,
+            finalLevel: user.level,
+            details: {
+              title: article.title,
+              raLevel: article.ra_level,
+              CEFRLevel: article.cefr_level,
+            },
+          }),
+        })
+      }
+    >
       <div
         className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
         style={{
@@ -82,9 +110,9 @@ const ArticleShowcaseCard = ({ article }: Props) => {
         </Badge>
         <div className="mt-auto">
           <div className=" bg-black bg-opacity-40">
-          <p className="text-xl drop-shadow-lg font-bold text-white">
-            {article.title}
-          </p>
+            <p className="text-xl drop-shadow-lg font-bold text-white">
+              {article.title}
+            </p>
           </div>
           <div className=" bg-black bg-opacity-40">
             <p className="text-sm drop-shadow-lg line-clamp-4 text-white">

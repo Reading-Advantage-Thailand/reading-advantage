@@ -21,15 +21,18 @@ import { Sentence } from "./types";
 import QuoteList from "./quote-list";
 import { Icons } from "../icons";
 import { splitTextIntoSentences } from "@/lib/utils";
+import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
+  userXP: number;
+  userLevel: number;
 };
 
-export default function OrderSentences({ userId }: Props) {
+export default function OrderSentences({ userId, userLevel, userXP }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const router = useRouter();
@@ -205,13 +208,29 @@ export default function OrderSentences({ userId }: Props) {
 
     if (isEqual) {
       try {
-        const updateScrore = await updateScore(15, userId);
-        if (updateScrore?.status === 201) {
+        // const updateScrore = await updateScore(15, userId);
+        const updateScrore = await fetch(
+          `/api/v1/users/${userId}/activitylog`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              articleId: "",
+              activityType: "sentence_ordering",
+              activityStatus: "completed",
+              xpEarned: 5,
+              initialXp: userXP,
+              finalXp: userXP + 5,
+              initialLevel: userLevel,
+              finalLevel: levelCalculation(userXP + 5).raLevel,
+            }),
+          }
+        );
+        if (updateScrore?.status === 200) {
           toast({
-          title: t("toast.success"),
-          imgSrc: true,
-          description: tUpdateScore("yourXp", { xp: 5 }),
-        });
+            title: t("toast.success"),
+            imgSrc: true,
+            description: tUpdateScore("yourXp", { xp: 5 }),
+          });
           setCurrentArticleIndex(currentArticleIndex + 1);
           router.refresh();
           setIsPlaying(false);
@@ -332,7 +351,7 @@ export default function OrderSentences({ userId }: Props) {
               >
                 {t("orderSentencesPractice.saveOrder")}
               </Button>
-            ) : (             
+            ) : (
               <div className="flex flex-wrap justify-center mt-10 ">
                 <Image
                   src={"/winners.svg"}

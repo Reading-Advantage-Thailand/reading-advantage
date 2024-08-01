@@ -15,7 +15,7 @@ export default async function PracticePage({}: Props) {
   }
   return (
     <>
-      <TabsPractice userId={user.id} />
+      <TabsPractice userId={user.id} userXP={user.xp} userLevel={user.level} />
     </>
   );
 }

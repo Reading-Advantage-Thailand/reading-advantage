@@ -58,15 +58,14 @@ function formatDataForDays(
 
     const filteredArticles = articles.filter((article: UserArticleRecord) => {
       // ISO string to Date object
-      const articleDate = new Date(article.updated_at);
+      const articleDate = new Date(article.timestamp);
       articleDate.setHours(0, 0, 0, 0);
       return articleDate.getTime() === i.getTime();
     });
 
     const total = filteredArticles.length;
     const articleInfo = filteredArticles.map(
-      (article: UserArticleRecord) =>
-        `${formatStatusToEmoji(article.status)} ${article.title}`
+      (article: UserArticleRecord) => `${article.activityStatus}`
     );
 
     data.push({ day: `${dayOfWeek} ${dayOfMonth}`, total, articleInfo });

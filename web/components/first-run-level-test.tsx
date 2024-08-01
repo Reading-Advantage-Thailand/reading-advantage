@@ -147,7 +147,7 @@ export default function FirstRunLevelTest({
             newIsQuestionAnswered[questionIndexArray[i]] = true;
             setIsQuestionAnswered(newIsQuestionAnswered);
           }
-        } 
+        }
       }
       setXp(
         (prevScore: number) =>
@@ -220,6 +220,23 @@ export default function FirstRunLevelTest({
                     toast({
                       title: t("toast.successUpdate"),
                       description: t("toast.successUpdateDescription"),
+                    });
+                    await fetch(`/api/v1/users/${userId}/activitylog`, {
+                      method: "POST",
+                      body: JSON.stringify({
+                        activityType: "level_test",
+                        activityStatus: "completed",
+                        xpEarned: xp,
+                        initialXp: xp,
+                        finalXp: xp,
+                        initialLevel: levelCalculation(xp).raLevel,
+                        finalLevel: levelCalculation(xp).raLevel,
+                        details: {
+                          questionsAnswered: isQuestionAnswered,
+                          correctAnswers: countOfRightAnswers,
+                          cefr_level: levelCalculation(xp).cefrLevel,
+                        },
+                      }),
                     });
                     router.refresh();
                   } else {
