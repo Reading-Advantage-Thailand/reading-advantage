@@ -1,10 +1,8 @@
 import CredentialsProvider from "next-auth/providers/credentials";
-import { createUserModel, User } from "@/server/models/user";
+import { createUserModel } from "@/server/models/user";
 import { userService } from "@/server/services/firestore-server-services";
 import { verifyIdToken } from "@/server/utils/verify-id-token";
-import { isUserExpired } from "@/server/utils/verify-user-expired";
 import { NextAuthOptions } from "next-auth";
-import { Role } from "@/server/models/enum";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -50,39 +48,41 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     jwt: async ({ token, user, account, profile, isNewUser, trigger, session }: any) => {
-      console.log("jwt callback", { token, user, account });
-      if (trigger === "update" && session?.user) {
-        console.log("session", session);
-        Object.assign(token, session.user);
+      const dbUser = await userService.getDoc(token.id);
+      console.log("jwt dbUser", dbUser);
+      console.log("jwt token", token);
+      if (!dbUser) {
+        if (user) {
+          token.id = user?.id
+        }
+        return token
       }
-      if (user) {
-        token = { ...user }
+      return {
+        id: dbUser.id,
+        display_name: dbUser.display_name,
+        email: dbUser.email,
+        picture: token.picture || dbUser.picture,
+        level: dbUser.level,
+        email_verified: dbUser.email_verified,
+        xp: dbUser.xp,
+        cefr_level: dbUser.cefr_level,
+        role: dbUser.role,
       }
-      // if (user) {
-      //   // Check if the user is expired when they sign in
-      //   if (isUserExpired(user.expired_date)) {
-      //     console.warn("User subscription or trial period has expired.");
-      //     return { ...token, expired: true };
-      //   }
-      //   return { ...token, ...user };
-      // }
-      return token;
     },
     session: ({ session, token, user }) => {
-      //   console.log("user-session", user);
+      console.log("session", session);
+      console.log("token", token);
       if (token) {
         session.user.id = token.id;
-        session.user.name = token.name;
+        session.user.display_name = token.display_name;
         session.user.email = token.email;
-        session.user.image = token.picture;
+        session.user.picture = token.picture;
         session.user.level = token.level;
         session.user.email_verified = token.email_verified;
         session.user.xp = token.xp;
         session.user.cefr_level = token.cefr_level;
         session.user.role = token.role;
       }
-      // console.log("session callback");
-      // console.log("session", session);
       return session;
     },
   },

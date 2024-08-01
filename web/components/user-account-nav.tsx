@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { User } from "next-auth";
 import { signOut } from "next-auth/react";
@@ -14,6 +15,7 @@ import { useScopedI18n } from "@/locales/client";
 import { Icons } from "./icons";
 import { Badge } from "./ui/badge";
 import { useState } from "react";
+import { Role } from "@/server/models/enum";
 
 interface UserAccountNavProps {
   user: User;
@@ -41,17 +43,15 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
             <p className="w-[200px] truncate text-sm text-muted-foreground line-clamp-1">
               {user.email}
             </p>
-            {
-              //check user verified email
-              !user.email_verified && (
-                <Link href="/settings/user-profile">
-                  <button className="w-[200px] text-start truncate text-sm text-red-500 flex items-center">
-                    <Icons.unVerified className="inline-block mr-1 w-4 h-4" />
-                    Not verified email
-                  </button>
-                </Link>
-              )
-            }
+            {/* Check if the user's email is verified */}
+            {!user.email_verified && (
+              <Link href="/settings/user-profile">
+                <button className="w-[200px] text-start truncate text-sm text-red-500 flex items-center">
+                  <Icons.unVerified className="inline-block mr-1 w-4 h-4" />
+                  Not verified email
+                </button>
+              </Link>
+            )}
             <div className="flex">
               <Badge
                 className="bg-green-700 hover:bg-green-600"
@@ -62,50 +62,45 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
             </div>
           </div>
         </div>
-        {/* <DropdownMenuSeparator /> */}
-        {/* {selectedRole &&
-          selectedRole.filter((role: string) => role === "TEACHER").length >
-            0 && (
+        <DropdownMenuSeparator />
+        {/* Role-based menu items */}
+        {
+          // Check if the user is a teacher, admin, or system
+          (user.role === Role.TEACHER || Role.ADMIN || Role.SYSTEM) && (
             <DropdownMenuItem asChild>
-              <Link href="/teacher/my-classes">{"Teacher dashboard"}</Link>
+              <Link href="/teacher/my-classes">Teacher dashboard</Link>
             </DropdownMenuItem>
-          )}
-
-        {selectedRole &&
-          selectedRole.filter((role: string) => role === "STUDENT").length >
-            0 &&
-          (user.cefr_level !== "" ? (
+          )
+        }
+        {
+          // Check if the user is a student, teacher, admin, or system
+          (user.role === Role.STUDENT ||
+            Role.TEACHER ||
+            Role.ADMIN ||
+            Role.SYSTEM) &&
+          user.cefr_level !== "" ? (
             <DropdownMenuItem asChild>
-              <Link href="/student/read">{"Learner Home"}</Link>
+              <Link href="/student/read">Learner Home</Link>
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem asChild>
-              <Link href="/level">{"Level Test"}</Link>
+              <Link href="/level">Level Test</Link>
             </DropdownMenuItem>
-          ))}
-
-        {selectedRole &&
-          selectedRole.filter((role: string) => role === "ADMINISTRATOR")
-            .length > 0 && (
+          )
+        }
+        {
+          // Check if the user is an admin or system
+          (user.role === Role.ADMIN || Role.SYSTEM) && (
             <DropdownMenuItem asChild>
-              <Link href="/admin">{"Admin dashboard"}</Link>
+              <Link href="/admin">Admin dashboard</Link>
             </DropdownMenuItem>
-          )} */}
-
-        {/* {selectedRole &&
-          selectedRole.filter((role: string) => role === "SYSTEM").length >
-            0 && (
-            <DropdownMenuItem asChild>
-              <Link href="/system">{"System dashboard"}</Link>
-            </DropdownMenuItem>
-          )} */}
-
-        {/* {selectedRole && !selectedRole.includes("STUDENT") && (
+          )
+        }
+        {user.role === Role.SYSTEM && (
           <DropdownMenuItem asChild>
-            <Link href="/system/dashboard">{"System dashboard"}</Link>
+            <Link href="/system/dashboard">System dashboard</Link>
           </DropdownMenuItem>
-        )} */}
-
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/settings/user-profile">{t("settings")}</Link>
@@ -115,9 +110,9 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
           className="cursor-pointer"
           onClick={async (event) => {
             event.preventDefault();
-            await signOut({
-              callbackUrl: `/`,
-            });
+            setIsLoading(true);
+            await signOut({ callbackUrl: `/` });
+            setIsLoading(false);
           }}
         >
           {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}

@@ -1,98 +1,83 @@
-import { getToken } from 'next-auth/jwt';
-import withAuth from 'next-auth/middleware';
-import { createI18nMiddleware } from 'next-international/middleware';
-import { NextRequest, NextResponse } from 'next/server';
-import { localeConfig } from './configs/locale-config';
+import { createI18nMiddleware } from 'next-international/middleware'
+import { NextRequest } from 'next/server'
+import { getToken } from "next-auth/jwt"
+import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
+import { Role } from './server/models/enum'
+import { localeConfig } from './configs/locale-config'
 
 const I18nMiddleware = createI18nMiddleware({
     locales: localeConfig.locales,
     defaultLocale: localeConfig.defaultLocale,
-    urlMappingStrategy: "rewriteDefault",
-});
+})
 
-const authPages = ['auth/signin', 'auth/signup', 'auth/forgot-password'];
-const publicPages = [''];
+export default withAuth(
+    async function middleware(req: NextRequest) {
+        const token = await getToken({ req })
+        const isAuth = !!token
+        const isAuthPage =
+            req.nextUrl.pathname.startsWith("/auth/signin")
+        const authLocales = localeConfig.locales;
+        const locale = authLocales.find((loc) => req.nextUrl.pathname.startsWith(`/${loc}/auth`)) || '/en';
 
-function doesPathMatchPages(req: NextRequest, pages: string[]) {
-    return RegExp(`^/(${pages.join('|')})`).test(req.nextUrl.pathname);
-}
+        // Skip the middleware for API routes
+        if (req.nextUrl.pathname.startsWith('/api')) {
+            return NextResponse.next();
+        }
+        // Skip the middleware for the session route
+        if (req.nextUrl.pathname.startsWith('/session')) {
+            return NextResponse.redirect(new URL(`/api/auth/session`, req.url));
+        }
+        // Skip the middleware for the CSRF route
+        if (req.nextUrl.pathname.startsWith('/csrf')) {
+            return NextResponse.redirect(new URL(`/api/auth/csrf`, req.url));
+        }
+        // Skip the middleware for the signout route
+        if (req.nextUrl.pathname.startsWith('/signout')) {
+            return NextResponse.redirect(new URL(`/api/auth/signout`, req.url));
+        }
 
-export default withAuth(async function onSuccess(req) {
-    const token = await getToken({ req });
-    // console.log('middleware: token', token);
+        if (authLocales.includes(locale)) {
+            // Redirect to the appropriate page based on the user's role and level
+            // if the user is already authenticated
+            if (isAuth) {
+                // Redirect to the role selection page if the user's role is unknown
+                // UNKNOWN is the default role assigned to a user
+                if (token.role === Role.UNKNOWN) {
+                    return NextResponse.redirect(new URL("/role-selection", req.url))
+                }
+                // Redirect to the level selection page if the user's level is unknown
+                if (token.level === undefined || token.level === null || token.level === 0) {
+                    return NextResponse.redirect(new URL("/level", req.url))
+                }
+                // Redirect to the teacher home page if the user is a teachet
+                if (token.role === Role.TEACHER) {
+                    return NextResponse.redirect(new URL("/teacher/my-classes", req.url))
+                }
+                // else redirect to the student home page
+                // DEFAULT ()
+                return NextResponse.redirect(new URL("/student/read", req.url))
+            }
 
-    const authLocales = localeConfig.locales;
-    const locale = authLocales.find((loc) => req.nextUrl.pathname.startsWith(`/${loc}/auth`)) || '/en';
+            return null
+        }
 
-    const isAuth = !!token;
-    const isNoLevel = token?.cefrLevel === "";
-    const teacherRole = token?.role?.includes('TEACHER');
-    const isTeacher = token && token.role ? teacherRole : false;
-    const isNoRole = !token?.role || token.role.length === 0;
+        if (!isAuth) {
+            let from = req.nextUrl.pathname;
+            if (req.nextUrl.search) {
+                from += req.nextUrl.search;
+            }
 
-    const isStudentArea = req.nextUrl.pathname.startsWith('/student');
-    const isTeacherArea = req.nextUrl.pathname.startsWith('/teacher');
-
-    if (req.nextUrl.pathname.startsWith('/api')) {
-        return NextResponse.next();
-    }
-
-    if (req.nextUrl.pathname.startsWith('/session')) {
-        return NextResponse.redirect(new URL(`/api/auth/session`, req.url));
-    }
-
-    if (req.nextUrl.pathname.startsWith('/csrf')) {
-        return NextResponse.redirect(new URL(`/api/auth/csrf`, req.url));
-    }
-
-    if (req.nextUrl.pathname.startsWith('/signout')) {
-        return NextResponse.redirect(new URL(`/api/auth/signout`, req.url));
-    }
-
-    if (!token) {
-        if (!doesPathMatchPages(req, authPages) && !doesPathMatchPages(req, publicPages)) {
-            let from = req.nextUrl.pathname + (req.nextUrl.search || '');
             return NextResponse.redirect(new URL(`${locale}/auth/signin?from=${encodeURIComponent(from)}`, req.url));
+
         }
-        return I18nMiddleware(req);
-    }
-
-    if (authLocales.includes(locale)) {
-        if (isAuth) {
-            // if (token.role === Role.UNKNOWN && !startsWith('/role-selection', req)) {
-            //     console.log('middleware: redirect to role-selection');
-            //     return NextResponse.redirect(new URL(`/role-selection`, req.url));
-            // }
-
-            // level selection
-            // if (!req.nextUrl.pathname.startsWith('/level') && (token.level === undefined || token.level === null || token.level === 0)) {
-            //     console.log('middleware: redirect to level');
-            //     return NextResponse.redirect(new URL(`/level`, req.url));
-            // }
-            // if (isNoLevel) return NextResponse.redirect(new URL(`/level`, req.url));
-            // if (isNoRole && isNoLevel) return NextResponse.redirect(new URL(`/role-selection`, req.url));
-            // if (isTeacher) return NextResponse.redirect(new URL(`/teacher/my-classes`, req.url));
-            // return NextResponse.redirect(new URL(`/student/read`, req.url));
-        }
-        return null;
-    }
-
-    if (!isAuth) {
-        let from = req.nextUrl.pathname + (req.nextUrl.search || '');
-        return NextResponse.redirect(new URL(`/auth/signin?from=${encodeURIComponent(from)}`, req.url));
-    }
-
-    // TODO: Add more conditions or remove unnecessary code here
-
-    return I18nMiddleware(req);
-}, {
-    callbacks: {
-        authorized: () => true,
+        return I18nMiddleware(req)
     },
-});
+    {
+        callbacks: { authorized: () => true, },
+    }
+)
 
 export const config = {
     matcher: ['/((?!api|static|.*\\..*|_next|favicon.ico|robots.txt).*)'],
 };
-
-

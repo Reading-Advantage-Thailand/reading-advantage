@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 
 export default async function UserProfileSettingsPage() {
   const user = await getCurrentUser();
+  console.log("user-profile: ", user);
 
   // check if user is not logged in and redirect to signin page
   if (!user) {
