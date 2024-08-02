@@ -9,6 +9,7 @@ import { BadgeCheck } from "lucide-react";
 import { Icons } from "@/components/icons";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function UserProfileSettingsPage() {
   const user = await getCurrentUser();
@@ -25,6 +26,9 @@ export default async function UserProfileSettingsPage() {
         heading="Personal information"
         text="Information about your personal profile"
       />
+      <Link href="/student/read" className="inline-block mb-4 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200">
+        &larr; Back to Reading Page
+      </Link>
       <Separator className="my-4" />
       <div className="mx-2 flex gap-4 flex-col md:flex-row">
         <div className="w-full">
