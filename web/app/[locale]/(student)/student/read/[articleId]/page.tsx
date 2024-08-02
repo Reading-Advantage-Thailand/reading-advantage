@@ -34,6 +34,7 @@ export default async function ArticleQuizPage({
   if (!user) return redirect("/auth/signin");
 
   const articleResponse = await getArticle(params.articleId);
+  
   if (articleResponse.message)
     return (
       <CustomError message={articleResponse.message} resp={articleResponse} />

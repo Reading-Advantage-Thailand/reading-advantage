@@ -104,6 +104,39 @@ export async function POST(req: Request, res: Response) {
         articleId: param.articleId,
       });
 
+      // gen file audio
+      /*
+      try {
+       
+        const allTimepoints: any[] = [];
+        let index = 0;
+--> chunks : array ของ word
+
+--> check check จาก validateAudioWords ว่ามีไฟล์ mp3 ไหม 
+        
+            const timepoints = await fetchAudio(chunks[i], i, params.articleId);
+            timepoints.forEach((tp: any) => {
+                allTimepoints.push({
+                    markName: `sentence${index}`,
+                    timeSeconds: tp.timeSeconds,
+                    index: index,
+                    file: `${params.articleId}_${i}.mp3`,
+                });
+                index++;
+            });
+        
+
+        // Update the database with all timepoints
+        await db.collection("new-articles").doc(params.articleId).update({
+            timepoints: allTimepoints,
+            id: params.articleId,
+        });
+    } catch (error) {
+        console.log(error);
+        throw new Error(`failed to generate audio: ${error}`);
+    }
+      */
+
       return new Response(
         JSON.stringify({
           messages: "success",
