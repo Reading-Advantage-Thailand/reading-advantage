@@ -220,7 +220,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                                               alt="play sound"
                                               width={20}
                                               height={20}
-                                              className={"mx-3"}
+                                              className={"mx-3 cursor-pointer"}
                                             />
                                           </div>
 
