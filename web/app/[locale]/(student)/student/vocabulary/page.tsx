@@ -15,11 +15,7 @@ export default async function VocabularyPage({}: Props) {
   }
   return (
     <>
-      <TabsVocabulary
-        userId={user.id}
-        userXP={user.xp}
-        userLevel={user.level}
-      />
+      <TabsVocabulary userId={user.id} />
     </>
   );
 }
