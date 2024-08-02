@@ -51,9 +51,7 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
   for (let level of levels) {
     if (progress >= level.min && progress <= level.max) {
       const range = level.max - level.min;
-      
       const progressInlevel = progress - level.min;
-      
       percentage = (progressInlevel * 100) / range;
     }
   }
@@ -71,8 +69,14 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
   
   useEffect(() => {
     const previousLevel = level - 1;
+    console.log('previousLevel', previousLevel);
+    console.log('level', level);
+    console.log('max xp old level', levels[previousLevel].max);
+    console.log('min xp new level', levels[level].min);
     
-    if (level !== previousLevel && percentage === 0) {
+    // if (level !== previousLevel && percentage >= 0) {
+    if (level > previousLevel && percentage > 0 && percentage <=15 ) {
+      // percentage <= 15, 15 is based on max userXpEarned in activity, will be changed later with variable
       setIsOpen(true);
     }
   }, [level, percentage]);
@@ -83,7 +87,7 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
         {`
           @keyframes progress-bar-animation {
             from{
-              width: 0;
+              width: 0%;
             }
             to {
               width: ${percentage}%;
@@ -115,7 +119,7 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
         </div>
         <p>{t("level", { level })} </p>
       </div>
-      {isOpen && levelCalResult.cefrLevel !== "" && level !== 0 && progress && (
+      {isOpen && levelCalResult.cefrLevel !== "" && level !== 0 && progress >= 0 &&(
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent>
