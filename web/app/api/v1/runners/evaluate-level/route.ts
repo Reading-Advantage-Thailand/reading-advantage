@@ -1,7 +1,7 @@
 import { restrictAccessKey } from "@/server/controllers/auth-controller";
 import { logRequest } from "@/server/middleware";
-import { evaluateLevelRunner } from "@/server/runners/evaluate-level-runner";
 import { handleRequest } from "@/server/utils/handle-request";
+import { evaluateLevelRunner } from "@/server/utils/runners/evaluate-level-runner";
 import { createEdgeRouter } from "next-connect";
 import { NextRequest } from "next/server";
 

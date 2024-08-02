@@ -1,5 +1,5 @@
 import { splitTextIntoSentences } from "@/lib/utils";
-import { AUDIO_URL, AVAILABLE_VOICES, BASE_TEXT_TO_SPEECH_URL } from "../constants";
+import { AUDIO_URL, AVAILABLE_VOICES, BASE_TEXT_TO_SPEECH_URL } from "../../constants";
 import base64 from "base64-js";
 import fs from "fs";
 import uploadToBucket from "@/utils/uploadToBucket";
@@ -11,7 +11,7 @@ interface GenerateAudioParams {
     articleId: string;
 }
 
-function passageToSSML(content: string[]): string {
+function contentToSSML(content: string[]): string {
     let ssml = "<speak>";
     content.forEach((sentence, i) => {
         ssml += `<s><mark name='sentence${i + 1}'/>${sentence}</s>`;
@@ -27,25 +27,25 @@ function splitTextIntoChunks(content: string, maxBytes: number): string[] {
 
     sentences.forEach((sentence, index) => {
         currentChunk.push(sentence);
-        const ssml = passageToSSML(currentChunk);
+        const ssml = contentToSSML(currentChunk);
 
         if (new TextEncoder().encode(ssml).length > maxBytes) {
             currentChunk.pop();
-            chunks.push(passageToSSML(currentChunk));
+            chunks.push(contentToSSML(currentChunk));
             currentChunk = [sentence];
         }
 
         if (index === sentences.length - 1 && currentChunk.length > 0) {
-            chunks.push(passageToSSML(currentChunk));
+            chunks.push(contentToSSML(currentChunk));
         }
     });
 
     return chunks;
 }
 
-async function fetchAudio(ssml: string, index: number, articleId: string): Promise<string[]> {
-    try {
-        const voice = AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
+export async function generateAudio({ passage, articleId }: GenerateAudioParams): Promise<void> {
+    const voice = AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
+    const generate = async (ssml: string, index: number) => {
         const response = await axios.post(
             `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize`,
             {
@@ -74,38 +74,34 @@ async function fetchAudio(ssml: string, index: number, articleId: string): Promi
         await uploadToBucket(localPath, `${AUDIO_URL}/${articleId}_${index}.mp3`);
 
         return response.data.timepoints;
-    } catch (error) {
-        throw new Error(`fetch audio failed ${error}`);
-    }
-}
-export async function generateAudio(params: GenerateAudioParams): Promise<void> {
-    const voice = AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
+    };
 
     try {
-        const chunks = splitTextIntoChunks(params.passage, 5000);
+        const chunks = splitTextIntoChunks(passage, 5000);
         const allTimepoints: any[] = [];
         let index = 0;
 
         for (let i = 0; i < chunks.length; i++) {
-            const timepoints = await fetchAudio(chunks[i], i, params.articleId);
+            const timepoints = await generate(chunks[i], i);
+
             timepoints.forEach((tp: any) => {
                 allTimepoints.push({
                     markName: `sentence${index}`,
                     timeSeconds: tp.timeSeconds,
                     index: index,
-                    file: `${params.articleId}_${i}.mp3`,
+                    file: `${articleId}_${i}.mp3`,
                 });
                 index++;
             });
         }
 
         // Update the database with all timepoints
-        await db.collection("new-articles").doc(params.articleId).update({
+        await db.collection("new-articles").doc(articleId).update({
             timepoints: allTimepoints,
-            id: params.articleId,
+            id: articleId,
         });
-    } catch (error) {
-        console.log(error);
-        throw new Error(`failed to generate audio: ${error}`);
+
+    } catch (error: any) {
+        throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(error.response.data)}`;
     }
 }

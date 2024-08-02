@@ -1,16 +1,16 @@
 import z from "zod";
 import path from "path";
-import { readJsonFile } from "../utils/read-json";
+import { readJsonFile } from "../read-json";
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { ArticleCefrLevel, ArticleType } from "../models/enum";
+import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 
 export interface GenerateArticleParams {
     type: ArticleType;
     genre: string;
     subgenre: string;
     topic: string;
-    cefrLevel: ArticleCefrLevel;
+    cefrLevel: ArticleBaseCefrLevel;
 }
 
 export interface GenerateArticleResponse {
@@ -56,7 +56,7 @@ export async function generateArticle(params: GenerateArticleParams): Promise<Ge
         ?.levels.find((lvl) => lvl.level === params.cefrLevel);
 
     if (!levelConfig) {
-        throw new Error("failed to generate article: level not found");
+        throw `level config not found for ${params.cefrLevel}`;
     }
 
     const userPrompt = levelConfig.userPromptTemplate
@@ -80,6 +80,6 @@ export async function generateArticle(params: GenerateArticleParams): Promise<Ge
             imageDesc: article.imageDesc,
         }
     } catch (error) {
-        throw new Error(`failed to generate article: ${error}`);
+        throw `failed to generate article: ${error}`;
     }
 }

@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { ArticleCefrLevel, ArticleType } from "../models/enum";
+import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 import { generateQuestion, GenerateQuestionParams } from "./question-generator";
 
 interface GenrateMCQuestionParams {
-    cefrlevel: ArticleCefrLevel,
+    cefrlevel: ArticleBaseCefrLevel,
     type: ArticleType,
     passage: string,
     title: string,

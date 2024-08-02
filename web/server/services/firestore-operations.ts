@@ -104,6 +104,33 @@ export const getAllDocs = async <T extends DocumentData>(collection: string, fil
     }
 }
 
+export const isCollectionExists = async (collection: string): Promise<boolean> => {
+    try {
+        const collectionRef = db.collection(collection);
+        const snapshot = await collectionRef.get();
+        return !snapshot.empty;
+    } catch (error) {
+        console.error(`Error checking if collection exists:`, error);
+        return false;
+    }
+}
+
+export const isDocExists = async (collection: string, id: string, parent?: { subCollection: string, docId: string }): Promise<boolean> => {
+    try {
+        const collectionRef = parent
+            ? db.collection(collection).doc(parent.docId).collection(parent.subCollection)
+            : db.collection(collection);
+
+        const docRef = collectionRef.doc(id);
+        const doc = await docRef.get();
+
+        return doc.exists;
+    } catch (error) {
+        console.error(`Error checking if document exists in collection "${collection}" with ID "${id}":`, error);
+        return false;
+    }
+}
+
 export interface Filter {
     orderBy: string;
     startAt: number;

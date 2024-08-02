@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendDiscordWebhook } from "../utils/send-discord-webhook";
 import db from "@/configs/firestore-config";
-import { generateMCQuestion } from "../generators/mc-question-generator";
-import { generateSAQuestion } from "../generators/sa-question-generator";
-import { generateLAQuestion } from "../generators/la-question-generator";
+import { generateMCQuestion } from "../utils/generators/mc-question-generator";
+import { generateSAQuestion } from "../utils/generators/sa-question-generator";
+import { generateLAQuestion } from "../utils/generators/la-question-generator";
 import { AUDIO_URL, IMAGE_URL } from "../constants";
 import uploadToBucket from "@/utils/uploadToBucket";
 import storage from "@/utils/storage";
 import fs from "fs";
 import openai from "@/utils/openai";
 import axios from "axios";
-import { generateAudio } from "../generators/audio-generator";
+import { generateAudio } from "../utils/generators/audio-generator";
+import { Article } from "../models/article";
 
 interface ArticleType {
     cefr_level?: string;
@@ -116,8 +117,8 @@ export async function validateArticle(
         "passed": passedResults.length,
         "regenerated": regeneratedResults.length,
         "failed": failedResults.length + "\n",
-        "rating stats": Object.entries(ratingStats).map(([cefr_level, { total, sum }]: any) =>
-            `**cefr level**: *${cefr_level}*, **average rating**: *${(sum / total).toFixed(2)}*`
+        "rating stats": "\n" + Object.entries(ratingStats).map(([cefr_level, { total, sum }]: any) =>
+            `CEFR: *${cefr_level}* average rating: *${(sum / total).toFixed(2)}* total: *${total}*`
         ).join("\n"),
     } as any;
 
@@ -166,7 +167,6 @@ export async function validateArticle(
     });
 }
 
-
 async function validator(articleId: string): Promise<{
     id: string,
     validation: ValidationResponse[],
@@ -174,16 +174,17 @@ async function validator(articleId: string): Promise<{
     cefr_level?: string,
 }> {
     const articleDoc = await db.collection("new-articles").doc(articleId).get();
+    console.log(`Validating article ${articleId}`);
     if (!articleDoc.exists) {
         throw new Error(`article ${articleId} not found in Firestore`);
     }
 
-    const articleData = articleDoc.data() as ArticleType;
+    const articleData = articleDoc.data() as Article;
 
     if (!articleData.id) {
         // Set article id
         console.log(`Setting article id for article ${articleId}`);
-        db.collection("new-articles").doc(articleId).set({ id: articleId }, { merge: true });
+        await db.collection("new-articles").doc(articleId).set({ id: articleId }, { merge: true });
     }
 
     try {
@@ -195,12 +196,12 @@ async function validator(articleId: string): Promise<{
             validateAudio(articleData.passage!, articleId),
         ]);
 
-        console.log('rating', articleData.rating);
+        console.log('rating', articleData.average_rating);
         console.log('cefr_level', articleData.cefr_level);
         return {
             id: articleId,
             validation: resp,
-            rating: articleData.rating || undefined,
+            rating: articleData.average_rating || undefined,
             cefr_level: articleData.cefr_level || undefined,
         };
     } catch (error: any) {
@@ -249,7 +250,6 @@ async function validateQuestions(
     }
 }
 
-
 async function validateImage(imageDesc: string, articleId: string): Promise<{ id: string, task: string, status: string }> {
     try {
         const generate = async () => {
@@ -287,7 +287,6 @@ async function validateImage(imageDesc: string, articleId: string): Promise<{ id
         throw error;
     }
 }
-
 
 async function validateAudio(passage: string, articleId: string): Promise<{ id: string, task: string, status: string }> {
     try {

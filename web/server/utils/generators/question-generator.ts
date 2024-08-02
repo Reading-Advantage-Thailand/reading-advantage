@@ -1,12 +1,12 @@
-import { ArticleCefrLevel, ArticleType } from "../models/enum";
+import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 import { z } from "zod"
-import { readJsonFile } from "../utils/read-json";
+import { readJsonFile } from "../read-json";
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import path from "path";
 
 export interface GenerateQuestionParams<T> {
-    cefrlevel: ArticleCefrLevel,
+    cefrlevel: ArticleBaseCefrLevel,
     type: ArticleType,
     passage: string,
     title: string,
@@ -105,6 +105,6 @@ export async function generateQuestion<T>(params: GenerateQuestionParams<T>): Pr
             question
         }
     } catch (error) {
-        throw new Error(`failed to generate ${params.promptFile} question: ${error}`);
+        throw `failed to generate ${params.promptFile} question: ${error}`;
     }
 }
