@@ -120,7 +120,7 @@ async function evaluateArticle(
         console.log(`Regenerating article... Attempt (${attempts}/${maxAttempts})`);
     }
 
-    throw `failed to generate article after ${maxAttempts} attempts`;
+    throw `failed to generate article after ${maxAttempts} attempts (low )`;
 }
 
 async function processQueue(
@@ -204,15 +204,17 @@ async function processQueue(
             .doc(articleRef.id)
             .collection("la-questions")
             .add(laq),
-        generateAudio({
-            passage: generatedArticle.passage,
-            articleId: articleRef.id,
-        }),
-        generateImage({
-            imageDesc: generatedArticle.imageDesc,
-            articleId: articleRef.id,
-        }),
     ]);
+
+    await generateAudio({
+        passage: generatedArticle.passage,
+        articleId: articleRef.id,
+    });
+
+    await generateImage({
+        imageDesc: generatedArticle.imageDesc,
+        articleId: articleRef.id,
+    });
 }
 
 // Generate article queue
