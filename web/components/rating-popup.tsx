@@ -6,7 +6,7 @@ import axios from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { toast } from "./ui/use-toast";
 import { Article } from "./models/article-model";
-import { levelCalculation } from "@/lib/utils";
+import { UserXpEarned } from "./models/user-activity-log-model";
 
 interface RateDialogProps {
   disabled?: boolean;
@@ -14,8 +14,6 @@ interface RateDialogProps {
   userId: string;
   articleId: string;
   article: Article;
-  userXP: number;
-  userLevel: number;
 }
 
 export default function RatingPopup({
@@ -24,8 +22,6 @@ export default function RatingPopup({
   userId,
   articleId,
   article,
-  userXP,
-  userLevel,
 }: RateDialogProps) {
   const t = useScopedI18n("components.rate");
   const [value, setValue] = React.useState<number | null>(-1);
@@ -55,29 +51,15 @@ export default function RatingPopup({
   };
 
   const onUpdateUser = async () => {
-    let xp;
     if (value === -1) return;
     if (value !== 0 && oldRating === 0) {
-      xp = 10;
-      // const response = await instance.patch(
-      //   `/api/users/${userId}/article-records`,
-      //   {
-      //     articleId,
-      //     rating: value,
-      //     xpAward: xp,
-      //   }
-      // );
       const response = await fetch(`/api/v1/users/${userId}/activitylog`, {
         method: "POST",
         body: JSON.stringify({
-          articleId: articleId || "STSTEM",
+          articleId: articleId,
           activityType: "article_rating",
           activityStatus: "completed",
-          xpEarned: xp,
-          initialXp: userXP,
-          finalXp: userXP + xp,
-          initialLevel: userLevel,
-          finalLevel: levelCalculation(userXP + xp).raLevel,
+          xpEarned: UserXpEarned.Article_Rating,
           details: {
             title: article.title,
             raLevel: article.ra_level,
@@ -86,56 +68,23 @@ export default function RatingPopup({
         }),
       });
       const data = await response.json();
-      console.log(data);
-      console.log(data.message === "Success");
       if (data.message === "Success") {
         toast({
           title: t("toast.success"),
           imgSrc: true,
-          description: "Congratulations, you earned 10 XP.",
+          description: `Congratulations, you earned ${UserXpEarned.Article_Rating} XP.`,
         });
         setModalIsOpen(false);
       }
       setLoading(false);
     } else if (value !== 0 && oldRating !== 0) {
-      xp = 0;
-      // const response = await instance.patch(
-      //   `/api/users/${userId}/article-records`,
-      //   {
-      //     articleId,
-      //     rating: value,
-      //     xpAward: xp,
-      //   }
-      // );
-      const response = await fetch(`/api/v1/users/${userId}/records`, {
-        method: "POST",
-        body: JSON.stringify({
-          articleId: articleId || "STSTEM",
-          activityType: "article_rating",
-          activityStatus: "completed",
-          xpEarned: xp,
-          initialXp: userXP,
-          finalXp: userXP + xp,
-          initialLevel: userLevel,
-          finalLevel: levelCalculation(userXP + xp).raLevel,
-          details: {
-            title: article.title,
-            raLevel: article.ra_level,
-            CEFRLevel: article.cefr_level,
-          },
-        }),
+      toast({
+        title: t("toast.success"),
+        imgSrc: true,
+        description: "you not earned XP.",
       });
-      const data = await response.json();
-      console.log(data);
-      console.log(data.message === "Success");
-      if (data.message === "Success") {
-        toast({
-          title: t("toast.success"),
-          imgSrc: true,
-          description: "you not earned XP.",
-        });
-        setModalIsOpen(false);
-      }
+      setModalIsOpen(false);
+
       setLoading(false);
     }
   };
@@ -149,17 +98,13 @@ export default function RatingPopup({
 
   const toggleModal = async () => {
     setModalIsOpen(!modalIsOpen);
-    await fetch(`/api/v1/users/${userId}/records`, {
+    await fetch(`/api/v1/users/${userId}/activitylog`, {
       method: "POST",
       body: JSON.stringify({
-        articleId: articleId || "STSTEM",
+        articleId: articleId,
         activityType: "article_rating",
         activityStatus: "in_progress",
         xpEarned: 0,
-        initialXp: userXP,
-        finalXp: userXP,
-        initialLevel: userLevel,
-        finalLevel: userLevel,
         details: {
           title: article.title,
           raLevel: article.ra_level,

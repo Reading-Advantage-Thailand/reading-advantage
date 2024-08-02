@@ -13,7 +13,7 @@ import { QuizStatus } from "./questions-model";
 //     level: number;
 // }
 
-export interface UserArticleRecord {
+export interface UserActivityLog {
   contentId: string;
   userId: string;
   articleId: string;
@@ -27,4 +27,16 @@ export interface UserArticleRecord {
   initialLevel: number;
   finalLevel: number;
   details: {};
+}
+
+export enum UserXpEarned {
+  MC_Question = 2,
+  Article_Rating = 10,
+  Vocabulary_Flashcards = 15,
+  Vocabulary_Matching = 5,
+  Sentence_Flashcards = 15,
+  Sentence_Matching = 5,
+  Sentence_Cloze_Test = 2,
+  Sentence_Ordering = 5,
+  Sentence_Word_Ordering = 5,
 }

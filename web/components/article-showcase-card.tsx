@@ -64,29 +64,7 @@ const ArticleShowcaseCard = ({ article, user }: Props) => {
   }
 
   return (
-    <Link
-      href={`/student/read/${article.id}`}
-      onClick={async () =>
-        await fetch(`/api/v1/users/${user.id}/activitylog`, {
-          method: "POST",
-          body: JSON.stringify({
-            articleId: article.id || "STSTEM",
-            activityType: "article_read",
-            activityStatus: "in_progress",
-            xpEarned: 0,
-            initialXp: user.xp,
-            finalXp: user.xp,
-            initialLevel: user.level,
-            finalLevel: user.level,
-            details: {
-              title: article.title,
-              raLevel: article.ra_level,
-              CEFRLevel: article.cefr_level,
-            },
-          }),
-        })
-      }
-    >
+    <Link href={`/student/read/${article.id}`}>
       <div
         className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
         style={{

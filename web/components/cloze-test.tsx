@@ -16,7 +16,6 @@ import { Header } from "./header";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
 import { Skeleton } from "./ui/skeleton";
-import { updateScore } from "@/lib/utils";
 import { Icons } from "./icons";
 import {
   Select,
@@ -27,15 +26,13 @@ import {
 } from "./ui/select";
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
-import { levelCalculation } from "@/lib/utils";
+import { UserXpEarned } from "./models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
-  userXP: number;
-  userLevel: number;
 };
 
 type RootObject = {
@@ -58,7 +55,7 @@ type TextArraySplit = {
   textSplit: string[];
 };
 
-export default function ClozeTest({ userId, userLevel, userXP }: Props) {
+export default function ClozeTest({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const tUpdateScore = useScopedI18n(
@@ -338,7 +335,6 @@ export default function ClozeTest({ userId, userLevel, userXP }: Props) {
       async (item: ResultTextArray) => {
         if (item.correctWords) {
           try {
-            // const result = await updateScore(2, userId);
             const updateScrore = await fetch(
               `/api/v1/users/${userId}/activitylog`,
               {
@@ -347,11 +343,7 @@ export default function ClozeTest({ userId, userLevel, userXP }: Props) {
                   articleId: "",
                   activityType: "sentence_cloze_test",
                   activityStatus: "completed",
-                  xpEarned: 2,
-                  initialXp: userXP,
-                  finalXp: userXP + 2,
-                  initialLevel: userLevel,
-                  finalLevel: levelCalculation(userXP + 2).raLevel,
+                  xpEarned: UserXpEarned.Sentence_Cloze_Test,
                 }),
               }
             );
@@ -360,7 +352,9 @@ export default function ClozeTest({ userId, userLevel, userXP }: Props) {
               toast({
                 title: t("toast.success"),
                 imgSrc: true,
-                description: tUpdateScore("yourXp", { xp: 2 }),
+                description: tUpdateScore("yourXp", {
+                  xp: UserXpEarned.Sentence_Cloze_Test,
+                }),
               });
             }
           } catch (error) {

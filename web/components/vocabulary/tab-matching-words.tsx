@@ -14,15 +14,13 @@ import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
 import { Word } from "./tab-flash-card";
-import { levelCalculation } from "@/lib/utils";
+import { UserXpEarned } from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
-  userXP: number;
-  userLevel: number;
 };
 
 type Matching = {
@@ -30,7 +28,7 @@ type Matching = {
   match: string;
 };
 
-export default function MatchingWords({ userId, userXP, userLevel }: Props) {
+export default function MatchingWords({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
@@ -138,11 +136,7 @@ export default function MatchingWords({ userId, userXP, userLevel }: Props) {
                 articleId: "",
                 activityType: "vocabulary_matching",
                 activityStatus: "completed",
-                xpEarned: 5,
-                initialXp: userXP,
-                finalXp: userXP + 5,
-                initialLevel: userLevel,
-                finalLevel: levelCalculation(userXP + 5).raLevel,
+                xpEarned: UserXpEarned.Vocabulary_Matching,
               }),
             }
           );
@@ -150,7 +144,9 @@ export default function MatchingWords({ userId, userXP, userLevel }: Props) {
             router.refresh();
             toast({
               title: t("toast.success"),
-              description: tUpdateScore("yourXp", { xp: 5 }),
+              description: tUpdateScore("yourXp", {
+                xp: UserXpEarned.Vocabulary_Matching,
+              }),
             });
           }
         } catch (error) {

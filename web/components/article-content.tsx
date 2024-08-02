@@ -23,15 +23,12 @@ import {
 } from "./ui/alert-dialog";
 import axios from "axios";
 import { toast } from "./ui/use-toast";
-import { levelCalculation } from "@/lib/utils";
 
 type Props = {
   article: Article;
   articleId: string;
   userId: string;
   className?: string;
-  userXP: number;
-  userLevel: number;
 };
 
 type Sentence = {
@@ -60,8 +57,6 @@ export default function ArticleContent({
   article,
   className = "",
   userId,
-  userLevel,
-  userXP,
 }: Props) {
   console.log("article", article);
   const t = useScopedI18n("components.articleContent");
@@ -235,29 +230,6 @@ export default function ArticleContent({
           ...card,
         });
 
-        await fetch(`/api/v1/users/${userId}/activitylog`, {
-          method: "POST",
-          body: JSON.stringify({
-            articleId: article.id || "STSTEM",
-            activityType: "save_sentence",
-            activityStatus: "completed",
-            xpEarned: 2,
-            initialXp: userXP,
-            finalXp: userXP + 2,
-            initialLevel: userLevel,
-            finalLevel: levelCalculation(userXP + 2).raLevel,
-            details: {
-              ...card,
-              translation: {
-                th: translate[selectedSentence as number],
-              },
-              audioUrl: sentenceList[selectedSentence as number].audioUrl,
-              sentence: sentenceList[
-                selectedSentence as number
-              ].sentence.replace("~~", ""),
-            },
-          }),
-        });
         console.log(
           "audioUrl",
           sentenceList[selectedSentence as number].audioUrl

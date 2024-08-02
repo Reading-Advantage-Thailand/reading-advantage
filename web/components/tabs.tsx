@@ -11,11 +11,9 @@ import { useScopedI18n } from "@/locales/client";
 
 type Props = {
   userId: string;
-  userXP: number;
-  userLevel: number;
 };
 
-export default function TabsPractice({ userId, userLevel, userXP }: Props) {
+export default function TabsPractice({ userId }: Props) {
   const [showButton, setShowButton] = useState(true);
   const t = useScopedI18n("pages.student.practicePage");
 
@@ -34,21 +32,19 @@ export default function TabsPractice({ userId, userLevel, userXP }: Props) {
           userId={userId}
           showButton={showButton}
           setShowButton={setShowButton}
-          userXP={userXP}
-          userLevel={userLevel}
         />
       </TabsContent>
       <TabsContent className="space-y-2" value="tab2">
-        <OrderSentences userId={userId} userXP={userXP} userLevel={userLevel} />
+        <OrderSentences userId={userId} />
       </TabsContent>
       <TabsContent className="space-y-2" value="tab3">
-        <ClozeTest userId={userId} userXP={userXP} userLevel={userLevel} />
+        <ClozeTest userId={userId} />
       </TabsContent>
       <TabsContent className="space-y-2" value="tab4">
-        <OrderWords userId={userId} userXP={userXP} userLevel={userLevel} />
+        <OrderWords userId={userId} />
       </TabsContent>
       <TabsContent className="space-y-2" value="tab5">
-        <Matching userId={userId} userXP={userXP} userLevel={userLevel} />
+        <Matching userId={userId} />
       </TabsContent>
       <TabsContent className="space-y-2" value="tab6">
         <ManageTab userId={userId} />

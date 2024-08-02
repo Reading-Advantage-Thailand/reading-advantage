@@ -17,7 +17,7 @@ import React, { useState } from "react";
 import { DateField } from "@/components/ui/date-field";
 import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 import { useTheme } from "next-themes";
-import { UserArticleRecord } from "../models/user-article-record-model";
+import { UserActivityLog } from "../models/user-activity-log-model";
 import { QuizStatus } from "../models/questions-model";
 
 // Function to calculate the data for the chart
@@ -25,7 +25,7 @@ import { QuizStatus } from "../models/questions-model";
 // It returns an array of objects with the day of the week and the total number of articles read on that day
 // Example: [{ day: "Sun 1", total: 5 }, { day: "Mon 2", total: 10 }, ...]
 function formatDataForDays(
-  articles: UserArticleRecord[],
+  articles: UserActivityLog[],
   calendarValue: DateValueType
 ) {
   // ISO date
@@ -56,7 +56,7 @@ function formatDataForDays(
     const dayOfWeek = daysOfWeek[i.getDay()];
     const dayOfMonth = i.getDate();
 
-    const filteredArticles = articles.filter((article: UserArticleRecord) => {
+    const filteredArticles = articles.filter((article: UserActivityLog) => {
       // ISO string to Date object
       const articleDate = new Date(article.timestamp);
       articleDate.setHours(0, 0, 0, 0);
@@ -65,7 +65,7 @@ function formatDataForDays(
 
     const total = filteredArticles.length;
     const articleInfo = filteredArticles.map(
-      (article: UserArticleRecord) => `${article.activityStatus}`
+      (article: UserActivityLog) => `${article.activityStatus}`
     );
 
     data.push({ day: `${dayOfWeek} ${dayOfMonth}`, total, articleInfo });
@@ -109,7 +109,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 interface UserActiviryChartProps {
-  data: UserArticleRecord[];
+  data: UserActivityLog[];
 }
 
 export function UserActivityChart({ data }: UserActiviryChartProps) {

@@ -12,16 +12,14 @@ import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
 import { useRouter } from "next/navigation";
 import { ReloadIcon } from "@radix-ui/react-icons";
-
 import { Button } from "../ui/button";
-import { updateScore } from "@/lib/utils";
 import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import FlashCardVocabularyPracticeButton from "./flash-card-vocabulary-practice-button";
 import FlipCardPracticeButton from "../flip-card-button";
 import { Timestamp } from "firebase/firestore";
-import { levelCalculation } from "@/lib/utils";
+import { UserXpEarned } from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -30,8 +28,6 @@ type Props = {
   userId: string;
   showButton: boolean;
   setShowButton: Function;
-  userXP: number;
-  userLevel: number;
 };
 
 export type Word = {
@@ -66,8 +62,6 @@ export default function FlashCard({
   userId,
   showButton,
   setShowButton,
-  userXP,
-  userLevel,
 }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
@@ -121,7 +115,7 @@ export default function FlashCard({
                   page: "vocabulary",
                 }
               );
-              // const updateScrore = await updateScore(15, userId);
+
               const updateScrore = await fetch(
                 `/api/v1/users/${userId}/activitylog`,
                 {
@@ -130,11 +124,7 @@ export default function FlashCard({
                     articleId: "",
                     activityType: "vocabulary_flashcards",
                     activityStatus: "completed",
-                    xpEarned: 15,
-                    initialXp: userXP,
-                    finalXp: userXP + 15,
-                    initialLevel: userLevel,
-                    finalLevel: levelCalculation(userXP + 15).raLevel,
+                    xpEarned: UserXpEarned.Vocabulary_Flashcards,
                     details: {
                       ...filterDataUpdateScore[i],
                     },
@@ -144,7 +134,9 @@ export default function FlashCard({
               if (updateScrore?.status === 200) {
                 toast({
                   title: t("toast.success"),
-                  description: tUpdateScore("yourXp", { xp: 15 }),
+                  description: tUpdateScore("yourXp", {
+                    xp: UserXpEarned.Vocabulary_Flashcards,
+                  }),
                 });
                 router.refresh();
               }

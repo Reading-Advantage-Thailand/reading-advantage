@@ -15,16 +15,13 @@ import { toast } from "./ui/use-toast";
 import { Skeleton } from "./ui/skeleton";
 import { Sentence } from "./dnd/types";
 import AudioButton from "./audio-button";
-import { updateScore } from "@/lib/utils";
-import { levelCalculation } from "@/lib/utils";
+import { UserXpEarned } from "./models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
-  userXP: number;
-  userLevel: number;
 };
 
 type Word = {
@@ -35,7 +32,7 @@ type Word = {
   articleId: string;
 };
 
-export default function Matching({ userId, userLevel, userXP }: Props) {
+export default function Matching({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
@@ -72,7 +69,6 @@ export default function Matching({ userId, userLevel, userXP }: Props) {
     const updateScoreCorrectMatches = async () => {
       if (correctMatches.length === 10) {
         try {
-          // const result = await updateScore(5, userId);
           const updateScrore = await fetch(
             `/api/v1/users/${userId}/activitylog`,
             {
@@ -81,11 +77,7 @@ export default function Matching({ userId, userLevel, userXP }: Props) {
                 articleId: "",
                 activityType: "sentence_matching",
                 activityStatus: "completed",
-                xpEarned: 5,
-                initialXp: userXP,
-                finalXp: userXP + 5,
-                initialLevel: userLevel,
-                finalLevel: levelCalculation(userXP + 5).raLevel,
+                xpEarned: UserXpEarned.Sentence_Matching,
               }),
             }
           );
@@ -94,7 +86,9 @@ export default function Matching({ userId, userLevel, userXP }: Props) {
             toast({
               title: t("toast.success"),
               imgSrc: true,
-              description: tUpdateScore("yourXp", { xp: 5 }),
+              description: tUpdateScore("yourXp", {
+                xp: UserXpEarned.Sentence_Matching,
+              }),
             });
           }
         } catch (error) {

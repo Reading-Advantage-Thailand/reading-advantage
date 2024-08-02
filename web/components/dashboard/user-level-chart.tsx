@@ -9,10 +9,16 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useState } from "react";
 import { useTheme } from "next-themes";
-import { CardDescription } from "@/components/ui/card";
-import { UserArticleRecord } from "../models/user-article-record-model";
+import { UserActivityLog } from "../models/user-activity-log-model";
 import { QuizStatus } from "../models/questions-model";
 import { DateField } from "@/components/ui/date-field";
 import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
@@ -23,11 +29,9 @@ import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 // Example: [{ day: "Sun 1", total: 5 }, { day: "Mon 2", total: 10 }, ...]
 
 function formatDataForDays(
-  articles: UserArticleRecord[],
+  articles: UserActivityLog[],
   calendarValue: DateValueType
 ) {
-  const today = new Date();
-
   // ISO date
   let startDate: Date;
   let endDate: Date;
@@ -58,7 +62,7 @@ function formatDataForDays(
     const dayOfWeek = daysOfWeek[i.getDay()];
     const dayOfMonth = i.getDate();
 
-    const filteredArticles = articles.filter((article: UserArticleRecord) => {
+    const filteredArticles = articles.filter((article: UserActivityLog) => {
       const articleDate = new Date(article.timestamp);
       articleDate.setHours(0, 0, 0, 0);
       return articleDate.toDateString() === i.toDateString();
@@ -96,13 +100,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 interface UserActiviryChartProps {
-  data: UserArticleRecord[];
-  resGeneralDescription: { message: string; general_description: string };
+  data: UserActivityLog[];
 }
-export function UserLevelChart({
-  data,
-  resGeneralDescription,
-}: UserActiviryChartProps) {
+export function UserLevelChart({ data }: UserActiviryChartProps) {
   const { theme } = useTheme();
   const [calendarValue, setCalendarValue] = useState<DateValueType>({
     startDate: new Date(new Date().setDate(new Date().getDate() - 6)),
@@ -114,45 +114,79 @@ export function UserLevelChart({
     setCalendarValue(newValue);
   };
 
+  const inProgressCount = data.filter(
+    (item: UserActivityLog) => item.activityStatus === "in_progress"
+  ).length;
+
+  const completedCount = data.filter(
+    (item: UserActivityLog) => item.activityStatus === "completed"
+  ).length;
+
   return (
     <>
-      <div className="relative w-full px-4 mb-4">
-        <DateField
-          label="Date Range"
-          value={calendarValue}
-          onChange={handleValueChange}
-        />
-      </div>
-      <ResponsiveContainer width="100%" height={350}>
-        <LineChart data={formattedData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="day"
-            stroke="#888888"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-          />
-          <YAxis
-            stroke="#888888"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(value: any) => `${value}`}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          {theme === "dark" ? (
-            <Line dataKey="xpEarned" stroke="#fafafa" strokeWidth={3} />
-          ) : (
-            <Line dataKey="xpEarned" stroke="#009688" strokeWidth={3} />
-          )}
-        </LineChart>
-      </ResponsiveContainer>
-      <div className="mt-6">
-        <CardDescription>
-          {resGeneralDescription.general_description}
-        </CardDescription>
-      </div>
+      <Card className="md:col-span-4">
+        <CardHeader>
+          <CardTitle>Activity Progress</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-3">
+          <Card>
+            <CardContent className="py-2">
+              <CardTitle>In prograss</CardTitle>
+              <p className="font-bold text-3xl">{inProgressCount}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-2">
+              <CardTitle>Completed</CardTitle>
+              <p className="font-bold text-3xl">{completedCount}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-2">
+              <CardTitle>Date Range</CardTitle>
+              <p className="font-bold text-2xl">
+                <DateField
+                  label=""
+                  value={calendarValue}
+                  onChange={handleValueChange}
+                />
+              </p>
+            </CardContent>
+          </Card>
+        </CardContent>
+      </Card>
+      <Card className="md:col-span-4">
+        <CardHeader>
+          <CardTitle>XP Earned</CardTitle>
+        </CardHeader>
+        <CardContent className="pl-2">
+          <ResponsiveContainer width="100%" height={350}>
+            <LineChart data={formattedData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="day"
+                stroke="#888888"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="#888888"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value: any) => `${value}`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              {theme === "dark" ? (
+                <Line dataKey="xpEarned" stroke="#fafafa" strokeWidth={3} />
+              ) : (
+                <Line dataKey="xpEarned" stroke="#009688" strokeWidth={3} />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     </>
   );
 }

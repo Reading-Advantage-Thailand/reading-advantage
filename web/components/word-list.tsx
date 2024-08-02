@@ -24,14 +24,11 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { toast } from "./ui/use-toast";
-import { levelCalculation } from "@/lib/utils";
 
 interface Props {
   article: Article;
   articleId: string;
   userId: string;
-  userXP: number;
-  userLevel: number;
 }
 
 interface WordList {
@@ -45,13 +42,7 @@ interface WordList {
   };
 }
 
-export default function WordList({
-  article,
-  articleId,
-  userId,
-  userXP,
-  userLevel,
-}: Props) {
+export default function WordList({ article, articleId, userId }: Props) {
   const t = useScopedI18n("components.wordList");
   const [loading, setLoading] = useState<boolean>(false);
   const [wordList, setWordList] = useState<WordList[]>([]);
@@ -106,23 +97,6 @@ export default function WordList({
         };
 
         const res = await axios.post(`/api/word-list/${userId}`, param);
-        await fetch(`/api/v1/users/${userId}/activitylog`, {
-          method: "POST",
-          body: JSON.stringify({
-            articleId: articleId || "STSTEM",
-            activityType: "save_vocabulary",
-            activityStatus: "completed",
-            xpEarned: 5,
-            initialXp: userXP,
-            finalXp: userXP + 5,
-            initialLevel: userLevel,
-            finalLevel: levelCalculation(userXP + 5).raLevel,
-            details: {
-              ...card,
-              foundWordsList,
-            },
-          }),
-        });
         if (res?.status === 200) {
           toast({
             title: "Success",

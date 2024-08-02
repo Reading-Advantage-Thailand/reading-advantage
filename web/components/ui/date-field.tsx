@@ -25,9 +25,7 @@ function DateField({ label, value, onChange, placeholder }: DateFieldProps) {
   };
   return (
     <>
-      {label && (
-        <label className="text-sm font-medium">{label}</label>
-      )}
+      {label && <label className="text-sm font-medium">{label}</label>}
       <div id="datepicker-wrapper">
         <Datepicker
           placeholder={placeholder}

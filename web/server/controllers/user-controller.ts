@@ -4,8 +4,6 @@ import { levelCalculation } from "@/lib/utils";
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
-import { array } from "zod";
-import { timeStamp } from "console";
 
 export const getUser = getOne(DBCollection.USERS);
 export const updateUser = updateOne(DBCollection.USERS);
@@ -21,33 +19,16 @@ export async function postActivityLog(
   { params: { id } }: RequestContext
 ) {
   try {
-    const activityType = [
-      "level_test",
-      "article_read",
-      "mc_question",
-      "sa_question",
-      "la_question",
-      "article_rating",
-      "sentence_flashcards",
-      "vocabulary_flashcards",
-      "save_sentence",
-      "save_vocabulary",
-      "vocabulary_matching",
-      "sentence_matching",
-      "sentence_cloze_test",
-      "sentence_ordering",
-      "sentence_word_ordering",
-    ];
+    //getUser
+    const userRef = (await db.collection("users").doc(id).get()).data();
 
-    const activityStatus = ["not_started", "in_progress", "completed"];
-
+    //Data from frontend
     const data = await req.json();
     // getActivityLog
     const replType = data.activityType.replace(/_/g, "-");
 
     const validActivityTypes = [
       "level_test",
-      "article_read",
       "mc_question",
       "sa_question",
       "la_question",
@@ -77,10 +58,10 @@ export async function postActivityLog(
       timestamp: new Date(),
       timeTaken: data.timeTaken || 0,
       xpEarned: data.xpEarned || 0,
-      initialXp: data.initialXp,
-      finalXp: data.finalXp,
-      initialLevel: data.initialLevel,
-      finalLevel: data.finalLevel,
+      initialXp: userRef?.xp,
+      finalXp: userRef?.xp + data.xpEarned,
+      initialLevel: userRef?.level,
+      finalLevel: levelCalculation(userRef?.xp + data.xpEarned).raLevel,
       details: data.details || {},
       ...data,
     };
@@ -108,9 +89,9 @@ export async function postActivityLog(
         .collection("users")
         .doc(id)
         .update({
-          xp: data.finalXp,
-          level: data.finalLevel,
-          ceftLevel: levelCalculation(data.finalXp).cefrLevel,
+          xp: commonData.finalXp,
+          level: commonData.finalLevel,
+          ceftLevel: levelCalculation(userRef?.xp + data.xpEarned).cefrLevel,
         });
     }
 

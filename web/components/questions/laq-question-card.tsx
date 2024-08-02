@@ -33,13 +33,11 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
-import { levelCalculation } from "@/lib/utils";
 
 interface Props {
   userId: string;
   userLevel: number;
   articleId: string;
-  userXP: number;
 }
 
 interface FeedbackDetails {
@@ -85,7 +83,6 @@ export default function LAQuestionCard({
   userId,
   userLevel,
   articleId,
-  userXP,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -127,7 +124,6 @@ export default function LAQuestionCard({
           resp={data}
           userLevel={userLevel}
           articleId={articleId}
-          userXP={userXP}
           handleCompleted={handleCompleted}
           handleCancel={handleCancel}
         />
@@ -194,7 +190,6 @@ function QuestionCardIncomplete({
   resp,
   userLevel,
   articleId,
-  userXP,
   handleCompleted,
   handleCancel,
 }: {
@@ -202,7 +197,6 @@ function QuestionCardIncomplete({
   resp: QuestionResponse;
   userLevel: number;
   articleId: string;
-  userXP: number;
   handleCompleted: () => void;
   handleCancel: () => void;
 }) {
@@ -214,8 +208,6 @@ function QuestionCardIncomplete({
         buttonLabel="Practice Writing"
         userId={userId}
         articleId={articleId}
-        userLevel={userLevel}
-        userXP={userXP}
         disabled={false}
       >
         <QuizContextProvider>
@@ -224,7 +216,6 @@ function QuestionCardIncomplete({
             resp={resp}
             userLevel={userLevel}
             articleId={articleId}
-            userXP={userXP}
             handleCompleted={handleCompleted}
             handleCancel={handleCancel}
           />
@@ -239,7 +230,6 @@ function LAQuestion({
   resp,
   userLevel,
   articleId,
-  userXP,
   handleCompleted,
   handleCancel,
 }: {
@@ -247,7 +237,6 @@ function LAQuestion({
   resp: QuestionResponse;
   userLevel: number;
   articleId: string;
-  userXP: number;
   handleCompleted: () => void;
   handleCancel: () => void;
 }) {
@@ -287,20 +276,7 @@ function LAQuestion({
     method: z.string(),
   });
 
-  const createActivity = z.object({
-    activityType: z.string(),
-    activityStatus: z.string(),
-    timestamp: z.date(),
-    timeTaken: z.number(),
-    xpEarned: z.number(),
-    initialLevel: z.number(),
-    finalLevel: z.number(),
-    details: z.object({}),
-  });
-
   type FormData = z.infer<typeof longAnswerSchema>;
-
-  type createActivityLog = z.infer<typeof createActivity>;
 
   const {
     register,
@@ -391,10 +367,6 @@ function LAQuestion({
         activityStatus: "completed",
         timeTaken: timer,
         xpEarned: rating,
-        initialXp: userXP,
-        finalXp: userXP + rating,
-        initialLevel: userLevel,
-        finalLevel: levelCalculation(userXP + rating).raLevel,
         details: data,
       }),
     });

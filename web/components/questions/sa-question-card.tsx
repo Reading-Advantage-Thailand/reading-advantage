@@ -31,14 +31,10 @@ import {
 import Rating from "@mui/material/Rating";
 import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
-import { UserX } from "lucide-react";
-import { levelCalculation } from "@/lib/utils";
 
 type Props = {
   userId: string;
-  userLevel: number;
   articleId: string;
-  userXP: number;
 };
 
 export type QuestionResponse = {
@@ -61,12 +57,7 @@ enum QuestionState {
   ERROR = 3,
 }
 
-export default function SAQuestionCard({
-  userId,
-  articleId,
-  userLevel,
-  userXP,
-}: Props) {
+export default function SAQuestionCard({ userId, articleId }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     result: {
@@ -105,9 +96,7 @@ export default function SAQuestionCard({
         <QuestionCardIncomplete
           userId={userId}
           resp={data}
-          userLevel={userLevel}
           articleId={articleId}
-          userXP={userXP}
           handleCompleted={handleCompleted}
         />
       );
@@ -178,15 +167,11 @@ function QuestionCardIncomplete({
   userId,
   resp,
   articleId,
-  userLevel,
-  userXP,
   handleCompleted,
 }: {
   userId: string;
   resp: QuestionResponse;
   articleId: string;
-  userLevel: number;
-  userXP: number;
   handleCompleted: () => void;
 }) {
   return (
@@ -197,9 +182,7 @@ function QuestionCardIncomplete({
         buttonLabel="Start Writing"
         userId={userId}
         articleId={articleId}
-        userLevel={userLevel}
         disabled={false}
-        userXP={userXP}
       >
         <QuizContextProvider>
           <SAQuestion
@@ -207,8 +190,6 @@ function QuestionCardIncomplete({
             articleId={articleId}
             handleCompleted={handleCompleted}
             userId={userId}
-            userXP={userXP}
-            userLevel={userLevel}
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -220,16 +201,12 @@ function SAQuestion({
   resp,
   articleId,
   userId,
-  userXP,
   handleCompleted,
-  userLevel,
 }: {
   resp: QuestionResponse;
   articleId: string;
   userId: string;
-  userXP: number;
   handleCompleted: () => void;
-  userLevel: number;
 }) {
   const shortAnswerSchema = z.object({
     answer: z
@@ -310,10 +287,6 @@ function SAQuestion({
         activityStatus: "completed",
         timeTaken: timer,
         xpEarned: rating,
-        initialXp: userXP,
-        finalXp: userXP + rating,
-        initialLevel: userLevel,
-        finalLevel: levelCalculation(userXP + rating).raLevel,
         details: data,
       }),
     });

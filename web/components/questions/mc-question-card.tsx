@@ -23,13 +23,11 @@ import { Icons } from "../icons";
 import { useQuestionStore } from "@/store/question-store";
 import { set } from "lodash";
 import { toast } from "../ui/use-toast";
-import { levelCalculation } from "@/lib/utils";
+import { UserXpEarned } from "../models/user-activity-log-model";
 
 type Props = {
   userId: string;
-  userLevel: number;
   articleId: string;
-  userXP: number;
 };
 
 export type QuestionResponse = {
@@ -39,12 +37,7 @@ export type QuestionResponse = {
   state: QuestionState;
 };
 
-export default function MCQuestionCard({
-  userId,
-  articleId,
-  userLevel,
-  userXP,
-}: Props) {
+export default function MCQuestionCard({ userId, articleId }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     results: [],
@@ -92,9 +85,7 @@ export default function MCQuestionCard({
         <QuestionCardIncomplete
           userId={userId}
           resp={data}
-          userLevel={userLevel}
           articleId={articleId}
-          userXP={userXP}
           handleCompleted={handleCompleted}
         />
       );
@@ -158,15 +149,11 @@ function QuestionCardIncomplete({
   userId,
   resp,
   articleId,
-  userLevel,
-  userXP,
   handleCompleted,
 }: {
   userId: string;
   resp: QuestionResponse;
   articleId: string;
-  userLevel: number;
-  userXP: number;
   handleCompleted: () => void;
 }) {
   return (
@@ -177,18 +164,14 @@ function QuestionCardIncomplete({
         buttonLabel="Start Quiz"
         userId={userId}
         articleId={articleId}
-        userLevel={userLevel}
         disabled={false}
-        userXP={userXP}
       >
         <QuizContextProvider>
           <MCQeustion
             articleId={articleId}
             resp={resp}
             handleCompleted={handleCompleted}
-            userXP={userXP}
             userId={userId}
-            userLevel={userLevel}
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -201,15 +184,11 @@ function MCQeustion({
   resp,
   handleCompleted,
   userId,
-  userXP,
-  userLevel,
 }: {
   articleId: string;
   resp: QuestionResponse;
   handleCompleted: () => void;
   userId: string;
-  userXP: number;
-  userLevel: number;
 }) {
   const [progress, setProgress] = useState(resp.progress);
   const [isLoadingAnswer, setLoadingAnswer] = useState(false);
@@ -245,7 +224,7 @@ function MCQeustion({
     let countTest = 0;
     progress.forEach((status) => {
       if (status == AnswerStatus.CORRECT) {
-        count += 2;
+        count += UserXpEarned.MC_Question;
         countTest++;
       } else if (status == AnswerStatus.INCORRECT) {
         countTest++;
@@ -254,15 +233,11 @@ function MCQeustion({
         fetch(`/api/v1/users/${userId}/activitylog`, {
           method: "POST",
           body: JSON.stringify({
-            articleId: articleId || "STSTEM",
+            articleId: articleId,
             activityType: "mc_question",
             activityStatus: "completed",
             timeTaken: timer,
             xpEarned: count,
-            initialXp: userXP,
-            finalXp: userXP + count,
-            initialLevel: userLevel,
-            finalLevel: levelCalculation(userXP + count).raLevel,
             details: {
               correctAnswer,
               progress,

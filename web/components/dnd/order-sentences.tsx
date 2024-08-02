@@ -16,23 +16,20 @@ import { Header } from "../header";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { updateScore } from "@/lib/utils";
 import { Sentence } from "./types";
 import QuoteList from "./quote-list";
 import { Icons } from "../icons";
 import { splitTextIntoSentences } from "@/lib/utils";
-import { levelCalculation } from "@/lib/utils";
+import { UserXpEarned } from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 
 type Props = {
   userId: string;
-  userXP: number;
-  userLevel: number;
 };
 
-export default function OrderSentences({ userId, userLevel, userXP }: Props) {
+export default function OrderSentences({ userId }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const router = useRouter();
@@ -208,7 +205,6 @@ export default function OrderSentences({ userId, userLevel, userXP }: Props) {
 
     if (isEqual) {
       try {
-        // const updateScrore = await updateScore(15, userId);
         const updateScrore = await fetch(
           `/api/v1/users/${userId}/activitylog`,
           {
@@ -217,11 +213,7 @@ export default function OrderSentences({ userId, userLevel, userXP }: Props) {
               articleId: "",
               activityType: "sentence_ordering",
               activityStatus: "completed",
-              xpEarned: 5,
-              initialXp: userXP,
-              finalXp: userXP + 5,
-              initialLevel: userLevel,
-              finalLevel: levelCalculation(userXP + 5).raLevel,
+              xpEarned: UserXpEarned.Sentence_Ordering,
             }),
           }
         );
@@ -229,7 +221,9 @@ export default function OrderSentences({ userId, userLevel, userXP }: Props) {
           toast({
             title: t("toast.success"),
             imgSrc: true,
-            description: tUpdateScore("yourXp", { xp: 5 }),
+            description: tUpdateScore("yourXp", {
+              xp: UserXpEarned.Sentence_Ordering,
+            }),
           });
           setCurrentArticleIndex(currentArticleIndex + 1);
           router.refresh();

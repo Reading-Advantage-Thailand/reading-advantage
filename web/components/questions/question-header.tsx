@@ -18,8 +18,10 @@ type Props = {
   disabled?: boolean;
   userId: string;
   articleId: string;
-  userLevel: number;
-  userXP: number;
+};
+
+type ActivityType = {
+  [key: string]: string;
 };
 
 export default function QuestionHeader({
@@ -29,47 +31,25 @@ export default function QuestionHeader({
   buttonLabel,
   userId,
   articleId,
-  userLevel,
-  userXP,
   disabled = true,
 }: Props) {
   const [isButtonClicked, setIsButtonClicked] = React.useState<boolean>(false);
   async function onButtonClick() {
     setIsButtonClicked(true);
-    if (buttonLabel === "Practice Writing") {
+    const activityTypes: ActivityType = {
+      "Practice Writing": "la_question",
+      "Start Quiz": "mc_question",
+      "Start Writing": "sa_question",
+    };
+
+    const activityType = activityTypes[buttonLabel as keyof ActivityType];
+
+    if (activityType) {
       fetch(`/api/v1/users/${userId}/activitylog`, {
         method: "POST",
         body: JSON.stringify({
-          activityType: "la_question",
+          activityType,
           articleId,
-          initialXp: userXP,
-          finalXp: userXP,
-          initialLevel: userLevel,
-          finalLevel: userLevel,
-        }),
-      });
-    } else if (buttonLabel === "Start Quiz") {
-      fetch(`/api/v1/users/${userId}/activitylog`, {
-        method: "POST",
-        body: JSON.stringify({
-          activityType: "mc_question",
-          articleId,
-          initialXp: userXP,
-          finalXp: userXP,
-          initialLevel: userLevel,
-          finalLevel: userLevel,
-        }),
-      });
-    } else if (buttonLabel === "Start Writing") {
-      fetch(`/api/v1/users/${userId}/activitylog`, {
-        method: "POST",
-        body: JSON.stringify({
-          activityType: "sa_question",
-          articleId,
-          initialXp: userXP,
-          finalXp: userXP,
-          initialLevel: userLevel,
-          finalLevel: userLevel,
         }),
       });
     }
