@@ -9,12 +9,6 @@ import { usePathname } from "next/navigation";
 
 type Props = {
   article: ArticleShowcase;
-  user: {
-    level: number;
-    name: string;
-    id: string;
-    xp: number;
-  };
 };
 
 async function getTranslate(
@@ -32,7 +26,7 @@ async function getTranslate(
   return res.data;
 }
 
-const ArticleShowcaseCard = ({ article, user }: Props) => {
+const ArticleShowcaseCard = ({ article }: Props) => {
   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
   const locale = useCurrentLocale();
   const pathName = usePathname();
