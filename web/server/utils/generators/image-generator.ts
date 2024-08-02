@@ -1,7 +1,7 @@
 import openai from "@/utils/openai";
 import uploadToBucket from "@/utils/uploadToBucket";
 import fs from "fs";
-import { IMAGE_URL } from "../constants";
+import { IMAGE_URL } from "../../constants";
 import axios from "axios";
 
 interface GenerateImageParams {
@@ -27,6 +27,6 @@ export async function generateImage(params: GenerateImageParams): Promise<void> 
 
         await uploadToBucket(localPath, `${IMAGE_URL}/${params.articleId}.png`);
     } catch (error) {
-        throw new Error(`failed to generate image: ${error}`);
+        throw `failed to generate image: ${error}`;
     }
 }

@@ -1,5 +1,5 @@
 import { generateText } from "ai";
-import { ArticleCefrLevel, ArticleType } from "../models/enum";
+import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 import { openai } from "@ai-sdk/openai";
 
 interface GenerateTopicParams {
@@ -27,6 +27,6 @@ export async function generateTopic(params: GenerateTopicParams): Promise<Genera
             topics: JSON.parse(response.text),
         };
     } catch (error) {
-        throw new Error(`failed to generate topics: ${error}`);
+        throw `failed to generate topic: ${error}`;
     }
 }

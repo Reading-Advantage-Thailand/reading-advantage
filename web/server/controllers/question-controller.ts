@@ -9,7 +9,7 @@ import {
 import db from "@/configs/firestore-config";
 import { NextResponse } from "next/server";
 import { getFeedbackWritter } from "./assistant-controller";
-import { generateLAQuestion } from "../generators/la-question-generator";
+import { generateLAQuestion } from "../utils/generators/la-question-generator";
 import { ExtendedNextRequest } from "./auth-controller";
 
 interface RequestContext {
@@ -613,7 +613,7 @@ export async function getFeedbackLAquestion(
 
   const randomExamples =
     getData.exampleRevisions[
-    Math.floor(Math.random() * getData.exampleRevisions.length)
+      Math.floor(Math.random() * getData.exampleRevisions.length)
     ];
 
   const result = { ...getData, exampleRevisions: randomExamples };

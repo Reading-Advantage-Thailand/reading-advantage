@@ -16,6 +16,12 @@ type Props = {
   buttonLabel: string;
   className?: string;
   disabled?: boolean;
+  userId: string;
+  articleId: string;
+};
+
+type ActivityType = {
+  [key: string]: string;
 };
 
 export default function QuestionHeader({
@@ -23,11 +29,30 @@ export default function QuestionHeader({
   heading,
   description,
   buttonLabel,
+  userId,
+  articleId,
   disabled = true,
 }: Props) {
   const [isButtonClicked, setIsButtonClicked] = React.useState<boolean>(false);
-  function onButtonClick() {
+  async function onButtonClick() {
     setIsButtonClicked(true);
+    const activityTypes: ActivityType = {
+      "Practice Writing": "la_question",
+      "Start Quiz": "mc_question",
+      "Start Writing": "sa_question",
+    };
+
+    const activityType = activityTypes[buttonLabel as keyof ActivityType];
+
+    if (activityType) {
+      fetch(`/api/v1/users/${userId}/activitylog`, {
+        method: "POST",
+        body: JSON.stringify({
+          activityType,
+          articleId,
+        }),
+      });
+    }
   }
   return isButtonClicked ? (
     <>{children}</>

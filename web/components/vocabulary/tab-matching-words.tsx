@@ -14,7 +14,7 @@ import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
 import { Word } from "./tab-flash-card";
-import { updateScore } from "@/lib/utils";
+import { UserXpEarned } from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -127,12 +127,26 @@ export default function MatchingWords({ userId }: Props) {
     const updateScoreCorrectMatches = async () => {
       if (correctMatches.length === 10) {
         try {
-          const result = await updateScore(5, userId);
-          if (result?.status === 201) {
+          // const result = await updateScore(5, userId);
+          const updateScrore = await fetch(
+            `/api/v1/users/${userId}/activitylog`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                articleId: "",
+                activityType: "vocabulary_matching",
+                activityStatus: "completed",
+                xpEarned: UserXpEarned.Vocabulary_Matching,
+              }),
+            }
+          );
+          if (updateScrore?.status === 200) {
             router.refresh();
             toast({
               title: t("toast.success"),
-              description: tUpdateScore("yourXp", { xp: 5 }),
+              description: tUpdateScore("yourXp", {
+                xp: UserXpEarned.Vocabulary_Matching,
+              }),
             });
           }
         } catch (error) {

@@ -1,5 +1,5 @@
 import db from "@/configs/firestore-config";
-import { ArticleCefrLevel, ArticleType } from "../models/enum";
+import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 
 export interface RandomSelectGenreParams {
     type: ArticleType;

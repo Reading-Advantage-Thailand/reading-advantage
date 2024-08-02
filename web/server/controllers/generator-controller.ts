@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendDiscordWebhook } from "../utils/send-discord-webhook";
-import { ArticleCefrLevel, ArticleType } from "../models/enum";
-import { randomSelectGenre } from "../generators/random-select-genre";
-import { generateTopic } from "../generators/topic-generator";
-import { generateArticle } from "../generators/article-generator";
-import { evaluateRating } from "../generators/evaluate-rating-generator";
-import { generateMCQuestion } from "../generators/mc-question-generator";
-import { generateSAQuestion } from "../generators/sa-question-generator";
-import { generateLAQuestion } from "../generators/la-question-generator";
+import { ArticleBaseCefrLevel, ArticleType } from "../models/enum";
+import { randomSelectGenre } from "../utils/generators/random-select-genre";
+import { generateTopic } from "../utils/generators/topic-generator";
+import { generateArticle } from "../utils/generators/article-generator";
+import { evaluateRating } from "../utils/generators/evaluate-rating-generator";
+import { generateMCQuestion } from "../utils/generators/mc-question-generator";
+import { generateSAQuestion } from "../utils/generators/sa-question-generator";
+import { generateLAQuestion } from "../utils/generators/la-question-generator";
 import { calculateLevel } from "@/lib/calculateLevel";
 import db from "@/configs/firestore-config";
-import { generateAudio } from "../generators/audio-generator";
-import { generateImage } from "../generators/image-generator";
+import { generateAudio } from "../utils/generators/audio-generator";
+import { generateImage } from "../utils/generators/image-generator";
 
 async function generateByGenre(
     type: ArticleType,
@@ -35,42 +35,42 @@ async function generateByGenre(
             randomGenre.genre,
             randomGenre.subgenre,
             topic,
-            ArticleCefrLevel.A1
+            ArticleBaseCefrLevel.A1
         ),
         processQueue(
             type,
             randomGenre.genre,
             randomGenre.subgenre,
             topic,
-            ArticleCefrLevel.A2
+            ArticleBaseCefrLevel.A2
         ),
         processQueue(
             type,
             randomGenre.genre,
             randomGenre.subgenre,
             topic,
-            ArticleCefrLevel.B1
+            ArticleBaseCefrLevel.B1
         ),
         processQueue(
             type,
             randomGenre.genre,
             randomGenre.subgenre,
             topic,
-            ArticleCefrLevel.B2
+            ArticleBaseCefrLevel.B2
         ),
         processQueue(
             type,
             randomGenre.genre,
             randomGenre.subgenre,
             topic,
-            ArticleCefrLevel.C1
+            ArticleBaseCefrLevel.C1
         ),
         processQueue(
             type,
             randomGenre.genre,
             randomGenre.subgenre,
             topic,
-            ArticleCefrLevel.C2
+            ArticleBaseCefrLevel.C2
         ),
     ]);
 
@@ -82,7 +82,7 @@ async function evaluateArticle(
     genre: string,
     subgenre: string,
     topic: string,
-    cefrLevel: ArticleCefrLevel,
+    cefrLevel: ArticleBaseCefrLevel,
     maxAttempts: number = 2
 ) {
     let attempts = 0;
@@ -103,11 +103,11 @@ async function evaluateArticle(
             type,
             genre,
             subgenre,
-            topic,
             cefrLevel,
             title: generatedArticle.title,
             summary: generatedArticle.summary,
             passage: generatedArticle.passage,
+            image_description: generatedArticle.imageDesc,
         });
         console.log(`Rating: ${evaluatedRating.rating}`);
 
@@ -120,7 +120,7 @@ async function evaluateArticle(
         console.log(`Regenerating article... Attempt (${attempts}/${maxAttempts})`);
     }
 
-    throw new Error("Failed to generate article: max attempts reached");
+    throw `failed to generate article after ${maxAttempts} attempts (low )`;
 }
 
 async function processQueue(
@@ -128,7 +128,7 @@ async function processQueue(
     genre: string,
     subgenre: string,
     topic: string,
-    cefrLevel: ArticleCefrLevel
+    cefrLevel: ArticleBaseCefrLevel
 ): Promise<void> {
     const { article: generatedArticle, rating } = await evaluateArticle(
         type,
@@ -168,7 +168,8 @@ async function processQueue(
         generatedArticle.passage
     );
 
-    const articleDoc = await db.collection("new-articles").add({
+    const articleRef = db.collection("new-articles").doc();
+    const articleDoc = await articleRef.set({
         average_rating: rating,
         cefr_level: calculatedCefrLevel,
         created_at: new Date().toISOString(),
@@ -187,31 +188,33 @@ async function processQueue(
         ...mcq.questions.map((question) =>
             db
                 .collection("new-articles")
-                .doc(articleDoc.id)
+                .doc(articleRef.id)
                 .collection("mc-questions")
                 .add(question)
         ),
         ...saq.questions.map((question) =>
             db
                 .collection("new-articles")
-                .doc(articleDoc.id)
+                .doc(articleRef.id)
                 .collection("sa-questions")
                 .add(question)
         ),
         db
             .collection("new-articles")
-            .doc(articleDoc.id)
+            .doc(articleRef.id)
             .collection("la-questions")
             .add(laq),
-        generateAudio({
-            passage: generatedArticle.passage,
-            articleId: articleDoc.id,
-        }),
-        generateImage({
-            imageDesc: generatedArticle.imageDesc,
-            articleId: articleDoc.id,
-        }),
     ]);
+
+    await generateAudio({
+        passage: generatedArticle.passage,
+        articleId: articleRef.id,
+    });
+
+    await generateImage({
+        imageDesc: generatedArticle.imageDesc,
+        articleId: articleRef.id,
+    });
 }
 
 // Generate article queue
@@ -242,7 +245,7 @@ export async function generateArticleQueue(
                         "amount per genre": amountPerGenre,
                         total: `${amount * 6 * 2}`,
                     },
-                    color: 0x0099ff,
+                    color: 0x00ff00,
                 },
             ],
             reqUrl,
@@ -258,8 +261,9 @@ export async function generateArticleQueue(
         const combinedQueue = [...fictionQueue, ...nonFictionQueue];
 
         const failedResults = combinedQueue.filter(
-            (result) => typeof result === "string"
+            (result: any) => result.status === "rejected"
         );
+        const failedReasons = failedResults.map((result: any) => result.reason);
         const failedCount = failedResults.length;
 
         const timeTakenMinutes = (Date.now() - timeTaken) / 1000 / 60;
@@ -272,9 +276,10 @@ export async function generateArticleQueue(
                         "amount per genre": amountPerGenre,
                         total: `${amount * 6 * 2}`,
                         "failed count": `${failedCount}`,
-                        "time taken": `${timeTakenMinutes.toFixed(2)} minutes`,
+                        "time taken": `${timeTakenMinutes.toFixed(2)} minutes\n`,
+                        "failed reasons": failedCount ? "\n" + failedReasons.join("\n") : "none",
                     },
-                    color: 0x0099ff,
+                    color: 0xffff00,
                 },
             ],
             reqUrl,

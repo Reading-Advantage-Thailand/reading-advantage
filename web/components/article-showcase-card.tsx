@@ -82,9 +82,9 @@ const ArticleShowcaseCard = ({ article }: Props) => {
         </Badge>
         <div className="mt-auto">
           <div className=" bg-black bg-opacity-40">
-          <p className="text-xl drop-shadow-lg font-bold text-white">
-            {article.title}
-          </p>
+            <p className="text-xl drop-shadow-lg font-bold text-white">
+              {article.title}
+            </p>
           </div>
           <div className=" bg-black bg-opacity-40">
             <p className="text-sm drop-shadow-lg line-clamp-4 text-white">

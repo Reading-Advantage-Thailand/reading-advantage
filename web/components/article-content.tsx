@@ -228,6 +228,7 @@ export default function ArticleContent({
           saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
           ...card,
         });
+
         console.log(
           "audioUrl",
           sentenceList[selectedSentence as number].audioUrl

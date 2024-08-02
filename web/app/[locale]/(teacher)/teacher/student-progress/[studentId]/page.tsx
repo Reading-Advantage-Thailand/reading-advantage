@@ -23,24 +23,24 @@ import { redirect } from "next/navigation";
 //         headers: headers(),
 //         }
 //     );
-    
+
 //     return res.json();
 //     }
 
 async function getUserArticleRecords(userId: string) {
-  return fetchData(`/api/v1/users/${userId}/records`);
+  return fetchData(`/api/v1/users/${userId}/activitylog`);
 }
 
-async function getGeneralDescription(userLevel: number) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/master-data/level-mean/${userLevel}`,
-    {
-      method: "GET",
-      headers: headers(),
-    }
-  );
-  return res.json();
-}
+// async function getGeneralDescription(userLevel: number) {
+//   const res = await fetch(
+//     `${process.env.NEXT_PUBLIC_BASE_URL}/api/master-data/level-mean/${userLevel}`,
+//     {
+//       method: "GET",
+//       headers: headers(),
+//     }
+//   );
+//   return res.json();
+// }
 
 async function getAllStudentData() {
   try {
@@ -51,68 +51,49 @@ async function getAllStudentData() {
         headers: headers(),
       }
     );
-    
+
     return res.json();
   } catch (error) {
     console.error("Failed to parse JSON", error);
   }
 }
 
-export default async function ProgressPage({params}: {params: {studentId: string}}) {
+export default async function ProgressPage({
+  params,
+}: {
+  params: { studentId: string };
+}) {
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
   const resStudentProgress = await getUserArticleRecords(params.studentId);
-  const resGeneralDescription = await getGeneralDescription(user.level);
-  const t = await getScopedI18n('pages.teacher.studentProgressPage');
+  const t = await getScopedI18n("pages.teacher.studentProgressPage");
 
-  const allStudent = await getAllStudentData(); 
-  
-  let nameOfStudent = '';
+  const allStudent = await getAllStudentData();
+
+  let nameOfStudent = "";
   let studentLevel: number = 0;
 
-  allStudent.students.forEach((student: { id: string; name: string; level: number; }) => {
-    if (student.id === params.studentId) {
-      nameOfStudent = student.name;
-      studentLevel = student.level;
+  allStudent.students.forEach(
+    (student: { id: string; name: string; level: number }) => {
+      if (student.id === params.studentId) {
+        nameOfStudent = student.name;
+        studentLevel = student.level;
+      }
     }
-  }
   );
 
   return (
     <>
-{resStudentProgress.results ? (
-  <div>
-<Header heading={t('progressOf', {nameOfStudent: nameOfStudent})} />
-  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4 mb-10">
-    <Card className="md:col-span-4">
-      <CardHeader>
-        <CardTitle>{t('activity')}</CardTitle>
-      </CardHeader>
-      <CardContent className="pl-2">
-        <UserActivityChart data={resStudentProgress.results} />
-      </CardContent>
-    </Card>
-    <Card className="md:col-span-3">
-      <CardHeader>
-        <CardTitle>{t('level')}</CardTitle>
-        <CardDescription>
-          {t('levelDescription', {level: studentLevel})}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <UserLevelChart
-          data={resStudentProgress.results}
-          resGeneralDescription={resGeneralDescription}
-        />
-      </CardContent>
-    </Card>
-  </div>
-  </div>
-) : (
-  <p className="text-center">{t('noUserProgress')}</p>
-)}
+      {resStudentProgress.results ? (
+        <div>
+          <Header heading={t("progressOf", { nameOfStudent: nameOfStudent })} />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4 mb-10">
+            <UserLevelChart data={resStudentProgress.results} />
+          </div>
+        </div>
+      ) : (
+        <p className="text-center">{t("noUserProgress")}</p>
+      )}
     </>
   );
 }
-
-

@@ -2,7 +2,7 @@
 import * as React from "react";
 import { toast } from "./ui/use-toast";
 import axios from "axios";
-import { formatDate, formatTimestamp, updateScore } from "@/lib/utils";
+import { formatDate, formatTimestamp } from "@/lib/utils";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -43,6 +43,7 @@ import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 
 import { date_scheduler } from "ts-fsrs";
 import { filter } from "lodash";
+import { UserXpEarned } from "./models/user-activity-log-model";
 
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
@@ -118,11 +119,28 @@ export default function ManageTab({ userId }: Props) {
                 `/api/ts-fsrs-test/${filterDataUpdateScore[i]?.id}/flash-card`,
                 { ...filterDataUpdateScore[i], update_score: true }
               );
-              const updateScrore = await updateScore(15, userId);
+
+              const updateScrore = await fetch(
+                `/api/v1/users/${userId}/activitylog`,
+                {
+                  method: "POST",
+                  body: JSON.stringify({
+                    articleId: filterDataUpdateScore[i]?.articleId,
+                    activityType: "sentence_flashcards",
+                    activityStatus: "completed",
+                    xpEarned: UserXpEarned.Sentence_Flashcards,
+                    details: {
+                      ...filterDataUpdateScore[i],
+                    },
+                  }),
+                }
+              );
               if (updateScrore?.status === 201) {
                 toast({
                   title: t("toast.success"),
-                  description: tUpdateScore("yourXp", { xp: 15 }),
+                  description: tUpdateScore("yourXp", {
+                    xp: UserXpEarned.Sentence_Flashcards,
+                  }),
                 });
                 router.refresh();
               }

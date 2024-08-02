@@ -12,16 +12,15 @@ import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
 import { useRouter } from "next/navigation";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import { Timestamp } from "firebase/firestore";
 
 import { Button } from "../ui/button";
-import { updateScore } from "@/lib/utils";
 import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import FlashCardVocabularyPracticeButton from "./flash-card-vocabulary-practice-button";
 import FlipCardPracticeButton from "../flip-card-button";
-import AudioButton from "../audio-button";
+import { Timestamp } from "firebase/firestore";
+import { UserXpEarned } from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -78,7 +77,7 @@ export default function FlashCard({
   const [words, setWords] = useState<Word[]>([]);
 
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
-   const getUserSentenceSaved = async () => {
+  const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/word-list/${userId}`);
       const startOfDay = date_scheduler(new Date(), 0, true);
@@ -98,8 +97,8 @@ export default function FlashCard({
       }
 
       // updateScore
-      
-       let filterDataUpdateScore = await filter(res.data.sentences, (param) => {
+
+      let filterDataUpdateScore = await filter(res.data.sentences, (param) => {
         const dueDate = new Date(param.due);
         const state = param.state || 0; // Assign a default value of 0 if param.state is undefined or falsy
         return (state === 2 || state === 3) && dueDate < startOfDay;
@@ -117,11 +116,28 @@ export default function FlashCard({
                   page: "vocabulary",
                 }
               );
-              const updateScrore = await updateScore(15, userId);
-              if (updateScrore?.status === 201) {
+
+              const updateScrore = await fetch(
+                `/api/v1/users/${userId}/activitylog`,
+                {
+                  method: "POST",
+                  body: JSON.stringify({
+                    articleId: "",
+                    activityType: "vocabulary_flashcards",
+                    activityStatus: "completed",
+                    xpEarned: UserXpEarned.Vocabulary_Flashcards,
+                    details: {
+                      ...filterDataUpdateScore[i],
+                    },
+                  }),
+                }
+              );
+              if (updateScrore?.status === 200) {
                 toast({
                   title: t("toast.success"),
-                  description: tUpdateScore("yourXp", { xp: 15 }),
+                  description: tUpdateScore("yourXp", {
+                    xp: UserXpEarned.Vocabulary_Flashcards,
+                  }),
                 });
                 router.refresh();
               }
@@ -131,14 +147,13 @@ export default function FlashCard({
           }
         }
       }
-      
     } catch (error) {
       toast({
         title: "Something went wrong.",
         description: "Your word was not saved. Please try again.",
         variant: "destructive",
       });
-    }   
+    }
   };
 
   const cards = words.map((word, index) => {
@@ -199,7 +214,7 @@ export default function FlashCard({
           heading={tWordList("tab.flashcard")}
           text={tWordList("flashcard.description")}
         />
-      </div>      
+      </div>
       <div className="flex flex-col items-center justify-center space-y-2 mt-4">
         {words.length != 0 && (
           <>

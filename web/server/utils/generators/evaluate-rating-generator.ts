@@ -1,19 +1,20 @@
 import path from "path";
-import { readJsonFile } from "../utils/read-json";
+import { readJsonFile } from "../read-json";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { generateObject } from "ai";
-import { ArticleCefrLevel, ArticleType } from "../models/enum";
+import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
+import { ArticleCefrLevel } from "../../models/article";
 
 export interface EvaluateRatingParams {
     type: ArticleType;
     genre: string;
     subgenre: string;
-    topic: string;
-    cefrLevel: ArticleCefrLevel;
+    cefrLevel: ArticleBaseCefrLevel | ArticleCefrLevel
     title: string,
     summary: string,
     passage: string,
+    image_description: string,
 }
 
 export interface EvaluateRatingResponse {
@@ -44,6 +45,7 @@ export async function evaluateRating(params: EvaluateRatingParams): Promise<Eval
                 type: params.type,
                 subgenre: params.subgenre,
                 passage: params.passage,
+                image: params.image_description,
             }),
         });
 

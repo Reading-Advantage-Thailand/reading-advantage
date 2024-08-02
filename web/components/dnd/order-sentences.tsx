@@ -16,11 +16,11 @@ import { Header } from "../header";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { updateScore } from "@/lib/utils";
 import { Sentence } from "./types";
 import QuoteList from "./quote-list";
 import { Icons } from "../icons";
 import { splitTextIntoSentences } from "@/lib/utils";
+import { UserXpEarned } from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -205,13 +205,26 @@ export default function OrderSentences({ userId }: Props) {
 
     if (isEqual) {
       try {
-        const updateScrore = await updateScore(15, userId);
-        if (updateScrore?.status === 201) {
+        const updateScrore = await fetch(
+          `/api/v1/users/${userId}/activitylog`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              articleId: "",
+              activityType: "sentence_ordering",
+              activityStatus: "completed",
+              xpEarned: UserXpEarned.Sentence_Ordering,
+            }),
+          }
+        );
+        if (updateScrore?.status === 200) {
           toast({
-          title: t("toast.success"),
-          imgSrc: true,
-          description: tUpdateScore("yourXp", { xp: 5 }),
-        });
+            title: t("toast.success"),
+            imgSrc: true,
+            description: tUpdateScore("yourXp", {
+              xp: UserXpEarned.Sentence_Ordering,
+            }),
+          });
           setCurrentArticleIndex(currentArticleIndex + 1);
           router.refresh();
           setIsPlaying(false);
@@ -332,7 +345,7 @@ export default function OrderSentences({ userId }: Props) {
               >
                 {t("orderSentencesPractice.saveOrder")}
               </Button>
-            ) : (             
+            ) : (
               <div className="flex flex-wrap justify-center mt-10 ">
                 <Image
                   src={"/winners.svg"}

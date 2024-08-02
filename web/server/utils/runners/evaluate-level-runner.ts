@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { articleService } from "../services/firestore-server-services";
-import { evaluateRating } from "../generators/evaluate-rating-generator";
 import fs from "fs";
+import { articleService } from "@/server/services/firestore-server-services";
+import { evaluateRating } from "../generators/evaluate-rating-generator";
 
 export async function evaluateLevelRunner(
     req: NextRequest,
     params: unknown,
     next: () => void
 ) {
-    const articles = await articleService.articles.getAllDocs({ limit: 10 });
+    const articles = await articleService.articles.getAllDocs();
     const total = articles.length;
     let count = 0;
     const evaluated = await Promise.all(
@@ -17,11 +17,11 @@ export async function evaluateLevelRunner(
                 type: article.type,
                 genre: article.genre,
                 subgenre: article.subgenre,
-                topic: article.topic,
-                cefrLevel: article.cefrLevel,
+                cefrLevel: article.cefr_level,
                 title: article.title,
                 summary: article.summary,
                 passage: article.passage,
+                image_description: article.image_description,
             });
             // update the article with the new rating
             await articleService.articles.updateDoc(article.id, { average_rating: rating.rating });

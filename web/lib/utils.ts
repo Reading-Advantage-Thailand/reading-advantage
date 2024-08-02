@@ -202,5 +202,5 @@ export async function updateScore(
   }
 }
 
-// updateScore(15, "USDaWeLC3vdvDA8lUPXncygoDOp2");
+// updateScore(5000, "qWXtOI9Hr6QtILuhsrOc06zXZUg1");
 

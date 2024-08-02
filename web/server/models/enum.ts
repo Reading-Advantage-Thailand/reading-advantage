@@ -23,7 +23,7 @@ export enum ArticleType {
     NONFICTION = "nonfiction",
 }
 
-export enum ArticleCefrLevel {
+export enum ArticleBaseCefrLevel {
     A1 = "A1",
     A2 = "A2",
     B1 = "B1",

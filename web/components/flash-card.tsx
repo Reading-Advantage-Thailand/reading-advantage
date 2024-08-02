@@ -11,17 +11,15 @@ import { v4 as uuidv4 } from "uuid";
 import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
 import { useRouter } from "next/navigation";
-
 import { ReloadIcon } from "@radix-ui/react-icons";
 import AudioButton from "./audio-button";
 import FlashCardPracticeButton from "./flash-card-practice-button";
 import FlipCardPracticeButton from "./flip-card-button";
-
 import { Button } from "./ui/button";
-import { updateScore } from "@/lib/utils";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
+import { UserXpEarned } from "./models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -89,13 +87,13 @@ export default function FlashCard({
         setShowButton(false);
       }
 
-      // updateScore
-      let filterDataUpdateScore = await filter(res.data.sentences, (param) => {
+      //updateScore
+      let filterDataUpdateScore = filter(res.data.sentences, (param) => {
         const dueDate = new Date(param.due);
         return (param.state === 2 || param.state === 3) && dueDate < startOfDay;
       });
 
-      if (filterDataUpdateScore?.length > 0) {
+      if (filterDataUpdateScore.length > 0) {
         for (let i = 0; i < filterDataUpdateScore.length; i++) {
           try {
             if (!filterDataUpdateScore[i]?.update_score) {
@@ -103,11 +101,29 @@ export default function FlashCard({
                 `/api/ts-fsrs-test/${filterDataUpdateScore[i]?.id}/flash-card`,
                 { ...filterDataUpdateScore[i], update_score: true }
               );
-              const updateScrore = await updateScore(15, userId);
-              if (updateScrore?.status === 201) {
+
+              const updateScrore = await fetch(
+                `/api/v1/users/${userId}/activitylog`,
+                {
+                  method: "POST",
+                  body: JSON.stringify({
+                    articleId: filterDataUpdateScore[i]?.articleId,
+                    activityType: "sentence_flashcards",
+                    activityStatus: "completed",
+                    xpEarned: UserXpEarned.Sentence_Flashcards,
+                    details: {
+                      ...filterDataUpdateScore[i],
+                    },
+                  }),
+                }
+              );
+
+              if (updateScrore?.status === 200) {
                 toast({
                   title: t("toast.success"),
-                  description: tUpdateScore("yourXp", { xp: 15 }),
+                  description: tUpdateScore("yourXp", {
+                    xp: UserXpEarned.Sentence_Flashcards,
+                  }),
                 });
                 router.refresh();
               }
@@ -124,7 +140,7 @@ export default function FlashCard({
 
   useEffect(() => {
     getUserSentenceSaved();
-  }, []);
+  }, [currentCardIndex]);
 
   const cards = sentences.map((sentence, index) => {
     return {

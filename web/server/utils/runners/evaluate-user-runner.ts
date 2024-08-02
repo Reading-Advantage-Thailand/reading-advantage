@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { articleService, userService } from "../services/firestore-server-services";
-import { evaluateRating } from "../generators/evaluate-rating-generator";
-import fs from "fs";
-import { User } from "../models/user";
-import { Role } from "../models/enum";
+import { userService } from "@/server/services/firestore-server-services";
+import { User } from "@/server/models/user";
+import { Role } from "@/server/models/enum";
+
 
 export async function evaluateUserRunner(
     req: NextRequest,
