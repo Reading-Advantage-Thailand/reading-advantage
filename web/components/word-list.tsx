@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useState, useRef, useEffect } from "react";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { Book } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { createEmptyCard, Card } from "ts-fsrs";
 import { filter, includes } from "lodash";
+import Image from "next/image";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -176,38 +177,53 @@ export default function WordList({ article, articleId, userId }: Props) {
                                       <FormControl>
                                         <div
                                           key={index}
-                                          className="p-4 border-b-2"
+                                          className="p-4 border-b-2 flex flex-row"
                                         >
-                                          <Checkbox
-                                            checked={field?.value?.includes(
-                                              word?.vocabulary
-                                            )}
-                                            onCheckedChange={(checked) => {
-                                              if (Array.isArray(field.value)) {
-                                                return checked
-                                                  ? field.onChange([
-                                                      ...field.value,
-                                                      word.vocabulary,
-                                                    ])
-                                                  : field.onChange(
-                                                      field.value.filter(
-                                                        (value) =>
-                                                          value !==
-                                                          word.vocabulary
-                                                      )
-                                                    );
-                                              } else {
-                                                return field.onChange(
-                                                  checked
-                                                    ? [word.vocabulary]
-                                                    : []
-                                                );
-                                              }
-                                            }}
-                                          />
+                                          <div>
+                                            <Checkbox
+                                              checked={field?.value?.includes(
+                                                word?.vocabulary
+                                              )}
+                                              onCheckedChange={(checked) => {
+                                                if (
+                                                  Array.isArray(field.value)
+                                                ) {
+                                                  return checked
+                                                    ? field.onChange([
+                                                        ...field.value,
+                                                        word.vocabulary,
+                                                      ])
+                                                    : field.onChange(
+                                                        field.value.filter(
+                                                          (value) =>
+                                                            value !==
+                                                            word.vocabulary
+                                                        )
+                                                      );
+                                                } else {
+                                                  return field.onChange(
+                                                    checked
+                                                      ? [word.vocabulary]
+                                                      : []
+                                                  );
+                                                }
+                                              }}
+                                            />
+                                          </div>
+
                                           <span className="font-bold text-cyan-500 ml-2">
                                             {word.vocabulary}:{" "}
                                           </span>
+                                          <div className="mr-5">
+                                            <Image
+                                              src={"/sound-play-sound.svg"}
+                                              alt="play sound"
+                                              width={20}
+                                              height={20}
+                                              className={"mx-3 cursor-pointer"}
+                                            />
+                                          </div>
+
                                           <span>
                                             {word.definition[currentLocale]}
                                           </span>

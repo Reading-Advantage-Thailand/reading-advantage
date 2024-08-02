@@ -71,7 +71,6 @@ export default function FlashCard({
   const getUserSentenceSaved = async () => {
     try {
       const res = await axios.get(`/api/users/${userId}/sentences`);
-      console.log(res.data.sentences);
       const startOfDay = date_scheduler(new Date(), 0, true);
       const filteredData = await res.data.sentences
         .filter((record: Sentence) => {
@@ -191,6 +190,7 @@ export default function FlashCard({
     }
   };
 
+  console.log("sentences", sentences);
   return (
     <>
       <Header heading={t("flashcard")} text={t("flashcardDescription")} />

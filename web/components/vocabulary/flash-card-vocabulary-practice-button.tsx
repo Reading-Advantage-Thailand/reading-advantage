@@ -1,25 +1,11 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { fsrs, generatorParameters, Rating, FSRS, State } from "ts-fsrs";
+import axios from "axios";
 import { buttonVariants } from "../ui/button";
 import { useScopedI18n } from "@/locales/client";
 import { Word } from "./tab-flash-card";
-import {
-  createEmptyCard,
-  formatDate,
-  fsrs,
-  generatorParameters,
-  Rating,
-  Grades,
-  Card,
-  FSRSParameters,
-  FSRS,
-  RecordLog,
-  State,
-  ReviewLog,
-} from "ts-fsrs";
-import { ColumnDef } from "@tanstack/react-table";
-import axios from "axios";
 
 type Props = {
   index: number;
@@ -77,6 +63,8 @@ export default function FlashCardVocabularyPracticeButton({
       setShowButton(false);
     }
   };
+
+  console.log("words", words);
 
   return (
     <>
