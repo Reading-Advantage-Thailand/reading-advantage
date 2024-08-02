@@ -4,14 +4,7 @@ import { useState } from "react";
 import { buttonVariants } from "./ui/button";
 import { useScopedI18n } from "@/locales/client";
 import { Sentence } from "@/components/flash-card";
-import {
-  fsrs,
-  generatorParameters,
-  Rating,
-  Card,
-  FSRS,
-  State,
-} from "ts-fsrs";
+import { fsrs, generatorParameters, Rating, Card, FSRS, State } from "ts-fsrs";
 import { ColumnDef } from "@tanstack/react-table";
 import axios from "axios";
 
@@ -19,8 +12,8 @@ type Props = {
   index: number;
   nextCard: Function;
   sentences: Sentence[];
-  showButton: boolean
-  setShowButton: Function
+  showButton: boolean;
+  setShowButton: Function;
 };
 
 type Logs = {

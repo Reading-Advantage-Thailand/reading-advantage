@@ -68,6 +68,7 @@ export default async function ArticleCard({
         userId={userId}
         averageRating={article.average_rating}
         articleId={articleId}
+        article={article}
       />
     </div>
   );

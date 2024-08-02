@@ -120,6 +120,7 @@ export default function LAQuestionCard({
     case QuestionState.INCOMPLETE:
       return (
         <QuestionCardIncomplete
+          userId={userId}
           resp={data}
           userLevel={userLevel}
           articleId={articleId}
@@ -185,12 +186,14 @@ function QuestionCardLoading() {
 }
 
 function QuestionCardIncomplete({
+  userId,
   resp,
   userLevel,
   articleId,
   handleCompleted,
   handleCancel,
 }: {
+  userId: string;
   resp: QuestionResponse;
   userLevel: number;
   articleId: string;
@@ -203,10 +206,13 @@ function QuestionCardIncomplete({
         heading="Long Answer Question"
         description="Write an essay."
         buttonLabel="Practice Writing"
+        userId={userId}
+        articleId={articleId}
         disabled={false}
       >
         <QuizContextProvider>
           <LAQuestion
+            userId={userId}
             resp={resp}
             userLevel={userLevel}
             articleId={articleId}
@@ -220,12 +226,14 @@ function QuestionCardIncomplete({
 }
 
 function LAQuestion({
+  userId,
   resp,
   userLevel,
   articleId,
   handleCompleted,
   handleCancel,
 }: {
+  userId: string;
   resp: QuestionResponse;
   userLevel: number;
   articleId: string;
@@ -238,7 +246,7 @@ function LAQuestion({
   const [isCompleted, setIsCompleted] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
-  const [rating, setRating] = React.useState<number>(3);
+  const [rating, setRating] = React.useState<number>(0);
   const [data, setData] = useState<AnswerResponse>({
     state: QuestionState.LOADING,
     answer: "",
@@ -301,6 +309,7 @@ function LAQuestion({
       setData({ ...feedback, answer: dataForm.answer });
 
       if (dataForm.method === "submit") {
+        setPaused(true);
         const submitAnswer = await fetch(
           `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}`,
           {
@@ -350,6 +359,17 @@ function LAQuestion({
       .finally(() => {
         setIsLoading(false);
       });
+    await fetch(`/api/v1/users/${userId}/activitylog`, {
+      method: "POST",
+      body: JSON.stringify({
+        articleId: articleId || "STSTEM",
+        activityType: "la_question",
+        activityStatus: "completed",
+        timeTaken: timer,
+        xpEarned: rating,
+        details: data,
+      }),
+    });
   }
 
   const handleCategoryChange = (category: string) => {
@@ -408,7 +428,6 @@ function LAQuestion({
             {...register("method")}
             onClick={() => {
               setOpenModal(false);
-              setPaused(true);
               setValue("method", "submit");
             }}
           >

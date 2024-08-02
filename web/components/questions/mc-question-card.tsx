@@ -20,9 +20,10 @@ import {
   QuestionState,
 } from "../models/questions-model";
 import { Icons } from "../icons";
-import {useQuestionStore} from '@/store/question-store'
+import { useQuestionStore } from "@/store/question-store";
 import { set } from "lodash";
 import { toast } from "../ui/use-toast";
+import { UserXpEarned } from "../models/user-activity-log-model";
 
 type Props = {
   userId: string;
@@ -51,7 +52,7 @@ export default function MCQuestionCard({ userId, articleId }: Props) {
       .then((data) => {
         setData(data);
         setState(data.state);
-        useQuestionStore.setState({mcQuestion: data});
+        useQuestionStore.setState({ mcQuestion: data });
       });
   }, [state, articleId]);
 
@@ -82,6 +83,7 @@ export default function MCQuestionCard({ userId, articleId }: Props) {
     case QuestionState.INCOMPLETE:
       return (
         <QuestionCardIncomplete
+          userId={userId}
           resp={data}
           articleId={articleId}
           handleCompleted={handleCompleted}
@@ -144,10 +146,12 @@ function QuestionCardLoading() {
 }
 
 function QuestionCardIncomplete({
+  userId,
   resp,
   articleId,
   handleCompleted,
 }: {
+  userId: string;
   resp: QuestionResponse;
   articleId: string;
   handleCompleted: () => void;
@@ -158,6 +162,8 @@ function QuestionCardIncomplete({
         heading="Multiple Choice Questions"
         description="Take the quiz to check your understanding"
         buttonLabel="Start Quiz"
+        userId={userId}
+        articleId={articleId}
         disabled={false}
       >
         <QuizContextProvider>
@@ -165,6 +171,7 @@ function QuestionCardIncomplete({
             articleId={articleId}
             resp={resp}
             handleCompleted={handleCompleted}
+            userId={userId}
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -176,10 +183,12 @@ function MCQeustion({
   articleId,
   resp,
   handleCompleted,
+  userId,
 }: {
   articleId: string;
   resp: QuestionResponse;
   handleCompleted: () => void;
+  userId: string;
 }) {
   const [progress, setProgress] = useState(resp.progress);
   const [isLoadingAnswer, setLoadingAnswer] = useState(false);
@@ -189,7 +198,7 @@ function MCQeustion({
   const { timer, setPaused } = useContext(QuizContext);
   const t = useScopedI18n("components.mcq");
 
-  const onSubmitted = (questionId: string, option: string, i: number) => {
+  const onSubmitted = async (questionId: string, option: string, i: number) => {
     setPaused(true);
     setLoadingAnswer(true);
     fetch(`/api/v1/articles/${articleId}/questions/mcq/${questionId}`, {
@@ -215,19 +224,32 @@ function MCQeustion({
     let countTest = 0;
     progress.forEach((status) => {
       if (status == AnswerStatus.CORRECT) {
-        count += 2;
+        count += UserXpEarned.MC_Question;
+        countTest++;
+      } else if (status == AnswerStatus.INCORRECT) {
         countTest++;
       }
-      else if(status == AnswerStatus.INCORRECT){
-        countTest++;
-      } 
-      if(countTest == 5){
+      if (countTest == 5) {
+        fetch(`/api/v1/users/${userId}/activitylog`, {
+          method: "POST",
+          body: JSON.stringify({
+            articleId: articleId,
+            activityType: "mc_question",
+            activityStatus: "completed",
+            timeTaken: timer,
+            xpEarned: count,
+            details: {
+              correctAnswer,
+              progress,
+            },
+          }),
+        });
         toast({
-          title: 'Success',
+          title: "Success",
           imgSrc: true,
           description: `Congratulations, you earned a total ${count} XP.`,
         });
-      }    
+      }
     });
   }, [progress, QuestionState]);
 
@@ -309,8 +331,7 @@ function MCQeustion({
           )}
           {5 - resp.results.length + 1 + index < resp.total
             ? "Next Question"
-            : "Submit Quiz"        
-          }
+            : "Submit Quiz"}
         </Button>
       }
     </CardContent>
