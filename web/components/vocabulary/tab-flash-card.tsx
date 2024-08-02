@@ -12,7 +12,6 @@ import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
 import { useRouter } from "next/navigation";
 import { ReloadIcon } from "@radix-ui/react-icons";
-
 import { Button } from "../ui/button";
 import { Header } from "../header";
 import { toast } from "../ui/use-toast";
@@ -237,19 +236,6 @@ export default function FlashCard({
               if (index === currentCardIndex) {
                 return (
                   <div className="flex space-x-3" key={uuidv4()}>
-                    <AudioButton
-                      key=""//{sentence.id}
-                      // audioUrl={
-                      //   sentence.audioUrl
-                      //     ? sentence.audioUrl
-                      //     : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${sentence.articleId}.mp3`
-                      // }
-                      audioUrl=""
-                      //startTimestamp={sentence.timepoint}
-                      //endTimestamp={sentence.endTimepoint}
-                      startTimestamp={0}
-                      endTimestamp={0}
-                    />
                     <FlipCardPracticeButton
                       currentCard={() => currentCardFlipRef.current()}
                     />
