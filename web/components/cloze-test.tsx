@@ -16,7 +16,6 @@ import { Header } from "./header";
 import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
 import { Skeleton } from "./ui/skeleton";
-import { updateScore } from "@/lib/utils";
 import { Icons } from "./icons";
 import {
   Select,
@@ -27,6 +26,7 @@ import {
 } from "./ui/select";
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
+import { UserXpEarned } from "./models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -335,13 +335,26 @@ export default function ClozeTest({ userId }: Props) {
       async (item: ResultTextArray) => {
         if (item.correctWords) {
           try {
-            const result = await updateScore(2, userId);
-            if (result?.status === 201) {
+            const updateScrore = await fetch(
+              `/api/v1/users/${userId}/activitylog`,
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  articleId: "",
+                  activityType: "sentence_cloze_test",
+                  activityStatus: "completed",
+                  xpEarned: UserXpEarned.Sentence_Cloze_Test,
+                }),
+              }
+            );
+            if (updateScrore?.status === 200) {
               router.refresh();
               toast({
                 title: t("toast.success"),
                 imgSrc: true,
-                description: tUpdateScore("yourXp", { xp: 2 }),
+                description: tUpdateScore("yourXp", {
+                  xp: UserXpEarned.Sentence_Cloze_Test,
+                }),
               });
             }
           } catch (error) {

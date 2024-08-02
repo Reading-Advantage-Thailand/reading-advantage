@@ -15,7 +15,7 @@ import { toast } from "./ui/use-toast";
 import { Skeleton } from "./ui/skeleton";
 import { Sentence } from "./dnd/types";
 import AudioButton from "./audio-button";
-import { updateScore } from '@/lib/utils';
+import { UserXpEarned } from "./models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -69,13 +69,26 @@ export default function Matching({ userId }: Props) {
     const updateScoreCorrectMatches = async () => {
       if (correctMatches.length === 10) {
         try {
-          const result = await updateScore(5, userId);
-          if (result?.status === 201) {
+          const updateScrore = await fetch(
+            `/api/v1/users/${userId}/activitylog`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                articleId: "",
+                activityType: "sentence_matching",
+                activityStatus: "completed",
+                xpEarned: UserXpEarned.Sentence_Matching,
+              }),
+            }
+          );
+          if (updateScrore?.status === 200) {
             router.refresh();
             toast({
               title: t("toast.success"),
               imgSrc: true,
-              description: tUpdateScore("yourXp", { xp: 5 }),
+              description: tUpdateScore("yourXp", {
+                xp: UserXpEarned.Sentence_Matching,
+              }),
             });
           }
         } catch (error) {
@@ -87,8 +100,7 @@ export default function Matching({ userId }: Props) {
         }
       }
     };
-    updateScoreCorrectMatches()
-
+    updateScoreCorrectMatches();
   }, [correctMatches]);
 
   const getUserSentenceSaved = async () => {
@@ -140,8 +152,6 @@ export default function Matching({ userId }: Props) {
       setCorrectMatches([...correctMatches, selectedCard.text, word.text]);
       setSelectedCard(null);
       setAnimateShake(""); // Clear any previous shakes
-      
-      
     } else {
       setAnimateShake("animate__animated animate__wobble"); // Trigger shake
       setTimeout(() => setAnimateShake(""), 2000); // Clear shake effect after 1 second

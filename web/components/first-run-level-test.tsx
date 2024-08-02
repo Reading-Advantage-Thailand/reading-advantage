@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Confetti from "react-confetti";
 import { useScopedI18n } from "../locales/client";
-import { levelCalculation, updateScore } from "../lib/utils";
+import { levelCalculation } from "../lib/utils";
 
 type Props = {
   userId: string;
@@ -147,7 +147,7 @@ export default function FirstRunLevelTest({
             newIsQuestionAnswered[questionIndexArray[i]] = true;
             setIsQuestionAnswered(newIsQuestionAnswered);
           }
-        } 
+        }
       }
       setXp(
         (prevScore: number) =>
@@ -215,12 +215,28 @@ export default function FirstRunLevelTest({
               size="lg"
               onClick={async () => {
                 try {
-                  const updateResult = await updateScore(xp, userId, update);
-                  if (updateResult.status == 201) {
+                  const updateResult = await fetch(
+                    `/api/v1/users/${userId}/activitylog`,
+                    {
+                      method: "POST",
+                      body: JSON.stringify({
+                        activityType: "level_test",
+                        activityStatus: "completed",
+                        xpEarned: xp,
+                        details: {
+                          questionsAnswered: isQuestionAnswered,
+                          correctAnswers: countOfRightAnswers,
+                          cefr_level: levelCalculation(xp).cefrLevel,
+                        },
+                      }),
+                    }
+                  );
+                  if (updateResult.status == 200) {
                     toast({
                       title: t("toast.successUpdate"),
                       description: t("toast.successUpdateDescription"),
                     });
+
                     router.refresh();
                   } else {
                     console.log("Update Failed");

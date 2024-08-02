@@ -56,7 +56,7 @@ export default async function ArticleQuizPage({
                 userId={user.id}
               />
             )}
-            
+
             {user.role.includes("SYSTEM") && (
               <div className="flex gap-4">
                 <ArticleActions
@@ -76,8 +76,8 @@ export default async function ArticleQuizPage({
           <SAQuestionCard userId={user.id} articleId={params.articleId} />
           <LAQuestionCard
             userId={user.id}
-            userLevel={user.level}
             articleId={params.articleId}
+            userLevel={user.level}
           />
         </div>
       </div>

@@ -94,6 +94,7 @@ export default function SAQuestionCard({ userId, articleId }: Props) {
     case QuestionState.INCOMPLETE:
       return (
         <QuestionCardIncomplete
+          userId={userId}
           resp={data}
           articleId={articleId}
           handleCompleted={handleCompleted}
@@ -163,10 +164,12 @@ function QuestionCardLoading() {
 }
 
 function QuestionCardIncomplete({
+  userId,
   resp,
   articleId,
   handleCompleted,
 }: {
+  userId: string;
   resp: QuestionResponse;
   articleId: string;
   handleCompleted: () => void;
@@ -177,6 +180,8 @@ function QuestionCardIncomplete({
         heading="Short Answer Question"
         description="Write a few sentences."
         buttonLabel="Start Writing"
+        userId={userId}
+        articleId={articleId}
         disabled={false}
       >
         <QuizContextProvider>
@@ -184,6 +189,7 @@ function QuestionCardIncomplete({
             resp={resp}
             articleId={articleId}
             handleCompleted={handleCompleted}
+            userId={userId}
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -194,10 +200,12 @@ function QuestionCardIncomplete({
 function SAQuestion({
   resp,
   articleId,
+  userId,
   handleCompleted,
 }: {
   resp: QuestionResponse;
   articleId: string;
+  userId: string;
   handleCompleted: () => void;
 }) {
   const shortAnswerSchema = z.object({
@@ -214,7 +222,7 @@ function SAQuestion({
   type FormData = z.infer<typeof shortAnswerSchema>;
 
   const t = useScopedI18n("components.mcq");
-  const tf = useScopedI18n('components.rate');
+  const tf = useScopedI18n("components.rate");
   const { timer, setPaused } = useContext(QuizContext);
   const [isCompleted, setIsCompleted] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -259,18 +267,29 @@ function SAQuestion({
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
-        if(data){
+        if (data) {
           toast({
-            title: tf('toast.success'), 
+            title: tf("toast.success"),
             imgSrc: true,
-            description: `Congratulations, you earned ${rating}XP.`  
-          })
+            description: `Congratulations, you earned ${rating}XP.`,
+          });
         }
         handleCompleted();
       })
       .finally(() => {
         setIsLoading(false);
       });
+    await fetch(`/api/v1/users/${userId}/activitylog`, {
+      method: "POST",
+      body: JSON.stringify({
+        articleId: articleId || "STSTEM",
+        activityType: "sa_question",
+        activityStatus: "completed",
+        timeTaken: timer,
+        xpEarned: rating,
+        details: data,
+      }),
+    });
   }
   return (
     <CardContent>
