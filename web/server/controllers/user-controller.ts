@@ -20,7 +20,9 @@ export async function postActivityLog(
 ) {
   try {
     //getUser
-    const userRef = (await db.collection("users").doc(id).get()).data();
+    const userRef = await db.collection("users").doc(id).get();
+
+    const userData = userRef.data();
 
     //Data from frontend
     const data = await req.json();
@@ -58,10 +60,10 @@ export async function postActivityLog(
       timestamp: new Date(),
       timeTaken: data.timeTaken || 0,
       xpEarned: data.xpEarned || 0,
-      initialXp: userRef?.xp,
-      finalXp: userRef?.xp + data.xpEarned,
-      initialLevel: userRef?.level,
-      finalLevel: levelCalculation(userRef?.xp + data.xpEarned).raLevel,
+      initialXp: userData?.xp,
+      finalXp: userData?.xp + data.xpEarned || 0,
+      initialLevel: userData?.level,
+      finalLevel: levelCalculation(userData?.xp + data.xpEarned || 0).raLevel,
       details: data.details || {},
       ...data,
     };
@@ -84,14 +86,14 @@ export async function postActivityLog(
     }
 
     //Update Xp and Level
-    if (data.xpEarned !== 0) {
+    if (commonData.xpEarned !== 0) {
       await db
         .collection("users")
         .doc(id)
         .update({
           xp: commonData.finalXp,
           level: commonData.finalLevel,
-          ceftLevel: levelCalculation(userRef?.xp + data.xpEarned).cefrLevel,
+          ceftLevel: levelCalculation(commonData.finalXp).cefrLevel,
         });
     }
 
