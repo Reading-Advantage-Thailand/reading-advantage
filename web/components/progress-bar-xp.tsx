@@ -69,12 +69,6 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
   
   useEffect(() => {
     const previousLevel = level - 1;
-    console.log('previousLevel', previousLevel);
-    console.log('level', level);
-    console.log('max xp old level', levels[previousLevel].max);
-    console.log('min xp new level', levels[level].min);
-    
-    // if (level !== previousLevel && percentage >= 0) {
     if (level > previousLevel && percentage > 0 && percentage <=15 ) {
       // percentage <= 15, 15 is based on max userXpEarned in activity, will be changed later with variable
       setIsOpen(true);
