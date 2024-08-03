@@ -40,7 +40,7 @@ export async function generateSAQuestion(params: GenrateSAQuestionParams): Promi
         summary: params.summary,
         imageDesc: params.imageDesc,
         schema: schema,
-        promptFile: "prompts-combined-MC.json",
+        promptFile: "prompts-combined-SA.json",
         modelId: "gpt-4o",
         cefrlevel: params.cefrlevel,
     }

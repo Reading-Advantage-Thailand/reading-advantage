@@ -17,10 +17,9 @@ async function generateByGenre(
     type: ArticleType,
     amountPerGenre: number
 ): Promise<unknown[]> {
-    console.log("Selecting random genre...");
+    console.log(`starting generation for ${type}...`);
     const randomGenre = await randomSelectGenre({ type });
 
-    console.log("Generating topic...");
     const generatedTopic = await generateTopic({
         type: type,
         genre: randomGenre.genre,
@@ -74,7 +73,7 @@ async function generateByGenre(
         ),
     ]);
 
-    return Promise.allSettled(queue);
+    return await Promise.allSettled(queue);
 }
 
 async function evaluateArticle(
@@ -89,7 +88,6 @@ async function evaluateArticle(
     let generatedArticle;
 
     while (attempts < maxAttempts) {
-        console.log("Generating article...");
         generatedArticle = await generateArticle({
             type,
             genre,
@@ -98,7 +96,6 @@ async function evaluateArticle(
             cefrLevel,
         });
 
-        console.log("Evaluating rating...");
         const evaluatedRating = await evaluateRating({
             type,
             genre,
@@ -109,7 +106,7 @@ async function evaluateArticle(
             passage: generatedArticle.passage,
             image_description: generatedArticle.imageDesc,
         });
-        console.log(`Rating: ${evaluatedRating.rating}`);
+        console.log(`${cefrLevel} evaluated rating: ${evaluatedRating.rating}`);
 
         if (evaluatedRating.rating > 2) {
             return { article: generatedArticle, rating: evaluatedRating.rating };
@@ -120,7 +117,7 @@ async function evaluateArticle(
         console.log(`Regenerating article... Attempt (${attempts}/${maxAttempts})`);
     }
 
-    throw `failed to generate article after ${maxAttempts} attempts (low )`;
+    throw `failed to generate article after ${maxAttempts} attempts (low rating)`;
 }
 
 async function processQueue(
@@ -138,7 +135,6 @@ async function processQueue(
         cefrLevel
     );
 
-    console.log("Generating questions...");
     const mcq = await generateMCQuestion({
         type,
         cefrlevel: cefrLevel,
@@ -182,6 +178,7 @@ async function processQueue(
         summary: generatedArticle.summary,
         title: generatedArticle.title,
         type,
+        id: articleRef.id,
     });
 
     await Promise.allSettled([
@@ -263,6 +260,9 @@ export async function generateArticleQueue(
         const failedResults = combinedQueue.filter(
             (result: any) => result.status === "rejected"
         );
+        const successResults = combinedQueue.filter(
+            (result: any) => result.status === "fulfilled"
+        );
         const failedReasons = failedResults.map((result: any) => result.reason);
         const failedCount = failedResults.length;
 
@@ -274,8 +274,9 @@ export async function generateArticleQueue(
                 {
                     description: {
                         "amount per genre": amountPerGenre,
-                        total: `${amount * 6 * 2}`,
+                        "total": `${amount * 6 * 2}`,
                         "failed count": `${failedCount}`,
+                        "success count": `${successResults.length} articles`,
                         "time taken": `${timeTakenMinutes.toFixed(2)} minutes\n`,
                         "failed reasons": failedCount ? "\n" + failedReasons.join("\n") : "none",
                     },

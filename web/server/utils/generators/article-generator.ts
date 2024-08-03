@@ -66,6 +66,7 @@ export async function generateArticle(params: GenerateArticleParams): Promise<Ge
 
     // generate article
     try {
+        console.log(`${params.cefrLevel} generating article model ID: ${levelConfig.modelId} type: ${params.type}`);
         const { object: article } = await generateObject({
             model: openai(levelConfig.modelId),
             schema: schema,

@@ -14,6 +14,7 @@ interface GenerateTopicResponse {
 }
 
 export async function generateTopic(params: GenerateTopicParams): Promise<GenerateTopicResponse> {
+    console.log(`generating topic for ${params.type} ${params.genre} ${params.subgenre} amount: ${params.amountPerGenre}`);
     const prompts = {
         fiction: `Please provide ${params.amountPerGenre} reading passage topics in the ${params.type} ${params.genre} genre and ${params.subgenre} subgenre appropriate for secondary school students. Output as a JSON array.`,
         nonfiction: `Please provide ${params.amountPerGenre} reading passage topics in the ${params.type} ${params.genre} genre and ${params.subgenre} subgenre appropriate for secondary school students. Output as a JSON array.`,
