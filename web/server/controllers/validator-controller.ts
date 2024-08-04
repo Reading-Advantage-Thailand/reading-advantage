@@ -83,10 +83,11 @@ export async function validateArticle(
                     "date": filterByDate,
                     "total article": `${snapshot.docs.length} articles`,
                 },
-                color: 0x00ff00,
+                color: 0x0099ff,
             },
         ],
         reqUrl,
+        color: 0x0099ff,
         userAgent,
     });
 
@@ -117,7 +118,7 @@ export async function validateArticle(
         "passed": passedResults.length,
         "regenerated": regeneratedResults.length,
         "failed": failedResults.length + "\n",
-        "rating stats": "\n" + Object.entries(ratingStats).map(([cefr_level, { total, sum }]: any) =>
+        ":star: rating stats": "\n" + Object.entries(ratingStats).map(([cefr_level, { total, sum }]: any) =>
             `CEFR: *${cefr_level}* average rating: *${(sum / total).toFixed(2)}* total: *${total}*`
         ).join("\n"),
     } as any;
@@ -125,7 +126,7 @@ export async function validateArticle(
     if (regeneratedResults.length > 0) {
         embeds = {
             ...embeds,
-            "regenerated details": "\n" + regeneratedResults.flatMap((result) =>
+            "\n:star: regenerated details": "\n" + regeneratedResults.flatMap((result) =>
                 result.validation.filter((validation) => validation.status === "regenerated").map((validation) =>
                     `**id**: *${validation.id}*, **task**: *${validation.task}*, **status**: *${validation.status}*`
                 )
@@ -136,7 +137,7 @@ export async function validateArticle(
     if (failedResults.length > 0) {
         embeds = {
             ...embeds,
-            "failed details": "\n" + failedResults.flatMap((result) =>
+            "\n:star: failed details": "\n" + failedResults.flatMap((result) =>
                 result.validation.map((validation) =>
                     `**id**: *${validation.id}*, **task**: *${validation.task}*, **code**: *${validation.errorMessage}*`
                 )
@@ -150,10 +151,11 @@ export async function validateArticle(
         embeds: [
             {
                 description: embeds,
-                color: 0x00ff00,
+                color: 0xff0000,
             },
         ],
         reqUrl,
+        color: 0xff0000,
         userAgent,
     });
 

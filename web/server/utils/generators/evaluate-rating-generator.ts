@@ -53,6 +53,6 @@ export async function evaluateRating(params: EvaluateRatingParams): Promise<Eval
             rating: evaluated.rating,
         };
     } catch (error) {
-        throw new Error("failed to evaluate rating");
+        throw `failed to evaluate rating`;
     }
 }

@@ -29,7 +29,7 @@ export async function generateLAQuestion(params: GenrateLAQuestionParams): Promi
         imageDesc: params.imageDesc,
         schema: schema,
         promptFile: "prompts-combined-LA.json",
-        modelId: "gpt-4o",
+        modelId: "gpt-4o-mini",
         cefrlevel: params.cefrlevel,
     }
     // generate question
