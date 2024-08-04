@@ -11,7 +11,7 @@ import db from "@/configs/firestore-config";
 import axios from "axios";
 
 interface GenerateAudioParams {
-  passage: string;
+  passage: string[];
   articleId: string;
 }
 
@@ -86,26 +86,42 @@ export async function generateAudioWord({
     };
 
     try {
-      const chunks = splitTextIntoChunks(passage, 5000);
-      const allTimepoints: any[] = [];
-      let index = 0;
-      for (let i = 0; i < chunks.length; i++) {
-        const timepoint = await generate(chunks[i], i);
-        timepoint.forEach((tp: any) => {
-          allTimepoints.push({
-            markName: `word${index}`,
-            timeSeconds: tp.timeSeconds,
-            index: index,
-            file: `${articleId}.mp3`,
-          });
-          index++;
-        });
-      }
+      // const chunks = splitTextIntoChunks(passage, 5000);
+      let allTimepoints: any[] = [];
+
+      const response = await axios.post(
+        `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize`,
+        {
+          input: { ssml: contentToSSML(passage) },
+          voice: {
+            languageCode: "en-US",
+            name: voice,
+          },
+          audioConfig: {
+            audioEncoding: "MP3",
+            pitch: 0,
+            speakingRate: 1,
+          },
+          enableTimePointing: ["SSML_MARK"],
+        },
+        {
+          params: { key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY },
+        }
+      );
+      const audio = response.data.audioContent;
+      const MP3 = base64.toByteArray(audio);
+      allTimepoints = response.data.timepoints;
+
+      const localPath = `${process.cwd()}/data/audios-words/${articleId}.mp3`;
+      fs.writeFileSync(localPath, MP3);
+      // await uploadToBucket(localPath, `${AUDIO_URL}/${articleId}.mp3`);
+
       // Update the database with all timepoints
       await db.collection("word-list").doc(articleId).update({
         timepoints: allTimepoints,
         id: articleId,
       });
+      
     } catch (error: any) {
       throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
         error.response.data
