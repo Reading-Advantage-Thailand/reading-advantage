@@ -56,7 +56,7 @@ export async function generateArticle(params: GenerateArticleParams): Promise<Ge
         ?.levels.find((lvl) => lvl.level === params.cefrLevel);
 
     if (!levelConfig) {
-        throw `level config not found for ${params.cefrLevel}`;
+        throw new Error(`level config not found for ${params.cefrLevel}`);
     }
 
     const userPrompt = levelConfig.userPromptTemplate
@@ -66,13 +66,13 @@ export async function generateArticle(params: GenerateArticleParams): Promise<Ge
 
     // generate article
     try {
+        console.log(`${params.cefrLevel} generating article model ID: ${levelConfig.modelId} type: ${params.type}`);
         const { object: article } = await generateObject({
             model: openai(levelConfig.modelId),
             schema: schema,
             system: levelConfig.systemPrompt,
             prompt: userPrompt,
         });
-
         return {
             passage: article.passage,
             title: article.title,

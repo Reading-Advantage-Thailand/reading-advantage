@@ -1,5 +1,5 @@
 import { restrictAccessKey } from "@/server/controllers/auth-controller";
-import { generateArticleQueue } from "@/server/controllers/generator-controller";
+import { generateQueue } from "@/server/controllers/generator-controller";
 import { logRequest } from "@/server/middleware";
 import { handleRequest } from "@/server/utils/handle-request";
 import { createEdgeRouter } from "next-connect";
@@ -17,6 +17,6 @@ router.use(restrictAccessKey);
 
 // POST /api/v1/articles/generate
 // BODY: { amountPerGenre: number }
-router.post(generateArticleQueue);
+router.post(generateQueue);
 
 export const POST = (request: NextRequest, ctx: Context) => handleRequest(router, request, ctx);

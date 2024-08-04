@@ -57,7 +57,7 @@ export async function generateMCQuestion(params: GenrateMCQuestionParams): Promi
         imageDesc: params.imageDesc,
         schema: schema,
         promptFile: "prompts-combined-MC.json",
-        modelId: "gpt-4o",
+        modelId: "gpt-4o-mini",
         cefrlevel: params.cefrlevel,
     }
     // generate question

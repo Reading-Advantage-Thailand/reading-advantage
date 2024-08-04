@@ -89,22 +89,26 @@ interface PromptFileType {
 }
 
 export async function generateQuestion<T>(params: GenerateQuestionParams<T>): Promise<GenerateQuestionResponse<T>> {
-    const dataFilePath = path.join(process.cwd(), "data", params.promptFile);
-    const prompt = readJsonFile<PromptFileType>(dataFilePath);
-    const { system_prompt, user_prompt } = prompt[params.type][params.cefrlevel];
-    const userPrompt = `${user_prompt}\n\nPassage: ${params.passage}\nTitle: ${params.title}\nSummary: ${params.summary}\nImage Description: ${params.imageDesc}`;
-
     try {
+        const dataFilePath = path.join(process.cwd(), "data", params.promptFile);
+        const prompt = readJsonFile<PromptFileType>(dataFilePath);
+        const { system_prompt, user_prompt } = prompt[params.type][params.cefrlevel];
+        const userPrompt = `${user_prompt}\n\nPassage: ${params.passage}\nTitle: ${params.title}\nSummary: ${params.summary}\nImage Description: ${params.imageDesc}`;
+        console.log(`${params.cefrlevel} generating ${params.promptFile} model ID: ${params.modelId} type: ${params.type} CEFR level: ${params.cefrlevel}`);
+        console.log(`user prompt: ${userPrompt}`);
+        console.log(`system prompt: ${system_prompt}`);
         const { object: question } = await generateObject({
             model: openai(params.modelId),
             schema: params.schema,
             system: system_prompt,
-            prompt: userPrompt
+            prompt: userPrompt,
+            maxTokens: 4000,
         });
         return {
             question
         }
     } catch (error) {
-        throw `failed to generate ${params.promptFile} question: ${error}`;
+        console.log(error);
+        throw `failed to generate ${params.promptFile.replace('.json', "").replace('prompts-combined-', "")} question: ${error}`;
     }
 }

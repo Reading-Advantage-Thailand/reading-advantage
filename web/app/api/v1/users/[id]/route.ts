@@ -1,4 +1,3 @@
-import { generateArticleQueue } from "@/server/controllers/generator-controller";
 import { getUser, updateUser } from "@/server/controllers/user-controller";
 import { logRequest } from "@/server/middleware";
 import { handleRequest } from "@/server/utils/handle-request";

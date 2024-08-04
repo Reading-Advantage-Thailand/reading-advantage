@@ -35,6 +35,6 @@ export async function randomSelectGenre(
     try {
         return await fetchGenres(params.type);
     } catch (error) {
-        throw `failed to fetch genre: ${error}`;
+        throw new Error(`failed to fetch genre: ${error}`);
     }
 }

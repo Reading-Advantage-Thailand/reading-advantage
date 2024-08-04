@@ -7,6 +7,7 @@ interface SendWebhookParams {
     reqUrl: string;
     webhookUrl?: string;
     userAgent?: string;
+    color?: number;
 }
 
 interface Embeds {
@@ -28,6 +29,7 @@ export async function sendDiscordWebhook({
     webhookUrl = process.env.DISCORD_WEBHOOK_URL as string,
     userAgent = "test-user-agent",
     reqUrl,
+    color = 0x0099ff,
 }: SendWebhookParams) {
     // Format the embeds
     const embedsFormatted = embeds.map((embed) => {
@@ -51,7 +53,7 @@ export async function sendDiscordWebhook({
                     description: `**triggered at:** <t:${Math.floor(
                         Date.now() / 1000
                     )}:R> \n**user-agent:** ${userAgent} \n**url:** ${reqUrl}`,
-                    color: 0x0099ff,
+                    color: color,
                 },
                 ...embedsFormatted,
             ],
