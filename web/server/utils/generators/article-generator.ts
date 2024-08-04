@@ -56,7 +56,7 @@ export async function generateArticle(params: GenerateArticleParams): Promise<Ge
         ?.levels.find((lvl) => lvl.level === params.cefrLevel);
 
     if (!levelConfig) {
-        throw `level config not found for ${params.cefrLevel}`;
+        throw new Error(`level config not found for ${params.cefrLevel}`);
     }
 
     const userPrompt = levelConfig.userPromptTemplate
@@ -73,7 +73,6 @@ export async function generateArticle(params: GenerateArticleParams): Promise<Ge
             system: levelConfig.systemPrompt,
             prompt: userPrompt,
         });
-
         return {
             passage: article.passage,
             title: article.title,
