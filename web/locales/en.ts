@@ -93,7 +93,8 @@ export default {
           buttonEasy: "Easy",
           flipCard: "Flip",
           nextButton: "Next",
-          yourXp: "You've received {xp} XP for this activity.",
+          yourXp:
+            "Congratulations!, You received {xp} XP for completing this activity.",
         },
         orderSentencesPractice: {
           //Order Sentences

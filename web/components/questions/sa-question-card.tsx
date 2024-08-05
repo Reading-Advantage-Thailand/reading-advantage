@@ -31,6 +31,7 @@ import {
 import Rating from "@mui/material/Rating";
 import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
+import { useRouter } from "next/navigation";
 
 type Props = {
   userId: string;
@@ -73,7 +74,6 @@ export default function SAQuestionCard({ userId, articleId }: Props) {
     fetch(`/api/v1/articles/${articleId}/questions/sa`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("data", data);
         setData(data);
         setState(data.state);
         useQuestionStore.setState({ saQuestion: data });
@@ -108,7 +108,6 @@ export default function SAQuestionCard({ userId, articleId }: Props) {
 }
 
 function QuestionCardError(data: any) {
-  console.log(data);
   return (
     <Card className="mt-3">
       <CardHeader>
@@ -236,6 +235,8 @@ function SAQuestion({
     resolver: zodResolver(shortAnswerSchema),
   });
 
+  const router = useRouter();
+
   async function onSubmitted(data: FormData) {
     setIsLoading(true);
     setPaused(true);
@@ -248,7 +249,6 @@ function SAQuestion({
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         setData(data);
       })
       .finally(() => {
@@ -266,12 +266,11 @@ function SAQuestion({
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         if (data) {
           toast({
             title: tf("toast.success"),
             imgSrc: true,
-            description: `Congratulations, you earned ${rating}XP.`,
+            description: `Congratulations!, You received ${rating} XP for completing this activity.`,
           });
         }
         handleCompleted();
@@ -290,6 +289,7 @@ function SAQuestion({
         details: data,
       }),
     });
+    router.refresh();
   }
   return (
     <CardContent>

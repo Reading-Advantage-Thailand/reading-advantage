@@ -271,19 +271,19 @@ export async function answerMCQuestion(
       });
 
     // Update user xp + 2 if correct
-    if (isCorrect === AnswerStatus.CORRECT) {
-      const user = await db
-        .collection("users")
-        .doc(req.session?.user.id as string)
-        .get();
-      const userXP = user.data()?.xp;
-      await db
-        .collection("users")
-        .doc(req.session?.user.id as string)
-        .update({
-          xp: userXP + 2,
-        });
-    }
+    // if (isCorrect === AnswerStatus.CORRECT) {
+    //   const user = await db
+    //     .collection("users")
+    //     .doc(req.session?.user.id as string)
+    //     .get();
+    //   const userXP = user.data()?.xp;
+    //   await db
+    //     .collection("users")
+    //     .doc(req.session?.user.id as string)
+    //     .update({
+    //       xp: userXP + 2,
+    //     });
+    // }
 
     const userRecordAll = await db
       .collection("users")
@@ -388,14 +388,15 @@ export async function rateArticle(
 ) {
   try {
     const { rating } = await req.json();
-    const newXp = (req.session?.user.xp as number) + rating;
 
-    await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .update({
-        xp: newXp,
-      });
+    // const newXp = (req.session?.user.xp as number) + rating;
+
+    // await db
+    //   .collection("users")
+    //   .doc(req.session?.user.id as string)
+    //   .update({
+    //     xp: newXp,
+    //   });
 
     // Update user record
     await db
