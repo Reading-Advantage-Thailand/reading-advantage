@@ -7,6 +7,7 @@ import { useScopedI18n } from "@/locales/client";
 import { toast } from "./ui/use-toast";
 import { Article } from "./models/article-model";
 import { UserXpEarned } from "./models/user-activity-log-model";
+import { useRouter } from "next/navigation";
 
 interface RateDialogProps {
   disabled?: boolean;
@@ -28,6 +29,7 @@ export default function RatingPopup({
   const [modalIsOpen, setModalIsOpen] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [oldRating, setOldRating] = React.useState(0);
+  const router = useRouter();
 
   const instance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BASE_URL,
@@ -72,8 +74,9 @@ export default function RatingPopup({
         toast({
           title: t("toast.success"),
           imgSrc: true,
-          description: `Congratulations, you earned ${UserXpEarned.Article_Rating} XP.`,
+          description: `Congratulations!, You received ${UserXpEarned.Article_Rating} XP for completing this activity.`,
         });
+        router.refresh();
         setModalIsOpen(false);
       }
       setLoading(false);

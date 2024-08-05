@@ -20,9 +20,9 @@ export async function postActivityLog(
 ) {
   try {
     //getUser
-    const userRef = await db.collection("users").doc(id).get();
+    // const userRef = await db.collection("users").doc(id).get();
 
-    const userData = userRef.data();
+    // const userData = userRef.data();
 
     //Data from frontend
     const data = await req.json();
@@ -60,10 +60,12 @@ export async function postActivityLog(
       timestamp: new Date(),
       timeTaken: data.timeTaken || 0,
       xpEarned: data.xpEarned || 0,
-      initialXp: userData?.xp,
-      finalXp: userData?.xp + data.xpEarned || 0,
-      initialLevel: userData?.level,
-      finalLevel: levelCalculation(userData?.xp + data.xpEarned || 0).raLevel,
+      initialXp: req.session?.user.xp as number,
+      finalXp: (req.session?.user.xp as number) + data.xpEarned || 0,
+      initialLevel: req.session?.user.level as number,
+      finalLevel: levelCalculation(
+        (req.session?.user.xp as number) + data.xpEarned || 0
+      ).raLevel,
       details: data.details || {},
       ...data,
     };

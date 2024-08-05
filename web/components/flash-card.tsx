@@ -121,6 +121,7 @@ export default function FlashCard({
               if (updateScrore?.status === 200) {
                 toast({
                   title: t("toast.success"),
+                  imgSrc: true,
                   description: tUpdateScore("yourXp", {
                     xp: UserXpEarned.Sentence_Flashcards,
                   }),
