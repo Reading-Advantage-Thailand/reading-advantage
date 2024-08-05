@@ -1,61 +1,136 @@
 "use client";
-import React, { use } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import dynamic from "next/dynamic";
-import { set } from "lodash";
+import { License } from "@/server/models/license";
+import { CircularProgressbar } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
-const GaugeChart = dynamic( () => import("react-gauge-chart"), { ssr: false });
+const GaugeChart = dynamic(() => import("react-gauge-chart"), { ssr: false });
 
 async function fetchLicense() {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/licenses`
   );
-  // console.log(response);
 
   const data = await response.json();
   return data;
 }
 export default async function LicenseUsageChart() {
-  const [usedLicenses, setUsedLicenses] = React.useState(0);
+  const [licenseData, setLicenseData] = useState<License[]>([]);
 
-  const license = await fetchLicense();
-    console.log('license: ', license.data[0].used_licenses);
+  const calculatePercentage = (usedLicenses: number, totalLicenses: number) => {
+    return (usedLicenses / totalLicenses) * 100;
+  };
 
-    for (let i = 0; i < license.data.length; i++) {
-      console.log('license: ', license.data[i].used_licenses);
-      const usedLicenses = license.data[i].used_licenses;
-      setUsedLicenses(usedLicenses);
-      // return usedLicenses;
-    } 
+  useEffect(() => {
+    async function loadLicenseData() {
+      const license = await fetchLicense();
+      setLicenseData(license.data);
+    }
+    loadLicenseData();
+  }, []);
 
   return (
     <>
-     {/* License Usage */}
-<Card className="col-span-1">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold">License Usage</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-40 flex items-center justify-center">
-          <GaugeChart
-            id="gauge-chart"
-            nrOfLevels={1}
-            percent={usedLicenses / 100}
-            arcWidth={0.3}
-            textColor="#000000"
-            needleColor="gray"
-            needleBaseColor="gray"
-            // colors={["#5BE12C", "#F5CD19", "#EA4228"]}
-            colors={["#5BE12C", "#F5CD19", "#EA4228"]} 
-          />
-        </div>
-      </CardContent>
-    </Card>
+      <Card className="col-span-1">
+        <CardHeader>
+          <CardTitle className="text-lg font-bold">License Usage</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Carousel>
+            <CarouselContent>
+              {licenseData.map((license: License, index) => (
+                <CarouselItem key={index}>
+                  <div className="p-1">
+                    <div className="flex justify-between">
+                      <CardDescription>
+                        School: {license.school_name}
+                      </CardDescription>
+                      <CardDescription>
+                        School Level: {license.subscription_level}
+                      </CardDescription>
+                    </div>
+                    <CardContent className="flex aspect-square items-center justify-center p-6">
+                      <div className="w-full max-w-md mx-auto" id="gaugeArea">
+                        <GaugeChart
+                          id="gauge-chart"
+                          // nrOfLevels={30}
+                          percent={license.used_licenses / license.total_licenses}
+                          arcWidth={0.3}
+                          cornerRadius={0}
+                          textColor="#000000"
+                          needleColor="#737373"
+                          needleBaseColor="#737373"
+                          // colors={['lightgray','rgb(44,151,222)']}
+                        //  colors={["#00BFFF", "#1E90FF"]}
+                        //  colors={["#E5E7EB", "#3B82F6"]}
+                        colors={['#EA4228', '#F5CD19', '#5BE12C']}
+                          arcPadding={0}
+                          hideText={true}
+
+                          nrOfLevels={420}
+                        />
+
+                        <div className="text-center text-4xl font-bold mt-4">
+                          {Math.round(license.used_licenses * 100) /
+                            license.total_licenses}
+                          %
+                        </div>
+                       
+                           <div className="flex justify-between mt-2">
+                          <span>0%</span>
+                          <span>100%</span>
+                        </div>
+
+                        {/* <CircularProgressbar
+                            value={calculatePercentage(license.used_licenses, license.total_licenses)}
+                            text={calculatePercentage(license.used_licenses, license.total_licenses) + "%"} 
+                            circleRatio={0.5}
+                            styles={{
+                              trail: {
+                                strokeLinecap: "butt",
+                                transform: "rotate(-0.25turn)",
+                                transformOrigin: "center center",
+                              },
+                              path: {
+                                strokeLinecap: "butt",
+                                transform: "rotate(-0.25turn)",
+                                transformOrigin: "center center",
+                                stroke: "#3B82F6",
+                              },
+                              text: {
+                                fill: "#000",
+                                fontSize: "12px",
+                              },
+                              }}
+                              strokeWidth={15}
+                            >
+                            </CircularProgressbar> */}
+                      </div>
+                    </CardContent>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </CardContent>
+      </Card>
     </>
   );
 }
