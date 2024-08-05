@@ -33,6 +33,7 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
+import { useRouter } from "next/navigation";
 
 interface Props {
   userId: string;
@@ -259,6 +260,8 @@ function LAQuestion({
     },
   });
 
+  const router = useRouter();
+
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const currentLocale = useCurrentLocale();
@@ -350,8 +353,8 @@ function LAQuestion({
         if (data) {
           toast({
             title: tf("toast.success"),
-            imgSrc: "/xpBox.webp",
-            description: `Congratulations, you earned ${rating} XP.`,
+            imgSrc: true,
+            description: `Congratulations!, You received ${rating} XP for completing this activity.`,
           });
         }
         handleCompleted();
@@ -370,6 +373,7 @@ function LAQuestion({
         details: data,
       }),
     });
+    router.refresh();
   }
 
   const handleCategoryChange = (category: string) => {

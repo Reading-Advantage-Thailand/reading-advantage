@@ -24,6 +24,7 @@ import { useQuestionStore } from "@/store/question-store";
 import { set } from "lodash";
 import { toast } from "../ui/use-toast";
 import { UserXpEarned } from "../models/user-activity-log-model";
+import { useRouter } from "next/navigation";
 
 type Props = {
   userId: string;
@@ -197,6 +198,7 @@ function MCQeustion({
   const [selectedOption, setSelectedOption] = useState(-1);
   const { timer, setPaused } = useContext(QuizContext);
   const t = useScopedI18n("components.mcq");
+  const router = useRouter();
 
   const onSubmitted = async (questionId: string, option: string, i: number) => {
     setPaused(true);
@@ -222,7 +224,7 @@ function MCQeustion({
   useEffect(() => {
     let count = 0;
     let countTest = 0;
-    progress.forEach((status) => {
+    progress.forEach(async (status) => {
       if (status == AnswerStatus.CORRECT) {
         count += UserXpEarned.MC_Question;
         countTest++;
@@ -230,7 +232,7 @@ function MCQeustion({
         countTest++;
       }
       if (countTest == 5) {
-        fetch(`/api/v1/users/${userId}/activitylog`, {
+        await fetch(`/api/v1/users/${userId}/activitylog`, {
           method: "POST",
           body: JSON.stringify({
             articleId: articleId,
@@ -247,8 +249,9 @@ function MCQeustion({
         toast({
           title: "Success",
           imgSrc: true,
-          description: `Congratulations, you earned a total ${count} XP.`,
+          description: `Congratulations!, You received ${count} XP for completing this activity.`,
         });
+        router.refresh();
       }
     });
   }, [progress, QuestionState]);

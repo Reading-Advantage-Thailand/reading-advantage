@@ -152,6 +152,7 @@ export default function MatchingWords({ userId }: Props) {
         } catch (error) {
           toast({
             title: t("toast.error"),
+            imgSrc: true,
             description: t("toast.errorDescription"),
             variant: "destructive",
           });
