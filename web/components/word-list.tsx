@@ -241,7 +241,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                   />
                 </>
               )}
-              <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4">
+              {/* <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4"> */}
                 <div className="flex justify-end mt-5">
                   <DialogClose asChild>
                     <Button type="button" variant="secondary">
@@ -259,7 +259,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                     {t("saveButton")}
                   </Button>
                 </div>
-              </DialogFooter>
+              {/* </DialogFooter> */}
             </form>
           </Form>
         </DialogContent>
