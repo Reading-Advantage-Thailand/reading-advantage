@@ -333,10 +333,8 @@ export default function ClozeTest({ userId }: Props) {
     // update score by words
     articleClozeTest[currentArticleIndex].randomWords.forEach(
       async (item: ResultTextArray) => {
-        console.log("item => ", item);
         if (item.correctWords) {
           try {
-            console.log("update score => ", item);
             const updateScrore = await fetch(
               `/api/v1/users/${userId}/activitylog`,
               {
