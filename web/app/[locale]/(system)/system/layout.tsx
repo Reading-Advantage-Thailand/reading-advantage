@@ -4,9 +4,10 @@ import { systemPageConfig } from "@/configs/system-page-config";
 export default function LevelPageLayout({ children }: BaseAppLayoutProps) {
   return (
     <AppLayout
-      disableSidebar={true}
+      disableSidebar={false}
       disableProgressBar={true}
       mainNavConfig={systemPageConfig.mainNav}
+      sidebarNavConfig={systemPageConfig.systemSidebarNav}
     >
       {children}
     </AppLayout>

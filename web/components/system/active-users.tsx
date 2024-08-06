@@ -24,7 +24,7 @@ export default function ActiveUsersChart() {
     <>
          <Card className="col-span-3">
           <CardHeader>
-            <CardTitle className="text-lg font-bold">Active Users</CardTitle>
+            <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">Active Users</CardTitle>
           </CardHeader>
           <CardContent>
             <select className="w-full mb-2">

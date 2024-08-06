@@ -10,7 +10,7 @@ const ChallengingQuestionsTable = () => {
   return (
     <Card className="w-full col-span-3">
       <CardHeader>
-        <CardTitle className="text-lg font-bold">Most Challenging Questions</CardTitle>
+        <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">Most Challenging Questions</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

@@ -68,7 +68,7 @@ export type SidebarTeacherNavItem = {
         }
     )
 export type SystemSidebarNavItem = {
-    title: "system dashboard" | "handle passages",
+    title: "system dashboard" | "handle passages" | "license",
     disabled?: boolean
     external?: boolean
     icon?: keyof typeof Icons
