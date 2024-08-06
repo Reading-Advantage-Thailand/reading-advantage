@@ -30,5 +30,11 @@ export const systemPageConfig: SystemPageConfig = {
             href: '/system/handle-passages',
             icon: "book",
         },
+        {
+            title: "License",
+            href: '/system/license',
+            icon: "scrollText",
+        },
+
     ],
 };

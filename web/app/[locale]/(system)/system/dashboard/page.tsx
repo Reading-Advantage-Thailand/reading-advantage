@@ -38,16 +38,34 @@ export default async function SystemDashboardPage({
 
   return (
     <>
-      <Header heading="System Dashboard Page" />
-      <div className="p-4 grid grid-cols-3 gap-4 auto-rows-auto">
-        <ActivityDistributionPieChart />
-        <LicenseUsageChart />
-        <LicenseUsageOverTimeChart />
-        <ChallengingQuestionsTable />
-        <ArticlesByTypeAndGenreChart />
-        <TopSchoolByXPGainedChart />
-        <ArticlesPerLevelChart articlesPerLevel={articlesPerLevel} />
-        <ActiveUsersChart />
+      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 truncate">
+        <Header heading="System Dashboard Page" />
+      </div>
+      <div className="p-4 grid gap-4 grid-cols-1 auto-rows-auto sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
+          <ActivityDistributionPieChart />
+        </div>
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
+          <LicenseUsageChart />
+        </div>
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
+          <LicenseUsageOverTimeChart />
+        </div>
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
+          <ChallengingQuestionsTable />
+        </div>
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-2">
+          <ArticlesByTypeAndGenreChart />
+        </div>
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
+          <TopSchoolByXPGainedChart />
+        </div>
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
+          <ArticlesPerLevelChart articlesPerLevel={articlesPerLevel} />
+        </div>
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
+          <ActiveUsersChart />
+        </div>
       </div>
     </>
   );

@@ -125,12 +125,12 @@ export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerL
   return (
     <Card className="col-span-3">
       <CardHeader>
-        <CardTitle className="text-lg font-bold">
+        <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
           Articles per Level
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex space-x-2 mb-2">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
           <input
             type="date"
             className="flex-1/2 border p-2 rounded-sm"

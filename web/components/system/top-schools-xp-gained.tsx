@@ -24,7 +24,7 @@ export default function TopSchoolByXPGainedChart() {
     <>
       <Card className="col-span-1">
           <CardHeader>
-            <CardTitle className="text-lg font-bold">Top Schools by XP Gained</CardTitle>
+            <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">Top Schools by XP Gained</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-40 flex items-center justify-center">
