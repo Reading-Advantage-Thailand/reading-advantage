@@ -18,6 +18,7 @@ export async function POST(req: Request, res: Response) {
         JSON.stringify({
           messages: "success",
           word_list: article?.word_list,
+          timepoints: article?.timepoints,
         }),
         { status: 200 }
       );
@@ -132,9 +133,7 @@ export async function POST(req: Request, res: Response) {
       return new Response(
         JSON.stringify({
           messages: "success",
-          word_list: JSON.parse(
-            response.choices[0].message.function_call?.arguments as string
-          )?.word_list,
+          word_list: resultWordList,
         }),
         { status: 200 }
       );

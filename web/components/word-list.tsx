@@ -25,6 +25,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { toast } from "./ui/use-toast";
+import { AUDIO_WORDS_URL } from "@/server/constants";
 
 interface Props {
   article: Article;
@@ -41,6 +42,10 @@ interface WordList {
     tw: string;
     vi: string;
   };
+  index: number;
+  startTime: number;
+  endTime: number;
+  audioUrl: string;
 }
 
 export default function WordList({ article, articleId, userId }: Props) {
@@ -70,6 +75,29 @@ export default function WordList({ article, articleId, userId }: Props) {
         userId,
       });
 
+      if (resWordlist?.data?.timepoints) {
+        console.log("resWordlist?.data : ", resWordlist?.data);
+        const wordList = resWordlist?.data?.timepoints.map(
+          (timepoint: { timeSeconds : number}, index: number) => {
+            const startTime = timepoint.timeSeconds;
+            const endTime =
+              index === resWordlist?.data?.timepoints.length - 1
+                ? timepoint.timeSeconds + 10
+                : resWordlist?.data?.timepoints[index + 1].timeSeconds - 0.3;
+            return {
+              vocabulary: resWordlist?.data?.word_list[index]?.vocabulary,
+              definition: resWordlist?.data?.word_list[index]?.definition,
+              index,
+              startTime,
+              endTime,
+              audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`,
+            };
+          }
+        );
+        console.log("wordList : ", wordList);
+      }
+      // http://localhost:3000/th/student/read/zRlMecpldFmScJpof0mO
+      // http://localhost:3000/th/student/read/wQcfMox8kjATSS5ZFglo
       setWordList(resWordlist?.data?.word_list);
       form.reset();
     } catch (error: any) {
