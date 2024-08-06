@@ -23,7 +23,11 @@ import { Icons } from "../icons";
 import { useQuestionStore } from "@/store/question-store";
 import { set } from "lodash";
 import { toast } from "../ui/use-toast";
-import { UserXpEarned } from "../models/user-activity-log-model";
+import {
+  UserXpEarned,
+  ActivityStatus,
+  ActivityType,
+} from "../models/user-activity-log-model";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -236,8 +240,8 @@ function MCQeustion({
           method: "POST",
           body: JSON.stringify({
             articleId: articleId,
-            activityType: "mc_question",
-            activityStatus: "completed",
+            activityType: ActivityType.MC_Question,
+            activityStatus: ActivityStatus.Completed,
             timeTaken: timer,
             xpEarned: count,
             details: {

@@ -26,7 +26,11 @@ import {
 } from "./ui/select";
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
-import { UserXpEarned } from "./models/user-activity-log-model";
+import {
+  UserXpEarned,
+  ActivityStatus,
+  ActivityType,
+} from "./models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -340,9 +344,8 @@ export default function ClozeTest({ userId }: Props) {
               {
                 method: "POST",
                 body: JSON.stringify({
-                  articleId: "",
-                  activityType: "sentence_cloze_test",
-                  activityStatus: "completed",
+                  activityType: ActivityType.SentenceClozeTest,
+                  activityStatus: ActivityStatus.Completed,
                   xpEarned: UserXpEarned.Sentence_Cloze_Test,
                 }),
               }

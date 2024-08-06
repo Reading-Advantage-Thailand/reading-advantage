@@ -40,3 +40,24 @@ export enum UserXpEarned {
   Sentence_Ordering = 5,
   Sentence_Word_Ordering = 5,
 }
+
+export enum ActivityType {
+  ArticleRating = "article_rating",
+  ArticleRead = "article_read",
+  LevelTest = "level_test",
+  MC_Question = "mc_question",
+  SA_Question = "sa_question",
+  LA_Question = "la_question",
+  SentenceFlashcards = "sentence_flashcards",
+  SentenceMatching = "sentence_matching",
+  SentenceOrdering = "sentence_ordering",
+  SentenceWordOrdering = "sentence_word_ordering",
+  SentenceClozeTest = "sentence_cloze_test",
+  VocabularyFlashcards = "vocabulary_flashcards",
+  VocabularyMatching = "vocabulary_matching",
+}
+
+export enum ActivityStatus {
+  InProgress = "in_progress",
+  Completed = "completed",
+}

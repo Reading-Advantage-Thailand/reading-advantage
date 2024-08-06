@@ -18,7 +18,11 @@ import { toast } from "./ui/use-toast";
 import { Skeleton } from "./ui/skeleton";
 import { Sentence } from "./dnd/types";
 import AudioButton from "./audio-button";
-import { UserXpEarned } from "./models/user-activity-log-model";
+import {
+  UserXpEarned,
+  ActivityStatus,
+  ActivityType,
+} from "./models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -136,9 +140,8 @@ export default function OrderWords({ userId }: Props) {
           {
             method: "POST",
             body: JSON.stringify({
-              articleId: "",
-              activityType: "sentence_word_ordering",
-              activityStatus: "completed",
+              activityType: ActivityType.SentenceWordOrdering,
+              activityStatus: ActivityStatus.Completed,
               xpEarned: UserXpEarned.Sentence_Word_Ordering,
             }),
           }

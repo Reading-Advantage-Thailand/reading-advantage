@@ -14,7 +14,11 @@ import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
 import { Word } from "./tab-flash-card";
-import { UserXpEarned } from "../models/user-activity-log-model";
+import {
+  UserXpEarned,
+  ActivityStatus,
+  ActivityType,
+} from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -133,9 +137,8 @@ export default function MatchingWords({ userId }: Props) {
             {
               method: "POST",
               body: JSON.stringify({
-                articleId: "",
-                activityType: "vocabulary_matching",
-                activityStatus: "completed",
+                activityType: ActivityType.VocabularyMatching,
+                activityStatus: ActivityStatus.Completed,
                 xpEarned: UserXpEarned.Vocabulary_Matching,
               }),
             }
@@ -144,6 +147,7 @@ export default function MatchingWords({ userId }: Props) {
             router.refresh();
             toast({
               title: t("toast.success"),
+              imgSrc: true,
               description: tUpdateScore("yourXp", {
                 xp: UserXpEarned.Vocabulary_Matching,
               }),

@@ -19,7 +19,11 @@ import { Button } from "./ui/button";
 import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
-import { UserXpEarned } from "./models/user-activity-log-model";
+import {
+  UserXpEarned,
+  ActivityStatus,
+  ActivityType,
+} from "./models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -108,8 +112,8 @@ export default function FlashCard({
                   method: "POST",
                   body: JSON.stringify({
                     articleId: filterDataUpdateScore[i]?.articleId,
-                    activityType: "sentence_flashcards",
-                    activityStatus: "completed",
+                    activityType: ActivityType.SentenceFlashcards,
+                    activityStatus: ActivityStatus.Completed,
                     xpEarned: UserXpEarned.Sentence_Flashcards,
                     details: {
                       ...filterDataUpdateScore[i],
