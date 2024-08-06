@@ -10,7 +10,7 @@ import { ActivityType, ActivityStatus } from "./models/user-activity-log-model";
 
 type Props = {
   article: ArticleShowcase;
-  userId: string;
+  userId?: string;
 };
 
 async function getTranslate(
