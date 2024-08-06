@@ -122,7 +122,11 @@ export default function Select({ user }: Props) {
         {selectedType && selectedGenre && selectedSubgenre ? (
           <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
             {articleShowcaseData.map((article, index) => (
-              <ArticleShowcaseCard key={index} article={article} />
+              <ArticleShowcaseCard
+                key={index}
+                article={article}
+                userId={user.id}
+              />
             ))}
           </div>
         ) : (
@@ -144,7 +148,11 @@ export default function Select({ user }: Props) {
             </div>
             <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
               {articleShowcaseData.map((article, index) => (
-                <ArticleShowcaseCard key={index} article={article} />
+                <ArticleShowcaseCard
+                  key={index}
+                  article={article}
+                  userId={user.id}
+                />
               ))}
             </div>
           </>

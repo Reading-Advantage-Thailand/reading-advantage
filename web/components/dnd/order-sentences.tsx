@@ -20,7 +20,11 @@ import { Sentence } from "./types";
 import QuoteList from "./quote-list";
 import { Icons } from "../icons";
 import { splitTextIntoSentences } from "@/lib/utils";
-import { UserXpEarned } from "../models/user-activity-log-model";
+import {
+  UserXpEarned,
+  ActivityStatus,
+  ActivityType,
+} from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -210,9 +214,8 @@ export default function OrderSentences({ userId }: Props) {
           {
             method: "POST",
             body: JSON.stringify({
-              articleId: "",
-              activityType: "sentence_ordering",
-              activityStatus: "completed",
+              activityType: ActivityType.SentenceOrdering,
+              activityStatus: ActivityStatus.Completed,
               xpEarned: UserXpEarned.Sentence_Ordering,
             }),
           }

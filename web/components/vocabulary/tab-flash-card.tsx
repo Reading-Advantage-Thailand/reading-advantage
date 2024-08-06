@@ -19,7 +19,11 @@ import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import FlashCardVocabularyPracticeButton from "./flash-card-vocabulary-practice-button";
 import FlipCardPracticeButton from "../flip-card-button";
 import { Timestamp } from "firebase/firestore";
-import { UserXpEarned } from "../models/user-activity-log-model";
+import {
+  UserXpEarned,
+  ActivityStatus,
+  ActivityType,
+} from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -121,9 +125,8 @@ export default function FlashCard({
                 {
                   method: "POST",
                   body: JSON.stringify({
-                    articleId: "",
-                    activityType: "vocabulary_flashcards",
-                    activityStatus: "completed",
+                    activityType: ActivityType.VocabularyFlashcards,
+                    activityStatus: ActivityStatus.Completed,
                     xpEarned: UserXpEarned.Vocabulary_Flashcards,
                     details: {
                       ...filterDataUpdateScore[i],

@@ -6,9 +6,11 @@ import { ArticleShowcase } from "./models/article-model";
 import axios from "axios";
 import { useCurrentLocale } from "@/locales/client";
 import { usePathname } from "next/navigation";
+import { ActivityType, ActivityStatus } from "./models/user-activity-log-model";
 
 type Props = {
   article: ArticleShowcase;
+  userId?: string;
 };
 
 async function getTranslate(
@@ -26,7 +28,7 @@ async function getTranslate(
   return res.data;
 }
 
-const ArticleShowcaseCard = ({ article }: Props) => {
+const ArticleShowcaseCard = ({ article, userId }: Props) => {
   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
   const locale = useCurrentLocale();
   const pathName = usePathname();
@@ -58,7 +60,24 @@ const ArticleShowcaseCard = ({ article }: Props) => {
   }
 
   return (
-    <Link href={`/student/read/${article.id}`}>
+    <Link
+      href={`/student/read/${article.id}`}
+      onClick={() =>
+        fetch(`/api/v1/users/${userId}/activitylog`, {
+          method: "POST",
+          body: JSON.stringify({
+            articleId: article.id,
+            activityType: ActivityType.ArticleRead,
+            activityStatus: ActivityStatus.InProgress,
+            details: {
+              title: article.title,
+              level: article.ra_level,
+              cefr_level: article.cefr_level,
+            },
+          }),
+        })
+      }
+    >
       <div
         className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md hover:scale-105 transition-all duration-300 bg-black "
         style={{

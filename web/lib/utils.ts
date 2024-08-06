@@ -59,7 +59,6 @@ export function formatTimestamp(updatedAt: {
   }
 }
 
-
 export function camelToSentenceCase(str: string) {
   return str
     .replace(/([A-Z])/g, " $1")
@@ -76,12 +75,19 @@ export function camelToSentenceCase(str: string) {
  * @param {string} content - The content to split into sentences.
  * @returns {string[]} An array of sentences.
  */
-export function splitTextIntoSentences(content: string, allowEnd: boolean = false): string[] {
-  // If content contains \n 
+export function splitTextIntoSentences(
+  content: string,
+  allowEnd: boolean = false
+): string[] {
+  // If content contains \n
   const regex = /(\n\n|\n|\\n\\n|\\n)/g;
   if (content.match(regex)) {
     content = content.replace(regex, allowEnd ? "~~" : "");
-    const sentences = content.split(/(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./).filter((sentence) => sentence.length > 0);
+    const sentences = content
+      .split(
+        /(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.)(?<!\b(?:Mr|Mrs|Dr|Ms|St|Ave|Rd|Blvd|Ph|D|Jr|Sr|Co|Inc|Ltd|Corp|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\./
+      )
+      .filter((sentence) => sentence.length > 0);
 
     // add . to the end of each sentence
     if (allowEnd) {
@@ -129,78 +135,77 @@ export function levelCalculation(xp: number) {
 }
 
 //function to get cefrLevel and xp from firebase
-export async function getPreviousData(userId: string) {
-  try {
-    const response = await axios.get(`/api/users/${userId}`);
-    if (response.status === 400) {
-      throw new Error("User not found");
-    }
-    const data = response.data;
-    const cefrLevel = data.data.cefrLevel;
-    const previousXp = data.data.xp;
-    // console.log("data", data);
-    return { cefrLevel, previousXp };
-  } catch (error) {
-    console.log("Error:", error);
-  }
-}
+// export async function getPreviousData(userId: string) {
+//   try {
+//     const response = await axios.get(`/api/users/${userId}`);
+//     if (response.status === 400) {
+//       throw new Error("User not found");
+//     }
+//     const data = response.data;
+//     const cefrLevel = data.data.cefrLevel;
+//     const previousXp = data.data.xp;
+//     // console.log("data", data);
+//     return { cefrLevel, previousXp };
+//   } catch (error) {
+//     console.log("Error:", error);
+//   }
+// }
 
-export async function updateScore(
-  xp: number,
-  userId: string,
-  updateSession?: Function
-) {
-  try {
-    const previousData = await getPreviousData(userId);
-    const cefrLevel = previousData?.cefrLevel;
-    let previousXp = previousData?.previousXp;
-    let newScore = 0;
+// export async function updateScore(
+//   xp: number,
+//   userId: string,
+//   updateSession?: Function
+// ) {
+//   try {
+//     const previousData = await getPreviousData(userId);
+//     const cefrLevel = previousData?.cefrLevel;
+//     let previousXp = previousData?.previousXp;
+//     let newScore = 0;
 
-    if (cefrLevel === "") {
-      //increase new xp with 0
-      previousXp = 0;
-      newScore = previousXp + xp;
-    } else {
-      // increase new xp with actual new xp
-      newScore = previousXp + xp;
-    }
+//     if (cefrLevel === "") {
+//       //increase new xp with 0
+//       previousXp = 0;
+//       newScore = previousXp + xp;
+//     } else {
+//       // increase new xp with actual new xp
+//       newScore = previousXp + xp;
+//     }
 
-    const response = await fetch(`/api/users/${userId}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        xp: newScore,
-        level: levelCalculation(newScore).raLevel,
-        cefrLevel: levelCalculation(newScore).cefrLevel,
-      }),
-    });
+//     const response = await fetch(`/api/users/${userId}`, {
+//       method: "PATCH",
+//       body: JSON.stringify({
+//         xp: newScore,
+//         level: levelCalculation(newScore).raLevel,
+//         cefrLevel: levelCalculation(newScore).cefrLevel,
+//       }),
+//     });
 
-    const data = await response.json();
-    (await updateSession)
-      ? {
-        user: {
-          // ...session?.user,
-          xp: previousXp + newScore,
-          level: levelCalculation(xp).raLevel,
-          cefrLevel: levelCalculation(xp).cefrLevel,
-        },
-      }
-      : null;
+//     const data = await response.json();
+//     (await updateSession)
+//       ? {
+//         user: {
+//           // ...session?.user,
+//           xp: previousXp + newScore,
+//           level: levelCalculation(xp).raLevel,
+//           cefrLevel: levelCalculation(xp).cefrLevel,
+//         },
+//       }
+//       : null;
 
-    return new Response(
-      JSON.stringify({
-        message: "success",
-      }),
-      { status: 201 }
-    );
-  } catch (error) {
-    return new Response(
-      JSON.stringify({
-        message: error,
-      }),
-      { status: 501 }
-    );
-  }
-}
+//     return new Response(
+//       JSON.stringify({
+//         message: "success",
+//       }),
+//       { status: 201 }
+//     );
+//   } catch (error) {
+//     return new Response(
+//       JSON.stringify({
+//         message: error,
+//       }),
+//       { status: 501 }
+//     );
+//   }
+// }
 
 // updateScore(5000, "qWXtOI9Hr6QtILuhsrOc06zXZUg1");
-
