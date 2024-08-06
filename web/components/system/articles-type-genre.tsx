@@ -24,7 +24,7 @@ export default function ArticlesByTypeAndGenreChart() {
     <>
       <Card className="col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg font-bold">Articles by Type and Genre</CardTitle>
+            <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">Articles by Type and Genre</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex space-x-4">

@@ -21,17 +21,17 @@ export const systemPageConfig: SystemPageConfig = {
     ],
     systemSidebarNav: [
         {
-            title: "system dashboard",
+            title: "System Dashboard",
             href: '/system/dashboard',
             icon: "dashboard",
         },
         {
-            title: "handle passages",
+            title: "Handle Passages",
             href: '/system/handle-passages',
             icon: "book",
         },
         {
-            title: "license",
+            title: "License",
             href: '/system/license',
             icon: "scrollText",
         },

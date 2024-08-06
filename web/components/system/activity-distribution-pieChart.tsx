@@ -81,16 +81,17 @@ export default function ActivityDistributionPieChart() {
 
   return (
     <>
-       <Card className="col-span-1">
+       <Card className="h-full">
         <CardHeader>
-          <CardTitle>Activity Distribution</CardTitle>
+          <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">Activity Distribution</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex items-center justify-center h-[calc(100%-4rem)]">
         <ChartContainer
             config={chartConfig}
-            className="mx-auto aspect-square max-h-[250px]"
+            // className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px] md:max-h-[350px] lg:max-h-[400px]"
+            className="w-full h-full max-w-[300px] max-h-[300px] lg:max-w-full lg:max-h-full"
           >
-            <PieChart>
+            <PieChart width={300} height={300}>
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent hideLabel />}
@@ -115,7 +116,7 @@ export default function ActivityDistributionPieChart() {
                           <tspan
                             x={viewBox.cx}
                             y={viewBox.cy}
-                            className="fill-foreground text-3xl font-bold"
+                            className="fill-foreground text-3xl sm:text-2xl lg:text-3xl font-bold"
                           >
                             {totalVisitors.toLocaleString()}
                           </tspan>

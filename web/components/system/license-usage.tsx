@@ -46,26 +46,26 @@ export default async function LicenseUsageChart() {
 
   return (
     <>
-      <Card className="col-span-1">
+      <Card className="h-full">
         <CardHeader>
-          <CardTitle className="text-lg font-bold">License Usage</CardTitle>
+          <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">License Usage</CardTitle>
         </CardHeader>
         <CardContent>
           <Carousel>
             <CarouselContent>
               {licenseData.map((license: License, index) => (
                 <CarouselItem key={index}>
-                  <div className="p-1">
-                    <div className="flex justify-between">
-                      <CardDescription>
+                  <div className="p-1 sm:p-2 md:p-4">
+                    <div className="flex justify-between flex-col sm:flex-row mb-2 sm:mb-4">
+                      <CardDescription className="text-xs sm:text-sm">
                         School: {license.school_name}
                       </CardDescription>
-                      <CardDescription>
+                      <CardDescription className="text-xs sm:text-sm">
                         School Level: {license.subscription_level}
                       </CardDescription>
                     </div>
-                    <CardContent className="flex aspect-square items-center justify-center p-6">
-                      <div className="w-full max-w-md mx-auto" id="gaugeArea">
+                    <CardContent className="flex items-center justify-center sm:p-4 md:p-6">
+                      <div className="w-full max-w-md sm:max-w-sm md:max-w-md" id="gaugeArea">
                         <GaugeChart
                           id="gauge-chart"
                           // nrOfLevels={30}
@@ -85,13 +85,13 @@ export default async function LicenseUsageChart() {
                           nrOfLevels={420}
                         />
 
-                        <div className="text-center text-4xl font-bold mt-4">
+                        <div className="text-center text-2xl font-bold mt-2 sm:text-3xl md:text-4xl sm:mt-4">
                           {Math.round(license.used_licenses * 100) /
                             license.total_licenses}
                           %
                         </div>
                        
-                           <div className="flex justify-between mt-2">
+                           <div className="flex justify-between mt-2 text-xs sm:text">
                           <span>0%</span>
                           <span>100%</span>
                         </div>
