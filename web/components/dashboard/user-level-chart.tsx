@@ -144,13 +144,11 @@ export function UserLevelChart({ data }: UserActiviryChartProps) {
           <Card>
             <CardContent className="py-2">
               <CardTitle>Date Range</CardTitle>
-              <p className="font-bold text-2xl">
-                <DateField
-                  label=""
-                  value={calendarValue}
-                  onChange={handleValueChange}
-                />
-              </p>
+              <DateField
+                label=""
+                value={calendarValue}
+                onChange={handleValueChange}
+              />
             </CardContent>
           </Card>
         </CardContent>

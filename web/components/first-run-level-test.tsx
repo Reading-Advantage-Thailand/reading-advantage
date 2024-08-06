@@ -14,6 +14,7 @@ import { useSession } from "next-auth/react";
 import Confetti from "react-confetti";
 import { useScopedI18n } from "../locales/client";
 import { levelCalculation } from "../lib/utils";
+import { ActivityStatus, ActivityType } from "./models/user-activity-log-model";
 
 type Props = {
   userId: string;
@@ -220,8 +221,8 @@ export default function FirstRunLevelTest({
                     {
                       method: "POST",
                       body: JSON.stringify({
-                        activityType: "level_test",
-                        activityStatus: "completed",
+                        activityType: ActivityType.LevelTest,
+                        activityStatus: ActivityStatus.Completed,
                         xpEarned: xp,
                         details: {
                           questionsAnswered: isQuestionAnswered,

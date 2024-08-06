@@ -32,6 +32,10 @@ import Rating from "@mui/material/Rating";
 import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
 import { useRouter } from "next/navigation";
+import {
+  ActivityStatus,
+  ActivityType,
+} from "../models/user-activity-log-model";
 
 type Props = {
   userId: string;
@@ -281,9 +285,9 @@ function SAQuestion({
     await fetch(`/api/v1/users/${userId}/activitylog`, {
       method: "POST",
       body: JSON.stringify({
-        articleId: articleId || "STSTEM",
-        activityType: "sa_question",
-        activityStatus: "completed",
+        articleId: articleId,
+        activityType: ActivityType.SA_Question,
+        activityStatus: ActivityStatus.Completed,
         timeTaken: timer,
         xpEarned: rating,
         details: data,

@@ -19,11 +19,6 @@ export async function postActivityLog(
   { params: { id } }: RequestContext
 ) {
   try {
-    //getUser
-    // const userRef = await db.collection("users").doc(id).get();
-
-    // const userData = userRef.data();
-
     //Data from frontend
     const data = await req.json();
     // getActivityLog
@@ -35,6 +30,7 @@ export async function postActivityLog(
       "sa_question",
       "la_question",
       "article_rating",
+      "article_read",
     ];
 
     const collectionRef = db
@@ -54,7 +50,7 @@ export async function postActivityLog(
 
     const commonData = {
       userId: id,
-      articleId: data.articleId || "STSTEM",
+      // articleId: data.articleId || "STSTEM",
       activityType: data.activityType,
       activityStatus: data.activityStatus || "in_progress",
       timestamp: new Date(),
@@ -66,7 +62,7 @@ export async function postActivityLog(
       finalLevel: levelCalculation(
         (req.session?.user.xp as number) + data.xpEarned || 0
       ).raLevel,
-      details: data.details || {},
+      // details: data.details || {},
       ...data,
     };
 
@@ -82,7 +78,7 @@ export async function postActivityLog(
           ...commonData,
         });
       }
-    } else {
+    } else if (commonData.activityStatus === "completed") {
       //Update if have data
       await collectionRef.doc(documentId).set(commonData);
     }
@@ -99,13 +95,28 @@ export async function postActivityLog(
         });
     }
 
+    //update Rating to article-records collection
+    if (
+      commonData.activityType === "article_rating" &&
+      commonData.details.Rating
+    ) {
+      await db
+        .collection("users")
+        .doc(id)
+        .collection("article-records")
+        .doc(commonData.articleId)
+        .update({ rated: commonData.details.Rating });
+    }
+
     return NextResponse.json({
       message: "Success",
+      status: 200,
     });
   } catch (error) {
     console.log("getActivity => ", error);
     return NextResponse.json({
       message: "Error",
+      status: 500,
     });
   }
 }

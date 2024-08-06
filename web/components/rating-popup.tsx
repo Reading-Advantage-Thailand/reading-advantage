@@ -6,7 +6,11 @@ import axios from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { toast } from "./ui/use-toast";
 import { Article } from "./models/article-model";
-import { UserXpEarned } from "./models/user-activity-log-model";
+import {
+  UserXpEarned,
+  ActivityStatus,
+  ActivityType,
+} from "./models/user-activity-log-model";
 import { useRouter } from "next/navigation";
 
 interface RateDialogProps {
@@ -42,11 +46,20 @@ export default function RatingPopup({
 
   const ratedFetch = async () => {
     try {
-      const result = await instance.get(
-        `/api/users/${userId}/article-records/${articleId}`
+      const ratingData = await fetch(
+        `/api/v1/users/${userId}/activitylog`
+      ).then((data) => data.json());
+      const filterRating = ratingData.results.filter(
+        (data: any) =>
+          data.articleId === articleId &&
+          data.activityType === ActivityType.ArticleRating
       );
-      const data = result.data.userArticleRecord.rated;
-      setOldRating(data);
+
+      // const result = await instance.get(
+      //   `/api/users/${userId}/article-records/${articleId}`
+      // );
+      // const data = result.data.userArticleRecord.rated;
+      setOldRating(filterRating[0].details.Rating);
     } catch (error) {
       console.log("Error fetching rating: ", error);
     }
@@ -55,13 +68,30 @@ export default function RatingPopup({
   const onUpdateUser = async () => {
     if (value === -1) return;
     if (value !== 0 && oldRating === 0) {
-      const response = await fetch(`/api/v1/users/${userId}/activitylog`, {
+      const ratingActivity = await fetch(
+        `/api/v1/users/${userId}/activitylog`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            articleId: articleId,
+            activityType: ActivityType.ArticleRating,
+            activityStatus: ActivityStatus.Completed,
+            xpEarned: UserXpEarned.Article_Rating,
+            details: {
+              title: article.title,
+              raLevel: article.ra_level,
+              CEFRLevel: article.cefr_level,
+              Rating: value,
+            },
+          }),
+        }
+      );
+      const readActivity = await fetch(`/api/v1/users/${userId}/activitylog`, {
         method: "POST",
         body: JSON.stringify({
           articleId: articleId,
-          activityType: "article_rating",
-          activityStatus: "completed",
-          xpEarned: UserXpEarned.Article_Rating,
+          activityType: ActivityType.ArticleRead,
+          activityStatus: ActivityStatus.Completed,
           details: {
             title: article.title,
             raLevel: article.ra_level,
@@ -69,8 +99,10 @@ export default function RatingPopup({
           },
         }),
       });
-      const data = await response.json();
-      if (data.message === "Success") {
+
+      const resRatingActivity = await ratingActivity.json();
+      const resReadActivity = await readActivity.json();
+      if (resRatingActivity.status === 200 && resReadActivity.status === 200) {
         toast({
           title: t("toast.success"),
           imgSrc: true,
@@ -81,6 +113,24 @@ export default function RatingPopup({
       }
       setLoading(false);
     } else if (value !== 0 && oldRating !== 0) {
+      const ratingActivity = await fetch(
+        `/api/v1/users/${userId}/activitylog`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            articleId: articleId,
+            activityType: ActivityType.ArticleRating,
+            activityStatus: ActivityStatus.Completed,
+            xpEarned: UserXpEarned.Article_Rating,
+            details: {
+              title: article.title,
+              raLevel: article.ra_level,
+              CEFRLevel: article.cefr_level,
+              Rating: value,
+            },
+          }),
+        }
+      );
       toast({
         title: t("toast.success"),
         imgSrc: true,
@@ -107,7 +157,6 @@ export default function RatingPopup({
         articleId: articleId,
         activityType: "article_rating",
         activityStatus: "in_progress",
-        xpEarned: 0,
         details: {
           title: article.title,
           raLevel: article.ra_level,
