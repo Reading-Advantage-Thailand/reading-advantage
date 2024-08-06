@@ -38,7 +38,8 @@ import {
     Trash2,
     UserPlus,
     ClipboardList,
-    BookOpenCheck
+    BookOpenCheck,
+    ScrollText,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -81,6 +82,7 @@ export const Icons = {
   delete: Trash2,
   addUser: UserPlus,
   assignments: BookOpenCheck,
+  scrollText: ScrollText,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"
