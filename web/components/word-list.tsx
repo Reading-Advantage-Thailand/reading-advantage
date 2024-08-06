@@ -222,6 +222,17 @@ export default function WordList({ article, articleId, userId }: Props) {
                                               height={20}
                                               className={"mx-3 cursor-pointer"}
                                             />
+                                            {/*  <AudioButton
+                                                      key={sentence.id}
+                                                      audioUrl={
+                                                        sentence.audioUrl
+                                                          ? sentence.audioUrl
+                                                          : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${sentence.articleId}.mp3`
+                                                      }
+                                                      startTimestamp={sentence.timepoint}
+                                                      endTimestamp={sentence.endTimepoint}
+                                                    />
+                                          */}
                                           </div>
 
                                           <span>

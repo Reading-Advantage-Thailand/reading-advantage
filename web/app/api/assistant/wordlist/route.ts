@@ -1,6 +1,8 @@
 import OpenAI from "openai";
 import db from "@/configs/firestore-config";
+import storage from "@/utils/storage";
 import { generateAudioWord } from "@/server/utils/generators/audio-words-generator";
+import { AUDIO_WORDS_URL } from "@/server/constants";
 
 export async function POST(req: Request, res: Response) {
   try {
@@ -111,10 +113,18 @@ export async function POST(req: Request, res: Response) {
       const passage = resultWordList.map((item: any) => item.vocabulary);
 
       try {
-        await generateAudioWord({
-          passage: passage,
-          articleId: param?.articleId,
-        });
+        // validate audio words
+        const fileExtention = ".mp3";
+        const fileExists = await storage
+          .bucket("artifacts.reading-advantage.appspot.com")
+          .file(`${AUDIO_WORDS_URL}/${param?.articleId}${fileExtention}`)
+          .exists();
+        if (!fileExists[0]) {
+          await generateAudioWord({
+            passage: passage,
+            articleId: param?.articleId,
+          });
+        }
       } catch (error) {
         throw new Error(`failed to generate audio: ${error}`);
       }
