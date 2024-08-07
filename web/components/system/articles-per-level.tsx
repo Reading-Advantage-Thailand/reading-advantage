@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Label, LabelList, XAxis } from "recharts";
 import {
   Card,
   CardContent,
@@ -163,7 +163,14 @@ export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerL
               dataKey="numberOfArticles"
               fill={chartConfig.articles.color}
               radius={4}
-            />
+            >
+              <LabelList 
+              position="top"
+              offset={12}
+              fontSize={12}
+              className="fill-foreground"
+              />
+              </Bar>
           </BarChart>
 
           ) : (
@@ -173,11 +180,6 @@ export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerL
           )}
         </ChartContainer>
       </CardContent>
-      {/* <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="leading-none text-muted-foreground">
-          Showing total articles for the selected period
-        </div>
-      </CardFooter> */}
     </Card>
   );
 }

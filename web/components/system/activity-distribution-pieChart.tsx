@@ -1,7 +1,8 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import '@/styles/globals.css';
 import { TrendingUp } from "lucide-react";
-import { Label, Pie, PieChart } from "recharts";
+import { Label, Pie, PieChart, ResponsiveContainer } from "recharts";
 import {
   Card,
   CardContent,
@@ -13,6 +14,8 @@ import {
 import {
   ChartConfig,
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
@@ -21,121 +24,137 @@ const chartData = [
   { activity: "MC", numberOfTimes: 200, fill: "var(--color-mc)" },
   { activity: "SA", numberOfTimes: 287, fill: "var(--color-sa)" },
   { activity: "LA", numberOfTimes: 275, fill: "var(--color-la)" },
-  { activity: "sentense flashcards", numberOfTimes: 275, fill: "var(--color-sentense_flashcards)" },
-  { activity: "vocabulary flashcards", numberOfTimes: 275, fill: "var(--color-vocabulary_flashcards)" },
-  { activity: "Sentense activities ", numberOfTimes: 275, fill: "var(--color-sentense_activities)" },
-  { activity: "Vocabulary activities", numberOfTimes: 275, fill: "var(--color-vocabulary_activities)" },
-  { activity: "Article reads", numberOfTimes: 275, fill: "var(--color-article_reads)" },
-  { activity: "Article rating", numberOfTimes: 275, fill: "var(--color-article_rating)" },
-  { activity: "Level test", numberOfTimes: 275, fill: "var(--color-level_test)" },
-
+  {
+    activity: "sent. flash.",
+    numberOfTimes: 275,
+    fill: "var(--color-sentense_flashcards)",
+  },
+  {
+    activity: "vocab. flash.",
+    numberOfTimes: 275,
+    fill: "var(--color-vocabulary_flashcards)",
+  },
+  {
+    activity: "Sent. act.",
+    numberOfTimes: 275,
+    fill: "var(--color-sentense_activities)",
+  },
+  {
+    activity: "Vocab. act.",
+    numberOfTimes: 275,
+    fill: "var(--color-vocabulary_activities)",
+  },
+  {
+    activity: "Article reads",
+    numberOfTimes: 275,
+    fill: "var(--color-article_reads)",
+  },
+  {
+    activity: "Article rating",
+    numberOfTimes: 275,
+    fill: "var(--color-article_rating)",
+  },
+  {
+    activity: "Level test",
+    numberOfTimes: 275,
+    fill: "var(--color-level_test)",
+  },
 ];
 
 const chartConfig = {
   mc: {
     label: "MC",
-    color: "#6366F1",
+    color: "hsl(221.2 83.2% 53.3%)",
   },
   sa: {
     label: "SA",
-    color: "#D97706",
+    color: "hsl(212 95% 68%)",
   },
   la: {
     label: "LA",
-    color: "#10B981",
+    color: "hsl(216 92% 60%)",
   },
-  article_read: {
+  article_reads: {
     label: "Article Reads",
-    color: "#e74c3c",
+    color: "hsl(218 98% 79%)",
   },
   article_rating: {
     label: "Article Rating",
-    color: "#3498db",
+    color: "hsl(212 97% 87%)",
   },
   sentense_flashcards: {
     label: "Level Test",
-    color: "#9b59b6",
+    color: "hsl(202 96% 86%)",
   },
   vocabulary_flashcards: {
     label: "Save Sentence",
-    color: "#f1c40f",
+    color: "hsl(222 95% 88%)",
   },
   sentense_activities: {
     label: "Save Vocabulary",
-    color: "#e67e22",
+    color: "hsl(212 95% 68%)",
   },
   vocabulary_activities: {
     label: "Sentence Cloze Test",
-    color: "#1abc9c",
+    color: "hsl(202 85% 68%)",
   },
   level_test: {
     label: "Sentence Matching",
-    color: "#34495e",
+    color: "hsl(215 95% 68%)",
   },
 } satisfies ChartConfig;
 
 export default function ActivityDistributionPieChart() {
-  const totalVisitors = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.numberOfTimes, 0);
-  }, []);
-
   return (
     <>
-       <Card className="h-full">
+      <Card className="h-full">
         <CardHeader>
-          <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">Activity Distribution</CardTitle>
+          <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
+            Activity Distribution
+          </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-[calc(100%-4rem)]">
-        <ChartContainer
+        <CardContent className="flex-1 pb-0">
+          <ChartContainer
             config={chartConfig}
-            // className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px] md:max-h-[350px] lg:max-h-[400px]"
-            className="w-full h-full max-w-[300px] max-h-[300px] lg:max-w-full lg:max-h-full"
+            className="w-full max-h-[350px] [&_.recharts-pie-label-text]:fill-foreground"
           >
-            <PieChart width={300} height={300}>
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent hideLabel />} />
               <Pie
                 data={chartData}
                 dataKey="numberOfTimes"
                 nameKey="activity"
-                innerRadius={60}
-                strokeWidth={5}
-              >
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      return (
-                        <text
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
-                          <tspan
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            className="fill-foreground text-3xl sm:text-2xl lg:text-3xl font-bold"
-                          >
-                            {totalVisitors.toLocaleString()}
-                          </tspan>
-                          {/* <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 24}
-                            className="fill-muted-foreground"
-                          >
-                            Total number of times activities
-                          </tspan> */}
-                        </text>
-                      );
-                    }
-                  }}
-                />
-              </Pie>
+                label={(entry) => entry.activity}
+                labelLine={true}
+                outerRadius="80%"
+              />
             </PieChart>
           </ChartContainer>
+
+{/* <ChartContainer
+          config={chartConfig}
+          className="w-full h-[200px] sm:h-[300px] md:h-[350px] [&_.recharts-pie-label-text]:fill-foreground"
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+              <Pie
+                data={chartData}
+                dataKey="numberOfTimes"
+                nameKey="activity"
+                label={(entry) => entry.activity}
+                labelLine={true}
+                outerRadius="80%"
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartContainer> */}
         </CardContent>
+        <CardFooter className="flex-col gap-2 mt-8 text-sm">
+          <div className="leading-none text-muted-foreground hidden sm:block md:block lg:block">
+            Showing the distribution of activities
+          </div>
+        </CardFooter>
       </Card>
     </>
   );
