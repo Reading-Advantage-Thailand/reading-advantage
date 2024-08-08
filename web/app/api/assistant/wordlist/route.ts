@@ -109,32 +109,26 @@ export async function POST(req: Request, res: Response) {
 
       const fileExtension = ".mp3";
 
-      // const fileExists = await storage
-      //   .bucket("artifacts.reading-advantage.appspot.com")
-      //   .file(`${AUDIO_WORDS_URL}/${param?.articleId}${fileExtension}`)
-      //   .exists();
+      const fileExists = await storage
+        .bucket("artifacts.reading-advantage.appspot.com")
+        .file(`${AUDIO_WORDS_URL}/${param?.articleId}${fileExtension}`)
+        .exists();
 
       await wordListRef.set({
         word_list: resultWordList,
         articleId: param.articleId,
       });
 
-      // if (!fileExists[0]) {
-      await generateAudioWord({
-        passage: passage,
-        articleId: param?.articleId,
-      });
-      // }
-
-      const dataList = await wordListSnapshot.data();
-
-      console.log("dataList : ", dataList);
+      if (!fileExists[0]) {
+        await generateAudioWord({
+          passage: passage,
+          articleId: param?.articleId,
+        });
+      }     
 
       return new Response(
         JSON.stringify({
-          messages: "success",
-          word_list: resultWordList,
-          // timepoints: allTimePoints,
+          messages: "success",        
         }),
         { status: 200 }
       );
