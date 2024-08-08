@@ -51,9 +51,9 @@ export async function generateAudioWord({
           params: { key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY },
         }
       );
-      const audio = response.data.audioContent;
+      const audio = response?.data?.audioContent;
       const MP3 = base64.toByteArray(audio);
-      allTimePoints = response.data.timepoints;
+      allTimePoints = response?.data?.timepoints;
 
       const localPath = `${process.cwd()}/data/audios-words/${articleId}.mp3`;
       fs.writeFileSync(localPath, MP3);
@@ -62,6 +62,7 @@ export async function generateAudioWord({
         timepoints: allTimePoints,
         id: articleId,
       });
+
     } catch (error: any) {
       throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
         error.response.data
