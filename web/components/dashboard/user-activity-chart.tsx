@@ -1,5 +1,4 @@
 "use client";
-import { ArticleRecord, User } from "@/types";
 import {
   CartesianGrid,
   Line,
@@ -19,9 +18,9 @@ import {
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import { UserActivityLog } from "../models/user-activity-log-model";
-import { QuizStatus } from "../models/questions-model";
 import { DateField } from "@/components/ui/date-field";
 import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
+import { CloudFog } from "lucide-react";
 
 // Function to calculate the data for the chart
 // This function takes in the articles and the number of days to go back
@@ -84,6 +83,8 @@ function formatDataForDays(
     });
   }
 
+  console.log(articles);
+
   return data;
 }
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -91,7 +92,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="bg-accent p-3 rounded-md">
         <p className="text-md font-bold">{`${label}`}</p>
-        <p className="text-sm">{`User is xpEarned ${payload[0].value}`}</p>
+        <p className="text-sm">{`${payload[0].value} XP`}</p>
       </div>
     );
   }
@@ -102,7 +103,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 interface UserActiviryChartProps {
   data: UserActivityLog[];
 }
-export function UserLevelChart({ data }: UserActiviryChartProps) {
+export function UserActivityChart({ data }: UserActiviryChartProps) {
   const { theme } = useTheme();
   const [calendarValue, setCalendarValue] = useState<DateValueType>({
     startDate: new Date(new Date().setDate(new Date().getDate() - 6)),
@@ -128,20 +129,22 @@ export function UserLevelChart({ data }: UserActiviryChartProps) {
         <CardHeader>
           <CardTitle>Activity Progress</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3 lg:grid-cols-3">
-          <Card>
-            <CardContent className="py-2">
-              <CardTitle>In prograss</CardTitle>
-              <p className="font-bold text-3xl">{inProgressCount}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="py-2">
-              <CardTitle>Completed</CardTitle>
-              <p className="font-bold text-3xl">{completedCount}</p>
-            </CardContent>
-          </Card>
-          <Card>
+        <CardContent className="grid gap-4 md:grid-cols-5 lg:grid-cols-5">
+          <div className="grid gap-4 grid-cols-2 col-span-3">
+            <Card>
+              <CardContent className="py-2">
+                <CardTitle>In prograss</CardTitle>
+                <p className="font-bold text-2xl">{inProgressCount}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="py-2">
+                <CardTitle>Completed</CardTitle>
+                <p className="font-bold text-2xl">{completedCount}</p>
+              </CardContent>
+            </Card>
+          </div>
+          <Card className="col-span-2">
             <CardContent className="py-2">
               <CardTitle>Date Range</CardTitle>
               <DateField
@@ -177,9 +180,21 @@ export function UserLevelChart({ data }: UserActiviryChartProps) {
               />
               <Tooltip content={<CustomTooltip />} />
               {theme === "dark" ? (
-                <Line dataKey="xpEarned" stroke="#fafafa" strokeWidth={3} />
+                <Line
+                  dataKey="xpEarned"
+                  type="step"
+                  stroke="#fafafa"
+                  strokeWidth={3}
+                  dot={false}
+                />
               ) : (
-                <Line dataKey="xpEarned" stroke="#009688" strokeWidth={3} />
+                <Line
+                  dataKey="xpEarned"
+                  type="step"
+                  stroke="#009688"
+                  strokeWidth={3}
+                  dot={false}
+                />
               )}
             </LineChart>
           </ResponsiveContainer>

@@ -1,5 +1,5 @@
-import { UserActivityChart } from "@/components/dashboard/user-artivity-chart";
-import { UserLevelChart } from "@/components/dashboard/user-level-chart";
+import { UserActivityChart } from "@/components/dashboard/user-activity-chart";
+import { UserXpOverAllChart } from "@/components/dashboard/user-xpoverall-chart";
 import { Header } from "@/components/header";
 import {
   Card,
@@ -88,7 +88,7 @@ export default async function ProgressPage({
         <div>
           <Header heading={t("progressOf", { nameOfStudent: nameOfStudent })} />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4 mb-10">
-            <UserLevelChart data={resStudentProgress.results} />
+            <UserActivityChart data={resStudentProgress.results} />
           </div>
         </div>
       ) : (
