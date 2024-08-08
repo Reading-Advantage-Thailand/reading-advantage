@@ -1,20 +1,24 @@
 import OpenAI from "openai";
 import db from "@/configs/firestore-config";
+import storage from "@/utils/storage";
+import { generateAudioWord } from "@/server/utils/generators/audio-words-generator";
+import { AUDIO_WORDS_URL } from "@/server/constants";
 
 export async function POST(req: Request, res: Response) {
   try {
     const param = await req.json();
 
     // First need to find the word list of the article in db
-    const articleRef = db.collection(`word-list`).doc(param?.articleId);
-    const articleSnapshot = await articleRef.get();
-    const article = articleSnapshot.data();
+    const wordListRef = db.collection(`word-list`).doc(param?.articleId);
+    const wordListSnapshot = await wordListRef.get();
 
-    if (articleSnapshot?.exists) {
+    if (wordListSnapshot?.exists) {
+      const dataList = wordListSnapshot.data();
       return new Response(
         JSON.stringify({
           messages: "success",
-          word_list: article?.word_list,
+          word_list: dataList?.word_list,
+          timepoints: dataList?.timepoints,
         }),
         { status: 200 }
       );
@@ -97,52 +101,34 @@ export async function POST(req: Request, res: Response) {
       });
 
       // Save to db
-      await articleRef.set({
-        word_list: JSON.parse(
-          response.choices[0].message.function_call?.arguments as string
-        )?.word_list,
+      const resultWordList = JSON.parse(
+        response.choices[0].message.function_call?.arguments as string
+      )?.word_list;
+
+      const passage = resultWordList.map((item: any) => item?.vocabulary);
+
+      const fileExtension = ".mp3";
+
+      const fileExists = await storage
+        .bucket("artifacts.reading-advantage.appspot.com")
+        .file(`${AUDIO_WORDS_URL}/${param?.articleId}${fileExtension}`)
+        .exists();
+
+      await wordListRef.set({
+        word_list: resultWordList,
         articleId: param.articleId,
       });
 
-      // gen file audio
-      /*
-      try {
-       
-        const allTimepoints: any[] = [];
-        let index = 0;
---> chunks : array ของ word
-
---> check check จาก validateAudioWords ว่ามีไฟล์ mp3 ไหม 
-        
-            const timepoints = await fetchAudio(chunks[i], i, params.articleId);
-            timepoints.forEach((tp: any) => {
-                allTimepoints.push({
-                    markName: `sentence${index}`,
-                    timeSeconds: tp.timeSeconds,
-                    index: index,
-                    file: `${params.articleId}_${i}.mp3`,
-                });
-                index++;
-            });
-        
-
-        // Update the database with all timepoints
-        await db.collection("new-articles").doc(params.articleId).update({
-            timepoints: allTimepoints,
-            id: params.articleId,
+      if (!fileExists[0]) {
+        await generateAudioWord({
+          passage: passage,
+          articleId: param?.articleId,
         });
-    } catch (error) {
-        console.log(error);
-        throw new Error(`failed to generate audio: ${error}`);
-    }
-      */
+      }     
 
       return new Response(
         JSON.stringify({
-          messages: "success",
-          word_list: JSON.parse(
-            response.choices[0].message.function_call?.arguments as string
-          )?.word_list,
+          messages: "success",        
         }),
         { status: 200 }
       );
@@ -150,7 +136,9 @@ export async function POST(req: Request, res: Response) {
   } catch (error) {
     return new Response(
       JSON.stringify({
-        message: "Internal server error",
+        message: `failed to generate audio: ${
+          error as unknown
+        } \n\n axios error: ${JSON.stringify((error as any).response.data)}`,
       }),
       { status: 500 }
     );

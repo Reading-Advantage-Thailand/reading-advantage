@@ -9,22 +9,22 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { createEmptyCard, Card } from "ts-fsrs";
 import { filter, includes } from "lodash";
-import Image from "next/image";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { AUDIO_WORDS_URL } from "@/server/constants";
 import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
 import { toast } from "./ui/use-toast";
+import AudioImg from "./audio-img";
 
 interface Props {
   article: Article;
@@ -41,6 +41,10 @@ interface WordList {
     tw: string;
     vi: string;
   };
+  index: number;
+  startTime: number;
+  endTime: number;
+  audioUrl: string;
 }
 
 export default function WordList({ article, articleId, userId }: Props) {
@@ -70,8 +74,27 @@ export default function WordList({ article, articleId, userId }: Props) {
         userId,
       });
 
-      setWordList(resWordlist?.data?.word_list);
-      form.reset();
+      if (resWordlist?.data?.timepoints) {
+        const wordList = resWordlist?.data?.timepoints.map(
+          (timepoint: { timeSeconds: number }, index: number) => {
+            const startTime = timepoint.timeSeconds;
+            const endTime =
+              index === resWordlist?.data?.timepoints.length - 1
+                ? timepoint.timeSeconds + 10
+                : resWordlist?.data?.timepoints[index + 1].timeSeconds
+            return {
+              vocabulary: resWordlist?.data?.word_list[index]?.vocabulary,
+              definition: resWordlist?.data?.word_list[index]?.definition,
+              index,
+              startTime,
+              endTime,
+              audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`,
+            };
+          }
+        );
+        setWordList(wordList);
+        form.reset();
+      }
     } catch (error: any) {
       toast({
         title: "Something went wrong.",
@@ -215,13 +238,16 @@ export default function WordList({ article, articleId, userId }: Props) {
                                             {word.vocabulary}:{" "}
                                           </span>
                                           <div className="mr-5">
-                                            <Image
-                                              src={"/sound-play-sound.svg"}
-                                              alt="play sound"
-                                              width={20}
-                                              height={20}
-                                              className={"mx-3 cursor-pointer"}
-                                            />
+                                            <AudioImg
+                                              key={word.index}
+                                              audioUrl={
+                                                word.audioUrl
+                                                  ? word.audioUrl
+                                                  : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`
+                                              }
+                                              startTimestamp={word?.startTime}
+                                              endTimestamp={word?.endTime}
+                                            />                                       
                                           </div>
 
                                           <span>
@@ -241,25 +267,25 @@ export default function WordList({ article, articleId, userId }: Props) {
                   />
                 </>
               )}
-              <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4">
-                <div className="flex justify-end mt-5">
-                  <DialogClose asChild>
-                    <Button type="button" variant="secondary">
-                      {t("closeButton")}
-                    </Button>
-                  </DialogClose>
-                  <Button
-                    className="ml-2"
-                    type="submit"
-                    disabled={
-                      form.watch("items")?.length === 0 ||
-                      form.watch("items") === undefined
-                    }
-                  >
-                    {t("saveButton")}
+              {/* <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4"> */}
+              <div className="flex justify-end mt-5">
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                    {t("closeButton")}
                   </Button>
-                </div>
-              </DialogFooter>
+                </DialogClose>
+                <Button
+                  className="ml-2"
+                  type="submit"
+                  disabled={
+                    form.watch("items")?.length === 0 ||
+                    form.watch("items") === undefined
+                  }
+                >
+                  {t("saveButton")}
+                </Button>
+              </div>
+              {/* </DialogFooter> */}
             </form>
           </Form>
         </DialogContent>
