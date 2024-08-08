@@ -1,7 +1,7 @@
 import ActivityDistributionPieChart from "@/components/system/activity-distribution-pieChart";
 import React from "react";
 import { Header } from "@/components/header";
-import ChallengingQuestionsTable from "@/components/system/challengingQuestionsTable";
+import LowestLatedArticlesTable from "@/components/system/LowestLatedArticlesTable";
 import LicenseUsageOverTimeChart from "@/components/system/license-usage-overtime";
 import LicenseUsageChart from "@/components/system/license-usage";
 import ArticlesByTypeAndGenreChart from "@/components/system/articles-type-genre";
@@ -52,7 +52,7 @@ export default async function SystemDashboardPage({
           <LicenseUsageOverTimeChart />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
-          <ChallengingQuestionsTable />
+          <LowestLatedArticlesTable />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-2">
           <ArticlesByTypeAndGenreChart />
