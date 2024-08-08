@@ -23,7 +23,7 @@ function contentToSSML(content: string[]): string {
   return ssml;
 }
 
-export async function generateAudioWord({
+export async function generateAudioForWord({
   passage,
   articleId,
 }: GenerateAudioParams): Promise<void> {
@@ -62,7 +62,6 @@ export async function generateAudioWord({
         timepoints: allTimePoints,
         id: articleId,
       });
-
     } catch (error: any) {
       throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
         error.response.data

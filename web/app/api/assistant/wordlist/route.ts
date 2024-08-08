@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import db from "@/configs/firestore-config";
 import storage from "@/utils/storage";
-import { generateAudioWord } from "@/server/utils/generators/audio-words-generator";
+import { generateAudioForWord } from "@/server/utils/generators/audio-words-generator";
 import { AUDIO_WORDS_URL } from "@/server/constants";
 
 export async function POST(req: Request, res: Response) {
@@ -120,15 +120,22 @@ export async function POST(req: Request, res: Response) {
       });
 
       if (!fileExists[0]) {
-        await generateAudioWord({
+        await generateAudioForWord({
           passage: passage,
           articleId: param?.articleId,
         });
       }     
 
-      return new Response(
+      // return new Response(
+      //   JSON.stringify({
+      //     messages: "success",        
+      //   }),
+      //   { status: 200 }
+      // );
+        return new Response(
         JSON.stringify({
-          messages: "success",        
+          messages: "success",   
+          word_list: resultWordList,     
         }),
         { status: 200 }
       );
