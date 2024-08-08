@@ -65,15 +65,15 @@ export default function WordList({ article, articleId, userId }: Props) {
     resolver: zodResolver(FormSchema),
   });
 
-  const handleWordList = useCallback(async () => {    try {
+  const handleWordList = useCallback(async () => {   
+     try {
       setLoading(true); // Start loading
       const resWordlist = await axios.post(`/api/assistant/wordlist`, {
         article,
         articleId,
         userId,
       });
-
-      /*
+      
       if (resWordlist?.data?.timepoints) {
         const wordList = resWordlist?.data?.timepoints.map(
           (timepoint: { timeSeconds: number }, index: number) => {
@@ -92,12 +92,12 @@ export default function WordList({ article, articleId, userId }: Props) {
             };
           }
         );
+        console.log("wordList: ",wordList)
         setWordList(wordList);
         form.reset();
       }
-      */
-      setWordList(resWordlist?.data?.word_list);
-      form.reset();
+      
+
     } catch (error: any) {
       toast({
         title: "Something went wrong.",
