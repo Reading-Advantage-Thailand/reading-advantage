@@ -17,29 +17,30 @@ export default function AudioImg({
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
   const handlePause = () => {
-    setIsPlaying(!isPlaying);
-    if (isPlaying) {
-      audioRef.current?.pause();
-    } else if (audioRef.current) {
-      audioRef.current.currentTime = startTimestamp;
-      audioRef.current?.play();
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.currentTime = startTimestamp;
+        audioRef.current.play();
 
-      // Use a tolerance for comparison due to floating-point precision
-      const tolerance = 0.5; // You can adjust this value based on your needs
+        const tolerance = 0.5;
 
-      // Set up a listener to check the playback progress
-      const checkProgress = setInterval(() => {
-        if (
-          audioRef.current &&
-          audioRef.current?.currentTime + tolerance >= endTimestamp
-        ) {
-          audioRef.current?.pause();
-          clearInterval(checkProgress); // Clear the interval once the end time is reached
-          setIsPlaying(false);
-        }
-      }, 10); // You can adjust the interval duration based on your needs
+        const checkProgress = setInterval(() => {
+          if (
+            audioRef.current &&
+            audioRef.current.currentTime + tolerance >= endTimestamp
+          ) {
+            audioRef.current.pause();
+            clearInterval(checkProgress);
+            setIsPlaying(false);
+          }
+        }, 5);
+      }
+      setIsPlaying(!isPlaying);
     }
   };
+
   return (
     <div className="select-none">
       <audio ref={audioRef}>
@@ -50,8 +51,17 @@ export default function AudioImg({
         alt="play sound"
         width={20}
         height={20}
-        className={"mx-3  mt-1 cursor-pointer"}
+        className={"mx-3 mt-1 cursor-pointer"}
         onClick={() => {
+          if (audioRef.current) {
+            if (!audioRef.current.paused) {
+              audioRef.current.pause();
+            } else {
+              audioRef.current.play().catch((error) => {
+                console.error("Audio playback failed:", error);
+              });
+            }
+          }
           handlePause();
         }}
       />
