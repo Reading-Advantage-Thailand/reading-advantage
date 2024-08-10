@@ -123,9 +123,9 @@ export default async function IndexPage({}: Props) {
             {siteConfig.name}
           </h1>
           <h2 className="font-heading text-2xl sm:text-4xl md:text-5xl lg:text-6xl ">
-            <span>Empower Your Students with Language Learning</span>
+            <span>Empower Your Students with</span>
             <span className="text-green-500"> AI-Enhanced </span>
-            <span>Learning</span>
+            <span>Language Learning</span>
           </h2>
           <p className="max-w-[42rem] font-heading leading-normal text-muted-foreground sm:text-xl sm:leading-8">
             Revolutionize language education with our cutting-edge platform
