@@ -12,7 +12,14 @@ export async function POST(req: Request, res: Response) {
     const wordListRef = db.collection(`word-list`).doc(param?.articleId);
     const wordListSnapshot = await wordListRef.get();
 
-    if (wordListSnapshot?.exists) {
+    const fileExtension = ".mp3";
+
+    const fileExists = await storage
+      .bucket("artifacts.reading-advantage.appspot.com")
+      .file(`${AUDIO_WORDS_URL}/${param?.articleId}${fileExtension}`)
+      .exists();
+
+    if (wordListSnapshot?.exists && fileExists[0]) {
       const dataList = wordListSnapshot.data();
       return new Response(
         JSON.stringify({
@@ -107,12 +114,7 @@ export async function POST(req: Request, res: Response) {
 
       const passage = resultWordList.map((item: any) => item?.vocabulary);
 
-      const fileExtension = ".mp3";
-
-      const fileExists = await storage
-        .bucket("artifacts.reading-advantage.appspot.com")
-        .file(`${AUDIO_WORDS_URL}/${param?.articleId}${fileExtension}`)
-        .exists();
+      
 
       await wordListRef.set({
         word_list: resultWordList,
