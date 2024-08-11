@@ -65,7 +65,8 @@ export default function WordList({ article, articleId, userId }: Props) {
     resolver: zodResolver(FormSchema),
   });
 
-  const handleWordList = useCallback(async () => {    try {
+  const handleWordList = useCallback(async () => {
+    try {
       setLoading(true); // Start loading
       const resWordlist = await axios.post(`/api/assistant/wordlist`, {
         article,
@@ -73,7 +74,6 @@ export default function WordList({ article, articleId, userId }: Props) {
         userId,
       });
 
-      /*
       if (resWordlist?.data?.timepoints) {
         const wordList = resWordlist?.data?.timepoints.map(
           (timepoint: { timeSeconds: number }, index: number) => {
@@ -81,7 +81,7 @@ export default function WordList({ article, articleId, userId }: Props) {
             const endTime =
               index === resWordlist?.data?.timepoints.length - 1
                 ? timepoint.timeSeconds + 10
-                : resWordlist?.data?.timepoints[index + 1].timeSeconds
+                : resWordlist?.data?.timepoints[index + 1].timeSeconds;
             return {
               vocabulary: resWordlist?.data?.word_list[index]?.vocabulary,
               definition: resWordlist?.data?.word_list[index]?.definition,
@@ -92,12 +92,10 @@ export default function WordList({ article, articleId, userId }: Props) {
             };
           }
         );
+        console.log("wordList: ", wordList);
         setWordList(wordList);
         form.reset();
       }
-      */
-      setWordList(resWordlist?.data?.word_list);
-      form.reset();
     } catch (error: any) {
       toast({
         title: "Something went wrong.",
@@ -199,66 +197,64 @@ export default function WordList({ article, articleId, userId }: Props) {
                                 name="items"
                                 render={({ field }) => {
                                   return (
-                                    <FormItem key={word?.vocabulary}>
-                                      <FormControl>
-                                        <div
-                                          key={index}
-                                          className="p-4 border-b-2 flex flex-row"
-                                        >
-                                          <div>
-                                            <Checkbox
-                                              checked={field?.value?.includes(
-                                                word?.vocabulary
-                                              )}
-                                              onCheckedChange={(checked) => {
-                                                if (
-                                                  Array.isArray(field.value)
-                                                ) {
-                                                  return checked
-                                                    ? field.onChange([
-                                                        ...field.value,
-                                                        word.vocabulary,
-                                                      ])
-                                                    : field.onChange(
-                                                        field.value.filter(
-                                                          (value) =>
-                                                            value !==
-                                                            word.vocabulary
-                                                        )
-                                                      );
-                                                } else {
-                                                  return field.onChange(
-                                                    checked
-                                                      ? [word.vocabulary]
-                                                      : []
-                                                  );
-                                                }
-                                              }}
-                                            />
-                                          </div>
+                                    <>
+                                      <FormItem key={word?.vocabulary}>
+                                        <FormControl>
+                                          <div
+                                            key={index}
+                                            className="p-4 border-b-2 flex flex-row"
+                                          >
+                                            <div>
+                                              <Checkbox
+                                                checked={field?.value?.includes(
+                                                  word?.vocabulary
+                                                )}
+                                                onCheckedChange={(checked) => {
+                                                  if (
+                                                    Array.isArray(field.value)
+                                                  ) {
+                                                    return checked
+                                                      ? field.onChange([
+                                                          ...field.value,
+                                                          word.vocabulary,
+                                                        ])
+                                                      : field.onChange(
+                                                          field.value.filter(
+                                                            (value) =>
+                                                              value !==
+                                                              word.vocabulary
+                                                          )
+                                                        );
+                                                  } else {
+                                                    return field.onChange(
+                                                      checked
+                                                        ? [word.vocabulary]
+                                                        : []
+                                                    );
+                                                  }
+                                                }}
+                                              />
+                                            </div>
 
-                                          <span className="font-bold text-cyan-500 ml-2">
-                                            {word.vocabulary}:{" "}
-                                          </span>
-                                          <div className="mr-5">
-                                            <AudioImg
-                                              key={word.index}
-                                              audioUrl={
-                                                word.audioUrl
-                                                  ? word.audioUrl
-                                                  : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`
-                                              }
-                                              startTimestamp={word?.startTime}
-                                              endTimestamp={word?.endTime}
-                                            />                                       
-                                          </div>
+                                            <span className="font-bold text-cyan-500 ml-2">
+                                              {word.vocabulary}:{" "}
+                                            </span>
+                                            <div className="mr-5">
+                                              <AudioImg
+                                                key={word.vocabulary}                                               
+                                                audioUrl={word.audioUrl}
+                                                startTimestamp={word?.startTime}
+                                                endTimestamp={word?.endTime}
+                                              />
+                                            </div>
 
-                                          <span>
-                                            {word.definition[currentLocale]}
-                                          </span>
-                                        </div>
-                                      </FormControl>
-                                    </FormItem>
+                                            <span>
+                                              {word.definition[currentLocale]}
+                                            </span>
+                                          </div>
+                                        </FormControl>
+                                      </FormItem>
+                                    </>
                                   );
                                 }}
                               />

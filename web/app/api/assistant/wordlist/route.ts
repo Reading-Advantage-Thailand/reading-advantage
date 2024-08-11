@@ -126,19 +126,13 @@ export async function POST(req: Request, res: Response) {
         });
       }     
 
-      // return new Response(
-      //   JSON.stringify({
-      //     messages: "success",        
-      //   }),
-      //   { status: 200 }
-      // );
-        return new Response(
+      return new Response(
         JSON.stringify({
-          messages: "success",   
-          word_list: resultWordList,     
+          messages: "success",        
         }),
         { status: 200 }
       );
+
     }
   } catch (error) {
     return new Response(

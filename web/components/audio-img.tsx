@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React from "react";
+import React, { useCallback } from "react";
 
 type Props = {
   audioUrl: string;
@@ -16,30 +16,34 @@ export default function AudioImg({
   const [isPlaying, setIsPlaying] = React.useState(false);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
-  const handlePause = () => {
-    setIsPlaying(!isPlaying);
-    if (isPlaying) {
-      audioRef.current?.pause();
-    } else if (audioRef.current) {
-      audioRef.current.currentTime = startTimestamp;
-      audioRef.current?.play();
+  const handlePlay = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause(); // Stop current audio
+      audioRef.current.currentTime = startTimestamp; // Reset to start time
 
-      // Use a tolerance for comparison due to floating-point precision
-      const tolerance = 0.5; // You can adjust this value based on your needs
+      audioRef.current
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          const tolerance = 0.5;
 
-      // Set up a listener to check the playback progress
-      const checkProgress = setInterval(() => {
-        if (
-          audioRef.current &&
-          audioRef.current?.currentTime + tolerance >= endTimestamp
-        ) {
-          audioRef.current?.pause();
-          clearInterval(checkProgress); // Clear the interval once the end time is reached
-          setIsPlaying(false);
-        }
-      }, 10); // You can adjust the interval duration based on your needs
+          const checkProgress = setInterval(() => {
+            if (
+              audioRef.current &&
+              audioRef.current.currentTime + tolerance >= endTimestamp
+            ) {
+              audioRef.current.pause();
+              clearInterval(checkProgress);
+              setIsPlaying(false);
+            }
+          }, 5);
+        })
+        .catch((error) => {
+          console.error("Audio playback failed:", error);
+        });
     }
-  };
+  }, [startTimestamp, endTimestamp]);
+
   return (
     <div className="select-none">
       <audio ref={audioRef}>
@@ -50,10 +54,8 @@ export default function AudioImg({
         alt="play sound"
         width={20}
         height={20}
-        className={"mx-3  mt-1 cursor-pointer"}
-        onClick={() => {
-          handlePause();
-        }}
+        className={"mx-3 mt-1 cursor-pointer"}
+        onClick={handlePlay}
       />
     </div>
   );
