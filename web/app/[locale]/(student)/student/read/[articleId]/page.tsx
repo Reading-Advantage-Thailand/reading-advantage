@@ -48,9 +48,9 @@ export default async function ArticleQuizPage({
       <CustomError message={articleResponse.message} resp={articleResponse} />
     );
 
-  if (articleResponse?.article) {
-    await getWordList(articleResponse?.article, params?.articleId, user?.id);
-  }
+  // if (articleResponse?.article) {
+  //   await getWordList(articleResponse?.article, params?.articleId, user?.id);
+  // }
 
   return (
     <>
