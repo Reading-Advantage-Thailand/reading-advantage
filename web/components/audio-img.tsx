@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React from "react";
+import React, { useCallback } from "react";
 
 type Props = {
   audioUrl: string;
@@ -16,30 +16,32 @@ export default function AudioImg({
   const [isPlaying, setIsPlaying] = React.useState(false);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
-  const handlePause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.currentTime = startTimestamp;
-        audioRef.current.play();
+ 
+const handlePause = useCallback(() => {
+  if (audioRef.current) {
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.currentTime = startTimestamp;
+      audioRef.current.play();
 
-        const tolerance = 0.5;
+      const tolerance = 0.5;
 
-        const checkProgress = setInterval(() => {
-          if (
-            audioRef.current &&
-            audioRef.current.currentTime + tolerance >= endTimestamp
-          ) {
-            audioRef.current.pause();
-            clearInterval(checkProgress);
-            setIsPlaying(false);
-          }
-        }, 5);
-      }
-      setIsPlaying(!isPlaying);
+      const checkProgress = setInterval(() => {
+        if (
+          audioRef.current &&
+          audioRef.current.currentTime + tolerance >= endTimestamp
+        ) {
+          audioRef.current.pause();
+          clearInterval(checkProgress);
+          setIsPlaying(false);
+          // setIsPlaying(!isPlaying);
+        }
+      }, 5);
     }
-  };
+    setIsPlaying(!isPlaying);
+  }
+}, [endTimestamp, isPlaying, startTimestamp]);
 
   return (
     <div className="select-none">

@@ -199,6 +199,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                                 name="items"
                                 render={({ field }) => {
                                   return (
+                                    <>
                                     <FormItem key={word?.vocabulary}>
                                       <FormControl>
                                         <div
@@ -259,6 +260,9 @@ export default function WordList({ article, articleId, userId }: Props) {
                                         </div>
                                       </FormControl>
                                     </FormItem>
+                                  
+                                    </>
+                                    
                                   );
                                 }}
                               />
@@ -267,7 +271,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                         </FormItem>
                       );
                     }}
-                  />
+                  />                   
                 </>
               )}
               {/* <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4"> */}
