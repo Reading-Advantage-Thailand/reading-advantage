@@ -18,8 +18,13 @@ export default function AudioImg({
 
   const handlePlay = useCallback(() => {
     if (audioRef.current) {
-      audioRef.current.pause(); // Stop current audio
-      audioRef.current.currentTime = startTimestamp; // Reset to start time
+      // If audio is playing, pause it first
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+
+      audioRef.current.currentTime = startTimestamp;
 
       audioRef.current
         .play()
@@ -40,9 +45,10 @@ export default function AudioImg({
         })
         .catch((error) => {
           console.error("Audio playback failed:", error);
+          setIsPlaying(false);
         });
     }
-  }, [startTimestamp, endTimestamp]);
+  }, [startTimestamp, endTimestamp, isPlaying]);
 
   return (
     <div className="select-none">
