@@ -47,10 +47,10 @@ export default async function ArticleQuizPage({
     getArticle(params.articleId).then((articleRes) => articleRes?.article && getWordList(articleRes.article, params.articleId, user.id)),
   ]);
 
-  if (articleResponse.message)
-    return (
-      <CustomError message={articleResponse.message} resp={articleResponse} />
-    );
+  // if (articleResponse.message)
+  //   return (
+  //     <CustomError message={articleResponse.message} resp={articleResponse} />
+  //   );
 
   // if (articleResponse?.article) {
   //   await getWordList(articleResponse?.article, params?.articleId, user?.id);
@@ -96,6 +96,7 @@ export default async function ArticleQuizPage({
             articleId={params.articleId}
             userLevel={user.level}
           />
+          {JSON.stringify(wordList)}
         </div>
       </div>
       <ChatBotFloatingChatButton
