@@ -49,20 +49,12 @@ export default async function ArticleQuizPage({
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 
-  // const articleResponse = await getArticle(params.articleId);
-  const [articleResponse, wordList] = await Promise.all([
-    getArticle(params.articleId),
-    getArticle(params.articleId).then((articleRes) => articleRes?.article && getWordList(articleRes.article, params.articleId, user.id)),
-  ]);
+  const articleResponse = await getArticle(params.articleId);
 
   if (articleResponse.message)
     return (
       <CustomError message={articleResponse.message} resp={articleResponse} />
     );
-
-  // if (articleResponse?.article) {
-  //   await getWordList(articleResponse?.article, params?.articleId, user?.id);
-  // }
 
   return (
     <>
