@@ -71,10 +71,8 @@ export default function WordList({ article, articleId, userId }: Props) {
       const resWordlist = await axios.post(`/api/assistant/wordlist`, {
         article,
         articleId,
-        userId,
       });
 
-      console.log("resWordlist?.data?.timepoints: ", resWordlist?.data?.timepoints);
       if (resWordlist?.data?.timepoints) {
         const wordList = resWordlist?.data?.timepoints.map(
           (timepoint: { timeSeconds: number }, index: number) => {
@@ -96,6 +94,11 @@ export default function WordList({ article, articleId, userId }: Props) {
         console.log("wordList: ", wordList);
         setWordList(wordList);
         form.reset();
+      } else {
+        await axios.post(`/api/assistant/wordlist`, {
+          article,
+          articleId,
+        });
       }
     } catch (error: any) {
       toast({
@@ -106,7 +109,7 @@ export default function WordList({ article, articleId, userId }: Props) {
     } finally {
       setLoading(false); // Stop loading
     }
-  }, [article, articleId, form, userId]);
+  }, [article, articleId, form]);
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
@@ -171,7 +174,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                   </div>
                 </DialogTitle>
               </DialogHeader>
-              {loading ? (
+              {loading && wordList ? (
                 <div className="flex items-center space-x-4 mt-5">
                   <div className="space-y-5">
                     <Skeleton className="h-4 w-[300px]" />
@@ -242,7 +245,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                                             </span>
                                             <div className="mr-5">
                                               <AudioImg
-                                                key={word.vocabulary}                                               
+                                                key={word.vocabulary}
                                                 audioUrl={word.audioUrl}
                                                 startTimestamp={word?.startTime}
                                                 endTimestamp={word?.endTime}
