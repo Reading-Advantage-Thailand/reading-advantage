@@ -73,6 +73,7 @@ export default function WordList({ article, articleId, userId }: Props) {
         articleId,
       });
 
+       console.log("resWordlist: ", resWordlist);
       if (resWordlist?.data?.timepoints) {
         const wordList = resWordlist?.data?.timepoints.map(
           (timepoint: { timeSeconds: number }, index: number) => {
@@ -91,7 +92,7 @@ export default function WordList({ article, articleId, userId }: Props) {
             };
           }
         );
-        console.log("wordList: ", wordList);
+       
         setWordList(wordList);
         form.reset();
       } else {
@@ -101,6 +102,7 @@ export default function WordList({ article, articleId, userId }: Props) {
         });
       }
     } catch (error: any) {
+       console.log("error: ", error);
       toast({
         title: "Something went wrong.",
         description: `${error?.response?.data?.message || error?.message}`,
