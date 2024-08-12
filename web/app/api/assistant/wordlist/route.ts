@@ -134,13 +134,16 @@ export async function POST(req: Request, res: Response) {
       );
     }
   } catch (error) {
-    return new Response(
-      JSON.stringify({
-        message: `failed to generate audio: ${
-          error as unknown
-        } \n\n axios error: ${JSON.stringify((error as any).response.data)}`,
-      }),
-      { status: 500 }
-    );
+    throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
+        error.response.data
+      )}`;
+    // return new Response(
+    //   JSON.stringify({
+    //     message: `failed to generate audio: ${
+    //       error as unknown
+    //     } \n\n axios error: ${JSON.stringify((error as any).response.data)}`,
+    //   }),
+    //   { status: 500 }
+    // );
   }
 }
