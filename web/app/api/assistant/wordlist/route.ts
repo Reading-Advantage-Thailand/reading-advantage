@@ -114,27 +114,24 @@ export async function POST(req: Request, res: Response) {
 
       const passage = resultWordList.map((item: any) => item?.vocabulary);
 
-      
-
       await wordListRef.set({
         word_list: resultWordList,
         articleId: param.articleId,
       });
 
-      if (!fileExists[0]) {
-        await generateAudioForWord({
-          passage: passage,
-          articleId: param?.articleId,
-        });
-      }     
+      const timepoints = await generateAudioForWord({
+        passage: passage,
+        articleId: param?.articleId,
+      });
 
       return new Response(
         JSON.stringify({
-          messages: "success",        
+          messages: "success",
+          timepoints,
+          word_list: resultWordList,
         }),
         { status: 200 }
       );
-
     }
   } catch (error) {
     return new Response(

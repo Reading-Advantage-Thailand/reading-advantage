@@ -14,6 +14,11 @@ interface GenerateAudioParams {
   articleId: string;
 }
 
+interface TimePoint {
+  timeSeconds: number;
+  markName: string;
+}
+
 function contentToSSML(content: string[]): string {
   let ssml = "<speak>";
   content.forEach((sentence, i) => {
@@ -26,12 +31,12 @@ function contentToSSML(content: string[]): string {
 export async function generateAudioForWord({
   passage,
   articleId,
-}: GenerateAudioParams): Promise<void> {
+}: GenerateAudioParams): Promise<TimePoint[]> {
   {
     try {
       const voice =
         AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
-      let allTimePoints: any[] = [];
+      let allTimePoints: TimePoint[] = [];
       const response = await axios.post(
         `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize`,
         {
@@ -54,7 +59,6 @@ export async function generateAudioForWord({
       const audio = response?.data?.audioContent;
       const MP3 = base64.toByteArray(audio);
       allTimePoints = response?.data?.timepoints;
-
       const localPath = `${process.cwd()}/data/audios-words/${articleId}.mp3`;
       fs.writeFileSync(localPath, MP3);
       await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);
@@ -62,6 +66,8 @@ export async function generateAudioForWord({
         timepoints: allTimePoints,
         id: articleId,
       });
+
+      return allTimePoints;
     } catch (error: any) {
       throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
         error.response.data
