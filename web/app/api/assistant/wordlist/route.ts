@@ -133,9 +133,9 @@ export async function POST(req: Request, res: Response) {
         { status: 200 }
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
-        error.response.data
+        error?.response.data
       )}`;
     // return new Response(
     //   JSON.stringify({
