@@ -9,22 +9,22 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { createEmptyCard, Card } from "ts-fsrs";
 import { filter, includes } from "lodash";
-import Image from "next/image";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { AUDIO_WORDS_URL } from "@/server/constants";
 import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
 import { toast } from "./ui/use-toast";
+import AudioImg from "./audio-img";
 
 interface Props {
   article: Article;
@@ -41,6 +41,10 @@ interface WordList {
     tw: string;
     vi: string;
   };
+  index: number;
+  startTime: number;
+  endTime: number;
+  audioUrl: string;
 }
 
 export default function WordList({ article, articleId, userId }: Props) {
@@ -67,12 +71,38 @@ export default function WordList({ article, articleId, userId }: Props) {
       const resWordlist = await axios.post(`/api/assistant/wordlist`, {
         article,
         articleId,
-        userId,
       });
 
-      setWordList(resWordlist?.data?.word_list);
-      form.reset();
+       console.log("resWordlist: ", resWordlist);
+      if (resWordlist?.data?.timepoints) {
+        const wordList = resWordlist?.data?.timepoints.map(
+          (timepoint: { timeSeconds: number }, index: number) => {
+            const startTime = timepoint.timeSeconds;
+            const endTime =
+              index === resWordlist?.data?.timepoints.length - 1
+                ? timepoint.timeSeconds + 10
+                : resWordlist?.data?.timepoints[index + 1].timeSeconds;
+            return {
+              vocabulary: resWordlist?.data?.word_list[index]?.vocabulary,
+              definition: resWordlist?.data?.word_list[index]?.definition,
+              index,
+              startTime,
+              endTime,
+              audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`,
+            };
+          }
+        );
+       
+        setWordList(wordList);
+        form.reset();
+      } else {
+        await axios.post(`/api/assistant/wordlist`, {
+          article,
+          articleId,
+        });
+      }
     } catch (error: any) {
+       console.log("error: ", error);
       toast({
         title: "Something went wrong.",
         description: `${error?.response?.data?.message || error?.message}`,
@@ -81,7 +111,7 @@ export default function WordList({ article, articleId, userId }: Props) {
     } finally {
       setLoading(false); // Stop loading
     }
-  }, [article, articleId, form, userId]);
+  }, [article, articleId, form]);
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
@@ -146,7 +176,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                   </div>
                 </DialogTitle>
               </DialogHeader>
-              {loading ? (
+              {loading && wordList ? (
                 <div className="flex items-center space-x-4 mt-5">
                   <div className="space-y-5">
                     <Skeleton className="h-4 w-[300px]" />
@@ -173,63 +203,64 @@ export default function WordList({ article, articleId, userId }: Props) {
                                 name="items"
                                 render={({ field }) => {
                                   return (
-                                    <FormItem key={word?.vocabulary}>
-                                      <FormControl>
-                                        <div
-                                          key={index}
-                                          className="p-4 border-b-2 flex flex-row"
-                                        >
-                                          <div>
-                                            <Checkbox
-                                              checked={field?.value?.includes(
-                                                word?.vocabulary
-                                              )}
-                                              onCheckedChange={(checked) => {
-                                                if (
-                                                  Array.isArray(field.value)
-                                                ) {
-                                                  return checked
-                                                    ? field.onChange([
-                                                        ...field.value,
-                                                        word.vocabulary,
-                                                      ])
-                                                    : field.onChange(
-                                                        field.value.filter(
-                                                          (value) =>
-                                                            value !==
-                                                            word.vocabulary
-                                                        )
-                                                      );
-                                                } else {
-                                                  return field.onChange(
-                                                    checked
-                                                      ? [word.vocabulary]
-                                                      : []
-                                                  );
-                                                }
-                                              }}
-                                            />
-                                          </div>
+                                    <>
+                                      <FormItem key={word?.vocabulary}>
+                                        <FormControl>
+                                          <div
+                                            key={index}
+                                            className="p-4 border-b-2 flex flex-row"
+                                          >
+                                            <div>
+                                              <Checkbox
+                                                checked={field?.value?.includes(
+                                                  word?.vocabulary
+                                                )}
+                                                onCheckedChange={(checked) => {
+                                                  if (
+                                                    Array.isArray(field.value)
+                                                  ) {
+                                                    return checked
+                                                      ? field.onChange([
+                                                          ...field.value,
+                                                          word.vocabulary,
+                                                        ])
+                                                      : field.onChange(
+                                                          field.value.filter(
+                                                            (value) =>
+                                                              value !==
+                                                              word.vocabulary
+                                                          )
+                                                        );
+                                                  } else {
+                                                    return field.onChange(
+                                                      checked
+                                                        ? [word.vocabulary]
+                                                        : []
+                                                    );
+                                                  }
+                                                }}
+                                              />
+                                            </div>
 
-                                          <span className="font-bold text-cyan-500 ml-2">
-                                            {word.vocabulary}:{" "}
-                                          </span>
-                                          <div className="mr-5">
-                                            <Image
-                                              src={"/sound-play-sound.svg"}
-                                              alt="play sound"
-                                              width={20}
-                                              height={20}
-                                              className={"mx-3 cursor-pointer"}
-                                            />
-                                          </div>
+                                            <span className="font-bold text-cyan-500 ml-2">
+                                              {word.vocabulary}:{" "}
+                                            </span>
+                                            <div className="mr-5">
+                                              <AudioImg
+                                                key={word.vocabulary}
+                                                audioUrl={word.audioUrl}
+                                                startTimestamp={word?.startTime}
+                                                endTimestamp={word?.endTime}
+                                              />
+                                            </div>
 
-                                          <span>
-                                            {word.definition[currentLocale]}
-                                          </span>
-                                        </div>
-                                      </FormControl>
-                                    </FormItem>
+                                            <span>
+                                              {word.definition[currentLocale]}
+                                            </span>
+                                          </div>
+                                        </FormControl>
+                                      </FormItem>
+                                    </>
                                   );
                                 }}
                               />
@@ -241,25 +272,25 @@ export default function WordList({ article, articleId, userId }: Props) {
                   />
                 </>
               )}
-              <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4">
-                <div className="flex justify-end mt-5">
-                  <DialogClose asChild>
-                    <Button type="button" variant="secondary">
-                      {t("closeButton")}
-                    </Button>
-                  </DialogClose>
-                  <Button
-                    className="ml-2"
-                    type="submit"
-                    disabled={
-                      form.watch("items")?.length === 0 ||
-                      form.watch("items") === undefined
-                    }
-                  >
-                    {t("saveButton")}
+              {/* <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4"> */}
+              <div className="flex justify-end mt-5">
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                    {t("closeButton")}
                   </Button>
-                </div>
-              </DialogFooter>
+                </DialogClose>
+                <Button
+                  className="ml-2"
+                  type="submit"
+                  disabled={
+                    form.watch("items")?.length === 0 ||
+                    form.watch("items") === undefined
+                  }
+                >
+                  {t("saveButton")}
+                </Button>
+              </div>
+              {/* </DialogFooter> */}
             </form>
           </Form>
         </DialogContent>
