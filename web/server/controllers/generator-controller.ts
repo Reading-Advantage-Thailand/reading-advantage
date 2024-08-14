@@ -52,11 +52,10 @@ export async function generateQueue(req: ExtendedNextRequest) {
         ArticleType.FICTION,
         amount
       );
-      // comment for test
-      // const nonfictionResults = await generateForGenre(ArticleType.NONFICTION, amount);
+      const nonfictionResults = await generateForGenre(ArticleType.NONFICTION, amount);
 
       // Combine results from both genres
-      const combinedResults = fictionResults; // comment for test //.concat(nonfictionResults);
+      const combinedResults = fictionResults.concat(nonfictionResults);
 
       // Count failed results
       const failedCount = combinedResults.filter(
@@ -131,12 +130,11 @@ async function generateForGenre(type: ArticleType, amountPerGenre: number) {
         generatedTopic.topics.map(async (topic) => {
             const topicResults = [];
             topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.A1));
-            // comment for test
-            // topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.A2));
-            // topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.B1));
-            // topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.B2));
-            // topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.C1));
-            // topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.C2));
+            topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.A2));
+            topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.B1));
+            topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.B2));
+            topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.C1));
+            topicResults.push(await queue(type, randomGenre.genre, randomGenre.subgenre, topic, ArticleBaseCefrLevel.C2));
             return topicResults;
         })
     );

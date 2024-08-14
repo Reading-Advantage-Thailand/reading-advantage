@@ -214,17 +214,22 @@ async function validator(articleId: string): Promise<{
     throw new Error(`article ${articleId} not found in Firestore`);
   }
 
-  if (!wordListDoc.exists) {
-    throw new Error(`word list ${articleId} not found in Firestore`);
+  let wordListData = {} as WordListResponse;
+  if (!wordListDoc.exists) {   
+    wordListData = await generateWordList({
+      passage: articleDoc.data()?.passage,
+    });
+    const wordListRef = db.collection("word-list").doc(articleId);
+    await wordListRef.set({
+      word_list: wordListData,
+      articleId: articleId,
+      id: articleId,
+    });
+  }else {
+    wordListData = wordListDoc.data()?.word_list as WordListResponse   
   }
 
   const articleData = articleDoc.data() as Article;
-  const wordListData = wordListDoc.data() as WordListResponse;
-
-    console.log(`Validating articleDoc ${articleDoc}`);
-    console.log(`Validating wordListDoc ${wordListDoc}`);
-    console.log(`Validating articleData ${articleData}`);
-    console.log(`Validating wordListData ${wordListData}`);
 
   if (!articleData.id) {
     // Set article id
@@ -234,21 +239,6 @@ async function validator(articleId: string): Promise<{
       .doc(articleId)
       .set({ id: articleId }, { merge: true });
   }
-
-  /*
-  const wordList = await generateWordList({
-    passage: articleData?.passage,
-  });
-
-  // update wordlist
-  const wordListRef = db.collection(`word-list`).doc(articleId);
-  await wordListRef.set({
-    word_list: wordList,
-    articleId: articleId,
-    id: articleId,
-  });
-  */
-  
 
   try {
     const resp = await Promise.all([
@@ -439,7 +429,7 @@ async function validateAudioWords({
       .bucket("artifacts.reading-advantage.appspot.com")
       .file(`${AUDIO_WORDS_URL}/${articleId}${fileExtension}`)
       .exists();
-    if (!fileExists[0]) {
+    if (!fileExists[0]) {     
       await generateAudioForWord({ wordList, articleId });
       return { id: articleId, task: "audio", status: "regenerated" };
     } else {

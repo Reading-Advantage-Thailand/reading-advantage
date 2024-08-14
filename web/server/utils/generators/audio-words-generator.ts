@@ -18,6 +18,7 @@ export type WordListResponse = {
     tw: string;
     vi: string;
   };
+  created_at?: string;
 }
 export type GenerateAudioParams = {
   wordList: WordListResponse;
@@ -43,7 +44,7 @@ export async function generateAudioForWord({
   articleId,
 }: GenerateAudioParams): Promise<void> {
   {
-    try {
+    try {     
       const voice = AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
       const vocabulary: string[] = Array.isArray(wordList) ? wordList.map((item: any) => item?.vocabulary) : [];      
       let allTimePoints: TimePoint[] = [];
@@ -78,7 +79,7 @@ export async function generateAudioForWord({
 
       await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);      
       
-      await db.collection(`word-list`).doc(articleId).update({
+      await db.collection("word-list").doc(articleId).update({
         timepoints: allTimePoints,
         id: articleId,
       });
