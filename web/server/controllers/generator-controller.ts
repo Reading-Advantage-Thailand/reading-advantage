@@ -13,80 +13,88 @@ import { generateLAQuestion } from "../utils/generators/la-question-generator";
 import { generateAudio } from "../utils/generators/audio-generator";
 import { generateImage } from "../utils/generators/image-generator";
 import { calculateLevel } from "@/lib/calculateLevel";
+import { generateWordList } from "../utils/generators/word-list-generator";
+import { generateAudioForWord } from "../utils/generators/audio-words-generator";
 
 // Function to generate queue
 export async function generateQueue(req: ExtendedNextRequest) {
     try {
-        const { amountPerGenre } = await req.json();
-        if (!amountPerGenre) {
-            throw new Error("amountPerGenre is required");
-        }
-        // initialize
-        const timeTaken = Date.now();
-        const userAgent = req.headers.get("user-agent") || "";
-        const reqUrl = req.url;
-        const amount = parseInt(amountPerGenre);
+      const { amountPerGenre } = await req.json();
+      if (!amountPerGenre) {
+        throw new Error("amountPerGenre is required");
+      }
+      // initialize
+      const timeTaken = Date.now();
+      const userAgent = req.headers.get("user-agent") || "";
+      const reqUrl = req.url;
+      const amount = parseInt(amountPerGenre);
 
-        // Send a message to Discord that the generation has started
-        await sendDiscordWebhook({
-            title: "Generate Queue",
-            embeds: [
-                {
-                    description: {
-                        "amount per genre": amountPerGenre,
-                        total: `${amount * 6 * 2}`,
-                    },
-                    color: 0x0099ff,
-                },
-            ],
+      // Send a message to Discord that the generation has started
+      await sendDiscordWebhook({
+        title: "Generate Queue",
+        embeds: [
+          {
+            description: {
+              "amount per genre": amountPerGenre,
+              total: `${amount * 6 * 2}`,
+            },
             color: 0x0099ff,
-            reqUrl,
-            userAgent,
-        });
+          },
+        ],
+        color: 0x0099ff,
+        reqUrl,
+        userAgent,
+      });
 
-        // Generate queue for fiction and nonfiction
-        // Run fiction generation first, then nonfiction
-        const fictionResults = await generateForGenre(ArticleType.FICTION, amount);
-        const nonfictionResults = await generateForGenre(ArticleType.NONFICTION, amount);
+      // Generate queue for fiction and nonfiction
+      // Run fiction generation first, then nonfiction
+      const fictionResults = await generateForGenre(
+        ArticleType.FICTION,
+        amount
+      );
+      const nonfictionResults = await generateForGenre(ArticleType.NONFICTION, amount);
 
-        // Combine results from both genres
-        const combinedResults = fictionResults.concat(nonfictionResults);
+      // Combine results from both genres
+      const combinedResults = fictionResults.concat(nonfictionResults);
 
-        // Count failed results
-        const failedCount = combinedResults.filter((result) => typeof result === "string").length;
-        const successCount = combinedResults.filter((result) => typeof result !== "string").length;
-        // const failedReasons = combinedResults.filter((result) => typeof result === "string");
-        // calculate taken time
-        const timeTakenMinutes = (Date.now() - timeTaken) / 1000 / 60;
+      // Count failed results
+      const failedCount = combinedResults.filter(
+        (result) => typeof result === "string"
+      ).length;
+      const successCount = combinedResults.filter(
+        (result) => typeof result !== "string"
+      ).length;
+      // const failedReasons = combinedResults.filter((result) => typeof result === "string");
+      // calculate taken time
+      const timeTakenMinutes = (Date.now() - timeTaken) / 1000 / 60;
 
-        await sendDiscordWebhook({
-            title: "Queue Generation Complete",
-            embeds: [
-                {
-                    description: {
-                        "amount per genre": amountPerGenre,
-                        "total": `${amount * 6 * 2}`,
-                        "failed": `${failedCount} articles`,
-                        "success": `${successCount} articles`,
-                        "time taken": `${timeTakenMinutes.toFixed(2)} minutes\n`,
-                        // ":star: failed reasons": failedCount ? "\n" + failedReasons.join("\n") : "none",
-                    },
-                    color: 0xff0000,
-                },
-            ],
+      await sendDiscordWebhook({
+        title: "Queue Generation Complete",
+        embeds: [
+          {
+            description: {
+              "amount per genre": amountPerGenre,
+              total: `${amount * 6 * 2}`,
+              failed: `${failedCount} articles`,
+              success: `${successCount} articles`,
+              "time taken": `${timeTakenMinutes.toFixed(2)} minutes\n`,
+              // ":star: failed reasons": failedCount ? "\n" + failedReasons.join("\n") : "none",
+            },
             color: 0xff0000,
-            reqUrl,
-            userAgent,
-        });
+          },
+        ],
+        color: 0xff0000,
+        reqUrl,
+        userAgent,
+      });
 
-        return NextResponse.json({
-            message: "Queue generation complete",
-            total: amount * 6 * 2,
-            failedCount,
-            timeTaken: timeTakenMinutes,
-            results: combinedResults,
-        });
-
+      return NextResponse.json({
+        message: "Queue generation complete",
+        total: amount * 6 * 2,
+        failedCount,
+        timeTaken: timeTakenMinutes,
+        results: combinedResults,
+      });
     } catch (error) {
         await sendDiscordWebhook({
             title: "Queue Generation Failed",
@@ -138,93 +146,113 @@ async function generateForGenre(type: ArticleType, amountPerGenre: number) {
 // Returns a string if failed, otherwise returns an object
 async function queue(type: ArticleType, genre: string, subgenre: string, topic: string, cefrLevel: ArticleBaseCefrLevel) {
     try {
-        // Generate article and evaluate rating
-        // low rating will regenerate article until rating is above 2 or max attempts reached
-        const { article: generatedArticle, rating } = await evaluateArticle(
-            type,
-            genre,
-            subgenre,
-            topic,
-            cefrLevel
-        );
+      // Generate article and evaluate rating
+      // low rating will regenerate article until rating is above 2 or max attempts reached
+      const { article: generatedArticle, rating } = await evaluateArticle(
+        type,
+        genre,
+        subgenre,
+        topic,
+        cefrLevel
+      );
 
-        const mcq = await generateMCQuestion({
-            type,
-            cefrlevel: cefrLevel,
-            passage: generatedArticle.passage,
-            title: generatedArticle.title,
-            summary: generatedArticle.summary,
-            imageDesc: generatedArticle.imageDesc,
-        });
-        const saq = await generateSAQuestion({
-            type,
-            cefrlevel: cefrLevel,
-            passage: generatedArticle.passage,
-            title: generatedArticle.title,
-            summary: generatedArticle.summary,
-            imageDesc: generatedArticle.imageDesc,
-        });
-        const laq = await generateLAQuestion({
-            type,
-            cefrlevel: cefrLevel,
-            passage: generatedArticle.passage,
-            title: generatedArticle.title,
-            summary: generatedArticle.summary,
-            imageDesc: generatedArticle.imageDesc,
-        });
+      const mcq = await generateMCQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      });
+      const saq = await generateSAQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      });
+      const laq = await generateLAQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      });
 
-        const { cefrLevel: calculatedCefrLevel, raLevel } = calculateLevel(
-            generatedArticle.passage
-        );
+      const wordList = await generateWordList({
+        passage: generatedArticle.passage,
+      });
+    
+      const { cefrLevel: calculatedCefrLevel, raLevel } = calculateLevel(
+        generatedArticle.passage
+      );
 
-        const ref = db.collection("new-articles").doc();
-        await ref.set({
-            average_rating: rating,
-            cefr_level: calculatedCefrLevel,
-            created_at: new Date().toISOString(),
-            genre,
-            image_description: generatedArticle.imageDesc,
-            passage: generatedArticle.passage,
-            ra_level: raLevel,
-            read_count: 0,
-            subgenre,
-            summary: generatedArticle.summary,
-            title: generatedArticle.title,
-            type,
-            id: ref.id,
-        });
+      const ref = db.collection("new-articles").doc();
+      await ref.set({
+        average_rating: rating,
+        cefr_level: calculatedCefrLevel,
+        created_at: new Date().toISOString(),
+        genre,
+        image_description: generatedArticle.imageDesc,
+        passage: generatedArticle.passage,
+        ra_level: raLevel,
+        read_count: 0,
+        subgenre,
+        summary: generatedArticle.summary,
+        title: generatedArticle.title,
+        type,
+        id: ref.id,
+      });
 
-        // update mcq
-        for (let i = 0; i < mcq.questions.length; i++) {
-            db.collection("new-articles")
-                .doc(ref.id)
-                .collection("mc-questions")
-                .add(mcq.questions[i]);
-        }
-
-        // update saq
-        for (let i = 0; i < saq.questions.length; i++) {
-            db.collection("new-articles")
-                .doc(ref.id)
-                .collection("sa-questions")
-                .add(saq.questions[i]);
-        }
-
-        // update laq
+      // update mcq
+      for (let i = 0; i < mcq.questions.length; i++) {
         db.collection("new-articles")
-            .doc(ref.id)
-            .collection("la-questions")
-            .add(laq);
+          .doc(ref.id)
+          .collection("mc-questions")
+          .add(mcq.questions[i]);
+      }
 
-        await generateAudio({
-            passage: generatedArticle.passage,
-            articleId: ref.id,
-        });
+      // update saq
+      for (let i = 0; i < saq.questions.length; i++) {
+        db.collection("new-articles")
+          .doc(ref.id)
+          .collection("sa-questions")
+          .add(saq.questions[i]);
+      }
 
-        await generateImage({
-            imageDesc: generatedArticle.imageDesc,
-            articleId: ref.id,
-        });
+      // update laq
+      db.collection("new-articles")
+        .doc(ref.id)
+        .collection("la-questions")
+        .add(laq);
+
+      // update wordlist      
+      const wordListRef = db.collection(`word-list`).doc(ref.id);
+      await wordListRef.set({
+        word_list: wordList,
+        articleId: ref.id,
+        id: ref.id,
+        created_at: new Date().toISOString(),
+      });
+      
+
+      await generateAudio({
+        passage: generatedArticle.passage,
+        articleId: ref.id,
+      });
+
+      await generateImage({
+        imageDesc: generatedArticle.imageDesc,
+        articleId: ref.id,
+      });
+
+      await generateAudioForWord({
+        wordList: wordList,
+        articleId: ref.id,
+      });
+
     } catch (error) {
         return `${cefrLevel} ${type === ArticleType.FICTION ? "F" : "N"} - ${error}`;
     }

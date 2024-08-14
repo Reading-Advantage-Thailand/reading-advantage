@@ -9,8 +9,19 @@ import uploadToBucket from "@/utils/uploadToBucket";
 import db from "@/configs/firestore-config";
 import axios from "axios";
 
-interface GenerateAudioParams {
-  passage: string[];
+export type WordListResponse = {
+  vocabulary: string;
+  definition: {
+    en: string;
+    th: string;
+    cn: string;
+    tw: string;
+    vi: string;
+  };
+  created_at?: string;
+}
+export type GenerateAudioParams = {
+  wordList: WordListResponse;
   articleId: string;
 }
 
@@ -29,18 +40,19 @@ function contentToSSML(content: string[]): string {
 }
 
 export async function generateAudioForWord({
-  passage,
+  wordList,
   articleId,
-}: GenerateAudioParams): Promise<TimePoint[]> {
+}: GenerateAudioParams): Promise<void> {
   {
-    try {
-      const voice =
-        AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
+    try {     
+      const voice = AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
+      const vocabulary: string[] = Array.isArray(wordList) ? wordList.map((item: any) => item?.vocabulary) : [];      
       let allTimePoints: TimePoint[] = [];
+
       const response = await axios.post(
         `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize`,
         {
-          input: { ssml: contentToSSML(passage) },
+          input: { ssml: contentToSSML(vocabulary) },
           voice: {
             languageCode: "en-US",
             name: voice,
@@ -56,18 +68,22 @@ export async function generateAudioForWord({
           params: { key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY },
         }
       );
+
       const audio = response?.data?.audioContent;
-      const MP3 = base64.toByteArray(audio);
+      const MP3 = base64.toByteArray(audio);      
       allTimePoints = response?.data?.timepoints;
+      
       const localPath = `${process.cwd()}/data/audios-words/${articleId}.mp3`;
+
       fs.writeFileSync(localPath, MP3);
-      await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);
+
+      await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);      
+      
       await db.collection("word-list").doc(articleId).update({
         timepoints: allTimePoints,
         id: articleId,
       });
 
-      return allTimePoints;
     } catch (error: any) {
       throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
         error.response.data

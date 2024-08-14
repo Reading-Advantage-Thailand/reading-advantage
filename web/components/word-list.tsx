@@ -72,8 +72,7 @@ export default function WordList({ article, articleId, userId }: Props) {
         article,
         articleId,
       });
-
-       console.log("resWordlist: ", resWordlist);
+ 
       if (resWordlist?.data?.timepoints) {
         const wordList = resWordlist?.data?.timepoints.map(
           (timepoint: { timeSeconds: number }, index: number) => {

@@ -119,31 +119,28 @@ export async function POST(req: Request, res: Response) {
         articleId: param.articleId,
       });
 
-      const timepoints = await generateAudioForWord({
-        passage: passage,
-        articleId: param?.articleId,
-      });
+      // const timepoints = await generateAudioForWord({
+      //   passage: passage,
+      //   articleId: param?.articleId,
+      // });
 
       return new Response(
         JSON.stringify({
           messages: "success",
-          timepoints,
+          // timepoints,
           word_list: resultWordList,
         }),
         { status: 200 }
       );
     }
   } catch (error: any) {
-    throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
-        error?.response.data
-      )}`;
-    // return new Response(
-    //   JSON.stringify({
-    //     message: `failed to generate audio: ${
-    //       error as unknown
-    //     } \n\n axios error: ${JSON.stringify((error as any).response.data)}`,
-    //   }),
-    //   { status: 500 }
-    // );
+    return new Response(
+      JSON.stringify({
+        message: `failed to generate audio: ${
+          error as unknown
+        } \n\n axios error: ${JSON.stringify((error as any).response.data)}`,
+      }),
+      { status: 500 }
+    );
   }
 }
