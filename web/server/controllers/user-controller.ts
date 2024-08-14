@@ -66,52 +66,58 @@ export async function postActivityLog(
       ...data,
     };
 
-    // if not exists will create
-    if (!getActivity.exists) {
-      // createActivityLog
-      if (validActivityTypes.includes(data.activityType)) {
-        await collectionRef.doc(documentId).set(commonData);
-      } else {
-        const createRefdoc = collectionRef.doc();
-        await createRefdoc.set({
-          contentId: createRefdoc.id,
-          ...commonData,
-        });
+    if (id) {
+      // if not exists will create
+      if (!getActivity.exists) {
+        // createActivityLog
+        if (validActivityTypes.includes(data.activityType)) {
+          await collectionRef.doc(documentId).set(commonData);
+        } else {
+          const createRefdoc = collectionRef.doc();
+          await createRefdoc.set({
+            contentId: createRefdoc.id,
+            ...commonData,
+          });
+        }
+      } else if (commonData.activityStatus === "completed") {
+        //Update if have data
+        await collectionRef.doc(documentId).update(commonData);
       }
-    } else if (commonData.activityStatus === "completed") {
-      //Update if have data
-      await collectionRef.doc(documentId).set(commonData);
-    }
 
-    //Update Xp and Level
-    if (commonData.xpEarned !== 0) {
-      await db
-        .collection("users")
-        .doc(id)
-        .update({
-          xp: commonData.finalXp,
-          level: commonData.finalLevel,
-          ceftLevel: levelCalculation(commonData.finalXp).cefrLevel,
-        });
-    }
+      //Update Xp and Level
+      if (commonData.xpEarned !== 0) {
+        await db
+          .collection("users")
+          .doc(id)
+          .update({
+            xp: commonData.finalXp,
+            level: commonData.finalLevel,
+            ceftLevel: levelCalculation(commonData.finalXp).cefrLevel,
+          });
+      }
 
-    //update Rating to article-records collection
-    if (
-      commonData.activityType === "article_rating" &&
-      commonData.details.Rating
-    ) {
-      await db
-        .collection("users")
-        .doc(id)
-        .collection("article-records")
-        .doc(commonData.articleId)
-        .update({ rated: commonData.details.Rating });
+      //update Rating to article-records collection
+      if (
+        commonData.activityType === "article_rating" &&
+        commonData.details.Rating
+      ) {
+        await db
+          .collection("users")
+          .doc(id)
+          .collection("article-records")
+          .doc(commonData.articleId)
+          .update({ rated: commonData.details.Rating });
+      }
+      return NextResponse.json({
+        message: "Success",
+        status: 200,
+      });
+    } else {
+      return NextResponse.json({
+        message: "invalid user",
+        status: 500,
+      });
     }
-
-    return NextResponse.json({
-      message: "Success",
-      status: 200,
-    });
   } catch (error) {
     console.log("getActivity => ", error);
     return NextResponse.json({

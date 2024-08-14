@@ -6,6 +6,10 @@ import { getCurrentUser } from "@/lib/session";
 import { fetchData } from "@/utils/fetch-data";
 import { redirect } from "next/navigation";
 import React from "react";
+import ReadingStatsChart from "@/components/dashboard/user-reading-chart";
+import CEFRLevels from "@/components/dashboard/user-level-indicator";
+import { CloudFog } from "lucide-react";
+import UserRecentActivity from "@/components/dashboard/user-recent-activity";
 
 type Props = {};
 
@@ -21,12 +25,17 @@ export default async function ReportsPage({}: Props) {
   return (
     <>
       <Header heading="User Activity" />
+      <UserRecentActivity data={res.results} />
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3 mt-4 mb-10">
         <div className="flex flex-col gap-4 col-span-2">
           <UserActivityChart data={res.results} />
           <UserXpOverAllChart data={res.results} />
+          <ReadingStatsChart data={res.results} />
         </div>
-        <UserActivityHeatMap data={res.results} />
+        <div className="flex flex-col gap-4">
+          <CEFRLevels currentLevel={user.cefr_level} />
+          <UserActivityHeatMap data={res.results} />
+        </div>
       </div>
     </>
   );

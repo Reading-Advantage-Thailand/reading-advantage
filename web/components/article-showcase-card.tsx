@@ -73,6 +73,9 @@ const ArticleShowcaseCard = ({ article, userId }: Props) => {
               title: article.title,
               level: article.ra_level,
               cefr_level: article.cefr_level,
+              type: article.type,
+              genre: article.genre,
+              subgenre: article.subgenre,
             },
           }),
         })

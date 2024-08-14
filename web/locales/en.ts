@@ -135,6 +135,40 @@ export default {
             "You need at least five saved sentences to play this activity.",
         },
       },
+      cefrLevelDescription: {
+        C2: "You get almost everything you read, even the tricky stuff. You'll catch the little jokes in stories and the hidden meanings in serious articles. Your word power is awesome, and you know just the right time to use those big, fancy words.",
+        "C2-":
+          "You're very close to mastering the language. You can handle complex texts with ease, but occasionally struggle with extremely nuanced or culturally specific content. Your vocabulary is extensive, but you might still encounter rare words that give you pause.",
+        "C1+":
+          "You can handle tough readings and get the hang of different writers' styles. You're pretty good at picking up on the less obvious stuff in texts and articles, and you don't need to look up words all the time.",
+        C1: "You can dive into long and difficult writings and come out understanding most of it. You enjoy stories and articles that make you think, and you can chat about them without searching too hard for the right words.",
+        "C1-":
+          "You're comfortable with complex texts but might need extra time with particularly challenging or specialized material. You can generally infer meaning from context, but occasionally struggle with idiomatic expressions or very technical language.",
+        "B2+":
+          "You can get the main ideas of more challenging stuff, like professional articles. You're starting to read more on your own and tackle topics that are a bit abstract or technical, especially in areas you know well.",
+        B2: "You can read on your own, figure out whether a text is formal or casual, and adjust your reading speed. You can enjoy a good book or article about current events. You know lots of words, and even if you get mixed up, you can usually sort it out.",
+        "B2-":
+          "You're getting better at understanding more complex texts, but you might still struggle with some advanced vocabulary or intricate sentence structures. You can follow the main points in most general interest articles, but specialized texts can be challenging.",
+        "B1+":
+          "You can understand clear writing about familiar subjects and are getting better at handling language that's a bit more complicated. You're comfortable finding info you need and can enjoy a book if it's not too hard.",
+        B1: "You can read texts on topics you like and understand the main points. Stories and personal letters are your thing. You've got a good stock of words for day-to-day stuff and can talk about what you read without too much trouble.",
+        "B1-":
+          "You're starting to tackle more complex texts, but you might need to read them slowly or more than once. You can understand the main ideas in straightforward articles on familiar topics, but detailed or abstract concepts can still be tricky.",
+        "A2+":
+          "You can understand regular writing and the main points in short news stories or descriptions. Your collection of words is growing so you can talk about things that matter to you and handle everyday tasks.",
+        A2: "You can get the gist of short, simple texts, find what you need in everyday stuff like ads or menus, and follow basic how-tos. You have enough words to get by in daily situations.",
+        "A2-":
+          "You're getting better at understanding simple texts, but you might still need to read them slowly or more than once. You can pick out important information from short, straightforward texts, especially if they're about familiar topics.",
+        "A1+":
+          "You're starting to make sense of sentences and expressions that are important for you. Reading is not just about spotting familiar words anymore; you're beginning to understand whole messages in simple texts.",
+        A1: "You can understand really short and simple stuff. You know enough words to spot them in notices and simple guides. You can talk about simple, everyday things with the words you know.",
+        "A1-":
+          "You're just starting to recognize familiar words and very basic phrases in simple texts. You can understand some common signs and short, simple messages, especially when they're supported by pictures or context.",
+        "A0+":
+          "You're just starting but can understand some words and phrases, especially if there's a picture to help. You can catch the meaning of simple signs and follow basic instructions if they're not too tricky.",
+        A0: "You can recognize words and names you've seen before, especially when there are pictures. You can understand the really simple signs around you and basic info like where and when something is happening.",
+        "A0-": "You are just getting started!",
+      },
     },
     teacher: {
       studentProgressPage: {
