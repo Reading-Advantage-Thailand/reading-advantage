@@ -73,17 +73,10 @@ export type SidebarTeacherNavItem = {
     }
 );
 export type SystemSidebarNavItem = {
-<<<<<<< HEAD
-    title: "system dashboard" | "handle passages" | "license",
-    disabled?: boolean
-    external?: boolean
-    icon?: keyof typeof Icons
-=======
-  title: "system dashboard" | "handle passages";
+  title: "system dashboard" | "handle passages" | "license";
   disabled?: boolean;
   external?: boolean;
   icon?: keyof typeof Icons;
->>>>>>> af65ef4 (feat:add recently activity and reading stat on student report page)
 } & (
   | {
       href: string;
