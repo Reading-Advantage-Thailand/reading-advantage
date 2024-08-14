@@ -6,6 +6,8 @@ export enum DBCollection {
 
     USERS = "users",
 
+    USER_ACTIVITY_LOGS = "user-activity-logs",
+
     LICENSES = "licenses",
     LICENSE_RECORDS = "records",
 }

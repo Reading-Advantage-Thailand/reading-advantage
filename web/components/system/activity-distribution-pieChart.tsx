@@ -1,12 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import '@/styles/globals.css';
-import { TrendingUp } from "lucide-react";
-import { Label, Pie, PieChart, ResponsiveContainer } from "recharts";
+import "@/styles/globals.css";
+import { Pie, PieChart } from "recharts";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -14,52 +12,9 @@ import {
 import {
   ChartConfig,
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-
-const chartData = [
-  { activity: "MC", numberOfTimes: 200, fill: "var(--color-mc)" },
-  { activity: "SA", numberOfTimes: 287, fill: "var(--color-sa)" },
-  { activity: "LA", numberOfTimes: 275, fill: "var(--color-la)" },
-  {
-    activity: "sent. flash.",
-    numberOfTimes: 275,
-    fill: "var(--color-sentense_flashcards)",
-  },
-  {
-    activity: "vocab. flash.",
-    numberOfTimes: 275,
-    fill: "var(--color-vocabulary_flashcards)",
-  },
-  {
-    activity: "Sent. act.",
-    numberOfTimes: 275,
-    fill: "var(--color-sentense_activities)",
-  },
-  {
-    activity: "Vocab. act.",
-    numberOfTimes: 275,
-    fill: "var(--color-vocabulary_activities)",
-  },
-  {
-    activity: "Article reads",
-    numberOfTimes: 275,
-    fill: "var(--color-article_reads)",
-  },
-  {
-    activity: "Article rating",
-    numberOfTimes: 275,
-    fill: "var(--color-article_rating)",
-  },
-  {
-    activity: "Level test",
-    numberOfTimes: 275,
-    fill: "var(--color-level_test)",
-  },
-];
 
 const chartConfig = {
   mc: {
@@ -75,36 +30,117 @@ const chartConfig = {
     color: "hsl(216 92% 60%)",
   },
   article_reads: {
-    label: "Article Reads",
+    label: "Article reads",
     color: "hsl(218 98% 79%)",
   },
   article_rating: {
-    label: "Article Rating",
+    label: "Article rating",
     color: "hsl(212 97% 87%)",
   },
   sentense_flashcards: {
-    label: "Level Test",
+    label: "Sent. flash.",
     color: "hsl(202 96% 86%)",
   },
   vocabulary_flashcards: {
-    label: "Save Sentence",
+    label: "Vocab. flash.",
     color: "hsl(222 95% 88%)",
   },
   sentense_activities: {
-    label: "Save Vocabulary",
+    label: "Sent. act.",
     color: "hsl(212 95% 68%)",
   },
   vocabulary_activities: {
-    label: "Sentence Cloze Test",
+    label: "Vocab. act.",
     color: "hsl(202 85% 68%)",
   },
   level_test: {
-    label: "Sentence Matching",
+    label: "Level test",
     color: "hsl(215 95% 68%)",
   },
 } satisfies ChartConfig;
 
+async function fetchActivity() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/activity`
+  );
+
+  const data = await response.json();
+  return data;
+}
+
 export default function ActivityDistributionPieChart() {
+  const [activityData, setActivityData] = useState<
+    Array<{
+      [x: string]: any;
+      userId: string;
+      activityName: string;
+      activityCount: number;
+    }>
+  >([]);
+
+  useEffect(() => {
+    async function loadActivityData() {
+      const activity = await fetchActivity();
+      setActivityData(activity.userActivityStats);
+    }
+    loadActivityData();
+  }, []);
+
+  const chartData = activityData.map((element) => {
+    return [
+      {
+        activity: "MC",
+        numberOfTimes: element.totalMcQuestionCount,
+        fill: "var(--color-mc)",
+      },
+      {
+        activity: "SA",
+        numberOfTimes: element.totalSaQuestionCount,
+        fill: "var(--color-sa)",
+      },
+      {
+        activity: "LA",
+        numberOfTimes: element.totalLaQuestionCount,
+        fill: "var(--color-la)",
+      },
+      {
+        activity: "Vocab. flash.",
+        numberOfTimes: element.totalVocabularyFlashcardsCount,
+        fill: "var(--color-vocabulary_flashcards)",
+      },
+      {
+        activity: "Sent. flash.",
+        numberOfTimes: element.totalSentenceFlashcardsCount,
+        fill: "var(--color-sentense_flashcards)",
+      },
+      {
+        activity: "Sent. act.",
+        numberOfTimes: element.totalSentenseActivityCount,
+        fill: "var(--color-sentense_activities)",
+      },
+      {
+        activity: "Article rating",
+        numberOfTimes: element.totalRatingCount,
+        fill: "var(--color-article_rating)",
+      },
+      {
+        activity: "Article reads",
+        numberOfTimes: element.totalReadingCount,
+        fill: "var(--color-article_reads)",
+      },
+      {
+        activity: "Level test",
+        numberOfTimes: element.totalLevelTestCount,
+        fill: "var(--color-level_test)",
+      },
+      {
+        activity: "Vocab. act.",
+        numberOfTimes: element.totalVocabularyActivityCount,
+        fill: "var(--color-vocabulary_activities)",
+      },
+    ];
+  }).flat();
+
   return (
     <>
       <Card className="h-full">
@@ -130,25 +166,6 @@ export default function ActivityDistributionPieChart() {
               />
             </PieChart>
           </ChartContainer>
-
-{/* <ChartContainer
-          config={chartConfig}
-          className="w-full h-[200px] sm:h-[300px] md:h-[350px] [&_.recharts-pie-label-text]:fill-foreground"
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-              <Pie
-                data={chartData}
-                dataKey="numberOfTimes"
-                nameKey="activity"
-                label={(entry) => entry.activity}
-                labelLine={true}
-                outerRadius="80%"
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartContainer> */}
         </CardContent>
         <CardFooter className="flex-col gap-2 mt-8 text-sm">
           <div className="leading-none text-muted-foreground hidden sm:block md:block lg:block">
