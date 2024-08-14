@@ -9,7 +9,7 @@ import uploadToBucket from "@/utils/uploadToBucket";
 import db from "@/configs/firestore-config";
 import axios from "axios";
 
-type WordListResponse = {
+export type WordListResponse = {
   vocabulary: string;
   definition: {
     en: string;
@@ -19,7 +19,7 @@ type WordListResponse = {
     vi: string;
   };
 }
-interface GenerateAudioParams {
+export type GenerateAudioParams = {
   wordList: WordListResponse;
   articleId: string;
 }
@@ -45,8 +45,7 @@ export async function generateAudioForWord({
   {
     try {
       const voice = AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
-      const vocabulary: string[] = Array.isArray(wordList) ? wordList.map((item: any) => item?.vocabulary) : [];
-      console.log("vocabulary: ", vocabulary);
+      const vocabulary: string[] = Array.isArray(wordList) ? wordList.map((item: any) => item?.vocabulary) : [];      
       let allTimePoints: TimePoint[] = [];
 
       const response = await axios.post(
@@ -79,22 +78,12 @@ export async function generateAudioForWord({
 
       await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);      
       
-     
-      
-      const wordListRef = db.collection(`word-list`).doc(articleId);
-      const wordListSnapshot = await wordListRef.get();
-      const dataList = wordListSnapshot.data();
-      console.log("generateAudioForWord allTimePoints: ", allTimePoints);
-      console.log("generateAudioForWord articleId: ", articleId);
-      console.log("generateAudioForWord dataList: ", dataList);
-
-      await db.collection("word-list").doc(articleId).update({
+      await db.collection(`word-list`).doc(articleId).update({
         timepoints: allTimePoints,
         id: articleId,
       });
 
     } catch (error: any) {
-      console.log("generateAudioForWord error: ", error);
       throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
         error.response.data
       )}`;
