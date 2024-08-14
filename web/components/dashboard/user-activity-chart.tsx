@@ -83,8 +83,6 @@ function formatDataForDays(
     });
   }
 
-  console.log(articles);
-
   return data;
 }
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -129,8 +127,8 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
         <CardHeader>
           <CardTitle>Activity Progress</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-5 lg:grid-cols-5">
-          <div className="grid gap-4 grid-cols-2 col-span-3">
+        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+          <div className="grid gap-4 grid-cols-2 col-span-1">
             <Card>
               <CardContent className="py-2">
                 <CardTitle>In prograss</CardTitle>
@@ -144,7 +142,7 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
               </CardContent>
             </Card>
           </div>
-          <Card className="col-span-2">
+          <Card className="col-span-1">
             <CardContent className="py-2">
               <CardTitle>Date Range</CardTitle>
               <DateField

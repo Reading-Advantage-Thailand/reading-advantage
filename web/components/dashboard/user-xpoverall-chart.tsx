@@ -84,10 +84,19 @@ function formatDataForDays(
     }
   }
 
-  const data = Object.keys(totalXp).map((month) => ({
-    month: `${month}`,
-    xpoverall: totalXp[month],
-  }));
+  // Handle the case where a month has 0 XP
+  let lastMonthXp = 0;
+  const data = Object.keys(totalXp).map((month) => {
+    if (totalXp[month] === 0) {
+      totalXp[month] = lastMonthXp;
+    } else {
+      lastMonthXp = totalXp[month];
+    }
+    return {
+      month: `${month}`,
+      xpoverall: totalXp[month],
+    };
+  });
 
   return data;
 }

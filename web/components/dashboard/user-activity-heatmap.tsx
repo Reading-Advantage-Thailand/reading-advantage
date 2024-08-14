@@ -49,7 +49,7 @@ interface UserActiviryChartProps {
 export default function UserActivityHeatMap({ data }: UserActiviryChartProps) {
   const formattedData = formatDataHeatmap(data);
   return (
-    <Card className="md:col-span-1 h-fit">
+    <Card className="md:col-span-1">
       <CardHeader>
         <CardTitle>Activity Heatmap</CardTitle>
       </CardHeader>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // const ChallengingQuestionsTable = () => {
-const LowestLatedArticlesTable = () => {
+const LowestRatedArticlesTable = () => {
   const articles = [
     { title: "The Stagecoach Robbery", type: "Fiction", rate: "2" },
     { title: "The Pomodoro Adventure: Boosting Focus and Efficiency with Time Management", type: "Non Fiction", rate: "3" },
@@ -11,7 +11,7 @@ const LowestLatedArticlesTable = () => {
   return (
     <Card className="w-full col-span-3">
       <CardHeader>
-        <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">Lowest Lated Articles</CardTitle>
+        <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">Lowest Rated Articles</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -39,4 +39,4 @@ const LowestLatedArticlesTable = () => {
   );
 };
 
-export default LowestLatedArticlesTable;
+export default LowestRatedArticlesTable;

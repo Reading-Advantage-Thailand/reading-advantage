@@ -27,7 +27,7 @@ export const authOptions: NextAuthOptions = {
             ...userModel,
             // Check if the user is expired when they sign in
             // expired: isUserExpired(userModel.expired_date),
-          }
+          };
 
           return user;
         } catch (error) {
@@ -47,15 +47,23 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
   },
   callbacks: {
-    jwt: async ({ token, user, account, profile, isNewUser, trigger, session }: any) => {
+    jwt: async ({
+      token,
+      user,
+      account,
+      profile,
+      isNewUser,
+      trigger,
+      session,
+    }: any) => {
       const dbUser = await userService.getDoc(token.id);
-      console.log("jwt dbUser", dbUser);
-      console.log("jwt token", token);
+      // console.log("jwt dbUser", dbUser);
+      // console.log("jwt token", token);
       if (!dbUser) {
         if (user) {
-          token.id = user?.id
+          token.id = user?.id;
         }
-        return token
+        return token;
       }
       return {
         id: dbUser.id,
@@ -67,11 +75,11 @@ export const authOptions: NextAuthOptions = {
         xp: dbUser.xp,
         cefr_level: dbUser.cefr_level,
         role: dbUser.role,
-      }
+      };
     },
     session: ({ session, token, user }) => {
-      console.log("session", session);
-      console.log("token", token);
+      // console.log("session", session);
+      // console.log("token", token);
       if (token) {
         session.user.id = token.id;
         session.user.display_name = token.display_name;
