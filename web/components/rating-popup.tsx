@@ -94,8 +94,11 @@ export default function RatingPopup({
           activityStatus: ActivityStatus.Completed,
           details: {
             title: article.title,
-            raLevel: article.ra_level,
-            CEFRLevel: article.cefr_level,
+            level: article.ra_level,
+            cefr_level: article.cefr_level,
+            type: article.type,
+            genre: article.genre,
+            subgenre: article.subgenre,
           },
         }),
       });
