@@ -22,11 +22,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { UserActivityLog } from "../models/user-activity-log-model";
 import { formatDate } from "@/lib/utils";
+import { useScopedI18n } from "@/locales/client";
 interface UserActiviryChartProps {
   data: UserActivityLog[];
 }
 export default function UserRecentActivity({ data }: UserActiviryChartProps) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const t = useScopedI18n("pages.student.reportpage");
+  const td: string | any = useScopedI18n(
+    "pages.student.reportpage.activitytype"
+  );
 
   // Sort the data by timestamp in descending order
   const sortedData = data.sort(
@@ -37,26 +42,14 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
   // Get the remaining activities
   const remainingActivities = sortedData.slice(1);
 
-  const formatActivityType = (value: string) => {
-    if (value === "mc_question" || "sa_question" || "la_question") {
-      switch (value) {
-        case "mc_question":
-          return "Multiple Choice Questions";
-        case "sa_question":
-          return "Short Answer Question";
-        case "la_question":
-          return "Long Answer Question";
-      }
-    }
-    return value.replace(/_/g, " ");
-  };
+  console.log(typeof mostRecentActivity.activityType);
 
   return (
     <Card className="mt-4">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <div className="flex items-center justify-between pr-6 space-x-4">
           <CardHeader>
-            <CardTitle>Recent Activities</CardTitle>
+            <CardTitle>{t("recentactivity")}</CardTitle>
           </CardHeader>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm">
@@ -71,7 +64,7 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
               <div className="flex items-center justify-between px-4 py-2 font-mono text-sm ">
                 <div>
                   <div className="capitalize font-semibold">
-                    {formatActivityType(mostRecentActivity.activityType)}
+                    {td(mostRecentActivity.activityType)}
                   </div>
                   <div className="text-xs text-gray-500">
                     {formatDate(mostRecentActivity.timestamp)}
@@ -84,12 +77,12 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
                 {mostRecentActivity.activityStatus === "completed" ? (
                   <Badge className="bg-green-500 hover:bg-green-500">
                     <CheckCircledIcon className="pr-1" />
-                    Completed
+                    {t("completed")}
                   </Badge>
                 ) : (
                   <Badge className="bg-orange-400 hover:bg-orange-400">
                     <ClockIcon className="pr-1" />
-                    In Progress
+                    {t("inProgress")}
                   </Badge>
                 )}
               </div>
@@ -102,7 +95,7 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
                 >
                   <div>
                     <div className="capitalize font-semibold">
-                      {formatActivityType(activity.activityType)}
+                      {td(activity.activityType)}
                     </div>
                     <div className="text-xs text-gray-500">
                       {formatDate(activity.timestamp)}
@@ -115,12 +108,12 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
                   {activity.activityStatus === "completed" ? (
                     <Badge className="bg-green-500 hover:bg-green-500">
                       <CheckCircledIcon className="pr-1" />
-                      Completed
+                      {t("completed")}
                     </Badge>
                   ) : (
                     <Badge className="bg-orange-400 hover:bg-orange-400">
                       <ClockIcon className="pr-1" />
-                      In Progress
+                      {t("inProgress")}
                     </Badge>
                   )}
                 </div>

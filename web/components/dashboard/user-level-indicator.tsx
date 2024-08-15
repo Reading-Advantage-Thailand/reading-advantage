@@ -17,7 +17,10 @@ interface Cefrlevel {
 }
 
 export default function CEFRLevels({ currentLevel }: Cefrlevel) {
-  const td: string | any = useScopedI18n("pages.student.cefrLevelDescription");
+  const td: string | any = useScopedI18n(
+    "pages.student.reportpage.cefr.description"
+  );
+  const t = useScopedI18n("pages.student.reportpage.cefr");
   const levels = [
     "A0-",
     "A0",
@@ -43,7 +46,7 @@ export default function CEFRLevels({ currentLevel }: Cefrlevel) {
   return (
     <Card className="md:col-span-1">
       <CardHeader>
-        <CardTitle>CEFR Levels</CardTitle>
+        <CardTitle>{t("title")}</CardTitle>
       </CardHeader>
       <CardContent className="w-full max-w-md mx-auto flex flex-col items-center">
         <GaugeChart
@@ -56,7 +59,7 @@ export default function CEFRLevels({ currentLevel }: Cefrlevel) {
         />
 
         <div className="text-center text-xl font-bold">
-          Your CEFR level : {currentLevel}
+          {t("yourlevel")} : {currentLevel}
         </div>
         <div className="mt-2">{td(currentLevel)}</div>
       </CardContent>

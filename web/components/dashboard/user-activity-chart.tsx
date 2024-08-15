@@ -18,9 +18,25 @@ import {
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import { UserActivityLog } from "../models/user-activity-log-model";
-import { DateField } from "@/components/ui/date-field";
-import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
-import { CloudFog } from "lucide-react";
+import { DateRange } from "react-day-picker";
+import { addDays, format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "@radix-ui/react-icons";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useScopedI18n } from "@/locales/client";
 
 // Function to calculate the data for the chart
 // This function takes in the articles and the number of days to go back
@@ -29,19 +45,15 @@ import { CloudFog } from "lucide-react";
 
 function formatDataForDays(
   articles: UserActivityLog[],
-  calendarValue: DateValueType
+  calendarValue: DateRange | undefined
 ) {
   // ISO date
   let startDate: Date;
   let endDate: Date;
 
   if (calendarValue) {
-    startDate = calendarValue.startDate
-      ? new Date(calendarValue.startDate)
-      : new Date();
-    endDate = calendarValue.endDate
-      ? new Date(calendarValue.endDate)
-      : new Date();
+    startDate = calendarValue.from ? new Date(calendarValue.from) : new Date();
+    endDate = calendarValue.to ? new Date(calendarValue.to) : new Date();
   } else {
     // Handle the case when calendarValue is null
     // You can set default values for startDate and endDate here
@@ -103,15 +115,15 @@ interface UserActiviryChartProps {
 }
 export function UserActivityChart({ data }: UserActiviryChartProps) {
   const { theme } = useTheme();
-  const [calendarValue, setCalendarValue] = useState<DateValueType>({
-    startDate: new Date(new Date().setDate(new Date().getDate() - 6)),
-    endDate: new Date(),
-  });
-  const formattedData = formatDataForDays(data, calendarValue);
 
-  const handleValueChange = (newValue: DateValueType) => {
-    setCalendarValue(newValue);
-  };
+  const t = useScopedI18n("pages.student.reportpage");
+
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: new Date(new Date().setDate(new Date().getDate() - 6)),
+    to: addDays(new Date(), 0),
+  });
+
+  const formattedData = formatDataForDays(data, date);
 
   const inProgressCount = data.filter(
     (item: UserActivityLog) => item.activityStatus === "in_progress"
@@ -125,38 +137,124 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
     <>
       <Card className="md:col-span-4">
         <CardHeader>
-          <CardTitle>Activity Progress</CardTitle>
+          <CardTitle>{t("activityprogress")}</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 ">
           <div className="grid gap-4 grid-cols-2 col-span-1">
             <Card>
-              <CardContent className="py-2">
-                <CardTitle>In prograss</CardTitle>
+              <CardContent className="py-2 ">
+                <CardTitle>{t("inProgress")}</CardTitle>
                 <p className="font-bold text-2xl">{inProgressCount}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="py-2">
-                <CardTitle>Completed</CardTitle>
+              <CardContent className="py-2 ">
+                <CardTitle>{t("completed")}</CardTitle>
                 <p className="font-bold text-2xl">{completedCount}</p>
               </CardContent>
             </Card>
           </div>
-          <Card className="col-span-1">
-            <CardContent className="py-2">
-              <CardTitle>Date Range</CardTitle>
-              <DateField
-                label=""
-                value={calendarValue}
-                onChange={handleValueChange}
-              />
+          <Card className="col-span-1 ">
+            <CardContent className="flex flex-col py-2 gap-2">
+              <CardTitle>{t("daterange")}</CardTitle>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="date"
+                    variant={"outline"}
+                    className={cn(
+                      "justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date?.from ? (
+                      date.to ? (
+                        <>
+                          {format(date.from, "LLL dd, y")} -{" "}
+                          {format(date.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(date.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="flex w-auto flex-col space-y-2 p-2"
+                  align="start"
+                >
+                  <Select
+                    onValueChange={(value) => {
+                      if (value === "thismonth") {
+                        setDate({
+                          from: new Date(
+                            new Date().getFullYear(),
+                            new Date().getMonth(),
+                            1
+                          ),
+                          to: new Date(
+                            new Date().getFullYear(),
+                            new Date().getMonth() + 1,
+                            0
+                          ),
+                        });
+                      } else if (value === "lastmonth") {
+                        setDate({
+                          from: new Date(
+                            new Date().getFullYear(),
+                            new Date().getMonth() - 1,
+                            1
+                          ),
+                          to: new Date(
+                            new Date().getFullYear(),
+                            new Date().getMonth(),
+                            0
+                          ),
+                        });
+                      } else {
+                        setDate({
+                          from: new Date(
+                            new Date().setDate(
+                              new Date().getDate() - parseInt(value)
+                            )
+                          ),
+                          to: addDays(new Date(), 0),
+                        });
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      <SelectItem value="0">Today</SelectItem>
+                      <SelectItem value="1">Yesterday</SelectItem>
+                      <SelectItem value="7">Last week</SelectItem>
+                      <SelectItem value="30">Last 30 days</SelectItem>
+                      <SelectItem value="thismonth">This month</SelectItem>
+                      <SelectItem value="lastmonth">Last month</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={date?.from}
+                    selected={date}
+                    onSelect={setDate}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
             </CardContent>
           </Card>
         </CardContent>
       </Card>
       <Card className="md:col-span-4">
         <CardHeader>
-          <CardTitle>XP Earned</CardTitle>
+          <CardTitle>{t("xpearned")}</CardTitle>
         </CardHeader>
         <CardContent className="pl-2">
           <ResponsiveContainer width="100%" height={350}>
