@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserActivityLog } from "../models/user-activity-log-model";
+import { useScopedI18n } from "@/locales/client";
 
 function formatDataHeatmap(article: UserActivityLog[]) {
   const dateCounts: { [date: string]: number } = {};
@@ -48,10 +49,11 @@ interface UserActiviryChartProps {
 
 export default function UserActivityHeatMap({ data }: UserActiviryChartProps) {
   const formattedData = formatDataHeatmap(data);
+  const t = useScopedI18n("pages.student.reportpage");
   return (
     <Card className="md:col-span-1">
       <CardHeader>
-        <CardTitle>Activity Heatmap</CardTitle>
+        <CardTitle>{t("activityheatmap")}</CardTitle>
       </CardHeader>
       <CardContent className="flex items-center justify-center py-2">
         <CalendarHeatmap

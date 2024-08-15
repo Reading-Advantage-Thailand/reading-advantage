@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useTheme } from "next-themes";
 import { UserActivityLog } from "../models/user-activity-log-model";
 import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
+import { useScopedI18n } from "@/locales/client";
 
 // Function to calculate the data for the chart
 // This function takes in the articles and the number of days to go back
@@ -125,6 +126,7 @@ export function UserXpOverAllChart({ data }: UserActiviryChartProps) {
   const formattedData = formatDataForDays(data, 5);
 
   const cardDescriptionText = `${formattedData[0]?.month} - ${formattedData[5]?.month}`;
+  const t = useScopedI18n("pages.student.reportpage");
 
   // const handleValueChange = (newValue: DateValueType) => {
   //   setCalendarValue(newValue);
@@ -134,7 +136,7 @@ export function UserXpOverAllChart({ data }: UserActiviryChartProps) {
     <>
       <Card className="md:col-span-4">
         <CardHeader>
-          <CardTitle>XP Overall</CardTitle>
+          <CardTitle>{t("xpoverall")}</CardTitle>
           <CardDescription>{cardDescriptionText}</CardDescription>
         </CardHeader>
         <CardContent className="pl-16">

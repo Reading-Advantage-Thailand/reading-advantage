@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserActivityLog } from "../models/user-activity-log-model";
+import { useScopedI18n } from "@/locales/client";
 
 const chartConfig = {
   // inProgress: {
@@ -45,6 +46,7 @@ interface UserActiviryChartProps {
 const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
   const { theme } = useTheme();
   const [seletedValue, setSeletedValue] = React.useState<string>("type");
+  const t = useScopedI18n("pages.student.reportpage");
   const formatData = (value: UserActivityLog[], selected: string) => {
     const filterArtcileRead = value.filter(
       (item) => item.activityType === "article_read"
@@ -87,7 +89,7 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
     <Card>
       <CardHeader className="flex flex-row justify-between">
         <div>
-          <CardTitle>Reading Stats Chart</CardTitle>
+          <CardTitle>{t("readingstatschart")}</CardTitle>
         </div>
         <Select onValueChange={handleSeletedChange} defaultValue="type">
           <SelectTrigger className="w-[180px]">
