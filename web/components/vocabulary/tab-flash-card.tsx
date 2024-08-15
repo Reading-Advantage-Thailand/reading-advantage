@@ -59,7 +59,7 @@ export type Word = {
     sn: number;
     timepoint: number;
     startTime: number;
-    endTimepoint: number;
+    endTime: number;
     audioUrl: string;
   };
   id?: string;
@@ -246,13 +246,13 @@ export default function FlashCard({
                   <div className="flex space-x-3" key={uuidv4()}>
                     {data.word.audioUrl && (
                       <>
-                       <AudioButton
-                        key={index}
-                        audioUrl={data.word.audioUrl?data.word.audioUrl:  `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${data.articleId}.mp3` }
-                        startTimestamp={data.word.startTime}
-                        endTimestamp={data.word.endTime}
-                      /></>
-                     
+                        <AudioButton
+                          key={index}
+                          audioUrl={data.word.audioUrl?data.word.audioUrl:  `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${data.articleId}.mp3` }
+                          startTimestamp={data?.word?.startTime}
+                          endTimestamp={data?.word?.endTime}
+                        />
+                      </>                     
                     )}
                     <FlipCardPracticeButton
                       currentCard={() => currentCardFlipRef.current()}
