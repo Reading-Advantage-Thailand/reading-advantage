@@ -11,6 +11,10 @@ interface WordList {
     tw: string;
     vi: string;
   };
+  audioUrl: string;
+  endTime: number;
+  startTime: number;
+  index: number;
 }
 export async function POST(req: Request, res: Response) {
   try {
