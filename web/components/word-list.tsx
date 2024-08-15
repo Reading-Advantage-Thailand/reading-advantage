@@ -72,9 +72,11 @@ export default function WordList({ article, articleId, userId }: Props) {
         article,
         articleId,
       });
- 
+
+      let wordList = []
+      
       if (resWordlist?.data?.timepoints) {
-        const wordList = resWordlist?.data?.timepoints.map(
+       wordList = resWordlist?.data?.timepoints.map(
           (timepoint: { timeSeconds: number }, index: number) => {
             const startTime = timepoint.timeSeconds;
             const endTime =
@@ -91,15 +93,11 @@ export default function WordList({ article, articleId, userId }: Props) {
             };
           }
         );
-       
-        setWordList(wordList);
-        form.reset();
-      } else {
-        await axios.post(`/api/assistant/wordlist`, {
-          article,
-          articleId,
-        });
+      } else{
+        wordList = resWordlist?.data?.word_list;
       }
+      setWordList(wordList);
+      form.reset();
     } catch (error: any) {
        console.log("error: ", error);
       toast({
@@ -244,13 +242,15 @@ export default function WordList({ article, articleId, userId }: Props) {
                                             <span className="font-bold text-cyan-500 ml-2">
                                               {word.vocabulary}:{" "}
                                             </span>
+                                           
                                             <div className="mr-5">
-                                              <AudioImg
+                                               {word?.startTime && (<AudioImg
                                                 key={word.vocabulary}
                                                 audioUrl={word.audioUrl}
                                                 startTimestamp={word?.startTime}
                                                 endTimestamp={word?.endTime}
-                                              />
+                                              />)}
+                                              
                                             </div>
 
                                             <span>

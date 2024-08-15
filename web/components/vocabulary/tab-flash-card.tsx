@@ -24,6 +24,7 @@ import {
   ActivityStatus,
   ActivityType,
 } from "../models/user-activity-log-model";
+import AudioButton from "../audio-button";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -57,6 +58,9 @@ export type Word = {
     };
     sn: number;
     timepoint: number;
+    startTime: number;
+    endTimepoint: number;
+    audioUrl: string;
   };
   id?: string;
   last_review?: Date; // The most recent review date, if applicable
@@ -236,10 +240,18 @@ export default function FlashCard({
                 {currentCardIndex + 1} / {cards.length}
               </p>
             </div>
-            {words.map((_, index) => {
+            {words.map((data, index) => {
               if (index === currentCardIndex) {
                 return (
                   <div className="flex space-x-3" key={uuidv4()}>
+                    {data.word.audioUrl && (
+                      <AudioButton
+                        key={data.id}
+                        audioUrl={data.word.audioUrl}
+                        startTimestamp={data.word.startTime}
+                        endTimestamp={data.word.endTimepoint}
+                      />
+                    )}
                     <FlipCardPracticeButton
                       currentCard={() => currentCardFlipRef.current()}
                     />
