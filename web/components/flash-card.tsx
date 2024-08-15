@@ -195,7 +195,6 @@ export default function FlashCard({
     }
   };
 
-  console.log("sentences", sentences);
   return (
     <>
       <Header heading={t("flashcard")} text={t("flashcardDescription")} />
