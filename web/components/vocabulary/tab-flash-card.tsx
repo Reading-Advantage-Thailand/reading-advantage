@@ -16,9 +16,9 @@ import { Button } from "../ui/button";
 import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
+import { AUDIO_WORDS_URL } from "@/server/constants";
 import FlashCardVocabularyPracticeButton from "./flash-card-vocabulary-practice-button";
 import FlipCardPracticeButton from "../flip-card-button";
-import { Timestamp } from "firebase/firestore";
 import {
   UserXpEarned,
   ActivityStatus,
@@ -245,12 +245,14 @@ export default function FlashCard({
                 return (
                   <div className="flex space-x-3" key={uuidv4()}>
                     {data.word.audioUrl && (
-                      <AudioButton
-                        key={data.id}
-                        audioUrl={data.word.audioUrl}
+                      <>
+                       <AudioButton
+                        key={index}
+                        audioUrl={data.word.audioUrl?data.word.audioUrl:  `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${data.articleId}.mp3` }
                         startTimestamp={data.word.startTime}
-                        endTimestamp={data.word.endTimepoint}
-                      />
+                        endTimestamp={data.word.endTime}
+                      /></>
+                     
                     )}
                     <FlipCardPracticeButton
                       currentCard={() => currentCardFlipRef.current()}
