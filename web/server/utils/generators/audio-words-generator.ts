@@ -18,7 +18,6 @@ export type WordListResponse = {
     tw: string;
     vi: string;
   };
-  created_at?: string;
 }
 export type GenerateAudioParams = {
   wordList: WordListResponse;

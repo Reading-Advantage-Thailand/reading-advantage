@@ -118,16 +118,10 @@ export async function POST(req: Request, res: Response) {
         word_list: resultWordList,
         articleId: param.articleId,
       });
-
-      // const timepoints = await generateAudioForWord({
-      //   passage: passage,
-      //   articleId: param?.articleId,
-      // });
-
+  
       return new Response(
         JSON.stringify({
           messages: "success",
-          // timepoints,
           word_list: resultWordList,
         }),
         { status: 200 }
