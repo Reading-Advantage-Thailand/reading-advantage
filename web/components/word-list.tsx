@@ -242,15 +242,22 @@ export default function WordList({ article, articleId, userId }: Props) {
                                             <span className="font-bold text-cyan-500 ml-2">
                                               {word.vocabulary}:{" "}
                                             </span>
-                                           
+
                                             <div className="mr-5">
-                                               {word?.startTime && (<AudioImg
-                                                key={word.vocabulary}
-                                                audioUrl={word.audioUrl}
-                                                startTimestamp={word?.startTime}
-                                                endTimestamp={word?.endTime}
-                                              />)}
-                                              
+                                              {word?.startTime && (
+                                                <AudioImg
+                                                  key={word.vocabulary}
+                                                  audioUrl={
+                                                    word.audioUrl
+                                                      ? word.audioUrl
+                                                      : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`
+                                                  }
+                                                  startTimestamp={
+                                                    word?.startTime
+                                                  }
+                                                  endTimestamp={word?.endTime}
+                                                />
+                                              )}
                                             </div>
 
                                             <span>
