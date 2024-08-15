@@ -51,9 +51,7 @@ export default function AudioButton({
       <button
         className={cn(buttonVariants({ size: "sm" }))}
         onClick={() => {
-          handlePause();
-          // startTimestamp,
-          // endTimestamp,
+          handlePause();         
         }}
       >
         {isplaying ? t("pause") : t("play")}

@@ -12,7 +12,7 @@ interface WordListResponse {
     cn: string;
     tw: string;
     vi: string;
-  };  
+  };
 }
 
 export async function generateWordList(

@@ -248,11 +248,15 @@ export default function FlashCard({
                       <>
                         <AudioButton
                           key={index}
-                          audioUrl={data.word.audioUrl?data.word.audioUrl:  `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${data.articleId}.mp3` }
+                          audioUrl={
+                            data.word.audioUrl
+                              ? data.word.audioUrl
+                              : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${data.articleId}.mp3`
+                          }
                           startTimestamp={data?.word?.startTime}
                           endTimestamp={data?.word?.endTime}
                         />
-                      </>                     
+                      </>
                     )}
                     <FlipCardPracticeButton
                       currentCard={() => currentCardFlipRef.current()}
