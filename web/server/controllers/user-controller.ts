@@ -69,6 +69,12 @@ export async function postActivityLog(
     if (id) {
       // if not exists will create
       if (!getActivity.exists) {
+        // createActivityLogTable
+        const userRef = await db.collection("user-activity-log").doc(id).get();
+
+        if (!userRef.exists) {
+          await db.collection("user-activity-log").doc(id).set({ id });
+        }
         // createActivityLog
         if (validActivityTypes.includes(data.activityType)) {
           await collectionRef.doc(documentId).set(commonData);
@@ -133,6 +139,14 @@ export async function getActivityLog(
 ) {
   try {
     const results: any[] = [];
+
+    // createActivityLogTable
+    const userRef = await db.collection("user-activity-log").doc(id).get();
+
+    if (!userRef.exists) {
+      await db.collection("user-activity-log").doc(id).set({ id });
+    }
+
     const getActivity = await db
       .collection("user-activity-log")
       .doc(id)

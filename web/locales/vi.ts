@@ -127,39 +127,70 @@ export default {
             "Bạn cần ít nhất năm câu đã lưu để tham gia hoạt động này.",
         },
       },
-      cefrLevelDescription: {
-        C2: "Bạn hiểu được hầu hết mọi thứ bạn đọc, kể cả những nội dung phức tạp. Bạn có thể nắm bắt được những câu chuyện hài hước nhỏ và ý nghĩa ẩn trong các bài viết nghiêm túc. Vốn từ vựng của bạn rất phong phú, và bạn biết khi nào nên sử dụng những từ ngữ cao cấp, hoa mỹ.",
-        "C2-":
-          "Bạn đã rất gần với việc thành thạo ngôn ngữ. Bạn có thể xử lý các văn bản phức tạp một cách dễ dàng, nhưng thỉnh thoảng vẫn gặp khó khăn với nội dung cực kỳ tinh tế hoặc đặc thù về văn hóa. Vốn từ vựng của bạn rất rộng, nhưng bạn vẫn có thể gặp những từ hiếm gặp khiến bạn phải dừng lại suy nghĩ.",
-        "C1+":
-          "Bạn đã rất gần với việc thành thạo ngôn ngữ. Bạn có thể xử lý các văn bản phức tạp một cách dễ dàng, nhưng thỉnh thoảng vẫn gặp khó khăn với nội dung cực kỳ tinh tế hoặc đặc thù về văn hóa. Vốn từ vựng của bạn rất rộng, nhưng bạn vẫn có thể gặp những từ hiếm gặp khiến bạn phải dừng lại suy nghĩ.",
-        C1: "Bạn có thể đọc hiểu các bài viết dài và khó, và hiểu được phần lớn nội dung. Bạn thích thú với những câu chuyện và bài viết khiến bạn phải suy nghĩ, và bạn có thể thảo luận về chúng mà không cần phải tìm kiếm từ ngữ quá nhiều.",
-        "C1-":
-          "Bạn cảm thấy thoải mái với các văn bản phức tạp, nhưng có thể cần thêm thời gian cho những tài liệu đặc biệt khó hoặc chuyên ngành. Thông thường, bạn có thể suy luận ý nghĩa từ ngữ cảnh, nhưng đôi khi vẫn gặp khó khăn với các thành ngữ hoặc ngôn ngữ rất chuyên môn.",
-        "B2+":
-          "Bạn có thể hiểu được ý chính của các nội dung thách thức hơn, như các bài báo chuyên ngành. Bạn bắt đầu đọc nhiều hơn một cách độc lập và có thể xử lý các chủ đề hơi trừu tượng hoặc kỹ thuật, đặc biệt là trong các lĩnh vực bạn quen thuộc.",
-        B2: "Bạn có thể đọc độc lập, xác định xem văn bản là trang trọng hay thân mật, và điều chỉnh tốc độ đọc của mình. Bạn có thể thưởng thức một cuốn sách hay hoặc bài báo về các sự kiện hiện tại. Bạn biết nhiều từ vựng, và ngay cả khi bạn bị nhầm lẫn, bạn thường có thể tìm ra ý nghĩa.",
-        "B2-":
-          "Bạn đang trở nên giỏi hơn trong việc hiểu các văn bản phức tạp hơn, nhưng vẫn có thể gặp khó khăn với một số từ vựng nâng cao hoặc cấu trúc câu phức tạp. Bạn có thể theo kịp các điểm chính trong hầu hết các bài viết về các chủ đề chung, nhưng các văn bản chuyên ngành vẫn có thể là một thách thức.",
-        "B1+":
-          "Bạn có thể hiểu được văn bản rõ ràng về các chủ đề quen thuộc và đang trở nên giỏi hơn trong việc xử lý ngôn ngữ phức tạp hơn một chút. Bạn cảm thấy thoải mái khi tìm kiếm thông tin bạn cần và có thể thưởng thức một cuốn sách nếu nó không quá khó.",
-        B1: "Bạn có thể đọc các văn bản về các chủ đề bạn thích và hiểu được các điểm chính. Câu chuyện và thư từ cá nhân là sở trường của bạn. Bạn có một vốn từ vựng tốt cho các vấn đề hàng ngày và có thể nói về những gì bạn đọc mà không gặp nhiều khó khăn.",
-        "B1-":
-          "Bạn bắt đầu xử lý các văn bản phức tạp hơn, nhưng có thể cần đọc chậm hoặc đọc nhiều lần. Bạn có thể hiểu được ý chính trong các bài viết đơn giản về các chủ đề quen thuộc, nhưng các khái niệm chi tiết hoặc trừu tượng vẫn có thể gây khó khăn.",
-        "A2+":
-          "Bạn có thể hiểu được văn bản thông thường và các điểm chính trong các tin tức ngắn hoặc mô tả. Vốn từ vựng của bạn đang phát triển nên bạn có thể nói về những điều quan trọng đối với bạn và xử lý các công việc hàng ngày.",
-        A2: "Bạn có thể hiểu được ý chính của các văn bản ngắn, đơn giản, tìm thấy những gì bạn cần trong các vật dụng hàng ngày như quảng cáo hoặc thực đơn, và làm theo các hướng dẫn cơ bản. Bạn có đủ từ vựng để đối phó với các tình huống hàng ngày.",
-        "A2-":
-          "Bạn đang trở nên giỏi hơn trong việc hiểu các văn bản đơn giản, nhưng có thể vẫn cần đọc chậm hoặc đọc nhiều lần. Bạn có thể trích xuất thông tin quan trọng từ các văn bản ngắn, đơn giản, đặc biệt là nếu chúng liên quan đến các chủ đề quen thuộc.",
-        "A1+":
-          "Bạn bắt đầu hiểu được các câu và cụm từ quan trọng đối với bạn. Việc đọc không chỉ là nhận ra các từ quen thuộc nữa; bạn bắt đầu hiểu được toàn bộ thông điệp trong các văn bản đơn giản.",
-        A1: "Bạn có thể hiểu được những nội dung rất ngắn và đơn giản. Bạn biết đủ từ vựng để nhận ra chúng trong các thông báo và hướng dẫn đơn giản. Bạn có thể nói về những việc đơn giản, hàng ngày bằng những từ bạn biết.",
-        "A1-":
-          "Bạn mới bắt đầu nhận ra các từ quen thuộc và cụm từ rất cơ bản trong các văn bản đơn giản. Bạn có thể hiểu một số biển báo thông thường và thông điệp ngắn, đơn giản, đặc biệt là khi chúng được hỗ trợ bằng hình ảnh hoặc ngữ cảnh.",
-        "A0+":
-          "Bạn mới bắt đầu nhưng có thể hiểu một số từ và cụm từ, đặc biệt là khi có hình ảnh hỗ trợ. Bạn có thể hiểu ý nghĩa của các biển báo đơn giản và làm theo các hướng dẫn cơ bản nếu chúng không quá phức tạp.",
-        A0: "Bạn có thể nhận ra các từ và tên bạn đã thấy trước đây, đặc biệt là khi có hình ảnh. Bạn có thể hiểu các biển báo rất đơn giản xung quanh bạn và thông tin cơ bản như khi nào và ở đâu một sự kiện đang diễn ra.",
-        "A0-": "Bạn mới chỉ bắt đầu thôi!",
+      reportpage: {
+        title: "Hoạt động của người dùng",
+        activityprogress: "Tiến độ hoạt động",
+        recentactivity: "Hoạt động gần đây",
+        inProgress: "Đang tiến hành",
+        completed: "Đã hoàn thành",
+        daterange: "Phạm vi ngày",
+        xpearned: "XP đã kiếm được",
+        xpoverall: "Tổng XP",
+        activityheatmap: "Bản đồ nhiệt hoạt động",
+        readingstatschart: "Biểu đồ thống kê đọc",
+        activitytype: {
+          article_rating: "Đánh giá bài viết",
+          article_read: "Đọc bài viết",
+          level_test: "Kiểm tra trình độ",
+          mc_question: "Câu hỏi trắc nghiệm",
+          sa_question: "Câu hỏi trả lời ngắn",
+          la_question: "Câu hỏi trả lời dài",
+          sentence_flashcards: "Thẻ câu",
+          sentence_matching: "Ghép câu",
+          sentence_ordering: "Sắp xếp câu",
+          sentence_word_ordering: "Sắp xếp từ trong câu",
+          sentence_cloze_test: "Điền vào chỗ trống câu",
+          vocabulary_flashcards: "Thẻ từ vựng",
+          vocabulary_matching: "Ghép từ vựng",
+        },
+        cefr: {
+          title: "Cấp độ CEFR",
+          yourlevel: "Cấp độ CEFR của bạn",
+          description: {
+            C2: "Bạn hiểu được hầu hết mọi thứ bạn đọc, kể cả những nội dung phức tạp. Bạn có thể nắm bắt được những câu chuyện hài hước nhỏ và ý nghĩa ẩn trong các bài viết nghiêm túc. Vốn từ vựng của bạn rất phong phú, và bạn biết khi nào nên sử dụng những từ ngữ cao cấp, hoa mỹ.",
+            "C2-":
+              "Bạn đã rất gần với việc thành thạo ngôn ngữ. Bạn có thể xử lý các văn bản phức tạp một cách dễ dàng, nhưng thỉnh thoảng vẫn gặp khó khăn với nội dung cực kỳ tinh tế hoặc đặc thù về văn hóa. Vốn từ vựng của bạn rất rộng, nhưng bạn vẫn có thể gặp những từ hiếm gặp khiến bạn phải dừng lại suy nghĩ.",
+            "C1+":
+              "Bạn đã rất gần với việc thành thạo ngôn ngữ. Bạn có thể xử lý các văn bản phức tạp một cách dễ dàng, nhưng thỉnh thoảng vẫn gặp khó khăn với nội dung cực kỳ tinh tế hoặc đặc thù về văn hóa. Vốn từ vựng của bạn rất rộng, nhưng bạn vẫn có thể gặp những từ hiếm gặp khiến bạn phải dừng lại suy nghĩ.",
+            C1: "Bạn có thể đọc hiểu các bài viết dài và khó, và hiểu được phần lớn nội dung. Bạn thích thú với những câu chuyện và bài viết khiến bạn phải suy nghĩ, và bạn có thể thảo luận về chúng mà không cần phải tìm kiếm từ ngữ quá nhiều.",
+            "C1-":
+              "Bạn cảm thấy thoải mái với các văn bản phức tạp, nhưng có thể cần thêm thời gian cho những tài liệu đặc biệt khó hoặc chuyên ngành. Thông thường, bạn có thể suy luận ý nghĩa từ ngữ cảnh, nhưng đôi khi vẫn gặp khó khăn với các thành ngữ hoặc ngôn ngữ rất chuyên môn.",
+            "B2+":
+              "Bạn có thể hiểu được ý chính của các nội dung thách thức hơn, như các bài báo chuyên ngành. Bạn bắt đầu đọc nhiều hơn một cách độc lập và có thể xử lý các chủ đề hơi trừu tượng hoặc kỹ thuật, đặc biệt là trong các lĩnh vực bạn quen thuộc.",
+            B2: "Bạn có thể đọc độc lập, xác định xem văn bản là trang trọng hay thân mật, và điều chỉnh tốc độ đọc của mình. Bạn có thể thưởng thức một cuốn sách hay hoặc bài báo về các sự kiện hiện tại. Bạn biết nhiều từ vựng, và ngay cả khi bạn bị nhầm lẫn, bạn thường có thể tìm ra ý nghĩa.",
+            "B2-":
+              "Bạn đang trở nên giỏi hơn trong việc hiểu các văn bản phức tạp hơn, nhưng vẫn có thể gặp khó khăn với một số từ vựng nâng cao hoặc cấu trúc câu phức tạp. Bạn có thể theo kịp các điểm chính trong hầu hết các bài viết về các chủ đề chung, nhưng các văn bản chuyên ngành vẫn có thể là một thách thức.",
+            "B1+":
+              "Bạn có thể hiểu được văn bản rõ ràng về các chủ đề quen thuộc và đang trở nên giỏi hơn trong việc xử lý ngôn ngữ phức tạp hơn một chút. Bạn cảm thấy thoải mái khi tìm kiếm thông tin bạn cần và có thể thưởng thức một cuốn sách nếu nó không quá khó.",
+            B1: "Bạn có thể đọc các văn bản về các chủ đề bạn thích và hiểu được các điểm chính. Câu chuyện và thư từ cá nhân là sở trường của bạn. Bạn có một vốn từ vựng tốt cho các vấn đề hàng ngày và có thể nói về những gì bạn đọc mà không gặp nhiều khó khăn.",
+            "B1-":
+              "Bạn bắt đầu xử lý các văn bản phức tạp hơn, nhưng có thể cần đọc chậm hoặc đọc nhiều lần. Bạn có thể hiểu được ý chính trong các bài viết đơn giản về các chủ đề quen thuộc, nhưng các khái niệm chi tiết hoặc trừu tượng vẫn có thể gây khó khăn.",
+            "A2+":
+              "Bạn có thể hiểu được văn bản thông thường và các điểm chính trong các tin tức ngắn hoặc mô tả. Vốn từ vựng của bạn đang phát triển nên bạn có thể nói về những điều quan trọng đối với bạn và xử lý các công việc hàng ngày.",
+            A2: "Bạn có thể hiểu được ý chính của các văn bản ngắn, đơn giản, tìm thấy những gì bạn cần trong các vật dụng hàng ngày như quảng cáo hoặc thực đơn, và làm theo các hướng dẫn cơ bản. Bạn có đủ từ vựng để đối phó với các tình huống hàng ngày.",
+            "A2-":
+              "Bạn đang trở nên giỏi hơn trong việc hiểu các văn bản đơn giản, nhưng có thể vẫn cần đọc chậm hoặc đọc nhiều lần. Bạn có thể trích xuất thông tin quan trọng từ các văn bản ngắn, đơn giản, đặc biệt là nếu chúng liên quan đến các chủ đề quen thuộc.",
+            "A1+":
+              "Bạn bắt đầu hiểu được các câu và cụm từ quan trọng đối với bạn. Việc đọc không chỉ là nhận ra các từ quen thuộc nữa; bạn bắt đầu hiểu được toàn bộ thông điệp trong các văn bản đơn giản.",
+            A1: "Bạn có thể hiểu được những nội dung rất ngắn và đơn giản. Bạn biết đủ từ vựng để nhận ra chúng trong các thông báo và hướng dẫn đơn giản. Bạn có thể nói về những việc đơn giản, hàng ngày bằng những từ bạn biết.",
+            "A1-":
+              "Bạn mới bắt đầu nhận ra các từ quen thuộc và cụm từ rất cơ bản trong các văn bản đơn giản. Bạn có thể hiểu một số biển báo thông thường và thông điệp ngắn, đơn giản, đặc biệt là khi chúng được hỗ trợ bằng hình ảnh hoặc ngữ cảnh.",
+            "A0+":
+              "Bạn mới bắt đầu nhưng có thể hiểu một số từ và cụm từ, đặc biệt là khi có hình ảnh hỗ trợ. Bạn có thể hiểu ý nghĩa của các biển báo đơn giản và làm theo các hướng dẫn cơ bản nếu chúng không quá phức tạp.",
+            A0: "Bạn có thể nhận ra các từ và tên bạn đã thấy trước đây, đặc biệt là khi có hình ảnh. Bạn có thể hiểu các biển báo rất đơn giản xung quanh bạn và thông tin cơ bản như khi nào và ở đâu một sự kiện đang diễn ra.",
+            "A0-": "Bạn mới chỉ bắt đầu thôi!",
+          },
+        },
       },
     },
     teacher: {
