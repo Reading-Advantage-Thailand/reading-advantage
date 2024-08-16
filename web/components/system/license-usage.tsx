@@ -29,6 +29,7 @@ async function fetchLicense() {
   const data = await response.json();
   return data;
 }
+
 export default async function LicenseUsageChart() {
   const [licenseData, setLicenseData] = useState<License[]>([]);
 
@@ -68,17 +69,13 @@ export default async function LicenseUsageChart() {
                       <div className="w-full max-w-md sm:max-w-sm md:max-w-md" id="gaugeArea">
                         <GaugeChart
                           id="gauge-chart"
-                          // nrOfLevels={30}
                           percent={license.used_licenses / license.total_licenses}
                           arcWidth={0.3}
                           cornerRadius={0}
                           textColor="#000000"
                           needleColor="#737373"
                           needleBaseColor="#737373"
-                          // colors={['lightgray','rgb(44,151,222)']}
-                        //  colors={["#00BFFF", "#1E90FF"]}
-                        //  colors={["#E5E7EB", "#3B82F6"]}
-                        colors={['#EA4228', '#F5CD19', '#5BE12C']}
+                        colors={['#5BE12C', '#F5CD19', '#EA4228',]}
                           arcPadding={0}
                           hideText={true}
 
@@ -86,40 +83,9 @@ export default async function LicenseUsageChart() {
                         />
 
                         <div className="text-center text-2xl font-bold mt-2 sm:text-3xl md:text-4xl sm:mt-4">
-                          {Math.round(license.used_licenses * 100) /
-                            license.total_licenses}
-                          %
+                          {license.used_licenses}
                         </div>
                        
-                           <div className="flex justify-between mt-2 text-xs sm:text">
-                          <span>0%</span>
-                          <span>100%</span>
-                        </div>
-
-                        {/* <CircularProgressbar
-                            value={calculatePercentage(license.used_licenses, license.total_licenses)}
-                            text={calculatePercentage(license.used_licenses, license.total_licenses) + "%"} 
-                            circleRatio={0.5}
-                            styles={{
-                              trail: {
-                                strokeLinecap: "butt",
-                                transform: "rotate(-0.25turn)",
-                                transformOrigin: "center center",
-                              },
-                              path: {
-                                strokeLinecap: "butt",
-                                transform: "rotate(-0.25turn)",
-                                transformOrigin: "center center",
-                                stroke: "#3B82F6",
-                              },
-                              text: {
-                                fill: "#000",
-                                fontSize: "12px",
-                              },
-                              }}
-                              strokeWidth={15}
-                            >
-                            </CircularProgressbar> */}
                       </div>
                     </CardContent>
                   </div>
