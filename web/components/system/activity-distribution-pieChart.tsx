@@ -5,7 +5,6 @@ import { Pie, PieChart } from "recharts";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -18,43 +17,33 @@ import {
 
 const chartConfig = {
   mc: {
-    label: "MC",
     color: "hsl(221.2 83.2% 53.3%)",
   },
   sa: {
-    label: "SA",
     color: "hsl(212 95% 68%)",
   },
   la: {
-    label: "LA",
     color: "hsl(216 92% 60%)",
   },
   article_reads: {
-    label: "Article reads",
     color: "hsl(218 98% 79%)",
   },
   article_rating: {
-    label: "Article rating",
     color: "hsl(212 97% 87%)",
   },
   sentense_flashcards: {
-    label: "Sent. flash.",
     color: "hsl(202 96% 86%)",
   },
   vocabulary_flashcards: {
-    label: "Vocab. flash.",
     color: "hsl(222 95% 88%)",
   },
   sentense_activities: {
-    label: "Sent. act.",
     color: "hsl(212 95% 68%)",
   },
   vocabulary_activities: {
-    label: "Vocab. act.",
     color: "hsl(202 85% 68%)",
   },
   level_test: {
-    label: "Level test",
     color: "hsl(215 95% 68%)",
   },
 } satisfies ChartConfig;
@@ -104,9 +93,29 @@ export default function ActivityDistributionPieChart() {
         fill: "var(--color-la)",
       },
       {
-        activity: "Vocab. flash.",
+        activity: "Art. rating",
+        numberOfTimes: element.totalRatingCount,
+        fill: "var(--color-article_rating)",
+      },
+      {
+        activity: "Art. reads",
+        numberOfTimes: element.totalReadingCount,
+        fill: "var(--color-article_reads)",
+      },
+      {
+        activity: "Voc. flash.",
         numberOfTimes: element.totalVocabularyFlashcardsCount,
         fill: "var(--color-vocabulary_flashcards)",
+      },
+      {
+        activity: "Lev. test",
+        numberOfTimes: element.totalLevelTestCount,
+        fill: "var(--color-level_test)",
+      },
+      {
+        activity: "Voc. act.",
+        numberOfTimes: element.totalVocabularyActivityCount,
+        fill: "var(--color-vocabulary_activities)",
       },
       {
         activity: "Sent. flash.",
@@ -117,26 +126,6 @@ export default function ActivityDistributionPieChart() {
         activity: "Sent. act.",
         numberOfTimes: element.totalSentenseActivityCount,
         fill: "var(--color-sentense_activities)",
-      },
-      {
-        activity: "Article rating",
-        numberOfTimes: element.totalRatingCount,
-        fill: "var(--color-article_rating)",
-      },
-      {
-        activity: "Article reads",
-        numberOfTimes: element.totalReadingCount,
-        fill: "var(--color-article_reads)",
-      },
-      {
-        activity: "Level test",
-        numberOfTimes: element.totalLevelTestCount,
-        fill: "var(--color-level_test)",
-      },
-      {
-        activity: "Vocab. act.",
-        numberOfTimes: element.totalVocabularyActivityCount,
-        fill: "var(--color-vocabulary_activities)",
       },
     ];
   }).flat();
@@ -149,30 +138,28 @@ export default function ActivityDistributionPieChart() {
             Activity Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 pb-0">
+        <CardContent className="w-full p-0">
           <ChartContainer
             config={chartConfig}
-            className="w-full max-h-[350px] [&_.recharts-pie-label-text]:fill-foreground"
+            className="mx-auto max-h-[300px] aspect-square [&_.recharts-pie-label-text]:fill-foreground md:w-full "
           >
             <PieChart>
-              <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+              <ChartTooltip content={<ChartTooltipContent/>} />
               <Pie
                 data={chartData}
                 dataKey="numberOfTimes"
                 nameKey="activity"
                 label={(entry) => entry.activity}
                 labelLine={true}
-                outerRadius="80%"
-              />
+                outerRadius="70%"
+                >
+                </Pie>
             </PieChart>
           </ChartContainer>
         </CardContent>
-        <CardFooter className="flex-col gap-2 mt-8 text-sm">
-          <div className="leading-none text-muted-foreground hidden sm:block md:block lg:block">
-            Showing the distribution of activities
-          </div>
-        </CardFooter>
       </Card>
     </>
   );
 }
+
+
