@@ -224,6 +224,7 @@ async function validator(articleId: string): Promise<{
       word_list: wordListData,
       articleId: articleId,
       id: articleId,
+      created_at: new Date().toISOString(),
     });
   }else {
     wordListData = wordListDoc.data()?.word_list as WordListResponse   
