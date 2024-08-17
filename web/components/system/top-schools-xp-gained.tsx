@@ -26,6 +26,15 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
+
+const chartConfig = {
+  xp: {
+    label: "XP",
+    // color: "hsl(var(--chart-1))",
+    color: "hsl(221.2 83.2% 53.3%)",
+  },
+} satisfies ChartConfig;
+
 export default function TopSchoolByXPGainedChart() {
   const chartData = [
     { school: "1School", xp: 186 },
@@ -35,13 +44,8 @@ export default function TopSchoolByXPGainedChart() {
     { school: "5School", xp: 209 },
     { school: "6School", xp: 214 },
   ];
-  const chartConfig = {
-    xp: {
-      label: "XP",
-      // color: "hsl(var(--chart-1))",
-      color: "hsl(221.2 83.2% 53.3%)",
-    },
-  } satisfies ChartConfig;
+  const topSchool = chartData.reduce((prev, current) => (prev.xp > current.xp) ? prev : current);
+  const bottomSchool = chartData.reduce((prev, current) => (prev.xp < current.xp) ? prev : current);
 
   return (
     <>
@@ -50,6 +54,8 @@ export default function TopSchoolByXPGainedChart() {
           <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
             Top Schools by XP Gained
           </CardTitle>
+          <CardDescription>Top Schools: {topSchool.school}, ({topSchool.xp})</CardDescription>
+          <CardDescription>Schools with Lowest XP: {bottomSchool.school}, ({topSchool.xp}) </CardDescription>
         </CardHeader>
         <CardContent  className="">
           <ChartContainer config={chartConfig}>
