@@ -112,11 +112,14 @@ export async function POST(req: Request, res: Response) {
         response.choices[0].message.function_call?.arguments as string
       )?.word_list;
 
-      const passage = resultWordList.map((item: any) => item?.vocabulary);
-
       await wordListRef.set({
         word_list: resultWordList,
         articleId: param.articleId,
+      });
+
+      await generateAudioForWord({
+        wordList: resultWordList,
+        articleId: param?.articleId,
       });
   
       return new Response(
