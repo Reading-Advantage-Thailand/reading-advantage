@@ -94,7 +94,7 @@ export function UpdateUserLicenseForm({
               <FormLabel>License</FormLabel>
               <FormDescription>
                 Active license for {username}. Update the license to change the
-                user's license.
+                user&apos;s license.
               </FormDescription>
               <FormControl>
                 <Input type="text" placeholder="license key" {...field} />

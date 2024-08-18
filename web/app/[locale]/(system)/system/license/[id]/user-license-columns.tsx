@@ -14,7 +14,6 @@ import { LicenseRecordStatus } from "@/server/models/enum";
 import { LicenseRecord } from "@/server/models/license";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 const apiDeactivateUserLicense = async (userId: string, licenseId: string) => {
   await fetch(`/api/v1/users/${userId}/license`, {
@@ -83,7 +82,6 @@ export const columns: ColumnDef<LicenseRecord>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const license = row.original;
-      const router = useRouter();
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -97,7 +95,6 @@ export const columns: ColumnDef<LicenseRecord>[] = [
             <DropdownMenuItem
               onClick={() => {
                 apiDeactivateUserLicense(license.id, license.license_id);
-                router.refresh();
               }}
             >
               Deactivate

@@ -9,7 +9,7 @@ export async function evaluateUserRunner(
     params: unknown,
     next: () => void
 ) {
-    const users = await userService.getAllDocs();
+    const users = await userService.users.getAllDocs();
     const total = users.length;
     let count = 0;
     // update the user with correct format
@@ -34,7 +34,7 @@ export async function evaluateUserRunner(
                 expired: false,
             };
             // update the user with the new data
-            await userService.updateDoc(user.id, updatedData);
+            await userService.users.updateDoc(user.id, updatedData);
             count++;
             console.log('id:', user.id, 'total:', count, '/', total);
             return updatedData;

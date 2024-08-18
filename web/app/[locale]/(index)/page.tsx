@@ -24,9 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import book1 from "@/public/book-1.jpg";
 import book1Optimized from "@/public/book1-original.jpg";
-import BookComp from "@/components/index/book";
 type Props = {};
 
 const features = [

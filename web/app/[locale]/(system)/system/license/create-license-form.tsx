@@ -14,8 +14,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import { useState } from "react";
-import { Icons } from "@/components/icons";
 import {
   Select,
   SelectContent,
@@ -23,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useRouter } from "next/navigation";
 import { licenseService } from "@/client/services/firestore-client-services";
 import { LicenseSubScriptionLevel } from "@/server/models/enum";
 
@@ -47,7 +44,6 @@ const FormSchema = z.object({
 });
 
 export function CreateLicenseForm() {
-  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -58,12 +54,9 @@ export function CreateLicenseForm() {
       duration: 1,
     },
   });
-  const router = useRouter();
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {
-      setIsLoading(true);
-
       // Create the licenses
       await licenseService.licenses.createDoc({
         total_licenses: data.total,
@@ -79,7 +72,6 @@ export function CreateLicenseForm() {
         school_name: "",
       });
 
-      router.refresh();
       toast({
         title: "Created licenses.",
         description: `Created ${data.total} ${data.subscription_level} licenses for ${data.school_name}.`,
@@ -90,8 +82,6 @@ export function CreateLicenseForm() {
         description: `Failed to create licenses`,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   }
 
@@ -206,9 +196,8 @@ export function CreateLicenseForm() {
           type="submit"
           variant="secondary"
           size="sm"
-          disabled={isLoading || !form.formState.isValid}
+          disabled={!form.formState.isValid}
         >
-          {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
           Create Licenses
         </Button>
       </form>
