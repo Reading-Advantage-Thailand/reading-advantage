@@ -134,6 +134,35 @@ export function levelCalculation(xp: number) {
   return { cefrLevel: "", raLevel: "" };
 }
 
+
+export function timeLeft(targetDate: string): string {
+  const now = new Date().getTime();
+  const target = new Date(targetDate).getTime();
+  const diff = target - now;
+
+  if (diff <= 0) return "Expired!";
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+  const dayString = `${days} day${days !== 1 ? "s" : ""}`;
+  const hourString = `${hours} hour${hours !== 1 ? "s" : ""}`;
+  const minuteString = `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+
+  return `${dayString} ${hourString} ${minuteString} left!`;
+}
+
+function calculateDaysLeft(targetDate: string): number {
+  const now = new Date().getTime();
+  const target = new Date(targetDate).getTime();
+  const diff = target - now;
+
+  // Convert milliseconds to days
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+
 //function to get cefrLevel and xp from firebase
 // export async function getPreviousData(userId: string) {
 //   try {
