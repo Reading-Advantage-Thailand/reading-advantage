@@ -64,7 +64,7 @@ export async function generateQueue(req: ExtendedNextRequest) {
       const successCount = combinedResults.filter(
         (result) => typeof result !== "string"
       ).length;
-      const failedReasons = combinedResults.filter((result) => typeof result === "string");
+      // const failedReasons = combinedResults.filter((result) => typeof result === "string");
       // calculate taken time
       const timeTakenMinutes = (Date.now() - timeTaken) / 1000 / 60;
 
@@ -78,7 +78,7 @@ export async function generateQueue(req: ExtendedNextRequest) {
               failed: `${failedCount} articles`,
               success: `${successCount} articles`,
               "time taken": `${timeTakenMinutes.toFixed(2)} minutes\n`,
-              ":star: failed reasons": failedCount ? "\n" + failedReasons.join("\n") : "none",
+              // ":star: failed reasons": failedCount ? "\n" + failedReasons.join("\n") : "none",
             },
             color: 0xff0000,
           },
