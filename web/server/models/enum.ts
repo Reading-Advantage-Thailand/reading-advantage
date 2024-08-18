@@ -5,6 +5,7 @@ export enum DBCollection {
     NEWARTICLES_LA = "la-questions",
 
     USERS = "users",
+    USERS_ARTICLE_RECORDS = "article-records",
 
     USER_ACTIVITY_LOGS = "user-activity-logs",
 
@@ -38,4 +39,9 @@ export enum LicenseSubScriptionLevel {
     BASIC = "basic",
     PREMIUM = "premium",
     ENTERPRISE = "enterprise",
+}
+
+export enum LicenseRecordStatus {
+    DISABLED = "disabled",
+    ENABLED = "enabled",
 }

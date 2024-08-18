@@ -1,4 +1,3 @@
-import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 import ChangeRole from "@/components/shared/change-role";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
@@ -17,6 +16,7 @@ export default async function FirstRoleSelectionPage() {
         className="md:w-[40rem]"
         userRole={user.role}
         userId={user.id}
+        redirectTo="/level"
       />
     </div>
   );

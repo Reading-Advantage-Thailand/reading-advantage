@@ -4,16 +4,28 @@ import { levelCalculation } from "@/lib/utils";
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
+import { userService } from "../services/firestore-server-services";
+import catchAsync from "../utils/catch-async";
 
+// parent collection (users) of user
+// factory functions
 export const getUser = getOne(DBCollection.USERS);
 export const updateUser = updateOne(DBCollection.USERS);
+
+// sub collection (records) of user
+export const getUserAllRecords = catchAsync(async (req: ExtendedNextRequest, ctx: { params: { id: string } }) => {
+  const records = await userService.articleRecords(ctx.params.id).getAllDocs();
+  return NextResponse.json({
+    length: records.length,
+    data: records,
+  });
+});
 
 interface RequestContext {
   params: {
     id: string;
   };
 }
-
 export async function postActivityLog(
   req: ExtendedNextRequest,
   { params: { id } }: RequestContext

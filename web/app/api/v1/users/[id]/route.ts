@@ -1,3 +1,4 @@
+import { activateLicense } from "@/server/controllers/license-controller";
 import { getUser, updateUser } from "@/server/controllers/user-controller";
 import { logRequest } from "@/server/middleware";
 import { handleRequest } from "@/server/utils/handle-request";
@@ -19,6 +20,9 @@ router.use(logRequest);
 // /api/v1/users/[id]
 router.get(getUser)
 router.patch(updateUser);
+// activate license
+router.post(activateLicense);
 
 export const GET = (request: NextRequest, ctx: Context) => handleRequest(router, request, ctx);
 export const PATCH = (request: NextRequest, ctx: Context) => handleRequest(router, request, ctx);
+export const POST = (request: NextRequest, ctx: Context) => handleRequest(router, request, ctx);

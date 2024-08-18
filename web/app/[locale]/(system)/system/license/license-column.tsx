@@ -1,5 +1,6 @@
 "use client";
 import { licenseService } from "@/client/services/firestore-client-services";
+import { Icons } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,9 +14,11 @@ import {
 import { cn } from "@/lib/utils";
 import { LicenseSubScriptionLevel } from "@/server/models/enum";
 import { License } from "@/server/models/license";
-import { ColumnDef, Row } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const apiDeleteLicense = async (id: string) => {
   await licenseService.licenses.deleteDoc(id);
@@ -109,7 +112,8 @@ export const columns: ColumnDef<License>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const license = row.original;
-      //   const router = useRouter();
+      const router = useRouter();
+      const [isLoading, setIsLoading] = useState(false);
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -121,11 +125,17 @@ export const columns: ColumnDef<License>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => {
-                apiDeleteLicense(license.id);
-                // router.refresh();
+              onClick={async (event) => {
+                event.preventDefault();
+                setIsLoading(true);
+                await apiDeleteLicense(license.id);
+                setIsLoading(false);
+                router.refresh();
               }}
             >
+              {isLoading && (
+                <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
+              )}
               Delete
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -134,7 +144,11 @@ export const columns: ColumnDef<License>[] = [
               Copy license ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View license details</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link href={`/system/license/${license.id}`}>
+                View license details
+              </Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

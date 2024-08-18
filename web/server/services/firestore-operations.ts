@@ -131,6 +131,36 @@ export const isDocExists = async (collection: string, id: string, parent?: { sub
     }
 }
 
+export interface IFindOneFilter<T> {
+    field: keyof T;
+    operator: FirebaseFirestore.WhereFilterOp;
+    value: any;
+}
+
+export const findOne = async <T extends DocumentData>(
+    collection: string,
+    filter: IFindOneFilter<T>,
+    parent?: { subCollection: string; docId: string }
+): Promise<T | undefined> => {
+    try {
+        const collectionRef = parent
+            ? db.collection(collection).doc(parent.docId).collection(parent.subCollection)
+            : db.collection(collection);
+
+        const snapshot = await collectionRef.where(filter.field.toString(), filter.operator, filter.value).get();
+        if (snapshot.empty) {
+            console.warn(`No document found in collection "${collection}" with field "${filter.field.toString()}" and value "${filter.value}".`);
+            return undefined;
+        }
+
+        const doc = snapshot.docs[0].data() as T;
+        console.log(`Document found in collection "${collection}" with field "${filter.field.toString()}" and value "${filter.value}".`);
+        return doc;
+    } catch (error) {
+        console.error(`Error retrieving document from collection "${collection}" with field "${filter.field.toString()}" and value "${filter.value}":`, error);
+        return undefined;
+    }
+}
 export interface Filter {
     orderBy: string;
     startAt: number;

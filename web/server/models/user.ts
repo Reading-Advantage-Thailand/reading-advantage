@@ -17,7 +17,25 @@ export interface User extends DocumentData {
     sign_in_provider?: string;
     expired_date: string;
     expired: boolean;
+    license_id?: string; // reference to license
 }
+export const UserFields = {
+    ID: 'id' as const,
+    EMAIL: 'email' as const,
+    DISPLAY_NAME: 'display_name' as const,
+    ROLE: 'role' as const,
+    CREATED_AT: 'created_at' as const,
+    UPDATED_AT: 'updated_at' as const,
+    LEVEL: 'level' as const,
+    EMAIL_VERIFIED: 'email_verified' as const,
+    PICTURE: 'picture' as const,
+    XP: 'xp' as const,
+    CEFR_LEVEL: 'cefr_level' as const,
+    SIGN_IN_PROVIDER: 'sign_in_provider' as const,
+    EXPIRED_DATE: 'expired_date' as const,
+    EXPIRED: 'expired' as const,
+    LICENSE_ID: 'license_id' as const,
+};
 
 export const createUserModel = (decoded: DecodedIdToken, user: User | undefined): User => {
     console.log("decoded", decoded);
@@ -40,6 +58,7 @@ export const createUserModel = (decoded: DecodedIdToken, user: User | undefined)
             level: user.level || 0,
             cefr_level: user.cefr_level || "",
             expired: false,
+            license_id: user.license_id || "",
         };
     } else {
         console.log("Creating new user model in Firestore");
@@ -60,6 +79,7 @@ export const createUserModel = (decoded: DecodedIdToken, user: User | undefined)
             expired_date: new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(),
             cefr_level: "",
             expired: false,
+            license_id: "",
         };
     }
 };

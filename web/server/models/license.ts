@@ -1,5 +1,5 @@
 import { DocumentData } from "firebase/firestore";
-import { LicenseSubScriptionLevel } from "./enum";
+import { LicenseRecordStatus, LicenseSubScriptionLevel } from "./enum";
 import { randomUUID } from "crypto";
 
 export interface License extends DocumentData {
@@ -15,12 +15,26 @@ export interface License extends DocumentData {
     admin_id: string; // id of the admin who manages this license
     school_name: string;
 }
-
+// fields of license
+export const LicenseFields = {
+    ID: 'id' as const,
+    KEY: 'key' as const,
+    TOTAL_LICENSES: 'total_licenses' as const,
+    USED_LICENSES: 'used_licenses' as const,
+    SUBSCRIPTION_LEVEL: 'subscription_level' as const,
+    EXPIRATION_DATE: 'expiration_date' as const,
+    USER_ID: 'user_id' as const,
+    CREATED_AT: 'created_at' as const,
+    UPDATED_AT: 'updated_at' as const,
+    ADMIN_ID: 'admin_id' as const,
+    SCHOOL_NAME: 'school_name' as const
+};
 // records (sub collection) of license
 export interface LicenseRecord extends DocumentData {
     id: string; // user id
-    license_key: string;
     activated_at: string;
+    status: LicenseRecordStatus;
+    license_id: string; // reference to license
 }
 
 export const createLicenseModel = ({

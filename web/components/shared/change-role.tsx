@@ -21,9 +21,15 @@ type Props = {
   userId: string;
   userRole: Role;
   className?: string;
+  redirectTo?: string;
 };
 
-export default function ChangeRole({ userId, userRole, className }: Props) {
+export default function ChangeRole({
+  userId,
+  userRole,
+  className,
+  redirectTo,
+}: Props) {
   const roles = [
     {
       title: "Student",
@@ -61,8 +67,8 @@ export default function ChangeRole({ userId, userRole, className }: Props) {
   }
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Role>(userRole);
-  const { update } = useSession();
   const router = useRouter();
+  const { update } = useSession();
 
   async function handleRoleChange() {
     try {
@@ -77,14 +83,12 @@ export default function ChangeRole({ userId, userRole, className }: Props) {
         throw new Error("Failed to update role.");
       }
 
-      // update user session token
-      await update({ user: { role: selectedRole } })
-        .then(() => {
-          console.log("Role updated in session.");
-        })
-        .catch((error) => {
-          console.error("Failed to update role in session.", error);
-        });
+      // Update the session
+      await update({
+        user: {
+          role: selectedRole,
+        },
+      });
 
       // refresh the page
       router.refresh();
@@ -93,6 +97,11 @@ export default function ChangeRole({ userId, userRole, className }: Props) {
         title: "Role updated.",
         description: `Changed role to ${selectedRole}.`,
       });
+
+      // Redirect to the specified page
+      if (redirectTo) {
+        router.push(redirectTo);
+      }
     } catch (error) {
       toast({
         title: "An error occurred.",

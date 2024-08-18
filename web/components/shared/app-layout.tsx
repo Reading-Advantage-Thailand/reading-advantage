@@ -9,6 +9,8 @@ import { NavItem, SidebarNavItem } from "@/types";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle";
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher";
+import { Role } from "@/server/models/enum";
+import ExpireAlertBanner from "./banners/expire-alert-banner";
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -16,6 +18,9 @@ interface AppLayoutProps {
   sidebarNavConfig?: SidebarNavItem[];
   disableProgressBar?: boolean;
   disableSidebar?: boolean;
+  disableRoleRedirect?: boolean;
+  disableLevelRedirect?: boolean;
+  disableExpriredRedirect?: boolean;
 }
 
 export interface BaseAppLayoutProps {
@@ -28,21 +33,37 @@ export default async function AppLayout({
   sidebarNavConfig,
   disableProgressBar,
   disableSidebar,
+  disableRoleRedirect,
+  disableLevelRedirect,
+  disableExpriredRedirect,
 }: AppLayoutProps) {
   const user = await getCurrentUser();
-
   // Redirect to sign in page if user is not logged in
   if (!user) {
     return redirect("/auth/signin");
   }
 
-  // Redirect to level selection page if user has not selected a level
-  // if (user.level === undefined || user.cefr_level === "") {
-  //   return redirect("/level");
-  // }
+  if (!disableRoleRedirect && user.role === Role.UNKNOWN) {
+    return redirect("/role-selection");
+  }
+
+  if (
+    !disableLevelRedirect &&
+    (user.level === undefined || user.level === null || user.level === 0)
+  ) {
+    return redirect("/level");
+  }
+
+  if (!disableExpriredRedirect && user.expired && user.role !== Role.SYSTEM) {
+    return redirect("/expired");
+  }
 
   return (
     <NextAuthSessionProvider session={user}>
+      <ExpireAlertBanner
+        expireDate={user.expired_date}
+        expired={user.expired}
+      />
       <div className="flex min-h-screen flex-col space-y-6">
         <header className="sticky top-0 z-40 border-b bg-background">
           <div className="container flex h-16 items-center justify-between py-4">

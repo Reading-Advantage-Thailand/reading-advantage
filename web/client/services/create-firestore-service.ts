@@ -9,7 +9,7 @@ const createFirestoreService = <T extends DocumentData>(collectionPath: string) 
     return {
         fetchDoc: async (docId: string, headers: ReadonlyHeaders) => {
             const url = `${apiUrl}/${docId}`;
-            return fetchData<T>(url, { method: "GET", headers: headers, cache: "no-store" }, {
+            return fetchData<T>(url, { method: "GET", headers: headers }, {
                 title: "Failed to fetch document",
             });
         },

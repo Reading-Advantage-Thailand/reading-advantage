@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
 import catchAsync from "../utils/catch-async";
 import { ExtendedNextRequest } from "./auth-controller";
-import { licenseService } from "../services/firestore-server-services";
-import { createLicenseModel, License } from "../models/license";
-import { DBCollection } from "../models/enum";
-import { getAlls, deleteOne } from "../handlers/handler-factory";
+import { licenseService, userService } from "../services/firestore-server-services";
+import { createLicenseModel, License, LicenseFields, LicenseRecord } from "../models/license";
+import { DBCollection, LicenseRecordStatus } from "../models/enum";
+import { getAlls, deleteOne, getOne, createOne } from "../handlers/handler-factory";
+import { UserFields } from "../models/user";
+import db from "@/configs/firestore-config";
 
+// parent collection (licenses) of license
 export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
-    const { total_licenses, subscription_level, school_name, admin_id } = await req.json();
+    const { total_licenses, subscription_level, school_name, admin_id, duration } = await req.json();
     const license: Omit<License, "id"> = createLicenseModel({
         totalLicense: total_licenses,
         subscriptionLevel: subscription_level,
         userId: req.session?.user.id || "",
         adminId: admin_id,
         schoolName: school_name,
+        expirationDate: new Date(new Date().getTime() + duration * 24 * 60 * 60 * 1000).toISOString(),  // duration in days
     })
     await licenseService.licenses.createDoc(license);
     return NextResponse.json({
@@ -21,94 +25,157 @@ export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
         license,
     });
 });
+export const deleteLicense = catchAsync(async (req: ExtendedNextRequest, ctx: { params: { id: string } }) => {
+    const records = await licenseService.records(ctx.params.id).getAllDocs();
+    for (let i = 0; i < records.length; i++) {
+        const record = records[i] as LicenseRecord;
+        await userService.users.updateDoc(record.id, {
+            expired_date: "",
+            license_id: "",
+        });
+    }
+    await licenseService.licenses.deleteDoc(ctx.params.id);
+    return NextResponse.json({
+        message: "License deleted successfully",
+    });
+});
 
+// factory functions
+export const getLicense = getOne<License>(DBCollection.LICENSES);
 export const getAllLicenses = getAlls<License>(DBCollection.LICENSES);
-export const deleteLicense = deleteOne<License>(DBCollection.LICENSES);
-// export const getFilteredLicenses = catchAsync(async (req: ExtendedNextRequest) => {
-//     // req.nextUrl.searchParams.get("page");
-//     // URLSearchParams { 'page' => '1' }
-//     // map to key
-//     const fil = req.nextUrl.searchParams.entries();
-//     const filter = Object.fromEntries(req.nextUrl.searchParams.entries());
-//     console.log('filter', filter);
-//     // pagination
-//     const licenses = await db.collection(DBCollection.NEWARTICLES)
-//         .orderBy("created_at")
-//         .startAt(1)
-//         .limit(10)
-//         .select("id", "key", "created_at")
-//         .get();
 
-//     const list = licenses.docs.map((license) => license.data());
+// sub collection (records) of license
+export const activateLicense = catchAsync(async (req: ExtendedNextRequest, ctx: { params: { id: string } }) => {
+    const id = req.session?.user.id;
+    const { license_key } = await req.json();
 
-//     return NextResponse.json({
-//         message: "Licenses fetched successfully",
-//         length: list.length,
-//         data: list,
-//     });
-// });
+    // check if license exists
+    const license = await licenseService.licenses.findOne({
+        field: LicenseFields.KEY,
+        operator: "==",
+        value: license_key,
+    });
 
-// export const getAllLicenses = getAll<License>(DBCollection.LICENSES);
+    if (!license) {
+        return NextResponse.json({
+            message: "License not found",
+        }, { status: 404 });
+    }
+    // check if license max limit reached
+    if (license.total_licenses <= license.used_licenses) {
+        return NextResponse.json({
+            message: "License limit reached",
+        }, { status: 400 });
+    }
 
-// export const generateLicenseKey = catchAsync(async (req: ExtendedNextRequest, { params: { id } }: { params: { id: string } }) => {
-//     const { totalLicenses, subscriptionLevel, userId } = await req.json();
-//     console.log(totalLicenses, subscriptionLevel, userId);
-//     const license: License = {
-//         key: randomUUID(),
-//         school_id: id,
-//         total_licenses: totalLicenses,
-//         used_licenses: 0,
-//         subscription_level: subscriptionLevel,
-//         // default expiration date is 1 day
-//         expiration_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-//         user_id: userId,
-//         created_at: new Date().toISOString(),
-//     };
+    // check if license is expired
+    if (new Date(license.expiration_date) < new Date()) {
+        return NextResponse.json({
+            message: "License expired",
+        }, { status: 400 });
+    }
 
-//     // save license to database
-//     await db.collection(DBCollection.LICENSES).doc(license.key).set({
-//         ...license,
-//     });
+    // check if user already activated this license and it is not expired
+    const user = await db.collection(DBCollection.USERS)
+        .where(UserFields.LICENSE_ID, "==", license.id)
+        .where(UserFields.ID, "==", id)
+        .get()
 
-//     return NextResponse.json({
-//         message: "License key generated successfully",
-//         license,
-//     });
-// });
+    if (!user.empty) {
+        return NextResponse.json({
+            message: "License already activated",
+        }, { status: 400 });
+    }
 
-// // use in user route
-// export const activateLicense = catchAsync(async (req: ExtendedNextRequest, { params: { id } }: { params: { id: string } }) => {
-//     const { key } = await req.json();
-//     // check if license exists
-//     const license = await db.collection(DBCollection.LICENSES).doc(key).get();
-//     if (!license.exists) {
-//         return NextResponse.json({
-//             message: "License not found",
-//         }, { status: 404 });
-//     }
+    // update user expired date
+    const record = await licenseService.records(license.id).setDoc(id!, {
+        activated_at: new Date().toISOString(),
+        id: id!,
+        status: LicenseRecordStatus.ENABLED,
+        license_id: license.id,
+    });
 
-//     // update user expired date
-//     const user = await db.collection(DBCollection.USERS).doc(id).get();
-//     const userData = user.data();
-//     if (!userData) {
-//         return NextResponse.json({
-//             message: "User data not found",
-//         }, { status: 404 });
-//     }
-//     await db.collection(DBCollection.USERS).doc(id).update({
-//         expired_date: new Date((userData.expired_date).getTime() + 24 * 60 * 60 * 1000).toISOString(),
-//     });
-//     return NextResponse.json({
-//         message: "Licenses fetched successfully",
-//     });
-// });
+    // updarecordexpired date
+    await userService.users.updateDoc(id!, {
+        expired_date: license.expiration_date,
+        license_id: license.id,
+    });
 
+    // update used licenses
+    await licenseService.licenses.updateDoc(license.id, {
+        used_licenses: license.used_licenses + 1,
+    });
 
-// export const getAllLicenses = catchAsync(async (req: ExtendedNextRequest, { params: { id } }: { params: { id: string } }) => {
-//     const licenses = await db.collection(DBCollection.LICENSES).where("school_id", "==", id).get();
-//     const licensesData = licenses.docs.map((license) => license.data() as License);
-//     return NextResponse.json({
-//         message: "Licenses fetched successfully",
-//         licenses: licensesData,
-//     });
-// });
+    return NextResponse.json({
+        message: "License activated successfully",
+        record,
+    });
+});
+export const deactivateLicense = catchAsync(async (req: ExtendedNextRequest, ctx: { params: { id: string } }) => {
+    const { id } = ctx.params; // user id
+    const { license_id } = await req.json();
+
+    // check if license exists
+    const license = await licenseService.licenses.findOne({
+        field: LicenseFields.ID,
+        operator: "==",
+        value: license_id,
+    });
+
+    if (!license) {
+        return NextResponse.json({
+            message: "License not found",
+        }, { status: 404 });
+    }
+
+    // Check license is lower than 0
+    if (license.used_licenses <= 0) {
+        return NextResponse.json({
+            message: "License already deactivated",
+        }, { status: 400 });
+    }
+
+    // update user expired date
+    await userService.users.updateDoc(id, {
+        expired_date: "",
+        license_id: "",
+    });
+
+    // update used licenses
+    await licenseService.licenses.updateDoc(license.id, {
+        used_licenses: license.used_licenses - 1,
+    });
+
+    // delete record
+    await db.collection(DBCollection.LICENSES)
+        .doc(license.id)
+        .collection(DBCollection.LICENSE_RECORDS)
+        .doc(id)
+        .delete();
+
+    return NextResponse.json({
+        message: "License deactivated successfully",
+    });
+});
+export const getLicenseAllRecords = catchAsync(async (req: ExtendedNextRequest, ctx: { params: { id: string } }) => {
+    const records = await licenseService.records(ctx.params.id).getAllDocs();
+    const data = [];
+    for (let i = 0; i < records.length; i++) {
+        const record = records[i];
+        const user = await userService.users.findOne({
+            field: UserFields.ID,
+            operator: "==",
+            value: record.id,
+        });
+        data.push({
+            ...record,
+            display_name: user?.display_name,
+            email: user?.email,
+            role: user?.role,
+        });
+    }
+    return NextResponse.json({
+        length: records.length,
+        data,
+    });
+});

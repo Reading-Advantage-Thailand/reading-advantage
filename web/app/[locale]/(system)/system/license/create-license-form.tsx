@@ -43,6 +43,7 @@ const FormSchema = z.object({
     LicenseSubScriptionLevel.ENTERPRISE,
   ]),
   admin_id: z.string(),
+  duration: z.number().int().min(1),
 });
 
 export function CreateLicenseForm() {
@@ -54,6 +55,7 @@ export function CreateLicenseForm() {
       subscription_level: LicenseSubScriptionLevel.BASIC,
       school_name: "",
       admin_id: "",
+      duration: 1,
     },
   });
   const router = useRouter();
@@ -63,11 +65,12 @@ export function CreateLicenseForm() {
       setIsLoading(true);
 
       // Create the licenses
-      const response = await licenseService.licenses.createDoc({
+      await licenseService.licenses.createDoc({
         total_licenses: data.total,
         subscription_level: data.subscription_level,
         school_name: data.school_name,
         admin_id: data.admin_id,
+        duration: data.duration,
       });
       // Reset the form
       form.reset({
@@ -174,6 +177,27 @@ export function CreateLicenseForm() {
               <FormMessage />
               <FormDescription>
                 The subscription level for the licenses.
+              </FormDescription>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="duration"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Duration in days</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Duration"
+                  {...field}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+              <FormDescription>
+                The duration of the license in days. Default is 1 day.
               </FormDescription>
             </FormItem>
           )}

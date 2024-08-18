@@ -4,7 +4,10 @@ import { License, LicenseRecord } from "../models/license";
 import { User } from "../models/user";
 import createFirestoreService from "./create-firestore-service";
 
-export const userService = createFirestoreService<User>(DBCollection.USERS);
+export const userService = {
+    users: createFirestoreService<User>(DBCollection.USERS),
+    articleRecords: (docId: string) => createFirestoreService<User>(DBCollection.USERS, { subCollection: DBCollection.USERS_ARTICLE_RECORDS, docId }),
+}
 
 export const licenseService = {
     licenses: createFirestoreService<License>(DBCollection.LICENSES),

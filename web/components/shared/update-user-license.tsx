@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { Icons } from "@/components/icons";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 const FormSchema = z.object({
@@ -27,9 +26,11 @@ const FormSchema = z.object({
 export function UpdateUserLicenseForm({
   username,
   userId,
+  redirectTo,
 }: {
   username: string;
   userId: string;
+  redirectTo?: string;
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -45,35 +46,36 @@ export function UpdateUserLicenseForm({
     try {
       setIsLoading(true);
       // Update the user's username
-      const response = await fetch(`/api/v1/licenses/test-school-id`, {
-        method: "PATCH",
+      const response = await fetch(`/api/v1/users/${userId}/license`, {
+        method: "POST",
         body: JSON.stringify({
-          key: data.license,
-          user_id: userId,
+          license_key: data.license,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update username.");
+        const data = await response.json();
+        throw new Error("Failed to update license. " + data.message);
       }
 
       // Reset the form
       form.reset({ license: data.license });
 
-      //   // update user session token
-      //   await update({ name: data.name });
-
-      // refresh the page
-      router.refresh();
+      // Redirect to the specified page
+      if (redirectTo) {
+        router.replace(redirectTo);
+      } else {
+        router.refresh();
+      }
 
       toast({
         title: "User license updated",
         description: `The user license has been updated to ${data.license}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "An error occurred.",
-        description: "Please try again later.",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -91,10 +93,11 @@ export function UpdateUserLicenseForm({
             <FormItem>
               <FormLabel>License</FormLabel>
               <FormDescription>
-                Enter the new license for the user
+                Active license for {username}. Update the license to change the
+                user's license.
               </FormDescription>
               <FormControl>
-                <Input type="text" placeholder="update license" {...field} />
+                <Input type="text" placeholder="license key" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

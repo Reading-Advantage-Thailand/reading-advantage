@@ -1,4 +1,5 @@
 "use client";
+
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -30,14 +31,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState } from "react";
-import { License } from "@/server/models/license";
+import { LicenseRecord } from "@/server/models/license";
 
-export function LicenseDataTable({
+export function UserLicenseDataTable({
   data,
   columns,
 }: {
-  data: License[];
-  columns: ColumnDef<License, any>[];
+  data: LicenseRecord[];
+  columns: ColumnDef<LicenseRecord, any>[];
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -67,12 +68,12 @@ export function LicenseDataTable({
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter school name..."
+          placeholder="Filter username"
           value={
-            (table.getColumn("school_name")?.getFilterValue() as string) ?? ""
+            (table.getColumn("display_name")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("school_name")?.setFilterValue(event.target.value)
+            table.getColumn("display_name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
