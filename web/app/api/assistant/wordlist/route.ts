@@ -1,7 +1,6 @@
 import OpenAI from "openai";
 import db from "@/configs/firestore-config";
 import storage from "@/utils/storage";
-import { generateAudioForWord } from "@/server/utils/generators/audio-words-generator";
 import { AUDIO_WORDS_URL } from "@/server/constants";
 
 export async function POST(req: Request, res: Response) {
@@ -111,8 +110,6 @@ export async function POST(req: Request, res: Response) {
       const resultWordList = JSON.parse(
         response.choices[0].message.function_call?.arguments as string
       )?.word_list;
-
-      const passage = resultWordList.map((item: any) => item?.vocabulary);
 
       await wordListRef.set({
         word_list: resultWordList,
