@@ -22,6 +22,10 @@ export const protect = async (
         return NextResponse.json({ message: "Unauthorized - Please login to access this resource" }, { status: 403 });
     }
 
+    // if (session.user.expired) {
+    //     return NextResponse.json({ message: "Unauthorized - Your account has expired" }, { status: 403 });
+    // }
+
     // Send user session to the next middleware
     req.session = session;
     return next();
@@ -49,11 +53,15 @@ export const restrictTo = (...allowedRoles: Role[]) => {
             return NextResponse.json({ message: "Forbidden - You are not allowed to access this resource" }, { status: 403 });
         }
 
+        // Check expired user
+        // if (session.user.expired) {
+        //     return NextResponse.json({ message: "Unauthorized - Your account has expired" }, { status: 403 });
+        // }
+
         req.session = session;
         return next();
     };
 };
-
 
 // Restrict access (requires access key) to a route
 export const restrictAccessKey = async (
@@ -94,5 +102,23 @@ export const restrictAccessKey = async (
             message: "Unauthorized: Access key is required",
         }, { status: 403 });
     }
+    return next();
+}
+
+export const isUserExpired = async (
+    req: NextRequest,
+    params: unknown,
+    next: () => void
+) => {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ message: "Unauthorized - Please login to access this resource" }, { status: 403 });
+    }
+
+    const { user } = session;
+    if (user.expired) {
+        return NextResponse.json({ message: "Unauthorized - Your account has expired" }, { status: 403 });
+    }
+
     return next();
 }

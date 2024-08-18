@@ -1,24 +1,33 @@
-import { createI18nMiddleware } from 'next-international/middleware'
-import { NextRequest } from 'next/server'
-import { getToken } from "next-auth/jwt"
-import { withAuth } from "next-auth/middleware"
-import { NextResponse } from "next/server"
-import { Role } from './server/models/enum'
-import { localeConfig } from './configs/locale-config'
+import { createI18nMiddleware } from "next-international/middleware";
+import { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
+import { Role } from "./server/models/enum";
+import { localeConfig } from "./configs/locale-config";
 
 const I18nMiddleware = createI18nMiddleware({
     locales: localeConfig.locales,
     defaultLocale: localeConfig.defaultLocale,
-})
+});
 
 export default withAuth(
-    async function middleware(req: NextRequest) {
-        const token = await getToken({ req })
-        const isAuth = !!token
-        const isAuthPage =
-            req.nextUrl.pathname.startsWith("/auth/signin")
+    async function middleware(req) {
+        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+        // console.log("middleware");
+        // console.log(token);
+
+        const isAuth = !!token;
         const authLocales = localeConfig.locales;
-        const locale = authLocales.find((loc) => req.nextUrl.pathname.startsWith(`/${loc}/auth`)) || '/en';
+        const locale = authLocales.find((loc) => req.nextUrl.pathname.startsWith(`/${loc}`)) || "en";
+        // root page is marketing page
+        const marketingPage = req.nextUrl.pathname === "/" || req.nextUrl.pathname === `/${locale}`;
+        const settingsPage = req.nextUrl.pathname.includes("/setting");
+        const expiredPage = req.nextUrl.pathname.includes("/expired");
+
+        const isAuthPage =
+            req.nextUrl.pathname.includes("/auth/signin") ||
+            req.nextUrl.pathname.includes("/auth/signup");
 
         // Skip the middleware for API routes
         if (req.nextUrl.pathname.startsWith('/api')) {
@@ -37,47 +46,35 @@ export default withAuth(
             return NextResponse.redirect(new URL(`/api/auth/signout`, req.url));
         }
 
-        if (authLocales.includes(locale)) {
-            // Redirect to the appropriate page based on the user's role and level
-            // if the user is already authenticated
+        if (isAuthPage) {
             if (isAuth) {
-                // Redirect to the role selection page if the user's role is unknown
-                // UNKNOWN is the default role assigned to a user
-                if (token.role === Role.UNKNOWN) {
-                    return NextResponse.redirect(new URL("/role-selection", req.url))
-                }
-                // Redirect to the level selection page if the user's level is unknown
-                if (token.level === undefined || token.level === null || token.level === 0) {
-                    return NextResponse.redirect(new URL("/level", req.url))
-                }
-                // Redirect to the teacher home page if the user is a teachet
-                if (token.role === Role.TEACHER) {
-                    return NextResponse.redirect(new URL("/teacher/my-classes", req.url))
-                }
-                // else redirect to the student home page
-                // DEFAULT ()
-                return NextResponse.redirect(new URL("/student/read", req.url))
+                return NextResponse.redirect(new URL("/student/read", req.url));
             }
-
-            return null
+            return I18nMiddleware(req);
         }
 
-        if (!isAuth) {
+        // root page is marketing page
+        if (!isAuth && !marketingPage) {
             let from = req.nextUrl.pathname;
             if (req.nextUrl.search) {
                 from += req.nextUrl.search;
             }
 
-            return NextResponse.redirect(new URL(`${locale}/auth/signin?from=${encodeURIComponent(from)}`, req.url));
-
+            return NextResponse.redirect(
+                new URL(`/auth/signin?from=${encodeURIComponent(from)}`, req.url)
+            );
         }
-        return I18nMiddleware(req)
+        return I18nMiddleware(req);
     },
     {
-        callbacks: { authorized: () => true, },
+        callbacks: {
+            async authorized() {
+                return true;
+            },
+        },
     }
-)
+);
 
 export const config = {
-    matcher: ['/((?!api|static|.*\\..*|_next|favicon.ico|robots.txt).*)'],
+    matcher: ["/((?!api|static|.*\\..*|_next|favicon.ico|robots.txt).*)"],
 };

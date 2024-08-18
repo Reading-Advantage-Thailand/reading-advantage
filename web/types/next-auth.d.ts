@@ -1,51 +1,40 @@
 import { User as NextAuthUser } from "next-auth";
 import { JWT as NextAuthJWT } from "next-auth/jwt";
-import { Role } from "@/server/models/enum";
 
 declare module "next-auth/jwt" {
     interface JWT {
         id: string;
-        email: string;
-        display_name: string;
-        role: Role.UNKNOWN;
+
+        // Custom properties
+        role: Role;
+        expired: boolean;
         level: number;
-        email_verified: boolean;
-        picture: string;
         xp: number;
         cefr_level: string;
+        display_name: string;
+        email_verified: boolean;
+        picture: string;
         expired_date: string;
-        expired?: boolean;
     }
 }
 
 declare module "next-auth" {
-    interface Session {
-        user: User & {
-            id: string;
-            email: string;
-            display_name: string;
-            role: Role;
-            level: number;
-            email_verified: boolean;
-            picture: string;
-            xp: number;
-            cefr_level: string;
-            expired_date: string;
-            expired?: boolean;
-        };
-    }
-
     interface User {
         id: string;
-        email: string;
-        display_name: string;
+
+        // Custom properties
         role: Role;
+        expired: boolean;
         level: number;
-        email_verified: boolean;
-        picture: string;
         xp: number;
         cefr_level: string;
+        display_name: string;
+        email_verified: boolean;
+        picture: string;
         expired_date: string;
-        expired?: boolean;
+    }
+
+    interface Session {
+        user: User;
     }
 }

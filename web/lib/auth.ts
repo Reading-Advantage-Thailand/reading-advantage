@@ -3,6 +3,8 @@ import { createUserModel } from "@/server/models/user";
 import { userService } from "@/server/services/firestore-server-services";
 import { verifyIdToken } from "@/server/utils/verify-id-token";
 import { NextAuthOptions } from "next-auth";
+import { isUserExpired } from "@/server/utils/verify-user-expired";
+import exp from "constants";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,7 +14,7 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.idToken) return null;
         try {
           const decoded = await verifyIdToken(credentials.idToken);
-          const userDoc = await userService.getDoc(decoded.uid);
+          const userDoc = await userService.users.getDoc(decoded.uid);
           // Create a user model based on the decoded token
           // If the user exists in Firestore, use the existing user model
           const userModel = createUserModel(decoded, userDoc);
@@ -20,7 +22,7 @@ export const authOptions: NextAuthOptions = {
           if (!userDoc) {
             // If the user does not exist in Firestore, create a new user model
             // and save it to Firestore
-            await userService.setDoc(decoded.uid, userModel);
+            await userService.users.setDoc(decoded.uid, userModel);
           }
 
           const user = {
@@ -47,51 +49,57 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
   },
   callbacks: {
-    jwt: async ({
-      token,
-      user,
-      account,
-      profile,
-      isNewUser,
-      trigger,
-      session,
-    }: any) => {
-      const dbUser = await userService.getDoc(token.id);
-      // console.log("jwt dbUser", dbUser);
-      // console.log("jwt token", token);
+    async session({ token, session }) {
+      console.log("session token", token);
+      if (token) {
+        session.user.id = token.id
+        session.user.display_name = token.display_name
+        session.user.email = token.email
+        session.user.picture = token.picture
+
+        // Custom properties
+        session.user.role = token.role
+        session.user.expired = token.expired
+        session.user.level = token.level
+        session.user.expired = token.expired
+        session.user.xp = token.xp
+        session.user.cefr_level = token.cefr_level
+        session.user.email_verified = token.email_verified
+        session.user.expired_date = token.expired_date
+      }
+      return session
+    },
+    jwt: async ({ token, user, account, profile, isNewUser, trigger, session }: any) => {
+      const dbUser = await userService.users.getDoc(token.id);
       if (!dbUser) {
         if (user) {
           token.id = user?.id;
         }
-        return token;
+        return token
       }
-      return {
+      if (user) {
+        token.id = user?.id
+      }
+
+      // Custom properties
+      token = {
+        expired: isUserExpired(dbUser.expired_date) || dbUser.expired_date === "",
+        // expired: false,
         id: dbUser.id,
         display_name: dbUser.display_name,
         email: dbUser.email,
-        picture: token.picture || dbUser.picture,
+        picture: profile?.picture || dbUser.picture,
         level: dbUser.level,
         email_verified: dbUser.email_verified,
         xp: dbUser.xp,
         cefr_level: dbUser.cefr_level,
         role: dbUser.role,
-      };
-    },
-    session: ({ session, token, user }) => {
-      // console.log("session", session);
-      // console.log("token", token);
-      if (token) {
-        session.user.id = token.id;
-        session.user.display_name = token.display_name;
-        session.user.email = token.email;
-        session.user.picture = token.picture;
-        session.user.level = token.level;
-        session.user.email_verified = token.email_verified;
-        session.user.xp = token.xp;
-        session.user.cefr_level = token.cefr_level;
-        session.user.role = token.role;
+        expired_date: dbUser.expired_date,
       }
-      return session;
+      // console.log("jwt token", token);
+      return {
+        ...token,
+      }
     },
   },
 };
