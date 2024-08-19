@@ -1,5 +1,6 @@
 import db from "@/configs/firestore-config";
 import { authOptions } from "@/lib/auth";
+import { log } from "console";
 import { getServerSession } from "next-auth";
 
   export async function GET(req: Request, res: Response) {
@@ -14,7 +15,7 @@ import { getServerSession } from "next-auth";
         );
         }
         
-        const userRef = db.collection('users').where('role', 'array-contains', 'TEACHER');
+        const userRef = db.collection('users').where('role', '==', 'teacher');
         const snapshot = await userRef.get();
         const teachers = snapshot.docs.map(doc => doc.data());
     
