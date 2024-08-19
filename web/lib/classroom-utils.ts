@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { Role } from "@/server/models/enum";
 
 async function fetchData(endpoint: string) {
   try {
@@ -26,9 +25,9 @@ export default async function ClassroomData(params: {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.role === Role.TEACHER) {
-    return redirect("/teacher/my-classes");
-  }
+  // if (user.role === Role.TEACHER) {
+  //   return redirect("/teacher/my-classes");
+  // }
 
   const [allClassroom, allStudent, allTeachers] = await Promise.all([
     fetchData(""),
@@ -38,7 +37,7 @@ export default async function ClassroomData(params: {
 
   const teacherId = allTeachers.teachers
     .filter((teacher: { id: string; role: any }) =>
-      teacher.role.includes("TEACHER") && teacher.id === user.id
+      teacher.role.includes("teacher") && teacher.id === user.id
     )
     .map((teacher: { id: string }) => teacher.id);
 
@@ -124,9 +123,9 @@ export async function StudentsData({
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.role === Role.TEACHER) {
-    return redirect("/teacher/my-classes");
-  }
+  // if (user.role === Role.TEACHER) {
+  //   return redirect("/teacher/my-classes");
+  // }
 
   // get student role data from database
   async function getAllStudentData() {
@@ -327,11 +326,9 @@ export async function StudentsData({
 
 export async function ClassesData() {
   const user = await getCurrentUser();
+  
   if (!user) {
     return redirect("/auth/signin");
-  }
-  if (user.role === Role.TEACHER) {
-    return redirect("/teacher/my-classes");
   }
 
   // get data from database
@@ -350,6 +347,7 @@ export async function ClassesData() {
     }
   }
   const allClassroom = await getAllClassroom();
+  
 
   // get student role data from database
   async function getAllStudentData() {
@@ -393,7 +391,7 @@ export async function ClassesData() {
     allTeachers.teachers.forEach((teacher: { id: string; role: any }) => {
       if (
         teacher.role &&
-        teacher.role.includes("TEACHER") &&
+        teacher.role.includes("teacher") &&
         teacher.id === user.id
       ) {
         teacherId.push(teacher.id);
