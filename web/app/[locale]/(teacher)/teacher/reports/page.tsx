@@ -5,7 +5,6 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import ClassroomData from "@/lib/classroom-utils";
 import { ClassesData } from "@/lib/classroom-utils";
-import { Role } from "@/server/models/enum";
 
 export default async function ReportsPage(params: {
   params: { classroomId: string };
@@ -13,9 +12,6 @@ export default async function ReportsPage(params: {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
-  }
-  if (user.role === Role.TEACHER) {
-    return redirect("/teacher/my-classes");
   }
 
   const res = await ClassroomData({

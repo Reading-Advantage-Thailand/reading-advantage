@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { Role } from "@/server/models/enum";
 
 async function fetchData(endpoint: string) {
   try {
@@ -26,9 +25,9 @@ export default async function ClassroomData(params: {
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.role === Role.TEACHER) {
-    return redirect("/teacher/my-classes");
-  }
+  // if (user.role === Role.TEACHER) {
+  //   return redirect("/teacher/my-classes");
+  // }
 
   const [allClassroom, allStudent, allTeachers] = await Promise.all([
     fetchData(""),
@@ -124,9 +123,9 @@ export async function StudentsData({
   if (!user) {
     return redirect("/auth/signin");
   }
-  if (user.role === Role.TEACHER) {
-    return redirect("/teacher/my-classes");
-  }
+  // if (user.role === Role.TEACHER) {
+  //   return redirect("/teacher/my-classes");
+  // }
 
   // get student role data from database
   async function getAllStudentData() {
@@ -327,14 +326,10 @@ export async function StudentsData({
 
 export async function ClassesData() {
   const user = await getCurrentUser();
-  // console.log('user', user);
   
   if (!user) {
     return redirect("/auth/signin");
   }
-  // if (user.role === Role.TEACHER) {
-  //   return redirect("/teacher/my-classes");
-  // }
 
   // get data from database
   async function getAllClassroom() {
