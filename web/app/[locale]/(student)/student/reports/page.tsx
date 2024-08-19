@@ -23,7 +23,7 @@ export default async function ReportsPage({}: Props) {
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
   const res = await getUserArticleRecords(user.id);
-
+  
   return (
     <>
       <Header heading={t("title")} />
@@ -42,3 +42,4 @@ export default async function ReportsPage({}: Props) {
     </>
   );
 }
+
