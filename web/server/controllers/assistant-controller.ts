@@ -72,26 +72,29 @@ export async function getFeedbackWritter(res: object) {
     const validatedInput = inputSchema.parse(res);
 
     const prompt = `
-    System: ${systemPrompt}
-    
     User: Provide feedback for the following writing:
-    
+
     Preferred Language: ${validatedInput.preferredLanguage}
     Target CEFR Level: ${validatedInput.targetCEFRLevel}
     Reading Passage: ${validatedInput.readingPassage}
     Writing Prompt: ${validatedInput.writingPrompt}
     Student Response: ${validatedInput.studentResponse}
-    
-    Please provide detailed feedback based on the CEFR criteria.
+
+    Please provide detailed feedback based on the CEFR criteria and Preferred Language.
     `;
 
     const { object } = await generateObject({
       model: openai("gpt-4o"),
       schema: outputSchema,
-      prompt: prompt,
+      system: systemPrompt,
+      prompt,
     });
 
-    return NextResponse.json(object.feedback, { status: 200 });
+    if (!object.feedback) {
+      return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+    } else {
+      return NextResponse.json(object.feedback, { status: 200 });
+    }
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json({ error: "An error occurred" }, { status: 500 });
