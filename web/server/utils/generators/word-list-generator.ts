@@ -1,18 +1,8 @@
 import OpenAI from "openai";
+import { WordListResponse } from "./audio-words-generator";
 
 interface GenerateWordListParams {
   passage: string;
-}
-
-interface WordListResponse {
-  vocabulary: string;
-  definition: {
-    en: string;
-    th: string;
-    cn: string;
-    tw: string;
-    vi: string;
-  };
 }
 
 export async function generateWordList(
@@ -100,7 +90,6 @@ export async function generateWordList(
     )?.word_list;
 
     return resultWordList;
-
   } catch (error) {
     console.log(error);
     throw `failed to generate audio: ${
