@@ -4,15 +4,11 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 import { ClassesData } from "@/lib/classroom-utils";
-import { Role } from "@/server/models/enum";
 
 export default async function MyClassesPage() {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
-  }
-  if (user.role === Role.TEACHER) {
-    return redirect("/teacher/my-classes");
   }
 
   const res = await ClassesData();

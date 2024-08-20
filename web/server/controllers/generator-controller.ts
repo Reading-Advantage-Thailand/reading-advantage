@@ -72,11 +72,15 @@ export async function generateQueue(req: ExtendedNextRequest) {
 
     // Log failed results
     if (failedCount > 0) {
-      await  db.collection("error-log").add({
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split(".")[0];
+      const errorLogRef = db.collection("error-log").doc(formattedDate);
+      await errorLogRef.set({
         error: failedReasons,
         created_at: new Date().toISOString(),
         amount: amount * 6 * 2,
-      });
+        id: formattedDate,
+      });     
     }
 
     await sendDiscordWebhook({

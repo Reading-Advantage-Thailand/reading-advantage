@@ -54,7 +54,7 @@ export type SidebarNavItem = {
 export type SidebarTeacherNavItem = {
   title:
     | "myClasses"
-    | "myStudent"
+    | "myStudents"
     | "classRoster"
     | "reports"
     | "passages"
