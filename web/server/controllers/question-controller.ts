@@ -85,7 +85,7 @@ export async function getMCQuestions(
         options: options.sort(() => 0.5 - Math.random()),
       };
     });
-    console.log(mcq);
+    //console.log(mcq);
     return NextResponse.json(
       {
         state:
@@ -179,7 +179,7 @@ export async function answerSAQuestion(
     .get();
 
   const data = question.data() as SARecord;
-  console.log(data);
+  //console.log(data);
 
   // Update user record
   await db
@@ -530,7 +530,7 @@ export async function getLAQuestion(
       .collection("la-questions")
       .get();
 
-    //check laq have in db
+    //check laq have no in db
     if (questions.docs.length === 0) {
       const getArticle = await db
         .collection("new-articles")
@@ -539,8 +539,14 @@ export async function getLAQuestion(
 
       const getData = getArticle.data();
 
+      let cefrlevel = getData?.cefr_level.replace(/[+-]/g, "");
+
+      if (cefrlevel === "A0") {
+        cefrlevel = "A1";
+      }
+
       const generateLAQ = await generateLAQuestion({
-        cefrlevel: getData?.cefr_level,
+        cefrlevel: cefrlevel,
         type: getData?.type,
         passage: getData?.passage,
         title: getData?.title,
@@ -598,9 +604,7 @@ export async function getFeedbackLAquestion(
 
   const article = getArticle.data();
 
-  let cefrLevelReformatted = article?.cefr_level
-    .replace("+", "")
-    .replace("-", "");
+  let cefrLevelReformatted = article?.cefr_level.replace(/[+-]/g, "");
 
   const getFeedback = await getFeedbackWritter({
     preferredLanguage,
