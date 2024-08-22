@@ -43,8 +43,6 @@ import {
 import { Icons } from "@/components/icons";
 import { Header } from "@/components/header";
 import { toast } from "../ui/use-toast";
-import classroomData from "@/lib/classroom-utils";
-import { ClassesData } from "@/lib/classroom-utils";
 
 type Student = {
   studentId: string;
@@ -87,12 +85,14 @@ type MyRosterProps = {
   studentInClass: Student[];
   classrooms: Classrooms[];
   classes: Classes[];
+  userArticleRecords: any;
 };
 
-export default function ClassRoster({
+export default async function ClassRoster({
   studentInClass,
   classrooms,
   classes,
+  userArticleRecords,
 }: MyRosterProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -226,17 +226,15 @@ export default function ClassRoster({
         let lastActivityDate;
 
         if (typeof lastActivity === "string") {
-          lastActivityDate = new Date(lastActivity);
-        } else if (
-          lastActivity &&
-          typeof lastActivity === "object" &&
-          "_seconds" in lastActivity
-        ) {
-          lastActivityDate = new Date(
-            (lastActivity as { _seconds: number })._seconds * 1000
-          );
+          lastActivityDate = userArticleRecords
+            .map((record: string[]) => {
+              if (record[0] === row.getValue("studentId")) {
+                return record[1];
+              }
+              return null;
+            })
+            .filter((date: null) => date !== null)[0];
         }
-
         return (
           <div className="captoliza ml-4">
             {lastActivityDate && lastActivityDate.toLocaleString()}
@@ -337,6 +335,7 @@ export default function ClassRoster({
       rowSelection,
     },
   });
+
   return (
     <>
       {isResetModalOpen && (
