@@ -115,9 +115,9 @@ export default async function ClassRoster({
 
   let action = "";
 
-  const closeDialog = () => {
-    setIsOpen(false);
-  };
+      const closeDialog = () => {
+        setIsOpen(false);
+      };
 
   useEffect(() => {
     if (!hasRefreshed && studentInClass) {
@@ -226,15 +226,24 @@ export default async function ClassRoster({
         let lastActivityDate;
 
         if (typeof lastActivity === "string") {
-          lastActivityDate = userArticleRecords
-            .map((record: string[]) => {
-              if (record[0] === row.getValue("studentId")) {
-                return record[1];
-              }
-              return null;
-            })
-            .filter((date: null) => date !== null)[0];
+          lastActivityDate = userArticleRecords.map((record: string[]) => {
+            if (record[0] === row.getValue("studentId")) {
+              return record[1];
+            }
+            return null;
+          }).filter((date: null) => date !== null)[0];
+        
+        } 
+        else if (
+          lastActivity &&
+          typeof lastActivity === "object" &&
+          "_seconds" in lastActivity
+        ) {
+          lastActivityDate = new Date(
+            (lastActivity as { _seconds: number })._seconds * 1000
+          );
         }
+
         return (
           <div className="captoliza ml-4">
             {lastActivityDate && lastActivityDate.toLocaleString()}
@@ -335,6 +344,7 @@ export default async function ClassRoster({
       rowSelection,
     },
   });
+
 
   return (
     <>
