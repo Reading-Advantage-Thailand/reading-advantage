@@ -64,9 +64,10 @@ type MyStudentProps = {
   studentInClass: Student[];
   classrooms: Classrooms[];
   classes: Classes[]; 
+  userArticleRecords: any;
 };
 
-export default function Reports({ studentInClass, userId, classrooms, classes}: MyStudentProps) {
+export default function Reports({ studentInClass, userId, classrooms, classes, userArticleRecords}: MyStudentProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -164,7 +165,12 @@ export default function Reports({ studentInClass, userId, classrooms, classes}: 
         let lastActivityDate;
 
         if (typeof lastActivity === "string") {
-          lastActivityDate = new Date(lastActivity);
+          lastActivityDate = userArticleRecords.map((record: string[]) => {
+            if (record[0] === row.getValue("studentId")) {
+              return record[1];
+            }
+            return null;
+          }).filter((date: null) => date !== null)[0];
         } else if (
           lastActivity &&
           typeof lastActivity === "object" &&
