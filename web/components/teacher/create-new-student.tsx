@@ -37,13 +37,15 @@ type CreateNewStudentProps = {
   allStudentEmail: any;
   studentInEachClass: any;
   classrooms: Classrooms[];
+  userArticleRecords: any;
 };
 
 export default function CreateNewStudent({
   studentDataInClass,
   allStudentEmail,
   studentInEachClass,
-  classrooms
+  classrooms,
+  userArticleRecords,
 }: CreateNewStudentProps) {
   const router = useRouter();
   const [inputs, setInputs] = useState(0);
@@ -79,9 +81,12 @@ if (studentDataInClass && studentDataInClass.length > 0 && 'classroomsId' in stu
     };
     const studentId = studentIdToAdd();
 
+    const userLastActivity = userArticleRecords.find((record: string[]) => record[0] === studentId);
+    const lastActivityTimestamp = userLastActivity ? userLastActivity[1] : 'No Activity';
+
     const updateStudentListBuilder = studentId.map((id: string) => ({
       studentId: id,
-      lastActivity: new Date(),
+      lastActivity: lastActivityTimestamp,
     }));
 
     if (studentEmail.includes(email) && email !== studentId) {
