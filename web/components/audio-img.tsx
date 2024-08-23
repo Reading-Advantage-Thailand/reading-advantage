@@ -57,7 +57,7 @@ export default function AudioImg({
       <audio ref={audioRef}>
         <source src={audioUrl} />
       </audio>
-      {/* {theme === "dark" ? (
+      {theme === "dark" ? (
         <Image
           src={"/sound-play-sound-white.svg"}
           alt="play sound"
@@ -75,15 +75,7 @@ export default function AudioImg({
           className={"mx-3 mt-1 cursor-pointer"}
           onClick={handlePlay}
         />
-      )} */}
-      <Image
-        src={"/sound-play-sound-black.svg"}
-        alt="play sound"
-        width={20}
-        height={20}
-        className={"mx-3 mt-1 cursor-pointer"}
-        onClick={handlePlay}
-      />
+      )}
     </div>
   );
 }
