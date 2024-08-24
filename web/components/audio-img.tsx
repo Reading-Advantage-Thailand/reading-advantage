@@ -59,7 +59,7 @@ export default function AudioImg({
       </audio>
       {theme === "dark" ? (
         <Image
-          src={"/sound-play-sound-white.svg"}
+          src={"/sound-play-sound-white.png"}
           alt="play sound"
           width={20}
           height={20}
@@ -68,7 +68,7 @@ export default function AudioImg({
         />
       ) : (
         <Image
-          src={"/sound-play-sound-black.svg"}
+          src={"/sound-play-sound-black.png"}
           alt="play sound"
           width={20}
           height={20}
