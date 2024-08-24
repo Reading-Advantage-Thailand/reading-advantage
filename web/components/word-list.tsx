@@ -73,10 +73,10 @@ export default function WordList({ article, articleId, userId }: Props) {
         articleId,
       });
 
-      let wordList = []
-      
+      let wordList = [];
+
       if (resWordlist?.data?.timepoints) {
-       wordList = resWordlist?.data?.timepoints.map(
+        wordList = resWordlist?.data?.timepoints.map(
           (timepoint: { timeSeconds: number }, index: number) => {
             const startTime = timepoint.timeSeconds;
             const endTime =
@@ -93,13 +93,13 @@ export default function WordList({ article, articleId, userId }: Props) {
             };
           }
         );
-      } else{
+      } else {
         wordList = resWordlist?.data?.word_list;
       }
       setWordList(wordList);
       form.reset();
     } catch (error: any) {
-       console.log("error: ", error);
+      console.log("error: ", error);
       toast({
         title: "Something went wrong.",
         description: `${error?.response?.data?.message || error?.message}`,
@@ -151,6 +151,15 @@ export default function WordList({ article, articleId, userId }: Props) {
     }
   };
 
+  // Calculate the height based on the number of items in the wordList
+  const calculateHeight = () => {
+    const baseHeight = 300; // Base height for content without wordList
+    const itemHeight = 50; // Height of each word list item
+    const maxDialogHeight = 490; // Maximum height of the dialog
+    const calculatedHeight = baseHeight + wordList.length * itemHeight;
+    return Math.min(calculatedHeight, maxDialogHeight); // Limit to max height
+  };
+
   return (
     <>
       <Dialog>
@@ -159,11 +168,14 @@ export default function WordList({ article, articleId, userId }: Props) {
             {t("title")}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[450px] h-96">
+        <DialogContent
+          style={{ height: `${calculateHeight()}px` }}
+          className="sm:max-w-[450px]"
+        >
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="overflow-auto"
+              className="overflow-auto h-96"
             >
               <DialogHeader>
                 <DialogTitle>
@@ -278,25 +290,25 @@ export default function WordList({ article, articleId, userId }: Props) {
                   />
                 </>
               )}
-              {/* <DialogFooter className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-4"> */}
-              <div className="flex justify-end mt-5">
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">
-                    {t("closeButton")}
+              <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-[#020817] p-5">
+                <div className="flex justify-end">
+                  <DialogClose asChild>
+                    <Button type="button" variant="secondary">
+                      {t("closeButton")}
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    className="ml-2"
+                    type="submit"
+                    disabled={
+                      form.watch("items")?.length === 0 ||
+                      form.watch("items") === undefined
+                    }
+                  >
+                    {t("saveButton")}
                   </Button>
-                </DialogClose>
-                <Button
-                  className="ml-2"
-                  type="submit"
-                  disabled={
-                    form.watch("items")?.length === 0 ||
-                    form.watch("items") === undefined
-                  }
-                >
-                  {t("saveButton")}
-                </Button>
+                </div>
               </div>
-              {/* </DialogFooter> */}
             </form>
           </Form>
         </DialogContent>
