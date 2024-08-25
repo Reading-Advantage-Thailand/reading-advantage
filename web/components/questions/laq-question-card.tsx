@@ -28,7 +28,7 @@ import * as z from "zod";
 import { Icons } from "../icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCurrentLocale } from "@/locales/client";
-import { localeNames } from "@/configs/locale-config";
+import { feedbackLanguage, localeNames } from "@/configs/locale-config";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
@@ -141,14 +141,16 @@ export default function LAQuestionCard({
 }
 
 function QuestionCardError(data: any) {
+  const t = useScopedI18n("components.laq");
   return (
     <Card className="mt-3">
       <CardHeader>
         <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          Long Answer Question
+          {t("title")}
         </CardTitle>
         <CardDescription className="text-red-500 dark:text-red-400">
-          There was an error getting the question. {data.error}
+          {t("descriptionFailure")}
+          {data.error}
         </CardDescription>
       </CardHeader>
     </Card>
@@ -156,16 +158,17 @@ function QuestionCardError(data: any) {
 }
 
 function QuestionCardComplete({ resp }: { resp: QuestionResponse }) {
+  const t = useScopedI18n("components.laq");
   return (
     <Card className="mt-4">
       <CardHeader>
         <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          Long Answer Question
+          {t("title")}
         </CardTitle>
         <CardDescription>
-          <p>You already completed the long answer question.</p>
+          <p>{t("descriptionSuccess")}</p>
           <Button className="mt-4" disabled={true}>
-            Practice Completed
+            {t("successButton")}
           </Button>
         </CardDescription>
       </CardHeader>
@@ -174,13 +177,14 @@ function QuestionCardComplete({ resp }: { resp: QuestionResponse }) {
 }
 
 function QuestionCardLoading() {
+  const t = useScopedI18n("components.laq");
   return (
     <Card className="mt-3">
       <CardHeader>
         <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          Long Answer Question
+          {t("title")}
         </CardTitle>
-        <CardDescription>Getting the long answer question...</CardDescription>
+        <CardDescription>{t("descriptionLoading")}</CardDescription>
         <Skeleton className={"h-10 w-full mt-2"} />
         <Skeleton className={"h-40 w-full mt-2"} />
         <Skeleton className={"h-8 w-full mt-2"} />
@@ -205,12 +209,13 @@ function QuestionCardIncomplete({
   handleCompleted: () => void;
   handleCancel: () => void;
 }) {
+  const t = useScopedI18n("components.laq");
   return (
     <Card className="mt-3">
       <QuestionHeader
-        heading="Long Answer Question"
-        description="Write an essay."
-        buttonLabel="Practice Writing"
+        heading={t("title")}
+        description={t("description")}
+        buttonLabel={t("practiceButton")}
         userId={userId}
         articleId={articleId}
         disabled={false}
@@ -307,15 +312,16 @@ function LAQuestion({
           method: "POST",
           body: JSON.stringify({
             answer: dataForm.answer,
-            preferredLanguage: localeNames[currentLocale],
+            preferredLanguage: feedbackLanguage[currentLocale],
           }),
         }
       );
 
       const feedback = await feedbackResponse.json();
+
       setData({ ...feedback, answer: dataForm.answer });
 
-      if (dataForm.method === "submit") {
+      if (dataForm.method === "submit" && feedback) {
         setPaused(true);
         const submitAnswer = await fetch(
           `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}`,
@@ -333,11 +339,15 @@ function LAQuestion({
         setData(finalFeedback);
         setRating(finalFeedback.sumScores);
       }
-    } catch (error) {
-      console.error("Error submitting feedback:", error);
-    } finally {
       setIsLoading(false);
       setOpenModal(true);
+    } catch (error) {
+      toast({
+        title: "An error occurred.",
+        description: `Something wrong. Please try again`,
+      });
+      setIsLoading(false);
+      console.error("Error submitting feedback:", error);
     }
   }
 
@@ -395,7 +405,7 @@ function LAQuestion({
           </Badge>
         </div>
         <CardTitle className="flex font-bold text-3xl md:text-3xl mt-3">
-          Long Answer Question
+          {t("title")}
         </CardTitle>
         <CardDescription className="text-lg md:text-lg mt-3">
           {resp.result.question}
@@ -451,8 +461,8 @@ function LAQuestion({
             <DialogHeader className="text-left">
               <DialogTitle className="font-bold text-2xl">
                 {getValues("method") === "feedback"
-                  ? "Writing Feedback"
-                  : "Final Feedback"}
+                  ? t("feedbackModal.feedbackwritting")
+                  : t("feedbackModal.finalfeedback")}
               </DialogTitle>
             </DialogHeader>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -464,7 +474,7 @@ function LAQuestion({
                   selectedCategory === "vocabularyUse" ? "default" : "outline"
                 }
               >
-                Vocabulary Use
+                {t("feedbackModal.vocabulary")}
               </Button>
               <Button
                 className="rounded-full"
@@ -474,7 +484,7 @@ function LAQuestion({
                   selectedCategory === "grammarAccuracy" ? "default" : "outline"
                 }
               >
-                Grammar Accuracy
+                {t("feedbackModal.grammar")}
               </Button>
               <Button
                 className="rounded-full"
@@ -486,7 +496,7 @@ function LAQuestion({
                     : "outline"
                 }
               >
-                Clarity and Coherence
+                {t("feedbackModal.clarityandcoherence")}
               </Button>
               <Button
                 className="rounded-full"
@@ -498,7 +508,7 @@ function LAQuestion({
                     : "outline"
                 }
               >
-                Complexity and Structure
+                {t("feedbackModal.complexityandstructure")}
               </Button>
               <Button
                 className="rounded-full"
@@ -510,14 +520,16 @@ function LAQuestion({
                     : "outline"
                 }
               >
-                Content and Development
+                {t("feedbackModal.contentanddevelopment")}
               </Button>
             </div>
             {selectedCategory && (
               <>
                 <DialogDescription className="flex flex-col gap-2">
                   <div>
-                    <p className="text-lg ">Area for impovement</p>
+                    <p className="text-lg ">
+                      {t("feedbackModal.areaforimpovement")}
+                    </p>
                     <p>
                       {
                         data.result?.detailedFeedback[selectedCategory]
@@ -526,7 +538,7 @@ function LAQuestion({
                     </p>
                   </div>
                   <div>
-                    <p className="text-lg ">Examples</p>
+                    <p className="text-lg ">{t("feedbackModal.examples")}</p>
                     <p>
                       {
                         data.result?.detailedFeedback[selectedCategory]
@@ -535,7 +547,7 @@ function LAQuestion({
                     </p>
                   </div>
                   <div>
-                    <p className="text-lg ">Strength</p>
+                    <p className="text-lg ">{t("feedbackModal.strength")}</p>
                     <p>
                       {
                         data.result?.detailedFeedback[selectedCategory]
@@ -544,7 +556,7 @@ function LAQuestion({
                     </p>
                   </div>
                   <div>
-                    <p className="text-lg ">Suggestions</p>
+                    <p className="text-lg ">{t("feedbackModal.suggestions")}</p>
                     <p>
                       {
                         data.result?.detailedFeedback[selectedCategory]
@@ -555,23 +567,30 @@ function LAQuestion({
                 </DialogDescription>
                 <div>
                   <p className="text-green-500 dark:text-green-400 inline font-bold">
-                    Score is {data.result?.scores[selectedCategory]}
+                    {t("feedbackModal.score")}{" "}
+                    {data.result?.scores[selectedCategory]}
                   </p>
                 </div>
               </>
             )}
             {!selectedCategory && (
               <div className="flex flex-col flex-grow overflow-y-auto pr-4 gap-2">
-                <p className="text-bold text-xl">Feedback Overall</p>
+                <p className="text-bold text-xl">
+                  {t("feedbackModal.feedbackoverall")}
+                </p>
                 <p className="text-sm ">{data.result?.overallImpression}</p>
                 {getValues("method") === "feedback" ? (
                   <>
-                    <p className="text-bold text-xl">Example Revisions</p>
+                    <p className="text-bold text-xl">
+                      {t("feedbackModal.examplerevisions")}
+                    </p>
                     <p className="text-sm ">{data.result?.exampleRevisions}</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-bold text-xl">Next Step</p>
+                    <p className="text-bold text-xl">
+                      {t("feedbackModal.nextStep")}
+                    </p>
                     <div className="text-sm ">
                       {data.result?.nextSteps.map((item, index) => (
                         <p key={index}>
@@ -587,7 +606,7 @@ function LAQuestion({
             <DialogFooter className="flex-shrink-0">
               <DialogClose>
                 {getValues("method") === "feedback" ? (
-                  <Button>Revise Your Response</Button>
+                  <Button>{t("feedbackModal.reviseResponse")}</Button>
                 ) : (
                   <Button
                     disabled={isLoading}
@@ -596,7 +615,7 @@ function LAQuestion({
                       onGetExp();
                     }}
                   >
-                    Get your XP!
+                    {t("feedbackModal.getXP")}
                   </Button>
                 )}
               </DialogClose>

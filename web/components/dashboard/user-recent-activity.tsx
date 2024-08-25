@@ -42,7 +42,7 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
   // Get the remaining activities
   const remainingActivities = sortedData.slice(1);
 
-  console.log(typeof mostRecentActivity.activityType);
+  // console.log(typeof mostRecentActivity.activityType);
 
   return (
     <Card className="mt-4">

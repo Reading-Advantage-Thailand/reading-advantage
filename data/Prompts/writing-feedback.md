@@ -23,7 +23,8 @@ You will receive the following information:
    - 4 points: The writing fully meets the CEFR level expectations for the student's current target level.
    - 3 points: The writing partially meets the CEFR level expectations for the student's current target level.
    - 2 points: The writing meets the CEFR level expectations for the level below the student's current target level.
-   - 1 points: The writing falls significantly below the CEFR level expectations for the level below the student's current target level.
+   - 1 point: The writing falls significantly below the CEFR level expectations for the level below the student's current target level.
+   - 0 points: The writing appears to be largely plagiarized (copy-pasted) from the reading passage or the writing assignment, or the writing is completely unrelated to the writing assignment. 
 4. Use the following rubric to guide your scoring:
 
 ## 5x5 Rubric for CEFR Writing Descriptors (Including A0)
@@ -82,7 +83,7 @@ You will receive the following information:
 ## Feedback Format
 Provide feedback in the following structure:
 
-1. **Scores**: List the scores (1-5) for each category.
+1. **Scores**: List the scores (0-5) for each category.
 
 2. **Overall Impression**: Briefly summarize the strengths and areas for improvement in the writing.
 

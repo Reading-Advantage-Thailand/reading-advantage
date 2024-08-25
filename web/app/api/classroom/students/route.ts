@@ -15,7 +15,7 @@ import { getServerSession } from "next-auth";
         }
         
         const userId = session.user.id;
-        const userRef = db.collection('users').where('role', 'array-contains', 'STUDENT');
+        const userRef = db.collection('users').where('role', '==', 'student');
         const snapshot = await userRef.get();
         const students = snapshot.docs.map(doc => doc.data());
     
