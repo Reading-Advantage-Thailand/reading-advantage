@@ -170,7 +170,7 @@ export default function WordList({ article, articleId, userId }: Props) {
         </DialogTrigger>
         <DialogContent
           style={{ height: `${calculateHeight()}px` }}
-          className="sm:max-w-[450px]"
+          className="sm:max-w-[550px]"
         >
           <Form {...form}>
             <form
@@ -255,7 +255,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                                               {word.vocabulary}:{" "}
                                             </span>
 
-                                            <div className="mr-5">
+                                            <div className="mr-1">
                                               {word?.startTime && (
                                                 <AudioImg
                                                   key={word.vocabulary}

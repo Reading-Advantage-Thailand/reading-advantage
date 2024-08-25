@@ -93,6 +93,7 @@ export default {
             "这是你读过的一篇文章中的几个句子，请填写缺失的单词以完成它们。如果你回答正确，你将获得5经验值。",
           submitButton: "提交",
           errorCloze: "请填写所有空白处",
+          submitArticle: "检查你的答案",
         },
         orderWordsPractice: {
           orderWords: "排序单词",
