@@ -3,6 +3,7 @@ const nextConfig = {
   transpilePackages: ["next-international", "international-types"],
   reactStrictMode: false,
   swcMinify: false,
+  productionBrowserSourceMaps: false,
   // eslint: {
   //     ignoreDuringBuilds: true,
   // },
