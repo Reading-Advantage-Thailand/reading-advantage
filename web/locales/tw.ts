@@ -93,6 +93,7 @@ export default {
             "這是你讀過的一篇文章中的幾個句子，請填入遺失的單詞以完成它們。如果你答對了，你將獲得5經驗值。",
           saveOrder: "儲存 & 稍後繼續",
           errorOrder: "請正確排序",
+          submitArticle: "檢查你的答案",
         },
         orderWordsPractice: {
           orderWords: "排序單詞",
