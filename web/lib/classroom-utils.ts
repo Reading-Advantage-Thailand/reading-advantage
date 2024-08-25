@@ -25,6 +25,9 @@ export default async function ClassroomData(params: {
   if (!user) {
     return redirect("/auth/signin");
   }
+  // if (user.role === Role.TEACHER) {
+  //   return redirect("/teacher/my-classes");
+  // }
 
   const [allClassroom, allStudent, allTeachers] = await Promise.all([
     fetchData(""),
@@ -97,7 +100,6 @@ export default async function ClassroomData(params: {
     }
   );
 
-
   return {
     studentsMapped,
     allClassroom,
@@ -121,7 +123,10 @@ export async function StudentsData({
   if (!user) {
     return redirect("/auth/signin");
   }
-  
+  // if (user.role === Role.TEACHER) {
+  //   return redirect("/teacher/my-classes");
+  // }
+
   // get student role data from database
   async function getAllStudentData() {
     try {
