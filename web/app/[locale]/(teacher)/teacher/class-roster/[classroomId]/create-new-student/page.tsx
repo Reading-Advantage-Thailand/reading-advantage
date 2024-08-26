@@ -1,19 +1,21 @@
-import React from 'react'
-import CreateNewStudent from '@/components/teacher/create-new-student';
+import React from "react";
+import CreateNewStudent from "@/components/teacher/create-new-student";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
-import  ClassroomData  from '@/lib/classroom-utils';
+import ClassroomData from "@/lib/classroom-utils";
 import { fetchData } from "@/utils/fetch-data";
 
 async function getUserArticleRecords(userId: string) {
   return fetchData(`/api/v1/users/${userId}/activitylog`);
 }
 
-export default async function AddNewStudent(params: { params: { classroomId: string; }}) {
+export default async function AddNewStudent(params: {
+  params: { classroomId: string };
+}) {
   const user = await getCurrentUser();
-if (!user) {
-  return redirect("/auth/signin");
-}
+  if (!user) {
+    return redirect("/auth/signin");
+  }
 
   const res = await ClassroomData({
     params: { classroomId: params.params.classroomId },
@@ -66,7 +68,13 @@ if (!user) {
 
   return (
     <>
-  <CreateNewStudent studentDataInClass={studentsMapped} allStudentEmail={studentEmail} studentInEachClass={studentInEachClass} classrooms={classrooms} userArticleRecords={sortedLastActivityTimestamp}/>
+      <CreateNewStudent
+        studentDataInClass={studentsMapped}
+        allStudentEmail={studentEmail}
+        studentInEachClass={studentInEachClass}
+        classrooms={classrooms}
+        userArticleRecords={sortedLastActivityTimestamp}
+      />
     </>
-  )
+  );
 }

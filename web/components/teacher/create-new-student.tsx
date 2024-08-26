@@ -103,6 +103,9 @@ export default function CreateNewStudent({
     };
     const studentId = studentIdToAdd();
 
+    const userLastActivity = userArticleRecords.find((record: string[]) => record[0] === studentId);
+    const lastActivityTimestamp = userLastActivity ? userLastActivity[1] : 'No Activity';
+
     const updateStudentListBuilder = studentId.map((studentId: string) => {
       const userLastActivity = userArticleRecords.find(
         (record: string[]) => record[0] === studentId

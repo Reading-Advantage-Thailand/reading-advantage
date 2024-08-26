@@ -48,9 +48,6 @@ export async function POST(req: Request, res: Response) {
         }
         const json = await req.json();
         const body = json.classroom;
-        // console.log('body', body);
-        
-
         const userId = session.user.id;
         const classroom = {
             teacherId: userId,
