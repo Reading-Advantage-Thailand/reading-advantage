@@ -47,6 +47,10 @@ export default function CreateNewStudent({
   classrooms,
   userArticleRecords,
 }: CreateNewStudentProps) {
+  console.log('studentDataInClass', studentDataInClass);
+  console.log('studentInEachClass', studentInEachClass);
+  
+  
   const router = useRouter();
   const [inputs, setInputs] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
@@ -85,28 +89,43 @@ export default function CreateNewStudent({
   };
 
   const handleAddStudent = async (classroomId: string, email: string) => {
-    let studentEmail = allStudentEmail.map(
-      (student: { email: string; studentId: string }) => student.email
+    const isEmailAlreadyInClass = studentDataInClass.some(
+      (student) => student.email === email
     );
-    const studentIdToAdd = () => {
-      allStudentEmail.forEach(
-        (student: { email: string; studentId: string }) => {
-          if (
-            student.email === email &&
-            !studentInEachClass.includes(student.studentId)
-          ) {
-            studentInEachClass.push(student.studentId);
-          }
-        }
-      );
-      return studentInEachClass;
-    };
-    const studentId = studentIdToAdd();
+    
+    if (isEmailAlreadyInClass) {
+      toast({
+        title: t("toast.studentAlreadyInClass"),
+        description: t("toast.studentAlreadyInClassDescription"),
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const userLastActivity = userArticleRecords.find((record: string[]) => record[0] === studentId);
-    const lastActivityTimestamp = userLastActivity ? userLastActivity[1] : 'No Activity';
+    const isEmailInAllStudents = allStudentEmail.some(
+      (student: { email: string; studentId: string }) => student.email === email
+    );
 
-    const updateStudentListBuilder = studentId.map((studentId: string) => {
+    if (!isEmailInAllStudents) {
+      toast({
+        title: t("toast.emailNotFound"),
+        description: t("toast.emailNotFoundDescription"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const studentToAdd = allStudentEmail.find(
+      (student: { email: string; studentId: string }) => student.email === email
+    );
+
+    if (studentToAdd && !studentInEachClass.includes(studentToAdd.studentId)) {
+      const updatedStudentList = [
+        ...studentInEachClass,
+        studentToAdd.studentId,
+      ];
+
+    const updateStudentListBuilder = updatedStudentList.map((studentId: string) => {
       const userLastActivity = userArticleRecords.find(
         (record: string[]) => record[0] === studentId
       );
@@ -124,53 +143,44 @@ export default function CreateNewStudent({
       };
     });
 
-    if (studentEmail.includes(email)) {
-      try {
-        const response = await axios.patch(
-          `/api/classroom/${classroomId}/enroll`,
-          {
-            student: updateStudentListBuilder,
-          }
-        );
-        if (response.status === 200) {
-          toast({
-            title: t("toast.successAddStudent"),
-            description: t("toast.successAddStudentDescription"),
-            variant: "default",
-          });
-        } else {
-          console.log("add failed with status: ", response.status);
-          toast({
-            title: t("toast.errorAddStudent"),
-            description: t("toast.errorAddStudentDescription"),
-            variant: "destructive",
-          });
+    try {
+      const response = await axios.patch(
+        `/api/classroom/${classroomId}/enroll`,
+        {
+          student: updateStudentListBuilder,
         }
-
-        return new Response(
-          JSON.stringify({
-            message: "success",
-          }),
-          { status: 200 }
-        );
-      } catch (error) {
-        return new Response(
-          JSON.stringify({
-            message: error,
-          }),
-          { status: 500 }
-        );
-      } finally {
+      );
+      if (response.status === 200) {
+        toast({
+          title: t("toast.successAddStudent"),
+          description: t("toast.successAddStudentDescription"),
+          variant: "default",
+        });
         router.push(`/teacher/class-roster/${classroomId}`);
+      } else {
+        console.log("add failed with status: ", response.status);
+        toast({
+          title: t("toast.errorAddStudent"),
+          description: t("toast.errorAddStudentDescription"),
+          variant: "destructive",
+        });
       }
-    } else {
+    } catch (error) {
+      console.error("Error adding student:", error);
       toast({
-        title: t("toast.emailNotFound"),
-        description: t("toast.emailNotFoundDescription"),
+        title: t("toast.errorAddStudent"),
+        description: t("toast.errorAddStudentDescription"),
         variant: "destructive",
       });
     }
-  };
+  } else {
+    toast({
+      title: t("toast.studentAlreadyInClass"),
+      description: t("toast.studentAlreadyInClassDescription"),
+      variant: "destructive",
+    });
+  }
+};
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -179,7 +189,6 @@ export default function CreateNewStudent({
       const entriesArray = Array.from(formEmail.entries());
       const data = Object.fromEntries(entriesArray);
       handleAddStudent(classroomId, data.email as string);
-      console.log("data email:", data.email);
     }
   };
 

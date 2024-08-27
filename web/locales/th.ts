@@ -541,6 +541,8 @@ export default {
           emailNotFound: "ไม่พบอีเมล",
           emailNotFoundDescription:
             "ที่อยู่อีเมลนี้ไม่มีบัญชีที่เกี่ยวข้อง กรุณาตรวจสอบการสะกดหรือทดลองใช้อีเมลอื่น",
+          studentAlreadyInClass: "นักเรียนอยู่ในชั้นเรียนแล้ว",
+          studentAlreadyInClassDescription: "นักเรียนคนนี้อยู่ในชั้นเรียนนี้แล้ว"
         },
       },
     },
