@@ -24,14 +24,14 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       );
     }
 
-    let data = await db
+    let data =  db
       .collection("new-articles")
       .where("ra_level", ">=", Number(level) - 1)
       .where("ra_level", "<=", Number(level) + 1)
       .orderBy("created_at", "desc")
       .limit(10);
 
-    let typeResult = await db.collection("article-selection").doc(level);
+    let typeResult =  db.collection("article-selection").doc(level);
 
     if (type) {
       typeResult = typeResult.collection("types").doc(type);
