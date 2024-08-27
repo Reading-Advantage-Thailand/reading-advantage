@@ -3,7 +3,7 @@ import db from "@/configs/firestore-config";
 import { Article } from "@/components/models/article-model";
 import { QuizStatus } from "@/components/models/questions-model";
 import { ExtendedNextRequest } from "./auth-controller";
-import { error } from "console";
+
 
 // GET search articles
 // GET /api/v1/articles?level=10&type=fiction&genre=Fantasy
@@ -101,7 +101,11 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
   } catch (err) {
     console.log("Error getting documents", err);
     return NextResponse.json(
-      { message: "Internal server error", results: [], error: err },
+      {
+        message: "[getSearchArticles] Internal server error",
+        results: [],
+        error: err,
+      },
       { status: 500 }
     );
   }
@@ -205,7 +209,7 @@ export async function getArticle(
   } catch (err) {
     console.log("Error getting documents", err);
     return NextResponse.json(
-      { message: "Internal server error", error: err },
+      { message: "[getArticle] Internal server error", error: err },
       { status: 500 }
     );
   }
