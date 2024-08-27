@@ -88,7 +88,7 @@ export async function POST(
         // translate from language
         const translate = new Translate({
           projectId: process.env.GOOGLE_PROJECT_ID,
-          key: process.env.GOOGLE_TRANSLATE_API_KEY,
+          key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY,
         });
 
         let [translations] = await translate.translate(sentences, language);
@@ -125,7 +125,7 @@ export async function POST(
     } else {
       const translate = new Translate({
         projectId: process.env.GOOGLE_PROJECT_ID,
-        key: process.env.GOOGLE_TRANSLATE_API_KEY,
+        key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY,
       });
       let [translations] = await translate.translate(sentences, language);
       translations = Array.isArray(translations)
@@ -169,7 +169,7 @@ export async function POST(
     // } else {
     //     const translate = new Translate({
     //         projectId: process.env.GOOGLE_PROJECT_ID,
-    //         key: process.env.GOOGLE_TRANSLATE_API_KEY,
+    //         key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY,
     //     });
     //     let [translations] = await translate.translate(sentences, 'th');
     //     translations = Array.isArray(translations) ? translations : [translations];
