@@ -205,7 +205,7 @@ export async function getArticle(
   } catch (err) {
     console.log("Error getting documents", err);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Internal server error", error: err },
       { status: 500 }
     );
   }
