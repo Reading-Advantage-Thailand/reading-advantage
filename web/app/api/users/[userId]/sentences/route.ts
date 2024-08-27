@@ -116,7 +116,8 @@ export async function GET(req: Request, res: Response) {
         }), { status: 200 });
     } catch (error) {
         return new Response(JSON.stringify({
-            message: 'Internal server error'
+            message: '[GET] Internal server error',
+            error: error,
         }), { status: 500 });
     }
 }
