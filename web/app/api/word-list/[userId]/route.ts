@@ -142,6 +142,7 @@ export async function GET(_req: Request, _res: Response) {
     return new Response(
       JSON.stringify({
         message: "Internal server error",
+        error: error,
       }),
       { status: 500 }
     );
