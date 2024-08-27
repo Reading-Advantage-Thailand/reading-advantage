@@ -90,7 +90,7 @@ export default function Select({ user }: Props) {
       setLoading(true);
       // console.log(searchParams.toString());
       const response = await fetchArticles(searchParams.toString());
-      // console.log(response);
+      console.log(response);
       if (response.results.length === 0) {
         router.push("?");
       }

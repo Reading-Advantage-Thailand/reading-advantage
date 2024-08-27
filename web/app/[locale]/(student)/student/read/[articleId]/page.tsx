@@ -23,22 +23,6 @@ async function getArticle(articleId: string) {
   return fetchData(`/api/v1/articles/${articleId}`);
 }
 
-async function getWordList(
-  article: Article,
-  articleId: string,
-  userId: string
-) {
-  return fetchData(
-    `/api/assistant/wordlist`,
-    { method: "POST" },
-    {
-      article,
-      articleId,
-      userId,
-    }
-  );
-}
-
 export default async function ArticleQuizPage({
   params,
 }: {
@@ -50,6 +34,7 @@ export default async function ArticleQuizPage({
   if (!user) return redirect("/auth/signin");
 
   const articleResponse = await getArticle(params.articleId);
+  console.log("articleResponse", articleResponse);
 
   if (articleResponse.message)
     return (
