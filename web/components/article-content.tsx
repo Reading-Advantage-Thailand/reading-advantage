@@ -23,6 +23,21 @@ import {
 } from "./ui/alert-dialog";
 import axios from "axios";
 import { toast } from "./ui/use-toast";
+import {
+  PlayIcon,
+  ResumeIcon,
+  PauseIcon,
+  TrackNextIcon,
+  TrackPreviousIcon,
+  ChevronDownIcon,
+} from "@radix-ui/react-icons";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 type Props = {
   article: Article;
@@ -57,13 +72,23 @@ export default function ArticleContent({
   article,
   className = "",
   userId,
-}: Props) {  
+}: Props) {
   const t = useScopedI18n("components.articleContent");
   const sentences = splitTextIntoSentences(article.passage, true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+  const [togglePlayer, setTogglePlayer] = useState<Boolean>(false);
+  const [selectedSentence, setSelectedSentence] = React.useState<Number>(-1);
+  const [loading, setLoading] = React.useState(false);
+  const [translate, setTranslate] = React.useState<string[]>([]);
+  const [isTranslate, setIsTranslate] = React.useState(false);
+  const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
+  const locale = useCurrentLocale();
+  const [isTranslateClicked, setIsTranslateClicked] = React.useState(false);
+  const [selectedIndex, setSelectedIndex] = React.useState(-1);
+  const [speed, setSpeed] = useState<string>("1");
 
   const sentenceList: Sentence[] = article.timepoints.map(
     (timepoint, index) => {
@@ -148,6 +173,7 @@ export default function ArticleContent({
       }
     } else {
       setIsPlaying(false);
+      setCurrentAudioIndex(0);
     }
   };
 
@@ -167,9 +193,11 @@ export default function ArticleContent({
       <span
         key={index}
         onClick={() => {
-          setSelectedSentence(i);
-          setSelectedIndex(i);
-          console.log(i);
+          if (togglePlayer) {
+            setSelectedSentence(i);
+            setSelectedIndex(i);
+            console.log(i);
+          }
         }}
       >
         {line}
@@ -179,25 +207,17 @@ export default function ArticleContent({
     ));
   };
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.src = sentenceList[currentAudioIndex].audioUrl;
-      audioRef.current.currentTime = sentenceList[currentAudioIndex].startTime;
-      audioRef.current.load();
+  const handleTogglePlayer = () => {
+    if (togglePlayer) {
+      setTogglePlayer(false);
+      audioRef.current?.load();
+      setIsPlaying(false);
+      setCurrentAudioIndex(0);
+      setSpeed("1");
+    } else {
+      setTogglePlayer(true);
     }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-    };
-  }, [currentAudioIndex]);
-
-  const [selectedSentence, setSelectedSentence] = React.useState<Number>(-1);
-  const [loading, setLoading] = React.useState(false);
-  const [translate, setTranslate] = React.useState<string[]>([]);
-  const [isTranslate, setIsTranslate] = React.useState(false);
-  const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
+  };
 
   const saveToFlashcard = async () => {
     //translate before save
@@ -258,7 +278,6 @@ export default function ArticleContent({
       }
     }
   };
-  const locale = useCurrentLocale();
 
   async function handleTranslateSentence() {
     setLoading(true);
@@ -290,8 +309,74 @@ export default function ArticleContent({
       setLoading(false);
     }
   }
-  const [isTranslateClicked, setIsTranslateClicked] = React.useState(false);
-  const [selectedIndex, setSelectedIndex] = React.useState(-1);
+
+  const handleSpeedTime = (value: string) => {
+    setSpeed(value);
+  };
+
+  const handleNextTrack = () => {
+    if (isPlaying) {
+      if (currentAudioIndex < sentenceList.length - 1) {
+        const nextAudioIndex = currentAudioIndex + 1;
+        setCurrentAudioIndex(nextAudioIndex);
+        if (audioRef.current) {
+          audioRef.current.src = sentenceList[nextAudioIndex].audioUrl;
+          audioRef.current.load();
+          const playAudio = () => {
+            audioRef.current!.currentTime =
+              sentenceList[nextAudioIndex].startTime;
+            audioRef.current!.play().catch((error) => {
+              console.log("Error playing audio: ", error);
+            });
+            audioRef.current!.removeEventListener("canplaythrough", playAudio);
+          };
+          audioRef.current.addEventListener("canplaythrough", playAudio);
+        }
+      } else {
+        setIsPlaying(false);
+      }
+    }
+  };
+
+  const handlePreviousTrack = () => {
+    if (isPlaying) {
+      if (currentAudioIndex > 0) {
+        const prevAudioIndex = currentAudioIndex - 1;
+        setCurrentAudioIndex(prevAudioIndex);
+        if (audioRef.current) {
+          audioRef.current.src = sentenceList[prevAudioIndex].audioUrl;
+          audioRef.current.load();
+          const playAudio = () => {
+            audioRef.current!.currentTime =
+              sentenceList[prevAudioIndex].startTime;
+            audioRef.current!.play().catch((error) => {
+              console.log("Error playing audio: ", error);
+            });
+            audioRef.current!.removeEventListener("canplaythrough", playAudio);
+          };
+          audioRef.current.addEventListener("canplaythrough", playAudio);
+        }
+      } else {
+        setCurrentAudioIndex(0);
+        setSelectedIndex(-1);
+        if (audioRef.current) {
+          audioRef.current.src = sentenceList[currentAudioIndex].audioUrl;
+          audioRef.current.load();
+
+          const playAudio = () => {
+            audioRef.current!.currentTime =
+              sentenceList[currentAudioIndex].startTime;
+            audioRef.current!.play().catch((error) => {
+              console.log("Error playing audio: ", error);
+            });
+            audioRef.current!.removeEventListener("canplaythrough", playAudio);
+          };
+
+          audioRef.current.addEventListener("canplaythrough", playAudio);
+        }
+      }
+    }
+  };
 
   const handleTranslate = async () => {
     //if not translate, translate
@@ -305,18 +390,51 @@ export default function ArticleContent({
     }
   };
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    setSelectedIndex(-1);
+    if (audio) {
+      audio.src = sentenceList[currentAudioIndex].audioUrl;
+
+      audio.load();
+      const handleLoadedMetadata = () => {
+        audio.currentTime = sentenceList[currentAudioIndex].startTime;
+
+        audio.playbackRate = Number(speed);
+
+        if (isPlaying) {
+          audio.play().catch((error) => {
+            // Handle any errors (e.g., user interaction required)
+            console.error("Playback error:", error);
+          });
+        }
+      };
+
+      audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+      return () => {
+        audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+        audio.pause();
+      };
+    }
+  }, [currentAudioIndex, speed]);
+
   return (
     <div>
-      <div className="flex flex-wrap gap-3 items-center">
-        <div className="flex items-center gap-2">
-          <p>{t("voiceAssistant")}</p>
+      <div className="flex justify-center items-center my-2">
+        <Button
+          variant="default"
+          className="flex flex-grow items-center mr-4"
+          onClick={handleTogglePlayer}
+        >
+          Listen and read along
+          {/* <p>{t("voiceAssistant")}</p>
           <Button size="sm" variant="secondary" onClick={handlePlayPause}>
             {isPlaying ? t("soundButton.pause") : t("soundButton.play")}
-          </Button>
-        </div>
+          </Button> */}
+        </Button>
         <Button
-          size="sm"
-          variant="secondary"
+          variant="default"
           onClick={handleTranslateSentence}
           disabled={loading}
         >
@@ -327,6 +445,52 @@ export default function ArticleContent({
             : t("translateButton.open")}
         </Button>
       </div>
+
+      {togglePlayer && (
+        <div
+          id="audioPlayer"
+          className="p-4 rounded my-2 bg-primary text-primary-foreground"
+        >
+          <div className="flex justify-between items-center gap-2">
+            <Button
+              variant="secondary"
+              className="rounded-full w-10 h-10 p-0"
+              onClick={handlePreviousTrack}
+            >
+              <TrackPreviousIcon />
+            </Button>
+            <Button
+              id="playPauseButton"
+              variant="secondary"
+              className="rounded-full w-10 h-10 p-0"
+              onClick={handlePlayPause}
+            >
+              {isPlaying ? <PauseIcon /> : <PlayIcon />}
+            </Button>
+            <Button
+              variant="secondary"
+              className="rounded-full w-10 h-10 p-0"
+              onClick={handleNextTrack}
+            >
+              <TrackNextIcon />
+            </Button>
+            <div>
+              <Select defaultValue="1" onValueChange={handleSpeedTime}>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="0.5">0.5x</SelectItem>
+                  <SelectItem value="0.75">0.75x</SelectItem>
+                  <SelectItem value="1">1x</SelectItem>
+                  <SelectItem value="1.25">1.25x</SelectItem>
+                  <SelectItem value="1.5">1.5x</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* show ที่แปลภาษาทีละประโยค */}
       {isTranslate && isTranslateOpen && (
@@ -354,7 +518,11 @@ export default function ArticleContent({
                 selectedIndex === index && "bg-blue-200 dark:bg-blue-900",
                 `${getHighlightedClass(index)}`
               )}
-              onClick={() => handleSentenceClick(sentence.startTime, index)}
+              onClick={() => {
+                if (togglePlayer) {
+                  handleSentenceClick(sentence.startTime, index);
+                }
+              }}
             >
               {renderSentence(sentence.sentence, index)}
             </span>
