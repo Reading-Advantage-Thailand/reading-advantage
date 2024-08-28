@@ -2,7 +2,7 @@
 const nextConfig = {
   transpilePackages: ["next-international", "international-types"],
   reactStrictMode: false,
-  // swcMinify: false,
+  swcMinify: false,
   // eslint: {
   //     ignoreDuringBuilds: true,
   // },
