@@ -12,21 +12,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "./article-showcase-card";
 import { articleShowcaseType } from "@/types";
-
-import axios from "axios";
 import { useCurrentLocale } from "@/locales/client";
-
-// async function getTranslate(
-//  sentences: string[],
-//  articleId: string,
-//  language: string
-// ) {
-//  const res = await axios.post(`/api/articles/${articleId}/translate/google`, {
-//    sentences,
-//    language,
-//  });
-//  return res.data;
-// }
+import axios from "axios";
 
 type Props = {
   user: {
@@ -37,12 +24,16 @@ type Props = {
 };
 
 async function fetchArticles(params: string) {
-  const response = await fetch(
+  // const response = await fetch(
+  //   `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/articles?${params}`
+  // );
+
+  // const data = await response.json();
+  // return data;
+  const response = await axios.get(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/articles?${params}`
   );
-
-  const data = await response.json();
-  return data;
+  return response.data;
 }
 
 export default function Select({ user }: Props) {
@@ -90,7 +81,7 @@ export default function Select({ user }: Props) {
       setLoading(true);
       // console.log(searchParams.toString());
       const response = await fetchArticles(searchParams.toString());
-      // console.log(response);
+      console.log(response);
       if (response.results.length === 0) {
         router.push("?");
       }
