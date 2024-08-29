@@ -546,6 +546,8 @@ export default {
           emailNotFound: "Không tìm thấy email",
           emailNotFoundDescription:
             "Địa chỉ email này không được liên kết với bất kỳ tài khoản nào. Vui lòng kiểm tra chính tả hoặc thử một địa chỉ email khác.",
+            studentAlreadyInClass: "Học sinh đã có trong lớp",
+            studentAlreadyInClassDescription: "Học sinh này đã có trong lớp này",
         },
       },
     },

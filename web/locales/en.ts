@@ -553,6 +553,8 @@ export default {
           emailNotFound: "Email not found",
           emailNotFoundDescription:
             "This email address isn't associated with any account. Please check the spelling or try a different email address.",
+            studentAlreadyInClass: "Student already in class",
+            studentAlreadyInClassDescription: "This student is already in this class",
         },
       },
     },
