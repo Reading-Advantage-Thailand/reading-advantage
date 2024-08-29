@@ -37,7 +37,7 @@ type CreateNewStudentProps = {
   allStudentEmail: any;
   studentInEachClass: any;
   classrooms: Classrooms[];
-  userArticleRecords: any;
+  userArticleRecords: string[][];
 };
 
 export default function CreateNewStudent({
@@ -45,12 +45,8 @@ export default function CreateNewStudent({
   allStudentEmail,
   studentInEachClass,
   classrooms,
-  userArticleRecords,
+  userArticleRecords = [],
 }: CreateNewStudentProps) {
-  console.log('studentDataInClass', studentDataInClass);
-  console.log('studentInEachClass', studentInEachClass);
-  
-  
   const router = useRouter();
   const [inputs, setInputs] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
@@ -92,7 +88,7 @@ export default function CreateNewStudent({
     const isEmailAlreadyInClass = studentDataInClass.some(
       (student) => student.email === email
     );
-    
+
     if (isEmailAlreadyInClass) {
       toast({
         title: t("toast.studentAlreadyInClass"),
@@ -125,62 +121,116 @@ export default function CreateNewStudent({
         studentToAdd.studentId,
       ];
 
-    const updateStudentListBuilder = updatedStudentList.map((studentId: string) => {
-      const userLastActivity = userArticleRecords.find(
-        (record: string[]) => record[0] === studentId
-      );
-      let lastActivityTimestamp;
+      const updateStudentListBuilder = updatedStudentList.map(
+        (studentId: string) => {
 
-      if (userLastActivity && userLastActivity[1]) {
-        lastActivityTimestamp = convertDateToISOString(userLastActivity[1]);
-      } else {
-        lastActivityTimestamp = "No Activity";
-      }
+          const userLastActivity = userArticleRecords.find(
+            (record: string[]) => record[0] === studentId
+          );
 
-      return {
-        studentId,
-        lastActivity: lastActivityTimestamp,
-      };
-    });
+          let lastActivityTimestamp;
 
-    try {
-      const response = await axios.patch(
-        `/api/classroom/${classroomId}/enroll`,
-        {
-          student: updateStudentListBuilder,
+          if (userLastActivity && userLastActivity[1]) {
+            lastActivityTimestamp = convertDateToISOString(userLastActivity[1]);
+          } else {
+            lastActivityTimestamp = "No Activity";
+          }
+
+          return {
+            studentId,
+            lastActivity: lastActivityTimestamp,
+          };
         }
       );
-      if (response.status === 200) {
-        toast({
-          title: t("toast.successAddStudent"),
-          description: t("toast.successAddStudentDescription"),
-          variant: "default",
-        });
-        router.push(`/teacher/class-roster/${classroomId}`);
-      } else {
-        console.log("add failed with status: ", response.status);
+
+      // const updateStudentListBuilder = updatedStudentList.map(
+      //   (studentId: string) => {
+      //     console.log("-----------------------------------------------");
+      //     console.log("userArticleRecords", userArticleRecords);
+      //     console.log("studentId", studentId);
+      //     return new Promise((resolve, reject) => {
+      //       const userLastActivity = userArticleRecords.find(
+      //         (record: string[]) => {
+      //           console.log("record[0]", record[0]);
+      //           return record[0] === studentId;
+      //         }
+      //       );
+      //       console.log("userLastActivity 1xxx", userLastActivity);
+      //       if (userLastActivity) {
+      //         console.log("ok");
+      //         resolve(userLastActivity);
+      //       } else {
+      //         reject("No Activity");
+      //       }
+      //     })
+      //       .then((userLastActivity) => {
+      //         console.log("userLastActivity 1", userLastActivity as string[]);
+      //         if ((userLastActivity as string[])[1]) {
+      //           return convertDateToISOString(
+      //             (userLastActivity as string[])[1]
+      //           );
+      //         } else {
+      //           // throw new Error("No Activity");
+      //           console.log(userLastActivity);
+      //         }
+      //       })
+      //       .then((userLastActivity) => {
+      //         console.log("userLastActivity 2", userLastActivity);
+      //         return {
+      //           studentId,
+      //           lastActivity: userLastActivity,
+      //         };
+      //       })
+      //       .catch((error) => {
+      //         console.log("error:", error);
+      //       })
+      //       .finally(() => {
+      //         return {
+      //           studentId,
+      //           lastActivity: "No Activity",
+      //         };
+      //       });
+      //   }
+      // );
+
+      try {
+        const response = await axios.patch(
+          `/api/classroom/${classroomId}/enroll`,
+          {
+            student: updateStudentListBuilder,
+          }
+        );
+        if (response.status === 200) {
+          toast({
+            title: t("toast.successAddStudent"),
+            description: t("toast.successAddStudentDescription"),
+            variant: "default",
+          });
+          router.push(`/teacher/class-roster/${classroomId}`);
+        } else {
+          console.log("add failed with status: ", response.status);
+          toast({
+            title: t("toast.errorAddStudent"),
+            description: t("toast.errorAddStudentDescription"),
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error adding student:", error);
         toast({
           title: t("toast.errorAddStudent"),
           description: t("toast.errorAddStudentDescription"),
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error("Error adding student:", error);
+    } else {
       toast({
-        title: t("toast.errorAddStudent"),
-        description: t("toast.errorAddStudentDescription"),
+        title: t("toast.studentAlreadyInClass"),
+        description: t("toast.studentAlreadyInClassDescription"),
         variant: "destructive",
       });
     }
-  } else {
-    toast({
-      title: t("toast.studentAlreadyInClass"),
-      description: t("toast.studentAlreadyInClassDescription"),
-      variant: "destructive",
-    });
-  }
-};
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
