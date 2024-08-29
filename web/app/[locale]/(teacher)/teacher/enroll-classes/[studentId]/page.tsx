@@ -18,6 +18,7 @@ export default async function EnrollPage({
   const res = await StudentsData({ params: { studentId: params.studentId } });
   const matchedNameOfStudent = res.matchedNameOfStudents;
   const differentClasses = res.differentClasses;
+  const selectedUserLastActivity = res.selectedUserLastActivity;
 
   return (
     <div>
@@ -26,7 +27,7 @@ export default async function EnrollPage({
           enrolledClasses={differentClasses}
           studentId={params.studentId}
           matchedNameOfStudent={matchedNameOfStudent}
-
+          selectedUserLastActivity={selectedUserLastActivity}
         />
       </NextAuthSessionProvider>
     </div>

@@ -51,12 +51,14 @@ type MyEnrollProps = {
   enrolledClasses: Classroom[];
   studentId: string;
   matchedNameOfStudent: Student[];
+  selectedUserLastActivity: Date;
 };
 
 export default function MyEnrollClasses({
   enrolledClasses,
   studentId,
-  matchedNameOfStudent
+  matchedNameOfStudent,
+  selectedUserLastActivity,
 }: MyEnrollProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -71,76 +73,84 @@ export default function MyEnrollClasses({
   const [classroomId, setClassroomId] = useState("");
   const [isCheck, setIsCheck] = useState(false);
   const [studentInClassVar, setStudentInClassVar] = useState<String[]>([]);
-console.log("studentInClassVar", studentInClassVar);
 
-  const eachClassChecked = useCallback((id: string) => {
-    if (isCheck) {
-      setStudentInClassVar(["classId_" + id]);
-    }
-  }, [isCheck, setStudentInClassVar]);
+  const eachClassChecked = useCallback(
+    (id: string) => {
+      if (isCheck) {
+        setStudentInClassVar(["classId_" + id]);
+      }
+    },
+    [isCheck, setStudentInClassVar]
+  );
 
   useEffect(() => {
     eachClassChecked(classroomId);
   }, [isCheck, classroomId, eachClassChecked]);
 
+  const handleStudentEnrollment = async (
+    classroomId: string,
+    enrolledClasses: any
+  ) => {
+    // Find the selected classroom
+    const selectedClassroom = enrolledClasses.find(
+      (classroom: any) => classroom.id === classroomId
+    );
 
-  const handleStudentEnrollment = async (classroomId: string, enrolledClasses: any) => {
-    let studentInClass: any[] = [];
-    enrolledClasses.forEach((enrolledClass: any) => {
-      if (enrolledClass.student) {
-        enrolledClass.student.forEach((student: { studentId: string }) => {
-          if (enrolledClass.id === classroomId) {
-            studentInClass.push(student.studentId);
-          }
-          if (!studentInClass.includes(studentId)) {
-            studentInClass.push(studentId);
-          }
-        });
-      } else {
-        studentInClass.push("No student in this class");
-      }
-    });
-    console.log("studentInClass", studentInClass);
-    
-    const updateStudentListBuilder = studentInClass.map((studentId) => ({
-      studentId,
-      lastActivity: new Date(),
-    }));
+    if (!selectedClassroom) {
+      console.error("Selected classroom not found");
+      toast({
+        title: te("toast.errorEnrollment"),
+        description: te("toast.errorEnrollDescription"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create the list of students for the selected classroom
+    let studentsInClass = selectedClassroom.student
+      ? [...selectedClassroom.student]
+      : [];
+
+    // Add the new student if not already present
+    if (
+      !studentsInClass.some((student: any) => student.studentId === studentId)
+    ) {
+      studentsInClass.push({
+        studentId: studentId,
+        lastActivity: selectedUserLastActivity,
+      });
+    }
 
     try {
-      const response = await axios.patch(`/api/classroom/${classroomId}/enroll`, {
-        student: updateStudentListBuilder,
-      });
+      const response = await axios.patch(
+        `/api/classroom/${classroomId}/enroll`,
+        {
+          student: studentsInClass,
+        }
+      );
 
       if (response.status === 200) {
         toast({
-          title: te('toast.successEnrollment'),
-          description: te('toast.successEnrollDescription'), 
-        })
+          title: te("toast.successEnrollment"),
+          description: te("toast.successEnrollDescription"),
+        });
       } else {
         console.log("add failed with status: ", response.status);
         toast({
-          title: te('toast.errorEnrollment'),
-          description: te('toast.errorEnrollDescription'),
+          title: te("toast.errorEnrollment"),
+          description: te("toast.errorEnrollDescription"),
           variant: "destructive",
-        })
+        });
       }
 
-      return new Response(
-        JSON.stringify({
-          message: "success",
-        }),
-        { status: 200 }
-      );
-    } catch (error) {
-      return new Response(
-        JSON.stringify({
-          message: error,
-        }),
-        { status: 500 }
-      );
-    } finally {
       router.refresh();
+    } catch (error) {
+      console.error("Error during enrollment:", error);
+      toast({
+        title: te("toast.errorEnrollment"),
+        description: te("toast.errorEnrollDescription"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -153,7 +163,7 @@ console.log("studentInClassVar", studentInClassVar);
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            {te('className')}
+            {te("className")}
             <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -161,16 +171,16 @@ console.log("studentInClassVar", studentInClassVar);
       cell: ({ row }) => {
         const classroomName: string = row.getValue("classroomName");
         return (
-        <div className="captoliza ml-4" onClick={() => row.toggleSelected}>
-          {classroomName ? classroomName : "Anonymous"}
-        </div>
+          <div className="captoliza ml-4" onClick={() => row.toggleSelected}>
+            {classroomName ? classroomName : "Anonymous"}
+          </div>
         );
       },
     },
     {
       accessorKey: "id",
       header: ({ column }) => {
-        return <Button variant="ghost">{te('enroll')}</Button>;
+        return <Button variant="ghost">{te("enroll")}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza ml-2">
@@ -208,7 +218,7 @@ console.log("studentInClassVar", studentInClassVar);
   return (
     <>
       <div className="font-bold text-3xl">
-        {te('title', {studentName: matchedNameOfStudent[0].name })} 
+        {te("title", { studentName: matchedNameOfStudent[0].name })}
       </div>
       <div className="flex items-center justify-between">
         <Input

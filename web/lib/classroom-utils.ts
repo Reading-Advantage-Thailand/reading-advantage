@@ -111,7 +111,6 @@ export default async function ClassroomData(params: {
   };
 }
 
-
 export async function StudentsData({
   params,
 }: {
@@ -122,6 +121,8 @@ export async function StudentsData({
     return redirect("/auth/signin");
   }
   
+  const studentId = params.studentId;
+
   // get student role data from database
   async function getAllStudentData() {
     try {
@@ -304,9 +305,65 @@ export async function StudentsData({
     params.studentId
   );
 
-  const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(
-    (studentId) => ({ studentId, lastActivity: new Date() })
+  async function getUserActivityRecords(userId: string) {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${userId}/activitylog`,
+        {
+          method: "GET",
+          headers: headers(),
+        }
+      );
+  
+      return res.json();
+    } catch (error) {
+      console.error("Failed to parse JSON", error);
+    }
+  }
+  const lastActivityTimestamp: { [key: string]: string } = {};
+  const response = await getUserActivityRecords(studentId);
+ 
+  const userRecordsMatch = response.results.filter(
+    (record: any) => record.userId === params.studentId
   );
+
+  if (userRecordsMatch.length > 0) {
+    const sortedData = response.results
+      .sort((a: any, b: any) => {
+        const timestampA = new Date(a.timestamp).getTime();
+        const timestampB = new Date(b.timestamp).getTime();
+        return timestampB - timestampA;
+      })
+      // .map((item: any) => {
+      //   const date = new Date(item.timestamp);
+      //   const formattedDate = date.toISOString().split("T")[0];
+      //   return {
+      //     ...item,
+      //     formattedTimestamp: formattedDate,
+      //   };
+      // });
+
+    // const lastTimestamp = sortedData[0].formattedTimestamp;
+    const lastTimestamp = sortedData[0].timestamp;
+    lastActivityTimestamp[params.studentId] = lastTimestamp;
+  } else {
+    lastActivityTimestamp[params.studentId] = "No Activity";
+  }
+
+const sortedLastActivityTimestamp = Object.entries(
+  lastActivityTimestamp
+).sort(([timestampA], [timestampB]) => {
+  if (timestampA === "No Activity") return 1;
+  if (timestampB === "No Activity") return -1;
+  return new Date(timestampB).getTime() - new Date(timestampA).getTime();
+});
+
+const userLastActivity = response.results.find((record: { userId: string; }) => record.userId === params.studentId);
+const selectedUserLastActivity = userLastActivity ? userLastActivity.timestamp : 'No Activity';
+
+  // const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(
+  //   (studentId) => ({ studentId, lastActivity: selectedUserLastActivity })
+  // );
 
   return {
     matchedClassrooms,
@@ -315,7 +372,9 @@ export async function StudentsData({
     matchedStudents,
     studentInDifferent,
     matchedNameOfStudents,
-    updateStudentListBuilder,
+    // updateStudentListBuilder,
+    sortedLastActivityTimestamp,
+    selectedUserLastActivity,
   };
 }
 
@@ -446,3 +505,4 @@ export async function ClassesData() {
     matchedStudents,
   };
 }
+
