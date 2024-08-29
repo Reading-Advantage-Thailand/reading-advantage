@@ -4,7 +4,6 @@ import { Article } from "@/components/models/article-model";
 import { QuizStatus } from "@/components/models/questions-model";
 import { ExtendedNextRequest } from "./auth-controller";
 
-
 // GET search articles
 // GET /api/v1/articles?level=10&type=fiction&genre=Fantasy
 export async function getSearchArticles(req: ExtendedNextRequest) {
@@ -24,14 +23,14 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       );
     }
 
-    let data =  db
+    let data = db
       .collection("new-articles")
       .where("ra_level", ">=", Number(level) - 1)
       .where("ra_level", "<=", Number(level) + 1)
       .orderBy("created_at", "desc")
       .limit(10);
 
-    let typeResult =  db.collection("article-selection").doc(level);
+    let typeResult = db.collection("article-selection").doc(level);
 
     if (type) {
       typeResult = typeResult.collection("types").doc(type);

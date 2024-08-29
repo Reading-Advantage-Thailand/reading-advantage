@@ -34,7 +34,6 @@ export default async function ArticleQuizPage({
   if (!user) return redirect("/auth/signin");
 
   const articleResponse = await getArticle(params.articleId);
-  console.log("articleResponse", articleResponse);
 
   if (articleResponse.message)
     return (
