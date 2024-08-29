@@ -350,20 +350,48 @@ export async function StudentsData({
     lastActivityTimestamp[params.studentId] = "No Activity";
   }
 
-const sortedLastActivityTimestamp = Object.entries(
-  lastActivityTimestamp
-).sort(([timestampA], [timestampB]) => {
-  if (timestampA === "No Activity") return 1;
-  if (timestampB === "No Activity") return -1;
-  return new Date(timestampB).getTime() - new Date(timestampA).getTime();
-});
+// const sortedLastActivityTimestamp = Object.entries(
+//   lastActivityTimestamp
+// ).sort(([timestampA], [timestampB]) => {
+//   if (timestampA === "No Activity") return 1;
+//   if (timestampB === "No Activity") return -1;
+//   return new Date(timestampB).getTime() - new Date(timestampA).getTime();
+// });
+// console.log('sortedLastActivityTimestamp', sortedLastActivityTimestamp);
 
 const userLastActivity = response.results.find((record: { userId: string; }) => record.userId === params.studentId);
 const selectedUserLastActivity = userLastActivity ? userLastActivity.timestamp : 'No Activity';
 
-  // const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(
-  //   (studentId) => ({ studentId, lastActivity: selectedUserLastActivity })
-  // );
+
+const activityPromises = updateStudentIdInMatchedClassrooms.map(studentId => 
+  getUserActivityRecords(studentId)
+);
+const activityResponses = await Promise.all(activityPromises);
+
+updateStudentIdInMatchedClassrooms.forEach((studentId, index) => {
+  const response = activityResponses[index];
+  const userRecordsMatch = response.results.filter(
+    (record: any) => record.userId === studentId
+  );
+
+  if (userRecordsMatch.length > 0) {
+    const sortedData = userRecordsMatch
+      .sort((a: any, b: any) => {
+        const timestampA = new Date(a.timestamp).getTime();
+        const timestampB = new Date(b.timestamp).getTime();
+        return timestampB - timestampA;
+      });
+
+    const lastTimestamp = sortedData[0].timestamp;
+    lastActivityTimestamp[studentId] = lastTimestamp;
+  } else {
+    lastActivityTimestamp[studentId] = "No Activity";
+  }
+});
+
+  const updateStudentListBuilder = updateStudentIdInMatchedClassrooms.map(
+    (studentId) => ({ studentId, lastActivity: lastActivityTimestamp[studentId] })
+  );
 
   return {
     matchedClassrooms,
@@ -372,9 +400,10 @@ const selectedUserLastActivity = userLastActivity ? userLastActivity.timestamp :
     matchedStudents,
     studentInDifferent,
     matchedNameOfStudents,
-    // updateStudentListBuilder,
-    sortedLastActivityTimestamp,
+    updateStudentListBuilder,
+    // sortedLastActivityTimestamp,
     selectedUserLastActivity,
+    lastActivityTimestamp,
   };
 }
 
