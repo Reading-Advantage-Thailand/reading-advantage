@@ -50,13 +50,13 @@ type Classroom = {
 type MyEnrollProps = {
   enrolledClasses: Classroom[];
   studentId: string;
-  matchedStudents: Student[];
+  matchedNameOfStudent: Student[];
 };
 
 export default function MyEnrollClasses({
   enrolledClasses,
   studentId,
-  matchedStudents,
+  matchedNameOfStudent
 }: MyEnrollProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -71,6 +71,7 @@ export default function MyEnrollClasses({
   const [classroomId, setClassroomId] = useState("");
   const [isCheck, setIsCheck] = useState(false);
   const [studentInClassVar, setStudentInClassVar] = useState<String[]>([]);
+console.log("studentInClassVar", studentInClassVar);
 
   const eachClassChecked = useCallback((id: string) => {
     if (isCheck) {
@@ -99,6 +100,8 @@ export default function MyEnrollClasses({
         studentInClass.push("No student in this class");
       }
     });
+    console.log("studentInClass", studentInClass);
+    
     const updateStudentListBuilder = studentInClass.map((studentId) => ({
       studentId,
       lastActivity: new Date(),
@@ -205,7 +208,7 @@ export default function MyEnrollClasses({
   return (
     <>
       <div className="font-bold text-3xl">
-        {te('title', {studentName: matchedStudents[0].name })} 
+        {te('title', {studentName: matchedNameOfStudent[0].name })} 
       </div>
       <div className="flex items-center justify-between">
         <Input
