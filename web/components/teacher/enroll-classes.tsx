@@ -51,13 +51,25 @@ type MyEnrollProps = {
   enrolledClasses: Classroom[];
   studentId: string;
   matchedStudents: Student[];
+  matchedNameOfStudent: Student[];  
+  sortedLastActivityTimestamp: [string, string][];
 };
 
 export default function MyEnrollClasses({
   enrolledClasses,
   studentId,
   matchedStudents,
+  matchedNameOfStudent,
+  sortedLastActivityTimestamp,
 }: MyEnrollProps) {
+  console.log('--------------------------------------');
+  
+console.log("enrolledClasses: ", enrolledClasses);
+console.log("studentId: ", studentId);
+console.log("matchedStudents: ", matchedStudents);
+console.log("matchedNameOfStudents: ", matchedNameOfStudent);
+
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -84,25 +96,34 @@ export default function MyEnrollClasses({
 
 
   const handleStudentEnrollment = async (classroomId: string, enrolledClasses: any) => {
-    let studentInClass: any[] = [];
+    // let studentInClass: any[] = [];
+    let studentInClass: { studentId: string, lastActivity: string }[] = [];
     enrolledClasses.forEach((enrolledClass: any) => {
       if (enrolledClass.student) {
-        enrolledClass.student.forEach((student: { studentId: string }) => {
+        enrolledClass.student.forEach((student: { studentId: string, lastActivity: string }) => {
           if (enrolledClass.id === classroomId) {
-            studentInClass.push(student.studentId);
+            // studentInClass.push(student.studentId);
+            studentInClass.push({ studentId: student.studentId, lastActivity: student.lastActivity });
           }
-          if (!studentInClass.includes(studentId)) {
-            studentInClass.push(studentId);
+          // if (!studentInClass.includes(studentId)) {
+          //   studentInClass.push(studentId);
+          // }
+          if (!studentInClass.some(student => student.studentId === studentId)) {
+            studentInClass.push({ studentId: student.studentId, lastActivity: student.lastActivity });
           }
         });
       } else {
-        studentInClass.push("No student in this class");
+        studentInClass.push({ studentId: "No student in this class", lastActivity: "" });
       }
     });
-    const updateStudentListBuilder = studentInClass.map((studentId) => ({
-      studentId,
-      lastActivity: new Date(),
-    }));
+    console.log("studentInClass 2: ", studentInClass);
+    
+const mergedStudentInClass = [...studentInClass, ...studentInClassVar];
+
+const updateStudentListBuilder = studentInClass.map(({studentId, lastActivity}) => ({
+studentId,
+lastActivity, 
+}));
 
     try {
       const response = await axios.patch(`/api/classroom/${classroomId}/enroll`, {
@@ -205,7 +226,7 @@ export default function MyEnrollClasses({
   return (
     <>
       <div className="font-bold text-3xl">
-        {te('title', {studentName: matchedStudents[0].name })} 
+        {te('title', {studentName: matchedNameOfStudent[0].name})} 
       </div>
       <div className="flex items-center justify-between">
         <Input
