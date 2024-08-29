@@ -50,14 +50,14 @@ type Classroom = {
 type MyEnrollProps = {
   enrolledClasses: Classroom[];
   studentId: string;
-  matchedNameOfStudent: Student[];
+  matchedNameOfStudents: Student[];
   selectedUserLastActivity: Date;
 };
 
 export default function MyEnrollClasses({
   enrolledClasses,
   studentId,
-  matchedNameOfStudent,
+  matchedNameOfStudents,
   selectedUserLastActivity,
 }: MyEnrollProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -218,7 +218,7 @@ export default function MyEnrollClasses({
   return (
     <>
       <div className="font-bold text-3xl">
-        {te("title", { studentName: matchedNameOfStudent[0].name })}
+        {te("title", { studentName: matchedNameOfStudents[0] ? matchedNameOfStudents[0].name : "Unknown" })}
       </div>
       <div className="flex items-center justify-between">
         <Input
