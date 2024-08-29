@@ -44,7 +44,7 @@ export default async function AddNewStudent(params: {
         })
         .map((item: any) => {
           const date = new Date(item.timestamp);
-          const formattedDate = date.toISOString().split("T")[0]; // Extracts "yyyy-mm-dd"
+          const formattedDate = date.toISOString().split("T")[0]; 
           return {
             ...item,
             formattedTimestamp: formattedDate,

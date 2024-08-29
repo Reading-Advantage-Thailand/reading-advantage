@@ -104,6 +104,7 @@ export default {
             "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy điền từ còn thiếu vào để hoàn thành chúng. Nếu bạn trả lời đúng, bạn sẽ nhận được 2 XP.",
           saveOrder: "Lưu & Tiếp tục sau",
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
+          submitArticle: "Kiểm tra câu trả lời của bạn",
         },
         orderWordsPractice: {
           orderWords: "Sắp xếp từ",
@@ -545,6 +546,8 @@ export default {
           emailNotFound: "Không tìm thấy email",
           emailNotFoundDescription:
             "Địa chỉ email này không được liên kết với bất kỳ tài khoản nào. Vui lòng kiểm tra chính tả hoặc thử một địa chỉ email khác.",
+            studentAlreadyInClass: "Học sinh đã có trong lớp",
+            studentAlreadyInClassDescription: "Học sinh này đã có trong lớp này",
         },
       },
     },

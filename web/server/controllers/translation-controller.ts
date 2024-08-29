@@ -90,8 +90,8 @@ export async function translate(request: NextRequest, ctx: RequestContext) {
 
 async function translatePassageWithGoogle(sentences: string[], targetLanguage: string): Promise<string[]> {
     const translate = new Translate({
-        projectId: process.env.GOOGLE_PROJECT_ID,
-        key: process.env.GOOGLE_TRANSLATE_API_KEY,
+      projectId: process.env.GOOGLE_PROJECT_ID,
+      key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY,
     });
 
     const [translations] = await translate.translate(sentences, targetLanguage);

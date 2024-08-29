@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useCallback } from "react";
+import { useTheme } from "next-themes";
 
 type Props = {
   audioUrl: string;
@@ -15,6 +16,7 @@ export default function AudioImg({
 }: Props) {
   const [isPlaying, setIsPlaying] = React.useState(false);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const { theme } = useTheme();
 
   const handlePlay = useCallback(() => {
     if (audioRef.current) {
@@ -55,14 +57,25 @@ export default function AudioImg({
       <audio ref={audioRef}>
         <source src={audioUrl} />
       </audio>
-      <Image
-        src={"/sound-play-sound.svg"}
-        alt="play sound"
-        width={20}
-        height={20}
-        className={"mx-3 mt-1 cursor-pointer"}
-        onClick={handlePlay}
-      />
+      {theme === "dark" ? (
+        <Image
+          src={"/sound-play-sound-white.png"}
+          alt="play sound"
+          width={20}
+          height={20}
+          className={"mx-3 mt-1 cursor-pointer"}
+          onClick={handlePlay}
+        />
+      ) : (
+        <Image
+          src={"/sound-play-sound-black.png"}
+          alt="play sound"
+          width={20}
+          height={20}
+          className={"mx-3 mt-1 cursor-pointer"}
+          onClick={handlePlay}
+        />
+      )}
     </div>
   );
 }

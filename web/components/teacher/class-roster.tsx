@@ -88,7 +88,7 @@ type MyRosterProps = {
   userArticleRecords: any;
 };
 
-export default async function ClassRoster({
+export default function ClassRoster({
   studentInClass,
   classrooms,
   classes,

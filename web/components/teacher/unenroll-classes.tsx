@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { title } from "process";
 import { toast } from "../ui/use-toast";
 
 type Student = {
@@ -59,7 +58,7 @@ export default function MyUnEnrollClasses({
   enrolledClasses,
   matchedNameOfStudents,
   updateStudentList,
-  studentId
+  studentId,
 }: MyEnrollProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -73,10 +72,13 @@ export default function MyUnEnrollClasses({
   const router = useRouter();
   const [classroomId, setClassroomId] = useState("");
 
-  const handleStudentEnrollment = async (classroomId: string, enrolledClasses: any, studentId: string) => {
-    const removedStudentInClass: any[]= [];
+  const handleStudentUnEnrollment = async (
+    classroomId: string,
+    enrolledClasses: any,
+    studentId: string
+  ) => {
+    const removedStudentInClass: any[] = [];
     enrolledClasses.forEach((classroom: any) => {
-      
       if (classroom.id === classroomId) {
         classroom.student.forEach((student: any) => {
           if (student.studentId !== studentId) {
@@ -85,29 +87,37 @@ export default function MyUnEnrollClasses({
         });
       }
     });
-    
-const updateStudentListBuilder = removedStudentInClass.map((student) => ({
-  studentId: student,
-  lastActivity: new Date(),
-}));
+
+    const updateStudentListBuilder = removedStudentInClass.map((studentId) => {
+      const matchedStudent = updateStudentList.find(
+        (student: { studentId: string }) => student.studentId === studentId
+      );
+      return {
+        studentId,
+        lastActivity: matchedStudent ? matchedStudent.lastActivity : null,
+      };
+    });
 
     try {
-      const response = await axios.patch(`/api/classroom/${classroomId}/unenroll`, {
+      const response = await axios.patch(
+        `/api/classroom/${classroomId}/unenroll`,
+        {
           student: updateStudentListBuilder,
           studentId: studentId,
-      });
+        }
+      );
       if (response.status === 200) {
         toast({
-          title: tu('toast.successUnenrollment'),
-          description: tu('toast.successUnenrollDescription'),
-        })
+          title: tu("toast.successUnenrollment"),
+          description: tu("toast.successUnenrollDescription"),
+        });
       } else {
         console.log("remove failed with status: ", response.status);
         toast({
-          title: tu('toast.errorUnenrollment'),
-          description: tu('toast.errorUnenrollDescription'),
-          variant: "destructive"
-        })
+          title: tu("toast.errorUnenrollment"),
+          description: tu("toast.errorUnenrollDescription"),
+          variant: "destructive",
+        });
       }
 
       return new Response(
@@ -137,7 +147,7 @@ const updateStudentListBuilder = removedStudentInClass.map((student) => ({
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            {tu('className')}
+            {tu("className")}
             <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -151,7 +161,7 @@ const updateStudentListBuilder = removedStudentInClass.map((student) => ({
     {
       accessorKey: "id",
       header: ({ column }) => {
-        return <Button variant="ghost">{tu('unEnroll')}</Button>;
+        return <Button variant="ghost">{tu("unEnroll")}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza ml-2">
@@ -189,11 +199,15 @@ const updateStudentListBuilder = removedStudentInClass.map((student) => ({
   return (
     <>
       <div className="font-bold text-3xl">
-         {tu('title', { studentName: matchedNameOfStudents[0] ? matchedNameOfStudents[0].name : "Unknown"})}
+        {tu("title", {
+          studentName: matchedNameOfStudents[0]
+            ? matchedNameOfStudents[0].name
+            : "Unknown",
+        })}
       </div>
       <div className="flex items-center justify-between">
         <Input
-          placeholder={tu('search')}
+          placeholder={tu("search")}
           value={
             (table.getColumn("classroomName")?.getFilterValue() as string) ?? ""
           }
@@ -205,9 +219,11 @@ const updateStudentListBuilder = removedStudentInClass.map((student) => ({
         <Button
           variant="default"
           className="max-w-sm mt-4"
-          onClick={() => handleStudentEnrollment(classroomId, enrolledClasses, studentId)}
+          onClick={() =>
+            handleStudentUnEnrollment(classroomId, enrolledClasses, studentId)
+          }
         >
-          {tu('remove')}
+          {tu("remove")}
         </Button>
       </div>
       <div className="rounded-md border mt-4">

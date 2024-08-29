@@ -93,6 +93,7 @@ export default {
             "這是你讀過的一篇文章中的幾個句子，請填入遺失的單詞以完成它們。如果你答對了，你將獲得5經驗值。",
           saveOrder: "儲存 & 稍後繼續",
           errorOrder: "請正確排序",
+          submitArticle: "檢查你的答案",
         },
         orderWordsPractice: {
           orderWords: "排序單詞",
@@ -517,6 +518,8 @@ export default {
           emailNotFound: "未找到電子郵件",
           emailNotFoundDescription:
             "此電子郵件地址未關聯任何賬戶。請檢查拼寫或嘗試不同的電子郵件地址。",
+            studentAlreadyInClass: "學生已經在班級中",
+            studentAlreadyInClassDescription: "這個學生已經在這個班級中",
         },
       },
     },
