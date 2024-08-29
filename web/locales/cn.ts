@@ -513,6 +513,8 @@ export default {
           emailNotFound: "未找到电子邮件",
           emailNotFoundDescription:
             "此电子邮件地址未关联任何账户。请检查拼写或尝试不同的电子邮件地址。",
+            studentAlreadyInClass: "学生已经在班级中",
+            studentAlreadyInClassDescription: "这个学生已经在这个班级中",
         },
       },
     },

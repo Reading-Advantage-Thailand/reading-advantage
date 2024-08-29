@@ -518,6 +518,8 @@ export default {
           emailNotFound: "未找到電子郵件",
           emailNotFoundDescription:
             "此電子郵件地址未關聯任何賬戶。請檢查拼寫或嘗試不同的電子郵件地址。",
+            studentAlreadyInClass: "學生已經在班級中",
+            studentAlreadyInClassDescription: "這個學生已經在這個班級中",
         },
       },
     },
