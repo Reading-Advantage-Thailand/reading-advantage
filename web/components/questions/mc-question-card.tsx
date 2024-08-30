@@ -33,6 +33,7 @@ import { useRouter } from "next/navigation";
 type Props = {
   userId: string;
   articleId: string;
+  articleTitle: string;
 };
 
 export type QuestionResponse = {
@@ -42,7 +43,9 @@ export type QuestionResponse = {
   state: QuestionState;
 };
 
-export default function MCQuestionCard({ userId, articleId }: Props) {
+export default function MCQuestionCard({ userId, articleId, articleTitle }: Props) {
+  console.log('articleTitle: ', articleTitle);
+  
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     results: [],
@@ -92,6 +95,7 @@ export default function MCQuestionCard({ userId, articleId }: Props) {
           resp={data}
           articleId={articleId}
           handleCompleted={handleCompleted}
+          articleTitle={articleTitle}
         />
       );
     case QuestionState.COMPLETED:
@@ -155,11 +159,13 @@ function QuestionCardIncomplete({
   resp,
   articleId,
   handleCompleted,
+  articleTitle,
 }: {
   userId: string;
   resp: QuestionResponse;
   articleId: string;
   handleCompleted: () => void;
+  articleTitle: string;
 }) {
   return (
     <Card>
@@ -177,6 +183,7 @@ function QuestionCardIncomplete({
             resp={resp}
             handleCompleted={handleCompleted}
             userId={userId}
+            articleTitle={articleTitle} 
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -189,11 +196,13 @@ function MCQeustion({
   resp,
   handleCompleted,
   userId,
+  articleTitle,
 }: {
   articleId: string;
   resp: QuestionResponse;
   handleCompleted: () => void;
   userId: string;
+  articleTitle: string;
 }) {
   const [progress, setProgress] = useState(resp.progress);
   const [isLoadingAnswer, setLoadingAnswer] = useState(false);
@@ -247,6 +256,7 @@ function MCQeustion({
             details: {
               correctAnswer,
               progress,
+              title: articleTitle
             },
           }),
         });

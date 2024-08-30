@@ -73,7 +73,7 @@ export default async function ArticleQuizPage({
             />
           </div>
 
-          <MCQuestionCard userId={user.id} articleId={params.articleId} />
+          <MCQuestionCard userId={user.id} articleId={params.articleId} articleTitle={articleResponse.article.title}/>
           <SAQuestionCard userId={user.id} articleId={params.articleId} />
           <LAQuestionCard
             userId={user.id}
