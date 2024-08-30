@@ -37,12 +37,10 @@ import { toast } from "../ui/use-toast";
 import { UserActivityLog } from "../models/user-activity-log-model";
 
 type MyRosterProps = {
- userActivityLog: UserActivityLog[];
+  userActivityLog: UserActivityLog[];
 };
 
-export default function TeacherHistory({
-userActivityLog,
-}: MyRosterProps) {
+export default function TeacherHistory({ userActivityLog }: MyRosterProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -57,20 +55,26 @@ userActivityLog,
     const activityMap: { [key: string]: string } = {
       article_read: "Article Read",
       mc_question: "Multiple Choice Question",
-        sa_question: "Short Answer Question",
-        la_question: "Long Answer Question",
-        article_rating: "Article Rating",
-        level_test: "Level Test",
-        sentence_flashcards: "Sentence Flashcards",
-        sentence_matching: "Sentence Matching",
-        sentence_ordering: "Sentence Ordering",
-        sentence_word_ordering: "Sentence Word Ordering",
-        sentence_cloze_test: "Sentence Cloze Test",
-        vocabulary_flashcards: "Vocabulary Flashcards",
-        vocabulary_matching: "Vocabulary Matching",
+      sa_question: "Short Answer Question",
+      la_question: "Long Answer Question",
+      article_rating: "Article Rating",
+      level_test: "Level Test",
+      sentence_flashcards: "Sentence Flashcards",
+      sentence_matching: "Sentence Matching",
+      sentence_ordering: "Sentence Ordering",
+      sentence_word_ordering: "Sentence Word Ordering",
+      sentence_cloze_test: "Sentence Cloze Test",
+      vocabulary_flashcards: "Vocabulary Flashcards",
+      vocabulary_matching: "Vocabulary Matching",
     };
-  
-    return activityMap[type] || type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+    return (
+      activityMap[type] ||
+      type
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+    );
   }
 
   const columns: ColumnDef<UserActivityLog>[] = [
@@ -88,18 +92,19 @@ userActivityLog,
         );
       },
       cell: ({ row }) => (
-        // <div className="captoliza ml-4">{row.getValue("timestamp")}</div>
-        <div className="captoliza ml-4">{new Date(row.getValue("timestamp")).toLocaleDateString()}</div>
+        <div className="captoliza ml-4">
+          {new Date(row.getValue("timestamp")).toLocaleDateString()}
+        </div>
       ),
     },
     {
-        accessorFn: (row) => formatActivityType(row.activityType),
-        id: "activityType",
-        header: "Activity",
-        cell: ({ row }) => (
-          <div className="ml-4">{row.getValue("activityType")}</div>
-        ),
-      },
+      accessorFn: (row) => formatActivityType(row.activityType),
+      id: "activityType",
+      header: "Activity",
+      cell: ({ row }) => (
+        <div className="ml-4">{row.getValue("activityType")}</div>
+      ),
+    },
     {
       accessorFn: (row) => row.details.title || "--",
       id: "title",
@@ -109,20 +114,13 @@ userActivityLog,
       ),
     },
     {
-      accessorFn : (row) => row.details.level || "--",
-      id: "level",  
+      accessorFn: (row) => row.details.level || "--",
+      id: "level",
       header: "Level",
       cell: ({ row }) => (
         <div className="captoliza ml-4">{row.getValue("level")}</div>
       ),
     },
-    {
-        accessorKey: "studentId",
-        header: ({ column }) => {
-          return null;
-        },
-        cell: ({ row }) => null,
-      },
   ];
 
   const table = useReactTable({
@@ -146,14 +144,14 @@ userActivityLog,
 
   return (
     <>
-        <div className="flex justify-between">
+      <div className="flex justify-between">
         <Input
           placeholder={tr("search")}
           value={
-            (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
+            (table.getColumn("activityType")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("studentName")?.setFilterValue(event.target.value)
+            table.getColumn("activityType")?.setFilterValue(event.target.value)
           }
           className="max-w-sm mt-4"
         />
