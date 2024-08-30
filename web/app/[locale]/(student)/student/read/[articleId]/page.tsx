@@ -73,12 +73,24 @@ export default async function ArticleQuizPage({
             />
           </div>
 
-          <MCQuestionCard userId={user.id} articleId={params.articleId} />
-          <SAQuestionCard userId={user.id} articleId={params.articleId} />
+          <MCQuestionCard
+            userId={user.id}
+            articleId={params.articleId}
+            articleTitle={articleResponse.article.title}
+            articleLevel={articleResponse.article.ra_level}
+          />
+          <SAQuestionCard
+            userId={user.id}
+            articleId={params.articleId}
+            articleTitle={articleResponse.article.title}
+            articleLevel={articleResponse.article.ra_level}
+          />
           <LAQuestionCard
             userId={user.id}
             articleId={params.articleId}
             userLevel={user.level}
+            articleTitle={articleResponse.article.title}
+            articleLevel={articleResponse.article.ra_level}
           />
         </div>
       </div>

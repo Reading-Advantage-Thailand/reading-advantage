@@ -33,6 +33,8 @@ import { useRouter } from "next/navigation";
 type Props = {
   userId: string;
   articleId: string;
+  articleTitle: string;
+  articleLevel: number;
 };
 
 export type QuestionResponse = {
@@ -42,7 +44,7 @@ export type QuestionResponse = {
   state: QuestionState;
 };
 
-export default function MCQuestionCard({ userId, articleId }: Props) {
+export default function MCQuestionCard({ userId, articleId, articleTitle, articleLevel }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     results: [],
@@ -92,6 +94,8 @@ export default function MCQuestionCard({ userId, articleId }: Props) {
           resp={data}
           articleId={articleId}
           handleCompleted={handleCompleted}
+          articleTitle={articleTitle}
+          articleLevel={articleLevel}
         />
       );
     case QuestionState.COMPLETED:
@@ -155,11 +159,15 @@ function QuestionCardIncomplete({
   resp,
   articleId,
   handleCompleted,
+  articleTitle,
+  articleLevel,
 }: {
   userId: string;
   resp: QuestionResponse;
   articleId: string;
   handleCompleted: () => void;
+  articleTitle: string;
+  articleLevel: number;  
 }) {
   return (
     <Card>
@@ -177,6 +185,8 @@ function QuestionCardIncomplete({
             resp={resp}
             handleCompleted={handleCompleted}
             userId={userId}
+            articleTitle={articleTitle}
+            articleLevel={articleLevel}   
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -189,11 +199,15 @@ function MCQeustion({
   resp,
   handleCompleted,
   userId,
+  articleTitle,
+  articleLevel,
 }: {
   articleId: string;
   resp: QuestionResponse;
   handleCompleted: () => void;
   userId: string;
+  articleTitle: string;
+  articleLevel: number;
 }) {
   const [progress, setProgress] = useState(resp.progress);
   const [isLoadingAnswer, setLoadingAnswer] = useState(false);
@@ -247,6 +261,8 @@ function MCQeustion({
             details: {
               correctAnswer,
               progress,
+              title: articleTitle,
+              level: articleLevel
             },
           }),
         });
