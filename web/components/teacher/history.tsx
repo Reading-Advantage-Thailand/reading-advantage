@@ -36,8 +36,6 @@ import { Header } from "@/components/header";
 import { toast } from "../ui/use-toast";
 import { UserActivityLog } from "../models/user-activity-log-model";
 
-
-
 type MyRosterProps = {
  userActivityLog: UserActivityLog[];
 };
@@ -54,16 +52,30 @@ userActivityLog,
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
   const tr = useScopedI18n("components.classRoster");
-  const ts = useScopedI18n("components.myStudent");
 
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState("");
+  function formatActivityType(type: string): string {
+    const activityMap: { [key: string]: string } = {
+      article_read: "Article Read",
+      mc_question: "Multiple Choice Question",
+        sa_question: "Short Answer Question",
+        la_question: "Long Answer Question",
+        article_rating: "Article Rating",
+        level_test: "Level Test",
+        sentence_flashcards: "Sentence Flashcards",
+        sentence_matching: "Sentence Matching",
+        sentence_ordering: "Sentence Ordering",
+        sentence_word_ordering: "Sentence Word Ordering",
+        sentence_cloze_test: "Sentence Cloze Test",
+        vocabulary_flashcards: "Vocabulary Flashcards",
+        vocabulary_matching: "Vocabulary Matching",
+    };
+  
+    return activityMap[type] || type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  }
 
   const columns: ColumnDef<UserActivityLog>[] = [
     {
-      accessorKey: "date",
+      accessorKey: "timestamp",
       header: ({ column }) => {
         return (
           <Button
@@ -76,34 +88,32 @@ userActivityLog,
         );
       },
       cell: ({ row }) => (
-        <div className="captoliza ml-4">{row.getValue("timestamp")}</div>
+        // <div className="captoliza ml-4">{row.getValue("timestamp")}</div>
+        <div className="captoliza ml-4">{new Date(row.getValue("timestamp")).toLocaleDateString()}</div>
       ),
     },
     {
-      accessorKey: "activity",
-      header: ({ column }) => {
-        return <div className="font-bold">Activity</div>
+        accessorFn: (row) => formatActivityType(row.activityType),
+        id: "activityType",
+        header: "Activity",
+        cell: ({ row }) => (
+          <div className="ml-4">{row.getValue("activityType")}</div>
+        ),
       },
+    {
+      accessorFn: (row) => row.details.title || "--",
+      id: "title",
+      header: "Activity Title",
       cell: ({ row }) => (
-        <div className="captoliza ml-4">{row.getValue("activityType")}</div>
+        <div className="captoliza ml-4">{row.getValue("title")}</div>
       ),
     },
     {
-      accessorKey: "activity title",
-      header: ({ column }) => {
-        return <div className="font-bold">Activity Title</div>
-      },
+      accessorFn : (row) => row.details.level || "--",
+      id: "level",  
+      header: "Level",
       cell: ({ row }) => (
-        <div className="captoliza ml-4">{row.getValue("details.title")}</div>
-      ),
-    },
-    {
-      accessorKey: "level",
-      header: ({ column }) => {
-        return <div className="font-bold">Level</div>
-      },
-      cell: ({ row }) => (
-        <div className="captoliza ml-4">{row.getValue("details.level")}</div>
+        <div className="captoliza ml-4">{row.getValue("level")}</div>
       ),
     },
     {
