@@ -26,7 +26,10 @@ export interface UserActivityLog {
   finalXp: number;
   initialLevel: number;
   finalLevel: number;
-  details: {};
+  details: {
+    level: number;
+    title: string;
+  };
 }
 
 export enum UserXpEarned {
