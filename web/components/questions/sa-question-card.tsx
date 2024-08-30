@@ -40,6 +40,8 @@ import {
 type Props = {
   userId: string;
   articleId: string;
+  articleTitle: string;
+  articleLevel: number;
 };
 
 export type QuestionResponse = {
@@ -62,7 +64,7 @@ enum QuestionState {
   ERROR = 3,
 }
 
-export default function SAQuestionCard({ userId, articleId }: Props) {
+export default function SAQuestionCard({ userId, articleId, articleTitle, articleLevel }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     result: {
@@ -102,6 +104,8 @@ export default function SAQuestionCard({ userId, articleId }: Props) {
           resp={data}
           articleId={articleId}
           handleCompleted={handleCompleted}
+          articleTitle={articleTitle}
+          articleLevel={articleLevel}
         />
       );
     case QuestionState.COMPLETED:
@@ -171,11 +175,15 @@ function QuestionCardIncomplete({
   resp,
   articleId,
   handleCompleted,
+  articleTitle,
+  articleLevel,
 }: {
   userId: string;
   resp: QuestionResponse;
   articleId: string;
   handleCompleted: () => void;
+  articleTitle: string;
+  articleLevel: number;
 }) {
   return (
     <Card className="mt-3">
@@ -193,6 +201,8 @@ function QuestionCardIncomplete({
             articleId={articleId}
             handleCompleted={handleCompleted}
             userId={userId}
+            articleTitle={articleTitle}
+            articleLevel={articleLevel}
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -205,11 +215,15 @@ function SAQuestion({
   articleId,
   userId,
   handleCompleted,
+  articleTitle,
+  articleLevel,
 }: {
   resp: QuestionResponse;
   articleId: string;
   userId: string;
   handleCompleted: () => void;
+  articleTitle: string;
+  articleLevel: number;
 }) {
   const shortAnswerSchema = z.object({
     answer: z
@@ -291,6 +305,8 @@ function SAQuestion({
         timeTaken: timer,
         xpEarned: rating,
         details: data,
+        title: articleTitle,
+        level: articleLevel,
       }),
     });
     router.refresh();

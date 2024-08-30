@@ -43,6 +43,8 @@ interface Props {
   userId: string;
   userLevel: number;
   articleId: string;
+  articleTitle: string;
+  articleLevel: number;
 }
 
 interface FeedbackDetails {
@@ -88,6 +90,8 @@ export default function LAQuestionCard({
   userId,
   userLevel,
   articleId,
+  articleTitle,
+  articleLevel,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -131,6 +135,8 @@ export default function LAQuestionCard({
           articleId={articleId}
           handleCompleted={handleCompleted}
           handleCancel={handleCancel}
+          articleTitle={articleTitle}
+          articleLevel={articleLevel}
         />
       );
     case QuestionState.COMPLETED:
@@ -201,6 +207,8 @@ function QuestionCardIncomplete({
   articleId,
   handleCompleted,
   handleCancel,
+  articleTitle,
+  articleLevel,
 }: {
   userId: string;
   resp: QuestionResponse;
@@ -208,6 +216,8 @@ function QuestionCardIncomplete({
   articleId: string;
   handleCompleted: () => void;
   handleCancel: () => void;
+  articleTitle: string;
+  articleLevel: number;
 }) {
   const t = useScopedI18n("components.laq");
   return (
@@ -228,6 +238,8 @@ function QuestionCardIncomplete({
             articleId={articleId}
             handleCompleted={handleCompleted}
             handleCancel={handleCancel}
+            articleTitle={articleTitle}
+            articleLevel={articleLevel}
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -242,6 +254,8 @@ function LAQuestion({
   articleId,
   handleCompleted,
   handleCancel,
+  articleTitle,
+  articleLevel,
 }: {
   userId: string;
   resp: QuestionResponse;
@@ -249,6 +263,8 @@ function LAQuestion({
   articleId: string;
   handleCompleted: () => void;
   handleCancel: () => void;
+  articleTitle: string;
+  articleLevel: number;
 }) {
   const t = useScopedI18n("components.laq");
   const tf = useScopedI18n("components.rate");
@@ -384,7 +400,9 @@ function LAQuestion({
         activityStatus: ActivityStatus.Completed,
         timeTaken: timer,
         xpEarned: rating,
-        details: data,
+        details: data, 
+        title: articleTitle, 
+        level: articleLevel
       }),
     });
     router.refresh();
