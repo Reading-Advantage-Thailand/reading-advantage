@@ -14,6 +14,7 @@ import React, { use } from "react";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
 import { redirect } from "next/navigation";
+import UserActivityHeatMap from "@/components/dashboard/user-activity-heatmap";
 
 // async function getStudentProgress(studentId: string) {
 //     const res = await fetch (
@@ -87,8 +88,13 @@ export default async function ProgressPage({
       {resStudentProgress.results ? (
         <div>
           <Header heading={t("progressOf", { nameOfStudent: nameOfStudent })} />
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4 mb-10">
-            <UserActivityChart data={resStudentProgress.results} />
+          <div className="flex flex-col gap-4 lg:flex-row">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 mt-4 mb-10 w-full">
+              <UserActivityChart data={resStudentProgress.results} />
+            </div>
+            <div className="lg:w-1/3 mt-4">
+              <UserActivityHeatMap data={resStudentProgress.results} />
+            </div>
           </div>
         </div>
       ) : (
