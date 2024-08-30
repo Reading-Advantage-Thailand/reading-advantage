@@ -91,12 +91,6 @@ export default function TeacherHistory({ userActivityLog }: MyRosterProps) {
           </Button>
         );
       },
-      // cell: ({ row }) => (
-      //   <div className="captoliza ml-4">
-      //     {/* {new Date(row.getValue("timestamp")).toLocaleDateString()} */}
-      //     {/* {(row.getValue("timestamp"))} */}
-      //   </div>
-      // ),
       cell: ({ row }) => {
         const timestamp = new Date(row.getValue("timestamp"));
         const formattedDate = timestamp.toISOString().split('T')[0]; 

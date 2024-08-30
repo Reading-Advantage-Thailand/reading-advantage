@@ -14,6 +14,7 @@ import React, { use } from "react";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
 import { redirect } from "next/navigation";
+import UserActivityHeatMap from "@/components/dashboard/user-activity-heatmap";
 
 // async function getStudentProgress(studentId: string) {
 //     const res = await fetch (
@@ -84,11 +85,31 @@ export default async function ProgressPage({
 
   return (
     <>
+      {/* {resStudentProgress.results ? (
+        <div>
+          <Header heading={t("progressOf", { nameOfStudent: nameOfStudent })} />
+          <div className="grid gap-4 md:grid-cols-5 lg:grid-cols-7 mt-4 mb-10">
+            <div className="md:col-span-3 lg:col-span-5">
+              <UserActivityChart data={resStudentProgress.results} />
+            </div>
+            <div className="md:col-span-2 gap-4 lg:col-span-2">
+              <UserActivityHeatMap data={resStudentProgress.results} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p className="text-center">{t("noUserProgress")}</p>
+      )} */}
       {resStudentProgress.results ? (
         <div>
           <Header heading={t("progressOf", { nameOfStudent: nameOfStudent })} />
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4 mb-10">
-            <UserActivityChart data={resStudentProgress.results} />
+          <div className="flex gap-4">
+            <div className="grid gap-4 md:grid-cols-5 lg:grid-cols-1 mt-4 mb-10 w-full">
+              <UserActivityChart data={resStudentProgress.results} />
+            </div>
+            <div className="sm:col-span-2 gap-4 lg:col-span-1 mt-4">
+              <UserActivityHeatMap data={resStudentProgress.results} />
+            </div>
           </div>
         </div>
       ) : (
