@@ -48,7 +48,7 @@ console.log('res', res.results);
   return (
     <div>
       <div className="mb-4">
-        <Header heading={`User Activity of ${userName}`} />
+        <Header heading={`History Activity of ${userName}`} />
         <TeacherHistory userActivityLog={res.results}/>
       </div>
     </div>
