@@ -106,7 +106,7 @@ export default function TeacherHistory({ userActivityLog }: MyRosterProps) {
       ),
     },
     {
-      accessorFn: (row) => row.details.title || "--",
+      accessorFn: (row) => row.title || "--",
       id: "title",
       header: "Activity Title",
       cell: ({ row }) => (
@@ -114,7 +114,7 @@ export default function TeacherHistory({ userActivityLog }: MyRosterProps) {
       ),
     },
     {
-      accessorFn: (row) => row.details.level || "--",
+      accessorFn: (row) => row.level || "--",
       id: "level",
       header: "Level",
       cell: ({ row }) => (

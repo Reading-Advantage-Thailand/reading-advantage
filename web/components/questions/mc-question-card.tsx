@@ -263,9 +263,9 @@ function MCQeustion({
             details: {
               correctAnswer,
               progress,
-              title: articleTitle,
-              level: articleLevel
             },
+            title: articleTitle,
+            level: articleLevel
           }),
         });
         toast({
