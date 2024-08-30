@@ -42,8 +42,6 @@ export default async function StudentHistoryForTeacher(params: {
       }
     );
   }
-  
-console.log('res', res.results);
 
   return (
     <div>
