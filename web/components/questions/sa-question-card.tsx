@@ -36,6 +36,7 @@ import {
   ActivityStatus,
   ActivityType,
 } from "../models/user-activity-log-model";
+import { title } from "process";
 
 type Props = {
   userId: string;
@@ -304,9 +305,7 @@ function SAQuestion({
         activityStatus: ActivityStatus.Completed,
         timeTaken: timer,
         xpEarned: rating,
-        details: data,
-        title: articleTitle,
-        level: articleLevel,
+        details: {data, title: articleTitle, level: articleLevel},
       }),
     });
     router.refresh();

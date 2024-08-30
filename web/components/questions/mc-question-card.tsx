@@ -45,8 +45,6 @@ export type QuestionResponse = {
 };
 
 export default function MCQuestionCard({ userId, articleId, articleTitle, articleLevel }: Props) {
-  console.log('articleTitle: ', articleTitle);
-  
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     results: [],
@@ -263,9 +261,9 @@ function MCQeustion({
             details: {
               correctAnswer,
               progress,
+              title: articleTitle,
+              level: articleLevel
             },
-            title: articleTitle,
-            level: articleLevel
           }),
         });
         toast({

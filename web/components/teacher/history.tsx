@@ -91,11 +91,23 @@ export default function TeacherHistory({ userActivityLog }: MyRosterProps) {
           </Button>
         );
       },
-      cell: ({ row }) => (
-        <div className="captoliza ml-4">
-          {new Date(row.getValue("timestamp")).toLocaleDateString()}
-        </div>
-      ),
+      // cell: ({ row }) => (
+      //   <div className="captoliza ml-4">
+      //     {/* {new Date(row.getValue("timestamp")).toLocaleDateString()} */}
+      //     {/* {(row.getValue("timestamp"))} */}
+      //   </div>
+      // ),
+      cell: ({ row }) => {
+        const timestamp = new Date(row.getValue("timestamp"));
+        const formattedDate = timestamp.toISOString().split('T')[0]; 
+        const formattedTime = timestamp.toTimeString().split(' ')[0];
+    
+        return (
+          <div className="captoliza ml-4">
+            {formattedDate} at {formattedTime}
+          </div>
+        );
+      },
     },
     {
       accessorFn: (row) => formatActivityType(row.activityType),
@@ -106,7 +118,7 @@ export default function TeacherHistory({ userActivityLog }: MyRosterProps) {
       ),
     },
     {
-      accessorFn: (row) => row.title || "--",
+      accessorFn: (row) => row.details.title || "--",
       id: "title",
       header: "Activity Title",
       cell: ({ row }) => (
@@ -114,7 +126,7 @@ export default function TeacherHistory({ userActivityLog }: MyRosterProps) {
       ),
     },
     {
-      accessorFn: (row) => row.level || "--",
+      accessorFn: (row) => row.details.level || "--",
       id: "level",
       header: "Level",
       cell: ({ row }) => (

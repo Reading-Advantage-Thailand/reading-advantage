@@ -400,9 +400,7 @@ function LAQuestion({
         activityStatus: ActivityStatus.Completed,
         timeTaken: timer,
         xpEarned: rating,
-        details: data, 
-        title: articleTitle, 
-        level: articleLevel
+        details: {...data, title: articleTitle, level: articleLevel}, 
       }),
     });
     router.refresh();
