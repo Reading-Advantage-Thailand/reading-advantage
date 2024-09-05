@@ -24,9 +24,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import book1 from "@/public/book-1.jpg";
-import book1Optimized from "@/public/book1-original.jpg";
-import BookComp from "@/components/index/book";
 type Props = {};
 
 const features = [
@@ -87,29 +84,6 @@ const benefits = [
   {
     title: "Increased Flexibility",
     description: "Access learning materials anytime, anywhere",
-  },
-];
-
-const bookData = [
-  {
-    title: "The Secret Code in the Old Mansion",
-    summary:
-      "Attorney Evelyn Harper unravels the mystery of a wealthy businessman&apos;s disappearance by decoding a secret message in an old mansion, uncovering a web of corruption and deceit.",
-    level: 13,
-    cefr: "B2+",
-    src: book1Optimized.src,
-    id: "3Cr4jYDRiKZwrpMi8av1",
-    passage: `The old mansion stood at the edge of the town, shrouded in an aura of mystery and neglect. Its once-grand facade was now a tapestry of peeling paint and ivy tendrils, whispering secrets of a bygone era. For years, it had been the subject of local lore, a place where shadows danced and whispers lingered. But for attorney Evelyn Harper, it was the key to unraveling a case that had haunted her for years...`,
-  },
-  {
-    title: "The Secret Code in the Old Mansion",
-    summary:
-      "Attorney Evelyn Harper unravels the mystery of a wealthy businessman's disappearance by decoding a secret message in an old mansion, uncovering a web of corruption and deceit.",
-    level: 13,
-    cefr: "B2+",
-    src: book1Optimized.src,
-    id: "3Cr4jYDRiKZwrpMi8av1",
-    passage: `The old mansion stood at the edge of the town, shrouded in an aura of mystery and neglect. Its once-grand facade was now a tapestry of peeling paint and ivy tendrils, whispering secrets of a bygone era. For years, it had been the subject of local lore, a place where shadows danced and whispers lingered. But for attorney Evelyn Harper, it was the key to unraveling a case that had haunted her for years...`,
   },
 ];
 

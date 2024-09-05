@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { TailwindIndicator } from "@/components/helpers/tailwind-indicator";
 import { LocaleProvider } from "@/components/providers/locale-provider";
+import { Viewport } from "next";
 
 const cabinSketch = localFont({
   src: "../../assets/fonts/CabinSketch-Regular.ttf",
@@ -40,10 +41,6 @@ export const metadata: Metadata = {
     "reading advantage app",
     "reading advantage web",
   ],
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
-  ],
   // openGraph: {
   //   type: "website",
   //   locale: "en_US",
@@ -59,6 +56,13 @@ export const metadata: Metadata = {
   },
   manifest: `${siteConfig.url}/site.webmanifest`,
   // manifest: `http://localhost:3000/site.webmanifest`,
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
 };
 
 export default function RootLayout({

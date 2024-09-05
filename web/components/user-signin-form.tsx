@@ -26,32 +26,27 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>("");
   const googleProvider = new GoogleAuthProvider();
+  const [email, setEmail] = React.useState<string>("");
+  const [password, setPassword] = React.useState<string>("");
 
   const handleOAuthSignIn = (provider: AuthProvider) => {
     signInWithPopup(firebaseAuth, provider)
-      .then((credential) => credential.user.getIdToken(true))
+      .then((credential) => {
+        if (
+          credential.user &&
+          typeof credential.user.getIdToken === "function"
+        ) {
+          return credential.user.getIdToken(true);
+        } else {
+          throw new Error("Invalid user object or getIdToken method not found");
+        }
+      })
       .then((idToken) => {
         signIn("credentials", {
           idToken,
-          callbackUrl: "/student/read",
+          callbackUrl: "/",
         });
       })
-      .catch((err) => console.error(err));
-  };
-
-  async function onSubmit(event: React.SyntheticEvent) {
-    event.preventDefault();
-    setIsLoading(true);
-    setError("");
-    const target = event.target as typeof event.target & {
-      email: { value: string };
-      password: { value: string };
-    };
-    const email = target.email.value;
-    const password = target.password.value;
-    console.log(email, password);
-    signInWithEmailAndPassword(firebaseAuth, email, password)
-      .then((credential) => credential.user.getIdToken(true))
       .catch((err) => {
         let customMessage;
         switch (err.code) {
@@ -67,14 +62,53 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
             customMessage = "Something went wrong.";
         }
         setError(customMessage);
-        console.log(err);
+      });
+  };
+
+  async function onSubmit(event: React.SyntheticEvent) {
+    event.preventDefault();
+    setIsLoading(true);
+    setError("");
+    // const target = event.target as typeof event.target & {
+    //   email: { value: string };
+    //   password: { value: string };
+    // };
+    // const email = target.email.value;
+    // const password = target.password.value;
+    // console.log(email, password);
+    signInWithEmailAndPassword(firebaseAuth, email, password)
+      .then((credential) => {
+        if (
+          credential.user &&
+          typeof credential.user.getIdToken === "function"
+        ) {
+          return credential.user.getIdToken(true);
+        } else {
+          throw new Error("Invalid user object or getIdToken method not found");
+        }
+      })
+      .catch((err) => {
+        let customMessage;
+        switch (err.code) {
+          case "auth/invalid-credential":
+            customMessage =
+              "The provided credential is invalid. This can happen if it is malformed, expired, or the user account does not exist.";
+            break;
+          case "auth/too-many-requests":
+            customMessage =
+              "Too many unsuccessful login attempts. Please try again later.";
+            break;
+          default:
+            customMessage = "Something went wrong.";
+        }
+        setError(customMessage);
         return null;
       })
       .then((idToken) => {
         if (idToken) {
           signIn("credentials", {
             idToken,
-            callbackUrl: "/student/read",
+            callbackUrl: "/",
           });
         }
       })
@@ -95,6 +129,8 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect="off"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               required
             />
@@ -110,12 +146,19 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="password"
               autoCorrect="off"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               required
             />
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
-          <Button disabled={isLoading}>
+          <Button
+            name="signin-button"
+            type="submit"
+            role="button"
+            disabled={isLoading}
+          >
             {isLoading && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
@@ -138,9 +181,11 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
         </div>
       </div>
       <Button
+        name="google-button"
         variant="outline"
         type="button"
         disabled={isLoading}
+        role="button"
         onClick={() => handleOAuthSignIn(googleProvider)}
       >
         {isLoading ? (
