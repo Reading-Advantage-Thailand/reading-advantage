@@ -21,7 +21,6 @@ import {
   sendEmailVerification,
 } from "firebase/auth";
 import type { AuthProvider } from "firebase/auth";
-import { set } from "lodash";
 import { LucideCheck } from "lucide-react";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
