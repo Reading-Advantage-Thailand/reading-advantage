@@ -7,6 +7,12 @@ export const getDoc = async <T extends DocumentData>(
   parent?: { subCollection: string; docId: string }
 ): Promise<T | undefined> => {
   try {
+    if (!id) {
+      console.warn(
+        `Document ID not provided for collection "${collection}". Skipping operation.`
+      );
+      return undefined;
+    }
     const collectionRef = parent
       ? db
           .collection(collection)
@@ -18,7 +24,9 @@ export const getDoc = async <T extends DocumentData>(
     const doc = await docRef.get();
 
     if (doc.exists) {
-      // console.log(`Document found in collection "${collection}" with ID "${id}".`);
+      // console.log(
+      //   `Document found in collection "${collection}" with ID "${id}".`
+      // );
       return doc.data() as T;
     } else {
       console.warn(

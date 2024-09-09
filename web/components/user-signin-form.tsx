@@ -75,7 +75,6 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
     // };
     // const email = target.email.value;
     // const password = target.password.value;
-    // console.log(email, password);
     signInWithEmailAndPassword(firebaseAuth, email, password)
       .then((credential) => {
         if (

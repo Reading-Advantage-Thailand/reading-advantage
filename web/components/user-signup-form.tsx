@@ -50,7 +50,6 @@ export function UserSignUpForm({ className, ...props }: UserAuthFormProps) {
     createUserWithEmailAndPassword(firebaseAuth, email, password)
       .then((credential) => credential.user.getIdToken(true))
       .catch((err) => {
-        // console.log(err.code)
         let customMessage;
         switch (err.code) {
           case "auth/email-already-in-use":
@@ -72,7 +71,7 @@ export function UserSignUpForm({ className, ...props }: UserAuthFormProps) {
             customMessage = "Something went wrong.";
         }
         setError(customMessage);
-        // console.log(err)
+
         return null;
       })
       .then((idToken) => {

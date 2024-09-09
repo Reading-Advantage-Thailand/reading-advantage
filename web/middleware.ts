@@ -1,21 +1,33 @@
 import { createI18nMiddleware } from "next-international/middleware";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { Role } from "./server/models/enum";
 import { localeConfig } from "./configs/locale-config";
-import { ConciergeBell } from "lucide-react";
 
 const I18nMiddleware = createI18nMiddleware({
   locales: localeConfig.locales,
   defaultLocale: localeConfig.defaultLocale,
+  urlMappingStrategy: "rewriteDefault",
 });
+
+// Define public pages that do not require authentication
+const publicPages = [
+  "/",
+  "/about",
+  "/contact",
+  "/authors",
+  "/auth/signin",
+  "/auth/signup",
+  "/auth/forgot-password",
+]; // Add other public pages as needed
 
 export default withAuth(
   async function middleware(req: NextRequest) {
     const token = await getToken({ req });
     const isAuth = !!token;
-    const isAuthPage = req.nextUrl.pathname.startsWith("/auth/signin");
+    const path = req.nextUrl.pathname;
+    const isPublicRoute = publicPages.includes(path);
     const authLocales = localeConfig.locales;
     const locale =
       authLocales.find((loc) =>
@@ -38,17 +50,6 @@ export default withAuth(
     if (req.nextUrl.pathname.startsWith("/signout")) {
       return NextResponse.redirect(new URL(`/api/auth/signout`, req.url));
     }
-
-    // Define public pages that do not require authentication
-    const publicPages = [
-      "/",
-      "/en",
-      "/about",
-      "/contact",
-      "/authors",
-      "/auth/signup",
-      "/auth/forgot-password",
-    ]; // Add other public pages as needed
 
     if (authLocales.includes(locale)) {
       // Redirect to the appropriate page based on the user's role and level
@@ -79,8 +80,8 @@ export default withAuth(
       return null;
     }
 
-    if (!isAuth && !publicPages.includes(req.nextUrl.pathname)) {
-      console.log("Redirecting to signin page");
+    if (!isAuth && !isPublicRoute) {
+      // Redirect to the sign-in page if the user is not authenticated
       let from = req.nextUrl.pathname;
       if (req.nextUrl.search) {
         from += req.nextUrl.search;

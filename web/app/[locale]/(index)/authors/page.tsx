@@ -5,8 +5,8 @@ type Props = {};
 
 export default function AuthorsPage({}: Props) {
   return (
-<>
-<AuthorsTabs />
-</>
+    <>
+      <AuthorsTabs />
+    </>
   );
 }
