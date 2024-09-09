@@ -5,7 +5,7 @@ import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/he
 const createFirestoreService = <T extends DocumentData>(
   collectionPath: string
 ) => {
-  const apiUrl = `${process.env.NEXT_PUBLIC_URL}/api/v1/${collectionPath}`;
+  const apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/${collectionPath}`;
 
   return {
     fetchDoc: async (docId: string, headers: ReadonlyHeaders) => {
@@ -69,10 +69,9 @@ const createFirestoreService = <T extends DocumentData>(
       const selectParams = filter?.select
         ? encodeURIComponent(JSON.stringify(filter.select))
         : "";
-
       const url = selectParams ? `${apiUrl}?select=${selectParams}` : apiUrl;
       return fetchData<{ length: number; data: T[] }>(
-        apiUrl,
+        url,
         { method: "GET", headers: headers, cache: "no-store" },
         {
           title: "Failed to fetch documents",
