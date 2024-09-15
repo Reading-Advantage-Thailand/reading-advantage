@@ -29,65 +29,81 @@ type Props = {};
 
 const features = [
   {
-    title: "AI-Powered Learning",
-    description:
-      "Personalized learning paths adapted to each student&apos;s needs",
+    title: "AI-Powered Content Generation",
+    description: "Enjoy an ever-expanding library of level-appropriate articles tailored to CEFR standards",
     icon: Bot,
   },
   {
-    title: "Comprehensive Analytics",
-    description: "Track student progress with detailed insights and reports",
-    icon: BarChart4,
+    title: "Intelligent Comprehension Exercises",
+    description: "Enhance understanding with AI-generated multiple-choice, short-answer, and long-answer questions",
+    icon: BrainCircuit,
   },
   {
-    title: "Extensive Content Library",
-    description: "Access a wide range of resources to support your learning",
-    icon: Book,
+    title: "Adaptive CEFR Leveling",
+    description: "Experience precise language difficulty matching from A1 to C2 levels",
+    icon: GitBranch,
   },
   {
-    title: "Customization Options",
-    description: "Tailor your learning experience to suit your preferences",
-    icon: Wrench,
-  },
-  {
-    title: "Interactive Quizzes",
-    description: "Test your knowledge with engaging quizzes and exercises",
+    title: "Interactive Vocabulary Tools",
+    description: "Build lexicon through contextual learning, flashcards, and spaced repetition exercises",
     icon: BookOpen,
   },
   {
-    title: "Most Advanced Features",
-    description: "Stay ahead of the curve with cutting-edge technology",
-    icon: Icons.star,
+    title: "Text-to-Speech Narration",
+    description: "Improve listening skills with high-quality audio narration of all articles",
+    icon: Volume2,
+  },
+  {
+    title: "Progress Analytics Dashboard",
+    description: "Track learning journey with detailed insights on reading habits, vocabulary growth, and CEFR progression",
+    icon: BarChart4,
+  },
+  {
+    title: "Customizable Reading Experience",
+    description: "Tailor content preferences, set personal goals, and create a personalized learning path",
+    icon: Settings,
+  },
+  {
+    title: "Classroom Management Tools",
+    description: "Empower teachers with student progress tracking, assignment capabilities, and performance reports",
+    icon: Users,
   },
 ];
 
 const benefits = [
   {
-    title: "Improved Learning Outcomes",
-    description: "Enhance student performance and engagement",
+    title: "Accelerated Language Acquisition",
+    description: "Boost students' language skills through extensive reading and AI-powered comprehension exercises",
   },
   {
-    title: "Time-Saving Tools",
-    description: "Streamline administrative tasks and lesson planning",
+    title: "Personalized Learning Paths",
+    description: "Tailor content to each student's CEFR level, interests, and learning pace",
   },
   {
-    title: "Scalable Solution",
-    description: "Easily adapt to growing student populations",
+    title: "Engaging Multimedia Content",
+    description: "Captivate learners with diverse articles, audio narration, and interactive exercises",
   },
   {
-    title: "Cost-Effective",
-    description: "Maximize resources and reduce overall expenses",
+    title: "Real-Time Progress Tracking",
+    description: "Monitor student growth with detailed analytics and CEFR level progression insights",
   },
   {
-    title: "Enhanced Collaboration",
-    description: "Foster teamwork and communication among students",
+    title: "Efficient Vocabulary Expansion",
+    description: "Enhance lexical knowledge through context-based learning and spaced repetition",
   },
   {
-    title: "Increased Flexibility",
-    description: "Access learning materials anytime, anywhere",
+    title: "Seamless Classroom Integration",
+    description: "Complement traditional instruction with flexible, anytime-anywhere access to learning materials",
+  },
+  {
+    title: "Cost-Effective Solution",
+    description: "Maximize resources with a scalable platform that grows with your student population",
+  },
+  {
+    title: "Enhanced Teacher Productivity",
+    description: "Streamline lesson planning and assessment with automated tools and rich content library",
   },
 ];
-
 export default async function IndexPage({}: Props) {
   const t = await getScopedI18n("pages.indexPage");
   return (
