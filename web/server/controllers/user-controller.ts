@@ -98,7 +98,7 @@ export async function postActivityLog(
           .update({
             xp: commonData.finalXp,
             level: commonData.finalLevel,
-            ceftLevel: levelCalculation(commonData.finalXp).cefrLevel,
+            cefr_level: levelCalculation(commonData.finalXp).cefrLevel,
           });
       }
 

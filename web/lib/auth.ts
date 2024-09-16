@@ -57,11 +57,11 @@ export const authOptions: NextAuthOptions = {
       session,
     }: any) => {
       const dbUser = await userService.getDoc(token.id);
-      // console.log("jwt dbUser", dbUser);
-      // console.log("jwt token", token);
       if (!dbUser) {
         if (user) {
           token.id = user?.id;
+          token.role = user?.role;
+          token.level = user?.level;
         }
         return token;
       }

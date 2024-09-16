@@ -101,7 +101,7 @@ describe("SignIn Page", () => {
       await waitFor(() => {
         expect(signIn).toHaveBeenCalledWith("credentials", {
           idToken: "mock-id-token",
-          callbackUrl: "/",
+          callbackUrl: "/student/read",
         });
       });
     });
@@ -167,7 +167,7 @@ describe("SignIn Page", () => {
       // Check if next-auth's signIn was called with the correct idToken
       expect(signIn).toHaveBeenCalledWith("credentials", {
         idToken: "mock-id-token",
-        callbackUrl: "/",
+        callbackUrl: "/student/read",
       });
     });
     it("should show an error message on login failure", async () => {

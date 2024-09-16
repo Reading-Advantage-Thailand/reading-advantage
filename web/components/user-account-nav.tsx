@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { User } from "next-auth";
 import { signOut } from "next-auth/react";
@@ -66,7 +65,9 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         {/* Role-based menu items */}
         {
           // Check if the user is a teacher, admin, or system
-          (user.role === Role.TEACHER || Role.ADMIN || Role.SYSTEM) && (
+          (user.role === Role.TEACHER ||
+            user.role === Role.ADMIN ||
+            user.role === Role.SYSTEM) && (
             <DropdownMenuItem asChild>
               <Link href="/teacher/my-classes">Teacher dashboard</Link>
             </DropdownMenuItem>
@@ -75,9 +76,9 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         {
           // Check if the user is a student, teacher, admin, or system
           (user.role === Role.STUDENT ||
-            Role.TEACHER ||
-            Role.ADMIN ||
-            Role.SYSTEM) &&
+            user.role === Role.TEACHER ||
+            user.role === Role.ADMIN ||
+            user.role === Role.SYSTEM) &&
           user.cefr_level !== "" ? (
             <DropdownMenuItem asChild>
               <Link href="/student/read">Learner Home</Link>
@@ -90,7 +91,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         }
         {
           // Check if the user is an admin or system
-          (user.role === Role.ADMIN || Role.SYSTEM) && (
+          (user.role === Role.ADMIN || user.role === Role.SYSTEM) && (
             <DropdownMenuItem asChild>
               <Link href="/admin">Admin dashboard</Link>
             </DropdownMenuItem>

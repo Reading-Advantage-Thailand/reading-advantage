@@ -42,39 +42,37 @@ export default async function AppLayout({
   // }
 
   return (
-    <NextAuthSessionProvider session={user}>
-      <div className="flex min-h-screen flex-col space-y-6">
-        <header className="sticky top-0 z-40 border-b bg-background">
-          <div className="container flex h-16 items-center justify-between py-4">
-            <MainNav items={mainNavConfig} />
-            {!disableProgressBar && (
-              <ProgressBar progress={user.xp} level={user.level!} />
-            )}
-            <div className="flex space-x-2">
-              <LocaleSwitcher />
-              <ThemeSwitcher />
-              <UserAccountNav user={user} />
-            </div>
+    <div className="flex min-h-screen flex-col space-y-6">
+      <header className="sticky top-0 z-40 border-b bg-background">
+        <div className="container flex h-16 items-center justify-between py-4">
+          <MainNav items={mainNavConfig} />
+          {!disableProgressBar && (
+            <ProgressBar progress={user.xp} level={user.level!} />
+          )}
+          <div className="flex space-x-2">
+            <LocaleSwitcher />
+            <ThemeSwitcher />
+            <UserAccountNav user={user} />
           </div>
-        </header>
-        <div
-          className={cn(
-            "container",
-            disableSidebar
-              ? "grid flex-1 gap-12"
-              : "mx-auto px-4 lg:grid lg:flex-1 gap-12 lg:grid-cols-[200px_1fr]"
-          )}
-        >
-          {!disableSidebar && (
-            <aside className="lg:w-[200px] lg:flex-col lg:flex">
-              <SidebarNav items={sidebarNavConfig || []} />
-            </aside>
-          )}
-          <main className="flex w-full flex-1 flex-col overflow-hidden">
-            {children}
-          </main>
         </div>
+      </header>
+      <div
+        className={cn(
+          "container",
+          disableSidebar
+            ? "grid flex-1 gap-12"
+            : "mx-auto px-4 lg:grid lg:flex-1 gap-12 lg:grid-cols-[200px_1fr]"
+        )}
+      >
+        {!disableSidebar && (
+          <aside className="lg:w-[200px] lg:flex-col lg:flex">
+            <SidebarNav items={sidebarNavConfig || []} />
+          </aside>
+        )}
+        <main className="flex w-full flex-1 flex-col overflow-hidden">
+          {children}
+        </main>
       </div>
-    </NextAuthSessionProvider>
+    </div>
   );
 }

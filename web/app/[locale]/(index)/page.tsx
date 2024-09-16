@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/configs/site-config";
 import React from "react";
 import Link from "next/link";
-import { getScopedI18n } from "@/locales/server";
 import {
   Card,
   CardContent,
@@ -24,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getScopedI18n } from "@/locales/server";
+
 type Props = {};
 
 const features = [
