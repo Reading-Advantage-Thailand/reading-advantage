@@ -3,12 +3,12 @@ import { MainNav } from "@/components/main-navbar";
 import { buttonVariants } from "@/components/ui/button";
 import { indexPageConfig } from "@/configs/index-page-config";
 import { cn } from "@/lib/utils";
-import { getScopedI18n } from "@/locales/server";
 import Link from "next/link";
 import { ReactNode } from "react";
 import ProgressBar from "@/components/progress-bar-xp";
 import { getCurrentUser } from "@/lib/session";
 import { UserAccountNav } from "@/components/user-account-nav";
+import { getScopedI18n } from "@/locales/server";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const t = await getScopedI18n("components");

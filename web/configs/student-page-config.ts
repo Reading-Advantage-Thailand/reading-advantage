@@ -25,25 +25,25 @@ export const studentPageConfig: StudentPageConfig = {
       href: "/student/read",
       icon: "book",
     },
-    {
-      title: "sentences",
-      href: "/student/sentences",
-      icon: "flashcard",
-    },
-    {
-      title: "vocabulary",
-      href: "/student/vocabulary",
-      icon: "book",
-    },
-    {
-      title: "reports",
-      href: "/student/reports",
-      icon: "dashboard",
-    },
-    {
-      title: "history",
-      href: "/student/history",
-      icon: "record",
-    },
+    // {
+    //   title: "sentences",
+    //   href: "/student/sentences",
+    //   icon: "flashcard",
+    // },
+    // {
+    //   title: "vocabulary",
+    //   href: "/student/vocabulary",
+    //   icon: "book",
+    // },
+    // {
+    //   title: "reports",
+    //   href: "/student/reports",
+    //   icon: "dashboard",
+    // },
+    // {
+    //   title: "history",
+    //   href: "/student/history",
+    //   icon: "record",
+    // },
   ],
 };

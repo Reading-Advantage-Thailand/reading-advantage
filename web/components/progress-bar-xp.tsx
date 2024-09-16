@@ -45,9 +45,8 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
     { min: 243000, max: 243000, cefrLevel: "C2", raLevel: 18 },
   ];
 
-  
   let percentage = 0;
-  
+
   for (let level of levels) {
     if (progress >= level.min && progress <= level.max) {
       const range = level.max - level.min;
@@ -55,21 +54,21 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
       percentage = (progressInlevel * 100) / range;
     }
   }
-  
+
   const xp = [
     4999, 10999, 17999, 25999, 34999, 44999, 55999, 67999, 80999, 94999, 109999,
     125999, 142999, 160999, 179999, 199999, 220999, 242999,
   ];
-  
+
   let maxProgress = xp.find((xp) => progress <= xp);
-  
+
   if (!maxProgress) {
     maxProgress = progress;
   }
-  
+
   useEffect(() => {
     const previousLevel = level - 1;
-    if (level > previousLevel && percentage > 0 && percentage <=15 ) {
+    if (level > previousLevel && percentage > 0 && percentage <= 15) {
       // percentage <= 15, 15 is based on max userXpEarned in activity, will be changed later with variable
       setIsOpen(true);
     }
@@ -113,27 +112,30 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
         </div>
         <p>{t("level", { level })} </p>
       </div>
-      {isOpen && levelCalResult.cefrLevel !== "" && level !== 0 && progress >= 0 &&(
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent>
-              <Confetti className="absolute w-[500px] h-[200px]" />
-              <DialogHeader>
-                <DialogTitle className="text-center font-bold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 ">
-                  {t("congratulations")} <br/>
-                  {t("upLevel")}
-                </DialogTitle>
-              </DialogHeader>
-              <DialogDescription className="text-center font-bold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-                {t("level", { level })}
-              </DialogDescription>
-              <DialogFooter>
-                <Button onClick={closeDialog}>Close</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      )}
+      {isOpen &&
+        levelCalResult.cefrLevel !== "" &&
+        level !== 0 &&
+        progress >= 0 && (
+          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogContent>
+                <Confetti className="absolute w-[500px] h-[200px]" />
+                <DialogHeader>
+                  <DialogTitle className="text-center font-bold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 ">
+                    {t("congratulations")} <br />
+                    {t("upLevel")}
+                  </DialogTitle>
+                </DialogHeader>
+                <DialogDescription className="text-center font-bold text-transparent text-3xl bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                  {t("level", { level })}
+                </DialogDescription>
+                <DialogFooter>
+                  <Button onClick={closeDialog}>Close</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
     </>
   );
 }

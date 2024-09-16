@@ -8,8 +8,10 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { TailwindIndicator } from "@/components/helpers/tailwind-indicator";
-import { LocaleProvider } from "@/components/providers/locale-provider";
 import { Viewport } from "next";
+import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
+import { getCurrentUser } from "@/lib/session";
+import { LocaleProvider } from "@/components/providers/locale-provider";
 
 const cabinSketch = localFont({
   src: "../../assets/fonts/CabinSketch-Regular.ttf",
@@ -65,15 +67,16 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   params: { locale },
   children,
 }: {
   params: { locale: string };
   children: ReactNode;
 }) {
+  const user = getCurrentUser();
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang={locale} suppressHydrationWarning={true}>
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
@@ -88,7 +91,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LocaleProvider locale={locale}>{children}</LocaleProvider>
+          <NextAuthSessionProvider session={user}>
+            <LocaleProvider locale={locale}>{children}</LocaleProvider>
+          </NextAuthSessionProvider>
           <Toaster />
           <TailwindIndicator />
         </ThemeProvider>

@@ -44,7 +44,7 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
       .then((idToken) => {
         signIn("credentials", {
           idToken,
-          callbackUrl: "/",
+          callbackUrl: "/student/read",
         });
       })
       .catch((err) => {
@@ -107,7 +107,7 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
         if (idToken) {
           signIn("credentials", {
             idToken,
-            callbackUrl: "/",
+            callbackUrl: "/student/read",
           });
         }
       })

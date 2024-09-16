@@ -13,19 +13,20 @@ type Props = {
   userId?: string;
 };
 
-async function getTranslate(
-  sentences: string[],
+async function getTranslateSentence(
   articleId: string,
-  language: string
-) {
-  const res = await axios.post(
-    `/api/articles/${articleId}/translate/google/summary`,
-    {
-      sentences,
-      language,
-    }
-  );
-  return res.data;
+  targetLanguage: string
+): Promise<{ message: string; translated_sentences: string[] }> {
+  try {
+    const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
+      method: "POST",
+      body: JSON.stringify({ type: "summary", targetLanguage }),
+    });
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    return { message: "error", translated_sentences: [] };
+  }
 }
 
 const ArticleShowcaseCard = ({ article, userId }: Props) => {
@@ -54,9 +55,10 @@ const ArticleShowcaseCard = ({ article, userId }: Props) => {
         localeTarget = "zh-TW";
         break;
     }
-    const res = await getTranslate([article.summary], articleId, localeTarget);
 
-    setSummarySentence(res.translation);
+    const data = await getTranslateSentence(articleId, localeTarget);
+
+    setSummarySentence(data.translated_sentences);
   }
 
   return (

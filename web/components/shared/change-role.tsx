@@ -168,16 +168,12 @@ const RoleSelectionItem = ({
   onClick: () => void;
   color: string;
 }) => {
-  const bgColor = isSelected
-    ? `dark:bg-${color}-900`
-    : `hover:dark:bg-${color}-800`;
-
   return (
     <div
       onClick={onClick}
       className={cn(
-        `relative overflow-hidden rounded-lg border shadow-2x hover:shadow-3x cursor-pointer hover:dark:bg-${color}-800`,
-        bgColor
+        `relative overflow-hidden rounded-lg border shadow-2x hover:shadow-3x cursor-pointer hover:dark:bg-${color}-900`,
+        isSelected && `dark:bg-${color}-900 hover:dark:bg-${color}-800`
       )}
     >
       <div className="flex flex-col justify-between rounded-md p-3">
