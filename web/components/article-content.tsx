@@ -59,10 +59,12 @@ async function getTranslateSentence(
   targetLanguage: string
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
-    const res = await axios.post(`/api/v1/assistant/translate/${articleId}`, {
-      targetLanguage,
+    const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
+      method: "POST",
+      body: JSON.stringify({ type: "passage", targetLanguage }),
     });
-    return res.data as { message: string; translated_sentences: string[] };
+    const data = await res.json();
+    return data;
   } catch (error) {
     return { message: "error", translated_sentences: [] };
   }
@@ -428,10 +430,6 @@ export default function ArticleContent({
           onClick={handleTogglePlayer}
         >
           Listen and read along
-          {/* <p>{t("voiceAssistant")}</p>
-          <Button size="sm" variant="secondary" onClick={handlePlayPause}>
-            {isPlaying ? t("soundButton.pause") : t("soundButton.play")}
-          </Button> */}
         </Button>
         <Button
           variant="default"

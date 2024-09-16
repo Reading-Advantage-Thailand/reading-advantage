@@ -59,7 +59,7 @@ export default function RatingPopup({
       //   `/api/users/${userId}/article-records/${articleId}`
       // );
       // const data = result.data.userArticleRecord.rated;
-      setOldRating(filterRating[0].details.Rating);
+      setOldRating(filterRating[0].details.rating);
     } catch (error) {
       console.log("Error fetching rating: ", error);
     }
@@ -80,8 +80,8 @@ export default function RatingPopup({
             details: {
               title: article.title,
               raLevel: article.ra_level,
-              CEFRLevel: article.cefr_level,
-              Rating: value,
+              cefr_level: article.cefr_level,
+              rating: value,
             },
           }),
         }
@@ -128,8 +128,8 @@ export default function RatingPopup({
             details: {
               title: article.title,
               raLevel: article.ra_level,
-              CEFRLevel: article.cefr_level,
-              Rating: value,
+              cefr_level: article.cefr_level,
+              rating: value,
             },
           }),
         }
@@ -163,7 +163,7 @@ export default function RatingPopup({
         details: {
           title: article.title,
           raLevel: article.ra_level,
-          CEFRLevel: article.cefr_level,
+          cefr_level: article.cefr_level,
         },
       }),
     });

@@ -26,22 +26,6 @@ export default async function LevelPage() {
     return res.json();
   }
 
-  // async function getLevelTestData() {
-  //   const res = await fetch(
-  //     `${process.env.NEXT_PUBLIC_BASE_URL}/api/level-test`,
-  //     {
-  //       method: "GET",
-  //       headers: headers(),
-  //     }
-  //   );
-
-  //   if (!res.ok) {
-  //     throw new Error(`Server responded with status: ${res.status}`);
-  //   }
-
-  //   return res.json();
-  // }
-
   const resGeneralDescription = await getLevelTestData();
   return (
     <>

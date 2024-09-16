@@ -5,14 +5,14 @@ import React from "react";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
 import CustomError from "./custom-error";
-import MCQuestionCard from "@/components/questions/mc-question-card";
-import SAQuestionCard from "@/components/questions/sa-question-card";
 import AssignDialog from "@/components/teacher/assign-dialog";
 import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
-import WordList from "@/components/word-list";
 import { Article } from "@/components/models/article-model";
 import ArticleActions from "@/components/article-actions";
+import WordList from "@/components/word-list";
 import LAQuestionCard from "@/components/questions/laq-question-card";
+import MCQuestionCard from "@/components/questions/mc-question-card";
+import SAQuestionCard from "@/components/questions/sa-question-card";
 
 export const metadata = {
   title: "Article",
@@ -66,14 +66,14 @@ export default async function ArticleQuizPage({
                 />
               </div>
             )}
-            <WordList
+            {/* <WordList
               article={articleResponse.article}
               articleId={params.articleId}
               userId={user.id}
-            />
+            /> */}
           </div>
 
-          <MCQuestionCard
+          {/* <MCQuestionCard
             userId={user.id}
             articleId={params.articleId}
             articleTitle={articleResponse.article.title}
@@ -91,7 +91,7 @@ export default async function ArticleQuizPage({
             userLevel={user.level}
             articleTitle={articleResponse.article.title}
             articleLevel={articleResponse.article.ra_level}
-          />
+          /> */}
         </div>
       </div>
       <ChatBotFloatingChatButton
