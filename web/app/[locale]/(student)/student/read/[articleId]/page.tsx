@@ -66,11 +66,11 @@ export default async function ArticleQuizPage({
                 />
               </div>
             )}
-            {/* <WordList
+            <WordList
               article={articleResponse.article}
               articleId={params.articleId}
               userId={user.id}
-            /> */}
+            />
           </div>
 
           {/* <MCQuestionCard
