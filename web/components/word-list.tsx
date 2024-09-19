@@ -68,24 +68,26 @@ export default function WordList({ article, articleId, userId }: Props) {
   const handleWordList = useCallback(async () => {
     try {
       setLoading(true); // Start loading
-      const resWordlist = await axios.post(`/api/assistant/wordlist`, {
-        article,
-        articleId,
+      const resWordlist = await fetch(`/api/v1/assistant/wordlist`, {
+        method: "POST",
+        body: JSON.stringify({ article, articleId }),
       });
+
+      const data = await resWordlist.json();
 
       let wordList = [];
 
-      if (resWordlist?.data?.timepoints) {
-        wordList = resWordlist?.data?.timepoints.map(
+      if (data?.timepoints) {
+        wordList = data?.timepoints.map(
           (timepoint: { timeSeconds: number }, index: number) => {
             const startTime = timepoint.timeSeconds;
             const endTime =
-              index === resWordlist?.data?.timepoints.length - 1
+              index === data?.timepoints.length - 1
                 ? timepoint.timeSeconds + 10
-                : resWordlist?.data?.timepoints[index + 1].timeSeconds;
+                : data?.timepoints[index + 1].timeSeconds;
             return {
-              vocabulary: resWordlist?.data?.word_list[index]?.vocabulary,
-              definition: resWordlist?.data?.word_list[index]?.definition,
+              vocabulary: data?.word_list[index]?.vocabulary,
+              definition: data?.word_list[index]?.definition,
               index,
               startTime,
               endTime,
@@ -94,7 +96,7 @@ export default function WordList({ article, articleId, userId }: Props) {
           }
         );
       } else {
-        wordList = resWordlist?.data?.word_list;
+        wordList = data?.word_list;
       }
       setWordList(wordList);
       form.reset();
@@ -113,7 +115,7 @@ export default function WordList({ article, articleId, userId }: Props) {
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
       let card: Card = createEmptyCard();
-      const foundWordsList = await filter(wordList, (vocab) =>
+      const foundWordsList = filter(wordList, (vocab) =>
         includes(data?.items, vocab?.vocabulary)
       );
       if (foundWordsList.length > 0) {
@@ -124,30 +126,32 @@ export default function WordList({ article, articleId, userId }: Props) {
           foundWordsList: foundWordsList,
         };
 
-        const res = await axios.post(`/api/word-list/${userId}`, param);
-        if (res?.status === 200) {
+        const res = await fetch(`/api/v1/users/wordlist/${userId}`, {
+          method: "POST",
+          body: JSON.stringify(param),
+        });
+
+        const data = await res.json();
+
+        if (data.status === 200) {
           toast({
             title: "Success",
             description: `You have saved ${foundWordsList.length} words to flashcard`,
           });
-        }
-      }
-    } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-        if (error?.response?.status === 400) {
+        } else if (data.status === 400) {
           toast({
             title: "Word already saved",
-            description: `${error?.response?.data?.message}`,
+            description: `${data?.message}`,
             variant: "destructive",
           });
         }
-      } else {
-        toast({
-          title: "Something went wrong.",
-          description: "Your word was not saved. Please try again.",
-          variant: "destructive",
-        });
       }
+    } catch (error: any) {
+      toast({
+        title: "Something went wrong.",
+        description: "Your word was not saved. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
