@@ -35,11 +35,6 @@ export default function RatingPopup({
   const [oldRating, setOldRating] = React.useState(0);
   const router = useRouter();
 
-  const instance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BASE_URL,
-    // timeout: 1000,
-  });
-
   React.useEffect(() => {
     ratedFetch();
   }, [userId, articleId]);
@@ -116,24 +111,21 @@ export default function RatingPopup({
       }
       setLoading(false);
     } else if (value !== 0 && oldRating !== 0) {
-      const ratingActivity = await fetch(
-        `/api/v1/users/${userId}/activitylog`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            articleId: articleId,
-            activityType: ActivityType.ArticleRating,
-            activityStatus: ActivityStatus.Completed,
-            xpEarned: UserXpEarned.Article_Rating,
-            details: {
-              title: article.title,
-              raLevel: article.ra_level,
-              cefr_level: article.cefr_level,
-              rating: value,
-            },
-          }),
-        }
-      );
+      await fetch(`/api/v1/users/${userId}/activitylog`, {
+        method: "POST",
+        body: JSON.stringify({
+          articleId: articleId,
+          activityType: ActivityType.ArticleRating,
+          activityStatus: ActivityStatus.Completed,
+          xpEarned: UserXpEarned.Article_Rating,
+          details: {
+            title: article.title,
+            raLevel: article.ra_level,
+            cefr_level: article.cefr_level,
+            rating: value,
+          },
+        }),
+      });
       toast({
         title: t("toast.success"),
         imgSrc: true,

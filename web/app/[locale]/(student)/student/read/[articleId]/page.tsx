@@ -73,7 +73,7 @@ export default async function ArticleQuizPage({
             />
           </div>
 
-          {/* <MCQuestionCard
+          <MCQuestionCard
             userId={user.id}
             articleId={params.articleId}
             articleTitle={articleResponse.article.title}
@@ -91,7 +91,7 @@ export default async function ArticleQuizPage({
             userLevel={user.level}
             articleTitle={articleResponse.article.title}
             articleLevel={articleResponse.article.ra_level}
-          /> */}
+          />
         </div>
       </div>
       <ChatBotFloatingChatButton
