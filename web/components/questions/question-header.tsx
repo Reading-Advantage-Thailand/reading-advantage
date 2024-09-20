@@ -45,7 +45,7 @@ export default function QuestionHeader({
     const activityType = activityTypes[buttonLabel as keyof ActivityType];
 
     if (activityType) {
-      fetch(`/api/v1/users/${userId}/activitylog`, {
+      fetch(`/api/users/${userId}/activitylog`, {
         method: "POST",
         body: JSON.stringify({
           activityType,

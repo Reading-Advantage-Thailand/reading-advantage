@@ -18,11 +18,11 @@ export type WordListResponse = {
     tw: string;
     vi: string;
   };
-}
+};
 export type GenerateAudioParams = {
   wordList: WordListResponse;
   articleId: string;
-}
+};
 
 interface TimePoint {
   timeSeconds: number;
@@ -43,48 +43,80 @@ export async function generateAudioForWord({
   articleId,
 }: GenerateAudioParams): Promise<void> {
   {
-    try {     
-      const voice = AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
-      const vocabulary: string[] = Array.isArray(wordList) ? wordList.map((item: any) => item?.vocabulary) : [];      
+    try {
+      const voice =
+        AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
+      const vocabulary: string[] = Array.isArray(wordList)
+        ? wordList.map((item: any) => item?.vocabulary)
+        : [];
       let allTimePoints: TimePoint[] = [];
 
-      const response = await axios.post(
-        `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize`,
+      // const response = await axios.post(
+      //   `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize`,
+      //   {
+      //     input: { ssml: contentToSSML(vocabulary) },
+      //     voice: {
+      //       languageCode: "en-US",
+      //       name: voice,
+      //     },
+      //     audioConfig: {
+      //       audioEncoding: "MP3",
+      //       pitch: 0,
+      //       speakingRate: 1,
+      //     },
+      //     enableTimePointing: ["SSML_MARK"],
+      //   },
+      //   {
+      //     params: { key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY },
+      //   }
+      // );
+
+      // const audio = response?.data?.audioContent;
+      // allTimePoints = response?.data?.timepoints;
+      const response = await fetch(
+        `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize?key=${process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY}`,
         {
-          input: { ssml: contentToSSML(vocabulary) },
-          voice: {
-            languageCode: "en-US",
-            name: voice,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          audioConfig: {
-            audioEncoding: "MP3",
-            pitch: 0,
-            speakingRate: 1,
-          },
-          enableTimePointing: ["SSML_MARK"],
-        },
-        {
-          params: { key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY },
+          body: JSON.stringify({
+            input: { ssml: contentToSSML(vocabulary) },
+            voice: {
+              languageCode: "en-US",
+              name: voice,
+            },
+            audioConfig: {
+              audioEncoding: "MP3",
+              pitch: 0,
+              speakingRate: 1,
+            },
+            enableTimePointing: ["SSML_MARK"],
+          }),
         }
       );
 
-      const audio = response?.data?.audioContent;
-      const MP3 = base64.toByteArray(audio);      
-      allTimePoints = response?.data?.timepoints;
-      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const audio = data.audioContent;
+      allTimePoints = data?.timepoints;
+      const MP3 = base64.toByteArray(audio);
+
       const localPath = `${process.cwd()}/data/audios-words/${articleId}.mp3`;
 
       fs.writeFileSync(localPath, MP3);
 
-      await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);      
-      
+      await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);
+
       await db.collection("word-list").doc(articleId).update({
         timepoints: allTimePoints,
         id: articleId,
       });
-
     } catch (error: any) {
-      throw `failed to generate audio: ${error} \n\n axios error: ${JSON.stringify(
+      throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
         error.response.data
       )}`;
     }

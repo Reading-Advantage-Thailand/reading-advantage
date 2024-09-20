@@ -1,6 +1,5 @@
 "use client";
 import { useCallback, useState, useRef, useEffect } from "react";
-import axios from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { Book } from "lucide-react";
 import { DialogClose } from "@radix-ui/react-dialog";
@@ -68,7 +67,7 @@ export default function WordList({ article, articleId, userId }: Props) {
   const handleWordList = useCallback(async () => {
     try {
       setLoading(true); // Start loading
-      const resWordlist = await fetch(`/api/v1/assistant/wordlist`, {
+      const resWordlist = await fetch(`/api/assistant/wordlist`, {
         method: "POST",
         body: JSON.stringify({ article, articleId }),
       });
@@ -126,7 +125,7 @@ export default function WordList({ article, articleId, userId }: Props) {
           foundWordsList: foundWordsList,
         };
 
-        const res = await fetch(`/api/v1/users/wordlist/${userId}`, {
+        const res = await fetch(`/api/users/wordlist/${userId}`, {
           method: "POST",
           body: JSON.stringify(param),
         });

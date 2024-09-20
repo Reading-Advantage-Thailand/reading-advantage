@@ -13,7 +13,6 @@ import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "./article-showcase-card";
 import { articleShowcaseType } from "@/types";
 import { useCurrentLocale } from "@/locales/client";
-import { useTranslations } from "next-intl";
 
 type Props = {
   user: {
@@ -25,7 +24,7 @@ type Props = {
 
 async function fetchArticles(params: string) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/articles?${params}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/articles?${params}`
   );
 
   const data = await response.json();

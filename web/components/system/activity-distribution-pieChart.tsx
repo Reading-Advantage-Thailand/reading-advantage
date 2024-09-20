@@ -61,7 +61,7 @@ const chartConfig = {
 
 async function fetchActivity() {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/activity`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/activity`
   );
 
   const data = await response.json();
@@ -86,60 +86,62 @@ export default function ActivityDistributionPieChart() {
     loadActivityData();
   }, []);
 
-  const chartData = activityData.map((element) => {
-    return [
-      {
-        activity: "MC",
-        numberOfTimes: element.totalMcQuestionCount,
-        fill: "var(--color-mc)",
-      },
-      {
-        activity: "SA",
-        numberOfTimes: element.totalSaQuestionCount,
-        fill: "var(--color-sa)",
-      },
-      {
-        activity: "LA",
-        numberOfTimes: element.totalLaQuestionCount,
-        fill: "var(--color-la)",
-      },
-      {
-        activity: "Vocab. flash.",
-        numberOfTimes: element.totalVocabularyFlashcardsCount,
-        fill: "var(--color-vocabulary_flashcards)",
-      },
-      {
-        activity: "Sent. flash.",
-        numberOfTimes: element.totalSentenceFlashcardsCount,
-        fill: "var(--color-sentense_flashcards)",
-      },
-      {
-        activity: "Sent. act.",
-        numberOfTimes: element.totalSentenseActivityCount,
-        fill: "var(--color-sentense_activities)",
-      },
-      {
-        activity: "Article rating",
-        numberOfTimes: element.totalRatingCount,
-        fill: "var(--color-article_rating)",
-      },
-      {
-        activity: "Article reads",
-        numberOfTimes: element.totalReadingCount,
-        fill: "var(--color-article_reads)",
-      },
-      {
-        activity: "Level test",
-        numberOfTimes: element.totalLevelTestCount,
-        fill: "var(--color-level_test)",
-      },
-      {
-        activity: "Vocab. act.",
-        numberOfTimes: element.totalVocabularyActivityCount,
-        fill: "var(--color-vocabulary_activities)",
-      },
-    ];
-  }).flat();
+  const chartData = activityData
+    .map((element) => {
+      return [
+        {
+          activity: "MC",
+          numberOfTimes: element.totalMcQuestionCount,
+          fill: "var(--color-mc)",
+        },
+        {
+          activity: "SA",
+          numberOfTimes: element.totalSaQuestionCount,
+          fill: "var(--color-sa)",
+        },
+        {
+          activity: "LA",
+          numberOfTimes: element.totalLaQuestionCount,
+          fill: "var(--color-la)",
+        },
+        {
+          activity: "Vocab. flash.",
+          numberOfTimes: element.totalVocabularyFlashcardsCount,
+          fill: "var(--color-vocabulary_flashcards)",
+        },
+        {
+          activity: "Sent. flash.",
+          numberOfTimes: element.totalSentenceFlashcardsCount,
+          fill: "var(--color-sentense_flashcards)",
+        },
+        {
+          activity: "Sent. act.",
+          numberOfTimes: element.totalSentenseActivityCount,
+          fill: "var(--color-sentense_activities)",
+        },
+        {
+          activity: "Article rating",
+          numberOfTimes: element.totalRatingCount,
+          fill: "var(--color-article_rating)",
+        },
+        {
+          activity: "Article reads",
+          numberOfTimes: element.totalReadingCount,
+          fill: "var(--color-article_reads)",
+        },
+        {
+          activity: "Level test",
+          numberOfTimes: element.totalLevelTestCount,
+          fill: "var(--color-level_test)",
+        },
+        {
+          activity: "Vocab. act.",
+          numberOfTimes: element.totalVocabularyActivityCount,
+          fill: "var(--color-vocabulary_activities)",
+        },
+      ];
+    })
+    .flat();
 
   return (
     <>

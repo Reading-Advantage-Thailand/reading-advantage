@@ -21,7 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import axios from "axios";
 import { toast } from "./ui/use-toast";
 import {
   PlayIcon,
@@ -59,7 +58,7 @@ async function getTranslateSentence(
   targetLanguage: string
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
-    const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
+    const res = await fetch(`/api/assistant/translate/${articleId}`, {
       method: "POST",
       body: JSON.stringify({ type: "passage", targetLanguage }),
     });
@@ -137,7 +136,7 @@ export default function ArticleContent({
   };
 
   const handleSentenceClick = (startTime: number, audioIndex: number) => {
-    if (audioRef.current) {
+    if (audioRef.current && togglePlayer) {
       audioRef.current.pause();
       setCurrentAudioIndex(audioIndex);
       audioRef.current.src = sentenceList[audioIndex].audioUrl;
@@ -195,11 +194,8 @@ export default function ArticleContent({
       <span
         key={index}
         onClick={() => {
-          if (togglePlayer) {
-            setSelectedSentence(i);
-            setSelectedIndex(i);
-            console.log(i);
-          }
+          setSelectedSentence(i);
+          setSelectedIndex(i);
         }}
       >
         {line}
@@ -234,49 +230,48 @@ export default function ArticleContent({
         } else {
           endTimepoint = audioRef.current?.duration as number;
         }
-        const res = await axios.post(`/api/users/${userId}/sentences`, {
-          sentence: sentenceList[selectedSentence as number].sentence.replace(
-            "~~",
-            ""
-          ),
-          sn: selectedSentence,
-          articleId: article.id,
-          translation: {
-            th: translate[selectedSentence as number],
-          },
-          audioUrl: sentenceList[selectedSentence as number].audioUrl,
-          timepoint: sentenceList[selectedSentence as number].startTime,
-          endTimepoint: endTimepoint,
-          saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
-          ...card,
+
+        const resSaveSentences = await fetch(`/api/users/sentences/${userId}`, {
+          method: "POST",
+          body: JSON.stringify({
+            sentence: sentenceList[selectedSentence as number].sentence.replace(
+              "~~",
+              ""
+            ),
+            sn: selectedSentence,
+            articleId: article.id,
+            translation: {
+              th: translate[selectedSentence as number],
+            },
+            audioUrl: sentenceList[selectedSentence as number].audioUrl,
+            timepoint: sentenceList[selectedSentence as number].startTime,
+            endTimepoint: endTimepoint,
+            saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
+            ...card,
+          }),
         });
 
-        console.log(
-          "audioUrl",
-          sentenceList[selectedSentence as number].audioUrl
-        );
-        toast({
-          title: "Success",
-          description: `You have saved "${sentenceList[
-            selectedSentence as number
-          ].sentence.replace("~~", "")}" to flashcard`,
-        });
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          if (error.response?.data.message === "Sentence already saved") {
-            toast({
-              title: "Sentence already saved",
-              description: "You have already saved this sentence.",
-              variant: "destructive",
-            });
-          }
-        } else {
+        if (resSaveSentences.status === 200) {
           toast({
-            title: "Something went wrong.",
-            description: "Your sentence was not saved. Please try again.",
+            title: "Success",
+            description: `You have saved "${sentenceList[
+              selectedSentence as number
+            ].sentence.replace("~~", "")}" to flashcard`,
+          });
+        } else if (resSaveSentences.status === 400) {
+          toast({
+            title: "Sentence already saved",
+            description: "You have already saved this sentence.",
             variant: "destructive",
           });
         }
+      } catch (error) {
+        console.error("Error:", error);
+        toast({
+          title: "Something went wrong.",
+          description: "Your sentence was not saved. Please try again.",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -501,7 +496,7 @@ export default function ArticleContent({
             </p>
           ) : (
             <p className="text-center text-green-500">
-              {translate[currentAudioIndex]}
+              {translate[selectedIndex]}
             </p>
           )}
           <Separator />
@@ -517,9 +512,7 @@ export default function ArticleContent({
                 `${getHighlightedClass(index)}`
               )}
               onClick={() => {
-                if (togglePlayer) {
-                  handleSentenceClick(sentence.startTime, index);
-                }
+                handleSentenceClick(sentence.startTime, index);
               }}
             >
               {renderSentence(sentence.sentence, index)}

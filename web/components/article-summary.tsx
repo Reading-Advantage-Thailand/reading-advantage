@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import axios from "axios";
 import { useCurrentLocale } from "@/locales/client";
 import { Article } from "./models/article-model";
 
@@ -14,7 +13,7 @@ async function getTranslate(
   targetLanguage: string
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
-    const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
+    const res = await fetch(`/api/assistant/translate/${articleId}`, {
       method: "POST",
       body: JSON.stringify({ type: "summary", targetLanguage }),
     });

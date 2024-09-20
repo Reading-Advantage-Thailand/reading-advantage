@@ -3,7 +3,6 @@ import { Badge } from "./ui/badge";
 import Link from "next/link";
 import { Rating } from "@mui/material";
 import { ArticleShowcase } from "./models/article-model";
-import axios from "axios";
 import { useCurrentLocale } from "@/locales/client";
 import { usePathname } from "next/navigation";
 import { ActivityType, ActivityStatus } from "./models/user-activity-log-model";
@@ -18,7 +17,7 @@ async function getTranslateSentence(
   targetLanguage: string
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
-    const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
+    const res = await fetch(`/api/assistant/translate/${articleId}`, {
       method: "POST",
       body: JSON.stringify({ type: "summary", targetLanguage }),
     });
@@ -65,7 +64,7 @@ const ArticleShowcaseCard = ({ article, userId }: Props) => {
     <Link
       href={`/student/read/${article.id}`}
       onClick={() =>
-        fetch(`/api/v1/users/${userId}/activitylog`, {
+        fetch(`/api/users/${userId}/activitylog`, {
           method: "POST",
           body: JSON.stringify({
             articleId: article.id,

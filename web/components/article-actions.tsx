@@ -1,80 +1,86 @@
-'use client';
-import React, { useState } from 'react'
+"use client";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Article } from "@/components/models/article-model";
-import { toast } from './ui/use-toast';
+import { toast } from "./ui/use-toast";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-  } from "@/components/ui/dialog";
-import axios from 'axios';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type Props = {
-    article: Article;
-    articleId: string;
-  };
+  article: Article;
+  articleId: string;
+};
 
 export default function ArticleActions({ article, articleId }: Props) {
-    const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-    const handleClose = () => {
-        setOpen(false);
-      };
+  const handleClose = () => {
+    setOpen(false);
+  };
 
-    const handleOpen = () => {
-        setOpen(true);
-      } 
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
-    const handleDelete = async (articleId: string) => {
-      console.log(`Deleted article with ID: ${articleId}`);
-      try {
-        await axios.delete(`/api/passage/${articleId}`);
-        setOpen(false);
-        toast({
-            title: "Article Deleted",
-            description: `The article with title: ${article.title} has been deleted`,
-        });
+  const handleDelete = async (articleId: string) => {
+    console.log(`Deleted article with ID: ${articleId}`);
+    try {
+      await fetch(`/api/passage/${articleId}`, { method: "DELETE" });
+      setOpen(false);
+      toast({
+        title: "Article Deleted",
+        description: `The article with title: ${article.title} has been deleted`,
+      });
     } catch (error) {
-        console.error(`Failed to delete article with ID: ${articleId}`, error);
-        toast({
-            title: "Error",
-            description: `Failed to delete article with title: ${article.title}`,
-            variant: "destructive",
-        });
+      console.error(`Failed to delete article with ID: ${articleId}`, error);
+      toast({
+        title: "Error",
+        description: `Failed to delete article with title: ${article.title}`,
+        variant: "destructive",
+      });
     }
-      };
-    
-      const handleApprove = (articleId: string) => {
-        console.log(`Approved article with ID: ${articleId}`);
-        toast({
-            title: "Article Approved",
-            description: "The  article has been approved",
-        })
-      };
+  };
+
+  const handleApprove = (articleId: string) => {
+    console.log(`Approved article with ID: ${articleId}`);
+    toast({
+      title: "Article Approved",
+      description: "The  article has been approved",
+    });
+  };
 
   return (
-    <div className='flex gap-4 mb-4 ml-4'>
-      <Button onClick={()=> {handleOpen()}}>
+    <div className="flex gap-4 mb-4 ml-4">
+      <Button
+        onClick={() => {
+          handleOpen();
+        }}
+      >
         Delete
       </Button>
-      <Button onClick={() => handleApprove(articleId)}>
-        Approve
-      </Button>
+      <Button onClick={() => handleApprove(articleId)}>Approve</Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete article &quot;{article.title}&quot;</DialogTitle>
+            <DialogTitle>
+              Delete article &quot;{article.title}&quot;
+            </DialogTitle>
           </DialogHeader>
           <DialogDescription>
             Are you sure you want to delete this article?
           </DialogDescription>
           <DialogFooter>
-            <Button variant="destructive" onClick={() => handleDelete(articleId)}>
+            <Button
+              variant="destructive"
+              onClick={() => handleDelete(articleId)}
+            >
               Delete
             </Button>
             <Button onClick={handleClose}>Cancel</Button>
@@ -82,7 +88,5 @@ export default function ArticleActions({ article, articleId }: Props) {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
-
-

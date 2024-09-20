@@ -103,7 +103,7 @@ export default function LAQuestionCard({
   });
 
   useEffect(() => {
-    fetch(`/api/v1/articles/${articleId}/questions/laq`)
+    fetch(`/api/articles/${articleId}/questions/laq`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -323,7 +323,7 @@ function LAQuestion({
 
     try {
       const feedbackResponse = await fetch(
-        `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
+        `/api/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -340,7 +340,7 @@ function LAQuestion({
       if (dataForm.method === "submit" && feedback) {
         setPaused(true);
         const submitAnswer = await fetch(
-          `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}`,
+          `/api/articles/${articleId}/questions/laq/${resp.result.id}`,
           {
             method: "POST",
             body: JSON.stringify({
@@ -369,15 +369,12 @@ function LAQuestion({
 
   async function onGetExp() {
     setIsLoading(true);
-    fetch(
-      `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/getxp`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          rating,
-        }),
-      }
-    )
+    fetch(`/api/articles/${articleId}/questions/laq/${resp.result.id}/getxp`, {
+      method: "POST",
+      body: JSON.stringify({
+        rating,
+      }),
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data) {
@@ -392,7 +389,7 @@ function LAQuestion({
       .finally(() => {
         setIsLoading(false);
       });
-    await fetch(`/api/v1/users/${userId}/activitylog`, {
+    await fetch(`/api/users/${userId}/activitylog`, {
       method: "POST",
       body: JSON.stringify({
         articleId: articleId,
@@ -400,7 +397,7 @@ function LAQuestion({
         activityStatus: ActivityStatus.Completed,
         timeTaken: timer,
         xpEarned: rating,
-        details: {...data, title: articleTitle, level: articleLevel}, 
+        details: { ...data, title: articleTitle, level: articleLevel },
       }),
     });
     router.refresh();
