@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Rating, Stack } from "@mui/material";
-import axios from "axios";
 import { useScopedI18n } from "@/locales/client";
 import { toast } from "./ui/use-toast";
 import { Article } from "./models/article-model";
@@ -41,9 +40,9 @@ export default function RatingPopup({
 
   const ratedFetch = async () => {
     try {
-      const ratingData = await fetch(
-        `/api/v1/users/${userId}/activitylog`
-      ).then((data) => data.json());
+      const ratingData = await fetch(`/api/users/${userId}/activitylog`).then(
+        (data) => data.json()
+      );
       const filterRating = ratingData.results.filter(
         (data: any) =>
           data.articleId === articleId &&
@@ -63,25 +62,22 @@ export default function RatingPopup({
   const onUpdateUser = async () => {
     if (value === -1) return;
     if (value !== 0 && oldRating === 0) {
-      const ratingActivity = await fetch(
-        `/api/v1/users/${userId}/activitylog`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            articleId: articleId,
-            activityType: ActivityType.ArticleRating,
-            activityStatus: ActivityStatus.Completed,
-            xpEarned: UserXpEarned.Article_Rating,
-            details: {
-              title: article.title,
-              raLevel: article.ra_level,
-              cefr_level: article.cefr_level,
-              rating: value,
-            },
-          }),
-        }
-      );
-      const readActivity = await fetch(`/api/v1/users/${userId}/activitylog`, {
+      const ratingActivity = await fetch(`/api/users/${userId}/activitylog`, {
+        method: "POST",
+        body: JSON.stringify({
+          articleId: articleId,
+          activityType: ActivityType.ArticleRating,
+          activityStatus: ActivityStatus.Completed,
+          xpEarned: UserXpEarned.Article_Rating,
+          details: {
+            title: article.title,
+            raLevel: article.ra_level,
+            cefr_level: article.cefr_level,
+            rating: value,
+          },
+        }),
+      });
+      const readActivity = await fetch(`/api/users/${userId}/activitylog`, {
         method: "POST",
         body: JSON.stringify({
           articleId: articleId,
@@ -111,7 +107,7 @@ export default function RatingPopup({
       }
       setLoading(false);
     } else if (value !== 0 && oldRating !== 0) {
-      await fetch(`/api/v1/users/${userId}/activitylog`, {
+      await fetch(`/api/users/${userId}/activitylog`, {
         method: "POST",
         body: JSON.stringify({
           articleId: articleId,
@@ -146,7 +142,7 @@ export default function RatingPopup({
 
   const toggleModal = async () => {
     setModalIsOpen(!modalIsOpen);
-    await fetch(`/api/v1/users/${userId}/activitylog`, {
+    await fetch(`/api/users/${userId}/activitylog`, {
       method: "POST",
       body: JSON.stringify({
         articleId: articleId,

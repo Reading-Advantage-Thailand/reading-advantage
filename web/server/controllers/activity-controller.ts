@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
 
 // GET user activity logs
-// GET /api/v1/activity
+// GET /api/activity
 
 export async function getAllUserActivity() {
   try {
@@ -26,19 +26,71 @@ export async function getAllUserActivity() {
     const userActivityStats = [];
 
     const activityTypes = [
-      { name: "ratingLogRef", collection: "article-rating-activity-log", countKey: "totalRatingCount" },
-      { name: "readingLogRef", collection: "article-read-activity-log", countKey: "totalReadingCount" },
-      { name: "laLogRef", collection: "la-question-activity-log", countKey: "totalLaQuestionCount" },
-      { name: "levelTestLogRef", collection: "level-test-activity-log", countKey: "totalLevelTestCount" },
-      { name: "mcQuestionLogRef", collection: "mc-question-activity-log", countKey: "totalMcQuestionCount" },
-      { name: "saQuestionLogRef", collection: "sa-question-activity-log", countKey: "totalSaQuestionCount" },
-      { name: "SentenceClozeTestLogRef", collection: "sentence-cloze-test-activity-log", countKey: "totalSentenceActivityCount" },
-      { name: "SentenceFlashcardsLogRef", collection: "sentence-flashcards-activity-log", countKey: "totalSentenceFlashcardsCount" },
-      { name: "SentenceMatchingLogRef", collection: "sentence-matching-activity-log", countKey: "totalSentenceActivityCount" },
-      { name: "SentenceOrderingLogRef", collection: "sentence-ordering-activity-log", countKey: "totalSentenceActivityCount" },
-      { name: "SentenceWordOrderingLogRef", collection: "sentence-word-ordering-activity-log", countKey: "totalSentenceActivityCount" },
-      { name: "VocabularyFlashcardsLogRef", collection: "vocabulary-flashcards-activity-log", countKey: "totalVocabularyFlashcardsCount" },
-      { name: "VocabularyMatchingLogRef", collection: "vocabulary-matching-activity-log", countKey: "totalVocabularyActivityCount" },
+      {
+        name: "ratingLogRef",
+        collection: "article-rating-activity-log",
+        countKey: "totalRatingCount",
+      },
+      {
+        name: "readingLogRef",
+        collection: "article-read-activity-log",
+        countKey: "totalReadingCount",
+      },
+      {
+        name: "laLogRef",
+        collection: "la-question-activity-log",
+        countKey: "totalLaQuestionCount",
+      },
+      {
+        name: "levelTestLogRef",
+        collection: "level-test-activity-log",
+        countKey: "totalLevelTestCount",
+      },
+      {
+        name: "mcQuestionLogRef",
+        collection: "mc-question-activity-log",
+        countKey: "totalMcQuestionCount",
+      },
+      {
+        name: "saQuestionLogRef",
+        collection: "sa-question-activity-log",
+        countKey: "totalSaQuestionCount",
+      },
+      {
+        name: "SentenceClozeTestLogRef",
+        collection: "sentence-cloze-test-activity-log",
+        countKey: "totalSentenceActivityCount",
+      },
+      {
+        name: "SentenceFlashcardsLogRef",
+        collection: "sentence-flashcards-activity-log",
+        countKey: "totalSentenceFlashcardsCount",
+      },
+      {
+        name: "SentenceMatchingLogRef",
+        collection: "sentence-matching-activity-log",
+        countKey: "totalSentenceActivityCount",
+      },
+      {
+        name: "SentenceOrderingLogRef",
+        collection: "sentence-ordering-activity-log",
+        countKey: "totalSentenceActivityCount",
+      },
+      {
+        name: "SentenceWordOrderingLogRef",
+        collection: "sentence-word-ordering-activity-log",
+        countKey: "totalSentenceActivityCount",
+      },
+      {
+        name: "VocabularyFlashcardsLogRef",
+        collection: "vocabulary-flashcards-activity-log",
+        countKey: "totalVocabularyFlashcardsCount",
+      },
+      {
+        name: "VocabularyMatchingLogRef",
+        collection: "vocabulary-matching-activity-log",
+        countKey: "totalVocabularyActivityCount",
+      },
     ];
 
     for (const doc of userActivityLogSnapshot.docs) {
@@ -48,7 +100,6 @@ export async function getAllUserActivity() {
         totalCounts[activity.countKey] += snapshot.size;
       });
 
-
       await Promise.all(promises);
     }
 
@@ -57,9 +108,12 @@ export async function getAllUserActivity() {
       ...totalCounts,
     });
 
-    return NextResponse.json({
-      userActivityStats,
-    });
+    return NextResponse.json(
+      {
+        userActivityStats,
+      },
+      { status: 200 }
+    );
   } catch (err) {
     console.log("Error getting documents", err);
     return NextResponse.json(
@@ -68,4 +122,3 @@ export async function getAllUserActivity() {
     );
   }
 }
-

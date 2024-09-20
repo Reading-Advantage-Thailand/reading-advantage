@@ -5,7 +5,7 @@ import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/he
 const createFirestoreService = <T extends DocumentData>(
   collectionPath: string
 ) => {
-  const apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/${collectionPath}`;
+  const apiUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/${collectionPath}`;
 
   return {
     fetchDoc: async (docId: string, headers: ReadonlyHeaders) => {

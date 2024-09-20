@@ -50,8 +50,8 @@ export default function FlashCardVocabularyPracticeButton({
     newLogs[index] = scheduling_cards[rating].log;
     setLogs(newLogs);
 
-    const response = await fetch(
-      `/api/v1/assistant/ts-fsrs-test/flash-card/${newCards[index].id}`,
+    await fetch(
+      `/api/assistant/ts-fsrs-test/flash-card/${newCards[index].id}`,
       {
         method: "POST",
         body: JSON.stringify({

@@ -2,7 +2,6 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ArticleType } from "@/types";
 import Tokenizer from "sentence-tokenizer";
-import axios from "axios";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -133,79 +132,3 @@ export function levelCalculation(xp: number) {
 
   return { cefrLevel: "", raLevel: "" };
 }
-
-//function to get cefrLevel and xp from firebase
-// export async function getPreviousData(userId: string) {
-//   try {
-//     const response = await axios.get(`/api/users/${userId}`);
-//     if (response.status === 400) {
-//       throw new Error("User not found");
-//     }
-//     const data = response.data;
-//     const cefrLevel = data.data.cefrLevel;
-//     const previousXp = data.data.xp;
-//     // console.log("data", data);
-//     return { cefrLevel, previousXp };
-//   } catch (error) {
-//     console.log("Error:", error);
-//   }
-// }
-
-// export async function updateScore(
-//   xp: number,
-//   userId: string,
-//   updateSession?: Function
-// ) {
-//   try {
-//     const previousData = await getPreviousData(userId);
-//     const cefrLevel = previousData?.cefrLevel;
-//     let previousXp = previousData?.previousXp;
-//     let newScore = 0;
-
-//     if (cefrLevel === "") {
-//       //increase new xp with 0
-//       previousXp = 0;
-//       newScore = previousXp + xp;
-//     } else {
-//       // increase new xp with actual new xp
-//       newScore = previousXp + xp;
-//     }
-
-//     const response = await fetch(`/api/users/${userId}`, {
-//       method: "PATCH",
-//       body: JSON.stringify({
-//         xp: newScore,
-//         level: levelCalculation(newScore).raLevel,
-//         cefrLevel: levelCalculation(newScore).cefrLevel,
-//       }),
-//     });
-
-//     const data = await response.json();
-//     (await updateSession)
-//       ? {
-//         user: {
-//           // ...session?.user,
-//           xp: previousXp + newScore,
-//           level: levelCalculation(xp).raLevel,
-//           cefrLevel: levelCalculation(xp).cefrLevel,
-//         },
-//       }
-//       : null;
-
-//     return new Response(
-//       JSON.stringify({
-//         message: "success",
-//       }),
-//       { status: 201 }
-//     );
-//   } catch (error) {
-//     return new Response(
-//       JSON.stringify({
-//         message: error,
-//       }),
-//       { status: 501 }
-//     );
-//   }
-// }
-
-// updateScore(5000, "qWXtOI9Hr6QtILuhsrOc06zXZUg1");

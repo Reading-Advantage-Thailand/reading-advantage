@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
-import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { generateObject, streamText } from "ai";
+import { openai, createOpenAI } from "@ai-sdk/openai";
 import fs, { stat } from "fs";
 import path from "path";
 import { z } from "zod";
@@ -10,6 +10,7 @@ import OpenAI from "openai";
 import { AUDIO_WORDS_URL } from "@/server/constants";
 import { generateAudioForWord } from "@/server/utils/generators/audio-words-generator";
 import { ExtendedNextRequest } from "./auth-controller";
+import { promptChatBot } from "@/data/prompt-chatbot";
 
 interface RequestContext {
   params: {
@@ -17,6 +18,19 @@ interface RequestContext {
     id: string;
   };
 }
+
+// Define the schema for the request body
+const createChatbotSchema = z.object({
+  title: z.string(),
+  passage: z.string(),
+  summary: z.string(),
+  image_description: z.string(),
+  blacklistedQuestions: z.array(z.string()),
+  newMessage: z.object({
+    text: z.string(),
+    sender: z.string(),
+  }),
+});
 
 export async function getFeedbackWritter(res: object) {
   const systemPrompt = fs.readFileSync(
@@ -247,7 +261,6 @@ export async function postFlashCard(
 ) {
   try {
     const json = await req.json();
-    console.log(json);
 
     if (json.page === "vocabulary") {
       await db
@@ -265,15 +278,68 @@ export async function postFlashCard(
         });
     }
 
-    return NextResponse.json({
-      messeges: "success",
-      status: 200,
-    });
+    return NextResponse.json(
+      {
+        messeges: "success",
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error:", error);
-    return NextResponse.json({
-      message: "Internal server error",
-      status: 500,
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function chatBot(req: ExtendedNextRequest) {
+  try {
+    const param = await req.json();
+    const validatedData = createChatbotSchema.parse(param);
+    const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const { textStream } = await streamText({
+      model: openai("gpt-4o-mini"),
+      messages: [
+        {
+          role: "system",
+          content: `${promptChatBot}
+          {                                                                  
+          "title": ${validatedData?.title},
+          "passage": ${validatedData?.passage},
+          "summary": ${validatedData?.summary},
+          "image-description": ${validatedData?.image_description},   
+          "blacklisted-questions": ${validatedData?.blacklistedQuestions}
+          }`,
+        },
+        { role: "user", content: validatedData?.newMessage?.text },
+      ],
     });
+
+    const messages = [];
+    for await (const textPart of textStream) {
+      messages.push(textPart);
+    }
+
+    const filteredMessages = messages.filter(
+      (item) =>
+        item !== undefined && item !== "" && item !== "}" && item !== "{"
+    );
+    const fullMessage = filteredMessages.join("");
+
+    return NextResponse.json(
+      { messages: "success", sender: "bot", text: fullMessage },
+      { status: 201 }
+    );
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ errors: error.errors }, { status: 400 });
+    }
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

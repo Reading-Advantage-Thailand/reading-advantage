@@ -1,6 +1,5 @@
 "use client";
 import { useCallback, useState, useRef, useEffect } from "react";
-import axios from "axios";
 import Image from "next/image";
 import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
@@ -45,17 +44,22 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
           laqQuestion?.result?.question,
         ];
 
-        const resOpenAi = await axios.post(`/api/assistant/chatbot`, {
-          newMessage,
-          title: article.title,
-          passage: article.passage,
-          summary: article.summary,
-          image_description: article.image_description,
-          blacklistedQuestions,
+        const resOpenAi = await fetch(`/api/assistant/chatbot`, {
+          method: "POST",
+          body: JSON.stringify({
+            newMessage,
+            title: article.title,
+            passage: article.passage,
+            summary: article.summary,
+            image_description: article.image_description,
+            blacklistedQuestions,
+          }),
         });
 
+        const data = await resOpenAi.json();
+
         const response: Message = {
-          text: ` : ${resOpenAi?.data?.text}`,
+          text: ` : ${data?.text}`,
           sender: "bot",
         };
         setMessages((messages) => [...messages, response]);
@@ -70,7 +74,17 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
 
       setUserInput(""); // Clear input after sending
     }
-  }, [userInput, messages, mcQuestion.results, saQuestion?.result?.question, laqQuestion?.result?.question, article.title, article.passage, article.summary, article.image_description]);
+  }, [
+    userInput,
+    messages,
+    mcQuestion.results,
+    saQuestion?.result?.question,
+    laqQuestion?.result?.question,
+    article.title,
+    article.passage,
+    article.summary,
+    article.image_description,
+  ]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

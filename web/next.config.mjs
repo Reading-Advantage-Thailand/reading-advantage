@@ -5,11 +5,27 @@ const nextConfig = {
   reactStrictMode: false,
   pageExtensions: ["tsx", "ts", "jsx", "js"],
   images: {
-    domains: [
-      "storage.googleapis.com",
-      "lh3.googleusercontent.com",
-      "lh4.googleusercontent.com",
-      "lh5.googleusercontent.com",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "storage.googleapis.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "lh4.googleusercontent.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "lh5.googleusercontent.com",
+        pathname: "**",
+      },
     ],
   },
   compiler: {

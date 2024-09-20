@@ -3,30 +3,36 @@ import uploadToBucket from "@/utils/uploadToBucket";
 import fs from "fs";
 import { IMAGE_URL } from "../../constants";
 import axios from "axios";
+import { buffer } from "stream/consumers";
 
 interface GenerateImageParams {
-    imageDesc: string;
-    articleId: string;
+  imageDesc: string;
+  articleId: string;
 }
 
-export async function generateImage(params: GenerateImageParams): Promise<void> {
-    try {
-        const response = await openai.images.generate({
-            model: "dall-e-3",
-            n: 1,
-            prompt: params.imageDesc,
-            size: "1024x1024",
-        });
+export async function generateImage(
+  params: GenerateImageParams
+): Promise<void> {
+  try {
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      n: 1,
+      prompt: params.imageDesc,
+      size: "1024x1024",
+    });
 
-        const image = await axios.get(response.data[0].url as string, {
-            responseType: "arraybuffer",
-        });
+    // const image = await axios.get(response.data[0].url as string, {
+    //     responseType: "arraybuffer",
+    // });
 
-        const localPath = `${process.cwd()}/data/images/${params.articleId}.png`;
-        fs.writeFileSync(localPath, image.data);
+    const imageResponse = await fetch(response.data[0].url as string);
+    const imageBuffer = await imageResponse.arrayBuffer();
 
-        await uploadToBucket(localPath, `${IMAGE_URL}/${params.articleId}.png`);
-    } catch (error) {
-        throw `failed to generate image: ${error}`;
-    }
+    const localPath = `${process.cwd()}/data/images/${params.articleId}.png`;
+    fs.writeFileSync(localPath, Buffer.from(imageBuffer));
+
+    await uploadToBucket(localPath, `${IMAGE_URL}/${params.articleId}.png`);
+  } catch (error) {
+    throw `failed to generate image: ${error}`;
+  }
 }

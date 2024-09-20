@@ -20,7 +20,7 @@ export const metadata = {
 };
 
 async function getArticle(articleId: string) {
-  return fetchData(`/api/v1/articles/${articleId}`);
+  return fetchData(`/api/articles/${articleId}`);
 }
 
 export default async function ArticleQuizPage({
@@ -50,7 +50,7 @@ export default async function ArticleQuizPage({
         />
         <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
           <div className="flex justify-evently">
-            {user.role.includes("TEACHER") && (
+            {user.role.includes("teacher") && (
               <AssignDialog
                 article={articleResponse.article}
                 articleId={params.articleId}
@@ -58,7 +58,7 @@ export default async function ArticleQuizPage({
               />
             )}
 
-            {user.role.includes("SYSTEM") && (
+            {user.role.includes("system") && (
               <div className="flex gap-4">
                 <ArticleActions
                   article={articleResponse.article}

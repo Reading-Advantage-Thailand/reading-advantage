@@ -47,7 +47,7 @@ export function UpdateUserLicenseForm({
     try {
       setIsLoading(true);
       // Update the user's username
-      const response = await fetch(`/api/v1/licenses/test-school-id`, {
+      const response = await fetch(`/api/licenses/test-school-id`, {
         method: "PATCH",
         body: JSON.stringify({
           key: data.license,

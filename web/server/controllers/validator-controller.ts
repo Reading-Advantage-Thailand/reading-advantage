@@ -208,14 +208,13 @@ async function validator(articleId: string): Promise<{
   const articleDoc = await db.collection("new-articles").doc(articleId).get();
   const wordListDoc = await db.collection("word-list").doc(articleId).get();
 
-
   console.log(`Validating article ${articleId}`);
   if (!articleDoc.exists) {
     throw new Error(`article ${articleId} not found in Firestore`);
   }
 
   let wordListData = {} as WordListResponse;
-  if (!wordListDoc.exists) {   
+  if (!wordListDoc.exists) {
     wordListData = await generateWordList({
       passage: articleDoc.data()?.passage,
     });
@@ -226,8 +225,8 @@ async function validator(articleId: string): Promise<{
       id: articleId,
       created_at: new Date().toISOString(),
     });
-  }else {
-    wordListData = wordListDoc.data()?.word_list as WordListResponse   
+  } else {
+    wordListData = wordListDoc.data()?.word_list as WordListResponse;
   }
 
   const articleData = articleDoc.data() as Article;
@@ -357,12 +356,15 @@ async function validateImage(
         size: "1024x1024",
       });
 
-      const image = await axios.get(response.data[0].url as string, {
-        responseType: "arraybuffer",
-      });
+      // const image = await axios.get(response.data[0].url as string, {
+      //   responseType: "arraybuffer",
+      // });
+
+      const imageResponse = await fetch(response.data[0].url as string);
+      const imageBuffer = await imageResponse.arrayBuffer();
 
       const localPath = `${process.cwd()}/data/images/${articleId}.png`;
-      fs.writeFileSync(localPath, image.data);
+      fs.writeFileSync(localPath, Buffer.from(imageBuffer));
 
       await uploadToBucket(localPath, `${IMAGE_URL}/${articleId}.png`);
     };
@@ -430,7 +432,7 @@ async function validateAudioWords({
       .bucket("artifacts.reading-advantage.appspot.com")
       .file(`${AUDIO_WORDS_URL}/${articleId}${fileExtension}`)
       .exists();
-    if (!fileExists[0]) {     
+    if (!fileExists[0]) {
       await generateAudioForWord({ wordList, articleId });
       return { id: articleId, task: "audio", status: "regenerated" };
     } else {

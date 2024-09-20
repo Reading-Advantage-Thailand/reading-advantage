@@ -65,7 +65,12 @@ enum QuestionState {
   ERROR = 3,
 }
 
-export default function SAQuestionCard({ userId, articleId, articleTitle, articleLevel }: Props) {
+export default function SAQuestionCard({
+  userId,
+  articleId,
+  articleTitle,
+  articleLevel,
+}: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     result: {
@@ -78,7 +83,7 @@ export default function SAQuestionCard({ userId, articleId, articleTitle, articl
   });
 
   useEffect(() => {
-    fetch(`/api/v1/articles/${articleId}/questions/sa`)
+    fetch(`/api/articles/${articleId}/questions/sa`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -259,7 +264,7 @@ function SAQuestion({
   async function onSubmitted(data: FormData) {
     setIsLoading(true);
     setPaused(true);
-    fetch(`/api/v1/articles/${articleId}/questions/sa/${resp.result.id}`, {
+    fetch(`/api/articles/${articleId}/questions/sa/${resp.result.id}`, {
       method: "POST",
       body: JSON.stringify({
         answer: data.answer,
@@ -277,7 +282,7 @@ function SAQuestion({
 
   async function onRating() {
     setIsLoading(true);
-    fetch(`/api/v1/articles/${articleId}/questions/sa/${resp.result.id}/rate`, {
+    fetch(`/api/articles/${articleId}/questions/sa/${resp.result.id}/rate`, {
       method: "POST",
       body: JSON.stringify({
         rating,
@@ -297,7 +302,7 @@ function SAQuestion({
       .finally(() => {
         setIsLoading(false);
       });
-    await fetch(`/api/v1/users/${userId}/activitylog`, {
+    await fetch(`/api/users/${userId}/activitylog`, {
       method: "POST",
       body: JSON.stringify({
         articleId: articleId,
@@ -305,7 +310,7 @@ function SAQuestion({
         activityStatus: ActivityStatus.Completed,
         timeTaken: timer,
         xpEarned: rating,
-        details: {data, title: articleTitle, level: articleLevel},
+        details: { data, title: articleTitle, level: articleLevel },
       }),
     });
     router.refresh();

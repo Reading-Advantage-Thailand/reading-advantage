@@ -94,6 +94,6 @@ export async function generateWordList(
     console.log(error);
     throw `failed to generate audio: ${
       error as unknown
-    } \n\n axios error: ${JSON.stringify((error as any).response.data)}`;
+    } \n\n error: ${JSON.stringify((error as any).response.data)}`;
   }
 }

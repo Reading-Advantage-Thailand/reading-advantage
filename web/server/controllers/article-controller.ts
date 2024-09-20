@@ -3,9 +3,18 @@ import db from "@/configs/firestore-config";
 import { Article } from "@/components/models/article-model";
 import { QuizStatus } from "@/components/models/questions-model";
 import { ExtendedNextRequest } from "./auth-controller";
+import { User } from "next-auth";
+
+// GET article by id
+// GET /api/articles/[id]
+interface RequestContext {
+  params: {
+    article_id: string;
+  };
+}
 
 // GET search articles
-// GET /api/v1/articles?level=10&type=fiction&genre=Fantasy
+// GET /api/articles?level=10&type=fiction&genre=Fantasy
 export async function getSearchArticles(req: ExtendedNextRequest) {
   try {
     const userId = req.session?.user.id as string;
@@ -110,13 +119,6 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
   }
 }
 
-// GET article by id
-// GET /api/v1/articles/[id]
-interface RequestContext {
-  params: {
-    article_id: string;
-  };
-}
 export async function getArticle(
   req: ExtendedNextRequest,
   { params: { article_id } }: RequestContext
@@ -202,13 +204,90 @@ export async function getArticle(
       );
     }
 
-    return NextResponse.json({
-      article,
-    });
+    return NextResponse.json(
+      {
+        article,
+      },
+      { status: 200 }
+    );
   } catch (err) {
     console.log("Error getting documents", err);
     return NextResponse.json(
       { message: "[getArticle] Internal server error", error: err },
+      { status: 500 }
+    );
+  }
+}
+
+export async function deleteArticle(
+  req: ExtendedNextRequest,
+  { params: { article_id } }: RequestContext
+) {
+  try {
+    const articlesRef = db.collection("new-articles");
+    //    const articlesRef = db.collection('test-collection');
+    const articleToDelete = await articlesRef.doc(article_id).get();
+
+    const mcSubcollection = await articleToDelete.ref
+      .collection("mc-questions")
+      .get();
+    mcSubcollection.docs.forEach((doc) => {
+      doc.ref
+        .delete()
+        .then(() => console.log(`Deleted doc: ${doc.id} from mc-questions`));
+    });
+
+    const saSubcollection = await articleToDelete.ref
+      .collection("sa-questions")
+      .get();
+    saSubcollection.docs.forEach((doc) => {
+      doc.ref
+        .delete()
+        .then(() => console.log(`Deleted doc: ${doc.id} from sa-questions`));
+    });
+
+    const laSubcollection = await articleToDelete.ref
+      .collection("la-questions")
+      .get();
+    laSubcollection.docs.forEach((doc) => {
+      doc.ref
+        .delete()
+        .then(() => console.log(`Deleted doc: ${doc.id} from la-questions`));
+    });
+
+    // if (userId && userRole.includes("SYSTEM")) {
+    //   if (!articleToDelete.exists) {
+    //     return new Response(
+    //       JSON.stringify({ message: "No such article found" }),
+    //       { status: 404 }
+    //     );
+    //   } else {
+    //     await articlesRef.doc(articleId).delete();
+    //     console.log("Document successfully deleted");
+    //     return new Response(JSON.stringify({ message: "Article deleted" }), {
+    //       status: 200,
+    //     });
+    //   }
+    // }
+
+    // if (!userRole.includes("SYSTEM")) {
+    //   return new Response(
+    //     JSON.stringify({
+    //       message: "Unauthorized",
+    //     }),
+    //     { status: 403 }
+    //   );
+    // }
+
+    return NextResponse.json(
+      {
+        message: "Article Deleted",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Internal server error" },
       { status: 500 }
     );
   }

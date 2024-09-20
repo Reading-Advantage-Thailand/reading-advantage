@@ -44,7 +44,12 @@ export type QuestionResponse = {
   state: QuestionState;
 };
 
-export default function MCQuestionCard({ userId, articleId, articleTitle, articleLevel }: Props) {
+export default function MCQuestionCard({
+  userId,
+  articleId,
+  articleTitle,
+  articleLevel,
+}: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
     results: [],
@@ -54,7 +59,7 @@ export default function MCQuestionCard({ userId, articleId, articleTitle, articl
   });
 
   useEffect(() => {
-    fetch(`/api/v1/articles/${articleId}/questions/mcq`)
+    fetch(`/api/articles/${articleId}/questions/mcq`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -69,7 +74,7 @@ export default function MCQuestionCard({ userId, articleId, articleTitle, articl
 
   const onRetake = () => {
     setState(QuestionState.LOADING);
-    fetch(`/api/v1/articles/${articleId}/questions/mcq`, {
+    fetch(`/api/articles/${articleId}/questions/mcq`, {
       method: "DELETE",
     })
       .then((res) => res.json())
@@ -167,7 +172,7 @@ function QuestionCardIncomplete({
   articleId: string;
   handleCompleted: () => void;
   articleTitle: string;
-  articleLevel: number;  
+  articleLevel: number;
 }) {
   return (
     <Card>
@@ -186,7 +191,7 @@ function QuestionCardIncomplete({
             handleCompleted={handleCompleted}
             userId={userId}
             articleTitle={articleTitle}
-            articleLevel={articleLevel}   
+            articleLevel={articleLevel}
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -221,7 +226,7 @@ function MCQeustion({
   const onSubmitted = async (questionId: string, option: string, i: number) => {
     setPaused(true);
     setLoadingAnswer(true);
-    fetch(`/api/v1/articles/${articleId}/questions/mcq/${questionId}`, {
+    fetch(`/api/articles/${articleId}/questions/mcq/${questionId}`, {
       method: "POST",
       body: JSON.stringify({
         answer: option,
@@ -250,7 +255,7 @@ function MCQeustion({
         countTest++;
       }
       if (countTest == 5) {
-        await fetch(`/api/v1/users/${userId}/activitylog`, {
+        await fetch(`/api/users/${userId}/activitylog`, {
           method: "POST",
           body: JSON.stringify({
             articleId: articleId,
@@ -262,7 +267,7 @@ function MCQeustion({
               correctAnswer,
               progress,
               title: articleTitle,
-              level: articleLevel
+              level: articleLevel,
             },
           }),
         });
