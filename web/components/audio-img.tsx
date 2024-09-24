@@ -16,7 +16,7 @@ export default function AudioImg({
 }: Props) {
   const [isPlaying, setIsPlaying] = React.useState(false);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   const handlePlay = useCallback(() => {
     if (audioRef.current) {
@@ -57,7 +57,7 @@ export default function AudioImg({
       <audio ref={audioRef}>
         <source src={audioUrl} />
       </audio>
-      {theme === "dark" ? (
+      {resolvedTheme === "dark" ? (
         <Image
           src={"/sound-play-sound-white.png"}
           alt="play sound"

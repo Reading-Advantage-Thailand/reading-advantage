@@ -94,6 +94,7 @@ export default {
           submitButton: "提交",
           errorCloze: "请填写所有空白处",
           submitArticle: "检查你的答案",
+          nextPassage: "下一段",
         },
         orderWordsPractice: {
           orderWords: "排序单词",
@@ -513,8 +514,8 @@ export default {
           emailNotFound: "未找到电子邮件",
           emailNotFoundDescription:
             "此电子邮件地址未关联任何账户。请检查拼写或尝试不同的电子邮件地址。",
-            studentAlreadyInClass: "学生已经在班级中",
-            studentAlreadyInClassDescription: "这个学生已经在这个班级中",
+          studentAlreadyInClass: "学生已经在班级中",
+          studentAlreadyInClassDescription: "这个学生已经在这个班级中",
         },
       },
     },
