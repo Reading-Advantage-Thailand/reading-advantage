@@ -313,7 +313,10 @@ export default function OrderSentences({ userId }: Props) {
                           }
                         >
                           <source
-                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${articleRandom[currentArticleIndex]?.timepoint}`}
+                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${
+                              articleRandom[currentArticleIndex]?.timepoint ??
+                              `${articleRandom[currentArticleIndex]?.articleId}.mp3`
+                            }`}
                           />
                         </audio>
                       </div>

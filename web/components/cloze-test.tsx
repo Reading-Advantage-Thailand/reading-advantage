@@ -465,7 +465,11 @@ export default function ClozeTest({ userId }: Props) {
                           }
                         >
                           <source
-                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${articleClozeTest[currentArticleIndex]?.audioFile}`}
+                            src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${
+                              articleClozeTest[currentArticleIndex]
+                                ?.audioFile ??
+                              `${articleClozeTest[currentArticleIndex]?.articleId}.mp3`
+                            }`}
                           />
                         </audio>
                       </div>

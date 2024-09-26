@@ -256,55 +256,51 @@ export default function FlashCard({
                     className="flex flex-col justify-center items-center space-x-3 gap-2"
                     key={uuidv4()}
                   >
-                    {data.word.audioUrl && (
-                      <>
-                        <div className="flex space-x-3 justify-center items-center">
-                          <AudioButton
-                            key={index}
-                            audioUrl={
-                              data.word.audioUrl
-                                ? data.word.audioUrl
-                                : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${data.articleId}.mp3`
-                            }
-                            startTimestamp={data?.word?.startTime}
-                            endTimestamp={data?.word?.endTime}
-                          />
-                          <FlipCardPracticeButton
-                            currentCard={() => currentCardFlipRef.current()}
-                          />
+                    <div className="flex space-x-3 justify-center items-center">
+                      {data.word.audioUrl && (
+                        <AudioButton
+                          key={index}
+                          audioUrl={
+                            data.word.audioUrl
+                              ? data.word.audioUrl
+                              : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${data.articleId}.mp3`
+                          }
+                          startTimestamp={data?.word?.startTime}
+                          endTimestamp={data?.word?.endTime}
+                        />
+                      )}
+
+                      <FlipCardPracticeButton
+                        currentCard={() => currentCardFlipRef.current()}
+                      />
+                    </div>
+                    {words.length != 0 && (
+                      <div className="flex flex-col gap-2 justify-center items-center">
+                        <FlashCardVocabularyPracticeButton
+                          index={currentCardIndex}
+                          nextCard={() => controlRef.current.nextCard()}
+                          words={words}
+                          showButton={showButton}
+                          setShowButton={setShowButton}
+                        />
+                        <div>
+                          {loading ? (
+                            <Button className="ml-auto font-medium" disabled>
+                              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                              {tWordList("flashcard.neverPracticeButton")}
+                            </Button>
+                          ) : (
+                            <Button
+                              className="ml-auto font-medium"
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDelete(data?.id)}
+                            >
+                              {tWordList("flashcard.neverPracticeButton")}
+                            </Button>
+                          )}
                         </div>
-                        {words.length != 0 && (
-                          <div className="flex flex-col gap-2 justify-center items-center">
-                            <FlashCardVocabularyPracticeButton
-                              index={currentCardIndex}
-                              nextCard={() => controlRef.current.nextCard()}
-                              words={words}
-                              showButton={showButton}
-                              setShowButton={setShowButton}
-                            />
-                            <div>
-                              {loading ? (
-                                <Button
-                                  className="ml-auto font-medium"
-                                  disabled
-                                >
-                                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                                  {tWordList("flashcard.neverPracticeButton")}
-                                </Button>
-                              ) : (
-                                <Button
-                                  className="ml-auto font-medium"
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDelete(data?.id)}
-                                >
-                                  {tWordList("flashcard.neverPracticeButton")}
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </>
+                      </div>
                     )}
                   </div>
                 );
