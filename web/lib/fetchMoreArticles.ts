@@ -58,7 +58,7 @@ export const fetchMoreArticles = async (
     }).toString();
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/passage?${queryParams}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/passage?${queryParams}`,
       {
         method: "GET",
         headers: headersObject,

@@ -1,6 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Bar, BarChart, CartesianGrid, Label, LabelList, XAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Label,
+  LabelList,
+  XAxis,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -33,13 +40,15 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerLevelChartProps) {
+export default function ArticlesPerLevelChart({
+  articlesPerLevel,
+}: ArticlesPerLevelChartProps) {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [chartData, setChartData] = useState<any[]>([]);
 
   const processData = (data: { [key: string]: number }) => {
-    if (!data) return[];
+    if (!data) return [];
     const processedData = Object.entries(data).map(([key, value]) => ({
       CEFR_Level: key,
       numberOfArticles: value,
@@ -47,8 +56,8 @@ export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerL
 
     processedData.sort((a, b) => {
       const getOrderValue = (cefr_Level: string) => {
-        if (cefr_Level.endsWith('-')) return 0;
-        if (cefr_Level.endsWith('+')) return 2;
+        if (cefr_Level.endsWith("-")) return 0;
+        if (cefr_Level.endsWith("+")) return 2;
         return 1;
       };
 
@@ -56,14 +65,18 @@ export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerL
         const match = cefr_Level.match(/(.*?)([-+])?$/);
         return {
           base: match ? match[1] : cefr_Level,
-          suffix: match && match[2] ? match[2] : ''
+          suffix: match && match[2] ? match[2] : "",
         };
       };
 
       const aParts = extractParts(a.CEFR_Level);
       const bParts = extractParts(b.CEFR_Level);
 
-      const baseLevelComparison = aParts.base.localeCompare(bParts.base, undefined, {numeric: true, sensitivity: 'base'});
+      const baseLevelComparison = aParts.base.localeCompare(
+        bParts.base,
+        undefined,
+        { numeric: true, sensitivity: "base" }
+      );
       if (baseLevelComparison !== 0) {
         return baseLevelComparison;
       }
@@ -76,30 +89,31 @@ export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerL
 
   const handleSendDates = async () => {
     if (startDate && endDate) {
-      const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/api/system/dashboard`);
-      
-      url.searchParams.append('startDate', startDate);
-      url.searchParams.append('endDate', endDate);
+      const url = new URL(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/system/dashboard`
+      );
+
+      url.searchParams.append("startDate", startDate);
+      url.searchParams.append("endDate", endDate);
 
       try {
         const response = await fetch(url.toString(), {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         });
 
         const data = await response.json();
-        
+
         if (data.data && data.data) {
           processData(data.data);
-        } 
-
+        }
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
       }
     } else {
-      alert('Please select both start and end dates.');
+      alert("Please select both start and end dates.");
     }
   };
 
@@ -107,7 +121,7 @@ export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerL
     if (articlesPerLevel) {
       processData(articlesPerLevel.data);
     } else {
-      console.error('Unexpected data structure:', articlesPerLevel);
+      console.error("Unexpected data structure:", articlesPerLevel);
     }
   }, [articlesPerLevel]);
 
@@ -118,7 +132,10 @@ export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerL
     }
   }, [startDate, endDate]);
 
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>, setDate: React.Dispatch<React.SetStateAction<string>>) => {
+  const handleDateChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    setDate: React.Dispatch<React.SetStateAction<string>>
+  ) => {
     setDate(event.target.value);
   };
 
@@ -146,33 +163,32 @@ export default function ArticlesPerLevelChart({ articlesPerLevel }: ArticlesPerL
         </div>
         <ChartContainer config={chartConfig}>
           {chartData.length > 0 ? (
-          <BarChart data={chartData}>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="CEFR_Level"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
-            <ChartTooltip
-              content={<ChartTooltipContent indicator="dashed" />}
-              cursor={false}
-            />
-            <Bar
-              dataKey="numberOfArticles"
-              fill={chartConfig.articles.color}
-              radius={4}
-            >
-              <LabelList 
-              position="top"
-              offset={12}
-              fontSize={12}
-              className="fill-foreground"
+            <BarChart data={chartData}>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="CEFR_Level"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                tickFormatter={(value) => value.slice(0, 3)}
               />
+              <ChartTooltip
+                content={<ChartTooltipContent indicator="dashed" />}
+                cursor={false}
+              />
+              <Bar
+                dataKey="numberOfArticles"
+                fill={chartConfig.articles.color}
+                radius={4}
+              >
+                <LabelList
+                  position="top"
+                  offset={12}
+                  fontSize={12}
+                  className="fill-foreground"
+                />
               </Bar>
-          </BarChart>
-
+            </BarChart>
           ) : (
             <div className="flex items-center justify-center h-32 text-muted-foreground">
               No data available

@@ -156,7 +156,7 @@ export default function FlashCardPracticeButton({
     setLogs(newLogs);
 
     await fetch(
-      `/api/assistant/ts-fsrs-test/flash-card/${newCards[index].id}`,
+      `/api/v1/assistant/ts-fsrs-test/flash-card/${newCards[index].id}`,
       {
         method: "POST",
         body: JSON.stringify({

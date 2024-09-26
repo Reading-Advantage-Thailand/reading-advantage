@@ -81,7 +81,7 @@ export default function ClozeTest({ userId }: Props) {
 
   const getUserSentenceSaved = async () => {
     try {
-      const res = await fetch(`/api/users/sentences/${userId}`);
+      const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
 
       // step 1 : sort Article sentence: ID and SN due date expired
@@ -104,7 +104,7 @@ export default function ClozeTest({ userId }: Props) {
   };
 
   const getArticle = async (articleId: string, sn: number) => {
-    const res = await fetch(`/api/articles/${articleId}`);
+    const res = await fetch(`/api/v1/articles/${articleId}`);
     const data = await res.json();
     const textList = splitTextIntoSentences(data.article.passage);
 
@@ -343,7 +343,7 @@ export default function ClozeTest({ userId }: Props) {
         if (item.correctWords) {
           try {
             const updateScrore = await fetch(
-              `/api/users/${userId}/activitylog`,
+              `/api/v1/users/${userId}/activitylog`,
               {
                 method: "POST",
                 body: JSON.stringify({

@@ -176,3 +176,63 @@ export async function getActivityLog(
     });
   }
 }
+
+export async function getUserRecords(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const limit = req.nextUrl.searchParams.get("limit") || 10;
+    const nextPage = req.nextUrl.searchParams.get("nextPage");
+
+    const records = await db
+      .collection("users")
+      .doc(id)
+      .collection("article-records")
+      .orderBy("created_at", "desc")
+      .get();
+
+    const results = records.docs.map((doc) => {
+      return {
+        id: doc.id,
+        ...doc.data(),
+      };
+    });
+
+    return NextResponse.json({
+      results,
+    });
+  } catch (error) {
+    console.error("Error getting documents", error);
+    return NextResponse.json(
+      { message: "Internal server error", results: [] },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getUserHeatmap(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const records = await db
+      .collection("users")
+      .doc(id)
+      .collection("heatmap")
+      .doc("activity")
+      .get();
+
+    const results = records.data();
+
+    return NextResponse.json({
+      results,
+    });
+  } catch (error) {
+    console.log("Error getting documents", error);
+    return NextResponse.json(
+      { message: "Internal server error", results: [] },
+      { status: 500 }
+    );
+  }
+}

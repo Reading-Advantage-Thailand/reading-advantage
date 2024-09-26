@@ -20,7 +20,7 @@ export const metadata = {
 };
 
 async function getArticle(articleId: string) {
-  return fetchData(`/api/articles/${articleId}`);
+  return fetchData(`/api/v1/articles/${articleId}`);
 }
 
 export default async function ArticleQuizPage({

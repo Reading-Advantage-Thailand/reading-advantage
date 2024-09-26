@@ -83,7 +83,7 @@ export default function SAQuestionCard({
   });
 
   useEffect(() => {
-    fetch(`/api/articles/${articleId}/questions/sa`)
+    fetch(`/api/v1/articles/${articleId}/questions/sa`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -264,7 +264,7 @@ function SAQuestion({
   async function onSubmitted(data: FormData) {
     setIsLoading(true);
     setPaused(true);
-    fetch(`/api/articles/${articleId}/questions/sa/${resp.result.id}`, {
+    fetch(`/api/v1/articles/${articleId}/questions/sa/${resp.result.id}`, {
       method: "POST",
       body: JSON.stringify({
         answer: data.answer,
@@ -282,7 +282,7 @@ function SAQuestion({
 
   async function onRating() {
     setIsLoading(true);
-    fetch(`/api/articles/${articleId}/questions/sa/${resp.result.id}/rate`, {
+    fetch(`/api/v1/articles/${articleId}/questions/sa/${resp.result.id}/rate`, {
       method: "POST",
       body: JSON.stringify({
         rating,
@@ -302,7 +302,7 @@ function SAQuestion({
       .finally(() => {
         setIsLoading(false);
       });
-    await fetch(`/api/users/${userId}/activitylog`, {
+    await fetch(`/api/v1/users/${userId}/activitylog`, {
       method: "POST",
       body: JSON.stringify({
         articleId: articleId,

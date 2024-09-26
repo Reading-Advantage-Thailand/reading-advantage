@@ -217,7 +217,7 @@ export default function FirstRunLevelTest({
               onClick={async () => {
                 try {
                   const updateResult = await fetch(
-                    `/api/users/${userId}/activitylog`,
+                    `/api/v1/users/${userId}/activitylog`,
                     {
                       method: "POST",
                       body: JSON.stringify({

@@ -85,7 +85,7 @@ export default function FlashCard({
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
   const getUserSentenceSaved = async () => {
     try {
-      const res = await fetch(`/api/users/wordlist/${userId}`);
+      const res = await fetch(`/api/v1/users/wordlist/${userId}`);
       const data = await res.json();
 
       const startOfDay = date_scheduler(new Date(), 0, true);
@@ -113,7 +113,7 @@ export default function FlashCard({
           try {
             if (!filterDataUpdateScore[i]?.update_score) {
               await fetch(
-                `/api/assistant/ts-fsrs-test/flash-card/${filterDataUpdateScore[i]?.id}`,
+                `/api/v1/assistant/ts-fsrs-test/flash-card/${filterDataUpdateScore[i]?.id}`,
                 {
                   method: "POST",
                   body: JSON.stringify({
@@ -124,7 +124,7 @@ export default function FlashCard({
                 }
               );
               const updateScrore = await fetch(
-                `/api/users/${userId}/activitylog`,
+                `/api/v1/users/${userId}/activitylog`,
                 {
                   method: "POST",
                   body: JSON.stringify({
@@ -183,7 +183,7 @@ export default function FlashCard({
       setLoading(true);
       // loop for delete all words
 
-      const res = await fetch(`/api/users/wordlist/${id}`, {
+      const res = await fetch(`/api/v1/users/wordlist/${id}`, {
         method: "DELETE",
         body: JSON.stringify({
           id,

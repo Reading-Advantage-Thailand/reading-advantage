@@ -61,7 +61,7 @@ const chartConfig = {
 
 async function fetchActivity() {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/activity`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/activity`
   );
 
   const data = await response.json();

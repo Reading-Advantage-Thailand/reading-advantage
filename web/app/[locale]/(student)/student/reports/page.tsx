@@ -15,7 +15,7 @@ import { getScopedI18n } from "@/locales/server";
 type Props = {};
 
 async function getUserArticleRecords(userId: string) {
-  return fetchData(`/api/users/${userId}/activitylog`);
+  return fetchData(`/api/v1/users/${userId}/activitylog`);
 }
 
 export default async function ReportsPage({}: Props) {
