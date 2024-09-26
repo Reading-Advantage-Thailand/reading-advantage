@@ -59,7 +59,7 @@ export default function MCQuestionCard({
   });
 
   useEffect(() => {
-    fetch(`/api/articles/${articleId}/questions/mcq`)
+    fetch(`/api/v1/articles/${articleId}/questions/mcq`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -74,7 +74,7 @@ export default function MCQuestionCard({
 
   const onRetake = () => {
     setState(QuestionState.LOADING);
-    fetch(`/api/articles/${articleId}/questions/mcq`, {
+    fetch(`/api/v1/articles/${articleId}/questions/mcq`, {
       method: "DELETE",
     })
       .then((res) => res.json())
@@ -226,7 +226,7 @@ function MCQeustion({
   const onSubmitted = async (questionId: string, option: string, i: number) => {
     setPaused(true);
     setLoadingAnswer(true);
-    fetch(`/api/articles/${articleId}/questions/mcq/${questionId}`, {
+    fetch(`/api/v1/articles/${articleId}/questions/mcq/${questionId}`, {
       method: "POST",
       body: JSON.stringify({
         answer: option,
@@ -255,7 +255,7 @@ function MCQeustion({
         countTest++;
       }
       if (countTest == 5) {
-        await fetch(`/api/users/${userId}/activitylog`, {
+        await fetch(`/api/v1/users/${userId}/activitylog`, {
           method: "POST",
           body: JSON.stringify({
             articleId: articleId,

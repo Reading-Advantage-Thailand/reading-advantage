@@ -24,7 +24,7 @@ type Props = {
 
 async function fetchArticles(params: string) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/articles?${params}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/articles?${params}`
   );
 
   const data = await response.json();

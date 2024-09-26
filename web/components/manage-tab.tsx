@@ -92,7 +92,7 @@ export default function ManageTab({ userId }: Props) {
 
   const getUserSentenceSaved = async () => {
     try {
-      const res = await fetch(`/api/users/sentences/${userId}`);
+      const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
       const startOfDay = date_scheduler(new Date(), 0, true);
       const filteredData = await data.sentences
@@ -117,12 +117,12 @@ export default function ManageTab({ userId }: Props) {
           try {
             if (!filterDataUpdateScore[i]?.update_score) {
               const updateDatabase = await axios.post(
-                `/api/ts-fsrs-test/${filterDataUpdateScore[i]?.id}/flash-card`,
+                `/api/v1/ts-fsrs-test/${filterDataUpdateScore[i]?.id}/flash-card`,
                 { ...filterDataUpdateScore[i], update_score: true }
               );
 
               const updateScrore = await fetch(
-                `/api/users/${userId}/activitylog`,
+                `/api/v1/users/${userId}/activitylog`,
                 {
                   method: "POST",
                   body: JSON.stringify({
@@ -250,7 +250,7 @@ export default function ManageTab({ userId }: Props) {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/users/sentences/${id}`, {
+      const res = await fetch(`/api/v1/users/sentences/${id}`, {
         method: "DELETE",
         body: JSON.stringify({
           id,

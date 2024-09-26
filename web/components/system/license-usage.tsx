@@ -22,7 +22,7 @@ const GaugeChart = dynamic(() => import("react-gauge-chart"), { ssr: false });
 
 async function fetchLicense() {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/licenses`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/licenses`
   );
 
   const data = await response.json();

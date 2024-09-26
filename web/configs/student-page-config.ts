@@ -40,10 +40,10 @@ export const studentPageConfig: StudentPageConfig = {
       href: "/student/reports",
       icon: "dashboard",
     },
-    // {
-    //   title: "history",
-    //   href: "/student/history",
-    //   icon: "record",
-    // },
+    {
+      title: "history",
+      href: "/student/history",
+      icon: "record",
+    },
   ],
 };

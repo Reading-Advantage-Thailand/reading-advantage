@@ -21,7 +21,7 @@ export default async function SystemDashboardPage({
         searchParams as Record<string, string>
       ).toString();
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/system/dashboard?${queryString}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/system/dashboard?${queryString}`,
         {
           method: "GET",
           headers: headers(),

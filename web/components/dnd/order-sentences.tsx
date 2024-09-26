@@ -48,7 +48,7 @@ export default function OrderSentences({ userId }: Props) {
 
   const getUserSentenceSaved = async () => {
     try {
-      const res = await fetch(`/api/users/sentences/${userId}`);
+      const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
 
       // step 1 : find Article sentence: ID and SN due date expired
@@ -72,7 +72,7 @@ export default function OrderSentences({ userId }: Props) {
   };
 
   const getArticle = async (articleId: string, sn: number) => {
-    const res = await fetch(`/api/articles/${articleId}`);
+    const res = await fetch(`/api/v1/articles/${articleId}`);
     const data = await res.json();
 
     const textList = splitTextIntoSentences(data.article.passage);
@@ -212,14 +212,17 @@ export default function OrderSentences({ userId }: Props) {
 
     if (isEqual) {
       try {
-        const updateScrore = await fetch(`/api/users/${userId}/activitylog`, {
-          method: "POST",
-          body: JSON.stringify({
-            activityType: ActivityType.SentenceOrdering,
-            activityStatus: ActivityStatus.Completed,
-            xpEarned: UserXpEarned.Sentence_Ordering,
-          }),
-        });
+        const updateScrore = await fetch(
+          `/api/v1/users/${userId}/activitylog`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              activityType: ActivityType.SentenceOrdering,
+              activityStatus: ActivityStatus.Completed,
+              xpEarned: UserXpEarned.Sentence_Ordering,
+            }),
+          }
+        );
         if (updateScrore?.status === 200) {
           toast({
             title: t("toast.success"),

@@ -73,7 +73,7 @@ export default function FlashCard({
 
   const getUserSentenceSaved = async () => {
     try {
-      const res = await fetch(`/api/users/sentences/${userId}`);
+      const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
 
       const startOfDay = date_scheduler(new Date(), 0, true);
@@ -103,7 +103,7 @@ export default function FlashCard({
           try {
             if (!filterDataUpdateScore[i]?.update_score) {
               await fetch(
-                `/api/assistant/ts-fsrs-test/flash-card/${filterDataUpdateScore[i]?.id}`,
+                `/api/v1/assistant/ts-fsrs-test/flash-card/${filterDataUpdateScore[i]?.id}`,
                 {
                   method: "POST",
                   body: JSON.stringify({
@@ -114,7 +114,7 @@ export default function FlashCard({
               );
 
               const updateScrore = await fetch(
-                `/api/users/${userId}/activitylog`,
+                `/api/v1/users/${userId}/activitylog`,
                 {
                   method: "POST",
                   body: JSON.stringify({
@@ -174,7 +174,7 @@ export default function FlashCard({
     try {
       setLoading(true);
       // loop for delete all sentences
-      const res = await fetch(`/api/users/sentences/${id}`, {
+      const res = await fetch(`/api/v1/users/sentences/${id}`, {
         method: "DELETE",
         body: JSON.stringify({
           id,

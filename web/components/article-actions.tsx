@@ -31,7 +31,7 @@ export default function ArticleActions({ article, articleId }: Props) {
   const handleDelete = async (articleId: string) => {
     console.log(`Deleted article with ID: ${articleId}`);
     try {
-      await fetch(`/api/passage/${articleId}`, { method: "DELETE" });
+      await fetch(`/api/v1/passage/${articleId}`, { method: "DELETE" });
       setOpen(false);
       toast({
         title: "Article Deleted",

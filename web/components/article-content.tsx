@@ -58,7 +58,7 @@ async function getTranslateSentence(
   targetLanguage: string
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
-    const res = await fetch(`/api/assistant/translate/${articleId}`, {
+    const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
       method: "POST",
       body: JSON.stringify({ type: "passage", targetLanguage }),
     });
@@ -231,25 +231,27 @@ export default function ArticleContent({
           endTimepoint = audioRef.current?.duration as number;
         }
 
-        const resSaveSentences = await fetch(`/api/users/sentences/${userId}`, {
-          method: "POST",
-          body: JSON.stringify({
-            sentence: sentenceList[selectedSentence as number].sentence.replace(
-              "~~",
-              ""
-            ),
-            sn: selectedSentence,
-            articleId: article.id,
-            translation: {
-              th: translate[selectedSentence as number],
-            },
-            audioUrl: sentenceList[selectedSentence as number].audioUrl,
-            timepoint: sentenceList[selectedSentence as number].startTime,
-            endTimepoint: endTimepoint,
-            saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
-            ...card,
-          }),
-        });
+        const resSaveSentences = await fetch(
+          `/api/v1/users/sentences/${userId}`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              sentence: sentenceList[
+                selectedSentence as number
+              ].sentence.replace("~~", ""),
+              sn: selectedSentence,
+              articleId: article.id,
+              translation: {
+                th: translate[selectedSentence as number],
+              },
+              audioUrl: sentenceList[selectedSentence as number].audioUrl,
+              timepoint: sentenceList[selectedSentence as number].startTime,
+              endTimepoint: endTimepoint,
+              saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
+              ...card,
+            }),
+          }
+        );
 
         if (resSaveSentences.status === 200) {
           toast({

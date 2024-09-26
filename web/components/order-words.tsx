@@ -52,7 +52,7 @@ export default function OrderWords({ userId }: Props) {
 
   const getUserSentenceSaved = async () => {
     try {
-      const res = await fetch(`/api/users/sentences/${userId}`);
+      const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
 
       // step 1 : sort Article sentence: ID and SN due date expired
@@ -142,14 +142,17 @@ export default function OrderWords({ userId }: Props) {
   const onNextPassage = async () => {
     if (resultOrderWords) {
       try {
-        const updateScrore = await fetch(`/api/users/${userId}/activitylog`, {
-          method: "POST",
-          body: JSON.stringify({
-            activityType: ActivityType.SentenceWordOrdering,
-            activityStatus: ActivityStatus.Completed,
-            xpEarned: UserXpEarned.Sentence_Word_Ordering,
-          }),
-        });
+        const updateScrore = await fetch(
+          `/api/v1/users/${userId}/activitylog`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              activityType: ActivityType.SentenceWordOrdering,
+              activityStatus: ActivityStatus.Completed,
+              xpEarned: UserXpEarned.Sentence_Word_Ordering,
+            }),
+          }
+        );
         if (updateScrore?.status === 200) {
           router.refresh();
           toast({

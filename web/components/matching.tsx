@@ -75,14 +75,17 @@ export default function Matching({ userId }: Props) {
     const updateScoreCorrectMatches = async () => {
       if (correctMatches.length === 10) {
         try {
-          const updateScrore = await fetch(`/api/users/${userId}/activitylog`, {
-            method: "POST",
-            body: JSON.stringify({
-              activityType: ActivityType.SentenceMatching,
-              activityStatus: ActivityStatus.Completed,
-              xpEarned: UserXpEarned.Sentence_Matching,
-            }),
-          });
+          const updateScrore = await fetch(
+            `/api/v1/users/${userId}/activitylog`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                activityType: ActivityType.SentenceMatching,
+                activityStatus: ActivityStatus.Completed,
+                xpEarned: UserXpEarned.Sentence_Matching,
+              }),
+            }
+          );
           if (updateScrore?.status === 200) {
             router.refresh();
             toast({
@@ -107,7 +110,7 @@ export default function Matching({ userId }: Props) {
 
   const getUserSentenceSaved = async () => {
     try {
-      const res = await fetch(`/api/users/sentences/${userId}`);
+      const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
 
       console.log(data);

@@ -44,7 +44,7 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
           laqQuestion?.result?.question,
         ];
 
-        const resOpenAi = await fetch(`/api/assistant/chatbot`, {
+        const resOpenAi = await fetch(`/api/v1/assistant/chatbot`, {
           method: "POST",
           body: JSON.stringify({
             newMessage,

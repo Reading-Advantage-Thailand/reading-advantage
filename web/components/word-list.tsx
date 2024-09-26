@@ -67,7 +67,7 @@ export default function WordList({ article, articleId, userId }: Props) {
   const handleWordList = useCallback(async () => {
     try {
       setLoading(true); // Start loading
-      const resWordlist = await fetch(`/api/assistant/wordlist`, {
+      const resWordlist = await fetch(`/api/v1/assistant/wordlist`, {
         method: "POST",
         body: JSON.stringify({ article, articleId }),
       });
@@ -125,7 +125,7 @@ export default function WordList({ article, articleId, userId }: Props) {
           foundWordsList: foundWordsList,
         };
 
-        const res = await fetch(`/api/users/wordlist/${userId}`, {
+        const res = await fetch(`/api/v1/users/wordlist/${userId}`, {
           method: "POST",
           body: JSON.stringify(param),
         });

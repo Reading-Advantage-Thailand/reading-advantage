@@ -47,7 +47,7 @@ export function ChangeUsernameForm({
     try {
       setIsLoading(true);
       // Update the user's username
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(`/api/v1/users/${userId}`, {
         method: "PATCH",
         body: JSON.stringify(data),
       });

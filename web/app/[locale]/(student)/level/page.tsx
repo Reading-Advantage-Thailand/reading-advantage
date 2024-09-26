@@ -17,7 +17,7 @@ export default async function LevelPage() {
 
   async function getLevelTestData() {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/level-test`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/level-test`,
       {
         method: "GET",
         headers: headers(),

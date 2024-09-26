@@ -49,7 +49,7 @@ export default function MatchingWords({ userId }: Props) {
 
   const getUserSentenceSaved = async () => {
     try {
-      const res = await fetch(`/api/users/wordlist/${userId}`);
+      const res = await fetch(`/api/v1/users/wordlist/${userId}`);
       const data = await res.json();
 
       // step 1 : sort Article sentence: ID and SN due date expired
@@ -132,14 +132,17 @@ export default function MatchingWords({ userId }: Props) {
       if (correctMatches.length === 10) {
         try {
           // const result = await updateScore(5, userId);
-          const updateScrore = await fetch(`/api/users/${userId}/activitylog`, {
-            method: "POST",
-            body: JSON.stringify({
-              activityType: ActivityType.VocabularyMatching,
-              activityStatus: ActivityStatus.Completed,
-              xpEarned: UserXpEarned.Vocabulary_Matching,
-            }),
-          });
+          const updateScrore = await fetch(
+            `/api/v1/users/${userId}/activitylog`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                activityType: ActivityType.VocabularyMatching,
+                activityStatus: ActivityStatus.Completed,
+                xpEarned: UserXpEarned.Vocabulary_Matching,
+              }),
+            }
+          );
           if (updateScrore?.status === 200) {
             router.refresh();
             toast({

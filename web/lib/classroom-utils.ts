@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 async function fetchData(endpoint: string) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom/${endpoint}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${endpoint}`,
       {
         method: "GET",
         headers: headers(),
@@ -132,7 +132,7 @@ export async function StudentsData({
   async function getAllStudentData() {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom/students`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/students`,
         {
           method: "GET",
           headers: headers(),
@@ -150,7 +150,7 @@ export async function StudentsData({
   async function getAllClassroom() {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom/`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/`,
         {
           method: "GET",
           headers: headers(),
@@ -313,7 +313,7 @@ export async function StudentsData({
   async function getUserActivityRecords(userId: string) {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/activitylog`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${userId}/activitylog`,
         {
           method: "GET",
           headers: headers(),
@@ -427,7 +427,7 @@ export async function ClassesData() {
   async function getAllClassroom() {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom`,
         {
           method: "GET",
           headers: headers(),
@@ -444,7 +444,7 @@ export async function ClassesData() {
   async function getAllStudentData() {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom/students`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/students`,
         {
           method: "GET",
           headers: headers(),
@@ -462,7 +462,7 @@ export async function ClassesData() {
   async function getAllTeachersData() {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/classroom/teachers`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/teachers`,
         {
           method: "GET",
           headers: headers(),

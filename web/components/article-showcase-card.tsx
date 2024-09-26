@@ -17,7 +17,7 @@ async function getTranslateSentence(
   targetLanguage: string
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
-    const res = await fetch(`/api/assistant/translate/${articleId}`, {
+    const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
       method: "POST",
       body: JSON.stringify({ type: "summary", targetLanguage }),
     });
@@ -64,7 +64,7 @@ const ArticleShowcaseCard = ({ article, userId }: Props) => {
     <Link
       href={`/student/read/${article.id}`}
       onClick={() =>
-        fetch(`/api/users/${userId}/activitylog`, {
+        fetch(`/api/v1/users/${userId}/activitylog`, {
           method: "POST",
           body: JSON.stringify({
             articleId: article.id,

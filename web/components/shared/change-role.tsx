@@ -70,7 +70,7 @@ export default function ChangeRole({ userId, userRole, className }: Props) {
     try {
       setIsLoading(true);
       // Update the user's role
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(`/api/v1/users/${userId}`, {
         method: "PATCH",
         body: JSON.stringify({ role: selectedRole }),
       });
