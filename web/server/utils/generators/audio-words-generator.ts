@@ -7,7 +7,6 @@ import base64 from "base64-js";
 import fs from "fs";
 import uploadToBucket from "@/utils/uploadToBucket";
 import db from "@/configs/firestore-config";
-import axios from "axios";
 
 export type WordListResponse = {
   vocabulary: string;

@@ -35,11 +35,11 @@ export const studentPageConfig: StudentPageConfig = {
       href: "/student/vocabulary",
       icon: "book",
     },
-    // {
-    //   title: "reports",
-    //   href: "/student/reports",
-    //   icon: "dashboard",
-    // },
+    {
+      title: "reports",
+      href: "/student/reports",
+      icon: "dashboard",
+    },
     // {
     //   title: "history",
     //   href: "/student/history",
