@@ -433,6 +433,7 @@ export async function ClassesData() {
           headers: headers(),
         }
       );
+
       return res.json();
     } catch (error) {
       console.error("Failed to parse JSON", error);
