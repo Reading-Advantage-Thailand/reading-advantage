@@ -10,7 +10,6 @@ import uploadToBucket from "@/utils/uploadToBucket";
 import storage from "@/utils/storage";
 import fs from "fs";
 import openai from "@/utils/openai";
-import axios from "axios";
 import { generateAudio } from "../utils/generators/audio-generator";
 import { Article } from "../models/article";
 import {
@@ -355,10 +354,6 @@ async function validateImage(
         prompt: imageDesc,
         size: "1024x1024",
       });
-
-      // const image = await axios.get(response.data[0].url as string, {
-      //   responseType: "arraybuffer",
-      // });
 
       const imageResponse = await fetch(response.data[0].url as string);
       const imageBuffer = await imageResponse.arrayBuffer();

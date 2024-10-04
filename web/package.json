@@ -35,7 +35,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.438.0",
     "next": "14.2.7",
-    "next-auth": "^4.24.7",
+    "next-auth": "^4.24.8",
     "next-connect": "^1.0.0",
     "next-international": "^1.2.4",
     "next-intl": "^3.19.1",

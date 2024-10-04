@@ -2,7 +2,6 @@ import openai from "@/utils/openai";
 import uploadToBucket from "@/utils/uploadToBucket";
 import fs from "fs";
 import { IMAGE_URL } from "../../constants";
-import axios from "axios";
 import { buffer } from "stream/consumers";
 
 interface GenerateImageParams {
@@ -20,10 +19,6 @@ export async function generateImage(
       prompt: params.imageDesc,
       size: "1024x1024",
     });
-
-    // const image = await axios.get(response.data[0].url as string, {
-    //     responseType: "arraybuffer",
-    // });
 
     const imageResponse = await fetch(response.data[0].url as string);
     const imageBuffer = await imageResponse.arrayBuffer();

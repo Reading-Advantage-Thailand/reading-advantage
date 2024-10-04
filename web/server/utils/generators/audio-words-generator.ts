@@ -50,28 +50,6 @@ export async function generateAudioForWord({
         : [];
       let allTimePoints: TimePoint[] = [];
 
-      // const response = await axios.post(
-      //   `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize`,
-      //   {
-      //     input: { ssml: contentToSSML(vocabulary) },
-      //     voice: {
-      //       languageCode: "en-US",
-      //       name: voice,
-      //     },
-      //     audioConfig: {
-      //       audioEncoding: "MP3",
-      //       pitch: 0,
-      //       speakingRate: 1,
-      //     },
-      //     enableTimePointing: ["SSML_MARK"],
-      //   },
-      //   {
-      //     params: { key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY },
-      //   }
-      // );
-
-      // const audio = response?.data?.audioContent;
-      // allTimePoints = response?.data?.timepoints;
       const response = await fetch(
         `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize?key=${process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY}`,
         {
