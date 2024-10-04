@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
-import axios from "axios";
 import { toast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";

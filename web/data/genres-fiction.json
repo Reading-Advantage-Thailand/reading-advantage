@@ -1,0 +1,147 @@
+{
+   "Genres":[
+      {
+         "Name":"Contemporary Fiction",
+         "Subgenres":[
+            "Realistic Contemporary",
+            "Domestic Fiction",
+            "Urban Fiction",
+            "Social Commentary",
+            "Relationship Drama",
+            "Coming-of-Age"
+         ]
+      },
+      {
+         "Name":"Historical Fiction",
+         "Subgenres":[
+            "Ancient History",
+            "Medieval Era",
+            "19th Century",
+            "World War I and II",
+            "Historical Romance",
+            "Regency Era"
+         ]
+      },
+      {
+         "Name":"Horror",
+         "Subgenres":[
+            "Supernatural Horror",
+            "Psychological Horror",
+            "Gothic Horror",
+            "Lovecraftian Horror",
+            "Haunted House",
+            "Body Horror"
+         ]
+      },
+      {
+         "Name":"Fantasy",
+         "Subgenres":[
+            "High Fantasy",
+            "Low Fantasy",
+            "Urban Fantasy",
+            "Epic Fantasy",
+            "Sword and Sorcery",
+            "Portal Fantasy"
+         ]
+      },
+      {
+         "Name":"Literary Fiction",
+         "Subgenres":[
+            "Character-driven",
+            "Experimental",
+            "Metafiction",
+            "Cultural Commentary",
+            "Stream of Consciousness",
+            "Postmodern Fiction"
+         ]
+      },
+      {
+         "Name":"Mystery/Thriller",
+         "Subgenres":[
+            "Crime Thriller",
+            "Cozy Mystery",
+            "Detective Noir",
+            "Legal Thriller",
+            "Spy Thriller",
+            "Political Thriller"
+         ]
+      },
+      {
+         "Name":"Romance",
+         "Subgenres":[
+            "Contemporary Romance",
+            "Historical Romance",
+            "Paranormal Romance",
+            "Romantic Suspense",
+            "Regency Romance",
+            "Second Chance Romance"
+         ]
+      },
+      {
+         "Name":"Science Fiction",
+         "Subgenres":[
+            "Hard Science Fiction",
+            "Space Opera",
+            "Cyberpunk",
+            "Dystopian Fiction",
+            "Alien Encounters",
+            "Time Travel"
+         ]
+      },
+      {
+         "Name":"War",
+         "Subgenres":[
+            "Historical War Fiction",
+            "Military Thriller",
+            "Post-Apocalyptic War",
+            "Espionage",
+            "War Romance",
+            "Alternate History War"
+         ]
+      },
+      {
+         "Name":"Westerns",
+         "Subgenres":[
+            "Classic Western",
+            "Western Romance",
+            "Weird West",
+            "Frontier Adventure",
+            "Bounty Hunter",
+            "Gold Rush"
+         ]
+      },
+      {
+         "Name":"Children's Fiction",
+         "Subgenres":[
+            "Early Readers",
+            "Middle Grade Fiction",
+            "Adventure Stories",
+            "Fantasy for Kids",
+            "Mystery for Kids",
+            "Animal Adventures"
+         ]
+      },
+      {
+         "Name":"Young Adult Fiction",
+         "Subgenres":[
+            "Contemporary YA",
+            "Fantasy YA",
+            "Dystopian YA",
+            "Romance YA",
+            "Science Fiction YA",
+            "Historical YA"
+         ]
+      },
+      {
+         "Name":"Adult Fiction",
+         "Subgenres":[
+            "Literary Fiction",
+            "Mystery/Thriller",
+            "Romance",
+            "Science Fiction",
+            "Historical Fiction",
+            "Psychological Fiction"
+         ]
+      }
+   ]
+}

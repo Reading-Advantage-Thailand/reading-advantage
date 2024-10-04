@@ -1,7 +1,6 @@
 "use client";
 import * as React from "react";
 import { toast } from "./ui/use-toast";
-import axios from "axios";
 import { formatDate, formatTimestamp } from "@/lib/utils";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
@@ -116,9 +115,15 @@ export default function ManageTab({ userId }: Props) {
         for (let i = 0; i < filterDataUpdateScore.length; i++) {
           try {
             if (!filterDataUpdateScore[i]?.update_score) {
-              const updateDatabase = await axios.post(
-                `/api/v1/ts-fsrs-test/${filterDataUpdateScore[i]?.id}/flash-card`,
-                { ...filterDataUpdateScore[i], update_score: true }
+              await fetch(
+                `/api/v1/assistant/ts-fsrs-test/flash-card/${filterDataUpdateScore[i]?.id}`,
+                {
+                  method: "POST",
+                  body: JSON.stringify({
+                    ...filterDataUpdateScore[i],
+                    update_score: true,
+                  }),
+                }
               );
 
               const updateScrore = await fetch(

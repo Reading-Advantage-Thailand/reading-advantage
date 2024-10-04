@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
 import dayjs from "dayjs";

@@ -8,7 +8,6 @@ import base64 from "base64-js";
 import fs from "fs";
 import uploadToBucket from "@/utils/uploadToBucket";
 import db from "@/configs/firestore-config";
-import axios from "axios";
 
 interface GenerateAudioParams {
   passage: string;
@@ -54,26 +53,6 @@ export async function generateAudio({
   const voice =
     AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
   const generate = async (ssml: string, index: number) => {
-    // const response = await axios.post(
-    //     `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize`,
-    //     {
-    //         input: { ssml: ssml },
-    //         voice: {
-    //             languageCode: "en-US",
-    //             name: voice,
-    //         },
-    //         audioConfig: {
-    //             audioEncoding: "MP3",
-    //             pitch: 0,
-    //             speakingRate: 1,
-    //         },
-    //         enableTimePointing: ["SSML_MARK"],
-    //     },
-    //     {
-    //         params: { key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY },
-    //     }
-    // );
-    // const audio = response.data.audioContent;
     const response = await fetch(
       `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize?key=${process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY}`,
       {
