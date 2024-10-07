@@ -495,15 +495,26 @@ export async function ClassesData() {
 
   const getClassroomOfThatTeacher = () => {
     let classrooms: any[] = [];
+    const role = user.role;
+    console.log(allClassroom);
     allClassroom.data.forEach(
       (classroom: { student: any; archived: boolean; teacherId: string }) => {
-        if (!classroom.archived && classroom.teacherId === teacher[0]) {
+        if (role === "teacher") {
+          if (!classroom.archived && classroom.teacherId === teacher[0]) {
+            classrooms.push(classroom);
+          }
+        } else if (role === "admin") {
+          if (!classroom.archived) {
+            classrooms.push(classroom);
+          }
+        } else if (role === "system") {
           classrooms.push(classroom);
         }
       }
     );
     return classrooms;
   };
+
   const classes = getClassroomOfThatTeacher();
 
   // get matched students
