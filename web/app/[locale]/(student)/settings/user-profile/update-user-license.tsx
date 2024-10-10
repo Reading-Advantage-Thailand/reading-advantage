@@ -41,7 +41,7 @@ export function UpdateUserLicenseForm({
   //   const { update } = useSession();
   const router = useRouter();
 
-  console.log(form.formState.isValid);
+  //console.log(form.formState.isValid);
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {

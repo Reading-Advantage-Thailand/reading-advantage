@@ -23,6 +23,13 @@ export default async function TeacherHomeLayout({
   if (!user) {
     return redirect("/auth/signin");
   }
+  if (
+    user?.role !== "system" &&
+    user?.role !== "teacher" &&
+    user?.role !== "admin"
+  ) {
+    return redirect("/");
+  }
 
   return (
     <div className="flex min-h-screen flex-col space-y-6">

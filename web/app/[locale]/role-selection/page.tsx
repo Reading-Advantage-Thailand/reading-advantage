@@ -12,6 +12,8 @@ export default async function FirstRoleSelectionPage() {
     return redirect("/student/read");
   } else if (user.role === "teacher") {
     return redirect("/teacher/my-classes");
+  } else if (user.role !== "unknown") {
+    return redirect("/");
   }
 
   return (
