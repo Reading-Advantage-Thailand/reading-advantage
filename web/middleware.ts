@@ -5,8 +5,6 @@ import { withAuth } from "next-auth/middleware";
 import { Role } from "./server/models/enum";
 import { localeConfig } from "./configs/locale-config";
 import { createI18nMiddleware } from "next-international/middleware";
-import Negotiator from "negotiator";
-import { match as matchLocale } from "@formatjs/intl-localematcher";
 
 const I18nMiddleware = createI18nMiddleware({
   locales: localeConfig.locales,
