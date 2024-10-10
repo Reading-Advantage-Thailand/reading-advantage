@@ -21,7 +21,6 @@ export default async function StudentHistoryForTeacher(params: {
     return redirect("/auth/signin");
   }
 
-  console.log(params.params.studentId);
   const res = await getUserArticleRecords(params.params.studentId);
 
   // articles that have been read

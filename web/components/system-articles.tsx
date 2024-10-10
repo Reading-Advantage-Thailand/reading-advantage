@@ -158,7 +158,6 @@ export default function System({ fetchMoreData }: PassagesProps) {
       hasMore: boolean;
     };
     setDocId(moreItems.lastDocId);
-    console.log("system-articles.tsx: ", moreItems);
     if (Array.isArray(moreItems.passages)) {
       setPassages((prevItems) => {
         // Create a new Set with ids of previous items for faster lookup

@@ -496,7 +496,7 @@ export async function ClassesData() {
   const getClassroomOfThatTeacher = () => {
     let classrooms: any[] = [];
     const role = user.role;
-    console.log(allClassroom);
+    //console.log(allClassroom);
     allClassroom.data.forEach(
       (classroom: { student: any; archived: boolean; teacherId: string }) => {
         if (role === "teacher") {
