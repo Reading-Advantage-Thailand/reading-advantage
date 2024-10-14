@@ -35,5 +35,12 @@ export async function PATCH(request: NextRequest, ctx: RequestContext) {
   throw new Error("Expected a NextResponse from router.run");
 }
 
-export const DELETE = (request: NextRequest, ctx: RequestContext) =>
-  handleRequest(router, request, ctx);
+export async function DELETE(request: NextRequest, ctx: RequestContext) {
+  const result = await router.run(request, ctx);
+  if (result instanceof NextResponse) {
+    return result;
+  }
+  // Handle the case where result is not a NextResponse
+  // You might want to return a default NextResponse or throw an error
+  throw new Error("Expected a NextResponse from router.run");
+}
