@@ -47,17 +47,17 @@ export function UpdateUserLicenseForm({
     try {
       setIsLoading(true);
       // Update the user's username
-      const response = await fetch(`/api/v1/licenses/${userId}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          key: data.license,
-          userId,
-        }),
-      });
+      // const response = await fetch(`/api/v1/licenses/${userId}`, {
+      //   method: "PATCH",
+      //   body: JSON.stringify({
+      //     key: data.license,
+      //     userId,
+      //   }),
+      // });
 
-      if (!response.ok) {
-        throw new Error("Failed to update username.");
-      }
+      // if (!response.ok) {
+      //   throw new Error("Failed to update username.");
+      // }
 
       // Reset the form
       form.reset({ license: data.license });

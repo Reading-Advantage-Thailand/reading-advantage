@@ -5,7 +5,7 @@ import { licenseService } from "../services/firestore-server-services";
 import { createLicenseModel, License } from "../models/license";
 import { DBCollection } from "../models/enum";
 import { getAlls, deleteOne } from "../handlers/handler-factory";
-import db from "@/configs/firestore-config";
+//import db from "@/configs/firestore-config";
 
 export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
   const { total_licenses, subscription_level, school_name, admin_id } =
