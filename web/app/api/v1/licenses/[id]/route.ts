@@ -18,7 +18,7 @@ const router = createEdgeRouter<NextRequest, Context>();
 router.use(logRequest);
 router.use(restrictTo(Role.SYSTEM));
 
-// /api/license/[id]
+// /api/v1/license/[id]
 router.delete(deleteLicense);
 
 export const DELETE = (request: NextRequest, ctx: Context) =>
