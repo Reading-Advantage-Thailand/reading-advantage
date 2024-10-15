@@ -1,8 +1,5 @@
 import { restrictTo } from "@/server/controllers/auth-controller";
-import {
-  deleteLicense,
-  activateLicense,
-} from "@/server/controllers/license-controller";
+import { deleteLicense } from "@/server/controllers/license-controller";
 import { logRequest } from "@/server/middleware";
 import { Role } from "@/server/models/enum";
 import { handleRequest } from "@/server/utils/handle-request";
@@ -22,7 +19,7 @@ router.use(logRequest);
 //router.use(restrictTo(Role.SYSTEM));
 
 // /api/license/[id]
-router.patch(activateLicense);
+//router.patch(activateLicense);
 router.delete(deleteLicense);
 
 export async function PATCH(request: NextRequest, ctx: RequestContext) {
