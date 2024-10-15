@@ -33,7 +33,7 @@ export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
 export const getAllLicenses = getAlls<License>(DBCollection.LICENSES);
 export const deleteLicense = deleteOne<License>(DBCollection.LICENSES);
 
-export const activateLicense = async (req: ExtendedNextRequest) => {
+export async function activateLicense(req: ExtendedNextRequest) {
   try {
     const { key, userId } = await req.json();
     const license = await db
@@ -98,7 +98,7 @@ export const activateLicense = async (req: ExtendedNextRequest) => {
       status: 500,
     });
   }
-};
+}
 
 // export const getFilteredLicenses = catchAsync(async (req: ExtendedNextRequest) => {
 //     // req.nextUrl.searchParams.get("page");
