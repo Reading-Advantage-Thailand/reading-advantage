@@ -7,12 +7,6 @@ import { DBCollection } from "../models/enum";
 import { getAlls, deleteOne } from "../handlers/handler-factory";
 import db from "@/configs/firestore-config";
 
-interface RequestContext {
-  params: {
-    id: string;
-  };
-}
-
 export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
   const { total_licenses, subscription_level, school_name, admin_id } =
     await req.json();
