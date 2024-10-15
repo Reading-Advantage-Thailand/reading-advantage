@@ -47,11 +47,11 @@ export function UpdateUserLicenseForm({
     try {
       setIsLoading(true);
       // Update the user's username
-      const response = await fetch(`/api/v1/licenses/test-school-id`, {
+      const response = await fetch(`/api/v1/licenses/${userId}`, {
         method: "PATCH",
         body: JSON.stringify({
           key: data.license,
-          user_id: userId,
+          userId,
         }),
       });
 
@@ -73,6 +73,7 @@ export function UpdateUserLicenseForm({
         description: `The user license has been updated to ${data.license}`,
       });
     } catch (error) {
+      console.log(error);
       toast({
         title: "An error occurred.",
         description: "Please try again later.",

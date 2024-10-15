@@ -30,6 +30,12 @@ export type TeacherPageConfig = {
   mainNav: MainNavItem[];
   teacherSidebarNav: teacherSidebarNav[];
 };
+
+export type AdminPageConfig = {
+  mainNav: MainNavItem[];
+  sidebarNav: sidebarNav[];
+};
+
 export type SystemPageConfig = {
   mainNav: MainNavItem[];
   systemSidebarNav: systemSidebarNav[];
