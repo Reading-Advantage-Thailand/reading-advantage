@@ -93,7 +93,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
           // Check if the user is an admin or system
           (user.role === Role.ADMIN || user.role === Role.SYSTEM) && (
             <DropdownMenuItem asChild>
-              <Link href="/admin">Admin dashboard</Link>
+              <Link href="/admin/dashboard">Admin dashboard</Link>
             </DropdownMenuItem>
           )
         }
