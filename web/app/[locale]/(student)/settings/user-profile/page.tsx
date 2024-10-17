@@ -2,15 +2,14 @@ import { Header } from "@/components/header";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChangeUsernameForm } from "./change-username-form";
-import { UpdateUserLicenseForm } from "./update-user-license";
+import { ChangeUsernameForm } from "@/components/change-username-form";
+import { UpdateUserLicenseForm } from "@/components/update-user-license";
 import { BadgeCheck } from "lucide-react";
 import { Icons } from "@/components/icons";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import ChangeRole from "@/components/shared/change-role";
-
 export default async function UserProfileSettingsPage() {
   const user = await getCurrentUser();
 
@@ -50,17 +49,22 @@ export default async function UserProfileSettingsPage() {
             desc="The XP is used to level up."
             data={user.xp?.toString() || "0"}
           />
-          <Button variant="secondary">Reset XP</Button>
+          <Button disabled={true} variant="secondary">
+            Reset XP
+          </Button>
           <UpdateUserLicenseForm
             username={user.display_name}
             userId={user.id}
+            expired={user.expired_date}
           />
         </div>
-        <ChangeRole
-          className="md:w-[38rem]"
-          userId={user.id}
-          userRole={user.role}
-        />
+        {process.env.NODE_ENV === "development" && (
+          <ChangeRole
+            className="md:w-[38rem]"
+            userId={user.id}
+            userRole={user.role}
+          />
+        )}
       </div>
     </div>
   );
@@ -111,7 +115,7 @@ const DisplaySettingInfo: React.FC<DisplaySettingInfoProps> = ({
         </div>
       )}
     </div>
-    {showVerified && verified && (
+    {showVerified && !verified && (
       <Button variant="secondary" size="sm">
         Resend verification email
       </Button>

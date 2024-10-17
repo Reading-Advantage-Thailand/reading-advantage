@@ -78,7 +78,7 @@ export function UserSignUpForm({ className, ...props }: UserAuthFormProps) {
         if (idToken) {
           signIn("credentials", {
             idToken,
-            callbackUrl: "/student/read",
+            //callbackUrl: "/",
           });
         }
       })

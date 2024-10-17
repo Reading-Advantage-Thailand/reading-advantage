@@ -33,7 +33,7 @@ export const createUserModel = (
       email: user.email || decoded.email || "",
       display_name:
         user.display_name || decoded.name || decoded.email?.split("@")[0] || "",
-      role: user.role || Role.UNKNOWN,
+      role: user.role || Role.USER,
       created_at: user.created_at || "",
       updated_at: user.updated_at || "",
       email_verified: user.email_verified || false,
@@ -52,7 +52,7 @@ export const createUserModel = (
       id: decoded.uid,
       email: decoded.email || "",
       display_name: decoded.name || decoded.email?.split("@")[0] || "",
-      role: Role.UNKNOWN,
+      role: Role.USER,
       created_at: date,
       updated_at: date,
       email_verified: decoded.email_verified || false,
