@@ -59,11 +59,6 @@ async function middleware(req: NextRequest) {
     // Check user role and access
     if (isAuth) {
       const userRole = token.role; // Assuming the token contains the user's role
-      // Redirect to the role selection page if the user's role is unknown
-      // UNKNOWN is the default role assigned to a user
-      if (userRole === Role.UNKNOWN) {
-        return NextResponse.redirect(new URL("/role-selection", req.url));
-      }
       // Redirect to the level selection page if the user's level is unknown
       if (
         token.level === undefined ||
@@ -72,15 +67,20 @@ async function middleware(req: NextRequest) {
       ) {
         return NextResponse.redirect(new URL("/level", req.url));
       }
-      // Redirect to the teacher home page if the user is a teacher
-      if (userRole === Role.TEACHER) {
-        return NextResponse.redirect(new URL("/teacher/my-classes", req.url));
-      }
-      if (userRole === Role.SYSTEM) {
-        return NextResponse.redirect(new URL("/system/dashboard", req.url));
+      if (userRole === Role.USER) {
+        return NextResponse.redirect(new URL("/", req.url));
       }
       if (userRole === Role.STUDENT) {
         return NextResponse.redirect(new URL("/student/read", req.url));
+      }
+      if (userRole === Role.TEACHER) {
+        return NextResponse.redirect(new URL("/teacher/my-classes", req.url));
+      }
+      if (userRole === Role.ADMIN) {
+        return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+      }
+      if (userRole === Role.SYSTEM) {
+        return NextResponse.redirect(new URL("/system/dashboard", req.url));
       }
       // else redirect to the student home page
       // DEFAULT ()

@@ -27,9 +27,11 @@ const FormSchema = z.object({
 export function UpdateUserLicenseForm({
   username,
   userId,
+  expired,
 }: {
   username: string;
   userId: string;
+  expired: string;
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -40,6 +42,8 @@ export function UpdateUserLicenseForm({
   });
   //   const { update } = useSession();
   const router = useRouter();
+  const date = new Date(expired);
+  console.log(date.toUTCString());
 
   //console.log(form.formState.isValid);
 
@@ -103,6 +107,11 @@ export function UpdateUserLicenseForm({
             </FormItem>
           )}
         />
+        <div className="text-sm text-gray-500">
+          <span>
+            <strong>Current License:</strong> {date.toUTCString()}
+          </span>
+        </div>
         <Button
           type="submit"
           variant="secondary"
@@ -110,7 +119,7 @@ export function UpdateUserLicenseForm({
           disabled={isLoading || !form.formState.isValid}
         >
           {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-          Update
+          Activate
         </Button>
       </form>
     </Form>
