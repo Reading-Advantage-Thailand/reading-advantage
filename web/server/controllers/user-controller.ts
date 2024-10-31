@@ -236,3 +236,90 @@ export async function getUserHeatmap(
     );
   }
 }
+
+export async function getAllUsers(req: NextRequest) {
+  try {
+    const users = await db.collection("users").get();
+    const results = users.docs.map((doc) => {
+      return {
+        id: doc.id,
+        ...doc.data(),
+      };
+    });
+
+    return NextResponse.json({
+      results,
+    });
+  } catch (error) {
+    console.error("Error getting documents", error);
+    return NextResponse.json(
+      { message: "Internal server error", results: [] },
+      { status: 500 }
+    );
+  }
+}
+
+export async function updateUserData(req: ExtendedNextRequest) {
+  try {
+    const data = await req.json();
+    const userRef = db.collection("users").where("email", "==", data.email);
+    const user = await userRef.get();
+
+    if (user.empty) {
+      return NextResponse.json(
+        {
+          message: "User not found",
+        },
+        { status: 404 }
+      );
+    }
+    console.log();
+    const license = await db
+      .collection(DBCollection.LICENSES)
+      .where("id", "==", data.license_id[0])
+      .get();
+
+    const licenseData = license.docs.map((license) => license.data());
+
+    if (license.empty) {
+      return NextResponse.json(
+        {
+          message: "License not found",
+        },
+        { status: 404 }
+      );
+    } else if (licenseData[0].total_licenses <= licenseData[0].used_licenses) {
+      return NextResponse.json(
+        {
+          message: "License is already used",
+        },
+        { status: 404 }
+      );
+    }
+    if (!license.empty && user) {
+      await db
+        .collection(DBCollection.LICENSES)
+        .doc(licenseData[0].id)
+        .update({
+          used_licenses: licenseData[0].used_licenses + 1,
+        });
+
+      await db.collection(DBCollection.USERS).doc(user.docs[0].id).update({
+        role: data.role,
+        expired_date: licenseData[0].expiration_date,
+        license_id: licenseData[0].id,
+      });
+
+      return NextResponse.json(
+        { message: "Update user successfully" },
+        { status: 200 }
+      );
+    }
+  } catch (error) {
+    console.error("Error updating documents", error);
+    return NextResponse.json(
+      { message: "Internal server error", results: [] },
+      { status: 500 }
+    );
+  }
+}

@@ -30,16 +30,17 @@ import {
   Star,
   AlertCircle,
   School,
-    Users,
-    BarChartBig,
-    Plus,
-    RefreshCw,
-    ArchiveRestore,
-    Trash2,
-    UserPlus,
-    ClipboardList,
-    BookOpenCheck,
-    ScrollText,
+  Users,
+  BarChartBig,
+  Plus,
+  RefreshCw,
+  ArchiveRestore,
+  Trash2,
+  UserPlus,
+  ClipboardList,
+  BookOpenCheck,
+  ScrollText,
+  MonitorCog,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -78,11 +79,12 @@ export const Icons = {
   report: BarChartBig,
   add: Plus,
   refresh: RefreshCw,
-  archive: ArchiveRestore, 
+  archive: ArchiveRestore,
   delete: Trash2,
   addUser: UserPlus,
   assignments: BookOpenCheck,
   scrollText: ScrollText,
+  MonitorCog: MonitorCog,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"

@@ -76,7 +76,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
               </Link>
             )}
 
-            <div className="flex flex-col gap-1">
+            <div className="inline-flex gap-1">
               <Badge className={`${color} w-max`} variant="outline">
                 {label}
               </Badge>
@@ -95,16 +95,6 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         <DropdownMenuSeparator />
         {/* Role-based menu items */}
         {
-          // Check if the user is a teacher, admin, or system
-          (user.role === Role.TEACHER ||
-            user.role === Role.ADMIN ||
-            user.role === Role.SYSTEM) && (
-            <DropdownMenuItem asChild>
-              <Link href="/teacher/my-classes">Teacher dashboard</Link>
-            </DropdownMenuItem>
-          )
-        }
-        {
           // Check if the user is a student, teacher, admin, or system
           (user.role === Role.STUDENT ||
             user.role === Role.TEACHER ||
@@ -117,6 +107,16 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
           ) : (
             <DropdownMenuItem asChild>
               <Link href="/level">Level Test</Link>
+            </DropdownMenuItem>
+          )
+        }
+        {
+          // Check if the user is a teacher, admin, or system
+          (user.role === Role.TEACHER ||
+            user.role === Role.ADMIN ||
+            user.role === Role.SYSTEM) && (
+            <DropdownMenuItem asChild>
+              <Link href="/teacher/my-classes">Teacher dashboard</Link>
             </DropdownMenuItem>
           )
         }

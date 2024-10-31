@@ -76,6 +76,7 @@ export const authOptions: NextAuthOptions = {
         cefr_level: dbUser.cefr_level,
         role: dbUser.role,
         expired_date: dbUser.expired_date,
+        license_id: dbUser.license_id,
       };
     },
     session: ({ session, token, user }) => {
@@ -92,6 +93,7 @@ export const authOptions: NextAuthOptions = {
         session.user.cefr_level = token.cefr_level;
         session.user.role = token.role;
         session.user.expired_date = token.expired_date;
+        session.user.license_id = token.license_id;
       }
       return session;
     },

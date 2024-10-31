@@ -395,7 +395,7 @@ export default function System({ fetchMoreData }: PassagesProps) {
                       checked={type === "nonfiction"}
                       onChange={handleTypeChange}
                     />
-                    <p>{tp("nonFiction")}</p>
+                    <p>{tp("nonfiction")}</p>
                   </div>
                 </div>
               </div>

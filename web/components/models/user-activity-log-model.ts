@@ -29,6 +29,7 @@ export interface UserActivityLog {
   details: {
     title: string;
     level: number;
+    cefr_level?: string;
   };
 }
 

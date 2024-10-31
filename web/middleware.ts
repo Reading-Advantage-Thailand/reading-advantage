@@ -67,6 +67,7 @@ async function middleware(req: NextRequest) {
       ) {
         return NextResponse.redirect(new URL("/level", req.url));
       }
+      // Redirect to the appropriate page based on the user's
       if (userRole === Role.USER) {
         return NextResponse.redirect(new URL("/", req.url));
       }

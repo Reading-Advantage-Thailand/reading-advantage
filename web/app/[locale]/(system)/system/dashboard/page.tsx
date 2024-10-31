@@ -38,7 +38,7 @@ export default async function SystemDashboardPage({
 
   return (
     <>
-      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 truncate">
+      <div className="text-xl sm:text-2xl md:text-3xl font-bold  truncate">
         <Header heading="System Dashboard Page" />
       </div>
       <div className="p-4 grid gap-4 grid-cols-1 auto-rows-auto sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">

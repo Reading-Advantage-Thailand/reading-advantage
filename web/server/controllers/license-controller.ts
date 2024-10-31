@@ -100,6 +100,32 @@ export const activateLicense = async (req: ExtendedNextRequest) => {
   }
 };
 
+export const getLicense = async (
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) => {
+  try {
+    const license = await db.collection(DBCollection.LICENSES).doc(id).get();
+    if (!license.exists) {
+      return NextResponse.json(
+        {
+          message: "License not found",
+        },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json({
+      message: "License fetched successfully",
+      license: license.data(),
+    });
+  } catch (error) {
+    return NextResponse.json({
+      message: "Internal server error",
+      status: 500,
+    });
+  }
+};
+
 // export const getFilteredLicenses = catchAsync(async (req: ExtendedNextRequest) => {
 //     // req.nextUrl.searchParams.get("page");
 //     // URLSearchParams { 'page' => '1' }

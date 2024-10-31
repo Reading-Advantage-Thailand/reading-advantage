@@ -2,10 +2,7 @@ import { logRequest } from "@/server/middleware";
 import { protect } from "@/server/controllers/auth-controller";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
-import {
-  getAllUserActivity,
-  getAllUsersActivity,
-} from "@/server/controllers/activity-controller";
+import { getAllUsersActivity } from "@/server/controllers/activity-controller";
 
 export interface RequestContext {
   params?: unknown;
@@ -16,7 +13,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 router.use(logRequest);
 router.use(protect);
 //api/activity
-router.get(getAllUserActivity);
+router.get(getAllUsersActivity);
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
