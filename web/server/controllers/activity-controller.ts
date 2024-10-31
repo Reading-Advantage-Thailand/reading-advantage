@@ -122,3 +122,44 @@ export async function getAllUserActivity() {
     );
   }
 }
+
+export async function getAllUsersActivity() {
+  try {
+    const data: any[] = [];
+
+    const getActivity = await db.collection("user-activity-log").get();
+
+    // Iterate through each document to get subcollections
+    const promises = getActivity.docs.map(async (doc) => {
+      const subCollections = await doc.ref.listCollections();
+      const subCollectionPromises = subCollections.map((subCollection) =>
+        subCollection.get().then((array) =>
+          array.docs.map((doc) =>
+            data.push({
+              ...doc.data(),
+              timestamp: doc.data().timestamp.toDate(),
+            })
+          )
+        )
+      );
+      await Promise.all(subCollectionPromises);
+    });
+
+    // Wait for all promises to resolve
+    await Promise.all(promises);
+
+    //console.log(userActivityStats);
+    return NextResponse.json(
+      {
+        data,
+      },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.log("Error getting documents", err);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

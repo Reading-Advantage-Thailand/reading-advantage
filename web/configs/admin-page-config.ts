@@ -25,5 +25,10 @@ export const adminPageConfig: AdminPageConfig = {
       href: "/admin/dashboard",
       icon: "dashboard",
     },
+    {
+      title: "Admin Management",
+      href: "/admin/management",
+      icon: "MonitorCog",
+    },
   ],
 };

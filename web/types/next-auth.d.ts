@@ -15,6 +15,7 @@ declare module "next-auth/jwt" {
     cefr_level: string;
     expired_date: string;
     expired?: boolean;
+    license_id?: string;
   }
 }
 
@@ -32,6 +33,7 @@ declare module "next-auth" {
       cefr_level: string;
       expired_date: string;
       expired?: boolean;
+      license_id?: string;
     };
   }
 
@@ -47,5 +49,6 @@ declare module "next-auth" {
     cefr_level: string;
     expired_date: string;
     expired?: boolean;
+    license_id?: string;
   }
 }
