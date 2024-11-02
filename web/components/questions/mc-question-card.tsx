@@ -13,7 +13,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Badge } from "../ui/badge";
 import { useScopedI18n } from "@/locales/client";
 import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
+import { cn, levelCalculation } from "@/lib/utils";
 import {
   AnswerStatus,
   MultipleChoiceQuestion,
@@ -264,6 +264,7 @@ function MCQeustion({
             timeTaken: timer,
             xpEarned: count,
             details: {
+              ceft_level: levelCalculation(count).cefrLevel,
               correctAnswer,
               progress,
               title: articleTitle,

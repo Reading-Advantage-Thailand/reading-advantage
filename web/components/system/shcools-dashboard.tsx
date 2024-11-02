@@ -23,6 +23,7 @@ import LineChartCustom from "@/components/line-chart";
 import PieChartCustom from "@/components/pie-chart";
 import LicesneUsageList from "@/components/license-usage-list";
 import { UserActivityLog } from "../models/user-activity-log-model";
+import { CloudHail } from "lucide-react";
 
 // Map CEFR levels to numerical values
 const cefrToNumber = {
@@ -85,25 +86,34 @@ async function ShcoolsDashboard({
   userRoleList: UserRoleList;
   averageCefrLevelData: CefrLevelData;
 }) {
-  const totalLicenses = schoolList.data.reduce(
+  const [schoolSelected, setSchoolSelected] = React.useState<string>("all");
+  const [schoolData, setSchoolData] = React.useState<School[]>(schoolList.data);
+  const [userRoleData, setUserRoleData] = React.useState<UserRole[]>(
+    userRoleList.results
+  );
+  const [averageCefrgraph, setAverageCefrgraph] = React.useState<
+    UserActivityLog[]
+  >(averageCefrLevelData.data);
+
+  const totalLicenses = schoolData.reduce(
     (sum, item) => sum + (item?.total_licenses || 0),
     0
   );
-  const usedLicenses = schoolList.data.reduce(
+  const usedLicenses = schoolData.reduce(
     (sum, item) => sum + (item?.used_licenses || 0),
     0
   );
   const availableLicenses = totalLicenses - usedLicenses;
 
-  const countTeachers = userRoleList?.results?.filter(
+  const countTeachers = userRoleData.filter(
     (users) => users.role === "teacher"
   ).length;
 
-  const countActiveUsers = userRoleList?.results?.filter(
+  const countActiveUsers = userRoleData.filter(
     (users) => users.license_id && users.license_id !== ""
   ).length;
 
-  const sumXp = userRoleList?.results?.reduce((sum, user) => {
+  const sumXp = userRoleData.reduce((sum, user) => {
     const xp = parseInt(user.xp) || 0;
     return sum + xp;
   }, 0);
@@ -114,8 +124,8 @@ async function ShcoolsDashboard({
   );
 
   // // Filter and calculate the average CEFR level
-  const cefrValues = userRoleList?.results
-    ?.map((user) => cefrToNumber[user.cefr_level])
+  const cefrValues = userRoleData
+    .map((user) => cefrToNumber[user.cefr_level])
     ?.filter((value) => value !== undefined); // Filter out invalid/missing levels
 
   const averageCefrValue =
@@ -123,26 +133,53 @@ async function ShcoolsDashboard({
 
   const averageCefrLevel = numberToCefr[Math.round(averageCefrValue)];
 
-  //   const handleSchoolChange = (value: string) => {
-  //     const newData = schoolList.data.filter(
-  //       (school: any) => school?.id === value
-  //     );
-  //     setData(newData);
-  //   };
+  const handleSchoolChange = (value: string) => {
+    const newData = schoolList.data.filter((school: any) => {
+      if (value === "all") {
+        return school;
+      } else {
+        return school?.id === value;
+      }
+    });
+    const UserData = userRoleList.results.filter((users: any) => {
+      if (value === "all") {
+        return users;
+      } else {
+        return users.license_id && users.license_id === value;
+      }
+    });
+
+    const userIds = UserData.map((users: any) => users.id);
+
+    const filteredActivityLog = averageCefrgraph.filter((activity: any) =>
+      userIds.includes(activity.userId)
+    );
+    setSchoolSelected(value);
+    setAverageCefrgraph(filteredActivityLog);
+    setUserRoleData(UserData);
+    setSchoolData(newData);
+  };
 
   return (
     <>
-      {/* <div className="py-2">
+      <div className="py-2">
         <Card className="flex items-center">
           <CardHeader>
             <CardTitle>Selete School :</CardTitle>
           </CardHeader>
-          <Select>
+          <Select
+            defaultValue={"all"}
+            onValueChange={(value) => handleSchoolChange(value)}
+          >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a School" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
+                <SelectItem value="all">All School.</SelectItem>
+              </SelectGroup>
+              <SelectGroup>
+                <SelectLabel>Select School</SelectLabel>
                 {schoolList.data.map(
                   (
                     school: { id: string; school_name: string },
@@ -157,7 +194,7 @@ async function ShcoolsDashboard({
             </SelectContent>
           </Select>
         </Card>
-      </div> */}
+      </div>
       <div className="py-2 grid grid-cols-1 gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 ">
         <Card>
           <CardHeader className="min-h-10">
@@ -177,7 +214,9 @@ async function ShcoolsDashboard({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-center">{averageCefrLevel}</p>
+            <p className="text-2xl font-bold text-center">
+              {averageCefrLevel ? averageCefrLevel : "A0-"}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -211,7 +250,7 @@ async function ShcoolsDashboard({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <LineChartCustom data={averageCefrLevelData.data} />
+            <LineChartCustom data={averageCefrgraph} />
           </CardContent>
         </Card>
       </div>
@@ -247,7 +286,11 @@ async function ShcoolsDashboard({
             <CardTitle className="text-xl">Users Role Management</CardTitle>
           </CardHeader>
           <CardContent>
-            <UserRoleManagement data={userRoleList?.results} page="system" />
+            <UserRoleManagement
+              data={userRoleData}
+              licenseId={schoolSelected}
+              page="system"
+            />
           </CardContent>
         </Card>
       </div>

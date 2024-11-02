@@ -14,14 +14,20 @@ interface RequestContext {
 }
 
 export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
-  const { total_licenses, subscription_level, school_name, admin_id } =
-    await req.json();
+  const {
+    total_licenses,
+    subscription_level,
+    school_name,
+    admin_id,
+    expiration_date,
+  } = await req.json();
   const license: Omit<License, "id"> = createLicenseModel({
     totalLicense: total_licenses,
     subscriptionLevel: subscription_level,
     userId: req.session?.user.id || "",
     adminId: admin_id,
     schoolName: school_name,
+    expirationDate: expiration_date,
   });
   await licenseService.licenses.createDoc(license);
   return NextResponse.json({

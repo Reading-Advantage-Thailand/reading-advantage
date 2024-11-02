@@ -57,6 +57,7 @@ async function middleware(req: NextRequest) {
     // Redirect to the appropriate page based on the user's role and level
     // if the user is already authenticated
     // Check user role and access
+
     if (isAuth) {
       const userRole = token.role; // Assuming the token contains the user's role
       // Redirect to the level selection page if the user's level is unknown

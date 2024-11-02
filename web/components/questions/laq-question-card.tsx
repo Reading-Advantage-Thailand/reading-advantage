@@ -38,6 +38,7 @@ import {
   ActivityType,
   ActivityStatus,
 } from "../models/user-activity-log-model";
+import { levelCalculation } from "@/lib/utils";
 
 interface Props {
   userId: string;
@@ -400,7 +401,12 @@ function LAQuestion({
         activityStatus: ActivityStatus.Completed,
         timeTaken: timer,
         xpEarned: rating,
-        details: { ...data, title: articleTitle, level: articleLevel },
+        details: {
+          ...data,
+          title: articleTitle,
+          level: articleLevel,
+          cefr_level: levelCalculation(rating).cefrLevel,
+        },
       }),
     });
     router.refresh();

@@ -39,3 +39,8 @@ export enum LicenseSubScriptionLevel {
   PREMIUM = "premium",
   ENTERPRISE = "enterprise",
 }
+
+export enum LicenseExpirationDate {
+  HALFYEARS = "180",
+  FULLYEARS = "360",
+}

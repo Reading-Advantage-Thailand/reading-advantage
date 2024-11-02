@@ -25,7 +25,10 @@ import {
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { licenseService } from "@/client/services/firestore-client-services";
-import { LicenseSubScriptionLevel } from "@/server/models/enum";
+import {
+  LicenseSubScriptionLevel,
+  LicenseExpirationDate,
+} from "@/server/models/enum";
 
 const FormSchema = z.object({
   school_name: z
@@ -43,6 +46,10 @@ const FormSchema = z.object({
     LicenseSubScriptionLevel.ENTERPRISE,
   ]),
   admin_id: z.string(),
+  expiration_date: z.enum([
+    LicenseExpirationDate.HALFYEARS,
+    LicenseExpirationDate.FULLYEARS,
+  ]),
 });
 
 export function CreateLicenseForm() {
@@ -54,6 +61,7 @@ export function CreateLicenseForm() {
       subscription_level: LicenseSubScriptionLevel.BASIC,
       school_name: "",
       admin_id: "",
+      expiration_date: LicenseExpirationDate.HALFYEARS,
     },
   });
   const router = useRouter();
@@ -68,12 +76,14 @@ export function CreateLicenseForm() {
         subscription_level: data.subscription_level,
         school_name: data.school_name,
         admin_id: data.admin_id,
+        expiration_date: data.expiration_date,
       });
       // Reset the form
       form.reset({
         total: 1,
         subscription_level: LicenseSubScriptionLevel.BASIC,
         school_name: "",
+        expiration_date: LicenseExpirationDate.HALFYEARS,
       });
 
       router.refresh();
@@ -174,6 +184,30 @@ export function CreateLicenseForm() {
               <FormMessage />
               <FormDescription>
                 The subscription level for the licenses.
+              </FormDescription>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="expiration_date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Subscription Level</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a subscription level" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={"180"}>180 day</SelectItem>
+                  <SelectItem value={"360"}>360 day</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+              <FormDescription>
+                The Expiration Date for the licenses.
               </FormDescription>
             </FormItem>
           )}

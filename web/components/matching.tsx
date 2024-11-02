@@ -19,6 +19,7 @@ import {
   ActivityStatus,
   ActivityType,
 } from "./models/user-activity-log-model";
+import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -82,6 +83,10 @@ export default function Matching({ userId }: Props) {
                 activityType: ActivityType.SentenceMatching,
                 activityStatus: ActivityStatus.Completed,
                 xpEarned: UserXpEarned.Sentence_Matching,
+                details: {
+                  cefr_level: levelCalculation(UserXpEarned.Sentence_Matching)
+                    .cefrLevel,
+                },
               }),
             }
           );

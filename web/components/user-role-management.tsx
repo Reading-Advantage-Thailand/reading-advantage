@@ -68,9 +68,11 @@ export type Payment = {
 export default function UserRoleManagement({
   data,
   page,
+  licenseId,
 }: {
   data: Payment[];
   page: string;
+  licenseId: string;
 }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -84,7 +86,6 @@ export default function UserRoleManagement({
   const [email, setEmail] = React.useState<string>();
   const [currentPayment, setCurrentPayment] = React.useState<Payment>();
   const router = useRouter();
-  const licenseIds = data.map((item) => item.license_id);
 
   const handleEditClick = (payment: Payment) => {
     setCurrentPayment(payment);
@@ -131,7 +132,7 @@ export default function UserRoleManagement({
           body: JSON.stringify({
             email: email,
             role: selectedRole,
-            license_id: licenseIds,
+            license_id: licenseId,
           }),
         }
       );
@@ -169,7 +170,7 @@ export default function UserRoleManagement({
           { name: "Student", value: "student" },
           { name: "Teacher", value: "teacher" },
           { name: "Admin", value: "admin" },
-          { name: "system", value: "system" },
+          { name: "System", value: "system" },
         ]
       : [
           { name: "Student", value: "student" },
@@ -327,7 +328,7 @@ export default function UserRoleManagement({
           </Table>
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
-          {page !== "system" && (
+          {licenseId !== "all" && (
             <div className="flex-1 text-sm text-muted-foreground">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
