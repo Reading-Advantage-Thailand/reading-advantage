@@ -276,7 +276,7 @@ export async function updateUserData(req: ExtendedNextRequest) {
     console.log();
     const license = await db
       .collection(DBCollection.LICENSES)
-      .where("id", "==", data.license_id[0])
+      .where("id", "==", data.license_id)
       .get();
 
     const licenseData = license.docs.map((license) => license.data());

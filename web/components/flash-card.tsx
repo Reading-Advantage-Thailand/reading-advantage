@@ -23,6 +23,7 @@ import {
   ActivityStatus,
   ActivityType,
 } from "./models/user-activity-log-model";
+import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -124,6 +125,9 @@ export default function FlashCard({
                     xpEarned: UserXpEarned.Sentence_Flashcards,
                     details: {
                       ...filterDataUpdateScore[i],
+                      cefr_level: levelCalculation(
+                        UserXpEarned.Sentence_Flashcards
+                      ).cefrLevel,
                     },
                   }),
                 }

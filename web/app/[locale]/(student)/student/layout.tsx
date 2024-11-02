@@ -11,6 +11,11 @@ export default async function SettingsPageLayout({
   if (!user) {
     return redirect("/auth/signin");
   }
+
+  if (new Date(user?.expired_date) < new Date() && user?.role !== "system") {
+    return redirect("/contact");
+  }
+
   if (
     user?.role !== "system" &&
     user?.role !== "admin" &&

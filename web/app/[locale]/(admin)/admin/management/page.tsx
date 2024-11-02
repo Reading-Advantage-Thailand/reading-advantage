@@ -85,7 +85,11 @@ export default async function AdminManagementPage() {
             <CardTitle className="text-xl">Users Role Management</CardTitle>
           </CardHeader>
           <CardContent>
-            <UserRoleManagement data={filterData} page="admin" />
+            <UserRoleManagement
+              data={filterData}
+              licenseId={schoolList.license.id}
+              page="admin"
+            />
           </CardContent>
         </Card>
       </div>

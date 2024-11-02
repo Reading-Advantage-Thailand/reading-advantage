@@ -82,7 +82,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
               </Badge>
               {daysLeft > 0 ? ( // Check if the user has a free trial
                 <Badge className="bg-green-700 w-max" variant="outline">
-                  Free trial {daysLeft} days left
+                  Expired in {daysLeft} days left
                 </Badge>
               ) : (
                 <Badge className="bg-red-700 w-max" variant="outline">

@@ -18,7 +18,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Sentence } from "./types";
 import QuoteList from "./quote-list";
 import { Icons } from "../icons";
-import { splitTextIntoSentences } from "@/lib/utils";
+import { levelCalculation, splitTextIntoSentences } from "@/lib/utils";
 import {
   UserXpEarned,
   ActivityStatus,
@@ -220,6 +220,10 @@ export default function OrderSentences({ userId }: Props) {
               activityType: ActivityType.SentenceOrdering,
               activityStatus: ActivityStatus.Completed,
               xpEarned: UserXpEarned.Sentence_Ordering,
+              details: {
+                cefr_level: levelCalculation(UserXpEarned.Sentence_Ordering)
+                  .cefrLevel,
+              },
             }),
           }
         );

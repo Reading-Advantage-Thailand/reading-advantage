@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { splitTextIntoSentences } from "@/lib/utils";
+import { levelCalculation, splitTextIntoSentences } from "@/lib/utils";
 import { Sentence } from "./dnd/types";
 import {
   UserXpEarned,
@@ -349,6 +349,11 @@ export default function ClozeTest({ userId }: Props) {
                   activityType: ActivityType.SentenceClozeTest,
                   activityStatus: ActivityStatus.Completed,
                   xpEarned: UserXpEarned.Sentence_Cloze_Test,
+                  details: {
+                    cefr_level: levelCalculation(
+                      UserXpEarned.Sentence_Cloze_Test
+                    ).cefrLevel,
+                  },
                 }),
               }
             );

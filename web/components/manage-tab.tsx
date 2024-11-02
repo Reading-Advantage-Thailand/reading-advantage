@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { toast } from "./ui/use-toast";
-import { formatDate, formatTimestamp } from "@/lib/utils";
+import { formatDate, formatTimestamp, levelCalculation } from "@/lib/utils";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -137,6 +137,9 @@ export default function ManageTab({ userId }: Props) {
                     xpEarned: UserXpEarned.Sentence_Flashcards,
                     details: {
                       ...filterDataUpdateScore[i],
+                      cefr_level: levelCalculation(
+                        UserXpEarned.Sentence_Flashcards
+                      ).cefrLevel,
                     },
                   }),
                 }
