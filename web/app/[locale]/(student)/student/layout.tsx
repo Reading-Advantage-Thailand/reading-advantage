@@ -16,14 +16,6 @@ export default async function SettingsPageLayout({
     return redirect("/contact");
   }
 
-  if (
-    user?.role !== "system" &&
-    user?.role !== "admin" &&
-    user?.role !== "teacher" &&
-    user?.role !== "student"
-  ) {
-    return redirect("/");
-  }
   return (
     <AppLayout
       mainNavConfig={studentPageConfig.mainNav}

@@ -11,7 +11,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FeatureBox } from "@/components/index/feature-box";
-import { GitBranch, BrainCircuit, BarChart4, Book, BookOpen, Bot, Wrench, Volume2, Settings, Users } from "lucide-react";
+import {
+  GitBranch,
+  BrainCircuit,
+  BarChart4,
+  Book,
+  BookOpen,
+  Bot,
+  Wrench,
+  Volume2,
+  Settings,
+  Users,
+} from "lucide-react";
 import { Icons } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,48 +35,57 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getScopedI18n } from "@/locales/server";
+import { getCurrentUser } from "@/lib/session";
 
 type Props = {};
 
 const features = [
   {
     title: "AI-Powered Content Generation",
-    description: "Enjoy an ever-expanding library of level-appropriate articles tailored to CEFR standards",
+    description:
+      "Enjoy an ever-expanding library of level-appropriate articles tailored to CEFR standards",
     icon: Bot,
   },
   {
     title: "Intelligent Comprehension Exercises",
-    description: "Enhance understanding with AI-generated multiple-choice, short-answer, and long-answer questions",
+    description:
+      "Enhance understanding with AI-generated multiple-choice, short-answer, and long-answer questions",
     icon: BrainCircuit,
   },
   {
     title: "Adaptive CEFR Leveling",
-    description: "Experience precise language difficulty matching from A1 to C2 levels",
+    description:
+      "Experience precise language difficulty matching from A1 to C2 levels",
     icon: GitBranch,
   },
   {
     title: "Interactive Vocabulary Tools",
-    description: "Build lexicon through contextual learning, flashcards, and spaced repetition exercises",
+    description:
+      "Build lexicon through contextual learning, flashcards, and spaced repetition exercises",
     icon: BookOpen,
   },
   {
     title: "Text-to-Speech Narration",
-    description: "Improve listening skills with high-quality audio narration of all articles",
+    description:
+      "Improve listening skills with high-quality audio narration of all articles",
     icon: Volume2,
   },
   {
     title: "Progress Analytics Dashboard",
-    description: "Track learning journey with detailed insights on reading habits, vocabulary growth, and CEFR progression",
+    description:
+      "Track learning journey with detailed insights on reading habits, vocabulary growth, and CEFR progression",
     icon: BarChart4,
   },
   {
     title: "Customizable Reading Experience",
-    description: "Tailor content preferences, set personal goals, and create a personalized learning path",
+    description:
+      "Tailor content preferences, set personal goals, and create a personalized learning path",
     icon: Settings,
   },
   {
     title: "Classroom Management Tools",
-    description: "Empower teachers with student progress tracking, assignment capabilities, and performance reports",
+    description:
+      "Empower teachers with student progress tracking, assignment capabilities, and performance reports",
     icon: Users,
   },
 ];
@@ -73,39 +93,48 @@ const features = [
 const benefits = [
   {
     title: "Accelerated Language Acquisition",
-    description: "Boost students' language skills through extensive reading and AI-powered comprehension exercises",
+    description:
+      "Boost students' language skills through extensive reading and AI-powered comprehension exercises",
   },
   {
     title: "Personalized Learning Paths",
-    description: "Tailor content to each student's CEFR level, interests, and learning pace",
+    description:
+      "Tailor content to each student's CEFR level, interests, and learning pace",
   },
   {
     title: "Engaging Multimedia Content",
-    description: "Captivate learners with diverse articles, audio narration, and interactive exercises",
+    description:
+      "Captivate learners with diverse articles, audio narration, and interactive exercises",
   },
   {
     title: "Real-Time Progress Tracking",
-    description: "Monitor student growth with detailed analytics and CEFR level progression insights",
+    description:
+      "Monitor student growth with detailed analytics and CEFR level progression insights",
   },
   {
     title: "Efficient Vocabulary Expansion",
-    description: "Enhance lexical knowledge through context-based learning and spaced repetition",
+    description:
+      "Enhance lexical knowledge through context-based learning and spaced repetition",
   },
   {
     title: "Seamless Classroom Integration",
-    description: "Complement traditional instruction with flexible, anytime-anywhere access to learning materials",
+    description:
+      "Complement traditional instruction with flexible, anytime-anywhere access to learning materials",
   },
   {
     title: "Cost-Effective Solution",
-    description: "Maximize resources with a scalable platform that grows with your student population",
+    description:
+      "Maximize resources with a scalable platform that grows with your student population",
   },
   {
     title: "Enhanced Teacher Productivity",
-    description: "Streamline lesson planning and assessment with automated tools and rich content library",
+    description:
+      "Streamline lesson planning and assessment with automated tools and rich content library",
   },
 ];
 export default async function IndexPage({}: Props) {
   const t = await getScopedI18n("pages.indexPage");
+  const user = await getCurrentUser();
   return (
     <div>
       <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-3">
@@ -124,7 +153,11 @@ export default async function IndexPage({}: Props) {
           <div className="relative">
             <div className="absolute -inset-2 rounded-lg bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-gray-600 via-purple-600 to-zinc-600 opacity-50 blur-2xl"></div>
             <div className="relative flex w-60 h-14 items-center justify-center border border-zinc-700 rounded-lg text-white bg-[#172554] font-heading text-xl cursor-pointer hover:scale-105 transition-transform duration-300 ease-in-out dark:bg-white dark:text-black">
-              <Link href={"/auth/signin"}>Start Your Free Trial</Link>
+              {user ? (
+                <Link href="/student/read">Start Your Free Trial</Link>
+              ) : (
+                <Link href={"/auth/signin"}>Start Your Free Trial</Link>
+              )}
             </div>
           </div>
         </div>
