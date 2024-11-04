@@ -96,10 +96,6 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
         {/* Role-based menu items */}
         {
           // Check if the user is a student, teacher, admin, or system
-          (user.role === Role.STUDENT ||
-            user.role === Role.TEACHER ||
-            user.role === Role.ADMIN ||
-            user.role === Role.SYSTEM) &&
           user.cefr_level !== "" ? (
             <DropdownMenuItem asChild>
               <Link href="/student/read">Learner Home</Link>
