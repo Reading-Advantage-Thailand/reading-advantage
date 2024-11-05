@@ -13,9 +13,12 @@ const info = [
     title: "About",
     links: [
       { title: "About Us", href: "/about" },
-      { title: "Features", href: "/features" },
+      { title: "Features", href: "/#features" },
       { title: "Pricing", href: "/pricing" },
-      { title: "Support", href: "/support" },
+      {
+        title: "Support",
+        href: "https://docs.google.com/forms/d/e/1FAIpQLSe_Ew100kef6j4O4IuiHm4ZeGhOj5FN6JRyJ7-0gvZV9eFgjQ/viewform?usp=sf_link",
+      },
     ],
   },
   {

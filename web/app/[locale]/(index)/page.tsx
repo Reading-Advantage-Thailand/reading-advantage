@@ -289,14 +289,23 @@ export default async function IndexPage({}: Props) {
           <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
             Start a free trial to see how our AI-enhanced learning tools can
             help you achieve your language learning goals.{" "}
-            <Link
-              href="/auth/signin"
-              target="_blank"
-              rel="noreferrer"
-              className="underline underline-offset-4"
-            >
-              Start Your Free Trial
-            </Link>
+            {user ? (
+              <Link
+                href="/student/read"
+                className="underline underline-offset-4"
+              >
+                Start Your Free Trial
+              </Link>
+            ) : (
+              <Link
+                href="/auth/signin"
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-4"
+              >
+                Start Your Free Trial
+              </Link>
+            )}
             .{" "}
           </p>
         </div>

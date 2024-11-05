@@ -61,6 +61,9 @@ async function middleware(req: NextRequest) {
     if (isAuth) {
       const userRole = token.role; // Assuming the token contains the user's role
       // Redirect to the level selection page if the user's level is unknown
+      if (userRole === Role.USER) {
+        return NextResponse.redirect(new URL("/role-selection", req.url));
+      }
       if (
         token.level === undefined ||
         token.level === null ||
@@ -68,10 +71,7 @@ async function middleware(req: NextRequest) {
       ) {
         return NextResponse.redirect(new URL("/level", req.url));
       }
-      // Redirect to the appropriate page based on the user's
-      if (userRole === Role.USER) {
-        return NextResponse.redirect(new URL("/", req.url));
-      }
+      // Redirect to the appropriate page based on the user's role
       if (userRole === Role.STUDENT) {
         return NextResponse.redirect(new URL("/student/read", req.url));
       }

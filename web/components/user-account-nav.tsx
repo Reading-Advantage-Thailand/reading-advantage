@@ -82,7 +82,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
               </Badge>
               {daysLeft > 0 ? ( // Check if the user has a free trial
                 <Badge className="bg-green-700 w-max" variant="outline">
-                  Expired in {daysLeft} days left
+                  Expires in: {daysLeft} days
                 </Badge>
               ) : (
                 <Badge className="bg-red-700 w-max" variant="outline">
@@ -130,6 +130,14 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link
+            target="_blank"
+            href="https://docs.google.com/forms/d/e/1FAIpQLSe_Ew100kef6j4O4IuiHm4ZeGhOj5FN6JRyJ7-0gvZV9eFgjQ/viewform?usp=sf_link"
+          >
+            {t("contactUs")}
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/settings/user-profile">{t("settings")}</Link>
         </DropdownMenuItem>

@@ -48,10 +48,13 @@ export const updateOne = <T extends DocumentData>(collection: DBCollection) =>
       const service = createFirestoreService<T>(collection);
       await service.updateDoc(id, body);
 
-      return NextResponse.json({
-        message: "Document updated",
-        data: body,
-      });
+      return NextResponse.json(
+        {
+          message: "Document updated",
+          data: body,
+        },
+        { status: 200 }
+      );
     }
   );
 

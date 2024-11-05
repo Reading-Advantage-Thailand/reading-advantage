@@ -10,6 +10,10 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import ChangeRole from "@/components/shared/change-role";
+import ResetDialog from "@/components/reset-xp-dialog";
+import { getAuth, sendEmailVerification } from "firebase/auth";
+import { firebaseApp } from "@/lib/firebase";
+import { toast } from "@/components/ui/use-toast";
 export default async function UserProfileSettingsPage() {
   const user = await getCurrentUser();
 
@@ -49,9 +53,7 @@ export default async function UserProfileSettingsPage() {
             desc="The XP is used to level up."
             data={user.xp?.toString() || "0"}
           />
-          <Button disabled={true} variant="secondary">
-            Reset XP
-          </Button>
+          <ResetDialog users={user.id} />
           <UpdateUserLicenseForm
             username={user.display_name}
             userId={user.id}
@@ -78,6 +80,68 @@ interface DisplaySettingInfoProps {
   verified?: boolean;
   showVerified?: boolean;
 }
+
+const handleSendEmailVerification = async () => {
+  const user = getAuth(firebaseApp).currentUser;
+
+  if (!user) return;
+  if (user.emailVerified) {
+    await fetch(`/api/users/${user.uid}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        emailVerified: true,
+      }),
+    })
+      .catch((err) => {
+        toast({
+          title: "Error",
+          description: "Something went wrong",
+          variant: "destructive",
+        });
+      })
+      .finally(() => {
+        toast({
+          title: "Email verified",
+          description: "Your email has been verified already",
+          variant: "destructive",
+        });
+      });
+  }
+  if (user.emailVerified) {
+    // refresh page
+
+    return;
+  }
+  sendEmailVerification(user!, {
+    url: `${process.env.NEXT_PUBLIC_BASE_URL}/settings/user-profile`,
+    handleCodeInApp: true,
+  })
+    .then((user) => {
+      toast({
+        title: "Email verification sent",
+        description: "Please check your email to verify your account",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      switch (err.code) {
+        case "auth/too-many-requests":
+          toast({
+            title: "Too many requests",
+            description: "Please try again later",
+            variant: "destructive",
+          });
+          break;
+        default:
+          toast({
+            title: "Error",
+            description: "Something went wrong",
+            variant: "destructive",
+          });
+          break;
+      }
+    });
+};
 
 const DisplaySettingInfo: React.FC<DisplaySettingInfoProps> = ({
   title,
@@ -115,10 +179,14 @@ const DisplaySettingInfo: React.FC<DisplaySettingInfoProps> = ({
         </div>
       )}
     </div>
-    {showVerified && !verified && (
-      <Button variant="secondary" size="sm">
+    {/* {showVerified && !verified && (
+      <Button
+        //onClick={() => handleSendEmailVerification()}
+        variant="secondary"
+        size="sm"
+      >
         Resend verification email
       </Button>
-    )}
+    )} */}
   </>
 );

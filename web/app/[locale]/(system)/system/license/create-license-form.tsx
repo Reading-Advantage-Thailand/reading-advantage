@@ -193,11 +193,11 @@ export function CreateLicenseForm() {
           name="expiration_date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Subscription Level</FormLabel>
+              <FormLabel>Expiration Date</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a subscription level" />
+                    <SelectValue placeholder="Select a Expiration Date" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

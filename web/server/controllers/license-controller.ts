@@ -75,6 +75,13 @@ export const activateLicense = async (req: ExtendedNextRequest) => {
         },
         { status: 404 }
       );
+    } else if (userData.license_id === licenseData[0].id) {
+      return NextResponse.json(
+        {
+          message: "License already activated",
+        },
+        { status: 404 }
+      );
     }
 
     if (!license.empty && userData) {
