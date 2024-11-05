@@ -11,18 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FeatureBox } from "@/components/index/feature-box";
-import {
-  GitBranch,
-  BrainCircuit,
-  BarChart4,
-  Book,
-  BookOpen,
-  Bot,
-  Wrench,
-  Volume2,
-  Settings,
-  Users,
-} from "lucide-react";
+import { GitBranch,BrainCircuit, BarChart4, Book, BookOpen, Bot, Wrench, Volume2, Settings, Users } from "lucide-react";
 import { Icons } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
