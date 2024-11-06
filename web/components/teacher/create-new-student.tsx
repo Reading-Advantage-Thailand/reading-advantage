@@ -83,6 +83,8 @@ export default function CreateNewStudent({
     return dateString;
   };
 
+  console.log(studentDataInClass);
+
   const handleAddStudent = async (classroomId: string, email: string) => {
     const isEmailAlreadyInClass = studentDataInClass.some(
       (student) => student.email === email
@@ -242,6 +244,7 @@ export default function CreateNewStudent({
       const formEmail = new FormData(formRef.current);
       const entriesArray = Array.from(formEmail.entries());
       const data = Object.fromEntries(entriesArray);
+      console.log(classroomId, data.email);
       handleAddStudent(classroomId, data.email as string);
     }
   };

@@ -43,7 +43,6 @@ export function UpdateUserLicenseForm({
   //   const { update } = useSession();
   const router = useRouter();
   const date = new Date(expired);
-  console.log(date.toUTCString());
 
   //console.log(form.formState.isValid);
 
@@ -59,25 +58,30 @@ export function UpdateUserLicenseForm({
         }),
       });
 
+      const res = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to update username.");
+        toast({
+          title: "An error occurred.",
+          description: `${res.message}`,
+          variant: "destructive",
+        });
+      } else {
+        // Reset the form
+        form.reset({ license: data.license });
+
+        //   // update user session token
+        //   await update({ name: data.name });
+
+        // refresh the page
+        router.refresh();
+
+        toast({
+          title: "User license updated",
+          description: `The user license has been updated to ${data.license}`,
+        });
       }
-
-      // Reset the form
-      form.reset({ license: data.license });
-
-      //   // update user session token
-      //   await update({ name: data.name });
-
-      // refresh the page
-      router.refresh();
-
-      toast({
-        title: "User license updated",
-        description: `The user license has been updated to ${data.license}`,
-      });
     } catch (error) {
-      console.log(error);
       toast({
         title: "An error occurred.",
         description: "Please try again later.",

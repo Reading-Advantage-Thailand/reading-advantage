@@ -204,6 +204,7 @@ export default {
       level: "等级 {level}",
       settings: "设置",
       signOut: "登出",
+      contactUs: "联系支持",
     },
     themeSwitcher: {
       dark: "暗模式",

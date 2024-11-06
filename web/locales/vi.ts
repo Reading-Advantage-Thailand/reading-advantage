@@ -217,6 +217,7 @@ export default {
       level: "Trình độ {level}",
       settings: "Cài đặt",
       signOut: "Đăng xuất",
+      contactUs: "Liên hệ hỗ trợ",
     },
     themeSwitcher: {
       dark: "Tối",

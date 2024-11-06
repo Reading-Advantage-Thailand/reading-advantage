@@ -216,6 +216,7 @@ export default {
       level: "ระดับ {level}",
       settings: "การตั้งค่า",
       signOut: "ออกจากระบบ",
+      contactUs: "ติดต่อฝ่ายสนับสนุน",
     },
     themeSwitcher: {
       dark: "โหมดมืด",
