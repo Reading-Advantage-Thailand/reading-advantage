@@ -59,7 +59,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
           className="h-8 w-8 border-2 border-[#E5E7EB] rounded-full cursor-pointer"
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="md:w-56">
+      <DropdownMenuContent align="end" className="md:w-56 lg:w-fit">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
             <p className="font-medium line-clamp-1">{user.display_name}</p>

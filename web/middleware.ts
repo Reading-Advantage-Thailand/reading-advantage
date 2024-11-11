@@ -72,9 +72,9 @@ async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL("/level", req.url));
       }
       // Redirect to the appropriate page based on the user's role
-      if (userRole === Role.STUDENT) {
-        return NextResponse.redirect(new URL("/student/read", req.url));
-      }
+      // if (userRole === Role.STUDENT) {
+      //   return NextResponse.redirect(new URL("/student/read", req.url));
+      // }
       if (userRole === Role.TEACHER) {
         return NextResponse.redirect(new URL("/teacher/my-classes", req.url));
       }
@@ -86,7 +86,7 @@ async function middleware(req: NextRequest) {
       }
       // else redirect to the student home page
       // DEFAULT ()
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL("/student/read", req.url));
     }
 
     return null;

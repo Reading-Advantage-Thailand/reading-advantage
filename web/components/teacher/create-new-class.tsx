@@ -10,10 +10,17 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
-
+import { Input } from "../ui/input";
 import { toast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function CreateNewClass({
   userId,
@@ -57,13 +64,14 @@ function CreateNewClass({
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      toast({
+        title: t("toast.successCreate"),
+        description: t("toast.successDescription"),
+      });
+      router.refresh();
+      setOpen(false);
     }
-    toast({
-      title: t("toast.successCreate"),
-      description: t("toast.successDescription"),
-    });
-    router.refresh();
-    setOpen(false);
   };
 
   const handleClose = () => {
@@ -93,35 +101,33 @@ function CreateNewClass({
               <DialogTitle>{t("title")}</DialogTitle>
             </DialogHeader>
             <DialogDescription>{t("description")}</DialogDescription>
-            <input
+            <Input
               type="text"
               className="w-full border rounded-md p-2"
               placeholder={t("className")}
               value={classroomName}
               onChange={(e) => setClassroomName(e.target.value)}
             />
-            <div className="flex w-full border rounded-md p-2">
-              <input
-                type="text"
-                value={classCode}
-                readOnly
-                className="flex-grow cursor-pointer"
-              />
-            </div>
-            <select
-              className="w-full border rounded-md p-2"
-              name="grade"
-              id="grade"
-              value={grade}
-              onChange={(e) => setGrade(e.target.value)}
-            >
-              <option value="select">{t("selectGrade")}</option>
-              {Array.from({ length: 10 }, (_, i) => i + 3).map((grade) => (
-                <option key={grade} value={grade}>
-                  {t("grade")} {grade}
-                </option>
-              ))}
-            </select>
+            <Input
+              type="text"
+              value={classCode}
+              readOnly
+              className="flex-grow cursor-pointer"
+            />
+            <Select onValueChange={(value) => setGrade(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("selectGrade")} />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 10 }, (_, i) => i + 3).map(
+                  (grade, index) => (
+                    <SelectItem key={index} value={String(grade)}>
+                      {t("grade")} {grade}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
             <DialogFooter>
               <Button variant="outline" onClick={() => handleCreateClass()}>
                 {t("create")}

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
+import { forEach } from "lodash";
 
 type Student = {
   studentId: string;
@@ -83,116 +84,64 @@ export default function CreateNewStudent({
     return dateString;
   };
 
-  console.log(studentDataInClass);
+  const handleAddStudent = async (
+    classroomId: string,
+    email: FormDataEntryValue[]
+  ) => {
+    for (const emailValue of email) {
+      if (studentDataInClass.some((student) => student.email === emailValue)) {
+        toast({
+          title: t("toast.studentAlreadyInClass"),
+          description: t("toast.studentAlreadyInClassDescription"),
+          variant: "destructive",
+        });
+        continue;
+      }
 
-  const handleAddStudent = async (classroomId: string, email: string) => {
-    const isEmailAlreadyInClass = studentDataInClass.some(
-      (student) => student.email === email
-    );
+      const studentToAdd = allStudentEmail.find(
+        (student: { email: string; studentId: string }) =>
+          student.email === emailValue
+      );
 
-    if (isEmailAlreadyInClass) {
-      toast({
-        title: t("toast.studentAlreadyInClass"),
-        description: t("toast.studentAlreadyInClassDescription"),
-        variant: "destructive",
-      });
-      return;
-    }
+      if (!studentToAdd) {
+        toast({
+          title: t("toast.emailNotFound"),
+          description: t("toast.emailNotFoundDescription"),
+          variant: "destructive",
+        });
+        continue;
+      }
 
-    const isEmailInAllStudents = allStudentEmail.some(
-      (student: { email: string; studentId: string }) => student.email === email
-    );
+      if (studentInEachClass.includes(studentToAdd.studentId)) {
+        toast({
+          title: t("toast.studentAlreadyInClass"),
+          description: t("toast.studentAlreadyInClassDescription"),
+          variant: "destructive",
+        });
+        continue;
+      }
 
-    if (!isEmailInAllStudents) {
-      toast({
-        title: t("toast.emailNotFound"),
-        description: t("toast.emailNotFoundDescription"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const studentToAdd = allStudentEmail.find(
-      (student: { email: string; studentId: string }) => student.email === email
-    );
-
-    if (studentToAdd && !studentInEachClass.includes(studentToAdd.studentId)) {
       const updatedStudentList = [
         ...studentInEachClass,
         studentToAdd.studentId,
       ];
-
       const updateStudentListBuilder = updatedStudentList.map(
         (studentId: string) => {
           const userLastActivity = userArticleRecords.find(
             (record: string[]) => record[0] === studentId
           );
-
           let lastActivityTimestamp;
-
           if (userLastActivity && userLastActivity[1]) {
             lastActivityTimestamp = convertDateToISOString(userLastActivity[1]);
           } else {
             lastActivityTimestamp = "No Activity";
           }
-
           return {
             studentId,
             lastActivity: lastActivityTimestamp,
           };
         }
       );
-
-      // const updateStudentListBuilder = updatedStudentList.map(
-      //   (studentId: string) => {
-      //     console.log("-----------------------------------------------");
-      //     console.log("userArticleRecords", userArticleRecords);
-      //     console.log("studentId", studentId);
-      //     return new Promise((resolve, reject) => {
-      //       const userLastActivity = userArticleRecords.find(
-      //         (record: string[]) => {
-      //           console.log("record[0]", record[0]);
-      //           return record[0] === studentId;
-      //         }
-      //       );
-      //       console.log("userLastActivity 1xxx", userLastActivity);
-      //       if (userLastActivity) {
-      //         console.log("ok");
-      //         resolve(userLastActivity);
-      //       } else {
-      //         reject("No Activity");
-      //       }
-      //     })
-      //       .then((userLastActivity) => {
-      //         console.log("userLastActivity 1", userLastActivity as string[]);
-      //         if ((userLastActivity as string[])[1]) {
-      //           return convertDateToISOString(
-      //             (userLastActivity as string[])[1]
-      //           );
-      //         } else {
-      //           // throw new Error("No Activity");
-      //           console.log(userLastActivity);
-      //         }
-      //       })
-      //       .then((userLastActivity) => {
-      //         console.log("userLastActivity 2", userLastActivity);
-      //         return {
-      //           studentId,
-      //           lastActivity: userLastActivity,
-      //         };
-      //       })
-      //       .catch((error) => {
-      //         console.log("error:", error);
-      //       })
-      //       .finally(() => {
-      //         return {
-      //           studentId,
-      //           lastActivity: "No Activity",
-      //         };
-      //       });
-      //   }
-      // );
-
       try {
         const response = await fetch(
           `/api/v1/classroom/${classroomId}/enroll`,
@@ -206,7 +155,7 @@ export default function CreateNewStudent({
             }),
           }
         );
-        if (response.status === 200) {
+        if (response.ok) {
           toast({
             title: t("toast.successAddStudent"),
             description: t("toast.successAddStudentDescription"),
@@ -214,7 +163,7 @@ export default function CreateNewStudent({
           });
           router.push(`/teacher/class-roster/${classroomId}`);
         } else {
-          console.log("add failed with status: ", response.status);
+          console.error("add failed with status: ", response.status);
           toast({
             title: t("toast.errorAddStudent"),
             description: t("toast.errorAddStudentDescription"),
@@ -229,12 +178,6 @@ export default function CreateNewStudent({
           variant: "destructive",
         });
       }
-    } else {
-      toast({
-        title: t("toast.studentAlreadyInClass"),
-        description: t("toast.studentAlreadyInClassDescription"),
-        variant: "destructive",
-      });
     }
   };
 
@@ -243,9 +186,10 @@ export default function CreateNewStudent({
     if (formRef.current) {
       const formEmail = new FormData(formRef.current);
       const entriesArray = Array.from(formEmail.entries());
-      const data = Object.fromEntries(entriesArray);
-      console.log(classroomId, data.email);
-      handleAddStudent(classroomId, data.email as string);
+      const emails = entriesArray
+        .map(([key, value]) => value)
+        .filter((value) => value);
+      handleAddStudent(classroomId, emails);
     }
   };
 
@@ -260,7 +204,7 @@ export default function CreateNewStudent({
         </CardDescription>
         <form ref={formRef} onSubmit={handleSubmit}>
           <CardContent className="flex flex-col items-center mb-8 overflow-auto md:w-full">
-            <Card className="my-4 overflow-x-auto flex flex-col items-center justify-center">
+            <Card className="my-4 flex flex-col items-center justify-center">
               <div className="flex justify-center items-center mt-8 w-[90%]">
                 <label htmlFor="email" className="text-base">
                   {t("email")}
@@ -269,7 +213,7 @@ export default function CreateNewStudent({
                   type="email"
                   name="email"
                   placeholder={t("placeholder")}
-                  className="hover:border-none border-b p-2 m-2 focus:outline-none focus:border-transparent overflow-x-auto"
+                  className="  p-2 m-2 focus:outline-none focus:border-transparent"
                 />
               </div>
               {Array.from({ length: inputs }).map((_: any, index: number) => (
@@ -278,7 +222,7 @@ export default function CreateNewStudent({
                   type="email"
                   name="email"
                   placeholder={t("placeholder")}
-                  className="hover:border-none border-b p-2 m-2 ml-12 focus:outline-none focus:border-transparent overflow-x-auto w-[77%]"
+                  className="  p-2 m-2 ml-12 focus:outline-none focus:border-transparent w-[77%]"
                 />
               ))}
               <Link

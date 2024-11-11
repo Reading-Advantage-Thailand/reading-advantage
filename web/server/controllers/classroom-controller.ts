@@ -59,7 +59,7 @@ export async function updateStudentClassroom(req: ExtendedNextRequest) {
     const studentId = json.studentId;
 
     await db.collection("users").doc(studentId).update({
-      name: name,
+      display_name: name,
     });
 
     return NextResponse.json({ message: "success" }, { status: 200 });

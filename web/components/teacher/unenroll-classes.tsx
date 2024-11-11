@@ -5,6 +5,7 @@ import {
   TableBody,
   TableCell,
   TableHeader,
+  TableHead,
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Checkbox, TableHead } from "@mui/material";
+import { Checkbox } from "../ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
@@ -172,7 +173,7 @@ export default function MyUnEnrollClasses({
         <div className="captoliza ml-2">
           <Checkbox
             checked={row.getIsSelected()}
-            onChange={() => {
+            onCheckedChange={() => {
               setClassroomId(row.getValue("id"));
               row.toggleSelected();
             }}

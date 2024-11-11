@@ -6,10 +6,12 @@ import {
   TableCell,
   TableHeader,
   TableRow,
+  TableHead,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
+  DropdownMenuItem,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
@@ -27,7 +29,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { TableHead } from "@mui/material";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
@@ -43,6 +44,7 @@ import {
 import { Icons } from "@/components/icons";
 import { Header } from "@/components/header";
 import { toast } from "../ui/use-toast";
+import { ScrollArea } from "../ui/scroll-area";
 
 type Student = {
   studentId: string;
@@ -115,9 +117,9 @@ export default function ClassRoster({
 
   let action = "";
 
-      const closeDialog = () => {
-        setIsOpen(false);
-      };
+  const closeDialog = () => {
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     if (!hasRefreshed && studentInClass) {
@@ -226,15 +228,15 @@ export default function ClassRoster({
         let lastActivityDate;
 
         if (typeof lastActivity === "string") {
-          lastActivityDate = userArticleRecords.map((record: string[]) => {
-            if (record[0] === row.getValue("studentId")) {
-              return record[1];
-            }
-            return null;
-          }).filter((date: null) => date !== null)[0];
-        
-        } 
-        else if (
+          lastActivityDate = userArticleRecords
+            .map((record: string[]) => {
+              if (record[0] === row.getValue("studentId")) {
+                return record[1];
+              }
+              return null;
+            })
+            .filter((date: null) => date !== null)[0];
+        } else if (
           lastActivity &&
           typeof lastActivity === "object" &&
           "_seconds" in lastActivity
@@ -345,7 +347,6 @@ export default function ClassRoster({
     },
   });
 
-
   return (
     <>
       {isResetModalOpen && (
@@ -385,26 +386,28 @@ export default function ClassRoster({
           <Header heading="Class Roster" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto mt-4">
+              <Button variant="outline" className="mt-4">
                 {selectedClassroom === ""
                   ? "Select a Classroom"
-                  : selectedClassroom}{" "}
+                  : selectedClassroom}
                 <ChevronDownIcon className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {classes.map((classroom) => (
-                <DropdownMenuCheckboxItem
-                  key={classroom.id}
-                  className="capitalize"
-                  onSelect={() => {
-                    setSelectedClassroom(classroom.classroomName);
-                    fetchStudentDataOnClick(classroom.id);
-                  }}
-                >
-                  {classroom.classroomName}
-                </DropdownMenuCheckboxItem>
-              ))}
+            <DropdownMenuContent align="start">
+              <ScrollArea className="h-[300px]">
+                {classes.map((classroom) => (
+                  <DropdownMenuItem
+                    key={classroom.id}
+                    className="capitalize"
+                    onSelect={() => {
+                      setSelectedClassroom(classroom.classroomName);
+                      fetchStudentDataOnClick(classroom.id);
+                    }}
+                  >
+                    {classroom.classroomName}
+                  </DropdownMenuItem>
+                ))}
+              </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

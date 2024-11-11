@@ -11,8 +11,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import ChangeRole from "@/components/shared/change-role";
 import ResetDialog from "@/components/reset-xp-dialog";
-import { getAuth, sendEmailVerification } from "firebase/auth";
-import { firebaseApp } from "@/lib/firebase";
+import {
+  getAuth,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+} from "firebase/auth";
+import { firebaseApp, firebaseAuth } from "@/lib/firebase";
 import { toast } from "@/components/ui/use-toast";
 export default async function UserProfileSettingsPage() {
   const user = await getCurrentUser();
@@ -42,6 +46,7 @@ export default async function UserProfileSettingsPage() {
             title="Email"
             data={user.email}
             verified={user.email_verified}
+            resetPassword
             showVerified
           />
           <DisplaySettingInfo
@@ -79,6 +84,7 @@ interface DisplaySettingInfoProps {
   badge?: string;
   verified?: boolean;
   showVerified?: boolean;
+  resetPassword?: boolean;
 }
 
 const handleSendEmailVerification = async () => {
@@ -143,12 +149,31 @@ const handleSendEmailVerification = async () => {
     });
 };
 
+const handleSendResetPassword = (email: string) => {
+  sendPasswordResetEmail(firebaseAuth, email)
+    .then(() => {
+      toast({
+        title: "Password reset email sent",
+        description: "Please check your email to reset your password",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive",
+      });
+    });
+};
+
 const DisplaySettingInfo: React.FC<DisplaySettingInfoProps> = ({
   title,
   desc,
   data,
   badge,
   verified,
+  resetPassword,
   showVerified = false,
 }) => (
   <>
@@ -179,14 +204,24 @@ const DisplaySettingInfo: React.FC<DisplaySettingInfoProps> = ({
         </div>
       )}
     </div>
-    {/* {showVerified && !verified && (
-      <Button
-        //onClick={() => handleSendEmailVerification()}
-        variant="secondary"
-        size="sm"
-      >
-        Resend verification email
-      </Button>
-    )} */}
+    <div className="flex gap-2">
+      {/* {resetPassword && (
+        <Button
+          variant="secondary"
+          size="sm"
+        >
+          Reset Password
+        </Button>
+      )} */}
+      {/* {showVerified && !verified && (
+        <Button
+          //onClick={() => handleSendEmailVerification()}
+          variant="secondary"
+          size="sm"
+        >
+          Resend verification email
+        </Button>
+      )} */}
+    </div>
   </>
 );

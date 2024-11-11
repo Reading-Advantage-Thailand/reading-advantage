@@ -6,6 +6,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
+  TableHead,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { TableHead } from "@mui/material";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
@@ -138,7 +138,7 @@ export default function MyStudents({ matchedStudents }: MyStudentProps) {
 
   const columns: ColumnDef<Student>[] = [
     {
-      accessorKey: "name",
+      accessorKey: "display_name",
       header: ({ column }) => {
         return (
           <Button
@@ -151,7 +151,7 @@ export default function MyStudents({ matchedStudents }: MyStudentProps) {
         );
       },
       cell: ({ row }) => {
-        const studentName: string = row.getValue("name");
+        const studentName: string = row.getValue("display_name");
         return (
           <div className="captoliza ml-4" onClick={() => row.toggleSelected}>
             {studentName ? studentName : "Anonymous"}

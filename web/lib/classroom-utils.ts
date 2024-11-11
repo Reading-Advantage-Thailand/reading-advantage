@@ -82,7 +82,9 @@ export default async function ClassroomData(params: {
               return {
                 studentId: studentData.studentId,
                 lastActivity: studentData.lastActivity,
-                studentName: matchedStudent ? matchedStudent.name : "Unknown",
+                studentName: matchedStudent
+                  ? matchedStudent.display_name
+                  : "Unknown",
                 classroomName: classStudent.classroomName,
                 classroomId: classStudent.id,
                 email: matchedStudent ? matchedStudent.email : "Unknown",
