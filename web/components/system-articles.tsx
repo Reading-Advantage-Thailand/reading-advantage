@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Input } from "./ui/input";
-import { Checkbox } from "@mui/material";
 import { Button } from "./ui/button";
+import { Checkbox } from "./ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,7 @@ import {
 import { CaretSortIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "./article-showcase-card";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface CustomCheckboxProps {
   label: string;
@@ -381,19 +382,19 @@ export default function System({ fetchMoreData }: PassagesProps) {
               <div className="mb-4">
                 <p className="font-bold">{tp("type")}</p>
                 <div className="ml-4">
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-2">
                     <Checkbox
-                      value="fiction"
+                      //value="fiction"
                       checked={type === "fiction"}
-                      onChange={handleTypeChange}
+                      onCheckedChange={() => handleTypeChange}
                     />
                     <p>{tp("fiction")}</p>
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-2">
                     <Checkbox
-                      value="nonfiction"
+                      //value="nonfiction"
                       checked={type === "nonfiction"}
-                      onChange={handleTypeChange}
+                      onCheckedChange={() => handleTypeChange}
                     />
                     <p>{tp("nonfiction")}</p>
                   </div>
@@ -482,7 +483,7 @@ export default function System({ fetchMoreData }: PassagesProps) {
             </div>
 
             {/* data card */}
-            <div className="overflow-auto">
+            <ScrollArea>
               {isFiltered ? (
                 <div className="grid grid-cols-1 h-full">
                   {sortPassages(filteredPassages).map(
@@ -521,7 +522,7 @@ export default function System({ fetchMoreData }: PassagesProps) {
               <div ref={sentinelRef}>
                 {hasMore ? "Loading more articles..." : ""}
               </div>
-            </div>
+            </ScrollArea>
           </div>
         </div>
       </div>

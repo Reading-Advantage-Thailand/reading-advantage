@@ -13,6 +13,14 @@ import { Icons } from "@/components/icons";
 import { toast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "../ui/input";
 
 type Classes = {
   classroomName: string;
@@ -99,7 +107,7 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
                 <DialogTitle>{t("title")}</DialogTitle>
               </DialogHeader>
               <DialogDescription>{t("description")}</DialogDescription>
-              <input
+              <Input
                 type="text"
                 className="w-full border rounded-md p-2"
                 placeholder={t("className")}
@@ -107,21 +115,20 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
                 key={classroom.id}
                 onChange={(e) => setClassroomName(e.target.value)}
               />
-              <select
-                className="w-full border rounded-md p-2"
-                name="grade"
-                id="grade"
-                value={grade}
-                onChange={(e) => setGrade(e.target.value)}
-              >
-                <option value="select">{t("selectGrade")}</option>
-                {Array.from({ length: 10 }, (_, i) => i + 3).map((grade) => (
-                  <option key={grade} value={grade}>
-                    {t("grade")} {grade}
-                  </option>
-                ))}
-              </select>
-
+              <Select value={grade} onValueChange={(value) => setGrade(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("selectGrade")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 10 }, (_, i) => i + 3).map(
+                    (grade, index) => (
+                      <SelectItem key={index} value={String(grade)}>
+                        {t("grade")} {grade}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
               <DialogFooter>
                 <Button
                   variant="outline"

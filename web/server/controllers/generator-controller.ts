@@ -80,7 +80,7 @@ export async function generateQueue(req: ExtendedNextRequest) {
         created_at: new Date().toISOString(),
         amount: amount * 6 * 2,
         id: formattedDate,
-      });     
+      });
     }
 
     await sendDiscordWebhook({
@@ -103,13 +103,16 @@ export async function generateQueue(req: ExtendedNextRequest) {
       userAgent,
     });
 
-    return NextResponse.json({
-      message: "Queue generation complete",
-      total: amount * 6 * 2,
-      failedCount,
-      timeTaken: timeTakenMinutes,
-      results: combinedResults,
-    });
+    return NextResponse.json(
+      {
+        message: "Queue generation complete",
+        total: amount * 6 * 2,
+        failedCount,
+        timeTaken: timeTakenMinutes,
+        results: combinedResults,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     await sendDiscordWebhook({
       title: "Queue Generation Failed",

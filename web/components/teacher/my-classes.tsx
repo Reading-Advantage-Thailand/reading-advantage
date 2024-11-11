@@ -6,6 +6,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
+  TableHead,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { TableHead } from "@mui/material";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";

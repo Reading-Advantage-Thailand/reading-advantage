@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
+  DropdownMenuItem,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
@@ -37,7 +38,7 @@ import EditStudent from "./edit-student";
 import RemoveStudent from "./remove-student-inclass";
 import { Header } from "@/components/header";
 import ClassroomData from "@/lib/classroom-utils";
-import { set } from "lodash";
+import { ScrollArea } from "../ui/scroll-area";
 
 type Student = {
   studentId: string;
@@ -63,11 +64,17 @@ type MyStudentProps = {
   userId: string;
   studentInClass: Student[];
   classrooms: Classrooms[];
-  classes: Classes[]; 
+  classes: Classes[];
   userArticleRecords: any;
 };
 
-export default function Reports({ studentInClass, userId, classrooms, classes, userArticleRecords}: MyStudentProps) {
+export default function Reports({
+  studentInClass,
+  userId,
+  classrooms,
+  classes,
+  userArticleRecords,
+}: MyStudentProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -76,7 +83,7 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
-  const trp = useScopedI18n("components.reports"); 
+  const trp = useScopedI18n("components.reports");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const router = useRouter();
   const [redirectUrl, setRedirectUrl] = useState("");
@@ -93,11 +100,11 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
   const handleActionSelected = (
     action: string,
     studentId: string,
-    classroomId: string,
+    classroomId: string
   ) => {
     switch (action) {
       case "view details":
-        setRedirectUrl(`/teacher/student-progress/${studentId}`)
+        setRedirectUrl(`/teacher/student-progress/${studentId}`);
         break;
       default:
         console.log("default");
@@ -123,7 +130,7 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-           {trp('name')}
+            {trp("name")}
             <CaretSortIcon className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -140,7 +147,7 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
     {
       accessorKey: "xp",
       header: ({ column }) => {
-        return <Button variant="ghost">{trp('xp')}</Button>;
+        return <Button variant="ghost">{trp("xp")}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza ml-4">{row.getValue("xp")}</div>
@@ -149,7 +156,7 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
     {
       accessorKey: "level",
       header: ({ column }) => {
-        return <Button variant="ghost">{trp('level')}</Button>;
+        return <Button variant="ghost">{trp("level")}</Button>;
       },
       cell: ({ row }) => (
         <div className="captoliza ml-4">{row.getValue("level")}</div>
@@ -158,19 +165,21 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
     {
       accessorKey: "lastActivity",
       header: ({ column }) => {
-        return <Button variant="ghost">{trp('lastActivity')}</Button>;
+        return <Button variant="ghost">{trp("lastActivity")}</Button>;
       },
       cell: ({ row }) => {
         const lastActivity = row.getValue("lastActivity");
         let lastActivityDate;
 
         if (typeof lastActivity === "string") {
-          lastActivityDate = userArticleRecords.map((record: string[]) => {
-            if (record[0] === row.getValue("studentId")) {
-              return record[1];
-            }
-            return null;
-          }).filter((date: null) => date !== null)[0];
+          lastActivityDate = userArticleRecords
+            .map((record: string[]) => {
+              if (record[0] === row.getValue("studentId")) {
+                return record[1];
+              }
+              return null;
+            })
+            .filter((date: null) => date !== null)[0];
         } else if (
           lastActivity &&
           typeof lastActivity === "object" &&
@@ -205,13 +214,13 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
     {
       accessorKey: "action",
       header: ({ column }) => {
-        return <Button variant="ghost">{trp('actions')}</Button>;
+        return <Button variant="ghost">{trp("actions")}</Button>;
       },
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="default" className="ml-auto">
-              {trp('actions')} <ChevronDownIcon className="ml-2 h-4 w-4" />
+              {trp("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -226,7 +235,7 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
                   )
                 }
               >
-                {trp('viewDetails')}
+                {trp("viewDetails")}
               </Link>
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
@@ -236,20 +245,20 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
     {
       accessorKey: "detail",
       header: ({ column }) => {
-        return <Button variant="ghost">{trp('detail')}</Button>;
+        return <Button variant="ghost">{trp("detail")}</Button>;
       },
       cell: ({ row }) => (
-        <div className="captoliza flex gap-2 ml-4" >
-        <EditStudent
-        userId={userId}
-          studentInClass={studentInClass}
-          studentIdSelected={row.getValue("studentId")}
+        <div className="captoliza flex gap-2 ml-4">
+          <EditStudent
+            userId={userId}
+            studentInClass={studentInClass}
+            studentIdSelected={row.getValue("studentId")}
           />
-          <RemoveStudent 
-          studentInClass={studentInClass}
-          userId={userId}
-          studentIdSelected={row.getValue("studentId")}
-          classroomIdSelected={studentInClass[0].classroomId}
+          <RemoveStudent
+            studentInClass={studentInClass}
+            userId={userId}
+            studentIdSelected={row.getValue("studentId")}
+            classroomIdSelected={studentInClass[0].classroomId}
           />
         </div>
       ),
@@ -258,7 +267,7 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
 
   const fetchStudentDataOnClick = async (classroomId: string) => {
     setRedirectUrl(`/teacher/reports/${classroomId}`);
-  }
+  };
 
   const table = useReactTable({
     data: studentInClass,
@@ -281,7 +290,7 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
 
   return (
     <>
-     {classrooms.length ? (
+      {classrooms.length ? (
         studentInClass.length ? (
           <div className="font-bold text-3xl">
             {trp("title", { className: studentInClass[0].classroomName })}
@@ -296,26 +305,28 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
           <Header heading="Reports" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto mt-4">
+              <Button variant="outline" className="mt-4">
                 {selectedClassroom === ""
                   ? "Select a Classroom"
-                  : selectedClassroom}{" "}
+                  : selectedClassroom}
                 <ChevronDownIcon className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {classes.map((classroom) => (
-                <DropdownMenuCheckboxItem
-                  key={classroom.id}
-                  className="capitalize"
-                  onSelect={() => {
-                    setSelectedClassroom(classroom.classroomName);
-                    fetchStudentDataOnClick(classroom.id);
-                  }}
-                >
-                  {classroom.classroomName}
-                </DropdownMenuCheckboxItem>
-              ))}
+            <DropdownMenuContent align="start">
+              <ScrollArea className="h-[300px]">
+                {classes.map((classroom) => (
+                  <DropdownMenuItem
+                    key={classroom.id}
+                    className="capitalize"
+                    onSelect={() => {
+                      setSelectedClassroom(classroom.classroomName);
+                      fetchStudentDataOnClick(classroom.id);
+                    }}
+                  >
+                    {classroom.classroomName}
+                  </DropdownMenuItem>
+                ))}
+              </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -323,7 +334,7 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
 
       <div className="grid grid-cols-2 items-end">
         <Input
-          placeholder={trp('search')}
+          placeholder={trp("search")}
           value={
             (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
           }
@@ -336,8 +347,8 @@ export default function Reports({ studentInClass, userId, classrooms, classes, u
           <div className="flex justify-end">
             <Card className="flex items-center justify-center w-[50%]">
               <CardContent className="mt-4">
-                {trp('averageLevel')}
-                <span className="text-xl ml-2">{averageLevel}</span>{" "}
+                {trp("averageLevel")}
+                <span className="text-xl ml-2">{averageLevel.toFixed(2)}</span>
               </CardContent>
             </Card>
           </div>
