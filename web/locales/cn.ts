@@ -224,6 +224,11 @@ export default {
       sentences: "句子",
       reports: "报告",
       vocabulary: "词汇",
+      myClasses: "我的课程",
+      myStudents: "我的学生",
+      classRoster: "班级名单",
+      passages: "段落",
+      assignments: "作业",
     },
     sidebarTeacherNav: {
       myClasses: "我的课程",
@@ -392,6 +397,7 @@ export default {
         grade: "年级",
         create: "创建班级",
         cancel: "取消",
+        classCode: "班级代码",
         toast: {
           attention: "注意力",
           attentionDescription: "所有字段必须填写！",

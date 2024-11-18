@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
+  DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -30,12 +30,12 @@ import {
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CreateNewClass from "./create-new-class";
 import EditClass from "./edit-class";
 import DeleteClass from "./delete-class";
 import ArchiveClass from "./archive-class";
+import { Header } from "../header";
 
 type Classes = {
   classroomName: string;
@@ -65,8 +65,8 @@ type MyClassesProps = {
 
 export default function MyClasses({
   userId,
-  classrooms,
   userName,
+  classrooms,
 }: MyClassesProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -77,31 +77,7 @@ export default function MyClasses({
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
   const tc = useScopedI18n("components.myClasses");
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
   const router = useRouter();
-  const [redirectUrl, setRedirectUrl] = useState("");
-
-  let action = "";
-
-  useEffect(() => {
-    if (redirectUrl) {
-      router.push(redirectUrl);
-    }
-  }, [selectedStudentId, action, redirectUrl, router]);
-
-  const handleActionSelected = (action: string, id: string) => {
-    switch (action) {
-      case "roster":
-        setRedirectUrl(`/teacher/class-roster/${id}`);
-        break;
-      case "reports":
-        setRedirectUrl(`/teacher/reports/${id}`);
-        break;
-      default:
-        console.log("default");
-        break;
-    }
-  };
 
   const columns: ColumnDef<Classes>[] = [
     {
@@ -128,93 +104,80 @@ export default function MyClasses({
     },
     {
       accessorKey: "classCode",
-      header: ({ column }) => {
-        return <Button variant="ghost">{tc("classCode")}</Button>;
+      header: () => {
+        return <div className="text-center">{tc("classCode")}</div>;
       },
       cell: ({ row }) => (
-        <div className="captoliza ml-4">{row.getValue("classCode")}</div>
+        <div className="captoliza text-center">{row.getValue("classCode")}</div>
       ),
     },
     {
-      accessorKey: "id",
-      header: ({ column }) => {
-        return null;
-      },
-      cell: ({ row }) => <div className="captoliza"></div>,
-    },
-    {
       accessorKey: "student.lenght",
-      header: ({ column }) => {
-        return <Button variant="ghost">{tc("studentCount")}</Button>;
+      header: () => {
+        return <div className="text-center">{tc("studentCount")}</div>;
       },
       cell: ({ row }) => (
-        <div className="captoliza ml-4">
+        <div className="captoliza text-center">
           {row.original?.student?.length || 0}
         </div>
       ),
     },
     {
       accessorKey: "action",
-      header: ({ column }) => {
-        return <Button variant="ghost">{tc("actions")}</Button>;
+      header: () => {
+        return <div className="text-center">{tc("actions")}</div>;
       },
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="default" className="ml-auto">
-              {tc("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuCheckboxItem>
-              <Link
-                href={redirectUrl}
-                onClick={() =>
-                  handleActionSelected("roster", row.getValue("id"))
-                }
-              >
-                {tc("roster")}
-              </Link>
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>
-              <Link
-                href={redirectUrl}
-                onClick={() =>
-                  handleActionSelected("reports", row.getValue("id"))
-                }
-              >
-                {tc("reports")}
-              </Link>
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      cell: ({ row }) => {
+        const payment = row.original;
+        return (
+          <div className="text-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="default" className="ml-auto">
+                  {tc("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem
+                  onClick={() =>
+                    router.push(
+                      `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/class-roster/${payment.id}`
+                    )
+                  }
+                >
+                  {tc("roster")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    router.push(
+                      `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/reports/${payment.id}`
+                    )
+                  }
+                >
+                  {tc("reports")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
     },
     {
       accessorKey: "detail",
-      header: ({ column }) => {
-        return <Button variant="ghost">{tc("detail")}</Button>;
+      header: () => {
+        return <div className="text-center">{tc("detail")}</div>;
       },
-      cell: ({ row }) => (
-        <div className="captoliza flex gap-2">
-          <EditClass
-            userId={userId}
-            classroomData={classrooms}
-            title="Edit Class"
-            classroomId={row.getValue("id")}
-          />
-          <ArchiveClass
-            classroomData={classrooms}
-            title="Archive class"
-            classroomId={row.getValue("id")}
-          />
-          <DeleteClass
-            classroomData={classrooms}
-            title="Delete class"
-            classroomId={row.getValue("id")}
-          />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const payment = row.original;
+
+        return (
+          <div className="captoliza justify-center flex gap-2">
+            <EditClass classroomData={payment} />
+            <ArchiveClass classroomData={payment} />
+            <DeleteClass classroomData={payment} />
+          </div>
+        );
+      },
     },
   ];
 
@@ -239,28 +202,31 @@ export default function MyClasses({
 
   return (
     <>
-      <div className="font-bold text-3xl">{tc("title")}</div>
-      <div className="flex justify-between">
-        <Input
-          placeholder={tc("search")}
-          value={
-            (table.getColumn("classroomName")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("classroomName")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm mt-4"
-        />
-        <CreateNewClass userId={userId} userName={userName} />
-      </div>
-      <div className="rounded-md border mt-4">
-        <Table>
-          <TableHeader className="font-bold">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableCell key={header.id}>
+      <div className="flex flex-col gap-4">
+        <Header heading={tc("title")} />
+        <div className="flex justify-between items-center">
+          <Input
+            placeholder={tc("search")}
+            value={
+              (table.getColumn("classroomName")?.getFilterValue() as string) ??
+              ""
+            }
+            onChange={(event) =>
+              table
+                .getColumn("classroomName")
+                ?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+          <CreateNewClass userId={userId} userName={userName} />
+        </div>
+        <div className="rounded-md border">
+          <Table style={{ tableLayout: "fixed", width: "100%" }}>
+            <TableHeader className="font-bold">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
                       <TableHead key={header.id}>
                         {header.isPlaceholder
                           ? null
@@ -269,74 +235,60 @@ export default function MyClasses({
                               header.getContext()
                             )}
                       </TableHead>
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  className="cursor-pointer"
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      onClick={() => {
-                        setSelectedStudentId(
-                          cell.getContext().cell.row.getValue("id")
-                        );
-                      }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Empty
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {t("select", {
-            selected: table.getFilteredSelectedRowModel().rows.length,
-            total: table.getFilteredRowModel().rows.length,
-          })}
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Empty
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {t("previous")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            {t("next")}
-          </Button>
+        <div className="flex items-center justify-end space-x-2">
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              {t("previous")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              {t("next")}
+            </Button>
+          </div>
         </div>
       </div>
     </>

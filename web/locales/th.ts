@@ -236,6 +236,11 @@ export default {
       sentences: "ประโยค",
       reports: "รายงาน",
       vocabulary: "คำศัพท์",
+      myClasses: "ชั้นเรียนของฉัน",
+      myStudents: "นักเรียนของฉัน",
+      classRoster: "บัญชีรายชื่อนักเรียน",
+      passages: "บทความ",
+      assignments: "การบ้าน",
     },
     sidebarTeacherNav: {
       myClasses: "ชั้นเรียนของฉัน",
@@ -405,7 +410,6 @@ export default {
       detail: "รายละเอียด",
       roster: "รายชื่อ",
       reports: "รายงาน",
-
       createNewClass: {
         button: "สร้างชั้นเรียนใหม่",
         title: "สร้างชั้นเรียนใหม่",
@@ -415,6 +419,7 @@ export default {
         grade: "เกรด",
         create: "สร้างชั้นเรียน",
         cancel: "ยกเลิก",
+        classCode: "รหัสชั้นเรียน",
         toast: {
           attention: "ความสนใจ",
           attentionDescription: "ต้องกรอกข้อมูลทุกช่อง!",

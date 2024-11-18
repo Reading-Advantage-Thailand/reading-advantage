@@ -237,6 +237,11 @@ export default {
       sentences: "Câu",
       reports: "Báo cáo",
       vocabulary: "từ vựng",
+      myClasses: "Lớp học của tôi",
+      myStudents: "học sinh của tôi",
+      classRoster: "Danh sách lớp",
+      passages: "Những đoạn văn",
+      assignments: "Bài tập",
     },
     sidebarTeacherNav: {
       myClasses: "Lớp học của tôi",
@@ -408,7 +413,6 @@ export default {
       detail: "Chi Tiết",
       roster: "Danh Sách",
       reports: "Báo Cáo",
-
       createNewClass: {
         button: "Tạo Lớp Học Mới",
         title: "Tạo lớp học mới",
@@ -418,6 +422,7 @@ export default {
         grade: "Khối",
         create: "Tạo Lớp",
         cancel: "Hủy",
+        classCode: "Mã Lớp",
         toast: {
           attention: "Chú Ý",
           attentionDescription: "Tất cả các trường phải được điền!",

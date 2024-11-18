@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
+  DropdownMenuItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -29,8 +29,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
+import { Header } from "../header";
 import { useScopedI18n } from "@/locales/client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -40,6 +40,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { toast } from "../ui/use-toast";
 
 type Student = {
   id: string;
@@ -61,78 +62,45 @@ export default function MyStudents({ matchedStudents }: MyStudentProps) {
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
   const ts = useScopedI18n("components.myStudent");
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState("");
-
-  let action = "";
-
-  const closeDialog = () => {
-    setIsOpen(false);
-  };
-
-  useEffect(() => {
-    if (redirectUrl) {
-      router.push(redirectUrl);
-    }
-  }, [selectedStudentId, action, redirectUrl, router]);
-
-  const handleActionSelected = (action: string, studentId: string) => {
-    switch (action) {
-      case "progress":
-        setRedirectUrl(`/teacher/student-progress/${studentId}`);
-        break;
-      case "enroll":
-        setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
-        break;
-      case "unenroll":
-        setRedirectUrl(`/teacher/unenroll-classes/${studentId}`);
-        break;
-      default:
-        console.log("default");
-        break;
-    }
-  };
-
-  const openResetModal = (selectedStudentId: null) => {
-    setIsResetModalOpen(true);
-    setSelectedStudentId(selectedStudentId);
-  };
-
-  const closeResetModal = () => {
-    setIsResetModalOpen(false);
-  };
+  const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
 
   const handleResetProgress = async (selectedStudentId: string) => {
-    closeResetModal();
     try {
-      const response = await fetch(`/api/v1/users/${selectedStudentId}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          xp: 0,
-          level: 0,
-          cefrLevel: "",
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${selectedStudentId}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            xp: 0,
+            level: 0,
+            cefr_level: "",
+          }),
+        }
+      );
+      if (response.status === 400) {
+        toast({
+          title: "Fail.",
+          description: `XP reset Fail.`,
+        });
+      }
 
-      return new Response(
-        JSON.stringify({
-          message: "success",
-        }),
-        { status: 200 }
-      );
+      if (response.status === 200) {
+        toast({
+          title: "Success.",
+          description: `XP reset successfully.`,
+        });
+      }
     } catch (error) {
-      return new Response(
-        JSON.stringify({
-          message: error,
-        }),
-        { status: 500 }
-      );
+      console.error(error);
+      toast({
+        title: "Fail.",
+        description: `XP reset Fail.`,
+      });
     } finally {
-      closeDialog();
       router.refresh();
+      setIsResetModalOpen(false);
     }
   };
 
@@ -153,7 +121,7 @@ export default function MyStudents({ matchedStudents }: MyStudentProps) {
       cell: ({ row }) => {
         const studentName: string = row.getValue("display_name");
         return (
-          <div className="captoliza ml-4" onClick={() => row.toggleSelected}>
+          <div className="captoliza ml-4">
             {studentName ? studentName : "Anonymous"}
           </div>
         );
@@ -161,65 +129,74 @@ export default function MyStudents({ matchedStudents }: MyStudentProps) {
     },
     {
       accessorKey: "email",
-      header: ({ column }) => {
-        return <Button variant="ghost">{ts("email")}</Button>;
+      header: () => {
+        return <div>{ts("email")}</div>;
       },
       cell: ({ row }) => {
         const studentEmail: string = row.getValue("email");
         return (
-          <div className="captoliza ml-4">
+          <div className="captoliza ">
             {studentEmail ? studentEmail : "Unknown"}
           </div>
         );
       },
     },
     {
-      accessorKey: "id",
-      header: ({ column }) => {
-        return null;
-      },
-      cell: ({ row }) => null,
-    },
-    {
       accessorKey: "action",
-      header: ({ column }) => {
-        return <Button variant="ghost">{ts("actions")}</Button>;
+      header: () => {
+        return <div className="text-center">{ts("actions")}</div>;
       },
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="default" className="ml-auto">
-              {ts("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuCheckboxItem
-              onClick={() =>
-                handleActionSelected("progress", row.getValue("id"))
-              }
-            >
-              <Link href={redirectUrl}>{ts("progress")}</Link>
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              onClick={() => handleActionSelected("enroll", row.getValue("id"))}
-            >
-              <Link href={redirectUrl}>{ts("enroll")}</Link>
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              onClick={() =>
-                handleActionSelected("unenroll", row.getValue("id"))
-              }
-            >
-              <Link href={redirectUrl}>{ts("unEnroll")}</Link>
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              onClick={() => openResetModal(row.getValue("id"))}
-            >
-              {ts("resetProgress")}
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      cell: ({ row }) => {
+        const payment = row.original;
+        return (
+          <div className="text-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="default" className="ml-auto">
+                  {ts("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem
+                  onClick={() =>
+                    router.push(
+                      `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/student-progress/${payment.id}`
+                    )
+                  }
+                >
+                  {ts("progress")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    router.push(
+                      `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/enroll-classes/${payment.id}`
+                    )
+                  }
+                >
+                  {ts("enroll")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    router.push(
+                      `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/unenroll-classes/${payment.id}`
+                    )
+                  }
+                >
+                  {ts("unEnroll")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setIsResetModalOpen(true);
+                    setSelectedStudentId(payment.id);
+                  }}
+                >
+                  {ts("resetProgress")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
     },
   ];
 
@@ -244,44 +221,25 @@ export default function MyStudents({ matchedStudents }: MyStudentProps) {
 
   return (
     <>
-      {isResetModalOpen && (
-        <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{ts("resetTitle")}</DialogTitle>
-            </DialogHeader>
-            <DialogDescription>{ts("resetDescription")}</DialogDescription>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => closeResetModal()}>
-                {ts("cancelReset")}
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => handleResetProgress(selectedStudentId ?? "")}
-              >
-                {ts("reset")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-      <div className="font-bold text-3xl">{ts("title")}</div>
-      <Input
-        placeholder={ts("searchName")}
-        value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-        onChange={(event) =>
-          table.getColumn("name")?.setFilterValue(event.target.value)
-        }
-        className="max-w-sm mt-4"
-      />
-      <div className="rounded-md border mt-4">
-        <Table>
-          <TableHeader className="font-bold">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableCell key={header.id}>
+      <div className="flex flex-col gap-4">
+        <Header heading={ts("title")} />
+        <Input
+          placeholder={ts("searchName")}
+          value={
+            (table.getColumn("display_name")?.getFilterValue() as string) ?? ""
+          }
+          onChange={(event) =>
+            table.getColumn("display_name")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm "
+        />
+        <div className="rounded-md border ">
+          <Table style={{ tableLayout: "fixed", width: "100%" }}>
+            <TableHeader className="font-bold">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
                       <TableHead key={header.id}>
                         {header.isPlaceholder
                           ? null
@@ -290,76 +248,87 @@ export default function MyStudents({ matchedStudents }: MyStudentProps) {
                               header.getContext()
                             )}
                       </TableHead>
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  className="cursor-pointer"
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      onClick={() =>
-                        setSelectedStudentId(
-                          cell.getContext().cell.row.getValue("id")
-                        )
-                      }
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Empty
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {t("select", {
-            selected: table.getFilteredSelectedRowModel().rows.length,
-            total: table.getFilteredRowModel().rows.length,
-          })}
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Empty
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {t("previous")}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            {t("next")}
-          </Button>
+        <div className="flex items-center justify-end space-x-2">
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              {t("previous")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              {t("next")}
+            </Button>
+          </div>
         </div>
       </div>
+      <Dialog
+        open={isResetModalOpen}
+        onOpenChange={() => setIsResetModalOpen(!isResetModalOpen)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{ts("resetTitle")}</DialogTitle>
+            <DialogDescription>{ts("resetDescription")}</DialogDescription>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsResetModalOpen(false)}
+              >
+                {ts("cancelReset")}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleResetProgress(selectedStudentId)}
+              >
+                {ts("reset")}
+              </Button>
+            </DialogFooter>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

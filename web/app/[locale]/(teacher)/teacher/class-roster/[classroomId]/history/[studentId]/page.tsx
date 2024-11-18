@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
-import ClassroomData from "@/lib/classroom-utils";
+import { headers } from "next/headers";
 
 async function getUserArticleRecords(userId: string) {
   return fetchData(`/api/v1/users/records/${userId}`);
@@ -34,25 +34,22 @@ export default async function StudentHistoryForTeacher(params: {
     (article: any) => article.rated >= 3
   );
 
-  let userName = "";
-  if (params && params.params) {
-    const classroomRes = await ClassroomData({
-      params: { classroomId: params.params.classroomId },
-    });
-
-    classroomRes.studentsMapped.forEach(
-      (student: { studentId: string; studentName: string }) => {
-        if (student.studentId === params.params.studentId) {
-          userName = student.studentName;
-        }
-      }
+  const StudentsData = async () => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${params.params.studentId}`,
+      { method: "GET", headers: headers() }
     );
-  }
+    if (!res.ok) throw new Error("Failed to fetch StudentData list");
+    const fetchdata = await res.json();
+    return fetchdata.data;
+  };
+
+  const studentData = await StudentsData();
 
   return (
     <div>
       <div className="mb-4">
-        <Header heading={`History Activity of ${userName}`} />
+        <Header heading={`History Activity of ${studentData.display_name}`} />
         <Header
           heading={t("reminderToReread")}
           text={t("reminderToRereadDescription")}

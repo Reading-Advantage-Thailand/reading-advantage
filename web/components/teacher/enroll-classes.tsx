@@ -27,11 +27,13 @@ import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
 import { toast } from "../ui/use-toast";
+import { Header } from "../header";
 
 type Student = {
   id: string;
   email: string;
-  name: string;
+  display_name: string;
+  last_activity: string;
 };
 
 type Classroom = {
@@ -49,16 +51,12 @@ type Classroom = {
 
 type MyEnrollProps = {
   enrolledClasses: Classroom[];
-  studentId: string;
-  matchedNameOfStudents: Student[];
-  selectedUserLastActivity: Date;
+  studentData: Student;
 };
 
 export default function MyEnrollClasses({
   enrolledClasses,
-  studentId,
-  matchedNameOfStudents,
-  selectedUserLastActivity,
+  studentData,
 }: MyEnrollProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -70,34 +68,10 @@ export default function MyEnrollClasses({
   const t = useScopedI18n("components.articleRecordsTable");
   const te = useScopedI18n("components.myStudent.enrollPage");
   const router = useRouter();
-  const [classroomId, setClassroomId] = useState("");
-  const [isCheck, setIsCheck] = useState(false);
-  const [studentInClassVar, setStudentInClassVar] = useState<String[]>([]);
 
-  const eachClassChecked = useCallback(
-    (id: string) => {
-      if (isCheck) {
-        setStudentInClassVar(["classId_" + id]);
-      }
-    },
-    [isCheck, setStudentInClassVar]
-  );
-
-  useEffect(() => {
-    eachClassChecked(classroomId);
-  }, [isCheck, classroomId, eachClassChecked]);
-
-  const handleStudentEnrollment = async (
-    classroomId: string,
-    enrolledClasses: any
-  ) => {
+  const handleStudentEnrollment = async (classroomId: string[]) => {
     // Find the selected classroom
-    const selectedClassroom = enrolledClasses.find(
-      (classroom: any) => classroom.id === classroomId
-    );
-
-    if (!selectedClassroom) {
-      console.error("Selected classroom not found");
+    if (classroomId.length === 0) {
       toast({
         title: te("toast.errorEnrollment"),
         description: te("toast.errorEnrollDescription"),
@@ -105,55 +79,47 @@ export default function MyEnrollClasses({
       });
       return;
     }
-
-    // Create the list of students for the selected classroom
-    let studentsInClass = selectedClassroom.student
-      ? [...selectedClassroom.student]
-      : [];
-
-    // Add the new student if not already present
-    if (
-      !studentsInClass.some((student: any) => student.studentId === studentId)
-    ) {
-      studentsInClass.push({
-        studentId: studentId,
-        lastActivity: selectedUserLastActivity,
-      });
-    }
-
-    try {
-      const response = await fetch(`/api/v1/classroom/${classroomId}/enroll`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          student: studentsInClass,
-        }),
-      });
-
-      if (response.status === 200) {
-        toast({
-          title: te("toast.successEnrollment"),
-          description: te("toast.successEnrollDescription"),
+    const studentdata = [
+      {
+        studentId: studentData.id,
+        lastActivity: studentData.last_activity
+          ? studentData.last_activity
+          : "No Activity",
+      },
+    ];
+    for (const classId of classroomId) {
+      try {
+        const response = await fetch(`/api/v1/classroom/${classId}/enroll`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            student: studentdata,
+          }),
         });
-      } else {
-        console.log("add failed with status: ", response.status);
+        if (!response.ok) {
+          toast({
+            title: te("toast.errorEnrollment"),
+            description: te("toast.errorEnrollDescription"),
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error during enrollment:", error);
         toast({
           title: te("toast.errorEnrollment"),
           description: te("toast.errorEnrollDescription"),
           variant: "destructive",
         });
+      } finally {
+        toast({
+          title: te("toast.successEnrollment"),
+          description: te("toast.successEnrollDescription"),
+        });
+        router.refresh();
+        setRowSelection({});
       }
-
-      router.refresh();
-    } catch (error) {
-      console.error("Error during enrollment:", error);
-      toast({
-        title: te("toast.errorEnrollment"),
-        description: te("toast.errorEnrollDescription"),
-        variant: "destructive",
-      });
     }
   };
 
@@ -182,17 +148,14 @@ export default function MyEnrollClasses({
     },
     {
       accessorKey: "id",
-      header: ({ column }) => {
-        return <Button variant="ghost">{te("enroll")}</Button>;
+      header: () => {
+        return <div>{te("enroll")}</div>;
       },
       cell: ({ row }) => (
-        <div className="captoliza ml-2">
+        <div className="ml-2">
           <Checkbox
             checked={row.getIsSelected()}
-            onCheckedChange={() => {
-              setClassroomId(row.getValue("id"));
-              row.toggleSelected();
-            }}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
           />
         </div>
       ),
@@ -219,14 +182,12 @@ export default function MyEnrollClasses({
   });
 
   return (
-    <>
-      <div className="font-bold text-3xl">
-        {te("title", {
-          studentName: matchedNameOfStudents[0]
-            ? matchedNameOfStudents[0].name
-            : "Unknown",
+    <div className="flex flex-col gap-4">
+      <Header
+        heading={te("title", {
+          studentName: studentData ? studentData.display_name : "Unknown",
         })}
-      </div>
+      />
       <div className="flex items-center justify-between">
         <Input
           placeholder={te("search")}
@@ -236,33 +197,37 @@ export default function MyEnrollClasses({
           onChange={(event) =>
             table.getColumn("classroomName")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm mt-4"
+          className="max-w-sm"
         />
         <Button
           variant="default"
-          className="max-w-sm mt-4"
-          onClick={() => handleStudentEnrollment(classroomId, enrolledClasses)}
+          className="max-w-sm"
+          onClick={() => {
+            const selectedRows = table.getSelectedRowModel().rowsById;
+            const fileIds = Object.values(selectedRows).map(
+              (row) => row.original.id
+            );
+            handleStudentEnrollment(fileIds);
+          }}
         >
           {te("add")}
         </Button>
       </div>
-      <div className="rounded-md border mt-4">
-        <Table>
+      <div className="rounded-md border">
+        <Table style={{ tableLayout: "fixed", width: "100%" }}>
           <TableHeader className="font-bold">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableCell key={header.id}>
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    </TableCell>
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   );
                 })}
               </TableRow>
@@ -272,7 +237,6 @@ export default function MyEnrollClasses({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                  className="cursor-pointer"
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
@@ -299,13 +263,7 @@ export default function MyEnrollClasses({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {t("select", {
-            selected: table.getFilteredSelectedRowModel().rows.length,
-            total: table.getFilteredRowModel().rows.length,
-          })}
-        </div>
+      <div className="flex items-center justify-end space-x-2">
         <div className="space-x-2">
           <Button
             variant="outline"
@@ -325,6 +283,6 @@ export default function MyEnrollClasses({
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import * as z from "zod";
 import exp from "constants";
+import { last } from "lodash";
 
 interface RequestContext {
   params: {
@@ -284,7 +285,6 @@ export async function patchClassroomUnenroll(
     // Fetch the classroom from the database
     const docRef = db.collection("classroom").doc(classroomId);
     const doc = await docRef.get();
-    const data = doc.data();
 
     // Check if the classroom exists and the id matches
     if (!doc.exists || doc.id !== classroomId) {

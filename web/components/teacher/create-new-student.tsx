@@ -13,17 +13,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
-import { forEach } from "lodash";
+import { last } from "lodash";
 
 type Student = {
-  studentId: string;
-  lastActivity: {
-    _seconds: number;
-    _nanoseconds: number;
-  };
-  studentName: string;
-  classroomName: string;
-  classroomsId: string;
+  id: string;
+  last_activity: string;
   email: string;
 };
 
@@ -33,56 +27,20 @@ type Classrooms = {
 };
 
 type CreateNewStudentProps = {
+  allStudentEmail: Student[];
+  classrooms: Classrooms;
   studentDataInClass: Student[];
-  allStudentEmail: any;
-  studentInEachClass: any;
-  classrooms: Classrooms[];
-  userArticleRecords: string[][];
 };
 
 export default function CreateNewStudent({
   studentDataInClass,
   allStudentEmail,
-  studentInEachClass,
   classrooms,
-  userArticleRecords = [],
 }: CreateNewStudentProps) {
   const router = useRouter();
   const [inputs, setInputs] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const t = useScopedI18n("components.classRoster.addNewStudent");
-
-  let classroomId: string = "";
-  if (
-    studentDataInClass &&
-    studentDataInClass.length > 0 &&
-    "classroomsId" in studentDataInClass[0]
-  ) {
-    classroomId = studentDataInClass[0].classroomsId;
-  } else if (classrooms && classrooms.length > 0 && "id" in classrooms[0]) {
-    classroomId = classrooms[0].id;
-  } else {
-    console.log("Unable to determine classroomId");
-  }
-
-  const className =
-    studentDataInClass && studentDataInClass.length > 0
-      ? studentDataInClass[0].classroomName
-      : classrooms[0].classroomName;
-
-  const convertDateToISOString = (dateString: string): string => {
-    if (dateString === "No Activity") {
-      return dateString;
-    }
-
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (dateRegex.test(dateString)) {
-      const [year, month, day] = dateString.split("-").map(Number);
-      const date = new Date(Date.UTC(year, month - 1, day));
-      return date.toISOString();
-    }
-    return dateString;
-  };
 
   const handleAddStudent = async (
     classroomId: string,
@@ -99,8 +57,7 @@ export default function CreateNewStudent({
       }
 
       const studentToAdd = allStudentEmail.find(
-        (student: { email: string; studentId: string }) =>
-          student.email === emailValue
+        (student: { email: string }) => student.email === emailValue
       );
 
       if (!studentToAdd) {
@@ -112,36 +69,13 @@ export default function CreateNewStudent({
         continue;
       }
 
-      if (studentInEachClass.includes(studentToAdd.studentId)) {
-        toast({
-          title: t("toast.studentAlreadyInClass"),
-          description: t("toast.studentAlreadyInClassDescription"),
-          variant: "destructive",
-        });
-        continue;
-      }
+      const updatedStudentList = [...studentDataInClass, studentToAdd];
 
-      const updatedStudentList = [
-        ...studentInEachClass,
-        studentToAdd.studentId,
-      ];
-      const updateStudentListBuilder = updatedStudentList.map(
-        (studentId: string) => {
-          const userLastActivity = userArticleRecords.find(
-            (record: string[]) => record[0] === studentId
-          );
-          let lastActivityTimestamp;
-          if (userLastActivity && userLastActivity[1]) {
-            lastActivityTimestamp = convertDateToISOString(userLastActivity[1]);
-          } else {
-            lastActivityTimestamp = "No Activity";
-          }
-          return {
-            studentId,
-            lastActivity: lastActivityTimestamp,
-          };
-        }
-      );
+      const updateStudentListBuilder = updatedStudentList.map((item) => ({
+        studentId: item.id,
+        lastActivity: item.last_activity || "No Activity",
+      }));
+
       try {
         const response = await fetch(
           `/api/v1/classroom/${classroomId}/enroll`,
@@ -163,7 +97,6 @@ export default function CreateNewStudent({
           });
           router.push(`/teacher/class-roster/${classroomId}`);
         } else {
-          console.error("add failed with status: ", response.status);
           toast({
             title: t("toast.errorAddStudent"),
             description: t("toast.errorAddStudentDescription"),
@@ -171,12 +104,13 @@ export default function CreateNewStudent({
           });
         }
       } catch (error) {
-        console.error("Error adding student:", error);
         toast({
           title: t("toast.errorAddStudent"),
           description: t("toast.errorAddStudentDescription"),
           variant: "destructive",
         });
+      } finally {
+        router.refresh();
       }
     }
   };
@@ -189,7 +123,7 @@ export default function CreateNewStudent({
       const emails = entriesArray
         .map(([key, value]) => value)
         .filter((value) => value);
-      handleAddStudent(classroomId, emails);
+      handleAddStudent(classrooms.id, emails);
     }
   };
 
@@ -197,7 +131,7 @@ export default function CreateNewStudent({
     <div>
       <Card className="flex flex-col items-center justify-center">
         <CardTitle className="mt-10 mb-4 text-3xl ">
-          {t("title", { className: className })}
+          {t("title", { className: classrooms.classroomName })}
         </CardTitle>
         <CardDescription className="text-base mb-4">
           {t("description")}
