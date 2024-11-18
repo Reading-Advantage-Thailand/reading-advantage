@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuItem,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -31,7 +30,6 @@ import {
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -46,23 +44,24 @@ import { Header } from "@/components/header";
 import { toast } from "../ui/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
 
-type Student = {
-  studentId: string;
-  lastActivity: {
-    _seconds: number;
-    _nanoseconds: number;
-  };
-  studentName: string;
-  classroomName: string;
-  classroomId: string;
+type StudentData = {
+  id: string;
+  display_name: string;
   email: string;
+  last_activity: string;
+};
+
+type StudentInClass = {
+  studentId: string;
+  lastActivity: string;
 };
 
 type Classrooms = {
   id: string;
   classroomName: string;
-  student: Student[];
+  student: StudentInClass[];
 };
+
 type Classes = {
   classroomName: string;
   classCode: string;
@@ -75,26 +74,19 @@ type Classes = {
   id: string;
   archived: boolean;
   title: string;
-  student: [
-    {
-      studentId: string;
-      lastActivity: Date;
-    }
-  ];
+  student: StudentInClass[];
 };
 
 type MyRosterProps = {
-  studentInClass: Student[];
-  classrooms: Classrooms[];
-  classes: Classes[];
-  userArticleRecords: any;
+  studentInClass?: StudentData[];
+  classrooms?: Classrooms[];
+  classes?: Classes[];
 };
 
 export default function ClassRoster({
   studentInClass,
   classrooms,
   classes,
-  userArticleRecords,
 }: MyRosterProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -108,101 +100,46 @@ export default function ClassRoster({
   const ts = useScopedI18n("components.myStudent");
 
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState("");
-  const [selectedStudentId, setSelectedStudentId] = useState(null);
-  const [hasRefreshed, setHasRefreshed] = useState(false);
-  const [selectedClassroom, setSelectedClassroom] = useState("");
-
-  let action = "";
-
-  const closeDialog = () => {
-    setIsOpen(false);
-  };
-
-  useEffect(() => {
-    if (!hasRefreshed && studentInClass) {
-      router.refresh();
-      setHasRefreshed(true);
-    }
-  }, [studentInClass, hasRefreshed, router]);
-
-  useEffect(() => {
-    if (redirectUrl) {
-      router.push(redirectUrl);
-    }
-  }, [selectedStudentId, action, redirectUrl, router]);
-
-  const handleActionSelected = (
-    action: string,
-    studentId: string,
-    classroomId: string
-  ) => {
-    switch (action) {
-      case "progress":
-        setRedirectUrl(`/teacher/student-progress/${studentId}`);
-        break;
-      case "enroll":
-        setRedirectUrl(`/teacher/enroll-classes/${studentId}`);
-        break;
-      case "history":
-        setRedirectUrl(
-          `/teacher/class-roster/${classroomId}/history/${studentId}`
-        );
-        break;
-      default:
-        console.log("default");
-        break;
-    }
-  };
-
-  const openResetModal = (selectedStudentId: null) => {
-    setIsResetModalOpen(true);
-    setSelectedStudentId(selectedStudentId);
-  };
-
-  const closeResetModal = () => {
-    setIsResetModalOpen(false);
-  };
+  const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
 
   const handleResetProgress = async (selectedStudentId: string) => {
-    closeResetModal();
     try {
-      const response = await fetch(`/api/users/${selectedStudentId}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          xp: 0,
-          level: 0,
-          cefrLevel: "",
-        }),
-      });
-      toast({
-        title: tr("toast.successResetProgress"),
-        description: tr("toast.successResetProgressDescription"),
-      });
-      return new Response(
-        JSON.stringify({
-          message: "success",
-        }),
-        { status: 200 }
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${selectedStudentId}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            xp: 0,
+            level: 0,
+            cefr_level: "",
+          }),
+        }
       );
+      if (!response.ok) {
+        toast({
+          title: "Fail.",
+          description: `XP reset Fail.`,
+        });
+      }
     } catch (error) {
-      return new Response(
-        JSON.stringify({
-          message: error,
-        }),
-        { status: 500 }
-      );
+      toast({
+        title: "Fail.",
+        description: `XP reset Fail.`,
+      });
     } finally {
-      closeDialog();
+      toast({
+        title: "Success.",
+        description: `XP reset successfully.`,
+      });
       router.refresh();
+      setIsResetModalOpen(false);
     }
   };
 
-  const columns: ColumnDef<Student>[] = [
+  const columns: ColumnDef<StudentData>[] = [
     {
-      accessorKey: "studentName",
+      accessorKey: "display_name",
       header: ({ column }) => {
         return (
           <Button
@@ -215,121 +152,87 @@ export default function ClassRoster({
         );
       },
       cell: ({ row }) => (
-        <div className="captoliza ml-4">{row.getValue("studentName")}</div>
+        <div className="captoliza ml-4">{row.getValue("display_name")}</div>
       ),
     },
     {
-      accessorKey: "lastActivity",
-      header: ({ column }) => {
-        return <Button variant="ghost">{tr("lastActivity")}</Button>;
+      accessorKey: "last_activity",
+      header: () => {
+        return <div className="text-center">{tr("lastActivity")}</div>;
       },
       cell: ({ row }) => {
-        const lastActivity = row.getValue("lastActivity");
-        let lastActivityDate;
-
-        if (typeof lastActivity === "string") {
-          lastActivityDate = userArticleRecords
-            .map((record: string[]) => {
-              if (record[0] === row.getValue("studentId")) {
-                return record[1];
-              }
-              return null;
-            })
-            .filter((date: null) => date !== null)[0];
-        } else if (
-          lastActivity &&
-          typeof lastActivity === "object" &&
-          "_seconds" in lastActivity
-        ) {
-          lastActivityDate = new Date(
-            (lastActivity as { _seconds: number })._seconds * 1000
-          );
-        }
-
         return (
-          <div className="captoliza ml-4">
-            {lastActivityDate && lastActivityDate.toLocaleString()}
+          <div className="captoliza text-center">
+            {row.getValue("last_activity")
+              ? row.getValue("last_activity")
+              : "No Activity"}
           </div>
         );
       },
     },
     {
-      accessorKey: "studentId",
-      header: ({ column }) => {
-        return null;
-      },
-      cell: ({ row }) => null,
-    },
-    {
-      accessorKey: "classroomId",
-      header: ({ column }) => {
-        return null;
-      },
-      cell: ({ row }) => null,
-    },
-    {
       accessorKey: "action",
-      header: ({ column }) => {
-        return <Button variant="ghost">{tr("actions")}</Button>;
+      header: () => {
+        return <div className="text-center">{tr("actions")}</div>;
       },
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="default" className="ml-auto">
-              {tr("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuCheckboxItem
-              onClick={() =>
-                handleActionSelected(
-                  "progress",
-                  row.getValue("studentId"),
-                  row.getValue("classroomId")
-                )
-              }
-            >
-              <Link href={redirectUrl}>{ts("progress")}</Link>
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              onClick={() =>
-                handleActionSelected(
-                  "enroll",
-                  row.getValue("studentId"),
-                  row.getValue("classroomId")
-                )
-              }
-            >
-              <Link href={redirectUrl}>{ts("enroll")}</Link>
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              onClick={() => openResetModal(row.getValue("studentId"))}
-            >
-              {ts("resetProgress")}
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              onClick={() =>
-                handleActionSelected(
-                  "history",
-                  row.getValue("studentId"),
-                  row.getValue("classroomId")
-                )
-              }
-            >
-              {tr("history")}
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      cell: ({ row }) => {
+        const payment = row.original;
+        return (
+          <div className="text-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="default" className="ml-auto">
+                  {tr("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem
+                  onClick={() =>
+                    router.push(
+                      `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/student-progress/${payment.id}`
+                    )
+                  }
+                >
+                  {ts("progress")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    router.push(
+                      `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/enroll-classes/${payment.id}`
+                    )
+                  }
+                >
+                  {ts("enroll")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setIsResetModalOpen(true);
+                    setSelectedStudentId(payment.id);
+                  }}
+                >
+                  {ts("resetProgress")}
+                </DropdownMenuItem>
+                {classrooms && (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      router.push(
+                        `${process.env.NEXT_PUBLIC_BASE_URL}//teacher/class-roster/${classrooms[0]?.id}/history/${payment.id}`
+                      )
+                    }
+                  >
+                    {tr("history")}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
     },
   ];
 
-  const fetchStudentDataOnClick = async (classroomId: string) => {
-    setRedirectUrl(`/teacher/class-roster/${classroomId}`);
-  };
-
   const table = useReactTable({
-    data: studentInClass,
+    data: studentInClass || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -348,48 +251,14 @@ export default function ClassRoster({
   });
 
   return (
-    <>
-      {isResetModalOpen && (
-        <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{ts("resetTitle")}</DialogTitle>
-            </DialogHeader>
-            <DialogDescription>{ts("resetDescription")}</DialogDescription>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => closeResetModal()}>
-                {ts("cancelReset")}
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => handleResetProgress(selectedStudentId ?? "")}
-              >
-                {ts("reset")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {classrooms.length ? (
-        studentInClass.length ? (
-          <div className="font-bold text-3xl">
-            {tr("title", { className: studentInClass[0].classroomName })}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <Header heading={tr("noStudent")} />
-          </div>
-        )
-      ) : (
+    <div className="flex flex-col gap-4">
+      {classes && (
         <div>
           <Header heading="Class Roster" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="mt-4">
-                {selectedClassroom === ""
-                  ? "Select a Classroom"
-                  : selectedClassroom}
+                Select a Classroom
                 <ChevronDownIcon className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -399,10 +268,9 @@ export default function ClassRoster({
                   <DropdownMenuItem
                     key={classroom.id}
                     className="capitalize"
-                    onSelect={() => {
-                      setSelectedClassroom(classroom.classroomName);
-                      fetchStudentDataOnClick(classroom.id);
-                    }}
+                    onClick={() =>
+                      router.push(`/teacher/class-roster/${classroom.id}`)
+                    }
                   >
                     {classroom.classroomName}
                   </DropdownMenuItem>
@@ -412,48 +280,54 @@ export default function ClassRoster({
           </DropdownMenu>
         </div>
       )}
-
-      <div className="flex justify-between">
+      {classrooms &&
+        (studentInClass?.length ? (
+          <Header
+            heading={tr("title", { className: classrooms[0].classroomName })}
+          />
+        ) : (
+          <Header heading={tr("noStudent")} />
+        ))}
+      <div className="flex justify-between items-center">
         <Input
           placeholder={tr("search")}
           value={
-            (table.getColumn("studentName")?.getFilterValue() as string) ?? ""
+            (table.getColumn("display_name")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("studentName")?.setFilterValue(event.target.value)
+            table.getColumn("display_name")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm mt-4"
+          className="max-w-sm"
         />
-        {classrooms.length > 0 ? (
-          <Link
-            href={`/teacher/class-roster/${classrooms[0].id}/create-new-student`}
+        {classrooms && (
+          <Button
+            variant="outline"
+            onClick={() =>
+              router.push(
+                `/teacher/class-roster/${classrooms[0].id}/create-new-student`
+              )
+            }
           >
-            <Button variant="outline">
-              <Icons.add />
-              &nbsp; {tr("addStudentButton")}
-            </Button>
-          </Link>
-        ) : (
-          ""
+            <Icons.add />
+            {tr("addStudentButton")}
+          </Button>
         )}
       </div>
-      <div className="rounded-md border mt-4">
-        <Table>
+      <div className="rounded-md border">
+        <Table style={{ tableLayout: "fixed", width: "100%" }}>
           <TableHeader className="font-bold">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableCell key={header.id}>
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    </TableCell>
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   );
                 })}
               </TableRow>
@@ -463,7 +337,6 @@ export default function ClassRoster({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                  className="cursor-pointer"
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
@@ -490,13 +363,7 @@ export default function ClassRoster({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {t("select", {
-            selected: table.getFilteredSelectedRowModel().rows.length,
-            total: table.getFilteredRowModel().rows.length,
-          })}
-        </div>
+      <div className="flex items-center justify-end space-x-2">
         <div className="space-x-2">
           <Button
             variant="outline"
@@ -516,6 +383,31 @@ export default function ClassRoster({
           </Button>
         </div>
       </div>
-    </>
+      <Dialog
+        open={isResetModalOpen}
+        onOpenChange={() => setIsResetModalOpen(!isResetModalOpen)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{ts("resetTitle")}</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>{ts("resetDescription")}</DialogDescription>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsResetModalOpen(false)}
+            >
+              {ts("cancelReset")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleResetProgress(selectedStudentId)}
+            >
+              {ts("reset")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

@@ -1,4 +1,3 @@
-import { Footer } from "@/components/footer";
 import AppLayout, { BaseAppLayoutProps } from "@/components/shared/app-layout";
 import { studentPageConfig } from "@/configs/student-page-config";
 import { getCurrentUser } from "@/lib/session";

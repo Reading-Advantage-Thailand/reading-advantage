@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
-import { NextAuthSessionProvider } from "../providers/nextauth-session-provider";
 import { MainNav } from "@/components/main-navbar";
 import { UserAccountNav } from "@/components/user-account-nav";
 import { SidebarNav } from "@/components/sidebar-nav";

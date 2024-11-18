@@ -15,9 +15,7 @@ import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
 
 interface ArchiveClassProps {
-  classroomData: Classes[];
-  title: string;
-  classroomId: string;
+  classroomData: Classes;
 }
 
 type Classes = {
@@ -26,13 +24,10 @@ type Classes = {
   id: string;
 };
 
-function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
+function ArchiveClass({ classroomData }: ArchiveClassProps) {
   const [open, setOpen] = useState(false);
-  const [archiveClass, setArchiveClass] = useState(false);
+
   const router = useRouter();
-  const classroom = classroomData.find(
-    (classroom) => classroom.id === classroomId
-  );
   const t = useScopedI18n("components.myClasses.archieve");
 
   const handleArchiveClass = async (classroomId: string) => {
@@ -44,7 +39,6 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
       });
 
       if (res.status === 200) {
-        setArchiveClass(true);
         toast({
           title: t("toast.successArchive"),
           description: t("toast.successArchiveDescription"),
@@ -74,12 +68,10 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
       <div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <span title="archive class">
-              <Icons.archive
-                className="h-4 w-4 cursor-pointer"
-                aria-label="archive class"
-              />
-            </span>
+            <Icons.archive
+              className="h-4 w-4 cursor-pointer"
+              aria-label="archive class"
+            />
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -87,13 +79,13 @@ function ArchiveClass({ classroomData, classroomId }: ArchiveClassProps) {
             </DialogHeader>
             <DialogDescription>
               {t("descriptionBefore")}
-              <span className="font-bold">{classroom?.classroomName}</span>
+              <span className="font-bold">{classroomData.classroomName}</span>
               {t("descriptionAfter")}
             </DialogDescription>
             <DialogFooter>
               <Button
                 variant="secondary"
-                onClick={() => handleArchiveClass(classroomId)}
+                onClick={() => handleArchiveClass(classroomData.id)}
               >
                 {t("archive")}
               </Button>

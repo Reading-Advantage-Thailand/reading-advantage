@@ -8,7 +8,6 @@ import { redirect } from "next/navigation";
 import React from "react";
 import ReadingStatsChart from "@/components/dashboard/user-reading-chart";
 import CEFRLevels from "@/components/dashboard/user-level-indicator";
-import { CloudFog } from "lucide-react";
 import UserRecentActivity from "@/components/dashboard/user-recent-activity";
 import { getScopedI18n } from "@/locales/server";
 

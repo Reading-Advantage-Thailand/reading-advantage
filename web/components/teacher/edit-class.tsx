@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 type Classes = {
   classroomName: string;
@@ -30,22 +31,14 @@ type Classes = {
 };
 
 interface EditClassProps {
-  userId: string;
-  classroomData: Classes[];
-  title: string;
-  classroomId: string;
+  classroomData: Classes;
 }
 
-function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
-  const classroomToEdit = classroomData.find(
-    (classroom) => classroom.id === classroomId
+function EditClass({ classroomData }: EditClassProps) {
+  const [classroomName, setClassroomName] = useState<string>(
+    classroomData.classroomName
   );
-  const [classroomName, setClassroomName] = useState(
-    classroomToEdit ? classroomToEdit.classroomName : ""
-  );
-  const [grade, setGrade] = useState(
-    classroomToEdit ? classroomToEdit.grade : ""
-  );
+  const [grade, setGrade] = useState<string>(classroomData.grade);
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const t = useScopedI18n("components.myClasses.edit");
@@ -53,11 +46,7 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
   const handleEditClass = async (classroomId: string) => {
     setOpen(true);
     try {
-      const editClassroom = {
-        classroomName: classroomName,
-        grade: grade,
-      };
-      if (!userId || !classroomName || !grade) {
+      if (!classroomName || !grade) {
         toast({
           title: t("toast.attention"),
           description: t("toast.attentionDescription"),
@@ -70,7 +59,10 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(editClassroom),
+          body: JSON.stringify({
+            classroomName,
+            grade,
+          }),
         });
       }
     } catch (error) {
@@ -85,64 +77,55 @@ function EditClass({ userId, classroomData, classroomId }: EditClassProps) {
     setOpen(false);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   return (
-    <div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <span title="edit class">
-            <Icons.edit
-              className="ml-2 h-4 w-4 cursor-pointer"
-              aria-label="edit class"
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Icons.edit
+          className="ml-2 h-4 w-4 cursor-pointer"
+          aria-label="edit class"
+        />
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("title")}</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>{t("description")}</DialogDescription>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label>{t("className")}</Label>
+            <Input
+              type="text"
+              className="col-span-3"
+              placeholder={t("className")}
+              value={classroomName}
+              onChange={(e) => setClassroomName(e.target.value)}
             />
-          </span>
-        </DialogTrigger>
-        {classroomData.map((classroom) => (
-          <div key={classroom.id}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t("title")}</DialogTitle>
-              </DialogHeader>
-              <DialogDescription>{t("description")}</DialogDescription>
-              <Input
-                type="text"
-                className="w-full border rounded-md p-2"
-                placeholder={t("className")}
-                value={classroomName}
-                key={classroom.id}
-                onChange={(e) => setClassroomName(e.target.value)}
-              />
-              <Select value={grade} onValueChange={(value) => setGrade(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("selectGrade")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => i + 3).map(
-                    (grade, index) => (
-                      <SelectItem key={index} value={String(grade)}>
-                        {t("grade")} {grade}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => handleEditClass(classroomId)}
-                >
-                  {t("update")}
-                </Button>
-                <Button onClick={handleClose}>{t("cancel")}</Button>
-              </DialogFooter>
-            </DialogContent>
           </div>
-        ))}
-      </Dialog>
-    </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label>{t("selectGrade")}</Label>
+            <Select value={grade} onValueChange={(value) => setGrade(value)}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder={t("selectGrade")} />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 10 }, (_, i) => i + 3).map(
+                  (grade, index) => (
+                    <SelectItem key={index} value={String(grade)}>
+                      {t("grade")} {grade}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => handleEditClass(classroomData.id)}>
+            {t("update")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

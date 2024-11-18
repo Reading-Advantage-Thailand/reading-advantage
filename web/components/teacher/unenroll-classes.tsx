@@ -27,11 +27,17 @@ import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
 import { toast } from "../ui/use-toast";
+import { Header } from "../header";
 
 type Student = {
   id: string;
   email: string;
-  name: string;
+  display_name: string;
+};
+
+type StudentInClass = {
+  studentId: string;
+  lastActivity: string;
 };
 
 type Classroom = {
@@ -43,22 +49,19 @@ type Classroom = {
     coTeacherId: string;
     name: string;
   };
+  student: StudentInClass[];
   archived: boolean;
   teacherId: string;
 };
 
 type MyEnrollProps = {
   enrolledClasses: Classroom[];
-  matchedNameOfStudents: Student[];
-  updateStudentList: any;
-  studentId: string;
+  studentData: Student;
 };
 
 export default function MyUnEnrollClasses({
   enrolledClasses,
-  matchedNameOfStudents,
-  updateStudentList,
-  studentId,
+  studentData,
 }: MyEnrollProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -70,77 +73,56 @@ export default function MyUnEnrollClasses({
   const t = useScopedI18n("components.articleRecordsTable");
   const tu = useScopedI18n("components.myStudent.unEnrollPage");
   const router = useRouter();
-  const [classroomId, setClassroomId] = useState("");
 
-  const handleStudentUnEnrollment = async (
-    classroomId: string,
-    enrolledClasses: any,
-    studentId: string
-  ) => {
-    const removedStudentInClass: any[] = [];
-    enrolledClasses.forEach((classroom: any) => {
-      if (classroom.id === classroomId) {
-        classroom.student.forEach((student: any) => {
-          if (student.studentId !== studentId) {
-            removedStudentInClass.push(student.studentId);
-          }
-        });
-      }
-    });
+  console.log(enrolledClasses);
 
-    const updateStudentListBuilder = removedStudentInClass.map((studentId) => {
-      const matchedStudent = updateStudentList.find(
-        (student: { studentId: string }) => student.studentId === studentId
-      );
-      return {
-        studentId,
-        lastActivity: matchedStudent ? matchedStudent.lastActivity : null,
-      };
-    });
+  const handleStudentUnEnrollment = async (classroomId: string[]) => {
+    if (classroomId.length === 0) {
+      toast({
+        title: tu("toast.errorUnenrollment"),
+        description: tu("toast.errorUnenrollDescription"),
+        variant: "destructive",
+      });
+      return;
+    }
+    for (const classId of classroomId) {
+      const studentDelete = enrolledClasses
+        .find((classroom: Classroom) => classroom.id === classId)
+        ?.student.filter(
+          (student: StudentInClass) => student.studentId !== studentData.id
+        );
 
-    try {
-      const response = await fetch(
-        `/api/v1/classroom/${classroomId}/unenroll`,
-        {
+      try {
+        const response = await fetch(`/api/v1/classroom/${classId}/unenroll`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            student: updateStudentListBuilder,
-            studentId: studentId,
+            student: studentDelete,
           }),
-        }
-      );
-      if (response.status === 200) {
-        toast({
-          title: tu("toast.successUnenrollment"),
-          description: tu("toast.successUnenrollDescription"),
         });
-      } else {
-        console.log("remove failed with status: ", response.status);
+        if (!response.ok) {
+          toast({
+            title: tu("toast.errorUnenrollment"),
+            description: tu("toast.errorUnenrollDescription"),
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
         toast({
           title: tu("toast.errorUnenrollment"),
           description: tu("toast.errorUnenrollDescription"),
           variant: "destructive",
         });
+      } finally {
+        toast({
+          title: tu("toast.successUnenrollment"),
+          description: tu("toast.successUnenrollDescription"),
+        });
+        router.refresh();
+        setRowSelection({});
       }
-
-      return new Response(
-        JSON.stringify({
-          message: "success",
-        }),
-        { status: 200 }
-      );
-    } catch (error) {
-      return new Response(
-        JSON.stringify({
-          message: error,
-        }),
-        { status: 500 }
-      );
-    } finally {
-      router.refresh();
     }
   };
 
@@ -166,17 +148,14 @@ export default function MyUnEnrollClasses({
     },
     {
       accessorKey: "id",
-      header: ({ column }) => {
-        return <Button variant="ghost">{tu("unEnroll")}</Button>;
+      header: () => {
+        return <div className="text-center">{tu("unEnroll")}</div>;
       },
       cell: ({ row }) => (
-        <div className="captoliza ml-2">
+        <div className="captoliza text-center">
           <Checkbox
             checked={row.getIsSelected()}
-            onCheckedChange={() => {
-              setClassroomId(row.getValue("id"));
-              row.toggleSelected();
-            }}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
           />
         </div>
       ),
@@ -203,14 +182,12 @@ export default function MyUnEnrollClasses({
   });
 
   return (
-    <>
-      <div className="font-bold text-3xl">
-        {tu("title", {
-          studentName: matchedNameOfStudents[0]
-            ? matchedNameOfStudents[0].name
-            : "Unknown",
+    <div className="flex flex-col gap-4">
+      <Header
+        heading={tu("title", {
+          studentName: studentData ? studentData.display_name : "Unknown",
         })}
-      </div>
+      />
       <div className="flex items-center justify-between">
         <Input
           placeholder={tu("search")}
@@ -220,35 +197,37 @@ export default function MyUnEnrollClasses({
           onChange={(event) =>
             table.getColumn("classroomName")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm mt-4"
+          className="max-w-sm"
         />
         <Button
           variant="default"
-          className="max-w-sm mt-4"
-          onClick={() =>
-            handleStudentUnEnrollment(classroomId, enrolledClasses, studentId)
-          }
+          className="max-w-sm"
+          onClick={() => {
+            const selectedRows = table.getSelectedRowModel().rowsById;
+            const fileIds = Object.values(selectedRows).map(
+              (row) => row.original.id
+            );
+            handleStudentUnEnrollment(fileIds);
+          }}
         >
           {tu("remove")}
         </Button>
       </div>
-      <div className="rounded-md border mt-4">
-        <Table>
+      <div className="rounded-md border">
+        <Table style={{ tableLayout: "fixed", width: "100%" }}>
           <TableHeader className="font-bold">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableCell key={header.id}>
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    </TableCell>
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   );
                 })}
               </TableRow>
@@ -258,7 +237,6 @@ export default function MyUnEnrollClasses({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                  className="cursor-pointer"
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
@@ -285,13 +263,7 @@ export default function MyUnEnrollClasses({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {t("select", {
-            selected: table.getFilteredSelectedRowModel().rows.length,
-            total: table.getFilteredRowModel().rows.length,
-          })}
-        </div>
+      <div className="flex items-center justify-end space-x-2">
         <div className="space-x-2">
           <Button
             variant="outline"
@@ -311,6 +283,6 @@ export default function MyUnEnrollClasses({
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -15,9 +15,7 @@ import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
 
 interface DeleteClassProps {
-  classroomData: Classes[];
-  title: string;
-  classroomId: string;
+  classroomData: Classes;
 }
 
 type Classes = {
@@ -26,12 +24,10 @@ type Classes = {
   id: string;
 };
 
-function DeleteClass({ classroomData, classroomId, title }: DeleteClassProps) {
+function DeleteClass({ classroomData }: DeleteClassProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const classroom = classroomData.find(
-    (classroom) => classroom.id === classroomId
-  );
+
   const t = useScopedI18n("components.myClasses.delete");
 
   const handleDeleteClass = async (classroomId: string) => {
@@ -74,26 +70,24 @@ function DeleteClass({ classroomData, classroomId, title }: DeleteClassProps) {
       <div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <span title="delete class">
-              <Icons.delete
-                className="h-4 w-4 cursor-pointer"
-                aria-label="delete class"
-              />
-            </span>
+            <Icons.delete
+              className="h-4 w-4 cursor-pointer"
+              aria-label="delete class"
+            />
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{t("title")}</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              {t("descriptionBefore")}{" "}
-              <span className="font-bold">{classroom?.classroomName}</span>{" "}
+              {t("descriptionBefore")}
+              <span className="font-bold">{classroomData.classroomName}</span>
               {t("descriptionAfter")}
             </DialogDescription>
             <DialogFooter>
               <Button
                 variant="destructive"
-                onClick={() => handleDeleteClass(classroomId)}
+                onClick={() => handleDeleteClass(classroomData.id)}
               >
                 {t("delete")}
               </Button>

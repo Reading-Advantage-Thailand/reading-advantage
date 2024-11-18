@@ -244,6 +244,11 @@ export default {
       reports: "Reports",
       history: "History",
       vocabulary: "Vocabulary",
+      myClasses: "My Classes",
+      myStudents: "My Students",
+      classRoster: "Class Roster",
+      passages: "Passages",
+      assignments: "Assignments",
     },
     sidebarTeacherNav: {
       myClasses: "My Classes",
@@ -411,7 +416,6 @@ export default {
       detail: "Detail",
       roster: "Roster",
       reports: "Reports",
-
       createNewClass: {
         button: "Create New Class",
         title: "Create a new class",
@@ -421,6 +425,7 @@ export default {
         grade: "Grade",
         create: "Create Class",
         cancel: "Cancel",
+        classCode: "Class Code",
         toast: {
           attention: "Attention",
           attentionDescription: "All fields must be filled out!",

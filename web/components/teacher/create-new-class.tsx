@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "../ui/label";
 
 function CreateNewClass({
   userId,
@@ -29,10 +30,10 @@ function CreateNewClass({
   userId: string;
   userName: string;
 }) {
-  const [classroomName, setClassroomName] = useState("");
-  const [grade, setGrade] = useState("");
-  const [classCode, setClassCode] = useState("");
-  const [open, setOpen] = useState(false);
+  const [classroomName, setClassroomName] = useState<string>("");
+  const [grade, setGrade] = useState<string>("");
+  const [classCode, setClassCode] = useState<string>("");
+  const [open, setOpen] = useState<boolean>(false);
   const router = useRouter();
   const t = useScopedI18n("components.myClasses.createNewClass");
 
@@ -70,6 +71,7 @@ function CreateNewClass({
         description: t("toast.successDescription"),
       });
       router.refresh();
+      setClassCode(generateRandomCode());
       setOpen(false);
     }
   };
@@ -87,56 +89,65 @@ function CreateNewClass({
   }, []);
 
   return (
-    <div>
-      <div className="max-w-sm mt-4">
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <Icons.add />
-              &nbsp; {t("button")}
+    <div className="max-w-sm">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline">
+            <Icons.add />
+            &nbsp; {t("button")}
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("title")}</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>{t("description")}</DialogDescription>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label>{t("className")}</Label>
+              <Input
+                type="text"
+                className="col-span-3"
+                placeholder={t("className")}
+                value={classroomName}
+                onChange={(e) => setClassroomName(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label>{t("classCode")}</Label>
+              <Input
+                type="text"
+                className="col-span-3 cursor-default "
+                value={classCode}
+                readOnly
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label>{t("selectGrade")}</Label>
+              <Select onValueChange={(value) => setGrade(value)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder={t("selectGrade")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 10 }, (_, i) => i + 3).map(
+                    (grade, index) => (
+                      <SelectItem key={index} value={String(grade)}>
+                        {t("grade")} {grade}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => handleCreateClass()}>
+              {t("create")}
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t("title")}</DialogTitle>
-            </DialogHeader>
-            <DialogDescription>{t("description")}</DialogDescription>
-            <Input
-              type="text"
-              className="w-full border rounded-md p-2"
-              placeholder={t("className")}
-              value={classroomName}
-              onChange={(e) => setClassroomName(e.target.value)}
-            />
-            <Input
-              type="text"
-              value={classCode}
-              readOnly
-              className="flex-grow cursor-pointer"
-            />
-            <Select onValueChange={(value) => setGrade(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("selectGrade")} />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 10 }, (_, i) => i + 3).map(
-                  (grade, index) => (
-                    <SelectItem key={index} value={String(grade)}>
-                      {t("grade")} {grade}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => handleCreateClass()}>
-                {t("create")}
-              </Button>
-              <Button onClick={handleClose}>{t("cancel")}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <Button onClick={handleClose}>{t("cancel")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

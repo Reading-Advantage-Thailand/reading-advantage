@@ -224,6 +224,11 @@ export default {
       sentences: "句子",
       reports: "報告",
       vocabulary: "詞彙",
+      myClasses: "我的課程",
+      myStudents: "我的學生",
+      classRoster: "班級名單",
+      passages: "段落",
+      assignments: "作業",
     },
     sidebarTeacherNav: {
       myClasses: "我的課程",
@@ -384,7 +389,6 @@ export default {
       detail: "詳情",
       roster: "名單",
       reports: "報告",
-
       createNewClass: {
         button: "創建新班級",
         title: "創建新班級",
@@ -394,6 +398,7 @@ export default {
         grade: "年級",
         create: "創建班級",
         cancel: "取消",
+        classCode: "班級代碼",
         toast: {
           attention: "注意",
           attentionDescription: "所有欄位必須填寫！",

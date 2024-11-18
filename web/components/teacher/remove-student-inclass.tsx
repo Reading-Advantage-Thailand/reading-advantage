@@ -15,86 +15,83 @@ import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
 
 interface RemoveStudentProps {
-  studentInClass: Classes[];
-  classroomIdSelected: string;
-  studentIdSelected: string;
-  userId: string;
+  userData: Student;
+  classroomData: Classrooms[];
 }
 
-type Classes = {
+type StudentInClass = {
   studentId: string;
-  lastActivity: Date;
-  studentName: string;
+  lastActivity: string;
+};
+
+type Classrooms = {
+  id: string;
   classroomName: string;
-  classroomId: string;
+  student: StudentInClass[];
+};
+
+type Student = {
+  id: string;
+  display_name: string;
   email: string;
+  last_activity: string;
+  level: number;
   xp: number;
 };
 
-function RemoveStudent({
-  studentInClass,
-  classroomIdSelected,
-  studentIdSelected,
-}: RemoveStudentProps) {
+function RemoveStudent({ userData, classroomData }: RemoveStudentProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const studentName = studentInClass.find(
-    (student) => student.studentId === studentIdSelected
-  );
   const t = useScopedI18n("components.reports.removeStudent");
 
   const handleRemoveStudentInClass = async (
-    classroomIdSelected: string,
-    studentIdSelected: string,
-    studentInClass: any
+    studentId: string,
+    studentInClass: Classrooms[]
   ) => {
-    const removedStudentInClass: any[] = [];
-    studentInClass.forEach((student: any) => {
-      if (student.studentId !== studentIdSelected) {
-        removedStudentInClass.push(student.studentId);
-      }
-    });
-
-    const updateStudentListBuilder = removedStudentInClass.map((student) => ({
-      studentId: student,
-      lastActivity: new Date(),
-    }));
-
-    setOpen(true);
+    const studentDelete = studentInClass[0]?.student.filter(
+      (student: StudentInClass) => student.studentId !== studentId
+    );
     try {
-      await fetch(`/api/v1/classroom/${classroomIdSelected}/unenroll`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          student: updateStudentListBuilder,
-          studentId: studentIdSelected,
-        }),
-      });
-      toast({
-        title: t("toast.successRemove"),
-        description: t("toast.successRemoveDescription"),
-        variant: "default",
-      });
+      const response = await fetch(
+        `/api/v1/classroom/${studentInClass[0].id}/unenroll`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            student: studentDelete,
+          }),
+        }
+      );
+      if (!response.ok) {
+        toast({
+          title: t("toast.errorRemove"),
+          description: t("toast.errorRemoveDescription"),
+          variant: "destructive",
+        });
+      }
     } catch (error) {
-      console.error(error);
       toast({
         title: t("toast.errorRemove"),
         description: t("toast.errorRemoveDescription"),
         variant: "destructive",
       });
     } finally {
+      toast({
+        title: t("toast.successRemove"),
+        description: t("toast.successRemoveDescription"),
+        variant: "default",
+      });
       router.refresh();
       setOpen(false);
     }
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   return (
     <div>
       <div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={() => setOpen(!open)}>
           <DialogTrigger asChild>
             <span title="remove student">
               <Icons.delete
@@ -108,24 +105,20 @@ function RemoveStudent({
               <DialogTitle>{t("title")}</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              {t("descriptionBefore")}{" "}
-              <span className="font-bold">{studentName?.studentName}</span>{" "}
+              {t("descriptionBefore")}
+              <span className="font-bold">{userData.display_name}</span>
               {t("descriptionAfter")}
             </DialogDescription>
             <DialogFooter>
               <Button
                 variant="destructive"
                 onClick={() =>
-                  handleRemoveStudentInClass(
-                    classroomIdSelected,
-                    studentIdSelected,
-                    studentInClass
-                  )
+                  handleRemoveStudentInClass(userData.id, classroomData)
                 }
               >
                 {t("remove")}
               </Button>
-              <Button onClick={handleClose}>{t("cancel")}</Button>
+              <Button onClick={() => setOpen(false)}>{t("cancel")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
