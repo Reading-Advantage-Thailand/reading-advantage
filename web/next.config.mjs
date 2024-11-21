@@ -38,7 +38,7 @@ const nextConfig = {
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: "https://app.reading-advantage.com, http://localhost:3000",
+            value: "https://app.reading-advantage.com",
           },
           {
             key: "Access-Control-Allow-Methods",
