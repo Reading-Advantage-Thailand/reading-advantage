@@ -4,7 +4,6 @@ import { levelCalculation } from "@/lib/utils";
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
-import { last } from "lodash";
 
 export const getUser = getOne(DBCollection.USERS);
 export const updateUser = updateOne(DBCollection.USERS);
