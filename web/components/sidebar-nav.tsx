@@ -29,7 +29,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
         </button>
       )}
       <nav className="flex flex-wrap lg:grid items-start gap-2 mb-4 lg:mb-0">
-        {items.map((item, index) => {
+        {items.map((item: SidebarNavItem, index) => {
           const Icon = Icons[item.icon as keyof typeof Icons];
           return (
             item.href && (
@@ -46,7 +46,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
                   <Icon className="mr-2 h-4 w-4" />
                   <span
                     className={cn(
-                      "truncate",
+                      "truncate capitalize",
                       !pathWithoutLocale.startsWith(item.href) &&
                         "group-hover:block sm:block",
                       pathWithoutLocale.startsWith(item.href)
