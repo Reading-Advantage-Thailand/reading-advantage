@@ -7,7 +7,6 @@ import { MainNav } from "@/components/main-navbar";
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher";
 import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle";
 import { UserAccountNav } from "@/components/user-account-nav";
-import { cn } from "@/lib/utils";
 import Leaderboard from "@/components/teacher/leaderboard";
 import { headers } from "next/headers";
 
