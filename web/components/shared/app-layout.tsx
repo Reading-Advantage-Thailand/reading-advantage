@@ -8,6 +8,8 @@ import { NavItem, SidebarNavItem } from "@/types";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle";
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher";
+import Leaderboard from "@/components/teacher/leaderboard";
+import { headers } from "next/headers";
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -34,6 +36,19 @@ export default async function AppLayout({
   if (!user) {
     return redirect("/auth/signin");
   }
+
+  const feactlearderboard = async () => {
+    if (!user.license_id) return [];
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/ranking/${user.license_id}`,
+      { method: "GET", headers: headers() }
+    );
+    if (!res.ok) throw new Error("Failed to fetch LeaderBoard list");
+    const fetchdata = await res.json();
+    return fetchdata.results;
+  };
+
+  const leaderboard = await feactlearderboard();
 
   // Redirect to level selection page if user has not selected a level
   // if (user.level === undefined || user.cefr_level === "") {
@@ -64,8 +79,9 @@ export default async function AppLayout({
         )}
       >
         {!disableSidebar && (
-          <aside className="lg:w-[200px] lg:flex-col lg:flex">
+          <aside className="lg:w-[230px] lg:flex-col lg:flex">
             <SidebarNav items={sidebarNavConfig || []} />
+            {user.license_id && <Leaderboard data={leaderboard} />}
           </aside>
         )}
         <main className="flex w-full flex-1 flex-col overflow-hidden">

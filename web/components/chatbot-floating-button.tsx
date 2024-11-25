@@ -5,9 +5,16 @@ import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bot, MessageSquare } from "lucide-react";
+import { Bot, MessageSquare, Send, Loader2, X } from "lucide-react";
 import { Article } from "@/components/models/article-model";
 import { useQuestionStore } from "@/store/question-store";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface Message {
   text: string;
@@ -24,8 +31,9 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { mcQuestion, saQuestion, laqQuestion } = useQuestionStore();
+  const inputLength = userInput.trim().length;
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleSendMessage = useCallback(async () => {
     if (userInput) {
@@ -86,62 +94,78 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
     article.image_description,
   ]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
     <>
       <div className="fixed bottom-4 right-4 flex items-center space-x-2 z-50">
         {!isOpen && (
-          <div className="flex bg-blue-500 rounded-full shadow-lg py-2 px-4 items-center">
-            <Image
-              src={"/magic-wand-and-hat.svg"}
-              alt="Magic wand and hat"
-              width={30}
-              height={30}
-            />
-            <span className=" text-white text-sm ml-2">
-              {`${t("textSuggestion")}`}
-            </span>
-          </div>
+          <>
+            <div className="flex bg-blue-500 rounded-full shadow-lg py-2 px-4 items-center">
+              <Image
+                src={"/magic-wand-and-hat.svg"}
+                alt="Magic wand and hat"
+                width={20}
+                height={20}
+              />
+              <span className=" text-white text-sm ml-2">
+                {`${t("textSuggestion")}`}
+              </span>
+            </div>
+            <Button
+              onClick={() => {
+                setIsOpen(!isOpen);
+                setUserInput("");
+                setMessages([]);
+              }}
+              className="bg-blue-500 hover:bg-blue-600 rounded-lg text-white"
+            >
+              <MessageSquare />
+            </Button>
+          </>
         )}
-        <Button
-          onClick={() => {
-            setIsOpen(!isOpen);
-            setUserInput("");
-            setMessages([]);
-          }}
-          className={`text-white ${
-            isOpen ? "bg-red-500" : "bg-blue-500 hover:bg-blue-600 "
-          } p-2 rounded-full focus:outline-none shadow-lg transition-colors`}
-        >
-          {isOpen ? "Close" : <MessageSquare className="w-6 h-6" />}
-        </Button>
+
         {isOpen && (
-          <div className="fixed bottom-14 right-5 w-96 h-96 bg-white border border-gray-300 p-4 shadow-xl rounded-lg overflow-hidden">
-            <div className="flex flex-col justify-between h-full overflow-hidden">
-              <div className="overflow-y-auto flex-1">
+          <Card className="fixed bottom-4 right-2 w-80 h-[420px] shadow-xl flex flex-col">
+            <CardHeader className="flex border-b-[1px] px-4 py-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Bot />
+                  <p className="text-sm font-medium leading-none">
+                    Talk to our assistant
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  className="rounded-full p-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <X />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 justify-end overflow-y-auto p-4">
+              <div className="flex flex-1 flex-col gap-4">
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`rounded-lg text-white m-2 p-2 flex  ${
+                    className={cn(
+                      "flex w-max max-w-[75%] flex-col gap-2 rounded-lg px-3 py-2 text-sm",
                       message.sender === "user"
-                        ? "bg-blue-500 self-end"
-                        : "bg-gray-500 self-start"
-                    }`}
-                  >
-                    {message.sender === "bot" && (
-                      <div>
-                        <Bot className="mr-2 text-white" />
-                      </div>
+                        ? "ml-auto bg-primary text-primary-foreground"
+                        : "bg-muted"
                     )}
-
-                    <span>{message.text}</span>
+                  >
+                    {message.sender !== "user" ? (
+                      <div>
+                        <Bot />
+                        <span>{message.text}</span>
+                      </div>
+                    ) : (
+                      <span>{message.text}</span>
+                    )}
                   </div>
                 ))}
                 {loading && (
@@ -153,26 +177,43 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
                     </div>
                   </div>
                 )}
-                <div ref={messagesEndRef} />
+                <div ref={scrollRef} />
               </div>
-              {messages.length !== 2 && !loading && (
-                <div className="shrink-0 flex m-2">
-                  <Input
-                    placeholder="Type your message..."
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    className="dark:text-black"
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    className="ml-2 bg-blue-500 dark:bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 focus:outline-none"
-                  >
-                    Send
+            </CardContent>
+            <CardFooter className="p-2 border-t-[1px]">
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (inputLength === 0) return;
+                  handleSendMessage();
+                }}
+                className="flex w-full items-center space-x-2"
+              >
+                <Input
+                  placeholder="Type your message..."
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  className="flex-1 focus-visible:ring-0"
+                  autoComplete="off"
+                />
+                {loading ? (
+                  <Button disabled className="bg-blue-600 disabled:bg-gray-600">
+                    <Loader2 className="animate-spin" />
                   </Button>
-                </div>
-              )}
-            </div>
-          </div>
+                ) : (
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={inputLength === 0 || loading}
+                    className="bg-blue-600 disabled:bg-gray-600 w-12"
+                  >
+                    <Send />
+                    <span className="sr-only">Send</span>
+                  </Button>
+                )}
+              </form>
+            </CardFooter>
+          </Card>
         )}
       </div>
     </>
