@@ -40,7 +40,7 @@ export default {
           ratedDescription: "You rated this article",
           timeSpend: "Time spent",
           timeSpendText: "{time}",
-          timeSpendDescription: "in {total} questions",
+          timeSpendDescription: "on {total} questions",
           scoreSuffix: {
             point: "point",
             points: "points",
@@ -75,7 +75,7 @@ export default {
           "You can practice your reading skills with sentence cards. The ones you have saved will appear here.",
         savedSentences: "Saved Sentences",
         noSavedSentences: "You have no saved sentences.",
-        savedSentencesDescription: "Your have {total} saved sentences.",
+        savedSentencesDescription: "You have {total} saved sentences.",
         added: "Added {date}",
         deleteButton: "Delete",
         neverPracticeButton: "Never practice this sentence again",
@@ -100,7 +100,7 @@ export default {
           //Order Sentences
           orderSentences: "Order Sentences",
           orderSentencesDescription:
-            "These are some sentences from one of the passages you've read. Put the sentences in an order that makes sense to you. If the order is the same as the passage, you'll receive 5 XP.",
+            "Reorder these sentences from a passage you've read. Match the original order to receive 5 XP.",
           saveOrder: "Continue",
           errorOrder: "Please order correctly",
         },
@@ -116,7 +116,7 @@ export default {
         orderWordsPractice: {
           orderWords: "Order Words",
           orderWordsDescription:
-            "This is a sentence from one of the passages you've read. Put the words in an order that makes sense to you. If the order is the same as the passage, you'll receive 5 XP.",
+            "Reorder the words in this sentence from a passage you've read. Match the original order to receive 5 XP.",
           saveOrder: "Continue",
           errorOrder: "Please order correctly",
           submitArticle: "Check your answers",
@@ -126,7 +126,7 @@ export default {
         matchingPractice: {
           matching: "Matching",
           matchingDescription:
-            "Match the sentence with its translation. If you match all the sentences correctly, you'll receive 5 XP.",
+            "Match each English sentence with its correct translation. Match them all correctly to receive 5 XP.",
           saveOrder: "Save & Continue Later",
           errorOrder: "Please order correctly",
           submitArticle: "Check your answers",
@@ -139,7 +139,7 @@ export default {
         title: "User Activity",
         activityprogress: "Activity Progress",
         recentactivity: "Recent Activities",
-        inProgress: "In prograss",
+        inProgress: "In progress",
         completed: "Completed",
         daterange: "Date Range",
         xpearned: "XP Earned",
@@ -281,7 +281,7 @@ export default {
         errorDescription:
           "Your XP and level were not updated. Please try again.",
       },
-      congratulations: "Congratulation!",
+      congratulations: "Congratulations!",
       congratulationsDescription: "The assessment is done.",
       yourScore: "Your Score : {xp}",
       yourCefrLevel: "Your CEFR Level : {cefrLevel}",
@@ -328,7 +328,7 @@ export default {
       cefrLevel: "CEFR level is {cefrLevel}",
       // The article pertains to the topic of A clever girl outsmarts an evil sorceress and saves her village from a curse., which falls within the tales and myths genre.
       articleCardDescription:
-        "The article pertains to the topic of {topic}, which falls within the {genre} genre.",
+        "This {genre} article is about {topic}.",
     },
     articleContent: {
       voiceAssistant: "Voice Assistant",
@@ -363,7 +363,7 @@ export default {
         incorrect: "Incorrect",
         incorrectDescription: "You got it wrong!",
         quizCompleted: "Quiz Completed",
-        quizCompletedDescription: "You have completed the quiz",
+        quizCompletedDescription: "You have finished the quiz!",
         error: "Error",
         errorDescription:
           "Something went wrong while submitting your answer. Please try again later.",
@@ -653,11 +653,11 @@ export default {
         clarityandcoherence: "Clarity and Coherence",
         complexityandstructure: "Complexity and Structure",
         contentanddevelopment: "Content and Development",
-        areaforimpovement: "Area for impovement",
+        areaforimpovement: "Area for improvement",
         examples: "Examples",
         strength: "Strength",
         suggestions: "Suggestions",
-        feedbackoverall: "Feedback Overall",
+        feedbackoverall: "Overall Feedback",
         examplerevisions: "Example Revisions",
         nextStep: "Next Step",
         reviseResponse: "Revise Your Response",
