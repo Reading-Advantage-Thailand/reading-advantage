@@ -12,6 +12,10 @@ export default async function SettingsPageLayout({
     return redirect("/auth/signin");
   }
 
+  if (user.cefr_level === "" && user.level === 0) {
+    return redirect("/level");
+  }
+
   if (new Date(user?.expired_date) < new Date() && user?.role !== "system") {
     return redirect("/contact");
   }

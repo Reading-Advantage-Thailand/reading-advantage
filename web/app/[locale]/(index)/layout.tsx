@@ -63,7 +63,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
           <header className="container z-40">
             <div className="flex h-20 items-center justify-between py-6">
               <MainNav items={indexPageConfig.mainNav} />
-              <ProgressBar progress={user.xp} level={user.level!} />
+              {/* <ProgressBar progress={user.xp} level={user.level!} /> */}
               <nav>
                 <UserAccountNav user={user} />
               </nav>

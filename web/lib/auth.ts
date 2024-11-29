@@ -77,6 +77,7 @@ export const authOptions: NextAuthOptions = {
         role: dbUser.role,
         expired_date: dbUser.expired_date,
         license_id: dbUser.license_id,
+        onborda: dbUser.onborda,
       };
     },
     session: ({ session, token, user }) => {
@@ -94,6 +95,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
         session.user.expired_date = token.expired_date;
         session.user.license_id = token.license_id;
+        session.user.onborda = token.onborda;
       }
       return session;
     },

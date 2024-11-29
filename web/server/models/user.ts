@@ -18,6 +18,7 @@ export interface User extends DocumentData {
   expired_date: string;
   expired: boolean;
   license_id?: string;
+  onborda: boolean;
 }
 
 export const createUserModel = (
@@ -46,6 +47,7 @@ export const createUserModel = (
       cefr_level: user.cefr_level || "",
       expired: false,
       license_id: user.license_id || "",
+      onborda: user.onborda || false,
     };
   } else {
     // console.log("Creating new user model in Firestore");
@@ -69,6 +71,7 @@ export const createUserModel = (
       cefr_level: "",
       expired: false,
       license_id: "",
+      onborda: false,
     };
   }
 };

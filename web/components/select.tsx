@@ -89,7 +89,7 @@ export default function Select({ user }: Props) {
   }, [searchParams, router, selectedGenre, selectedSubgenre, selectedType]);
 
   return (
-    <Card className="my-2">
+    <Card id="onborda-articles" className="my-2">
       <CardHeader>
         <CardTitle>
           {t("articleChoose", {

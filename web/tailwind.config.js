@@ -8,6 +8,7 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/**/*.{ts,tsx}",
     "./node_modules/react-tailwindcss-datepicker/dist/index.esm.js",
+    "./node_modules/onborda/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     container: {

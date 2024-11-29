@@ -157,7 +157,7 @@ export default function RatingPopup({
   };
 
   return (
-    <div className="">
+    <div id="onborda-rating">
       <div
         className="sm:pl-[4.0%] pl-6 mt-4 py-2 font-bold text-3xl
     flex sm:flex-row flex-wrap gap-4 items-center border-[1px] 

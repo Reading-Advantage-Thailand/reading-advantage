@@ -242,7 +242,7 @@ export default function FirstRunLevelTest({
                   } else {
                     console.log("Update Failed");
                   }
-                  router.push("/student/read");
+                  router.push("/");
                 } catch (error) {
                   console.error(error);
                   toast({

@@ -222,7 +222,7 @@ function QuestionCardIncomplete({
 }) {
   const t = useScopedI18n("components.laq");
   return (
-    <Card className="mt-3">
+    <Card id="onborda-laq" className="mt-3">
       <QuestionHeader
         heading={t("title")}
         description={t("description")}

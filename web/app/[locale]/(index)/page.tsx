@@ -11,7 +11,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FeatureBox } from "@/components/index/feature-box";
-import { GitBranch,BrainCircuit, BarChart4, Book, BookOpen, Bot, Wrench, Volume2, Settings, Users } from "lucide-react";
+import {
+  GitBranch,
+  BrainCircuit,
+  BarChart4,
+  Book,
+  BookOpen,
+  Bot,
+  Wrench,
+  Volume2,
+  Settings,
+  Users,
+  Sparkles,
+} from "lucide-react";
 import { Icons } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +37,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { getScopedI18n } from "@/locales/server";
 import { getCurrentUser } from "@/lib/session";
+import StartTour from "@/components/tour/StartTour";
 
 type Props = {};
 
@@ -124,11 +137,16 @@ const benefits = [
 export default async function IndexPage({}: Props) {
   const t = await getScopedI18n("pages.indexPage");
   const user = await getCurrentUser();
+
   return (
     <div>
       <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-3">
         <div className="container flex max-w-[64rem] py-36 flex-col items-center gap-4 text-center ">
-          <h1 className="font-heading animate-glow text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-white">
+          {user && !user.onborda ? <StartTour /> : null}
+          <h1
+            id="onborda-step1"
+            className="font-heading animate-glow text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-white"
+          >
             {siteConfig.name}
           </h1>
           <h2 className="font-heading text-2xl sm:text-4xl md:text-5xl lg:text-6xl ">

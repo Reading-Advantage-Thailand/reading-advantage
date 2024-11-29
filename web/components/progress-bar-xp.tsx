@@ -88,7 +88,7 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
           }
         `}
       </style>
-      <div className="gap-2 justify-center w-[50%] flex">
+      <div id="onborda-xp" className="gap-2 justify-center w-[50%] flex">
         <p className="hidden md:block">{t("xp")}</p>
         <div className="w-[50%] bg-[#f3f3f3] rounded-xl hidden md:block h-5">
           <div

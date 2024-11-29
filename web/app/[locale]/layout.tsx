@@ -12,6 +12,9 @@ import { Viewport } from "next";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 import { getCurrentUser } from "@/lib/session";
 import { LocaleProvider } from "@/components/providers/locale-provider";
+import { Onborda, OnbordaProvider } from "onborda";
+import { steps } from "@/lib/steps";
+import CustomCard from "@/components/tour/CustomCard";
 
 const cabinSketch = localFont({
   src: "../../assets/fonts/CabinSketch-Regular.ttf",
@@ -92,7 +95,17 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <NextAuthSessionProvider session={user}>
-            <LocaleProvider locale={locale}>{children}</LocaleProvider>
+            <LocaleProvider locale={locale}>
+              <OnbordaProvider>
+                <Onborda
+                  steps={steps}
+                  cardComponent={CustomCard}
+                  shadowOpacity="0.8"
+                >
+                  {children}
+                </Onborda>
+              </OnbordaProvider>
+            </LocaleProvider>
           </NextAuthSessionProvider>
           <Toaster />
           <TailwindIndicator />

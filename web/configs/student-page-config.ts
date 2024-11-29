@@ -26,21 +26,25 @@ export const studentPageConfig: StudentPageConfig = {
       icon: "book",
     },
     {
+      id: "onborda-sentences",
       title: "sentences",
       href: "/student/sentences",
       icon: "flashcard",
     },
     {
+      id: "onborda-vocabulary",
       title: "vocabulary",
       href: "/student/vocabulary",
       icon: "book",
     },
     {
+      id: "onborda-reports",
       title: "reports",
       href: "/student/reports",
       icon: "dashboard",
     },
     {
+      id: "onborda-history",
       title: "history",
       href: "/student/history",
       icon: "record",
