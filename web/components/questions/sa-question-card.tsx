@@ -193,7 +193,7 @@ function QuestionCardIncomplete({
   articleLevel: number;
 }) {
   return (
-    <Card className="mt-3">
+    <Card id="onborda-saq" className="mt-3">
       <QuestionHeader
         heading="Short Answer Question"
         description="Write a few sentences."

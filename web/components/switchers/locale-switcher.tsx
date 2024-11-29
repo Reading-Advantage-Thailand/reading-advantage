@@ -29,31 +29,33 @@ export function LocaleSwitcher() {
   ];
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 px-0">
-          <Icons.globe className="h-5 w-5" />
-          <span className="sr-only">Toggle Locale</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {sortedLocales.map((locale) => (
-          <DropdownMenuItem
-            key={locale}
-            onClick={() => changeLocale(locale as Locale)}
-          >
-            <span
-              className={`text-sm ${
-                locale === currentLocale
-                  ? "font-semibold"
-                  : "text-muted-foreground"
-              }`}
+    <div id="onborda-language">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-8 w-8 px-0">
+            <Icons.globe className="h-5 w-5" />
+            <span className="sr-only">Toggle Locale</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {sortedLocales.map((locale) => (
+            <DropdownMenuItem
+              key={locale}
+              onClick={() => changeLocale(locale as Locale)}
             >
-              {t(locale as Locale)}
-            </span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+              <span
+                className={`text-sm ${
+                  locale === currentLocale
+                    ? "font-semibold"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {t(locale as Locale)}
+              </span>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

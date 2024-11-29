@@ -420,27 +420,30 @@ export default function ArticleContent({
 
   return (
     <div>
-      <div className="flex justify-center items-center my-2">
-        <Button
-          variant="default"
-          className="flex flex-grow items-center mr-4"
-          onClick={handleTogglePlayer}
-        >
-          Listen and read along
-        </Button>
-        <Button
-          variant="default"
-          onClick={handleTranslateSentence}
-          disabled={loading}
-        >
-          {loading
-            ? "Loading"
-            : isTranslate && isTranslateOpen
-            ? t("translateButton.close")
-            : t("translateButton.open")}
-        </Button>
+      <div className="flex justify-center items-center my-2 gap-4">
+        <div id="onborda-audio" className="flex flex-grow items-center">
+          <Button
+            variant="default"
+            className="w-full"
+            onClick={handleTogglePlayer}
+          >
+            Listen and read along
+          </Button>
+        </div>
+        <div id="onborda-translate">
+          <Button
+            variant="default"
+            onClick={handleTranslateSentence}
+            disabled={loading}
+          >
+            {loading
+              ? "Loading"
+              : isTranslate && isTranslateOpen
+              ? t("translateButton.close")
+              : t("translateButton.open")}
+          </Button>
+        </div>
       </div>
-
       {togglePlayer && (
         <div
           id="audioPlayer"
@@ -508,6 +511,7 @@ export default function ArticleContent({
         <ContextMenuTrigger>
           {sentenceList.map((sentence, index) => (
             <span
+              id="onborda-savesentences"
               key={sentence.index}
               className={cn(
                 selectedIndex === index && "bg-blue-200 dark:bg-blue-900",

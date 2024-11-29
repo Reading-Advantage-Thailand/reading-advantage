@@ -42,6 +42,7 @@ export type SystemPageConfig = {
 };
 
 export type SidebarNavItem = {
+  id?: string;
   title: "read" | "sentences" | "vocabulary" | "reports" | "history";
   disabled?: boolean;
   external?: boolean;

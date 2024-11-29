@@ -16,6 +16,7 @@ declare module "next-auth/jwt" {
     expired_date: string;
     expired?: boolean;
     license_id?: string;
+    onborda: boolean;
   }
 }
 
@@ -34,6 +35,7 @@ declare module "next-auth" {
       expired_date: string;
       expired?: boolean;
       license_id?: string;
+      onborda: boolean;
     };
   }
 
@@ -50,5 +52,6 @@ declare module "next-auth" {
     expired_date: string;
     expired?: boolean;
     license_id?: string;
+    onborda: boolean;
   }
 }

@@ -49,112 +49,116 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
   const { label, color } = roles[user.role];
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <UserAvatar
-          user={{
-            name: user.display_name || null,
-            image: user.picture || null,
-          }}
-          className="h-8 w-8 border-2 border-[#E5E7EB] rounded-full cursor-pointer"
-        />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="md:w-56 lg:w-fit">
-        <div className="flex items-center justify-start gap-2 p-2">
-          <div className="flex flex-col space-y-1 leading-none">
-            <p className="font-medium line-clamp-1">{user.display_name}</p>
-            <p className="w-[200px] truncate text-sm text-muted-foreground line-clamp-1">
-              {user.email}
-            </p>
-            {/* Check if the user's email is verified */}
-            {!user.email_verified && (
-              <Link href="/settings/user-profile">
-                <button className="w-[200px] text-start truncate text-sm text-red-500 flex items-center">
-                  <Icons.unVerified className="inline-block mr-1 w-4 h-4" />
-                  Not verified email
-                </button>
-              </Link>
-            )}
-
-            <div className="inline-flex gap-1">
-              <Badge className={`${color} w-max`} variant="outline">
-                {label}
-              </Badge>
-              {daysLeft > 0 ? ( // Check if the user has a free trial
-                <Badge className="bg-green-700 w-max" variant="outline">
-                  Expires in: {daysLeft} days
-                </Badge>
-              ) : (
-                <Badge className="bg-red-700 w-max" variant="outline">
-                  Expired
-                </Badge>
+    <div id="onborda-usermanu">
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <UserAvatar
+            user={{
+              name: user.display_name || null,
+              image: user.picture || null,
+            }}
+            className="h-8 w-8 border-2 border-[#E5E7EB] rounded-full cursor-pointer"
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="md:w-56 lg:w-fit">
+          <div className="flex items-center justify-start gap-2 p-2">
+            <div className="flex flex-col space-y-1 leading-none">
+              <p className="font-medium line-clamp-1">{user.display_name}</p>
+              <p className="w-[200px] truncate text-sm text-muted-foreground line-clamp-1">
+                {user.email}
+              </p>
+              {/* Check if the user's email is verified */}
+              {!user.email_verified && (
+                <Link href="/settings/user-profile">
+                  <button className="w-[200px] text-start truncate text-sm text-red-500 flex items-center">
+                    <Icons.unVerified className="inline-block mr-1 w-4 h-4" />
+                    Not verified email
+                  </button>
+                </Link>
               )}
+
+              <div className="inline-flex gap-1">
+                <Badge className={`${color} w-max`} variant="outline">
+                  {label}
+                </Badge>
+                {daysLeft > 0 ? ( // Check if the user has a free trial
+                  <Badge className="bg-green-700 w-max" variant="outline">
+                    Expires in: {daysLeft} days
+                  </Badge>
+                ) : (
+                  <Badge className="bg-red-700 w-max" variant="outline">
+                    Expired
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        <DropdownMenuSeparator />
-        {/* Role-based menu items */}
-        {
-          // Check if the user is a student, teacher, admin, or system
-          user.cefr_level !== "" ? (
+          <DropdownMenuSeparator />
+          {/* Role-based menu items */}
+          {
+            // Check if the user is a student, teacher, admin, or system
+            user.cefr_level !== "" ? (
+              <DropdownMenuItem asChild>
+                <Link href="/student/read">Learner Home</Link>
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem asChild>
+                <Link href="/level">Level Test</Link>
+              </DropdownMenuItem>
+            )
+          }
+          {
+            // Check if the user is a teacher, admin, or system
+            (user.role === Role.TEACHER ||
+              user.role === Role.ADMIN ||
+              user.role === Role.SYSTEM) && (
+              <DropdownMenuItem asChild>
+                <Link href="/teacher/my-classes">Teacher dashboard</Link>
+              </DropdownMenuItem>
+            )
+          }
+          {
+            // Check if the user is an admin or system
+            (user.role === Role.ADMIN || user.role === Role.SYSTEM) && (
+              <DropdownMenuItem asChild>
+                <Link href="/admin/dashboard">Admin dashboard</Link>
+              </DropdownMenuItem>
+            )
+          }
+          {user.role === Role.SYSTEM && (
             <DropdownMenuItem asChild>
-              <Link href="/student/read">Learner Home</Link>
+              <Link href="/system/dashboard">System dashboard</Link>
             </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem asChild>
-              <Link href="/level">Level Test</Link>
-            </DropdownMenuItem>
-          )
-        }
-        {
-          // Check if the user is a teacher, admin, or system
-          (user.role === Role.TEACHER ||
-            user.role === Role.ADMIN ||
-            user.role === Role.SYSTEM) && (
-            <DropdownMenuItem asChild>
-              <Link href="/teacher/my-classes">Teacher dashboard</Link>
-            </DropdownMenuItem>
-          )
-        }
-        {
-          // Check if the user is an admin or system
-          (user.role === Role.ADMIN || user.role === Role.SYSTEM) && (
-            <DropdownMenuItem asChild>
-              <Link href="/admin/dashboard">Admin dashboard</Link>
-            </DropdownMenuItem>
-          )
-        }
-        {user.role === Role.SYSTEM && (
+          )}
+          <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/system/dashboard">System dashboard</Link>
+            <Link
+              target="_blank"
+              href="https://docs.google.com/forms/d/e/1FAIpQLSe_Ew100kef6j4O4IuiHm4ZeGhOj5FN6JRyJ7-0gvZV9eFgjQ/viewform?usp=sf_link"
+            >
+              {t("contactUs")}
+            </Link>
           </DropdownMenuItem>
-        )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link
-            target="_blank"
-            href="https://docs.google.com/forms/d/e/1FAIpQLSe_Ew100kef6j4O4IuiHm4ZeGhOj5FN6JRyJ7-0gvZV9eFgjQ/viewform?usp=sf_link"
+          <DropdownMenuItem asChild>
+            <Link href="/settings/user-profile">{t("settings")}</Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={async (event) => {
+              event.preventDefault();
+              setIsLoading(true);
+              await signOut({ callbackUrl: `/` });
+              setIsLoading(false);
+            }}
           >
-            {t("contactUs")}
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/settings/user-profile">{t("settings")}</Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={async (event) => {
-            event.preventDefault();
-            setIsLoading(true);
-            await signOut({ callbackUrl: `/` });
-            setIsLoading(false);
-          }}
-        >
-          {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-          {t("signOut")}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            {isLoading && (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {t("signOut")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

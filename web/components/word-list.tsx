@@ -164,7 +164,7 @@ export default function WordList({ article, articleId, userId }: Props) {
   };
 
   return (
-    <>
+    <div id="onborda-wordbutton">
       <Dialog>
         <DialogTrigger asChild>
           <Button onClick={handleWordList} className="mb-4 ml-3">
@@ -316,6 +316,6 @@ export default function WordList({ article, articleId, userId }: Props) {
           </Form>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

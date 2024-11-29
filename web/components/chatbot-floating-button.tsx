@@ -100,31 +100,20 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 flex items-center space-x-2 z-50">
+      <div
+        id="onborda-chatbot"
+        className="fixed bottom-4 right-4 flex items-center space-x-2 z-50"
+      >
         {!isOpen && (
-          <>
-            <div className="flex bg-blue-500 rounded-full shadow-lg py-2 px-4 items-center">
-              <Image
-                src={"/magic-wand-and-hat.svg"}
-                alt="Magic wand and hat"
-                width={20}
-                height={20}
-              />
-              <span className=" text-white text-sm ml-2">
-                {`${t("textSuggestion")}`}
-              </span>
-            </div>
-            <Button
-              onClick={() => {
-                setIsOpen(!isOpen);
-                setUserInput("");
-                setMessages([]);
-              }}
-              className="bg-blue-500 hover:bg-blue-600 rounded-lg text-white"
-            >
-              <MessageSquare />
-            </Button>
-          </>
+          <Button
+            onClick={() => {
+              setIsOpen(!isOpen);
+              setUserInput("");
+              setMessages([]);
+            }}
+          >
+            <MessageSquare />
+          </Button>
         )}
 
         {isOpen && (

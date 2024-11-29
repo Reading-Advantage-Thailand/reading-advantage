@@ -175,7 +175,7 @@ function QuestionCardIncomplete({
   articleLevel: number;
 }) {
   return (
-    <Card>
+    <Card id="onborda-mcq">
       <QuestionHeader
         heading="Multiple Choice Questions"
         description="Take the quiz to check your understanding"
