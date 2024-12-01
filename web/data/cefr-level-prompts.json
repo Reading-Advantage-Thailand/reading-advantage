@@ -152,7 +152,7 @@ Key Guidelines:
 Sample of Text Complexity:
 \"This is a car. It has four wheels. The car moves on the road. People use cars to go places. Some cars are big. Some cars are small. Cars are fast. Some people drive to work. Others drive to the store.\"
 ",
-        "modelId": "ft:gpt-4o-mini-2024-07-18:reading-advantage:a1-nonfiction:9p4fJ80z"
+        "modelId": "ft:gpt-4o-mini-2024-07-18:reading-advantage:a1-nonfiction:9p4fJ80z",
         "userPromptTemplate": "Write a 250-word, nonfiction article within the {genre} genre and the {subgenre} subgenre. (topic is \"{topic}\")"
       },
       {
@@ -173,7 +173,7 @@ Key Guidelines:
 Sample of Text Complexity:
 \"A dog is an animal. Dogs live in many places. They can be big or small. Some dogs live in homes with families. They are good pets. Dogs help people. Some dogs work as guide dogs. Other dogs work on farms.\"
 ",
-        "modelId": "ft:gpt-4o-mini-2024-07-18:reading-advantage:a2-nonfiction:9oKRXAVg"
+        "modelId": "ft:gpt-4o-mini-2024-07-18:reading-advantage:a2-nonfiction:9oKRXAVg",
         "userPromptTemplate": "Write a 350-word, nonfiction article within the {genre} genre and the {subgenre} subgenre. (topic is \"{topic}\")"
       },
       {
@@ -194,7 +194,7 @@ Key Guidelines:
 Sample of Text Complexity:
 \"The Eiffel Tower is in Paris. It is a very tall building. People can visit it. Many tourists come to see it every year. The Eiffel Tower was built in 1887. It was designed by Gustave Eiffel. The tower is 324 meters tall. There are three levels in the tower. Visitors can go to the top.\"
 ",
-        "modelId": "ft:gpt-4o-mini-2024-07-18:reading-advantage:nonfiction-b1:9p4MxvZs"
+        "modelId": "ft:gpt-4o-mini-2024-07-18:reading-advantage:nonfiction-b1:9p4MxvZs",
         "userPromptTemplate": "Write a 500-word, nonfiction article within the {genre} genre and the {subgenre} subgenre. (topic is \"{topic}\")"
       },
       {
@@ -215,7 +215,7 @@ Key Guidelines:
 Sample of Text Complexity:
 \"Climate change is a serious problem. It happens when the Earth's temperature rises. Many scientists believe that human activities, such as burning coal and oil, are causing this problem. The result is that weather patterns are changing. Some places are getting hotter, while others are becoming colder. In some areas, there are more storms and floods. People must take action to reduce pollution and use clean energy.\"
 ",
-        "modelId": "ft:gpt-4o-mini-2024-07-18:reading-advantage:b2-nonfiction:9p4WmLWE"
+        "modelId": "ft:gpt-4o-mini-2024-07-18:reading-advantage:b2-nonfiction:9p4WmLWE",
         "userPromptTemplate": "Write a 650-word, nonfiction article within the {genre} genre and the {subgenre} subgenre. (topic is \"{topic}\")"
       },
       {
