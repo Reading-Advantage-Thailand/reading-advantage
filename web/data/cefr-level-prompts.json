@@ -41,7 +41,7 @@ Key Guidelines:
 Sample of Text Complexity:
 \"Tom and his brother Jack like to play football. One day, Tom kicked the ball too hard, and it went over the fence. Jack ran to get the ball, but he couldn’t find it. He looked under the tree and behind the bushes, but there was no ball. Tom said, 'Don’t worry, Jack. We will find it tomorrow.'\"
 ",
-        "modelId": "gpt-4o",
+        "modelId": "gpt-4o-mini",
         "userPromptTemplate": "Write a 400-word fiction story within the {genre} genre and the {subgenre} subgenre. (topic is \"{topic}\")"
       },
       {
