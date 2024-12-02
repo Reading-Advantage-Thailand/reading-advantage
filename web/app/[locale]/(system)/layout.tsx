@@ -12,10 +12,10 @@ export default async function LevelPageLayout({
   }
   return (
     <AppLayout
-      disableSidebar={false}
       disableProgressBar={true}
       mainNavConfig={systemPageConfig.mainNav}
       sidebarNavConfig={systemPageConfig.systemSidebarNav}
+      disableLeaderboard={true}
     >
       {children}
     </AppLayout>

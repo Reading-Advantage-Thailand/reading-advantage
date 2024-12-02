@@ -123,14 +123,15 @@ export default function SAQuestionCard({
 }
 
 function QuestionCardError(data: any) {
+  const t = useScopedI18n("components.saq");
   return (
     <Card className="mt-3">
       <CardHeader>
         <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          Short Answer Question
+          {t("title")}
         </CardTitle>
         <CardDescription className="text-red-500 dark:text-red-400">
-          There was an error getting the question. {data.error}
+          {t("descriptionFailure", { error: data.error })}
         </CardDescription>
       </CardHeader>
     </Card>
@@ -138,19 +139,20 @@ function QuestionCardError(data: any) {
 }
 
 function QuestionCardComplete({ resp }: { resp: QuestionResponse }) {
+  const t = useScopedI18n("components.saq");
   return (
     <Card className="mt-4">
       <CardHeader>
         <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          Short Answer Question
+          {t("title")}
         </CardTitle>
         <CardDescription>
-          You already completed the short answer question.
-          <p className="font-bold text-lg mt-4">Question</p>
+          {t("descriptionSuccess")}
+          <p className="font-bold text-lg mt-4">{t("question")}</p>
           <p>{resp.result.question}</p>
-          <p className="font-bold text-lg mt-4">Suggested Answer</p>
+          <p className="font-bold text-lg mt-4">{t("suggestedAnswer")}</p>
           <p>{resp.suggested_answer}</p>
-          <p className="font-bold text-lg mt-4">Your Answer</p>
+          <p className="font-bold text-lg mt-4">{t("yourAnswer")}</p>
           <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
             {resp.answer}
           </p>
@@ -161,13 +163,14 @@ function QuestionCardComplete({ resp }: { resp: QuestionResponse }) {
 }
 
 function QuestionCardLoading() {
+  const t = useScopedI18n("components.saq");
   return (
     <Card className="mt-3">
       <CardHeader>
         <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          Short Answer Question
+          {t("title")}
         </CardTitle>
-        <CardDescription>Getting the short answer question...</CardDescription>
+        <CardDescription>{t("descriptionLoading")}</CardDescription>
         <Skeleton className={"h-10 w-full mt-2"} />
         <Skeleton className={"h-40 w-full mt-2"} />
         <Skeleton className={"h-8 w-full mt-2"} />
@@ -192,12 +195,13 @@ function QuestionCardIncomplete({
   articleTitle: string;
   articleLevel: number;
 }) {
+  const t = useScopedI18n("components.saq");
   return (
     <Card id="onborda-saq" className="mt-3">
       <QuestionHeader
-        heading="Short Answer Question"
-        description="Write a few sentences."
-        buttonLabel="Start Writing"
+        heading={t("title")}
+        description={t("description")}
+        buttonLabel={t("practiceButton")}
         userId={userId}
         articleId={articleId}
         disabled={false}
@@ -245,7 +249,7 @@ function SAQuestion({
 
   type FormData = z.infer<typeof shortAnswerSchema>;
 
-  const t = useScopedI18n("components.mcq");
+  const t = useScopedI18n("components.saq");
   const tf = useScopedI18n("components.rate");
   const { timer, setPaused } = useContext(QuizContext);
   const [isCompleted, setIsCompleted] = React.useState<boolean>(false);
@@ -332,7 +336,7 @@ function SAQuestion({
           </Badge>
         </div>
         <CardTitle className="flex font-bold text-3xl md:text-3xl mt-3">
-          Short Answer Question
+          {t("title")}
         </CardTitle>
         <CardDescription className="text-2xl md:text-2xl mt-3">
           {resp.result.question}
@@ -356,21 +360,23 @@ function SAQuestion({
               {isLoading && (
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Save Answer
+              {t("submitButton")}
             </Button>
           </DialogTrigger>
           {!isLoading && (
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader className="text-left">
                 <DialogTitle className="font-bold text-2xl">
-                  Let&apos;s Rate Your Answer
+                  {t("scorerate")}
                 </DialogTitle>
                 <DialogDescription>
-                  <p className="font-bold text-lg mt-4">Question</p>
+                  <p className="font-bold text-lg mt-4">{t("question")}</p>
                   <p>{resp.result.question}</p>
-                  <p className="font-bold text-lg mt-4">Suggested Answer</p>
+                  <p className="font-bold text-lg mt-4">
+                    {t("suggestedAnswer")}
+                  </p>
                   <p>{data.suggested_answer}</p>
-                  <p className="font-bold text-lg mt-4">Your Answer</p>
+                  <p className="font-bold text-lg mt-4">{t("yourAnswer")}</p>
                   <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
                     {data.answer}
                   </p>
@@ -400,7 +406,7 @@ function SAQuestion({
                     onRating();
                   }}
                 >
-                  Rate Answer
+                  {t("rateButton")}
                 </Button>
               </DialogFooter>
             </DialogContent>

@@ -30,6 +30,7 @@ async function getAllLicenses() {
         "used_licenses",
         "expiration_date",
         "subscription_level",
+        "key",
       ],
     },
     headers()

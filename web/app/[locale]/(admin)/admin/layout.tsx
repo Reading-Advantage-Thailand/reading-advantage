@@ -19,6 +19,7 @@ export default async function AdminLayout({ children }: BaseAppLayoutProps) {
     <AppLayout
       mainNavConfig={adminPageConfig.mainNav}
       sidebarNavConfig={adminPageConfig.sidebarNav}
+      disableLeaderboard={true}
     >
       {children}
     </AppLayout>

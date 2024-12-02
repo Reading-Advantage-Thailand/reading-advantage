@@ -42,82 +42,7 @@ import { ArticleRecord } from "@/types";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import { QuizStatus } from "./models/questions-model";
-
-export const columns: ColumnDef<ArticleRecord>[] = [
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Title
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="captoliza">{row.getValue("title")}</div>,
-  },
-  {
-    accessorKey: "scores",
-    header: ({ column }) => {
-      return <div>{column.id}</div>;
-    },
-  },
-  {
-    accessorKey: "updated_at",
-    header: "Date",
-    cell: ({ row }) => {
-      const updatedAt = row.getValue("updated_at") as string;
-      const date = formatDate(updatedAt);
-      return <div>{date}</div>;
-    },
-  },
-  {
-    accessorKey: "rated",
-    header: () => <div className="text-center">Rated</div>,
-    cell: ({ row }) => {
-      const amount = parseInt(row.getValue("rated"));
-      return <div className="text-center font-medium">{amount}</div>;
-    },
-  },
-  {
-    accessorKey: "status",
-    header: () => <div className="text-center">Status</div>,
-    cell: ({ row }) => {
-      const status = row.getValue("status") as QuizStatus;
-      const map = {
-        [QuizStatus.READ]: "Read",
-        [QuizStatus.COMPLETED_MCQ]: "Completed MCQ",
-        [QuizStatus.COMPLETED_SAQ]: "Completed SAQ",
-        [QuizStatus.COMPLETED_LAQ]: "Completed LAQ",
-        [QuizStatus.UNRATED]: "Unrated",
-      };
-      return <div className="text-center font-medium">{map[status]}</div>;
-    },
-  },
-  // {
-  //     id: "actions",
-  //     enableHiding: false,
-  //     cell: () => {
-  //         return (
-  //             <DropdownMenu>
-  //                 <DropdownMenuTrigger asChild>
-  //                     <Button variant="ghost" className="h-8 w-8 p-0">
-  //                         <span className="sr-only">Open menu</span>
-  //                         <DotsHorizontalIcon className="h-4 w-4" />
-  //                     </Button>
-  //                 </DropdownMenuTrigger>
-  //                 <DropdownMenuContent align="end">
-  //                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-  //                     <DropdownMenuItem className="text-[#e11d48]">Delete</DropdownMenuItem>
-  //                 </DropdownMenuContent>
-  //             </DropdownMenu>
-  //         )
-  //     },
-  // },
-];
+import { useScopedI18n } from "@/locales/client";
 
 interface ReminderRereadTableProps {
   articles: ArticleRecord[];
@@ -130,6 +55,68 @@ export function ReminderRereadTable({ articles }: ReminderRereadTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const t = useScopedI18n("components.history.reminder");
+
+  const columns: ColumnDef<ArticleRecord>[] = [
+    {
+      accessorKey: "title",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            {t("title")}
+            <CaretSortIcon className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="captoliza">{row.getValue("title")}</div>
+      ),
+    },
+    {
+      accessorKey: "scores",
+      header: () => {
+        return <div>{t("score")}</div>;
+      },
+      cell: ({ row }) => {
+        return <div>{row.getValue("scores")}</div>;
+      },
+    },
+    {
+      accessorKey: "updated_at",
+      header: () => <div>{t("date")}</div>,
+      cell: ({ row }) => {
+        const updatedAt = row.getValue("updated_at") as string;
+        const date = formatDate(updatedAt);
+        return <div>{date}</div>;
+      },
+    },
+    {
+      accessorKey: "rated",
+      header: () => <div className="text-center">{t("rated")}</div>,
+      cell: ({ row }) => {
+        const amount = parseInt(row.getValue("rated"));
+        return <div className="text-center font-medium">{amount}</div>;
+      },
+    },
+    {
+      accessorKey: "status",
+      header: () => <div className="text-center">{t("status")}</div>,
+      cell: ({ row }) => {
+        const status = row.getValue("status") as QuizStatus;
+        const map = {
+          [QuizStatus.READ]: "Read",
+          [QuizStatus.COMPLETED_MCQ]: "Completed MCQ",
+          [QuizStatus.COMPLETED_SAQ]: "Completed SAQ",
+          [QuizStatus.COMPLETED_LAQ]: "Completed LAQ",
+          [QuizStatus.UNRATED]: "Unrated",
+        };
+        return <div className="text-center font-medium">{map[status]}</div>;
+      },
+    },
+  ];
 
   const table = useReactTable({
     data: articles,

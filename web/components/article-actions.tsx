@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useScopedI18n } from "@/locales/client";
 
 type Props = {
   article: Article;
@@ -19,6 +20,7 @@ type Props = {
 
 export default function ArticleActions({ article, articleId }: Props) {
   const [open, setOpen] = useState(false);
+  const t = useScopedI18n("components.article");
 
   const handleClose = () => {
     setOpen(false);
@@ -62,9 +64,11 @@ export default function ArticleActions({ article, articleId }: Props) {
           handleOpen();
         }}
       >
-        Delete
+        {t("deleteButton")}
       </Button>
-      <Button onClick={() => handleApprove(articleId)}>Approve</Button>
+      <Button onClick={() => handleApprove(articleId)}>
+        {t("appoveButton")}
+      </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

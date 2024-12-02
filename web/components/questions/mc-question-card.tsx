@@ -117,26 +117,26 @@ function QuestionCardComplete({
   resp: QuestionResponse;
   onRetake: () => void;
 }) {
+  const t = useScopedI18n("components.mcq");
   return (
     <Card>
       <CardHeader>
         <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          Multiple Choice Questions
+          {t("title")}
         </CardTitle>
         <CardDescription>
-          You already completed the quiz.
+          {t("descriptionSuccess")}{" "}
           <p className="text-green-500 dark:text-green-400 inline font-bold">
-            {" "}
-            Your score is{" "}
-            {
-              resp.progress.filter((status) => status === AnswerStatus.CORRECT)
-                .length
-            }{" "}
-            out of {resp.total}.
+            {t("descriptionSuccess2", {
+              score: resp.progress.filter(
+                (status) => status === AnswerStatus.CORRECT
+              ).length,
+              total: resp.total,
+            })}
           </p>
         </CardDescription>
         <Button size={"sm"} variant={"outline"} onClick={onRetake}>
-          Retake Quiz
+          {t("retakeButton")}
         </Button>
       </CardHeader>
     </Card>
@@ -144,15 +144,14 @@ function QuestionCardComplete({
 }
 
 function QuestionCardLoading() {
+  const t = useScopedI18n("components.mcq");
   return (
     <Card>
       <CardHeader>
         <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          Multiple Choice Questions
+          {t("title")}
         </CardTitle>
-        <CardDescription>
-          Getting questions for this article. Please wait a moment.
-        </CardDescription>
+        <CardDescription>{t("descriptionLoading")}</CardDescription>
         <Skeleton className="h-8 w-full mt-2" />
       </CardHeader>
     </Card>
@@ -174,12 +173,13 @@ function QuestionCardIncomplete({
   articleTitle: string;
   articleLevel: number;
 }) {
+  const t = useScopedI18n("components.mcq");
   return (
     <Card id="onborda-mcq">
       <QuestionHeader
-        heading="Multiple Choice Questions"
-        description="Take the quiz to check your understanding"
-        buttonLabel="Start Quiz"
+        heading={t("title")}
+        description={t("description")}
+        buttonLabel={t("startButton")}
         userId={userId}
         articleId={articleId}
         disabled={false}
@@ -358,9 +358,11 @@ function MCQeustion({
           {isLoadingAnswer && (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
           )}
-          {5 - resp.results.length + 1 + index < resp.total
-            ? "Next Question"
-            : "Submit Quiz"}
+          {5 - resp.results.length + 1 + index < resp.total ? (
+            <>{t("nextQuestionButton")}</>
+          ) : (
+            <>{t("submitButton")}</>
+          )}
         </Button>
       }
     </CardContent>
