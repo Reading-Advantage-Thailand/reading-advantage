@@ -23,6 +23,7 @@ interface UserAccountNavProps {
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
   const t = useScopedI18n("components.userAccountNav");
+  const td = useScopedI18n("components.userAccountNav.users");
   const [isLoading, setIsLoading] = useState(false);
   const [daysLeft, setDaysLeft] = useState<number>(0);
   const currentDate = new Date();
@@ -39,11 +40,11 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
   }, [currentDate, expirationDate]);
 
   const roles = {
-    system: { label: "System", color: "bg-[#FFC107]" },
-    admin: { label: "Admin", color: "bg-[#DC3545]" },
-    teacher: { label: "Teacher", color: "bg-[#007BFF]" },
-    student: { label: "Student", color: "bg-[#28A745]" },
-    user: { label: "User", color: "bg-[#6C757D]" },
+    system: { label: "system", color: "bg-[#FFC107]" },
+    admin: { label: "admin", color: "bg-[#DC3545]" },
+    teacher: { label: "teacher", color: "bg-[#007BFF]" },
+    student: { label: "student", color: "bg-[#28A745]" },
+    user: { label: "user", color: "bg-[#6C757D]" },
   };
 
   const { label, color } = roles[user.role];
@@ -79,15 +80,15 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
 
               <div className="inline-flex gap-1">
                 <Badge className={`${color} w-max`} variant="outline">
-                  {label}
+                  {td(`${user.role}`)}
                 </Badge>
                 {daysLeft > 0 ? ( // Check if the user has a free trial
                   <Badge className="bg-green-700 w-max" variant="outline">
-                    Expires in: {daysLeft} days
+                    {t("daysLeft", { daysLeft })}
                   </Badge>
                 ) : (
                   <Badge className="bg-red-700 w-max" variant="outline">
-                    Expired
+                    {t("expires")}
                   </Badge>
                 )}
               </div>
@@ -99,11 +100,11 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
             // Check if the user is a student, teacher, admin, or system
             user.cefr_level !== "" ? (
               <DropdownMenuItem asChild>
-                <Link href="/student/read">Learner Home</Link>
+                <Link href="/student/read">{t("learningpage")}</Link>
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem asChild>
-                <Link href="/level">Level Test</Link>
+                <Link href="/level">{t("leveltest")}</Link>
               </DropdownMenuItem>
             )
           }
@@ -113,7 +114,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
               user.role === Role.ADMIN ||
               user.role === Role.SYSTEM) && (
               <DropdownMenuItem asChild>
-                <Link href="/teacher/my-classes">Teacher dashboard</Link>
+                <Link href="/teacher/my-classes">{t("teacherpage")}</Link>
               </DropdownMenuItem>
             )
           }
@@ -121,13 +122,13 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
             // Check if the user is an admin or system
             (user.role === Role.ADMIN || user.role === Role.SYSTEM) && (
               <DropdownMenuItem asChild>
-                <Link href="/admin/dashboard">Admin dashboard</Link>
+                <Link href="/admin/dashboard">{t("adminpage")}</Link>
               </DropdownMenuItem>
             )
           }
           {user.role === Role.SYSTEM && (
             <DropdownMenuItem asChild>
-              <Link href="/system/dashboard">System dashboard</Link>
+              <Link href="/system/dashboard">{t("systempage")}</Link>
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />

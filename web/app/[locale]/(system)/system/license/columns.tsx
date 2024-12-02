@@ -110,6 +110,7 @@ export const columns: ColumnDef<License>[] = [
     cell: ({ row }) => {
       const license = row.original;
       //   const router = useRouter();
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -129,9 +130,9 @@ export const columns: ColumnDef<License>[] = [
               Delete
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(license.id)}
+              onClick={() => navigator.clipboard.writeText(license.key)}
             >
-              Copy license ID
+              Copy License Key
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View license details</DropdownMenuItem>

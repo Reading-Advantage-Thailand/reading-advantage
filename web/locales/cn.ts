@@ -205,6 +205,20 @@ export default {
       settings: "设置",
       signOut: "登出",
       contactUs: "联系支持",
+      leveltest: "等级测试",
+      learningpage: "学习者主页",
+      teacherpage: "教师仪表板",
+      adminpage: "管理员仪表板",
+      systempage: "系统仪表板",
+      daysLeft: "过期时间：{daysLeft} 天",
+      expires: "已过期",
+      users: {
+        student: "学生",
+        teacher: "教师",
+        admin: "管理员",
+        system: "系统",
+        user: "用户",
+      },
     },
     themeSwitcher: {
       dark: "暗模式",
@@ -300,6 +314,8 @@ export default {
       genre: "文章种类",
       subGenre: "文章子类",
       article: "文章",
+      deleteButton: "删除",
+      appoveButton: "批准",
     },
     articleCard: {
       raLevel: "阅读能力等级为 {raLevel}",
@@ -312,6 +328,7 @@ export default {
         play: "播放声音",
         pause: "暂停声音",
       },
+      openvoicebutton: "一边听一边读",
       // button translate
       translateButton: {
         open: "翻译",
@@ -319,6 +336,11 @@ export default {
       },
     },
     mcq: {
+      title: "多项选择题",
+      description: "参加测验以检查你的理解",
+      descriptionSuccess: "你已经完成了测验",
+      descriptionSuccess2: "你的分数是 {score}/{total}",
+      descriptionLoading: "正在获取本文的问题，请稍等。",
       quiz: "测验",
       reQuiz: "重新测验",
       quizDescription:
@@ -330,6 +352,7 @@ export default {
       elapsedTime: "已用时间 {time} 秒",
       questionHeading: "问题 {number}，共 {total} 个",
       nextQuestionButton: "下一个问题",
+      submitButton: "提交测验",
       toast: {
         correct: "正确",
         correctDescription: "您答对了！",
@@ -529,6 +552,25 @@ export default {
       },
     },
 
+    history: {
+      reminder: {
+        title: "标题",
+        score: "分数",
+        date: "日期",
+        rated: "已评分",
+        status: "状态",
+      },
+      record: {
+        search: "搜索...",
+        columns: "列",
+        title: "标题",
+        scores: "分数",
+        updated_at: "日期",
+        rated: "已评分",
+        status: "状态",
+      },
+    },
+
     reports: {
       title: "班级报告：{className}",
       averageLevel: "平均等级：",
@@ -628,6 +670,21 @@ export default {
         getXP: "获取经验值！",
         score: "分数是",
       },
+    },
+    saq: {
+      title: "简答题",
+      description: "写几句话",
+      descriptionSuccess: "你已经完成了简答题",
+      descriptionLoading: "正在获取简答题...",
+      descriptionFailure: "获取问题时出错。{error}",
+      question: "问题",
+      suggestedAnswer: "建议答案",
+      yourAnswer: "你的答案",
+      practiceButton: "开始写作",
+      rateButton: "评价答案",
+      submitButton: "保存答案",
+      elapsedTime: "已用时间 {time} 秒",
+      scorerate: "让我们评价你的答案",
     },
   },
 

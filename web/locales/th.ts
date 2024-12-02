@@ -217,6 +217,20 @@ export default {
       settings: "การตั้งค่า",
       signOut: "ออกจากระบบ",
       contactUs: "ติดต่อฝ่ายสนับสนุน",
+      leveltest: "แบบทดสอบระดับ",
+      learningpage: "หน้าหลักของผู้เรียน",
+      teacherpage: "แผงควบคุมของครู",
+      adminpage: "แผงควบคุมของผู้ดูแลระบบ",
+      systempage: "แผงควบคุมของระบบ",
+      daysLeft: "หมดอายุในอีก {daysLeft} วัน",
+      expires: "หมดอายุ",
+      users: {
+        student: "นักเรียน",
+        teacher: "ครู",
+        admin: "ผู้ดูแลระบบ",
+        system: "ระบบ",
+        user: "ผู้ใช้",
+      },
     },
     themeSwitcher: {
       dark: "โหมดมืด",
@@ -315,6 +329,8 @@ export default {
       genre: "ชนิดของบทความ",
       subGenre: "ชนิดย่อยของบทความ",
       article: "บทความ",
+      deleteButton: "ลบ",
+      appoveButton: "อนุมัติ",
     },
     articleCard: {
       raLevel: "ระดับการอ่านของบทความคือ {raLevel}",
@@ -329,6 +345,7 @@ export default {
         play: "เล่นเสียง",
         pause: "หยุดเสียง",
       },
+      openvoicebutton: "ฟังและอ่านตาม",
       // button translate
       translateButton: {
         open: "แปล",
@@ -336,6 +353,11 @@ export default {
       },
     },
     mcq: {
+      title: "คำถามแบบหลายตัวเลือก",
+      description: "ทำแบบทดสอบเพื่อตรวจสอบความเข้าใจของคุณ",
+      descriptionSuccess: "คุณทำแบบทดสอบเสร็จแล้ว",
+      descriptionSuccess2: "คะแนนของคุณคือ {score} จากทั้งหมด {total}",
+      descriptionLoading: "กำลังดึงคำถามสำหรับบทความนี้ โปรดรอสักครู่",
       //headings
       quiz: "แบบทดสอบ",
       reQuiz: "ลองทำแบบทดสอบอีกครั้ง",
@@ -350,6 +372,7 @@ export default {
       elapsedTime: "ใช้เวลาไป {time} วินาที",
       questionHeading: "คำถามที่ {number} จาก {total}",
       nextQuestionButton: "คำถามต่อไป",
+      submitButton: "ส่งแบบทดสอบ",
       toast: {
         correct: "ถูกต้อง",
         correctDescription: "คุณตอบถูกต้อง!",
@@ -556,6 +579,25 @@ export default {
       },
     },
 
+    history: {
+      reminder: {
+        title: "หัวข้อ",
+        score: "คะแนน",
+        date: "วันที่",
+        rated: "การให้คะแนน",
+        status: "สถานะ",
+      },
+      record: {
+        search: "ค้นหา...",
+        columns: "คอลัมน์",
+        title: "หัวข้อ",
+        scores: "คะแนน",
+        updated_at: "วันที่",
+        rated: "การให้คะแนน",
+        status: "สถานะ",
+      },
+    },
+
     reports: {
       title: "รายงานชั้นเรียน: {className}",
       averageLevel: "ระดับเฉลี่ย:",
@@ -655,6 +697,21 @@ export default {
         getXP: "รับ XP ของคุณ!",
         score: "คะแนนคือ",
       },
+    },
+    saq: {
+      title: "คำถามแบบตอบสั้น",
+      description: "เขียนสองสามประโยค",
+      descriptionSuccess: "คุณทำคำถามแบบตอบสั้นเสร็จแล้ว",
+      descriptionLoading: "กำลังดึงคำถามแบบตอบสั้น...",
+      descriptionFailure: "มีข้อผิดพลาดในการดึงคำถาม {error}",
+      question: "คำถาม",
+      suggestedAnswer: "คำตอบที่แนะนำ",
+      yourAnswer: "คำตอบของคุณ",
+      practiceButton: "เริ่มเขียน",
+      rateButton: "ให้คะแนนคำตอบ",
+      submitButton: "บันทึกคำตอบ",
+      elapsedTime: "ใช้เวลาไป {time} วินาที",
+      scorerate: "มาประเมินคำตอบของคุณกัน",
     },
   },
 

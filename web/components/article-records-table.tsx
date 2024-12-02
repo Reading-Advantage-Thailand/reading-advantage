@@ -45,103 +45,7 @@ import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import { useScopedI18n } from "@/locales/client";
 import { QuizStatus } from "./models/questions-model";
-
-export const columns: ColumnDef<ArticleRecord>[] = [
-  // check box
-  // {
-  //     id: "select",
-  //     header: ({ table }) => (
-  //         <Checkbox
-  //             checked={table.getIsAllPageRowsSelected()}
-  //             onCheckedChange={(value: any) => table.toggleAllPageRowsSelected(!!value)}
-  //             aria-label="Select all"
-  //         />
-  //     ),
-  //     cell: ({ row }) => (
-  //         <Checkbox
-  //             checked={row.getIsSelected()}
-  //             onCheckedChange={(value: any) => row.toggleSelected(!!value)}
-  //             aria-label="Select row"
-  //         />
-  //     ),
-  //     enableSorting: false,
-  //     enableHiding: false,
-  // },
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Title
-          <CaretSortIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => <div className="captoliza">{row.getValue("title")}</div>,
-  },
-  {
-    accessorKey: "scores",
-    header: ({ column }) => {
-      return <div>{column.id}</div>;
-    },
-  },
-  {
-    accessorKey: "updated_at",
-    header: "Date",
-    cell: ({ row }) => {
-      const updatedAt = row.getValue("updated_at") as string;
-      const date = formatDate(updatedAt);
-      return <div>{date}</div>;
-    },
-  },
-  {
-    accessorKey: "rated",
-    header: () => <div className="text-center">Rated</div>,
-    cell: ({ row }) => {
-      const amount = parseInt(row.getValue("rated"));
-      return <div className="text-center font-medium">{amount}</div>;
-    },
-  },
-  {
-    accessorKey: "status",
-    header: () => <div className="text-center">Status</div>,
-    cell: ({ row }) => {
-      const status = row.getValue("status") as QuizStatus;
-      const map = {
-        [QuizStatus.READ]: "Read",
-        [QuizStatus.COMPLETED_MCQ]: "Completed MCQ",
-        [QuizStatus.COMPLETED_SAQ]: "Completed SAQ",
-        [QuizStatus.COMPLETED_LAQ]: "Completed LAQ",
-        [QuizStatus.UNRATED]: "Unrated",
-      };
-      return <div className="text-center font-medium">{map[status]}</div>;
-    },
-  },
-
-  // {
-  //     id: "actions",
-  //     enableHiding: false,
-  //     cell: () => {
-  //         return (
-  //             <DropdownMenu>
-  //                 <DropdownMenuTrigger asChild>
-  //                     <Button variant="ghost" className="h-8 w-8 p-0">
-  //                         <span className="sr-only">Open menu</span>
-  //                         <DotsHorizontalIcon className="h-4 w-4" />
-  //                     </Button>
-  //                 </DropdownMenuTrigger>
-  //                 <DropdownMenuContent align="end">
-  //                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-  //                     <DropdownMenuItem className="text-[#e11d48]">Delete</DropdownMenuItem>
-  //                 </DropdownMenuContent>
-  //             </DropdownMenu>
-  //         )
-  //     },
-  // },
-];
+import { divide } from "lodash";
 
 interface ArticleRecordsTableProps {
   className?: string;
@@ -156,6 +60,70 @@ export function ArticleRecordsTable({ articles }: ArticleRecordsTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const td = useScopedI18n("components.history.record");
+
+  const columns: ColumnDef<ArticleRecord>[] = [
+    {
+      accessorKey: "title",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            {td("title")}
+            <CaretSortIcon className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="captoliza">{row.getValue("title")}</div>
+      ),
+    },
+    {
+      accessorKey: "scores",
+      header: () => {
+        return <div>{td("scores")}</div>;
+      },
+      cell: ({ row }) => {
+        return <div>{row.getValue("scores")}</div>;
+      },
+    },
+    {
+      accessorKey: "updated_at",
+      header: () => {
+        return <div>{td("updated_at")}</div>;
+      },
+      cell: ({ row }) => {
+        const updatedAt = row.getValue("updated_at") as string;
+        const date = formatDate(updatedAt);
+        return <div>{date}</div>;
+      },
+    },
+    {
+      accessorKey: "rated",
+      header: () => <div className="text-center">{td("rated")}</div>,
+      cell: ({ row }) => {
+        const amount = parseInt(row.getValue("rated"));
+        return <div className="text-center font-medium">{amount}</div>;
+      },
+    },
+    {
+      accessorKey: "status",
+      header: () => <div className="text-center">{td("status")}</div>,
+      cell: ({ row }) => {
+        const status = row.getValue("status") as QuizStatus;
+        const map = {
+          [QuizStatus.READ]: "Read",
+          [QuizStatus.COMPLETED_MCQ]: "Completed MCQ",
+          [QuizStatus.COMPLETED_SAQ]: "Completed SAQ",
+          [QuizStatus.COMPLETED_LAQ]: "Completed LAQ",
+          [QuizStatus.UNRATED]: "Unrated",
+        };
+        return <div className="text-center font-medium">{map[status]}</div>;
+      },
+    },
+  ];
 
   const table = useReactTable({
     data: articles,
@@ -185,7 +153,7 @@ export function ArticleRecordsTable({ articles }: ArticleRecordsTableProps) {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder={"Search..."}
+          placeholder={td("search")}
           value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("title")?.setFilterValue(event.target.value)
@@ -195,7 +163,7 @@ export function ArticleRecordsTable({ articles }: ArticleRecordsTableProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDownIcon className="ml-2 h-4 w-4" />
+              {td("columns")} <ChevronDownIcon className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

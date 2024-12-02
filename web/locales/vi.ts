@@ -218,6 +218,20 @@ export default {
       settings: "Cài đặt",
       signOut: "Đăng xuất",
       contactUs: "Liên hệ hỗ trợ",
+      leveltest: "Kiểm tra trình độ",
+      learningpage: "Trang chủ người học",
+      teacherpage: "Bảng điều khiển giáo viên",
+      adminpage: "Bảng điều khiển quản trị",
+      systempage: "Bảng điều khiển hệ thống",
+      daysLeft: "Hết hạn trong: {daysLeft} ngày",
+      expires: "Hết hạn",
+      users: {
+        student: "Học sinh",
+        teacher: "Giáo viên",
+        admin: "Quản trị viên",
+        system: "Hệ thống",
+        user: "Người dùng",
+      },
     },
     themeSwitcher: {
       dark: "Tối",
@@ -318,6 +332,8 @@ export default {
       genre: "Thể loại bài viết",
       subGenre: "Thể loại phụ bài viết",
       article: "Bài viết",
+      deleteButton: "Xóa",
+      appoveButton: "Duyệt",
     },
     articleCard: {
       raLevel: "Trình độ đọc là {raLevel}",
@@ -331,6 +347,7 @@ export default {
         play: "Phát âm thanh",
         pause: "Tạm dừng âm thanh",
       },
+      openvoicebutton: "Nghe và đọc theo",
       // button translate
       translateButton: {
         open: "Dịch",
@@ -338,6 +355,12 @@ export default {
       },
     },
     mcq: {
+      title: "Câu hỏi trắc nghiệm",
+      description: "Làm bài kiểm tra để kiểm tra sự hiểu biết của bạn",
+      descriptionSuccess: "Bạn đã hoàn thành bài kiểm tra",
+      descriptionSuccess2: "Điểm số của bạn là {score} trên {total}",
+      descriptionLoading:
+        "Đang lấy câu hỏi cho bài viết này. Vui lòng chờ trong giây lát.",
       // Headings
       quiz: "Bài kiểm tra",
       reQuiz: "Làm lại bài kiểm tra",
@@ -352,6 +375,7 @@ export default {
       elapsedTime: "{time} giây đã trôi qua",
       questionHeading: "Câu hỏi {number} trong tổng số {total}",
       nextQuestionButton: "Câu hỏi tiếp theo",
+      submitButton: "Nộp bài kiểm tra",
       toast: {
         correct: "Đúng",
         correctDescription: "Bạn đã trả lời đúng!",
@@ -561,6 +585,25 @@ export default {
       },
     },
 
+    history: {
+      reminder: {
+        title: "Tiêu đề",
+        score: "Điểm",
+        date: "Ngày",
+        rated: "Đã được đánh giá",
+        status: "Trạng thái",
+      },
+      record: {
+        search: "Tìm kiếm...",
+        columns: "Cột",
+        title: "Tiêu đề",
+        scores: "Điểm",
+        updated_at: "Ngày",
+        rated: "Đã được đánh giá",
+        status: "Trạng thái",
+      },
+    },
+
     reports: {
       title: "Báo Cáo Lớp Học: {className}",
       averageLevel: "Mức Trung Bình:",
@@ -661,6 +704,21 @@ export default {
         getXP: "Nhận XP của bạn!",
         score: "Điểm là",
       },
+    },
+    saq: {
+      title: "Câu hỏi trả lời ngắn",
+      description: "Viết một vài câu",
+      descriptionSuccess: "Bạn đã hoàn thành câu hỏi trả lời ngắn",
+      descriptionLoading: "Đang lấy câu hỏi trả lời ngắn...",
+      descriptionFailure: "Đã xảy ra lỗi khi lấy câu hỏi. {error}",
+      question: "Câu hỏi",
+      suggestedAnswer: "Câu trả lời gợi ý",
+      yourAnswer: "Câu trả lời của bạn",
+      practiceButton: "Bắt đầu viết",
+      rateButton: " Đánh giá câu trả lời",
+      submitButton: "Lưu câu trả lời",
+      elapsedTime: "{time} giây đã trôi qua",
+      scorerate: "Hãy đánh giá câu trả lời của bạn",
     },
   },
 

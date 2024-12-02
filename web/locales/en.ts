@@ -225,6 +225,20 @@ export default {
       settings: "Settings",
       signOut: "Sign Out",
       contactUs: "Contact Support",
+      leveltest: "Level Test",
+      learningpage: "Learner Home",
+      teacherpage: "Teacher dashboard",
+      adminpage: "Admin dashboard",
+      systempage: "System dashboard",
+      daysLeft: "Expires in: {daysLeft} days",
+      expires: "Expired",
+      users: {
+        student: "Student",
+        teacher: "Teacher",
+        admin: "Admin",
+        system: "System",
+        user: "User",
+      },
     },
     themeSwitcher: {
       dark: "Dark",
@@ -322,13 +336,14 @@ export default {
       genre: "genre",
       subGenre: "sub-genre",
       article: "article",
+      deleteButton: "Delete",
+      appoveButton: "Approve",
     },
     articleCard: {
       raLevel: "Reading Advantage level is {raLevel}",
       cefrLevel: "CEFR level is {cefrLevel}",
       // The article pertains to the topic of A clever girl outsmarts an evil sorceress and saves her village from a curse., which falls within the tales and myths genre.
-      articleCardDescription:
-        "This {genre} article is about {topic}.",
+      articleCardDescription: "This {genre} article is about {topic}.",
     },
     articleContent: {
       voiceAssistant: "Voice Assistant",
@@ -336,6 +351,7 @@ export default {
         play: "Play sound",
         pause: "Pause sound",
       },
+      openvoicebutton: "Listen and read along",
       // button translate
       translateButton: {
         open: "Translate",
@@ -343,6 +359,12 @@ export default {
       },
     },
     mcq: {
+      title: "Multiple Choice Questions",
+      description: "Take the quiz to check your understanding",
+      descriptionSuccess: "You already completed the quiz.",
+      descriptionSuccess2: "Your score is {score} out of {total}.",
+      descriptionLoading:
+        "Getting questions for this article. Please wait a moment.",
       //headings
       quiz: "Quiz",
       reQuiz: "Re-Quiz",
@@ -357,6 +379,7 @@ export default {
       elapsedTime: "{time} seconds elapsed",
       questionHeading: "Question {number} of {total}",
       nextQuestionButton: "Next Question",
+      submitButton: "Submit Quiz",
       toast: {
         correct: "Correct",
         correctDescription: "You got it right!",
@@ -566,6 +589,25 @@ export default {
       },
     },
 
+    history: {
+      reminder: {
+        title: "Title",
+        score: "Scores",
+        date: "Date",
+        rated: "Rated",
+        status: "Status",
+      },
+      record: {
+        search: "Search...",
+        columns: "Columns",
+        title: "Title",
+        scores: "Scores",
+        updated_at: "Date",
+        rated: "Rated",
+        status: "Status",
+      },
+    },
+
     reports: {
       title: "Class Reports: {className}",
       averageLevel: "Average Level:",
@@ -664,6 +706,21 @@ export default {
         getXP: "Get your XP!",
         score: "Score is",
       },
+    },
+    saq: {
+      title: "Short Answer Question",
+      description: "Write a few sentences.",
+      descriptionSuccess: "You already completed the short answer question.",
+      question: "Question",
+      suggestedAnswer: "Suggested Answer",
+      yourAnswer: "Your Answer",
+      descriptionLoading: "Getting the short answer question...",
+      descriptionFailure: "There was an error getting the question. {error}",
+      practiceButton: "Start Writing",
+      rateButton: "Rate Answer",
+      submitButton: "Save Answer",
+      elapsedTime: "{time} seconds elapsed",
+      scorerate: "Let's Rate Your Answer",
     },
   },
 

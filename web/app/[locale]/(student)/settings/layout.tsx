@@ -6,6 +6,7 @@ export default function SettingsPageLayout({ children }: BaseAppLayoutProps) {
     <AppLayout
       mainNavConfig={settingsPageConfig.mainNav}
       sidebarNavConfig={settingsPageConfig.sidebarNav}
+      disableLeaderboard={true}
     >
       {children}
     </AppLayout>

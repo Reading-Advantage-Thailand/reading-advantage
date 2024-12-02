@@ -427,7 +427,7 @@ export default function ArticleContent({
             className="w-full"
             onClick={handleTogglePlayer}
           >
-            Listen and read along
+            {t("openvoicebutton")}
           </Button>
         </div>
         <div id="onborda-translate">

@@ -17,6 +17,7 @@ interface AppLayoutProps {
   sidebarNavConfig?: SidebarNavItem[];
   disableProgressBar?: boolean;
   disableSidebar?: boolean;
+  disableLeaderboard?: boolean;
 }
 
 export interface BaseAppLayoutProps {
@@ -29,6 +30,7 @@ export default async function AppLayout({
   sidebarNavConfig,
   disableProgressBar,
   disableSidebar,
+  disableLeaderboard,
 }: AppLayoutProps) {
   const user = await getCurrentUser();
 
@@ -81,7 +83,9 @@ export default async function AppLayout({
         {!disableSidebar && (
           <aside className="lg:w-[230px] lg:flex-col lg:flex">
             <SidebarNav items={sidebarNavConfig || []} />
-            {user.license_id && <Leaderboard data={leaderboard} />}
+            {user.license_id && !disableLeaderboard ? (
+              <Leaderboard data={leaderboard} />
+            ) : null}
           </aside>
         )}
         <main className="flex w-full flex-1 flex-col overflow-hidden">

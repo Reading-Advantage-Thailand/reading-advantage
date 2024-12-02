@@ -205,6 +205,20 @@ export default {
       settings: "設置",
       signOut: "登出",
       contactUs: "聯繫支持",
+      leveltest: "等級測試",
+      learningpage: "學習者主頁",
+      teacherpage: "教師儀表板",
+      adminpage: "管理員儀表板",
+      systempage: "系統儀表板",
+      daysLeft: "過期時間：{daysLeft} 天",
+      expires: "已過期",
+      users: {
+        student: "學生",
+        teacher: "教師",
+        admin: "管理員",
+        system: "系統",
+        user: "用戶",
+      },
     },
     themeSwitcher: {
       dark: "暗模式",
@@ -300,6 +314,8 @@ export default {
       genre: "文章種類",
       subGenre: "文章子類",
       article: "文章",
+      deleteButton: "刪除",
+      appoveButton: "批准",
     },
     articleCard: {
       raLevel: "閱讀能力等級為 {raLevel}",
@@ -312,6 +328,7 @@ export default {
         play: "播放聲音",
         pause: "暫停聲音",
       },
+      openvoicebutton: "一邊聽一邊讀",
       // button translate
       translateButton: {
         open: "翻譯",
@@ -319,6 +336,11 @@ export default {
       },
     },
     mcq: {
+      title: "多項選擇題",
+      description: "參加測驗以檢查你的理解",
+      descriptionSuccess: "你已經完成了測驗",
+      descriptionSuccess2: "你的分數是 {score}/{total}",
+      descriptionLoading: "正在獲取本文的問題，請稍等。",
       quiz: "測驗",
       reQuiz: "重新測驗",
       quizDescription:
@@ -330,6 +352,7 @@ export default {
       elapsedTime: "已用時間 {time} 秒",
       questionHeading: "問題 {number}，共 {total} 個",
       nextQuestionButton: "下一個問題",
+      submitButton: "提交測驗",
       toast: {
         correct: "正確",
         correctDescription: "您答對了！",
@@ -533,6 +556,25 @@ export default {
       },
     },
 
+    history: {
+      reminder: {
+        title: "標題",
+        score: "分數",
+        date: "日期",
+        rated: "已評分",
+        status: "狀態",
+      },
+      record: {
+        search: "搜尋...",
+        columns: "欄",
+        title: "標題",
+        scores: "分數",
+        updated_at: "日期",
+        rated: "已評分",
+        status: "狀態",
+      },
+    },
+
     reports: {
       title: "班級報告：{className}",
       averageLevel: "平均等級：",
@@ -632,6 +674,21 @@ export default {
         getXP: "獲取經驗值！",
         score: "分數是",
       },
+    },
+    saq: {
+      title: "簡答題",
+      description: "寫幾句話",
+      descriptionSuccess: "你已經完成了簡答題",
+      descriptionLoading: "正在獲取簡答題...",
+      descriptionFailure: "獲取問題時出錯。{error}",
+      question: "問題",
+      suggestedAnswer: "建議答案",
+      yourAnswer: "你的答案",
+      practiceButton: "開始寫作",
+      rateButton: "評價答案",
+      submitButton: "保存答案",
+      elapsedTime: "已用時間 {time} 秒",
+      scorerate: "讓我們評價你的答案",
     },
   },
   selectType: {

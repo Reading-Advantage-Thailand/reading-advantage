@@ -45,10 +45,10 @@ export const teacherPageConfig: TeacherPageConfig = {
       href: "/teacher/passages",
       icon: "article",
     },
-    {
-      title: "assignments",
-      href: "/teacher/assignments",
-      icon: "assignments",
-    },
+    // {
+    //   title: "assignments",
+    //   href: "/teacher/assignments",
+    //   icon: "assignments",
+    // },
   ],
 };
