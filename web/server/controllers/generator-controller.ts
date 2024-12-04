@@ -29,7 +29,7 @@ export async function generateQueue(req: ExtendedNextRequest) {
     const reqUrl = req.url;
     const amount = parseInt(amountPerGenre);
 
-    // Send a message to Discord that the generation has started
+    //Send a message to Discord that the generation has started
     await sendDiscordWebhook({
       title: "Generate Queue",
       embeds: [
@@ -109,7 +109,7 @@ export async function generateQueue(req: ExtendedNextRequest) {
         total: amount * 6 * 2,
         failedCount,
         timeTaken: timeTakenMinutes,
-        results: combinedResults,
+        results: successCount,
       },
       { status: 200 }
     );
@@ -143,67 +143,86 @@ async function generateForGenre(type: ArticleType, amountPerGenre: number) {
     amountPerGenre: amountPerGenre,
   });
 
-  // Process each topic concurrently
+  const cefrLevels = [
+    ArticleBaseCefrLevel.A1,
+    ArticleBaseCefrLevel.A2,
+    ArticleBaseCefrLevel.B1,
+    ArticleBaseCefrLevel.B2,
+    ArticleBaseCefrLevel.C1,
+    ArticleBaseCefrLevel.C2,
+  ];
+
   const results = await Promise.all(
-    generatedTopic.topics.map(async (topic) => {
-      const topicResults = [];
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.A1
+    generatedTopic.topics.map(async (topic) =>
+      Promise.all(
+        cefrLevels.map((level) =>
+          queue(type, randomGenre.genre, randomGenre.subgenre, topic, level)
         )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.A2
-        )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.B1
-        )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.B2
-        )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.C1
-        )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.C2
-        )
-      );
-      return topicResults;
-    })
+      )
+    )
   );
+
+  // Process each topic concurrently
+  // const results = await Promise.all(
+  //   generatedTopic.topics.map(async (topic) => {
+  //     const topicResults = [];
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.A1
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.A2
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.B1
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.B2
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.C1
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.C2
+  //       )
+  //     );
+  //     return topicResults;
+  //   })
+  // );
 
   return results.flat();
 }
@@ -280,7 +299,8 @@ async function queue(
 
     // update mcq
     for (let i = 0; i < mcq.questions.length; i++) {
-      db.collection("new-articles")
+      await db
+        .collection("new-articles")
         .doc(ref.id)
         .collection("mc-questions")
         .add(mcq.questions[i]);
@@ -288,14 +308,16 @@ async function queue(
 
     // update saq
     for (let i = 0; i < saq.questions.length; i++) {
-      db.collection("new-articles")
+      await db
+        .collection("new-articles")
         .doc(ref.id)
         .collection("sa-questions")
         .add(saq.questions[i]);
     }
 
     // update laq
-    db.collection("new-articles")
+    await db
+      .collection("new-articles")
       .doc(ref.id)
       .collection("la-questions")
       .add(laq);
@@ -324,6 +346,7 @@ async function queue(
       articleId: ref.id,
     });
   } catch (error) {
+    console.log("error => ", error);
     return `${cefrLevel} ${
       type === ArticleType.FICTION ? "F" : "N"
     } - ${error}`;
