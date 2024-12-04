@@ -52,7 +52,7 @@ export async function generateAudio({
 }: GenerateAudioParams): Promise<void> {
   const voice =
     AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
-  const generate = async (ssml: string, index: number) => {
+  const generate = async (ssml: string) => {
     const response = await fetch(
       `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize?key=${process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY}`,
       {
@@ -68,8 +68,6 @@ export async function generateAudio({
           },
           audioConfig: {
             audioEncoding: "MP3",
-            pitch: 0,
-            speakingRate: 1,
           },
           enableTimePointing: ["SSML_MARK"],
         }),
@@ -84,32 +82,33 @@ export async function generateAudio({
     const audio = data.audioContent;
     const MP3 = base64.toByteArray(audio);
 
-    const localPath = `${process.cwd()}/data/audios/${articleId}_${index}.mp3`;
+    const localPath = `${process.cwd()}/data/audios/${articleId}.mp3`;
     fs.writeFileSync(localPath, MP3);
 
-    await uploadToBucket(localPath, `${AUDIO_URL}/${articleId}_${index}.mp3`);
+    await uploadToBucket(localPath, `${AUDIO_URL}/${articleId}.mp3`);
 
     return data.timepoints;
   };
 
   try {
     const chunks = splitTextIntoChunks(passage, 5000);
-    const allTimepoints: any[] = [];
-    let index = 0;
+    let currentIndex = 0;
 
-    for (let i = 0; i < chunks.length; i++) {
-      const timepoints = await generate(chunks[i], i);
+    //Generate all timepoints in parallel for efficiency
+    const allTimepoints = (
+      await Promise.all(
+        chunks.map(async (chunk) => {
+          const chunkTimepoints = await generate(chunk);
 
-      timepoints.forEach((tp: any) => {
-        allTimepoints.push({
-          markName: `sentence${index}`,
-          timeSeconds: tp.timeSeconds,
-          index: index,
-          file: `${articleId}_${i}.mp3`,
-        });
-        index++;
-      });
-    }
+          return chunkTimepoints.map((tp: { timeSeconds: number }) => ({
+            markName: `sentence${currentIndex++}`,
+            timeSeconds: tp.timeSeconds,
+            index: currentIndex - 1,
+            file: `${articleId}.mp3`,
+          }));
+        })
+      )
+    ).flat();
 
     // Update the database with all timepoints
     await db.collection("new-articles").doc(articleId).update({

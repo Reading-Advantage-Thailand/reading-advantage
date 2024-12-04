@@ -48,6 +48,7 @@ export async function generateAudioForWord({
       const vocabulary: string[] = Array.isArray(wordList)
         ? wordList.map((item: any) => item?.vocabulary)
         : [];
+
       let allTimePoints: TimePoint[] = [];
 
       const response = await fetch(
@@ -65,8 +66,6 @@ export async function generateAudioForWord({
             },
             audioConfig: {
               audioEncoding: "MP3",
-              pitch: 0,
-              speakingRate: 1,
             },
             enableTimePointing: ["SSML_MARK"],
           }),
@@ -83,7 +82,6 @@ export async function generateAudioForWord({
       const MP3 = base64.toByteArray(audio);
 
       const localPath = `${process.cwd()}/data/audios-words/${articleId}.mp3`;
-
       fs.writeFileSync(localPath, MP3);
 
       await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);
