@@ -41,6 +41,7 @@ ENV ACCESS_KEY=$ACCESS_KEY
 ENV DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL
 
 RUN mkdir -p /usr/src/app
+RUN apt-get update && apt-get install -y ffmpeg
 WORKDIR /usr/src/app
 
 COPY . /usr/src/app/

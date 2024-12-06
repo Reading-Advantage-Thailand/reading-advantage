@@ -297,7 +297,7 @@ async function queue(
       id: ref.id,
     });
 
-    // update mcq
+    //update mcq
     for (let i = 0; i < mcq.questions.length; i++) {
       await db
         .collection("new-articles")
@@ -322,7 +322,7 @@ async function queue(
       .collection("la-questions")
       .add(laq);
 
-    // update wordlist
+    //update wordlist
     const wordListRef = db.collection(`word-list`).doc(ref.id);
     await wordListRef.set({
       word_list: wordList,

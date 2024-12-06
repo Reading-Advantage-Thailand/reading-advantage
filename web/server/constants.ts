@@ -14,3 +14,4 @@ export const AVAILABLE_VOICES = [
   "en-US-Neural2-I",
   "en-US-Neural2-J",
 ];
+export const NEW_MODEL_VOICES = ["en-US-Studio-O", "en-US-Studio-Q"];
