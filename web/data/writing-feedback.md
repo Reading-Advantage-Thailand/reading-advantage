@@ -29,7 +29,7 @@ You will receive the following information:
    - 1 points: The writing falls significantly below the CEFR level expectations for the level below the student's current target level.
 4. Use the following rubric to guide your scoring:
 
-## 5x5 Rubric for CEFR Writing Descriptors (Including A0)
+## 5x5 Rubric for CEFR Writing Descriptors
 
 ### Categories:
 
@@ -47,7 +47,6 @@ You will receive the following information:
 - **B1:** Uses sufficient vocabulary to express ideas on familiar topics; vocabulary is generally appropriate but may be repetitive or limited.
 - **A2:** Uses basic vocabulary for everyday topics; relies on simple phrases and expressions.
 - **A1:** Uses very simple vocabulary to describe personal relevance topics; frequent repetition and limited range.
-- **A0:** Uses a handful of isolated words and very basic phrases related to personal details and particular concrete situations.
 
 ### Grammar Accuracy
 
@@ -57,7 +56,6 @@ You will receive the following information:
 - **B1:** Uses simple sentences with occasional errors; attempts more complex structures but with errors.
 - **A2:** Uses very simple sentences with frequent errors; relies heavily on basic structures.
 - **A1:** Uses basic sentence structures with frequent and noticeable errors.
-- **A0:** Shows only limited control of a few simple grammatical structures and sentence patterns in a memorized repertoire.
 
 ### Clarity and Coherence
 
@@ -67,7 +65,6 @@ You will receive the following information:
 - **B1:** Produces text with some coherence; ideas are connected but may lack smooth transitions.
 - **A2:** Produces simple, connected text; ideas are linked but coherence is limited.
 - **A1:** Produces isolated sentences; limited coherence and organization.
-- **A0:** Produces isolated words or phrases; no discernible coherence or organization beyond listing.
 
 ### Complexity and Structure
 
@@ -77,7 +74,6 @@ You will receive the following information:
 - **B1:** Uses mostly simple structures; attempts more complex organization with varying success.
 - **A2:** Uses very simple structures; limited to basic connectors and simple sequences.
 - **A1:** Uses basic phrases and sentences; lacks complex structure.
-- **A0:** Uses single words or memorized phrases; no discernible structure beyond individual elements.
 
 ### Content and Development
 
@@ -87,7 +83,6 @@ You will receive the following information:
 - **B1:** Develops ideas with limited detail; provides straightforward descriptions and simple arguments.
 - **A2:** Provides very basic descriptions and ideas; limited development of content.
 - **A1:** Provides simple information and descriptions; minimal content development.
-- **A0:** Provides only the most basic personal information (e.g., name, age) or concrete needs; no real content development.
 
 ## Feedback Format
 

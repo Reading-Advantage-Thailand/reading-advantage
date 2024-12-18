@@ -18,8 +18,9 @@ export type WordListResponse = {
     vi: string;
   };
 };
+
 export type GenerateAudioParams = {
-  wordList: WordListResponse;
+  wordList: WordListResponse[];
   articleId: string;
 };
 

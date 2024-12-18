@@ -1,16 +1,16 @@
 import { NextResponse, NextRequest } from "next/server";
 import { generateObject, streamText } from "ai";
-import { openai, createOpenAI } from "@ai-sdk/openai";
 import fs, { stat } from "fs";
 import path from "path";
 import { z } from "zod";
 import db from "@/configs/firestore-config";
 import storage from "@/utils/storage";
-import OpenAI from "openai";
 import { AUDIO_WORDS_URL } from "@/server/constants";
 import { generateAudioForWord } from "@/server/utils/generators/audio-words-generator";
 import { ExtendedNextRequest } from "./auth-controller";
 import { promptChatBot } from "@/data/prompt-chatbot";
+import openai from "@/utils/openai";
+import { generateWordList } from "../utils/generators/word-list-generator";
 
 interface RequestContext {
   params: {
@@ -153,102 +153,23 @@ export async function getWordlist(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } else {
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+    const wordList = await generateWordList({
+      passage: article.passage,
     });
-
-    const prompt_user = `Extract the ten most difficult vocabulary words, phrases, or idioms from the following passage: ${article.passage}`;
-
-    const schema = {
-      type: "object",
-      properties: {
-        word_list: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              vocabulary: {
-                type: "string",
-                description: "A difficult vocabulary word, phrase, or idiom.",
-              },
-              definition: {
-                type: "object",
-                properties: {
-                  en: {
-                    type: "string",
-                    description:
-                      "The English definition of the vocabulary in simple language.",
-                  },
-                  th: {
-                    type: "string",
-                    description: "The Thai translation of the vocabulary.",
-                  },
-                  cn: {
-                    type: "string",
-                    description:
-                      "The Simplified Chinese translation of the vocabulary.",
-                  },
-                  tw: {
-                    type: "string",
-                    description:
-                      "The Traditional Chinese translation of the vocabulary.",
-                  },
-                  vi: {
-                    type: "string",
-                    description:
-                      "The Vietnamese translation of the vocabulary.",
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      required: ["word_list"],
-    };
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are an article database assisstant.",
-        },
-        { role: "user", content: `${prompt_user}` },
-      ],
-      functions: [
-        {
-          name: "extract_difficult_vocabulary",
-          description:
-            "Extracts the ten most difficult vocabulary words, phrases, or idioms from a given passage and provides their definitions or translations in multiple languages.",
-          parameters: schema,
-        },
-      ],
-      function_call: {
-        name: "extract_difficult_vocabulary",
-      },
-      temperature: 0.7,
-    });
-
-    // Save to db
-    const resultWordList = JSON.parse(
-      response.choices[0].message.function_call?.arguments as string
-    )?.word_list;
-
     await wordListRef.set({
-      word_list: resultWordList,
+      word_list: wordList.word_list,
       articleId: articleId,
     });
 
     await generateAudioForWord({
-      wordList: resultWordList,
+      wordList: wordList.word_list,
       articleId: articleId,
     });
 
     return NextResponse.json(
       {
         messeges: "success",
-        word_list: resultWordList,
+        word_list: wordList.word_list,
       },
       { status: 200 }
     );
@@ -299,8 +220,7 @@ export async function chatBot(req: ExtendedNextRequest) {
   try {
     const param = await req.json();
     const validatedData = createChatbotSchema.parse(param);
-    const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const { textStream } = await streamText({
+    const { textStream } = streamText({
       model: openai("gpt-4o-mini"),
       messages: [
         {
