@@ -4,7 +4,10 @@ import db from "@/configs/firestore-config";
 import { generateMCQuestion } from "../utils/generators/mc-question-generator";
 import { generateSAQuestion } from "../utils/generators/sa-question-generator";
 import { generateLAQuestion } from "../utils/generators/la-question-generator";
-import { generateWordList } from "../utils/generators/word-list-generator";
+import {
+  generateWordList,
+  GenerateWordListResponse,
+} from "../utils/generators/word-list-generator";
 import { AUDIO_URL, AUDIO_WORDS_URL, IMAGE_URL } from "../constants";
 import uploadToBucket from "@/utils/uploadToBucket";
 import storage from "@/utils/storage";
@@ -17,6 +20,7 @@ import {
   GenerateAudioParams,
   WordListResponse,
 } from "../utils/generators/audio-words-generator";
+import { experimental_generateImage as generateImage } from "ai";
 
 interface ArticleType {
   cefr_level?: string;
@@ -212,20 +216,19 @@ async function validator(articleId: string): Promise<{
     throw new Error(`article ${articleId} not found in Firestore`);
   }
 
-  let wordListData = {} as WordListResponse;
+  let wordListData = {} as GenerateWordListResponse;
+
   if (!wordListDoc.exists) {
     wordListData = await generateWordList({
       passage: articleDoc.data()?.passage,
     });
     const wordListRef = db.collection("word-list").doc(articleId);
     await wordListRef.set({
-      word_list: wordListData,
+      word_list: wordListData.word_list,
       articleId: articleId,
       id: articleId,
       created_at: new Date().toISOString(),
     });
-  } else {
-    wordListData = wordListDoc.data()?.word_list as WordListResponse;
   }
 
   const articleData = articleDoc.data() as Article;
@@ -261,7 +264,7 @@ async function validator(articleId: string): Promise<{
       ),
       validateImage(articleData.image_description!, articleId),
       validateAudio(articleData.passage!, articleId),
-      validateAudioWords({ wordList: wordListData, articleId }),
+      validateAudioWords({ wordList: wordListData.word_list, articleId }),
     ]);
 
     console.log("rating", articleData.average_rating);
@@ -348,18 +351,19 @@ async function validateImage(
 ): Promise<{ id: string; task: string; status: string }> {
   try {
     const generate = async () => {
-      const response = await openai.images.generate({
-        model: "dall-e-3",
+      const { image } = await generateImage({
+        model: openai.image("dall-e-3"),
         n: 1,
         prompt: imageDesc,
         size: "1024x1024",
       });
 
-      const imageResponse = await fetch(response.data[0].url as string);
-      const imageBuffer = await imageResponse.arrayBuffer();
+      const base64 = image.base64;
+
+      const base64Image: Buffer = Buffer.from(base64, "base64");
 
       const localPath = `${process.cwd()}/data/images/${articleId}.png`;
-      fs.writeFileSync(localPath, Buffer.from(imageBuffer));
+      fs.writeFileSync(localPath, base64Image);
 
       await uploadToBucket(localPath, `${IMAGE_URL}/${articleId}.png`);
     };

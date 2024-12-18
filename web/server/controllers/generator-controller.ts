@@ -12,7 +12,7 @@ import { generateSAQuestion } from "../utils/generators/sa-question-generator";
 import { generateLAQuestion } from "../utils/generators/la-question-generator";
 import { generateAudio } from "../utils/generators/audio-generator";
 import { generateImage } from "../utils/generators/image-generator";
-import { calculateLevel } from "@/lib/calculateLevel";
+import { getLevelNumber } from "@/lib/calculateLevel";
 import { generateWordList } from "../utils/generators/word-list-generator";
 import { generateAudioForWord } from "../utils/generators/audio-words-generator";
 
@@ -46,42 +46,85 @@ export async function generateQueue(req: ExtendedNextRequest) {
       userAgent,
     });
 
-    // Generate queue for fiction and nonfiction
-    // Run fiction generation first, then nonfiction
-    const fictionResults = await generateForGenre(ArticleType.FICTION, amount);
-    const nonfictionResults = await generateForGenre(
-      ArticleType.NONFICTION,
-      amount
-    );
+    const [fictionResults, nonfictionResults] = await Promise.all([
+      generateForGenre(ArticleType.FICTION, amount),
+      generateForGenre(ArticleType.NONFICTION, amount),
+    ]);
 
     // Combine results from both genres
-    const combinedResults = fictionResults.concat(nonfictionResults);
+    const combinedResults = [...fictionResults, ...nonfictionResults];
+
+    // Separate and count results in a single pass
+    const { failedResults, successCount } = combinedResults.reduce(
+      (acc, result) => {
+        if (typeof result === "string") {
+          acc.failedResults.push(result);
+        } else {
+          acc.successCount += 1;
+        }
+        return acc;
+      },
+      { failedResults: [], successCount: 0 } as {
+        failedResults: string[];
+        successCount: number;
+      }
+    );
+
+    // Calculate counts and time taken
+    const failedCount = failedResults.length;
+    const timeTakenMinutes = (Date.now() - timeTaken) / (1000 * 60);
+
+    // Log failed results if any
+    if (failedCount > 0) {
+      try {
+        const formattedDate = new Date().toISOString().split(".")[0];
+        await db
+          .collection("error-log")
+          .doc(formattedDate)
+          .set({
+            error: failedResults,
+            created_at: new Date().toISOString(),
+            amount: amount * 12,
+            id: formattedDate,
+          });
+      } catch (error) {
+        console.error("Failed to log errors:", error);
+      }
+    }
+
+    // Generate queue for fiction and nonfiction
+    // Run fiction generation first, then nonfiction
+    // const fictionResults = await generateForGenre(ArticleType.FICTION, amount);
+    // const nonfictionResults = await generateForGenre(
+    //   ArticleType.NONFICTION,
+    //   amount
+    // );
 
     // Count failed results
-    const failedCount = combinedResults.filter(
-      (result) => typeof result === "string"
-    ).length;
-    const successCount = combinedResults.filter(
-      (result) => typeof result !== "string"
-    ).length;
-    const failedReasons = combinedResults.filter(
-      (result) => typeof result === "string"
-    );
+    // const failedCount = combinedResults.filter(
+    //   (result) => typeof result === "string"
+    // ).length;
+    // const successCount = combinedResults.filter(
+    //   (result) => typeof result !== "string"
+    // ).length;
+    // const failedReasons = combinedResults.filter(
+    //   (result) => typeof result === "string"
+    // );
     // calculate taken time
-    const timeTakenMinutes = (Date.now() - timeTaken) / 1000 / 60;
+    //const timeTakenMinutes = (Date.now() - timeTaken) / 1000 / 60;
 
     // Log failed results
-    if (failedCount > 0) {
-      const currentDate = new Date();
-      const formattedDate = currentDate.toISOString().split(".")[0];
-      const errorLogRef = db.collection("error-log").doc(formattedDate);
-      await errorLogRef.set({
-        error: failedReasons,
-        created_at: new Date().toISOString(),
-        amount: amount * 6 * 2,
-        id: formattedDate,
-      });
-    }
+    // if (failedCount > 0) {
+    //   const currentDate = new Date();
+    //   const formattedDate = currentDate.toISOString().split(".")[0];
+    //   const errorLogRef = db.collection("error-log").doc(formattedDate);
+    //   await errorLogRef.set({
+    //     error: failedReasons,
+    //     created_at: new Date().toISOString(),
+    //     amount: amount * 6 * 2,
+    //     id: formattedDate,
+    //   });
+    // }
 
     await sendDiscordWebhook({
       title: "Queue Generation Complete",
@@ -108,7 +151,7 @@ export async function generateQueue(req: ExtendedNextRequest) {
         message: "Queue generation complete",
         total: amount * 6 * 2,
         failedCount,
-        timeTaken: timeTakenMinutes,
+        timeTaken: timeTakenMinutes.toFixed(2),
         results: successCount,
       },
       { status: 200 }
@@ -153,12 +196,13 @@ async function generateForGenre(type: ArticleType, amountPerGenre: number) {
   ];
 
   const results = await Promise.all(
-    generatedTopic.topics.map(async (topic) =>
-      Promise.all(
-        cefrLevels.map((level) =>
-          queue(type, randomGenre.genre, randomGenre.subgenre, topic, level)
+    generatedTopic.topics.map(
+      async (topic) =>
+        await Promise.all(
+          cefrLevels.map((level) =>
+            queue(type, randomGenre.genre, randomGenre.subgenre, topic, level)
+          )
         )
-      )
     )
   );
 
@@ -239,56 +283,24 @@ async function queue(
   try {
     // Generate article and evaluate rating
     // low rating will regenerate article until rating is above 2 or max attempts reached
-    const { article: generatedArticle, rating } = await evaluateArticle(
-      type,
-      genre,
-      subgenre,
-      topic,
-      cefrLevel
-    );
-
-    const mcq = await generateMCQuestion({
-      type,
-      cefrlevel: cefrLevel,
-      passage: generatedArticle.passage,
-      title: generatedArticle.title,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-    });
-    const saq = await generateSAQuestion({
-      type,
-      cefrlevel: cefrLevel,
-      passage: generatedArticle.passage,
-      title: generatedArticle.title,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-    });
-    const laq = await generateLAQuestion({
-      type,
-      cefrlevel: cefrLevel,
-      passage: generatedArticle.passage,
-      title: generatedArticle.title,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-    });
-
-    const wordList = await generateWordList({
-      passage: generatedArticle.passage,
-    });
-
-    const { cefrLevel: calculatedCefrLevel, raLevel } = calculateLevel(
-      generatedArticle.passage
-    );
+    const {
+      article: generatedArticle,
+      rating,
+      cefrlevel,
+      ralevel,
+    } = await evaluateArticle(type, genre, subgenre, topic, cefrLevel);
 
     const ref = db.collection("new-articles").doc();
+    const createdAt = new Date().toISOString();
+
     await ref.set({
       average_rating: rating,
-      cefr_level: calculatedCefrLevel,
-      created_at: new Date().toISOString(),
+      cefr_level: cefrlevel,
+      created_at: createdAt,
       genre,
       image_description: generatedArticle.imageDesc,
       passage: generatedArticle.passage,
-      ra_level: raLevel,
+      ra_level: ralevel,
       read_count: 0,
       subgenre,
       summary: generatedArticle.summary,
@@ -297,60 +309,167 @@ async function queue(
       id: ref.id,
     });
 
-    //update mcq
-    for (let i = 0; i < mcq.questions.length; i++) {
-      await db
-        .collection("new-articles")
-        .doc(ref.id)
-        .collection("mc-questions")
-        .add(mcq.questions[i]);
-    }
+    const [mcq, saq, laq, wordList] = await Promise.all([
+      generateMCQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      }),
+      generateSAQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      }),
+      generateLAQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      }),
+      generateWordList({
+        passage: generatedArticle.passage,
+      }),
+    ]);
 
-    // update saq
-    for (let i = 0; i < saq.questions.length; i++) {
-      await db
-        .collection("new-articles")
-        .doc(ref.id)
-        .collection("sa-questions")
-        .add(saq.questions[i]);
-    }
+    // const mcq = await generateMCQuestion({
+    //   type,
+    //   cefrlevel: cefrLevel,
+    //   passage: generatedArticle.passage,
+    //   title: generatedArticle.title,
+    //   summary: generatedArticle.summary,
+    //   imageDesc: generatedArticle.imageDesc,
+    // });
 
-    // update laq
-    await db
-      .collection("new-articles")
-      .doc(ref.id)
-      .collection("la-questions")
-      .add(laq);
+    // const saq = await generateSAQuestion({
+    //   type,
+    //   cefrlevel: cefrLevel,
+    //   passage: generatedArticle.passage,
+    //   title: generatedArticle.title,
+    //   summary: generatedArticle.summary,
+    //   imageDesc: generatedArticle.imageDesc,
+    // });
 
-    //update wordlist
-    const wordListRef = db.collection(`word-list`).doc(ref.id);
-    await wordListRef.set({
-      word_list: wordList,
-      articleId: ref.id,
-      id: ref.id,
-      created_at: new Date().toISOString(),
-    });
+    // const laq = await generateLAQuestion({
+    //   type,
+    //   cefrlevel: cefrLevel,
+    //   passage: generatedArticle.passage,
+    //   title: generatedArticle.title,
+    //   summary: generatedArticle.summary,
+    //   imageDesc: generatedArticle.imageDesc,
+    // });
 
-    await generateAudio({
-      passage: generatedArticle.passage,
-      articleId: ref.id,
-    });
+    // const wordList = await generateWordList({
+    //   passage: generatedArticle.passage,
+    // });
 
-    await generateImage({
-      imageDesc: generatedArticle.imageDesc,
-      articleId: ref.id,
-    });
+    await Promise.all([
+      addQuestionsToCollection(ref.id, "mc-questions", mcq.questions),
+      addQuestionsToCollection(ref.id, "sa-questions", saq.questions),
+      addQuestionsToCollection(ref.id, "la-questions", [laq]),
+      addWordList(ref.id, wordList.word_list, createdAt),
+    ]);
 
-    await generateAudioForWord({
-      wordList: wordList,
-      articleId: ref.id,
-    });
+    // //update mcq
+    // for (let i = 0; i < mcq.questions.length; i++) {
+    //   await db
+    //     .collection("new-articles")
+    //     .doc(ref.id)
+    //     .collection("mc-questions")
+    //     .add(mcq.questions[i]);
+    // }
+
+    // // update saq
+    // for (let i = 0; i < saq.questions.length; i++) {
+    //   await db
+    //     .collection("new-articles")
+    //     .doc(ref.id)
+    //     .collection("sa-questions")
+    //     .add(saq.questions[i]);
+    // }
+
+    // // update laq
+    // await db
+    //   .collection("new-articles")
+    //   .doc(ref.id)
+    //   .collection("la-questions")
+    //   .add(laq);
+
+    // //update wordlist
+    // const wordListRef = db.collection(`word-list`).doc(ref.id);
+    // await wordListRef.set({
+    //   word_list: wordList,
+    //   articleId: ref.id,
+    //   id: ref.id,
+    //   created_at: new Date().toISOString(),
+    // });
+
+    await Promise.all([
+      generateAudio({ passage: generatedArticle.passage, articleId: ref.id }),
+      generateImage({
+        imageDesc: generatedArticle.imageDesc,
+        articleId: ref.id,
+      }),
+      generateAudioForWord({ wordList: wordList.word_list, articleId: ref.id }),
+    ]);
+
+    // await generateAudio({
+    //   passage: generatedArticle.passage,
+    //   articleId: ref.id,
+    // });
+
+    // await generateImage({
+    //   imageDesc: generatedArticle.imageDesc,
+    //   articleId: ref.id,
+    // });
+
+    // await generateAudioForWord({
+    //   wordList: wordList,
+    //   articleId: ref.id,
+    // });
   } catch (error) {
     console.log("error => ", error);
     return `${cefrLevel} ${
       type === ArticleType.FICTION ? "F" : "N"
     } - ${error}`;
   }
+}
+
+// Helper function to add questions to a specific subcollection
+async function addQuestionsToCollection(
+  articleId: string,
+  collectionName: string,
+  questions: any[]
+) {
+  const collectionRef = db
+    .collection("new-articles")
+    .doc(articleId)
+    .collection(collectionName);
+
+  const promises = questions.map((question) => collectionRef.add(question));
+  await Promise.all(promises);
+}
+
+// Helper function to store word list
+async function addWordList(
+  articleId: string,
+  wordList: any[],
+  createdAt: string
+) {
+  const wordListRef = db.collection("word-list").doc(articleId);
+  await wordListRef.set({
+    word_list: wordList,
+    articleId,
+    id: articleId,
+    created_at: createdAt,
+  });
 }
 
 async function evaluateArticle(
@@ -361,12 +480,16 @@ async function evaluateArticle(
   cefrLevel: ArticleBaseCefrLevel,
   maxAttempts: number = 2
 ) {
-  try {
-    let attempts = 0;
-    let generatedArticle;
+  let attempts = 0;
 
-    while (attempts < maxAttempts) {
-      generatedArticle = await generateArticle({
+  // Helper to log attempts
+  const logAttempt = (message: string) => {
+    console.log(`Attempt (${attempts + 1}/${maxAttempts}): ${message}`);
+  };
+
+  while (attempts < maxAttempts) {
+    try {
+      const generatedArticle = await generateArticle({
         type,
         genre,
         subgenre,
@@ -375,30 +498,33 @@ async function evaluateArticle(
       });
 
       const evaluatedRating = await evaluateRating({
-        type,
-        genre,
-        subgenre,
-        cefrLevel,
-        title: generatedArticle.title,
-        summary: generatedArticle.summary,
         passage: generatedArticle.passage,
-        image_description: generatedArticle.imageDesc,
+        cefrLevel,
       });
-      console.log(`${cefrLevel} evaluated rating: ${evaluatedRating.rating}`);
+
+      console.log(
+        `CEFR ${cefrLevel}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${evaluatedRating.cefr_level}`
+      );
 
       if (evaluatedRating.rating > 2) {
-        return { article: generatedArticle, rating: evaluatedRating.rating };
+        return {
+          article: generatedArticle,
+          rating: evaluatedRating.rating,
+          cefrlevel: evaluatedRating.cefr_level,
+          ralevel: getLevelNumber(evaluatedRating.cefr_level),
+        };
       }
 
-      attempts++;
-      console.log(`Failed to evaluate rating: ${evaluatedRating.rating}`);
-      console.log(
-        `Regenerating article... Attempt (${attempts}/${maxAttempts})`
-      );
+      // Log failure and increment attempts
+      logAttempt(`Rating failed (${evaluatedRating.rating}), regenerating...`);
+    } catch (error) {
+      console.error(`Error during article generation/evaluation: ${error}`);
     }
-
-    throw `max attempts reached (low rating)`;
-  } catch (error) {
-    throw `failed to evaluate article: ${error}`;
+    attempts++;
   }
+
+  // All attempts failed
+  throw new Error(
+    `Failed to generate a suitable article after ${maxAttempts} attempts.`
+  );
 }

@@ -2,7 +2,7 @@ import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 import { z } from "zod";
 import { readJsonFile } from "../read-json";
 import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
+import openai from "@/utils/openai";
 import path from "path";
 
 export interface GenerateQuestionParams<T> {

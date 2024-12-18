@@ -1,8 +1,8 @@
 import openai from "@/utils/openai";
+import { experimental_generateImage as generateImages } from "ai";
 import uploadToBucket from "@/utils/uploadToBucket";
 import fs from "fs";
 import { IMAGE_URL } from "../../constants";
-import { buffer } from "stream/consumers";
 
 interface GenerateImageParams {
   imageDesc: string;
@@ -13,18 +13,19 @@ export async function generateImage(
   params: GenerateImageParams
 ): Promise<void> {
   try {
-    const response = await openai.images.generate({
-      model: "dall-e-3",
+    const { image } = await generateImages({
+      model: openai.image("dall-e-3"),
       n: 1,
       prompt: params.imageDesc,
       size: "1024x1024",
     });
 
-    const imageResponse = await fetch(response.data[0].url as string);
-    const imageBuffer = await imageResponse.arrayBuffer();
+    const base64 = image.base64;
+
+    const base64Image: Buffer = Buffer.from(base64, "base64");
 
     const localPath = `${process.cwd()}/data/images/${params.articleId}.png`;
-    fs.writeFileSync(localPath, Buffer.from(imageBuffer));
+    fs.writeFileSync(localPath, base64Image);
 
     await uploadToBucket(localPath, `${IMAGE_URL}/${params.articleId}.png`);
   } catch (error) {
