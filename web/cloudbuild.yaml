@@ -9,7 +9,7 @@ steps:
         "--build-arg",
         "GOOGLE_CLIENT_SECRET=$_GOOGLE_CLIENT_SECRET",
         "--build-arg",
-        "GOOGLE_CLIENT_SECRET=$_GOOGLE_GENERATIVE_AI_API_KEY",
+        "GOOGLE_GENERATIVE_AI_API_KEY=$_GOOGLE_GENERATIVE_AI_API_KEY",
         "--build-arg",
         "NEXT_PUBLIC_URL=$_NEXT_PUBLIC_URL",
         "--build-arg",
