@@ -29,12 +29,12 @@ function getCefrLevel(textStandart: number): string {
   return levels[Math.min(Math.max(0, textStandart), 18)];
 }
 
-// function calculateLevel(text: string): IReadability {
-//   const textStandard = readability.textStandard(text, true);
-//   const raLevel = (textStandard as number) + 1;
-//   const cefrLevel = getCefrLevel(textStandard as number);
-//   return { raLevel, cefrLevel };
-// }
+function calculateLevel(text: string): IReadability {
+  const textStandard = readability.textStandard(text, true);
+  const raLevel = (textStandard as number) + 1;
+  const cefrLevel = getCefrLevel(textStandard as number);
+  return { raLevel, cefrLevel };
+}
 
 function getLevelNumber(level: string): number | null {
   const levels = [
@@ -62,6 +62,6 @@ function getLevelNumber(level: string): number | null {
   return index !== -1 ? index + 1 : null; // Return null if level is not found
 }
 
-export { getLevelNumber };
+//export { getLevelNumber };
 
-//export { calculateLevel };
+export { calculateLevel };

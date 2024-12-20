@@ -3,6 +3,7 @@ import { z } from "zod";
 import { readJsonFile } from "../read-json";
 import { generateObject } from "ai";
 import openai from "@/utils/openai";
+import google from "@/utils/google";
 import path from "path";
 
 export interface GenerateQuestionParams<T> {
@@ -101,7 +102,7 @@ export async function generateQuestion<T>(
     // console.log(`user prompt: ${userPrompt}`);
     // console.log(`system prompt: ${system_prompt}`);
     const { object: question } = await generateObject({
-      model: openai(params.modelId),
+      model: google("gemini-2.0-flash-exp"),
       schema: params.schema,
       system: system_prompt,
       prompt: userPrompt,

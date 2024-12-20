@@ -21,7 +21,7 @@ export interface EvaluateRatingParams {
 
 export interface EvaluateRatingResponse {
   rating: number;
-  cefr_level: string;
+  cefr_level?: string;
 }
 
 interface CefrLevelEvaluationPromptType {
@@ -35,7 +35,7 @@ export async function evaluateRating(
   const dataFilePath = path.join(
     process.cwd(),
     "data",
-    "new-level-evaluation-prompts.json"
+    "cefr-level-evaluation-prompts.json"
   );
 
   const systemPrompt = fs.readFileSync(
@@ -67,14 +67,14 @@ export async function evaluateRating(
       model: google("gemini-2.0-flash-exp"),
       schema: z.object({
         rating: z.number(),
-        cefr_level: z
-          .string()
-          .describe(
-            "The 'cefr_level' value should be a string representing the CEFR level (e.g., 'B1+', 'C1-')"
-          ),
+        // cefr_level: z
+        //   .string()
+        //   .describe(
+        //     "The 'cefr_level' value should be a string representing the CEFR level (e.g., 'B1+', 'C1-')"
+        //   ),
       }),
-      //system: prompt.find((p) => p.level === params.cefrLevel)?.systemPrompt,
-      system: systemPrompt,
+      system: prompt.find((p) => p.level === params.cefrLevel)?.systemPrompt,
+      //system: systemPrompt,
       prompt: JSON.stringify({
         passage: params.passage,
       }),
@@ -82,7 +82,6 @@ export async function evaluateRating(
 
     return {
       rating: evaluated.rating,
-      cefr_level: evaluated.cefr_level,
     };
   } catch (error) {
     throw `failed to evaluate rating`;
