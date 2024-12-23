@@ -1,4 +1,4 @@
-import openai from "@/utils/openai";
+import { openai } from "@/utils/openai";
 import { experimental_generateImage as generateImages } from "ai";
 import uploadToBucket from "@/utils/uploadToBucket";
 import fs from "fs";

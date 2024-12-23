@@ -9,7 +9,7 @@ import { AUDIO_WORDS_URL } from "@/server/constants";
 import { generateAudioForWord } from "@/server/utils/generators/audio-words-generator";
 import { ExtendedNextRequest } from "./auth-controller";
 import { promptChatBot } from "@/data/prompt-chatbot";
-import openai from "@/utils/openai";
+import { openai, openaiModel } from "@/utils/openai";
 import { generateWordList } from "../utils/generators/word-list-generator";
 
 interface RequestContext {
@@ -111,7 +111,7 @@ export async function getFeedbackWritter(res: object) {
     `;
 
     const { object } = await generateObject({
-      model: openai("gpt-4o"),
+      model: openai(openaiModel),
       schema: outputSchema,
       system: systemPrompt,
       prompt,
@@ -221,7 +221,7 @@ export async function chatBot(req: ExtendedNextRequest) {
     const param = await req.json();
     const validatedData = createChatbotSchema.parse(param);
     const { textStream } = streamText({
-      model: openai("gpt-4o-mini"),
+      model: openai(openaiModel),
       messages: [
         {
           role: "system",

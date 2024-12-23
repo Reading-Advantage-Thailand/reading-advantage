@@ -3,8 +3,8 @@ import path from "path";
 import { readJsonFile } from "../read-json";
 import { generateObject } from "ai";
 import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
-import openai from "@/utils/openai";
-import google from "@/utils/google";
+import { openai, openaiModel } from "@/utils/openai";
+import { google, googleModel } from "@/utils/google";
 
 export interface GenerateArticleParams {
   type: ArticleType;
@@ -74,10 +74,11 @@ export async function generateArticle(
   // generate article
   try {
     console.log(
-      `${params.cefrLevel} generating article model ID: gemini-2.0-flash-exp type: ${params.type}`
+      `${params.cefrLevel} generating article model ID: ${googleModel} type: ${params.type}`
     );
     const { object: article } = await generateObject({
-      model: google("gemini-2.0-flash-exp"),
+      model: google(googleModel),
+      //model: openai(openaiModel),
       schema: schema,
       system: levelConfig.systemPrompt,
       prompt: userPrompt,
