@@ -322,6 +322,10 @@ async function evaluateArticle(
       });
 
       const evaluatedRating = await evaluateRating({
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        type,
+        image_description: generatedArticle.imageDesc,
         passage: generatedArticle.passage,
         cefrLevel,
       });

@@ -4,7 +4,7 @@ import { Translate } from "@google-cloud/translate/build/src/v2";
 import { generateObject } from "ai";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import openai from "@/utils/openai";
+import { openai, openaiModel } from "@/utils/openai";
 
 interface RequestContext {
   params: {
@@ -212,7 +212,7 @@ async function translatePassageWithGPT(sentences: string[]): Promise<string[]> {
 
   const generate = async () => {
     const { object } = await generateObject({
-      model: openai("gpt-4o-mini"),
+      model: openai(openaiModel),
       schema: schema,
       prompt: prompt + "\n\n" + JSON.stringify(mapJSON),
     });

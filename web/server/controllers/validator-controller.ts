@@ -12,7 +12,7 @@ import { AUDIO_URL, AUDIO_WORDS_URL, IMAGE_URL } from "../constants";
 import uploadToBucket from "@/utils/uploadToBucket";
 import storage from "@/utils/storage";
 import fs from "fs";
-import openai from "@/utils/openai";
+import { openai } from "@/utils/openai";
 import { generateAudio } from "../utils/generators/audio-generator";
 import { Article } from "../models/article";
 import {

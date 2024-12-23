@@ -1,11 +1,11 @@
 import path from "path";
 import { readJsonFile } from "../read-json";
-import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { generateObject } from "ai";
 import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 import { ArticleCefrLevel } from "../../models/article";
-import google from "@/utils/google";
+import { openai, openaiModel } from "@/utils/openai";
+import { google, googleModel } from "@/utils/google";
 import fs from "fs";
 
 export interface EvaluateRatingParams {
@@ -48,7 +48,7 @@ export async function evaluateRating(
 
   try {
     // const { object: evaluated } = await generateObject({
-    //   model: openai("gpt-4o-mini"),
+    //   model: openai(openaiModel),
     //   schema: z.object({
     //     rating: z.number(),
     //   }),
@@ -64,7 +64,7 @@ export async function evaluateRating(
     // });
 
     const { object: evaluated } = await generateObject({
-      model: google("gemini-2.0-flash-exp"),
+      model: google(googleModel),
       schema: z.object({
         rating: z.number(),
         // cefr_level: z
@@ -76,7 +76,12 @@ export async function evaluateRating(
       system: prompt.find((p) => p.level === params.cefrLevel)?.systemPrompt,
       //system: systemPrompt,
       prompt: JSON.stringify({
+        // title: params.title,
+        // summary: params.summary,
+        // type: params.type,
+        // subgenre: params.subgenre,
         passage: params.passage,
+        //image: params.image_description,
       }),
     });
 

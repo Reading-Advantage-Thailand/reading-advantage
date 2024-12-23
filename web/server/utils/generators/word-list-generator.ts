@@ -1,7 +1,7 @@
 import { WordListResponse } from "./audio-words-generator";
 import { generateObject } from "ai";
-import openai from "@/utils/openai";
-import google from "@/utils/google";
+import { openai, openaiModel } from "@/utils/openai";
+import { google, googleModel } from "@/utils/google";
 import { z } from "zod";
 
 interface GenerateWordListParams {
@@ -98,7 +98,7 @@ export async function generateWordList(
       .required();
 
     const { object: response } = await generateObject({
-      model: google("gemini-2.0-flash-exp"),
+      model: google(googleModel),
       schema,
       system: "You are an article database assisstant.",
       prompt: userPrompt,

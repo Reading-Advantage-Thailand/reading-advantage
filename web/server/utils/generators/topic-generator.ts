@@ -1,7 +1,8 @@
 import { generateObject, generateText } from "ai";
 import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 import { z } from "zod";
-import openai from "@/utils/openai";
+import { openai, openaiModel } from "@/utils/openai";
+import { google, googleModel } from "@/utils/google";
 
 interface GenerateTopicParams {
   type: ArticleType;
@@ -26,7 +27,8 @@ export async function generateTopic(
   };
   try {
     const response = await generateObject({
-      model: openai("gpt-4o-mini"),
+      //model: openai(openaiModel),
+      model: google(googleModel),
       schema: z.object({
         topics: z
           .array(z.string())
