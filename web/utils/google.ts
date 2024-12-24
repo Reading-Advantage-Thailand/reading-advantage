@@ -16,6 +16,6 @@ const google = createGoogleGenerativeAI({
 //   },
 // });
 
-const googleModel = "gemini-1.5-flash-latest";
+const googleModel = "gemini-2.0-flash-exp";
 
 export { google, googleModel };
