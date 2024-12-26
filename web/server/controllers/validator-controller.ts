@@ -12,7 +12,6 @@ import { AUDIO_URL, AUDIO_WORDS_URL, IMAGE_URL } from "../constants";
 import uploadToBucket from "@/utils/uploadToBucket";
 import storage from "@/utils/storage";
 import fs from "fs";
-import { openai } from "@/utils/openai";
 import { generateAudio } from "../utils/generators/audio-generator";
 import { Article } from "../models/article";
 import {
@@ -21,6 +20,8 @@ import {
   WordListResponse,
 } from "../utils/generators/audio-words-generator";
 import { experimental_generateImage as generateImage } from "ai";
+import { openai, openaiImages } from "@/utils/openai";
+import { google, googleImages } from "@/utils/google";
 
 interface ArticleType {
   cefr_level?: string;
@@ -352,18 +353,26 @@ async function validateImage(
   try {
     const generate = async () => {
       const { image } = await generateImage({
-        model: openai.image("dall-e-3"),
+        model: openai.image(openaiImages),
         n: 1,
         prompt: imageDesc,
         size: "1024x1024",
       });
+
+      // const { image } = await generateImage({
+      //   model: google.image(googleImages),
+      //   prompt: imageDesc,
+      //   providerOptions: {
+      //     vertex: { aspectRatio: "1:1", sampleCount: 1 },
+      //   },
+      // });
 
       const base64 = image.base64;
 
       const base64Image: Buffer = Buffer.from(base64, "base64");
 
       const localPath = `${process.cwd()}/data/images/${articleId}.png`;
-      fs.writeFileSync(localPath, base64Image);
+      fs.writeFileSync(localPath, base64Image as Uint8Array);
 
       await uploadToBucket(localPath, `${IMAGE_URL}/${articleId}.png`);
     };
