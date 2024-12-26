@@ -34,11 +34,11 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/api/:path*",
+        source: "/:path*",
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: "https://app.reading-advantage.com",
+            value: "https://app.reading-advantage.com/",
           },
           {
             key: "Access-Control-Allow-Methods",

@@ -83,6 +83,8 @@ export async function evaluateRating(
         passage: params.passage,
         //image: params.image_description,
       }),
+      seed: Math.floor(Math.random() * 1000),
+      temperature: 1,
     });
 
     return {

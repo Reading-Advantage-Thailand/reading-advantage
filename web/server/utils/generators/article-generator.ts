@@ -76,19 +76,18 @@ export async function generateArticle(
     console.log(
       `${params.cefrLevel} generating article model ID: ${googleModel} type: ${params.type}`
     );
+
     const { object: article } = await generateObject({
       model: google(googleModel),
       //model: openai(openaiModel),
       schema: schema,
       system: levelConfig.systemPrompt,
       prompt: userPrompt,
+      seed: Math.floor(Math.random() * 1000),
+      temperature: 1,
     });
-    return {
-      passage: article.passage,
-      title: article.title,
-      summary: article.summary,
-      imageDesc: article.imageDesc,
-    };
+
+    return article;
   } catch (error) {
     throw `failed to generate article: ${error}`;
   }

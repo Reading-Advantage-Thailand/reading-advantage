@@ -6,4 +6,6 @@ const openai = createOpenAI({
 
 const openaiModel = "gpt-4o-mini";
 
-export { openai, openaiModel };
+const openaiImages = "dall-e-3";
+
+export { openai, openaiModel, openaiImages };

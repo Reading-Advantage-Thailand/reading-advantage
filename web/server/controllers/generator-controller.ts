@@ -5,7 +5,10 @@ import { sendDiscordWebhook } from "../utils/send-discord-webhook";
 import { randomSelectGenre } from "../utils/generators/random-select-genre";
 import { generateTopic } from "../utils/generators/topic-generator";
 import { ArticleBaseCefrLevel, ArticleType } from "../models/enum";
-import { generateArticle } from "../utils/generators/article-generator";
+import {
+  generateArticle,
+  GenerateArticleResponse,
+} from "../utils/generators/article-generator";
 import { evaluateRating } from "../utils/generators/evaluate-rating-generator";
 import { generateMCQuestion } from "../utils/generators/mc-question-generator";
 import { generateSAQuestion } from "../utils/generators/sa-question-generator";
@@ -29,7 +32,7 @@ export async function generateQueue(req: ExtendedNextRequest) {
     const reqUrl = req.url;
     const amount = parseInt(amountPerGenre);
 
-    //Send a message to Discord that the generation has started
+    // Send a message to Discord that the generation has started
     await sendDiscordWebhook({
       title: "Generate Queue",
       embeds: [
@@ -433,12 +436,10 @@ async function evaluateArticle(
   maxAttempts: number = 2
 ) {
   let attempts = 0;
-
   // Helper to log attempts
   const logAttempt = (message: string) => {
     console.log(`Attempt (${attempts + 1}/${maxAttempts}): ${message}`);
   };
-
   while (attempts < maxAttempts) {
     try {
       const generatedArticle = await generateArticle({
@@ -448,7 +449,6 @@ async function evaluateArticle(
         topic,
         cefrLevel,
       });
-
       const evaluatedRating = await evaluateRating({
         title: generatedArticle.title,
         summary: generatedArticle.summary,
@@ -457,7 +457,6 @@ async function evaluateArticle(
         passage: generatedArticle.passage,
         cefrLevel,
       });
-
       const { raLevel, cefrLevel: cefr_level } = calculateLevel(
         generatedArticle.passage
       );
@@ -465,7 +464,6 @@ async function evaluateArticle(
       console.log(
         `CEFR ${cefrLevel}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${cefr_level}`
       );
-
       if (evaluatedRating.rating > 2) {
         return {
           article: generatedArticle,
@@ -474,7 +472,6 @@ async function evaluateArticle(
           raLevel,
         };
       }
-
       // Log failure and increment attempts
       logAttempt(`Rating failed (${evaluatedRating.rating}), regenerating...`);
     } catch (error) {
@@ -482,7 +479,6 @@ async function evaluateArticle(
     }
     attempts++;
   }
-
   // All attempts failed
   throw new Error(
     `Failed to generate a suitable article after ${maxAttempts} attempts.`
