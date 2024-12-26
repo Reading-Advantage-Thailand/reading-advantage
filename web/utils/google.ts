@@ -6,7 +6,7 @@ import { createVertex } from "@ai-sdk/google-vertex";
 // });
 
 const google = createVertex({
-  project: process.env.GOOGLE_PROJECT_ID,
+  project: process.env.FIREBASE_PROJECT_ID,
   location: "us-central1",
   googleAuthOptions: {
     credentials: {
