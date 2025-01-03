@@ -91,8 +91,10 @@ export default async function LicenseUsageChart() {
                         />
 
                         <div className="text-center text-2xl font-bold mt-2 sm:text-3xl md:text-4xl sm:mt-4">
-                          {Math.round(license.used_licenses * 100) /
-                            license.total_licenses}
+                          {(
+                            Math.round(license.used_licenses * 100) /
+                            license.total_licenses
+                          ).toFixed(2)}
                           %
                         </div>
 

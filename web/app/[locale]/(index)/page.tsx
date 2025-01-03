@@ -38,6 +38,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getScopedI18n } from "@/locales/server";
 import { getCurrentUser } from "@/lib/session";
 import StartTour from "@/components/tour/StartTour";
+import { buttonVariants } from "@/components/ui/button";
 
 type Props = {};
 

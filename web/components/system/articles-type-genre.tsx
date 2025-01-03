@@ -1,18 +1,20 @@
-"use client"
-import * as React from "react"
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
+"use client";
+import * as React from "react";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
 
 const chartData = [
   { genre: "Action and Adventure", fiction: 222 },
@@ -31,21 +33,23 @@ const chartData = [
   { genre: "Business", nonFiction: 340 },
   { genre: "Business and Economics", nonFiction: 180 },
   { genre: "Career Guides", nonFiction: 320 },
-]
+];
 
-const fictionData = chartData.filter(item => item.fiction !== undefined)
-const nonFictionData = chartData.filter(item => item.nonFiction !== undefined)
+const fictionData = chartData.filter((item) => item.fiction !== undefined);
+const nonFictionData = chartData.filter(
+  (item) => item.nonFiction !== undefined
+);
 
 const chartConfig = {
   fiction: {
     label: "Fiction",
-    color: "hsl(221.2 83.2% 53.3%)",
+    color: "hsl(var(--primary))",
   },
   nonFiction: {
     label: "Non Fiction",
-    color: "hsl(212 95% 68%)",
+    color: "hsl(var(--primary))",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 type GenreChartProps = {
   data: any;
@@ -54,10 +58,7 @@ type GenreChartProps = {
 };
 
 const GenreChart = ({ data, dataKey, config }: GenreChartProps) => (
-  <ChartContainer
-    config={config}
-    className="aspect-auto h-[250px] w-full"
-  >
+  <ChartContainer config={config} className="aspect-auto h-[250px] w-full">
     <BarChart
       layout="vertical"
       data={data}
@@ -71,10 +72,7 @@ const GenreChart = ({ data, dataKey, config }: GenreChartProps) => (
       <YAxis dataKey="genre" type="category" width={90} />
       <ChartTooltip
         content={
-          <ChartTooltipContent
-            className="w-[150px]"
-            nameKey={dataKey}
-          />
+          <ChartTooltipContent className="w-[150px]" nameKey={dataKey} />
         }
       />
       <Bar dataKey={dataKey} fill={`var(--color-${dataKey})`}>
@@ -88,24 +86,29 @@ const GenreChart = ({ data, dataKey, config }: GenreChartProps) => (
       </Bar>
     </BarChart>
   </ChartContainer>
-)
+);
 
 export default function ArticlesByTypeAndGenreChart() {
   const total = React.useMemo(
     () => ({
       fiction: fictionData.reduce((acc, curr) => acc + curr.fiction, 0),
-      nonFiction: nonFictionData.reduce((acc, curr) => acc + curr.nonFiction, 0),
+      nonFiction: nonFictionData.reduce(
+        (acc, curr) => acc + curr.nonFiction,
+        0
+      ),
     }),
     []
-  )
+  );
 
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">Articles by Type and Genre</CardTitle>
+        <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
+          Articles by Type and Genre
+        </CardTitle>
         <div className="flex">
           {["fiction", "nonFiction"].map((key) => {
-            const chart = key as keyof typeof chartConfig
+            const chart = key as keyof typeof chartConfig;
             return (
               <div
                 key={chart}
@@ -118,16 +121,24 @@ export default function ArticlesByTypeAndGenreChart() {
                   {total[key as keyof typeof total].toLocaleString()}
                 </span>
               </div>
-            )
+            );
           })}
         </div>
       </CardHeader>
       <CardContent className="">
         <div className="flex">
-          <GenreChart data={fictionData} dataKey="fiction" config={chartConfig} />
-          <GenreChart data={nonFictionData} dataKey="nonFiction" config={chartConfig} />
+          <GenreChart
+            data={fictionData}
+            dataKey="fiction"
+            config={chartConfig}
+          />
+          <GenreChart
+            data={nonFictionData}
+            dataKey="nonFiction"
+            config={chartConfig}
+          />
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,8 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { ArticleType } from "@/types";
 import Tokenizer from "sentence-tokenizer";
-import { UserActivityLog } from "@/components/models/user-activity-log-model";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

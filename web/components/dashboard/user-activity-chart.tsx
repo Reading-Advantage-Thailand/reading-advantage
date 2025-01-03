@@ -15,6 +15,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import { UserActivityLog } from "../models/user-activity-log-model";
@@ -113,6 +119,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 interface UserActiviryChartProps {
   data: UserActivityLog[];
 }
+
+const chartConfig = {
+  xp: {
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
+
 export function UserActivityChart({ data }: UserActiviryChartProps) {
   const { resolvedTheme } = useTheme();
 
@@ -257,7 +270,38 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
           <CardTitle>{t("xpearned")}</CardTitle>
         </CardHeader>
         <CardContent className="pl-2">
-          <ResponsiveContainer width="100%" height={350}>
+          <ChartContainer config={chartConfig}>
+            <LineChart
+              accessibilityLayer
+              data={formattedData}
+              margin={{
+                left: 12,
+                right: 12,
+              }}
+            >
+              <CartesianGrid vertical={true} />
+              <XAxis
+                dataKey="day"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => value.slice(0, 3)}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideIndicator />}
+              />
+              <Line
+                dataKey="xpEarned"
+                name="XP"
+                type="step"
+                stroke="var(--color-xp)"
+                strokeWidth={3}
+                dot={false}
+              />
+            </LineChart>
+          </ChartContainer>
+          {/* <ResponsiveContainer width="100%" height={350}>
             <LineChart data={formattedData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
@@ -293,7 +337,7 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
                 />
               )}
             </LineChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer> */}
         </CardContent>
       </Card>
     </>

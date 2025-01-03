@@ -15,6 +15,9 @@ import { LocaleProvider } from "@/components/providers/locale-provider";
 import { Onborda, OnbordaProvider } from "onborda";
 import { steps } from "@/lib/steps";
 import CustomCard from "@/components/tour/CustomCard";
+import { ThemeWrapper } from "@/components/theme-warpper";
+
+import "@/styles/themes.css";
 
 const cabinSketch = localFont({
   src: "../../assets/fonts/CabinSketch-Regular.ttf",
@@ -102,7 +105,7 @@ export default async function RootLayout({
                   cardComponent={CustomCard}
                   shadowOpacity="0.8"
                 >
-                  {children}
+                  <ThemeWrapper>{children}</ThemeWrapper>
                 </Onborda>
               </OnbordaProvider>
             </LocaleProvider>

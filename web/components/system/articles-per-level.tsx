@@ -36,7 +36,7 @@ interface ArticlesPerLevelChartProps {
 const chartConfig = {
   articles: {
     label: "Articles",
-    color: "#1D4ED8",
+    color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
 
