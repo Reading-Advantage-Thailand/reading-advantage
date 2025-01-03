@@ -15,6 +15,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import { UserActivityLog } from "../models/user-activity-log-model";
@@ -118,6 +124,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 interface UserActiviryChartProps {
   data: UserActivityLog[];
 }
+
+const chartConfig = {
+  xpoverall: {
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
+
 export function UserXpOverAllChart({ data }: UserActiviryChartProps) {
   const { resolvedTheme } = useTheme();
   // const [calendarValue, setCalendarValue] = useState<DateValueType>({
@@ -141,7 +154,38 @@ export function UserXpOverAllChart({ data }: UserActiviryChartProps) {
           <CardDescription>{cardDescriptionText}</CardDescription>
         </CardHeader>
         <CardContent className="pl-16">
-          <ResponsiveContainer width="100%" height={350}>
+          <ChartContainer config={chartConfig}>
+            <LineChart
+              accessibilityLayer
+              data={formattedData}
+              margin={{
+                left: 12,
+                right: 12,
+              }}
+            >
+              <CartesianGrid vertical={true} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => value.slice(0, 3)}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideIndicator />}
+              />
+              <Line
+                dataKey="xpoverall"
+                name="XP"
+                type="linear"
+                stroke="var(--color-xpoverall)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ChartContainer>
+          {/* <ResponsiveContainer width="100%" height={350}>
             <LineChart
               accessibilityLayer
               data={formattedData}
@@ -166,7 +210,7 @@ export function UserXpOverAllChart({ data }: UserActiviryChartProps) {
                 <Line dataKey="xpoverall" stroke="#009688" strokeWidth={3} />
               )}
             </LineChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer> */}
         </CardContent>
       </Card>
     </>

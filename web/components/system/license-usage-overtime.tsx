@@ -109,7 +109,7 @@ export default function LicenseUsageOverTimeChart() {
   //   { date: "2024-06-29", desktop: 103, mobile: 160 },
   //   { date: "2024-06-30", desktop: 446, mobile: 400 },
   // ]
-  
+
   // const chartConfig = {
   //   views: {
   //     label: "Page Views",
@@ -144,15 +144,14 @@ export default function LicenseUsageOverTimeChart() {
     { month: "April", desktop: 73 },
     { month: "May", desktop: 209 },
     { month: "June", desktop: 214 },
-  ]
+  ];
   const chartConfig = {
     desktop: {
       label: "Desktop",
       // color: "hsl(var(--chart-1))",
-      color: "hsl(221.2 83.2% 53.3%)",
+      color: "hsl(var(--primary))",
     },
-  } satisfies ChartConfig
-  
+  } satisfies ChartConfig;
 
   // return (
   //   <>
@@ -226,11 +225,16 @@ export default function LicenseUsageOverTimeChart() {
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">License Usage Over Time</CardTitle>
+        <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
+          License Usage Over Time
+        </CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
-        <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[250px] w-full"
+        >
           <LineChart
             accessibilityLayer
             data={chartData}
@@ -262,5 +266,5 @@ export default function LicenseUsageOverTimeChart() {
         </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

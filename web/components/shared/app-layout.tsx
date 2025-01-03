@@ -10,6 +10,7 @@ import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle";
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher";
 import Leaderboard from "@/components/teacher/leaderboard";
 import { headers } from "next/headers";
+import { ThemeCustomizer } from "../theme-customizer";
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -67,6 +68,7 @@ export default async function AppLayout({
           )}
           <div className="flex space-x-2">
             <LocaleSwitcher />
+            <ThemeCustomizer />
             <ThemeSwitcher />
             <UserAccountNav user={user} />
           </div>

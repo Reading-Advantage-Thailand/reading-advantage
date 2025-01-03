@@ -29,14 +29,14 @@ import { UserActivityLog } from "../models/user-activity-log-model";
 import { useScopedI18n } from "@/locales/client";
 
 const chartConfig = {
-  // inProgress: {
-  //   label: "inProgress",
-  //   color: "hsl(var(--chart-1))",
-  // },
-  // Completed: {
-  //   label: "Completed",
-  //   color: "hsl(var(--chart-2))",
-  // },
+  inProgress: {
+    label: "inProgress",
+    color: "hsl(var(--primary))",
+  },
+  Completed: {
+    label: "Completed",
+    color: "hsl(var(--chart-1))",
+  },
 } satisfies ChartConfig;
 
 interface UserActiviryChartProps {
@@ -126,7 +126,19 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
                 />
               }
             />
-            {resolvedTheme === "dark" ? (
+            <Bar
+              dataKey="inProgressRead"
+              fill="var(--color-inProgress)"
+              name={t("inProgress")}
+              radius={8}
+            />
+            <Bar
+              dataKey="completedRead"
+              fill="var(--color-Completed)"
+              name={t("completed")}
+              radius={8}
+            />
+            {/* {resolvedTheme === "dark" ? (
               <>
                 <Bar dataKey="inProgressRead" fill="#fafafa" radius={8} />
                 <Bar dataKey="completedRead" fill="#009688" radius={8} />
@@ -140,7 +152,7 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
                 />
                 <Bar dataKey="completedRead" fill="#009688" radius={8} />
               </>
-            )}
+            )} */}
           </BarChart>
         </ChartContainer>
       </CardContent>

@@ -3,6 +3,8 @@ import { siteConfig } from "@/configs/site-config";
 import { ThemeSwitcher } from "./switchers/theme-switcher-toggle";
 import { LocaleSwitcher } from "./switchers/locale-switcher";
 import Link from "next/link";
+import { Palette } from "lucide-react";
+import { ThemeCustomizer } from "./theme-customizer";
 
 interface FooterProps {
   className?: string;
@@ -93,7 +95,7 @@ export function Footer({ className }: FooterProps) {
               </a>
               . All Rights Reserved.
             </span>
-            <div className="flex mt-4 justify-center sm:mt-0 items-center">
+            <div className="flex gap-2 justify-center  items-center">
               <Link href={siteConfig.link.github} className="mr-2">
                 <svg
                   className="w-5 h-5"
@@ -110,6 +112,7 @@ export function Footer({ className }: FooterProps) {
                 </svg>
                 <span className="sr-only">GitHub</span>
               </Link>
+              <ThemeCustomizer />
               <ThemeSwitcher />
               <LocaleSwitcher />
             </div>

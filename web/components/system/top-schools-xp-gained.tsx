@@ -39,7 +39,7 @@ export default function TopSchoolByXPGainedChart() {
     xp: {
       label: "XP",
       // color: "hsl(var(--chart-1))",
-      color: "hsl(221.2 83.2% 53.3%)",
+      color: "hsl(var(--primary))",
     },
   } satisfies ChartConfig;
 
@@ -51,9 +51,9 @@ export default function TopSchoolByXPGainedChart() {
             Top Schools by XP Gained
           </CardTitle>
         </CardHeader>
-        <CardContent  className="">
+        <CardContent className="">
           <ChartContainer config={chartConfig}>
-            <BarChart accessibilityLayer data={chartData} margin={{ top: 20, }}>
+            <BarChart accessibilityLayer data={chartData} margin={{ top: 20 }}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="school"
@@ -67,13 +67,13 @@ export default function TopSchoolByXPGainedChart() {
                 content={<ChartTooltipContent hideLabel />}
               />
               <Bar dataKey="xp" fill="var(--color-xp)" radius={8}>
-                <LabelList 
+                <LabelList
                   position="top"
                   className="fill-foreground"
                   offset={12}
                   fontSize={12}
                 />
-                </Bar>
+              </Bar>
             </BarChart>
           </ChartContainer>
         </CardContent>

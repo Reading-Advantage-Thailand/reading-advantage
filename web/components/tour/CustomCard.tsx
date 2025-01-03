@@ -33,7 +33,6 @@ const CustomCard: React.FC<CardComponentProps> = ({
   const router = useRouter();
 
   async function handleConfetti() {
-    closeOnborda();
     const res = await fetch(`/api/v1/users/${session?.user?.id}`, {
       method: "PATCH",
       body: JSON.stringify({
@@ -42,12 +41,13 @@ const CustomCard: React.FC<CardComponentProps> = ({
     });
 
     if (res.ok) {
-      router.push("/");
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
       });
+      closeOnborda();
+      router.push("/");
     }
   }
 
