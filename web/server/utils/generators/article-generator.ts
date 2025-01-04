@@ -35,7 +35,7 @@ type CefrLevelType = {
 
 // schema
 const schema = z.object({
-  planning: z.string().describe("Planning for the passage: passage-specific strategies for vocabulary and grammar according to the CEFR level; and a detailed outline (plan) of the passage."
+  planning: z.string().describe("Planning for the passage: passage-specific strategies for vocabulary and grammar according to the CEFR level; and a detailed outline (plan) of the passage."),
   title: z.string().describe("An interesting title for the article written to the CEFR level"),
   passage: z.string().describe("The main content of the article"),
   summary: z.string().describe("A one-sentence summary of the article written to the CEFR level"),
