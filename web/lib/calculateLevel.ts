@@ -31,8 +31,17 @@ function getCefrLevel(textStandart: number): string {
 
 function calculateLevel(text: string): IReadability {
   const textStandard = readability.textStandard(text, true);
-  const raLevel = (textStandard as number) + 1;
-  const cefrLevel = getCefrLevel(textStandard as number);
+  let raLevel = (textStandard as number) + 1;
+  let cefrLevel = getCefrLevel(textStandard as number);
+  if (!cefrLevel) {
+    if (raLevel <= 0) {
+      raLevel = 1;
+      cefrLevel = "A1-";
+    } else if (raLevel >= 18) {
+      raLevel = 18;
+      cefrLevel = "C2+";
+    }
+  }
   return { raLevel, cefrLevel };
 }
 

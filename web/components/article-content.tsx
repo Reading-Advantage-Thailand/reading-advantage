@@ -190,6 +190,7 @@ export default function ArticleContent({
     // if (!sentence) {
     //   return "";
     // }
+
     return sentence.split("~~").map((line, index, array) => (
       <span
         key={index}
@@ -519,6 +520,7 @@ export default function ArticleContent({
               )}
               onClick={() => {
                 handleSentenceClick(sentence.startTime, index);
+                console.log(sentence);
               }}
             >
               {renderSentence(sentence.sentence, index)}

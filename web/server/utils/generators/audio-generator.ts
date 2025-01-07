@@ -19,7 +19,7 @@ interface GenerateAudioParams {
 function contentToSSML(content: string[]): string {
   let ssml = "<speak>";
   content.forEach((sentence, i) => {
-    ssml += `<s><mark name='sentence${i + 1}'/>${sentence}</s>`;
+    ssml += `<mark name='sentence${i + 1}'/>${sentence}`;
   });
   ssml += "</speak>";
   return ssml;
@@ -198,6 +198,7 @@ export async function generateAudio({
     // ).flat();
 
     // Update the database with all timepoints
+
     await db.collection("new-articles").doc(articleId).update({
       timepoints: result,
       id: articleId,

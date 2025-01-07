@@ -464,6 +464,7 @@ async function evaluateArticle(
       console.log(
         `CEFR ${cefrLevel}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${cefr_level}`
       );
+
       if (evaluatedRating.rating > 2) {
         return {
           article: generatedArticle,
