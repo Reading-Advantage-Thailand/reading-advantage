@@ -54,13 +54,15 @@ AI-curated materials designed to cater to all user proficiency levels.
 9. [x] Article Vocabulary Lists | รายการคำศัพท์ของบทความ
 10. [x] Vocabulary SRS Practice | การฝึกฝนคำศัพท์ SRS
 11. [x] MC and SA Comprehension Questions | คำถามความเข้าใจแบบหลายตัวเลือกและคำตอบสั้น
-12. [ ] First-run Tour | การแนะนำการใช้งานครั้งแรก
+12. [x] First-run Tour | การแนะนำการใช้งานครั้งแรก
 13. [x] "Ask Questions About the Language in This Article" Chatbot | แชทบอทสำหรับถามคำถามเกี่ยวกับภาษาในบทความนี้
-14. [ ] LA Writing Prompts and Feedback | คำแนะนำในการเขียนและข้อเสนอแนะ
+14. [x] LA Writing Prompts and Feedback | คำแนะนำในการเขียนและข้อเสนอแนะ
 15. [ ] Running Records | การบันทึกการวิ่ง
 16. [x] Teacher & Classroom Management | การจัดการครูและห้องเรียน
-17. [ ] School Admin Management | การจัดการผู้ดูแลโรงเรียน
+17. [x] School Admin Management | การจัดการผู้ดูแลโรงเรียน
 18. [x] App Admin Functions | ฟังก์ชั่นผู้ดูแลแอป
+19. [ ] Gamification
+20. [ ] Whole-class and printing
 
 ## Usage and User Experience | การใช้งานและประสบการณ์ของผู้ใช้
 - **User Choice and Motivation:** The advantage in Reading Advantage is student choice. Students choose the article they want to read, the activities they want to do, and the vocabulary or sentences they want to save for later practice. This choice enhances motivation and engagement.
