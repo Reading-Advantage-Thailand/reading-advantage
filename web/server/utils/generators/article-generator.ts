@@ -35,10 +35,26 @@ type CefrLevelType = {
 
 // schema
 const schema = z.object({
-  planning: z.string().describe("Planning for the passage: a detailed strategy for incorporating vocabulary and grammar features suited to the specified CEFR level, including sentence structures, common phrases, and appropriate linguistic complexity. For nonfiction, focus on a logical organization of ideas and clear transitions; for fiction, consider narrative techniques, character development, and descriptive language. Provide a bullet-point outline covering the structure, key content points, and any specific stylistic or thematic elements to include."),
-  title: z.string().describe("An interesting title for the article written at the same CEFR level"),
-  passage: z.string().describe("The reading passage written to the supplied specifications for both CEFR and type."),
-  summary: z.string().describe("A one-sentence summary of the article written at the same CEFR level"),
+  planning: z
+    .string()
+    .describe(
+      "Planning for the passage: a detailed strategy for incorporating vocabulary and grammar features suited to the specified CEFR level, including sentence structures, common phrases, and appropriate linguistic complexity. For nonfiction, focus on a logical organization of ideas and clear transitions; for fiction, consider narrative techniques, character development, and descriptive language. Provide a bullet-point outline covering the structure, key content points, and any specific stylistic or thematic elements to include."
+    ),
+  title: z
+    .string()
+    .describe(
+      "An interesting title for the article written at the same CEFR level"
+    ),
+  passage: z
+    .string()
+    .describe(
+      "The reading passage written to the supplied specifications for both CEFR and type."
+    ),
+  summary: z
+    .string()
+    .describe(
+      "A one-sentence summary of the article written at the same CEFR level"
+    ),
   imageDesc: z
     .string()
     .describe(
