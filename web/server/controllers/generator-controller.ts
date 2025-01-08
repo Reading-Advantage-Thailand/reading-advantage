@@ -458,11 +458,12 @@ async function evaluateArticle(
         cefrLevel,
       });
       const { raLevel, cefrLevel: cefr_level } = calculateLevel(
-        generatedArticle.passage
+        generatedArticle.passage,
+        cefrLevel
       );
 
       console.log(
-        `CEFR ${cefrLevel}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${cefr_level}`
+        `CEFR ${cefrLevel}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${cefr_level}, Evaluated raLevel: ${raLevel}`
       );
 
       if (evaluatedRating.rating > 2) {
