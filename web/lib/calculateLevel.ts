@@ -26,35 +26,27 @@ const levels = [
   "C2+",
 ];
 
-function getCefrLevel(textStandart: number): string {
-  return levels[Math.min(Math.max(0, textStandart), 18)];
-}
+function calculateLevel(text: string, cefrLevelInput: string): IReadability {
+  const textStandard = Math.max(
+    1,
+    Math.min(readability.textStandard(text, true) as number, levels.length)
+  );
+  const inputLevelNum = levels.indexOf(cefrLevelInput) + 1;
 
-function calculateLevel(text: string, cefrlevel: string): IReadability {
-  const textStandard = readability.textStandard(text, true);
-  const cefrNum = getLevelNumber(cefrlevel);
-  let raLevel = (textStandard as number) + 1;
-  let cefrLevel = getCefrLevel(textStandard as number);
+  let adjustedLevel = textStandard;
 
-  if (cefrNum > raLevel) {
-    raLevel = cefrNum - 1;
-    cefrLevel = levels[raLevel - 1];
-  } else if (cefrNum < raLevel) {
-    raLevel = cefrNum + 1;
-    cefrLevel = levels[raLevel - 1];
-  } else {
-    raLevel = cefrNum;
-    cefrLevel = levels[raLevel - 1];
+  if (inputLevelNum > textStandard) {
+    adjustedLevel = inputLevelNum - 1;
+  } else if (inputLevelNum < textStandard) {
+    adjustedLevel = inputLevelNum + 1;
   }
 
-  return { raLevel, cefrLevel };
-}
+  // Ensure adjusted level is within valid range
+  adjustedLevel = Math.max(1, Math.min(adjustedLevel, levels.length));
 
-function getLevelNumber(level: string): number {
-  const index = levels.indexOf(level);
-  return index + 1;
-}
+  const adjustedCefrLevel = levels[adjustedLevel - 1];
 
-//export { getLevelNumber };
+  return { raLevel: adjustedLevel, cefrLevel: adjustedCefrLevel };
+}
 
 export { calculateLevel };
