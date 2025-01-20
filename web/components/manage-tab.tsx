@@ -43,6 +43,7 @@ import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { date_scheduler } from "ts-fsrs";
 import { filter } from "lodash";
 import { UserXpEarned } from "./models/user-activity-log-model";
+import { Badge } from "./ui/badge";
 
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
@@ -94,21 +95,25 @@ export default function ManageTab({ userId }: Props) {
       const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
       const startOfDay = date_scheduler(new Date(), 0, true);
-      const filteredData = await data.sentences
-        .filter((record: Sentence) => {
-          const dueDate = new Date(record.due);
-          return record.state === 0 || dueDate < startOfDay;
-        })
-        .sort((a: Sentence, b: Sentence) => {
-          return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
-        });
-
-      setSentences(filteredData);
+      // const filteredData = await data.sentences
+      //   .filter((record: Sentence) => {
+      //     const dueDate = new Date(record.due);
+      //     return record.state === 0 || dueDate < startOfDay;
+      //   })
+      //   .sort((a: Sentence, b: Sentence) => {
+      //     return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
+      //   });
+      // setSentences(filteredData);
+      setSentences(data.sentences);
 
       // updateScore
-      let filterDataUpdateScore = await filter(data.sentences, (param) => {
-        const dueDate = new Date(param.due);
-        return (param.state === 2 || param.state === 3) && dueDate < startOfDay;
+      let filterDataUpdateScore = filter(data.sentences, (item) => {
+        const dueDate = new Date(item.due);
+        return (
+          (item.state === 2 || item.state === 3) &&
+          dueDate < startOfDay &&
+          !item.update_score
+        );
       });
 
       if (filterDataUpdateScore?.length > 0) {
@@ -212,9 +217,32 @@ export default function ManageTab({ userId }: Props) {
       cell: ({ row }) => {
         const due = row.getValue("due") as string;
         const date = formatDate(due);
-        return <div className="text-center font-medium">{date}</div>;
+        return <div>{date}</div>;
       },
     },
+    // {
+    //   accessorKey: "update_score",
+    //   header: ({ column }) => (
+    //     <div className="text-center font-medium">Status</div>
+    //   ),
+    //   cell: ({ row }) => {
+    //     const status = row.getValue("update_score");
+
+    //     return (
+    //       <div className="text-center font-medium">
+    //         {status ? (
+    //           <Badge className="bg-green-700" variant="outline">
+    //             Complate
+    //           </Badge>
+    //         ) : (
+    //           <Badge className="bg-orange-400" variant="outline">
+    //             In Progress
+    //           </Badge>
+    //         )}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       accessorKey: "delete",
       header: "",
@@ -365,6 +393,30 @@ export default function ManageTab({ userId }: Props) {
               )}
             </TableBody>
           </Table>
+        </div>
+        <div className="flex items-center justify-end space-x-2 pt-4">
+          {/* <div className="flex-1 text-sm text-muted-foreground">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
+          </div> */}
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </div>
       {/* )}  */}
