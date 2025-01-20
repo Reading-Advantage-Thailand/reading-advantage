@@ -183,96 +183,131 @@ export async function generateQueue(req: ExtendedNextRequest) {
 // Function to generate queue for a given genre
 // fiction or nonfiction
 async function generateForGenre(type: ArticleType, amountPerGenre: number) {
-  const randomGenre = await randomSelectGenre({ type });
+  // const randomGenre = await randomSelectGenre({ type });
 
-  const generatedTopic = await generateTopic({
-    type: type,
-    genre: randomGenre.genre,
-    subgenre: randomGenre.subgenre,
-    amountPerGenre: amountPerGenre,
-  });
+  // const generatedTopic = await generateTopic({
+  //   type: type,
+  //   genre: randomGenre.genre,
+  //   subgenre: randomGenre.subgenre,
+  //   amountPerGenre: amountPerGenre,
+  // });
 
-  // const cefrLevels = [
-  //   ArticleBaseCefrLevel.A1,
-  //   ArticleBaseCefrLevel.A2,
-  //   ArticleBaseCefrLevel.B1,
-  //   ArticleBaseCefrLevel.B2,
-  //   ArticleBaseCefrLevel.C1,
-  //   ArticleBaseCefrLevel.C2,
-  // ];
+  const cefrLevels = [
+    ArticleBaseCefrLevel.A1,
+    ArticleBaseCefrLevel.A2,
+    ArticleBaseCefrLevel.B1,
+    ArticleBaseCefrLevel.B2,
+    ArticleBaseCefrLevel.C1,
+    ArticleBaseCefrLevel.C2,
+  ];
 
   // const results = await Promise.all(
   //   generatedTopic.topics.map(
   //     async (topic) =>
   //       await Promise.all(
-  //         cefrLevels.map((level) =>
-  //           queue(type, randomGenre.genre, randomGenre.subgenre, topic, level)
+  //         cefrLevels.map(
+  //           async (level) =>
+  //             await queue(
+  //               type,
+  //               randomGenre.genre,
+  //               randomGenre.subgenre,
+  //               topic,
+  //               level
+  //             )
   //         )
   //       )
   //   )
   // );
 
+  const results = [];
+
+  // Process each CEFR level sequentially
+  for (const level of cefrLevels) {
+    // Step 1: Randomly select a genre for this CEFR level
+    const randomGenre = await randomSelectGenre({ type });
+
+    // Step 2: Generate topics based on the selected genre
+    const generatedTopic = await generateTopic({
+      type: type,
+      genre: randomGenre.genre,
+      subgenre: randomGenre.subgenre,
+      amountPerGenre: amountPerGenre,
+    });
+
+    // Step 3: Queue tasks for each topic in this CEFR level
+    for (const topic of generatedTopic.topics) {
+      const result = await queue(
+        type,
+        randomGenre.genre,
+        randomGenre.subgenre,
+        topic,
+        level
+      );
+      results.push(result);
+    }
+  }
+
   // Process each topic concurrently
-  const results = await Promise.all(
-    generatedTopic.topics.map(async (topic) => {
-      const topicResults = [];
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.A1
-        )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.A2
-        )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.B1
-        )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.B2
-        )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.C1
-        )
-      );
-      topicResults.push(
-        await queue(
-          type,
-          randomGenre.genre,
-          randomGenre.subgenre,
-          topic,
-          ArticleBaseCefrLevel.C2
-        )
-      );
-      return topicResults;
-    })
-  );
+  // const results = await Promise.all(
+  //   generatedTopic.topics.map(async (topic) => {
+  //     const topicResults = [];
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.A1
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.A2
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.B1
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.B2
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.C1
+  //       )
+  //     );
+  //     topicResults.push(
+  //       await queue(
+  //         type,
+  //         randomGenre.genre,
+  //         randomGenre.subgenre,
+  //         topic,
+  //         ArticleBaseCefrLevel.C2
+  //       )
+  //     );
+  //     return topicResults;
+  //   })
+  // );
 
   return results.flat();
 }
