@@ -27,6 +27,8 @@ export async function generateMCQuestion(params: GenrateMCQuestionParams): Promi
     const schema = z.object({
         questions: z.array(
             z.object({
+                question_number: z.number(),
+                question: z.string().describe("The question"),
                 correct_answer: z.string().describe("The correct answer"),
                 distractor_1: z
                     .string()
@@ -43,8 +45,11 @@ export async function generateMCQuestion(params: GenrateMCQuestionParams): Promi
                     .describe(
                         "An incorrect but plausible answer that is approximately the same length as the correct answer."
                     ),
-                question: z.string().describe("The question"),
-                question_number: z.number(),
+               textual_evidence = z
+                    .string()
+                    .describe(
+                        "A quote from the reading passage providing textual evidence for the correct answer"
+                    ), 
             })
         ),
     });
