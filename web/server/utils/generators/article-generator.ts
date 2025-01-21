@@ -35,10 +35,15 @@ type CefrLevelType = {
 
 // schema
 const schema = z.object({
+  brainstorming: z
+    .string()
+    .describe(
+      "Brainstorm various ideas for the article or passage in short phrases."
+    ),
   planning: z
     .string()
     .describe(
-      "Planning for the passage: a detailed strategy for incorporating vocabulary and grammar features suited to the specified CEFR level, including sentence structures, common phrases, and appropriate linguistic complexity. For nonfiction, focus on a logical organization of ideas and clear transitions; for fiction, consider narrative techniques, character development, and descriptive language. Provide a bullet-point outline covering the structure, key content points, and any specific stylistic or thematic elements to include."
+      "Planning for the passage: a strategy for incorporating vocabulary and grammar features suited to the specified CEFR level, including sentence structures, common phrases, and appropriate linguistic complexity. For nonfiction, focus on a logical organization of ideas and clear transitions; for fiction, consider narrative techniques, character development, and descriptive language. Provide a bullet-point outline covering the structure, key content points, and any specific stylistic or thematic elements to include."
     ),
   title: z
     .string()
