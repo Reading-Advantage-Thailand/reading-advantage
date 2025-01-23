@@ -388,8 +388,6 @@ export default {
       heading: "段落",
       type: "類型",
       fiction: "小說",
-      Fiction: "小說",
-      nonFiction: "非小說類",
       nonfiction: "非小說類",
       topic: "主題",
       selectGenre: "選擇類型",

@@ -416,8 +416,6 @@ export default {
       heading: "Passages",
       type: "Type",
       fiction: "Fiction",
-      Fiction: "Fiction",
-      nonFiction: "NonFiction",
       nonfiction: "Nonfiction",
       topic: "Topic",
       selectGenre: "Select Genre",
