@@ -64,7 +64,7 @@ const schema = z.object({
     .string()
     .describe(
       "A detailed description of an image to go along with the passage"
-    ),
+    )
 });
 
 export async function generateArticle(
