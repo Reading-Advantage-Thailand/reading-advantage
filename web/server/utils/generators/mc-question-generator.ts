@@ -46,10 +46,7 @@ export async function generateMCQuestion(params: GenrateMCQuestionParams): Promi
                         "An incorrect but plausible answer that is approximately the same length as the correct answer."
                     ),
                textual_evidence = z
-                    .string()
-                    .describe(
-                        "A quote from the reading passage providing textual evidence for the correct answer"
-                    ), 
+                    .string().describe("A quote from the reading passage providing textual evidence for the correct answer"), 
             })
         ),
     });
