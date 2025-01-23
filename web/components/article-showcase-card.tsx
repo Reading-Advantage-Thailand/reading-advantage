@@ -3,7 +3,7 @@ import { Badge } from "./ui/badge";
 import Link from "next/link";
 import { Rating } from "@mui/material";
 import { ArticleShowcase } from "./models/article-model";
-import { useCurrentLocale } from "@/locales/client";
+import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import { usePathname } from "next/navigation";
 import { ActivityType, ActivityStatus } from "./models/user-activity-log-model";
 
@@ -99,6 +99,9 @@ const ArticleShowcaseCard = ({ article, userId }: Props) => {
         </Badge>
         <Badge className="shadow-lg max-w-max" variant="destructive">
           CEFR Level: {article.cefr_level}
+        </Badge>
+        <Badge className="shadow-lg max-w-max" variant="destructive">
+          {article.genre}, {article.subgenre}
         </Badge>
         <Badge className="shadow-lg max-w-max" variant="destructive">
           <Rating name="read-only" value={article.average_rating} readOnly />

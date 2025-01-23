@@ -413,8 +413,6 @@ export default {
       heading: "Đoạn văn",
       type: "Loại",
       fiction: "Tiểu thuyết",
-      Fiction: "Tiểu thuyết",
-      nonFiction: "Phi hư cấu",
       nonfiction: "Phi hư cấu",
       topic: "Chủ đề",
       selectGenre: "Chọn thể loại",

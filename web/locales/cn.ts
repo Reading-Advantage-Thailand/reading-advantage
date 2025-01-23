@@ -388,8 +388,6 @@ export default {
       heading: "段落",
       type: "类型",
       fiction: "小说",
-      Fiction: "小说",
-      nonFiction: "非小说类",
       nonfiction: "非小说类",
       topic: "主题",
       selectGenre: "选择类型",

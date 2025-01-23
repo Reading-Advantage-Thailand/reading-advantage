@@ -409,8 +409,6 @@ export default {
       heading: "บทความ",
       type: "ประเภท",
       fiction: "นิยาย",
-      Fiction: "นิยาย",
-      nonFiction: "สารคดี",
       nonfiction: "สารคดี",
       topic: "หัวข้อ",
       selectGenre: "เลือกประเภท",
