@@ -10,6 +10,10 @@ import fs from "fs";
 import { execSync } from "child_process";
 import uploadToBucket from "@/utils/uploadToBucket";
 import db from "@/configs/firestore-config";
+import { generateObject } from "ai";
+import { openai, openaiModel } from "@/utils/openai";
+import { google, googleModel } from "@/utils/google";
+import z from "zod";
 
 interface GenerateAudioParams {
   passage: string;
@@ -25,8 +29,39 @@ function contentToSSML(content: string[]): string {
   return ssml;
 }
 
-function splitTextIntoChunks(content: string, maxBytes: number): string[] {
-  const sentences = splitTextIntoSentences(content);
+const generateSSML = async (article: string) => {
+  try {
+    //const prompt = `You are an SSML processing engine. Given the following text, break it into sentences and wrap each sentence in SSML tags. Add a <mark> tag before each sentence using the format <mark name='sentenceX'/> where X is the sentence number.\n\nHere is the text:\n---\n${article}\n---\n\nReturn only the SSML output, without explanations.`;
+    const systemPrompt = `You are a text processor. Given an article, split it into individual sentences.
+    Return only an array of strings, where each string is a complete sentence from the article.
+    Preserve the original punctuation and formatting within each sentence.`;
+    const userPrompt = `Split the following text into sentences: ${article}`;
+
+    //and Add a <speak> tag before and end article only.
+    const { object: ssml } = await generateObject({
+      model: google(googleModel),
+      schema: z
+        .array(
+          z.string().describe("A single complete sentence from the article")
+        )
+        .describe("Array of sentences extracted from the input article"),
+      system: systemPrompt,
+      prompt: userPrompt,
+      temperature: 0.2,
+    });
+
+    return ssml;
+  } catch (error: any) {
+    throw `failed to generate ssml: ${error}`;
+  }
+};
+
+async function splitTextIntoChunks(
+  content: string,
+  maxBytes: number
+): Promise<string[]> {
+  // const sentences = splitTextIntoSentences(content);
+  const sentences = await generateSSML(content);
   const chunks: string[] = [];
   let currentChunk: string[] = [];
 
@@ -58,7 +93,7 @@ export async function generateAudio({
     const newVoice =
       NEW_MODEL_VOICES[Math.floor(Math.random() * NEW_MODEL_VOICES.length)];
 
-    const chunks = splitTextIntoChunks(passage, 5000);
+    const chunks = await splitTextIntoChunks(passage, 5000);
     let currentIndex = 0;
     let cumulativeTime = 0;
 
@@ -142,61 +177,6 @@ export async function generateAudio({
 
     await uploadToBucket(combinedAudioPath, `${AUDIO_URL}/${articleId}.mp3`);
 
-    // const generate = async (ssml: string, index: number) => {
-    //   const response = await fetch(
-    //     `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize?key=${process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY}`,
-    //     {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //       body: JSON.stringify({
-    //         input: {
-    //           ssml: ssml,
-    //         },
-    //         voice: {
-    //           languageCode: "en-US",
-    //           name: voice,
-    //         },
-    //         audioConfig: {
-    //           audioEncoding: "MP3",
-    //         },
-    //         enableTimePointing: ["SSML_MARK"],
-    //       }),
-    //     }
-    //   );
-
-    //   if (!response.ok) {
-    //     throw new Error(`Error: ${response.statusText}`);
-    //   }
-
-    //   const data = await response.json();
-    //   const audio = data.audioContent;
-    //   const MP3 = base64.toByteArray(audio);
-
-    //   const localPath = `${process.cwd()}/data/audios/${articleId}_${index}.mp3`;
-    //   fs.writeFileSync(localPath, MP3);
-
-    //   await uploadToBucket(localPath, `${AUDIO_URL}/${articleId}_${index}.mp3`);
-
-    //   return data.timepoints;
-    // };
-
-    //Generate all timepoints in parallel for efficiency
-    // const allTimepoints = (
-    //   await Promise.all(
-    //     chunks.map(async (chunk, i) => {
-    //       const chunkTimepoints = await generate(chunk, i);
-    //       return chunkTimepoints.map((tp: { timeSeconds: number }) => ({
-    //         markName: `sentence${currentIndex++}`,
-    //         timeSeconds: tp.timeSeconds,
-    //         index: currentIndex - 1,
-    //         file: `${articleId}_${i}.mp3`,
-    //       }));
-    //     })
-    //   )
-    // ).flat();
-
     // Update the database with all timepoints
 
     await db.collection("new-articles").doc(articleId).update({
@@ -204,8 +184,9 @@ export async function generateAudio({
       id: articleId,
     });
   } catch (error: any) {
-    throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
-      error.response.data
-    )}`;
+    console.log(error);
+    // throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
+    //   error.response.data
+    // )}`;
   }
 }
