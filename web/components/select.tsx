@@ -124,9 +124,7 @@ export default function Select({ user }: Props) {
                     onClick={() => handleButtonClick(type)}
                     disabled={loading}
                   >
-                    {locale == "en"
-                      ? type.replace(/_/g, " ")
-                      : tf(type.replace(/_/g, " "))}
+                    {tf(type)}
                   </Button>
                 );
               })}

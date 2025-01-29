@@ -24,7 +24,7 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     const type = req.nextUrl.searchParams.get("type");
     const genre = req.nextUrl.searchParams.get("genre");
     const subgenre = req.nextUrl.searchParams.get("subgenre");
-    let selectionType: any[] = [];
+    let selectionType: any[] = ["fiction", "nonfiction"];
     let results: any[] = [];
 
     if (!level) {
@@ -41,14 +41,60 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       .orderBy("created_at", "desc")
       .limit(10);
 
-    let typeResult = db.collection("article-selection").doc(level);
+    //let typeResult = db.collection("article-selection").doc(level);
 
-    if (type) {
-      typeResult = typeResult.collection("types").doc(type);
+    // if (type) {
+    //   typeResult = typeResult.collection("types").doc(type);
+    // }
+    // if (genre) {
+    //   typeResult = typeResult.collection("genres").doc(genre);
+    // }
+
+    const fetchGenres = async (type: string, genre?: string | null) => {
+      const collectionName =
+        type === "fiction" ? "genres-fiction" : "genres-nonfiction";
+      const collectionRef = db.collection(collectionName);
+
+      const querySnapshot = await collectionRef.get();
+      const allGenres = querySnapshot.docs.map((doc) => doc.data());
+
+      if (genre) {
+        const genreData = allGenres.find((data) => data.name === genre);
+        if (genreData) {
+          return genreData.subgenres;
+        }
+      }
+
+      return allGenres.map((data) => data.name);
+    };
+
+    if (type === "fiction" || type === "nonfiction") {
+      selectionType = await fetchGenres(type, genre);
     }
-    if (genre) {
-      typeResult = typeResult.collection("genres").doc(genre);
-    }
+
+    // if (type === "fiction") {
+    //   const test = await db.collection("genres-fiction").get();
+    //   console.log(test.docs.map((doc) => doc.data()));
+    //   const testd1 = test.docs.map((doc) => doc.data().name);
+    //   if (genre) {
+    //     const testd2 = test.docs
+    //       .map((doc) => doc.data())
+    //       .filter((data) => data.name === genre)
+    //       .map((data) => data.subgenres)[0];
+    //     selectionType = testd2;
+    //   }
+    // } else if (type === "nonfiction") {
+    //   const test = await db.collection("genres-nonfiction").get();
+    //   const testd1 = test.docs.map((doc) => doc.data().name);
+    //   selectionType = testd1;
+    //   if (genre) {
+    //     const testd2 = test.docs
+    //       .map((doc) => doc.data())
+    //       .filter((data) => data.name === genre)
+    //       .map((data) => data.subgenres)[0];
+    //     selectionType = testd2;
+    //   }
+    // }
 
     const fetchArticles = async (query: any) => {
       const snapshot = await query.get();
@@ -93,10 +139,10 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
 
     results = await getArticles({ subgenre, genre, type, level });
 
-    const snapType = await typeResult.get();
-    selectionType = Object.entries(snapType.data() as any).map(
-      ([key, value]) => key
-    );
+    // const snapType = await typeResult.get();
+    // selectionType = Object.entries(snapType.data() as any).map(
+    //   ([key, value]) => key
+    // );
 
     return NextResponse.json({
       params: {
