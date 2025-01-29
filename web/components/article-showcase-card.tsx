@@ -33,6 +33,7 @@ const ArticleShowcaseCard = ({ article, userId }: Props) => {
   const locale = useCurrentLocale();
   const pathName = usePathname();
   const systemPathRegex = /\/(?:[a-z]{2}\/)?system\/.*\/?$/i;
+  const t: string | any = useScopedI18n("selectType.types");
 
   React.useEffect(() => {
     handleTranslateSummary();
@@ -101,7 +102,7 @@ const ArticleShowcaseCard = ({ article, userId }: Props) => {
           CEFR Level: {article.cefr_level}
         </Badge>
         <Badge className="shadow-lg max-w-max" variant="destructive">
-          {article.genre}, {article.subgenre}
+          {t(article.genre)}, {t(article.subgenre)}
         </Badge>
         <Badge className="shadow-lg max-w-max" variant="destructive">
           <Rating name="read-only" value={article.average_rating} readOnly />
