@@ -10,7 +10,9 @@ import db from "@/configs/firestore-config";
 import { NextResponse } from "next/server";
 import { getFeedbackWritter } from "./assistant-controller";
 import { generateLAQuestion } from "../utils/generators/la-question-generator";
+import { generateMCQuestion } from "../utils/generators/mc-question-generator";
 import { ExtendedNextRequest } from "./auth-controller";
+import { generateSAQuestion } from "../utils/generators/sa-question-generator";
 
 interface RequestContext {
   params: {
@@ -47,6 +49,34 @@ export async function getMCQuestions(
       .collection("mc-questions")
       .get();
 
+    if (questions.docs.length === 0) {
+      const getArticle = await db
+        .collection("new-articles")
+        .doc(article_id)
+        .get();
+
+      const getData = getArticle.data();
+
+      let cefrlevel = getData?.cefr_level.replace(/[+-]/g, "");
+
+      const generateMCQ = await generateMCQuestion({
+        cefrlevel: cefrlevel,
+        type: getData?.type,
+        passage: getData?.passage,
+        title: getData?.title,
+        summary: getData?.summary,
+        imageDesc: getData?.image_description,
+      });
+
+      for (let i = 0; generateMCQ.questions.length; i++) {
+        await db
+          .collection("new-articles")
+          .doc(article_id)
+          .collection("mc-questions")
+          .add(generateMCQ.questions[i]);
+      }
+    }
+
     // Get user record
     const userRecord = await db
       .collection("users")
@@ -62,9 +92,11 @@ export async function getMCQuestions(
       const data = doc.data();
       progress.push(data.status);
     });
+
     for (let i = 0; i < 5 - userRecord.docs.length; i++) {
       progress.push(AnswerStatus.UNANSWERED);
     }
+
     const randomQuestions = questions.docs
       .filter((doc) => {
         return !userRecord.docs.some((userDoc) => userDoc.id === doc.id);
@@ -141,10 +173,42 @@ export async function getSAQuestion(
       .doc(article_id)
       .collection("sa-questions")
       // Random select 1 question from 5
-      .where("question_number", "==", Math.floor(Math.random() * 5))
+      .where("question_number", "==", Math.floor(Math.random() * 5) + 1)
       .get();
 
-    const data = questions.docs[0].data() as SARecord;
+    let data: Data = { question: "" };
+
+    if (questions.docs.length === 0) {
+      const getArticle = await db
+        .collection("new-articles")
+        .doc(article_id)
+        .get();
+
+      const getData = getArticle.data();
+
+      let cefrlevel = getData?.cefr_level.replace(/[+-]/g, "");
+
+      const generateSAQ = await generateSAQuestion({
+        cefrlevel: cefrlevel,
+        type: getData?.type,
+        passage: getData?.passage,
+        title: getData?.title,
+        summary: getData?.summary,
+        imageDesc: getData?.image_description,
+      });
+
+      for (let i = 0; i < generateSAQ.questions.length; i++) {
+        await db
+          .collection("new-articles")
+          .doc(article_id)
+          .collection("sa-questions")
+          .add(generateSAQ.questions[i]);
+      }
+
+      data = generateSAQ.questions[Math.floor(Math.random() * 5)];
+    } else {
+      data = questions.docs[0].data() as SARecord;
+    }
 
     return NextResponse.json(
       {
