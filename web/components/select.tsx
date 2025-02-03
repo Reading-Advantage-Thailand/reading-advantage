@@ -28,7 +28,7 @@ async function fetchArticles(params: string) {
   );
 
   const data = await response.json();
-
+  console.log("API Response:", response);
   return data;
 }
 
@@ -45,6 +45,8 @@ export default function Select({ user }: Props) {
   const [articleShowcaseData, setArticleShowcaseData] = React.useState<
     articleShowcaseType[]
   >([]);
+  const [page, setPage] = React.useState(1);
+  const observer = React.useRef<IntersectionObserver | null>(null);
 
   const selectedType = searchParams.get("type");
   const selectedGenre = searchParams.get("genre");
@@ -59,7 +61,7 @@ export default function Select({ user }: Props) {
 
   async function handleButtonClick(value: string) {
     const params = new URLSearchParams(searchParams.toString());
-
+    console.log(params.toString());
     if (!selectedType && !selectedGenre && !selectedSubgenre) {
       params.set("type", value);
     }
@@ -73,20 +75,51 @@ export default function Select({ user }: Props) {
   }
 
   React.useEffect(() => {
+    setPage(1);
+  }, [searchParams]);
+  
+  React.useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      // console.log(searchParams.toString());
-      const response = await fetchArticles(searchParams.toString());
-      if (response.results.length === 0) {
+  
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", page.toString());
+      params.set("limit", "10");
+  
+      const response = await fetchArticles(params.toString());
+      console.log("API Response:", response);
+  
+      if (response.results.length === 0 && page === 1) {
         router.push("?");
       }
-
-      setArticleShowcaseData(response.results);
+  
+      setArticleShowcaseData((prev) =>
+        page === 1 ? response.results : [...prev, ...response.results]
+      );
+  
       setArticleTypesData(response.selectionType);
       setLoading(false);
     }
+  
     fetchData();
-  }, [searchParams, router, selectedGenre, selectedSubgenre, selectedType]);
+  }, [searchParams, page]);
+  
+  
+  const lastArticleRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [loading]
+  );
 
   return (
     <Card id="onborda-articles" className="my-2">
@@ -130,13 +163,17 @@ export default function Select({ user }: Props) {
               })}
             </div>
             <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
-              {articleShowcaseData.map((article, index) => (
-                <ArticleShowcaseCard
-                  key={index}
-                  article={article}
-                  userId={user.id}
-                />
-              ))}
+              {articleShowcaseData.map((article, index) => {
+                const isLastArticle = index === articleShowcaseData.length - 1;
+                return (
+                  <ArticleShowcaseCard
+                    ref={isLastArticle ? lastArticleRef : null}
+                    key={article.id}
+                    article={article}
+                    userId={user.id}
+                  />
+                );
+              })}
             </div>
           </>
         )}

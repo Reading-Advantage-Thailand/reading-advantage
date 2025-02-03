@@ -17,6 +17,7 @@ interface RequestContext {
 
 // GET search articles
 // GET /api/articles?level=10&type=fiction&genre=Fantasy
+// GET /api/v1/articles?type=nonfiction&genre=Career+Guides&subgenre=Career+Change&page=1&limit=10 <--when scroll down
 export async function getSearchArticles(req: ExtendedNextRequest) {
   try {
     const userId = req.session?.user.id as string;
@@ -24,6 +25,8 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     const type = req.nextUrl.searchParams.get("type");
     const genre = req.nextUrl.searchParams.get("genre");
     const subgenre = req.nextUrl.searchParams.get("subgenre");
+    const page = Number(req.nextUrl.searchParams.get("page")) || 1;
+    const limit = Number(req.nextUrl.searchParams.get("limit")) || 10;
     let selectionType: any[] = ["fiction", "nonfiction"];
     let results: any[] = [];
 
@@ -39,7 +42,8 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       .where("ra_level", ">=", Number(level) - 1)
       .where("ra_level", "<=", Number(level) + 1)
       .orderBy("created_at", "desc")
-      .limit(10);
+      .offset((page - 1) * limit)
+      .limit(limit);
 
     //let typeResult = db.collection("article-selection").doc(level);
 
@@ -68,9 +72,33 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       return allGenres.map((data) => data.name);
     };
 
-    if (type === "fiction" || type === "nonfiction") {
+    if (!type) {
+      selectionType = ["fiction", "nonfiction"];
+    } else if (type && !genre) {
+      selectionType = await fetchGenres(type);
+    } else if (type && genre) {
       selectionType = await fetchGenres(type, genre);
     }
+
+    let query = db
+      .collection("new-articles")
+      .where("ra_level", ">=", Number(level) - 1)
+      .where("ra_level", "<=", Number(level) + 1);
+
+    if (type) {
+      query = query.where("type", "==", type);
+    }
+    if (genre) {
+      query = query.where("genre", "==", genre);
+    }
+    if (subgenre) {
+      query = query.where("subgenre", "==", subgenre);
+    }
+
+    query = query
+      .orderBy("created_at", "desc")
+      .offset((page - 1) * limit)
+      .limit(limit);
 
     // if (type === "fiction") {
     //   const test = await db.collection("genres-fiction").get();
@@ -150,6 +178,8 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
         type,
         genre,
         subgenre,
+        page,
+        limit,
       },
       results,
       selectionType,
