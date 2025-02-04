@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
+import { DBCollection } from "../models/enum";
 
 // GET user activity logs
 // GET /api/activity
@@ -157,6 +158,81 @@ export async function getAllUsersActivity() {
     );
   } catch (err) {
     console.log("Error getting documents", err);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getUserActivityByLicense(licenseId: string) {
+  try {
+    const usersSnapshot = await db
+      .collection(DBCollection.USERS)
+      .where("license_id", "==", licenseId)
+      .get();
+    const userIds = usersSnapshot.docs.map((doc) => doc.id);
+    console.log("Users found:", userIds);
+
+    const dateToUserSet: Record<string, Set<string>> = {};
+
+    const parentSnapshot = await db.collection("user-activity-log").get();
+
+    const listCollectionsPromises = parentSnapshot.docs.map((doc) =>
+      doc.ref.listCollections()
+    );
+    const subCollectionsArrays = await Promise.all(listCollectionsPromises);
+    const allSubCollections = subCollectionsArrays.flat();
+    console.log("Total subcollections found:", allSubCollections);
+
+    const queryPromises: Promise<FirebaseFirestore.QuerySnapshot>[] = [];
+
+    if (userIds.length > 0) {
+      if (userIds.length <= 10) {
+        allSubCollections.forEach((subCollection) => {
+          queryPromises.push(
+            subCollection.where("userId", "in", userIds).get()
+          );
+        });
+      } else {
+        allSubCollections.forEach((subCollection) => {
+          userIds.forEach((userId) => {
+            queryPromises.push(
+              subCollection.where("userId", "==", userId).get()
+            );
+          });
+        });
+      }
+    }
+
+    const querySnapshots = await Promise.all(queryPromises);
+    querySnapshots.forEach((snapshot) => {
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.timestamp) {
+          const timestamp: Date = data.timestamp.toDate
+            ? data.timestamp.toDate()
+            : new Date(data.timestamp);
+          const dateStr = timestamp.toISOString().slice(0, 10);
+
+          if (!dateToUserSet[dateStr]) {
+            dateToUserSet[dateStr] = new Set();
+          }
+          dateToUserSet[dateStr].add(data.userId);
+        }
+      });
+    });
+
+    const result = Object.entries(dateToUserSet).map(([date, userSet]) => ({
+      date,
+      noOfUsers: userSet.size,
+    }));
+
+    console.log("Final result:", result);
+
+    return NextResponse.json({ data: result }, { status: 200 });
+  } catch (err) {
+    console.error("Error getting documents", err);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

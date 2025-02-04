@@ -25,7 +25,12 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
+interface ActiveUsersChartProps {
+  page: string;
+  license_id: string;
+}
+
+const mockChartData = [
   { date: "2024-04-01", noOfUsers: 222 },
   { date: "2024-04-02", noOfUsers: 97 },
   { date: "2024-04-03", noOfUsers: 167 },
@@ -129,15 +134,61 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function ActiveUsersChart() {
+export default function ActiveUsersChart({
+  page,
+  license_id,
+}: ActiveUsersChartProps) {
+  const [timeRange, setTimeRange] = React.useState("Daily");
+  const [chartData, setChartData] = React.useState<typeof mockChartData>(
+    mockChartData || []
+  );
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("noOfUsers");
-  const total = React.useMemo(
-    () => ({
-      desktop: chartData.reduce((acc, curr) => acc + curr.noOfUsers, 0),
-    }),
-    []
-  );
+  const total = React.useMemo(() => {
+    if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
+      return { desktop: 0 };
+    }
+    return {
+      desktop: chartData.reduce((acc, curr) => acc + (curr.noOfUsers || 0), 0),
+    };
+  }, [chartData]);
+
+  const fetchAdminActiveChart = React.useCallback(async () => {
+    try {
+      const res = await fetch(`/api/v1/activity/${license_id}`, {
+        method: "GET",
+      });
+      if (!res.ok) throw new Error("Failed to fetch User activity byLicense");
+
+      const fetchData = await res.json();
+      if (!fetchData || !Array.isArray(fetchData.data)) {
+        throw new Error("Invalid data format from API");
+      }
+
+      setChartData(fetchData.data);
+      console.log("fetchData", fetchData);
+    } catch (error) {
+      console.error(error);
+      setChartData([]);
+    }
+  }, [license_id]);
+
+  React.useEffect(() => {
+    if (page === "admin") {
+      fetchAdminActiveChart();
+    }
+  }, [page, fetchAdminActiveChart]);
+
+  const filterChartData = () => {
+    switch (timeRange) {
+      case "Weekly":
+        return chartData.slice(-7); // เอาข้อมูล 7 วันล่าสุด
+      case "Monthly":
+        return chartData.slice(-30); // เอาข้อมูล 30 วันล่าสุด
+      default:
+        return chartData; // แสดงข้อมูลทั้งหมด
+    }
+  };
 
   return (
     <>
@@ -148,10 +199,14 @@ export default function ActiveUsersChart() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <select className="w-full mb-2">
-            <option>Daily</option>
-            <option>Weekly</option>
-            <option>Monthly</option>
+          <select
+            className="w-full mb-2"
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value)}
+          >
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
           </select>
           <ChartContainer
             config={chartConfig}
@@ -159,7 +214,7 @@ export default function ActiveUsersChart() {
           >
             <BarChart
               accessibilityLayer
-              data={chartData}
+              data={filterChartData()}
               margin={{
                 left: 12,
                 right: 12,
