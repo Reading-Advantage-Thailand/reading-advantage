@@ -626,6 +626,7 @@ export default {
       tab: {
         flashcard: "单词卡",
         matching: "匹配",
+        manage: "管理",
       },
       flashcard: {
         neverPracticeButton: "不再练习这个词汇",

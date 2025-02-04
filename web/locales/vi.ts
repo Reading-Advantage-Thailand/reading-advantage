@@ -660,6 +660,7 @@ export default {
       tab: {
         flashcard: "Thẻ học",
         matching: "Ghép cặp",
+        manage: "quản lý",
       },
       flashcard: {
         neverPracticeButton: "Không luyện tập từ này nữa",
