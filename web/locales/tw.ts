@@ -630,6 +630,7 @@ export default {
       tab: {
         flashcard: "單詞卡",
         matching: "配對",
+        manage: "管理",
       },
       flashcard: {
         neverPracticeButton: "不再練習這個詞彙",

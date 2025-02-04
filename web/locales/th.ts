@@ -653,6 +653,7 @@ export default {
       tab: {
         flashcard: "การ์ดคำศัพท์",
         matching: "การจับคู่",
+        manage: "จัดการ",
       },
       flashcard: {
         neverPracticeButton: "ไม่ต้องฝึกคำศัพท์นี้อีก",
