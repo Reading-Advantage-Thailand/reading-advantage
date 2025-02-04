@@ -15,6 +15,7 @@ import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { Role } from "@/server/models/enum";
 import UnauthorizedPage from "@/components/shared/unauthorized-page";
+import ActiveUsersChart from "@/components/system/active-users";
 
 export default async function AdminDashboardPage() {
   const user = await getCurrentUser();
@@ -193,6 +194,9 @@ export default async function AdminDashboardPage() {
             <LicesneUsageList data={schoolList.license} />
           </CardContent>
         </Card>
+      </div>
+      <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
+        <ActiveUsersChart />
       </div>
     </>
   );
