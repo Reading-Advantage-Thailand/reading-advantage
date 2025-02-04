@@ -13,6 +13,7 @@ import { useScopedI18n } from "@/locales/client";
 import ArticleShowcaseCard from "./article-showcase-card";
 import { articleShowcaseType } from "@/types";
 import { useCurrentLocale } from "@/locales/client";
+import { Skeleton } from "./ui/skeleton";
 
 type Props = {
   user: {
@@ -136,7 +137,13 @@ export default function Select({ user }: Props) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {selectedType && selectedGenre && selectedSubgenre ? (
+        {loading && page === 1 ? (
+          <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton key={index} className="h-80 w-full" />
+            ))}
+          </div>
+        ) : selectedType && selectedGenre && selectedSubgenre ? (
           <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
             {articleShowcaseData.map((article, index) => (
               <ArticleShowcaseCard
