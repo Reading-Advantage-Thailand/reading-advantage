@@ -111,13 +111,16 @@ export async function getMCQuestions(
       options.push(data.distractor_2);
       options.push(data.distractor_3);
       options.push(data.correct_answer);
+
+      const textualEvidence = data.textual_evidence;
       return {
         id: doc.id,
         question: data.question,
         options: options.sort(() => 0.5 - Math.random()),
+        textual_evidence: textualEvidence,
       };
     });
-    //console.log(mcq);
+    // console.log(mcq);
     return NextResponse.json(
       {
         state:

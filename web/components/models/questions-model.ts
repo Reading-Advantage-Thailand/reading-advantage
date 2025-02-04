@@ -12,6 +12,7 @@ export interface MCQRecord {
   distractor_1: string;
   distractor_2: string;
   distractor_3: string;
+  textual_evidence: string;
 }
 
 export interface SARecord {
