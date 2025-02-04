@@ -77,34 +77,33 @@ export default function Select({ user }: Props) {
   React.useEffect(() => {
     setPage(1);
   }, [searchParams]);
-  
+
   React.useEffect(() => {
     async function fetchData() {
       setLoading(true);
-  
+
       const params = new URLSearchParams(searchParams.toString());
       params.set("page", page.toString());
       params.set("limit", "10");
-  
+
       const response = await fetchArticles(params.toString());
       console.log("API Response:", response);
-  
+
       if (response.results.length === 0 && page === 1) {
         router.push("?");
       }
-  
+
       setArticleShowcaseData((prev) =>
         page === 1 ? response.results : [...prev, ...response.results]
       );
-  
+
       setArticleTypesData(response.selectionType);
       setLoading(false);
     }
-  
+
     fetchData();
-  }, [searchParams, page]);
-  
-  
+  }, [searchParams, page, router]);
+
   const lastArticleRef = React.useCallback(
     (node: HTMLDivElement | null) => {
       if (loading) return;
