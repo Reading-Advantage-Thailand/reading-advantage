@@ -662,6 +662,7 @@ export default {
       tab: {
         flashcard: "Flashcard",
         matching: "Matching",
+        manage: "Manage",
       },
       flashcard: {
         neverPracticeButton: "Do not practice this word anymore",
