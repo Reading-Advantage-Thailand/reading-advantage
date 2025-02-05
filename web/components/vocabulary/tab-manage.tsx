@@ -215,16 +215,39 @@ export default function VocabularyManageTab({ userId }: Props) {
     {
       accessorKey: "word",
       header: "Vocabulary",
-      cell: ({ row }) => <div>{row.getValue("word")}</div>,
+      cell: ({ row }) => (
+        <div
+          className="capitalize cursor-pointer"
+          onClick={() => handleNavigateToArticle(row.original.articleId)}
+        >
+          {row.getValue("word")}
+        </div>
+      ),
     },
     {
       accessorKey: "createdAtString",
-      header: "Date",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Date
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => <div>{row.getValue("createdAtString")}</div>,
     },
     {
       accessorKey: "due",
-      header: "Due",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Due
+          <CaretSortIcon className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => <div>{formatDate(row.getValue("due"))}</div>,
     },
     // {
