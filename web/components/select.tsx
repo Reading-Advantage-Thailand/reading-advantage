@@ -29,7 +29,7 @@ async function fetchArticles(params: string) {
   );
 
   const data = await response.json();
-  console.log("API Response:", response);
+  //console.log("API Response:", response);
   return data;
 }
 
@@ -62,7 +62,7 @@ export default function Select({ user }: Props) {
 
   async function handleButtonClick(value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    console.log(params.toString());
+    //console.log(params.toString());
     if (!selectedType && !selectedGenre && !selectedSubgenre) {
       params.set("type", value);
     }
@@ -88,7 +88,7 @@ export default function Select({ user }: Props) {
       params.set("limit", "10");
 
       const response = await fetchArticles(params.toString());
-      console.log("API Response:", response);
+      //console.log("API Response:", response);
 
       if (response.results.length === 0 && page === 1) {
         router.push("?");
