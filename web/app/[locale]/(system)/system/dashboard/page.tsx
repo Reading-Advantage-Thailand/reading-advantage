@@ -64,7 +64,7 @@ export default async function SystemDashboardPage({
           <ArticlesPerLevelChart articlesPerLevel={articlesPerLevel} />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
-          <ActiveUsersChart />
+          <ActiveUsersChart page="system" />
         </div>
       </div>
     </>

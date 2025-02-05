@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
-import { DBCollection } from "../models/enum";
+const admin = require("firebase-admin");
 
 // GET user activity logs
 // GET /api/activity
@@ -165,77 +165,51 @@ export async function getAllUsersActivity() {
   }
 }
 
-export async function getUserActivityByLicense(licenseId: string) {
+export async function getActivitveUsers(licenseId?: string) {
   try {
-    const usersSnapshot = await db
-      .collection(DBCollection.USERS)
-      .where("license_id", "==", licenseId)
-      .get();
-    const userIds = usersSnapshot.docs.map((doc) => doc.id);
-    console.log("Users found:", userIds);
+    const activeUsersSnapshot = await db.collection("active-users-log").get();
 
-    const dateToUserSet: Record<string, Set<string>> = {};
+    let totalData: { date: string; noOfUsers: number }[] = [];
+    let licenseData: { date: string; noOfUsers: number }[] = [];
 
-    const parentSnapshot = await db.collection("user-activity-log").get();
+    const promises = activeUsersSnapshot.docs.map(async (doc) => {
+      const data = doc.data();
 
-    const listCollectionsPromises = parentSnapshot.docs.map((doc) =>
-      doc.ref.listCollections()
-    );
-    const subCollectionsArrays = await Promise.all(listCollectionsPromises);
-    const allSubCollections = subCollectionsArrays.flat();
-    console.log("Total subcollections found:", allSubCollections);
-
-    const queryPromises: Promise<FirebaseFirestore.QuerySnapshot>[] = [];
-
-    if (userIds.length > 0) {
-      if (userIds.length <= 10) {
-        allSubCollections.forEach((subCollection) => {
-          queryPromises.push(
-            subCollection.where("userId", "in", userIds).get()
-          );
-        });
-      } else {
-        allSubCollections.forEach((subCollection) => {
-          userIds.forEach((userId) => {
-            queryPromises.push(
-              subCollection.where("userId", "==", userId).get()
-            );
-          });
+      if (Array.isArray(data.total)) {
+        data.total.forEach((entry: any) => {
+          if (entry.date && entry.noOfUsers !== undefined) {
+            totalData.push({ date: entry.date, noOfUsers: entry.noOfUsers });
+          }
         });
       }
-    }
 
-    const querySnapshots = await Promise.all(queryPromises);
-    querySnapshots.forEach((snapshot) => {
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.timestamp) {
-          const timestamp: Date = data.timestamp.toDate
-            ? data.timestamp.toDate()
-            : new Date(data.timestamp);
-          const dateStr = timestamp.toISOString().slice(0, 10);
+      if (licenseId && data.licenses && data.licenses[licenseId]) {
+        const licenseEntries = data.licenses[licenseId];
 
-          if (!dateToUserSet[dateStr]) {
-            dateToUserSet[dateStr] = new Set();
-          }
-          dateToUserSet[dateStr].add(data.userId);
+        if (Array.isArray(licenseEntries)) {
+          licenseEntries.forEach((entry: any) => {
+            if (entry.date && entry.noOfUsers !== undefined) {
+              licenseData.push({ date: entry.date, noOfUsers: entry.noOfUsers });
+            }
+          });
         }
-      });
+      }
     });
 
-    const result = Object.entries(dateToUserSet).map(([date, userSet]) => ({
-      date,
-      noOfUsers: userSet.size,
-    }));
+    await Promise.all(promises);
 
-    console.log("Final result:", result);
+    totalData.sort((a, b) => (a.date < b.date ? -1 : 1));
+    licenseData.sort((a, b) => (a.date < b.date ? -1 : 1));
 
-    return NextResponse.json({ data: result }, { status: 200 });
-  } catch (err) {
-    console.error("Error getting documents", err);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
+    return { total: totalData, license: licenseId ? licenseData : [] };
+  } catch (error) {
+    console.error("Error fetching active user logs:", error);
+    return { message: "Internal server error" };
   }
 }
+
+
+
+
+
+
