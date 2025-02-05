@@ -270,3 +270,124 @@ export async function deleteSentencesFlashcard(req: ExtendedNextRequest) {
     });
   }
 }
+
+// Get vocabularies for a user
+export async function getVocabulariesFlashcard(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    // Get vocabularies from user-word-records collection
+    const vocabulariesRef = db
+      .collection("user-word-records")
+      .where("userId", "==", id)
+      .orderBy("createdAt", "desc");
+
+    const vocabulariesSnapshot = await vocabulariesRef.get();
+    const vocabularies = vocabulariesSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json({
+      message: "Vocabularies retrieved successfully",
+      vocabularies,
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error getting vocabularies:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      error,
+      status: 500,
+    });
+  }
+}
+
+// Add new vocabulary
+export async function postVocabulariesFlashcard(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const {
+      articleId,
+      word,
+      difficulty = 0,
+      due = new Date(),
+      elapsed_days = 0,
+      lapses = 0,
+      reps = 0,
+      scheduled_days = 0,
+      stability = 0,
+      state = 0,
+      saveToFlashcard = true,
+    } = await req.json();
+
+    // Check if vocabulary already exists
+    const existingVocab = await db
+      .collection("user-word-records")
+      .where("userId", "==", id)
+      .where("articleId", "==", articleId)
+      .where("word.vocabulary", "==", word.vocabulary)
+      .limit(1)
+      .get();
+
+    if (!existingVocab.empty) {
+      return NextResponse.json(
+        { message: "Vocabulary already exists" },
+        { status: 400 }
+      );
+    }
+
+    // Add new vocabulary
+    await db.collection("user-word-records").add({
+      userId: id,
+      articleId,
+      word,
+      createdAt: new Date(),
+      difficulty,
+      due,
+      elapsed_days,
+      lapses,
+      reps,
+      scheduled_days,
+      stability,
+      state,
+      saveToFlashcard,
+    });
+
+    return NextResponse.json({
+      message: "Vocabulary added successfully",
+      status: 201,
+    });
+  } catch (error) {
+    console.error("Error adding vocabulary:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      status: 500,
+    });
+  }
+}
+
+// Delete vocabulary
+export async function deleteVocabulariesFlashcard(req: ExtendedNextRequest) {
+  try {
+    const { id } = await req.json();
+
+    // Delete vocabulary document
+    const vocabularyRef = db.collection("user-word-records").doc(id);
+    await vocabularyRef.delete();
+
+    return NextResponse.json({
+      message: "Vocabulary deleted successfully",
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error deleting vocabulary:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      status: 500,
+    });
+  }
+}
