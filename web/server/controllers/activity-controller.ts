@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
 const admin = require("firebase-admin");
+import { NextRequest, NextResponse } from "next/server";
 
 // GET user activity logs
 // GET /api/activity
@@ -189,7 +189,10 @@ export async function getActivitveUsers(licenseId?: string) {
         if (Array.isArray(licenseEntries)) {
           licenseEntries.forEach((entry: any) => {
             if (entry.date && entry.noOfUsers !== undefined) {
-              licenseData.push({ date: entry.date, noOfUsers: entry.noOfUsers });
+              licenseData.push({
+                date: entry.date,
+                noOfUsers: entry.noOfUsers,
+              });
             }
           });
         }
@@ -208,8 +211,21 @@ export async function getActivitveUsers(licenseId?: string) {
   }
 }
 
+export async function getActiveUser(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const licenseId = searchParams.get("licenseId") || undefined;
 
+    // console.log("Received licenseId:", licenseId);
 
+    const response = await getActivitveUsers(licenseId);
 
-
-
+    return NextResponse.json(response, { status: 200 });
+  } catch (error) {
+    console.error("Error in GET /api/v1/activity/active-users:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

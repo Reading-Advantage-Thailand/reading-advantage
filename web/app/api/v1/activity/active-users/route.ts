@@ -2,7 +2,7 @@ import { logRequest } from "@/server/middleware";
 import { protect } from "@/server/controllers/auth-controller";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
-import { getActivitveUsers } from "@/server/controllers/activity-controller";
+import { getActiveUser } from "@/server/controllers/activity-controller";
 
 export interface RequestContext {
   params?: {
@@ -17,22 +17,7 @@ router.use(logRequest);
 router.use(protect);
 
 // API: GET /api/v1/activity/active-users?licenseId={license_id}
-router.get(async (req) => {
-  try {
-    const { searchParams } = new URL(req.url);
-    const licenseId = searchParams.get("licenseId") || undefined;
-
-    //console.log("Received licenseId:", licenseId);
-
-    const response = await getActivitveUsers(licenseId);
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (error) {
-    console.error("Error in GET /api/v1/activity/active-users:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-  }
-});
-
+router.get(getActiveUser);
 
 // Export API Route for Next.js
 export async function GET(request: NextRequest, ctx: RequestContext) {
