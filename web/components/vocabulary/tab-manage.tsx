@@ -316,13 +316,29 @@ export default function VocabularyManageTab({ userId }: Props) {
 
   const handleDelete = async (id: string) => {
     try {
-      // Replace with actual delete logic later.
-      const updatedVocabularies = vocabularies.filter((item) => item.id !== id);
-      setVocabularies(updatedVocabularies);
-      toast({
-        title: t("toast.success"),
-        description: t("toast.successDescription"),
+      const res = await fetch(`/api/v1/users/vocabularies/${id}`, {
+        method: "DELETE",
+        body: JSON.stringify({
+          id,
+        }),
       });
+      const data = await res.json();
+      if (data.status === 200) {
+        const updateVocabularies = vocabularies.filter(
+          (item) => item.id !== id
+        );
+        setVocabularies(updateVocabularies);
+        toast({
+          title: t("toast.success"),
+          description: t("toast.successDescription"),
+        });
+      } else {
+        toast({
+          title: t("toast.error"),
+          description: t("toast.errorDescription"),
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.log(error);
       toast({
