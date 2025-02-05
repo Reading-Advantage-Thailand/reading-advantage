@@ -367,9 +367,11 @@ export default function VocabularyManageTab({ userId }: Props) {
         <div className="flex items-center py-4">
           <Input
             placeholder={"Search..."}
-            value={(table.getColumn("word")?.getFilterValue() as string) ?? ""}
+            value={
+              (table.getColumn("vocabulary")?.getFilterValue() as string) ?? ""
+            }
             onChange={(event) =>
-              table.getColumn("word")?.setFilterValue(event.target.value)
+              table.getColumn("vocabulary")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
