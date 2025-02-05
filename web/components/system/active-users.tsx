@@ -25,7 +25,12 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
+interface ActiveUsersChartProps {
+  page: string;
+  license_id?: string;
+}
+
+const mockChartData = [
   { date: "2024-04-01", noOfUsers: 222 },
   { date: "2024-04-02", noOfUsers: 97 },
   { date: "2024-04-03", noOfUsers: 167 },
@@ -129,15 +134,72 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function ActiveUsersChart() {
+export default function ActiveUsersChart({
+  page,
+  license_id,
+}: ActiveUsersChartProps) {
+  const [timeRange, setTimeRange] = React.useState("Daily");
+  const [chartData, setChartData] = React.useState(mockChartData);
+  const [chartType, setChartType] = React.useState<"total" | "license">(
+    "total"
+  );
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("noOfUsers");
-  const total = React.useMemo(
-    () => ({
-      desktop: chartData.reduce((acc, curr) => acc + curr.noOfUsers, 0),
-    }),
-    []
-  );
+  const total = React.useMemo(() => {
+    if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
+      return { desktop: 0 };
+    }
+    return {
+      desktop: chartData.reduce((acc, curr) => acc + (curr.noOfUsers || 0), 0),
+    };
+  }, [chartData]);
+
+  const fetchActiveChart = React.useCallback(async () => {
+    try {
+      const apiUrl =
+        page === "system" || chartType === "total"
+          ? `/api/v1/activity/active-users`
+          : `/api/v1/activity/active-users?licenseId=${license_id}`;
+
+      const res = await fetch(apiUrl, { method: "GET" });
+
+      if (!res.ok) throw new Error("Failed to fetch User activity");
+
+      const fetchData = await res.json();
+      //console.log("Fetched Data:", fetchData);
+
+      if (!fetchData || typeof fetchData !== "object") {
+        throw new Error("Invalid API response format");
+      }
+
+      const totalData: { date: string; noOfUsers: number }[] =
+        fetchData.total || [];
+      const licenseData: { date: string; noOfUsers: number }[] =
+        fetchData.license || [];
+
+      setChartData(
+        page === "system" || chartType === "total" ? totalData : licenseData
+      );
+    } catch (error) {
+      console.error(error);
+      setChartData(mockChartData);
+    }
+  }, [chartType, license_id, page]);
+
+  React.useEffect(() => {
+    fetchActiveChart();
+  }, [page, chartType, license_id, fetchActiveChart]);
+
+  const filterChartData = () => {
+    switch (timeRange) {
+      case "Weekly":
+        return chartData.slice(-7);
+      case "Monthly":
+        return chartData.slice(-30);
+      default:
+        return chartData;
+    }
+  };
 
   return (
     <>
@@ -148,18 +210,39 @@ export default function ActiveUsersChart() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <select className="w-full mb-2">
-            <option>Daily</option>
-            <option>Weekly</option>
-            <option>Monthly</option>
-          </select>
+          {page !== "system" && (
+            <div className="flex justify-between mb-2">
+              <select
+                className="p-1 border rounded-md"
+                value={chartType}
+                onChange={(e) =>
+                  setChartType(e.target.value as "total" | "license")
+                }
+              >
+                <option value="total">Total Users</option>
+                <option value="license">License Users</option>
+              </select>
+            </div>
+          )}
+
+          <div className="flex justify-between mb-2">
+            <select
+              className="p-1 border rounded-md"
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value)}
+            >
+              <option value="Daily">Daily</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Monthly">Monthly</option>
+            </select>
+          </div>
           <ChartContainer
             config={chartConfig}
             className="aspect-auto h-[250px] w-full"
           >
             <BarChart
               accessibilityLayer
-              data={chartData}
+              data={filterChartData()}
               margin={{
                 left: 12,
                 right: 12,

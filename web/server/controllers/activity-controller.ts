@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
+const admin = require("firebase-admin");
+import { NextRequest, NextResponse } from "next/server";
 
 // GET user activity logs
 // GET /api/activity
@@ -157,6 +158,71 @@ export async function getAllUsersActivity() {
     );
   } catch (err) {
     console.log("Error getting documents", err);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getActivitveUsers(licenseId?: string) {
+  try {
+    const activeUsersSnapshot = await db.collection("active-users-log").get();
+
+    let totalData: { date: string; noOfUsers: number }[] = [];
+    let licenseData: { date: string; noOfUsers: number }[] = [];
+
+    const promises = activeUsersSnapshot.docs.map(async (doc) => {
+      const data = doc.data();
+
+      if (Array.isArray(data.total)) {
+        data.total.forEach((entry: any) => {
+          if (entry.date && entry.noOfUsers !== undefined) {
+            totalData.push({ date: entry.date, noOfUsers: entry.noOfUsers });
+          }
+        });
+      }
+
+      if (licenseId && data.licenses && data.licenses[licenseId]) {
+        const licenseEntries = data.licenses[licenseId];
+
+        if (Array.isArray(licenseEntries)) {
+          licenseEntries.forEach((entry: any) => {
+            if (entry.date && entry.noOfUsers !== undefined) {
+              licenseData.push({
+                date: entry.date,
+                noOfUsers: entry.noOfUsers,
+              });
+            }
+          });
+        }
+      }
+    });
+
+    await Promise.all(promises);
+
+    totalData.sort((a, b) => (a.date < b.date ? -1 : 1));
+    licenseData.sort((a, b) => (a.date < b.date ? -1 : 1));
+
+    return { total: totalData, license: licenseId ? licenseData : [] };
+  } catch (error) {
+    console.error("Error fetching active user logs:", error);
+    return { message: "Internal server error" };
+  }
+}
+
+export async function getActiveUser(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const licenseId = searchParams.get("licenseId") || undefined;
+
+    // console.log("Received licenseId:", licenseId);
+
+    const response = await getActivitveUsers(licenseId);
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (error) {
+    console.error("Error in GET /api/v1/activity/active-users:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
