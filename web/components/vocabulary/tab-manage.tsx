@@ -231,7 +231,7 @@ export default function VocabularyManageTab({ userId }: Props) {
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Date
+          Date Saved
           <CaretSortIcon className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -422,7 +422,7 @@ export default function VocabularyManageTab({ userId }: Props) {
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-end space-x-2 pt-4">
+        <div className="flex items-center justify-end space-x-2 pt-4 pb-4">
           <Button
             variant="outline"
             size="sm"
