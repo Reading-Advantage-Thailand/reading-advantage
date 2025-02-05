@@ -145,4 +145,7 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
     );
   }
 );
+
+ArticleShowcaseCard.displayName = "ArticleShowcaseCard";
+
 export default React.memo(ArticleShowcaseCard);
