@@ -4,6 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScopedI18n } from "@/locales/client";
 import FlashCard from "./tab-flash-card";
 import MatchingWords from "./tab-matching-words";
+import VocabularyManageTab from "./tab-manage";
+
 type Props = {
   userId: string;
 };
@@ -17,6 +19,7 @@ export default function TabsVocabulary({ userId }: Props) {
       <TabsList className="h-fit grid grid-cols-1 md:grid-cols-6">
         <TabsTrigger value="tab1">{t("flashcard").toString()}</TabsTrigger>
         <TabsTrigger value="tab5">{t("matching").toString()}</TabsTrigger>
+        <TabsTrigger value="tab6">{t("manage").toString()}</TabsTrigger>
       </TabsList>
       <TabsContent className="space-y-2" value="tab1">
         <FlashCard
@@ -28,6 +31,9 @@ export default function TabsVocabulary({ userId }: Props) {
 
       <TabsContent className="space-y-2" value="tab5">
         <MatchingWords userId={userId} />
+      </TabsContent>
+      <TabsContent className="space-y-2" value="tab6">
+        <VocabularyManageTab userId={userId} />
       </TabsContent>
     </Tabs>
   );

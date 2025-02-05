@@ -72,6 +72,9 @@ export default {
         savedSentences: "ประโยคที่บันทึกไว้",
         noSavedSentences: "คุณยังไม่มีประโยคที่บันทึกไว้",
         savedSentencesDescription: "คุณมีประโยคที่บันทึกไว้ {total} ประโยค",
+        savedVocabulary: "คำศัพท์ที่บันทึกไว้",
+        noSavedVocabulary: "คุณยังไม่มีคำศัพท์ที่บันทึกไว้",
+        savedVocabularyDescription: "คุณมีคำศัพท์ที่บันทึกไว้ {total} คำ",
         added: "เพิ่มเมื่อ {date}",
         deleteButton: "ลบ",
         neverPracticeButton: "ไม่ต้องฝึกประโยคนี้อีก",
@@ -653,6 +656,7 @@ export default {
       tab: {
         flashcard: "การ์ดคำศัพท์",
         matching: "การจับคู่",
+        manage: "จัดการ",
       },
       flashcard: {
         neverPracticeButton: "ไม่ต้องฝึกคำศัพท์นี้อีก",
