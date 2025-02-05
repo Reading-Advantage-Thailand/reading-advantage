@@ -61,6 +61,18 @@ export default async function AdminDashboardPage() {
     return fetchdata;
   };
 
+  const xpSum30Days = async () => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/xp?license_id=${user.license_id}`,
+      { method: "GET", headers: headers() }
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch XP data");
+
+    const fetchdata = await res.json();
+    return fetchdata.total_xp;
+  };
+
   const userRoleListfetch = async () => {
     const userRes = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users`,
@@ -84,15 +96,11 @@ export default async function AdminDashboardPage() {
   const schoolList = await schoolListfetch();
   const userRoleList = await userRoleListfetch();
   const averageCefrLevelData = await averageCefrLevelDatafetch();
+  const sumXp30Days = await xpSum30Days();
 
   const UserData = userRoleList?.results?.filter(
     (users: any) => users.license_id && users.license_id === user.license_id
   );
-
-  const sumXp = UserData.reduce((sum: number, user: any) => {
-    const xp = parseInt(user.xp) || 0;
-    return sum + xp;
-  }, 0);
 
   const countTeachers = UserData.filter(
     (users: any) => users.role === "teacher"
@@ -158,7 +166,7 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-center">
-              {sumXp.toLocaleString()} XP
+              {sumXp30Days.toLocaleString()} XP
             </p>
           </CardContent>
         </Card>
