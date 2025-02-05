@@ -2,7 +2,7 @@
 import * as React from "react";
 import { toast } from "../ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
-import { formatDate, formatTimestamp, levelCalculation } from "@/lib/utils";
+import { formatDate, levelCalculation } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { State } from "ts-fsrs";
@@ -30,11 +30,6 @@ import { CaretSortIcon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import { Header } from "@/components/header";
 
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import dayjs_plugin_isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-
 import { date_scheduler } from "ts-fsrs";
 import { filter } from "lodash";
 import { UserXpEarned } from "../models/user-activity-log-model";
@@ -45,15 +40,15 @@ export type Vocabulary = {
   definition: string;
   createdAt: string;
   id: string;
-  due: Date; // Date when the card is next due for review
-  stability: number; // A measure of how well the information is retained
-  difficulty: number; // Reflects the inherent difficulty of the card content
-  elapsed_days: number; // Days since the card was last reviewed
-  scheduled_days: number; // The interval at which the card is next scheduled
-  reps: number; // Total number of times the card has been reviewed
-  lapses: number; // Times the card was forgotten or remembered incorrectly
-  state: State; // The current state of the card (New, Learning, Review, Relearning)
-  last_review?: Date; // The most recent review date, if applicable
+  due: Date; 
+  stability: number; 
+  difficulty: number; 
+  elapsed_days: number; 
+  scheduled_days: number; 
+  reps: number; 
+  lapses: number; 
+  state: State; 
+  last_review?: Date; 
 };
 
 type Props = {
@@ -82,47 +77,33 @@ export default function VocabularyManageTab({ userId }: Props) {
       const data = await res.json();
       const startOfDay = date_scheduler(new Date(), 0, true);
 
-      /*const filteredData = await data.vocabularies
-        .filter((record: Vocabulary) => {
-          const dueDate = new Date(record.due);
-          return record.state === 0 || dueDate < startOfDay;
-        })
-        .sort((a: Vocabulary, b: Vocabulary) => {
-          return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
-        });
-      */
-      //setVocabularies(filteredData);
-
       if (!data || !data.vocabularies || !Array.isArray(data.vocabularies)) {
         console.error("Invalid API response:", data);
-        return; // Or handle the error appropriately
+        return; 
       }
 
       const vocabulariesWithFormattedData = data.vocabularies.map(
         (vocabulary: any) => {
-          const word = vocabulary.word || {}; // Handle missing word
-          const definition = word.definition || {}; // Handle missing definition
+          const word = vocabulary.word || {}; 
+          const definition = word.definition || {}; 
 
           return {
             ...vocabulary,
             createdAtString: formatDateFromTimestamp(vocabulary.createdAt),
-            word: word.vocabulary, // Access word.vocabulary, handle missing word
+            word: word.vocabulary, 
             definition:
               definition.th ||
               definition.en ||
               definition.cn ||
               definition.tw ||
               definition.vi ||
-              "No definition", // Access definition.th (or other languages), handle missing definition
+              "No definition", 
           };
         }
       );
 
       setVocabularies(vocabulariesWithFormattedData);
 
-      console.log(data.vocabularies[0]);
-
-      // updateScore
       let filterDataUpdateScore = filter(data.vocabularies, (item) => {
         const dueDate = new Date(item.due);
         return (
@@ -186,8 +167,7 @@ export default function VocabularyManageTab({ userId }: Props) {
   };
 
   const formatDateFromTimestamp = (timestamp: any): string => {
-    // Type any to handle various cases
-    if (!timestamp) return ""; // Handle missing timestamp
+    if (!timestamp) return ""; 
 
     if (typeof timestamp === "object" && timestamp._seconds) {
       const seconds = timestamp._seconds;
@@ -204,7 +184,7 @@ export default function VocabularyManageTab({ userId }: Props) {
         return "Invalid Date";
       }
     }
-    return "Invalid Date"; // Handle other cases
+    return "Invalid Date"; 
   };
 
   React.useEffect(() => {
@@ -250,29 +230,6 @@ export default function VocabularyManageTab({ userId }: Props) {
       ),
       cell: ({ row }) => <div>{formatDate(row.getValue("due"))}</div>,
     },
-    // {
-    //   accessorKey: "update_score",
-    //   header: ({ column }) => (
-    //     <div className="text-center font-medium">Status</div>
-    //   ),
-    //   cell: ({ row }) => {
-    //     const status = row.getValue("update_score");
-
-    //     return (
-    //       <div className="text-center font-medium">
-    //         {status ? (
-    //           <Badge className="bg-green-700" variant="outline">
-    //             Complate
-    //           </Badge>
-    //         ) : (
-    //           <Badge className="bg-orange-400" variant="outline">
-    //             In Progress
-    //           </Badge>
-    //         )}
-    //       </div>
-    //     );
-    //   },
-    // },
     {
       accessorKey: "delete",
       header: "",
@@ -386,7 +343,6 @@ export default function VocabularyManageTab({ userId }: Props) {
                         : typeof header.column.columnDef.header === "function"
                         ? header.column.columnDef.header(header.getContext())
                         : header.column.columnDef.header}{" "}
-                      {/* Render header based on type */}
                     </TableHead>
                   ))}
                 </TableRow>

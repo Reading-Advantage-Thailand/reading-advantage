@@ -271,13 +271,11 @@ export async function deleteSentencesFlashcard(req: ExtendedNextRequest) {
   }
 }
 
-// Get vocabularies for a user
 export async function getVocabulariesFlashcard(
   req: ExtendedNextRequest,
   { params: { id } }: RequestContext
 ) {
   try {
-    // Get vocabularies from user-word-records collection
     const vocabulariesRef = db
       .collection("user-word-records")
       .where("userId", "==", id)
@@ -304,7 +302,6 @@ export async function getVocabulariesFlashcard(
   }
 }
 
-// Add new vocabulary
 export async function postVocabulariesFlashcard(
   req: ExtendedNextRequest,
   { params: { id } }: RequestContext
@@ -324,7 +321,6 @@ export async function postVocabulariesFlashcard(
       saveToFlashcard = true,
     } = await req.json();
 
-    // Check if vocabulary already exists
     const existingVocab = await db
       .collection("user-word-records")
       .where("userId", "==", id)
@@ -340,7 +336,6 @@ export async function postVocabulariesFlashcard(
       );
     }
 
-    // Add new vocabulary
     await db.collection("user-word-records").add({
       userId: id,
       articleId,
@@ -370,12 +365,10 @@ export async function postVocabulariesFlashcard(
   }
 }
 
-// Delete vocabulary
 export async function deleteVocabulariesFlashcard(req: ExtendedNextRequest) {
   try {
     const { id } = await req.json();
 
-    // Delete vocabulary document
     const vocabularyRef = db.collection("user-word-records").doc(id);
     await vocabularyRef.delete();
 
