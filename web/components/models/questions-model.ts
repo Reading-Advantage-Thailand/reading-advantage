@@ -55,6 +55,7 @@ export interface MultipleChoiceQuestion {
   id: string;
   question: string;
   options: string[];
+  textual_evidence: string;
 }
 
 export interface ShortAnswerQuestion {

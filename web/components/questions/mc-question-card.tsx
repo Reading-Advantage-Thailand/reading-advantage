@@ -222,6 +222,7 @@ function MCQeustion({
   const { timer, setPaused } = useContext(QuizContext);
   const t = useScopedI18n("components.mcq");
   const router = useRouter();
+  const [textualEvidence, setTextualEvidence] = useState("");
 
   const onSubmitted = async (questionId: string, option: string, i: number) => {
     setPaused(true);
@@ -238,6 +239,7 @@ function MCQeustion({
         setCorrectAnswer(data.correct_answer);
         setSelectedOption(i);
         setProgress(data.progress);
+        setTextualEvidence(resp.results[index].textual_evidence);
       })
       .finally(() => {
         setLoadingAnswer(false);
@@ -322,6 +324,16 @@ function MCQeustion({
       <CardDescription className="text-2xl md:text-2xl mt-3">
         {resp.results[index]?.question}
       </CardDescription>
+
+      {textualEvidence && (
+        <div className="mt-4 p-4 font-semibold bg-gray-100 text-gray-700 rounded">
+          <p>
+            <span className="font-bold text-lg text-gray-800">Feedback: </span>
+            {`"${textualEvidence}"`}
+          </p>
+        </div>
+      )}
+
       {resp.results[index]?.options.map((option, i) => (
         <Button
           key={i}
@@ -350,6 +362,7 @@ function MCQeustion({
               setSelectedOption(-1);
               setCorrectAnswer("");
               setPaused(false);
+              setTextualEvidence("");
             } else {
               handleCompleted();
             }
