@@ -62,6 +62,9 @@ export default {
         savedSentences: "保存的句子",
         noSavedSentences: "您没有保存的句子。",
         savedSentencesDescription: "您有 {total} 个保存的句子。",
+        savedVocabulary: "保存的单词",
+        noSavedVocabulary: "您还没有保存的单词",
+        savedVocabularyDescription: "您有保存的单词 {total} 个",
         added: "添加于 {date}",
         deleteButton: "删除",
         neverPracticeButton: "不用再练习这个句子了",
@@ -626,6 +629,7 @@ export default {
       tab: {
         flashcard: "单词卡",
         matching: "匹配",
+        manage: "管理",
       },
       flashcard: {
         neverPracticeButton: "不再练习这个词汇",

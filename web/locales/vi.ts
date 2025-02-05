@@ -72,6 +72,9 @@ export default {
         savedSentences: "Câu đoạn đã lưu",
         noSavedSentences: "Bạn chưa lưu câu đoạn nào.",
         savedSentencesDescription: "Bạn đã lưu {total} câu đoạn.",
+        savedVocabulary: "Từ vựng đã lưu",
+        noSavedVocabulary: "Bạn chưa có từ vựng nào đã lưu",
+        savedVocabularyDescription: "Bạn có {total} từ vựng đã lưu",
         added: "Thêm vào {date}",
         deleteButton: "Xóa",
         neverPracticeButton: "Không cần luyện tập câu này nữa.",
@@ -660,6 +663,7 @@ export default {
       tab: {
         flashcard: "Thẻ học",
         matching: "Ghép cặp",
+        manage: "quản lý",
       },
       flashcard: {
         neverPracticeButton: "Không luyện tập từ này nữa",
