@@ -125,7 +125,7 @@ const mockChartData = [
 ];
 const chartConfig = {
   views: {
-    label: "Page Views",
+    label: "Active Users",
   },
   noOfUsers: {
     label: "noOfUsers",
@@ -139,56 +139,51 @@ export default function ActiveUsersChart({
   license_id,
 }: ActiveUsersChartProps) {
   const [timeRange, setTimeRange] = React.useState("Daily");
+  const [chartType, setChartType] = React.useState<"total" | "license">("total");
+  const [selectedLicense, setSelectedLicense] = React.useState<string | "total">("total");
   const [chartData, setChartData] = React.useState(mockChartData);
-  const [chartType, setChartType] = React.useState<"total" | "license">(
-    "total"
-  );
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("noOfUsers");
-  const total = React.useMemo(() => {
-    if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
-      return { desktop: 0 };
-    }
-    return {
-      desktop: chartData.reduce((acc, curr) => acc + (curr.noOfUsers || 0), 0),
-    };
-  }, [chartData]);
+  const [licenses, setLicenses] = React.useState<string[]>([]);
 
   const fetchActiveChart = React.useCallback(async () => {
     try {
-      const apiUrl =
-        page === "system" || chartType === "total"
-          ? `/api/v1/activity/active-users`
-          : `/api/v1/activity/active-users?licenseId=${license_id}`;
-
+      let apiUrl = `/api/v1/activity/active-users`;
       const res = await fetch(apiUrl, { method: "GET" });
 
       if (!res.ok) throw new Error("Failed to fetch User activity");
 
       const fetchData = await res.json();
-      //console.log("Fetched Data:", fetchData);
-
       if (!fetchData || typeof fetchData !== "object") {
         throw new Error("Invalid API response format");
       }
 
-      const totalData: { date: string; noOfUsers: number }[] =
-        fetchData.total || [];
-      const licenseData: { date: string; noOfUsers: number }[] =
-        fetchData.license || [];
+      let dataToUse: { date: string; noOfUsers: number }[] = [];
 
-      setChartData(
-        page === "system" || chartType === "total" ? totalData : licenseData
-      );
+      if (page === "admin" && license_id) {
+        dataToUse = fetchData.licenses?.[license_id] || [];
+      } else {
+        if (selectedLicense === "total") {
+          dataToUse = fetchData.total || [];
+        } else {
+          dataToUse = fetchData.licenses?.[selectedLicense] || [];
+        }
+
+        if (fetchData.licenses) {
+          setLicenses(Object.keys(fetchData.licenses));
+        }
+      }
+
+      setChartData(dataToUse);
     } catch (error) {
       console.error(error);
       setChartData(mockChartData);
     }
-  }, [chartType, license_id, page]);
+  }, [page, license_id, selectedLicense]);
 
   React.useEffect(() => {
     fetchActiveChart();
-  }, [page, chartType, license_id, fetchActiveChart]);
+  }, [fetchActiveChart]);
 
   const filterChartData = () => {
     switch (timeRange) {
@@ -210,17 +205,19 @@ export default function ActiveUsersChart({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {page !== "system" && (
+          {page === "system" && (
             <div className="flex justify-between mb-2">
               <select
                 className="p-1 border rounded-md"
-                value={chartType}
-                onChange={(e) =>
-                  setChartType(e.target.value as "total" | "license")
-                }
+                value={selectedLicense}
+                onChange={(e) => setSelectedLicense(e.target.value)}
               >
                 <option value="total">Total Users</option>
-                <option value="license">License Users</option>
+                {licenses.map((license) => (
+                  <option key={license} value={license}>
+                    License: {license}
+                  </option>
+                ))}
               </select>
             </div>
           )}
@@ -286,3 +283,4 @@ export default function ActiveUsersChart({
     </>
   );
 }
+

@@ -170,7 +170,7 @@ export async function getActivitveUsers(licenseId?: string) {
     const activeUsersSnapshot = await db.collection("active-users-log").get();
 
     let totalData: { date: string; noOfUsers: number }[] = [];
-    let licenseData: { date: string; noOfUsers: number }[] = [];
+    let licensesData: Record<string, { date: string; noOfUsers: number }[]> = {};
 
     const promises = activeUsersSnapshot.docs.map(async (doc) => {
       const data = doc.data();
@@ -183,28 +183,48 @@ export async function getActivitveUsers(licenseId?: string) {
         });
       }
 
-      if (licenseId && data.licenses && data.licenses[licenseId]) {
-        const licenseEntries = data.licenses[licenseId];
+      if (data.licenses && typeof data.licenses === "object") {
+        Object.keys(data.licenses).forEach((licenseKey) => {
+          if (!licensesData[licenseKey]) {
+            licensesData[licenseKey] = [];
+          }
 
-        if (Array.isArray(licenseEntries)) {
-          licenseEntries.forEach((entry: any) => {
-            if (entry.date && entry.noOfUsers !== undefined) {
-              licenseData.push({
-                date: entry.date,
-                noOfUsers: entry.noOfUsers,
-              });
-            }
-          });
-        }
+          const licenseEntries = data.licenses[licenseKey];
+
+          if (Array.isArray(licenseEntries)) {
+            licenseEntries.forEach((entry: any) => {
+              if (entry.date && entry.noOfUsers !== undefined) {
+                licensesData[licenseKey].push({
+                  date: entry.date,
+                  noOfUsers: entry.noOfUsers,
+                });
+              }
+            });
+          }
+        });
       }
     });
 
     await Promise.all(promises);
 
     totalData.sort((a, b) => (a.date < b.date ? -1 : 1));
-    licenseData.sort((a, b) => (a.date < b.date ? -1 : 1));
+    Object.keys(licensesData).forEach((license) => {
+      licensesData[license].sort((a, b) => (a.date < b.date ? -1 : 1));
+    });
 
-    return { total: totalData, license: licenseId ? licenseData : [] };
+    if (licenseId) {
+      return {
+        total: totalData,
+        licenses: {
+          [licenseId]: licensesData[licenseId] || [],
+        },
+      };
+    }
+
+    return {
+      total: totalData,
+      licenses: licensesData,
+    };
   } catch (error) {
     console.error("Error fetching active user logs:", error);
     return { message: "Internal server error" };
@@ -215,8 +235,6 @@ export async function getActiveUser(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const licenseId = searchParams.get("licenseId") || undefined;
-
-    // console.log("Received licenseId:", licenseId);
 
     const response = await getActivitveUsers(licenseId);
 
@@ -229,3 +247,4 @@ export async function getActiveUser(req: NextRequest) {
     );
   }
 }
+
