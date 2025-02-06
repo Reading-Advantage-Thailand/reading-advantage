@@ -258,7 +258,7 @@ export default function ClassRoster({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="mt-4">
-                Select a Classroom
+                {classrooms?.[0]?.classroomName || "Select a Classroom"}
                 <ChevronDownIcon className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
