@@ -98,8 +98,12 @@ export default function ArticleContent({
         index === article.timepoints.length - 1
           ? timepoint.timeSeconds + 10
           : article.timepoints[index + 1].timeSeconds - 0.3;
+      const sentence =
+        sentences.length < article.timepoints.length
+          ? article.timepoints[index].sentences
+          : sentences[index];
       return {
-        sentence: sentences[index],
+        sentence: sentence ?? sentences[index],
         index: timepoint.index,
         startTime,
         endTime,
