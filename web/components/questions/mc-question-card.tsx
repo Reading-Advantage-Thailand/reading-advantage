@@ -343,7 +343,11 @@ function MCQeustion({
             correctAnswer === option && "bg-green-500 hover:bg-green-600"
           )}
           disabled={isLoadingAnswer}
-          onClick={() => onSubmitted(resp.results[index].id, option, i)}
+          onClick={() => {
+            if (selectedOption === -1) {
+              onSubmitted(resp.results[index].id, option, i);
+            }
+          }}
         >
           <p className="w-full text-left">
             {i + 1}. {option}
