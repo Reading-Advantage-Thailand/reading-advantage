@@ -99,7 +99,7 @@ export default function ArticleContent({
           ? timepoint.timeSeconds + 10
           : article.timepoints[index + 1].timeSeconds - 0.3;
       const sentence =
-        sentences.length < article.timepoints.length
+        sentences.length <= article.timepoints.length
           ? article.timepoints[index].sentences
           : sentences[index];
       return {

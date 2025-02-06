@@ -204,9 +204,9 @@ export default async function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div>
+      {/* <div>
         <ClassRoomXpChart license_id={schoolList.license.id}/>
-      </div>
+      </div> */}
       <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
         <ActiveUsersChart page={"admin"} license_id={schoolList.license.id} />
       </div>
