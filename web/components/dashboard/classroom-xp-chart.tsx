@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTheme } from "next-themes";
 import {
   BarChart,
   Bar,
@@ -12,80 +13,59 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+interface ClassRoomXpChartProps {
+  license_id?: string;
+}
+
 type TimeRange = "week" | "month" | "year";
 type ViewType = "mostActive" | "leastActive";
+type XpData = { name: string; xp: number };
 
-interface ClassData {
-  name: string;
-  xp: number;
-}
-
-interface DataByTimeRange {
-  week: ClassData[];
-  month: ClassData[];
-  year: ClassData[];
-}
-
-export default function ClassRoomXpChart() {
+export default function ClassRoomXpChart({ license_id }: ClassRoomXpChartProps) {
+  const { theme } = useTheme();
   const [timeRange, setTimeRange] = useState<TimeRange>("week");
   const [view, setView] = useState<ViewType>("mostActive");
+  const [data, setData] = useState<XpData[]>([]);
+  const [maxXP, setMaxXP] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const dataMostActive: DataByTimeRange = {
-    week: [
-      { name: "Class A", xp: 85000 },
-      { name: "Class B", xp: 75000 },
-      { name: "Class C", xp: 65000 },
-      { name: "Class D", xp: 55000 },
-      { name: "Class E", xp: 45000 },
-    ],
-    month: [
-      { name: "Class A", xp: 340000 },
-      { name: "Class B", xp: 300000 },
-      { name: "Class C", xp: 260000 },
-      { name: "Class D", xp: 220000 },
-      { name: "Class E", xp: 180000 },
-    ],
-    year: [
-      { name: "Class A", xp: 4080000 },
-      { name: "Class B", xp: 3600000 },
-      { name: "Class C", xp: 3120000 },
-      { name: "Class D", xp: 2640000 },
-      { name: "Class E", xp: 2160000 },
-    ],
-  };
+  React.useEffect(() => {
+    const fetchXpData = async () => {
+      setLoading(true);
+      setError(null);
 
-  const dataLeastActive: DataByTimeRange = {
-    week: [
-      { name: "Class X", xp: 15000 },
-      { name: "Class Y", xp: 12000 },
-      { name: "Class Z", xp: 10000 },
-      { name: "Class W", xp: 8000 },
-      { name: "Class V", xp: 5000 },
-    ],
-    month: [
-      { name: "Class X", xp: 60000 },
-      { name: "Class Y", xp: 48000 },
-      { name: "Class Z", xp: 40000 },
-      { name: "Class W", xp: 32000 },
-      { name: "Class V", xp: 20000 },
-    ],
-    year: [
-      { name: "Class X", xp: 720000 },
-      { name: "Class Y", xp: 576000 },
-      { name: "Class Z", xp: 480000 },
-      { name: "Class W", xp: 384000 },
-      { name: "Class V", xp: 240000 },
-    ],
-  };
+      try {
+        const year = new Date().getFullYear();
+        const url = license_id
+          ? `/api/v1/classroom/xp-chart?year=${year}&licenseId=${license_id}`
+          : `/api/v1/classroom/xp-chart?year=${year}`;
 
-  const data = view === "mostActive" 
-    ? dataMostActive[timeRange] 
-    : dataLeastActive[timeRange];
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch data");
 
-  const maxXP = Math.max(
-    ...dataMostActive[timeRange].map(item => item.xp),
-    ...dataLeastActive[timeRange].map(item => item.xp)
-  );
+        const result = await response.json();
+        const xpData = result.data;
+        if (!xpData) throw new Error("No XP data available");
+
+        const key = view === "mostActive" ? "dataMostActive" : "dataLeastActive";
+        let formattedData: XpData[] = xpData[key]?.[timeRange] || [];
+
+        formattedData.sort((a, b) => b.xp - a.xp);
+        setData(formattedData);
+
+        const maxXpValue =
+          formattedData.length > 0 ? Math.max(...formattedData.map((item) => item.xp)) : 0;
+        setMaxXP(maxXpValue);
+      } catch (error: any) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchXpData();
+  }, [timeRange, view, license_id]);
 
   const buttons = [
     { id: "mostActive" as const, label: "5 Most Active" },
@@ -99,12 +79,13 @@ export default function ClassRoomXpChart() {
   ];
 
   return (
-    <Card className="col-span-3 p-4 rounded-lg shadow mt-2 mb-4">
+    <Card className="min-h-[500px] col-span-3 p-4 rounded-lg shadow mt-2 mb-4">
       <CardHeader>
         <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
           Class Activity
         </CardTitle>
       </CardHeader>
+
       <CardContent>
         <div className="flex flex-wrap gap-2 mb-6">
           <div className="flex gap-2">
@@ -134,38 +115,55 @@ export default function ClassRoomXpChart() {
           </div>
         </div>
 
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart layout="vertical" data={data}>
-            <XAxis
-              type="number"
-              domain={[0, maxXP]}
-              tickFormatter={(value) => `${value.toLocaleString()} XP`}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              type="category"
-              dataKey="name"
-              width={120}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Tooltip
-              content={({ active, payload }) => {
-                if (active && payload && payload.length > 0 && payload[0]) {
-                  return (
-                    <div className="bg-gray-800 text-white p-2 rounded shadow-lg">
-                      <p className="font-bold">{`Classroom: ${payload[0].payload.name}`}</p>
-                      <p>{`XP: ${payload[0].value?.toLocaleString()} XP`}</p>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Bar dataKey="xp" fill="#6366f1" />
-          </BarChart>
-        </ResponsiveContainer>
+        {loading ? (
+          <p className="text-center text-gray-500">Loading data...</p>
+        ) : error ? (
+          <p className="text-center text-red-500">{error}</p>
+        ) : data.length === 0 ? (
+          <p className="text-center text-gray-500">No XP data available</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart layout="vertical" data={data}>
+              <XAxis
+                type="number"
+                domain={[0, maxXP]}
+                tickFormatter={(value) => `${value.toLocaleString()} XP`}
+                axisLine={false}
+                tickLine={false}
+                stroke={theme === "dark" ? "#fff" : "#000"}
+              />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={50}
+                axisLine={false}
+                tickLine={false}
+                stroke={theme === "dark" ? "#fff" : "#000"}
+              />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length > 0 && payload[0]) {
+                    return (
+                      <div
+                        className={`p-2 rounded shadow-lg ${
+                          theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"
+                        }`}
+                      >
+                        <p className="font-bold">{`Classroom: ${payload[0].payload.name}`}</p>
+                        <p>{`XP: ${payload[0].value?.toLocaleString()} XP`}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar
+                dataKey="xp"
+                fill={theme === "dark" ? "#4F46E5" : "#2662d9"}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );

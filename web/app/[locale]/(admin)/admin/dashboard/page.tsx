@@ -197,7 +197,7 @@ export default async function AdminDashboardPage() {
         </Card>
       </div>
       <div>
-        <ClassRoomXpChart/>
+        <ClassRoomXpChart license_id={schoolList.license.id}/>
       </div>
       <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
         <ActiveUsersChart page={"admin"} license_id={schoolList.license.id} />
