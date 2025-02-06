@@ -228,14 +228,14 @@ export default function Reports({
   });
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       {classes && (
         <div>
           <Header heading="Reports" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="mt-4">
-                Select a Classroom
+                {classrooms?.[0]?.classroomName || "Select a Classroom"}
                 <ChevronDownIcon className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -275,7 +275,7 @@ export default function Reports({
           onChange={(event) =>
             table.getColumn("display_name")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm mt-4"
+          className="max-w-sm"
         />
         {studentInClass && (
           <div className="flex justify-end">
@@ -288,7 +288,7 @@ export default function Reports({
           </div>
         )}
       </div>
-      <div className="rounded-md border mt-4">
+      <div className="rounded-md border">
         <Table style={{ tableLayout: "fixed", width: "100%" }}>
           <TableHeader className="font-bold">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -358,6 +358,6 @@ export default function Reports({
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 }
