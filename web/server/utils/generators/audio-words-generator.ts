@@ -32,7 +32,9 @@ interface TimePoint {
 function contentToSSML(content: string[]): string {
   let ssml = "<speak>";
   content.forEach((sentence, i) => {
-    ssml += `<s><mark name='word${i + 1}'/>${sentence}</s>`;
+    ssml += `<s><mark name='word${
+      i + 1
+    }'/>${sentence}<break time="500ms"/></s>`;
   });
   ssml += "</speak>";
   return ssml;

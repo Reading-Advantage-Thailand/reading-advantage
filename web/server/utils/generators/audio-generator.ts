@@ -59,7 +59,7 @@ const generateSSML = async (article: string) => {
 async function splitTextIntoChunks(
   content: string,
   maxBytes: number
-): Promise<string[]> {
+): Promise<{ sentences: string[]; chunks: string[] }> {
   // const sentences = splitTextIntoSentences(content);
   const sentences = await generateSSML(content);
   const chunks: string[] = [];
@@ -80,7 +80,7 @@ async function splitTextIntoChunks(
     }
   });
 
-  return chunks;
+  return { sentences, chunks };
 }
 
 export async function generateAudio({
@@ -93,7 +93,7 @@ export async function generateAudio({
     const newVoice =
       NEW_MODEL_VOICES[Math.floor(Math.random() * NEW_MODEL_VOICES.length)];
 
-    const chunks = await splitTextIntoChunks(passage, 5000);
+    const { sentences, chunks } = await splitTextIntoChunks(passage, 5000);
     let currentIndex = 0;
     let cumulativeTime = 0;
 
@@ -102,6 +102,7 @@ export async function generateAudio({
       timeSeconds: number;
       index: number;
       file: string;
+      sentences: string;
     }> = [];
     [];
     const audioPaths: string[] = [];
@@ -150,6 +151,7 @@ export async function generateAudio({
           timeSeconds: (tp.timeSeconds || 0) + cumulativeTime,
           index: currentIndex - 1,
           file: `${articleId}.mp3`, // Final combined file name
+          sentences: sentences[currentIndex - 1],
         });
       });
 

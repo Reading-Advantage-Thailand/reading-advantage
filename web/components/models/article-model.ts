@@ -35,4 +35,5 @@ export interface Timepoint {
   markName: string;
   file: string;
   index: number;
+  sentences: string;
 }
