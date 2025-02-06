@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import catchAsync from "../utils/catch-async";
 import { ExtendedNextRequest } from "./auth-controller";
 import { licenseService } from "../services/firestore-server-services";
@@ -6,6 +6,7 @@ import { createLicenseModel, License } from "../models/license";
 import { DBCollection } from "../models/enum";
 import { getAlls, deleteOne } from "../handlers/handler-factory";
 import db from "@/configs/firestore-config";
+import { DocumentData } from "firebase-admin/firestore";
 
 interface RequestContext {
   params: {
@@ -226,3 +227,147 @@ export const getLicense = async (
 //         licenses: licensesData,
 //     });
 // });
+
+export const calculateXpForLast30Days = async () => {
+  try {
+    const now = new Date();
+
+    const xpByDateAndUser: Record<string, Record<string, number>> = {};
+
+    const activitySnapshot = await db.collection("user-activity-log").get();
+
+    const activityPromises = activitySnapshot.docs.map(async (doc) => {
+      const subCollections = await doc.ref.listCollections();
+      const subCollectionPromises = subCollections.map(
+        async (subCollection) => {
+          const subSnapshot = await subCollection.get();
+
+          subSnapshot.docs.forEach((subDoc) => {
+            const data = subDoc.data();
+
+            if (!data.userId || !data.timestamp || !data.xpEarned) {
+              return;
+            }
+
+            const userId = data.userId;
+            const xpEarned = data.xpEarned || 0;
+            const timestamp: Date = data.timestamp.toDate
+              ? data.timestamp.toDate()
+              : new Date(data.timestamp);
+            const dateStr = timestamp.toISOString().slice(0, 10);
+
+            const past30Days = new Date();
+            past30Days.setDate(now.getDate() - 30);
+
+            if (timestamp < past30Days || timestamp >= now) return;
+
+            if (!xpByDateAndUser[dateStr]) {
+              xpByDateAndUser[dateStr] = {};
+            }
+
+            if (!xpByDateAndUser[dateStr][userId]) {
+              xpByDateAndUser[dateStr][userId] = 0;
+            }
+
+            xpByDateAndUser[dateStr][userId] += xpEarned;
+          });
+        }
+      );
+
+      await Promise.all(subCollectionPromises);
+    });
+
+    await Promise.all(activityPromises);
+
+    const usersSnapshot = await db.collection("users").get();
+    const licenseToUserMap: Record<string, Set<string>> = {};
+
+    usersSnapshot.forEach((doc) => {
+      const user = doc.data();
+      const userId = doc.id;
+      const licenseId = user.license_id;
+      if (licenseId) {
+        if (!licenseToUserMap[licenseId]) {
+          licenseToUserMap[licenseId] = new Set();
+        }
+        licenseToUserMap[licenseId].add(userId);
+      }
+    });
+
+    const xpByDateAndLicenseFinal: Record<string, Record<string, number>> = {};
+
+    Object.entries(xpByDateAndUser).forEach(([date, xpByUser]) => {
+      xpByDateAndLicenseFinal[date] = {};
+
+      Object.entries(licenseToUserMap).forEach(([licenseId, userSet]) => {
+        let totalXp = 0;
+        userSet.forEach((userId) => {
+          if (xpByUser[userId]) {
+            totalXp += xpByUser[userId];
+          }
+        });
+        if (totalXp > 0) {
+          xpByDateAndLicenseFinal[date][licenseId] = totalXp;
+        }
+      });
+    });
+
+    for (const [date, xpByLicense] of Object.entries(xpByDateAndLicenseFinal)) {
+      for (const license_id in xpByLicense) {
+        await db.collection("xp-gained-log").doc(`${license_id}-${date}`).set({
+          license_id,
+          date,
+          total_xp: xpByLicense[license_id],
+          created_at: now.toISOString(),
+        });
+      }
+    }
+
+    return NextResponse.json({ success: true, data: xpByDateAndLicenseFinal });
+  } catch (error) {
+    console.error("Error calculating XP:", error);
+    return NextResponse.json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
+};
+
+export const getXp30days = async (request: NextRequest) => {
+  try {
+    const { searchParams } = new URL(request.url);
+    const license_id = searchParams.get("license_id");
+
+    //console.log(`Fetching XP logs${license_id ? ` for license: ${license_id}` : " (all licenses)"}`);
+
+    let querySnapshot;
+
+    if (license_id) {
+      querySnapshot = await db.collection("xp-gained-log").where("license_id", "==", license_id).get();
+    } else {
+      querySnapshot = await db.collection("xp-gained-log").get();
+    }
+
+    let totalXp = 0;
+
+    querySnapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      totalXp += data.total_xp || 0;
+    });
+
+    //console.log(`Total XP Retrieved: ${totalXp}`);
+
+    return NextResponse.json({ 
+      success: true, 
+      license_id: license_id || "all", 
+      total_xp: totalXp 
+    });
+
+  } catch (error) {
+    console.error("Error fetching XP logs:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+};

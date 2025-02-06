@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import * as z from "zod";
 import exp from "constants";
 import { last } from "lodash";
+import admin from "firebase-admin";
+import { getAllLicenses } from "./license-controller";
 
 interface RequestContext {
   params: {
@@ -302,5 +304,245 @@ export async function patchClassroomUnenroll(
     return NextResponse.json({ message: "success" }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: error }, { status: 500 });
+  }
+}
+
+//update xp for classroom
+export async function calculateClassXp(
+  req: NextRequest,
+  ctx: RequestContext = { params: { classroomId: "" } }
+) {
+  try {
+    const firestore = admin.firestore();
+    //con-sole.log("Fetching licenses...");
+
+    const licensesSnapshot = await firestore.collection("licenses").get();
+    const licenses = licensesSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    if (licenses.length === 0) {
+      console.error("No licenses found.");
+      return NextResponse.json(
+        { message: "No licenses found" },
+        { status: 404 }
+      );
+    }
+
+    //console.log(`Found ${licenses.length} licenses.`);
+
+    const now = new Date();
+    const currentYear = now.getFullYear(); // ปีปัจจุบัน เช่น 2025
+    const startOfYear = new Date(currentYear, 0, 1).getTime();
+    const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59).getTime();
+
+    for (const license of licenses) {
+      const licenseId = license.id;
+      //console.log(`Processing license: ${licenseId}`, license);
+
+      if (!licenseId) {
+        console.warn("License ID is missing, skipping...");
+        continue;
+      }
+
+      const classroomSnapshot = await firestore
+        .collection("classroom")
+        .where("license_id", "==", licenseId)
+        .get();
+      //console.log(
+      //`Found ${classroomSnapshot.size} classrooms for license ${licenseId}`
+      //);
+
+      let classXpData: {
+        name: string;
+        xp: { week: number; month: number; year: number };
+      }[] = [];
+
+      for (const docSnap of classroomSnapshot.docs) {
+        const classroomData = docSnap.data();
+        const classroomName = classroomData.classroomName;
+        //console.log(`Processing classroom: ${classroomName}`);
+
+        const studentIds: string[] = (classroomData.student || []).map(
+          (student: any) => student.studentId
+        );
+
+        if (studentIds.length === 0) continue;
+
+        const userActivityLogs: any[] = [];
+
+        for (const studentId of studentIds) {
+          //console.log(`Fetching activity for student: ${studentId}`);
+
+          const studentRef = firestore
+            .collection("user-activity-log")
+            .doc(studentId);
+
+          const subCollections = await studentRef.listCollections();
+
+          for (const subCollection of subCollections) {
+            //console.log(
+            //`Fetching activities from subcollection: ${subCollection.id}`
+            //);
+
+            const subCollectionSnapshot = await subCollection.get();
+
+            subCollectionSnapshot.forEach((doc) => {
+              const data = doc.data();
+              userActivityLogs.push({
+                ...data,
+                timestamp: data.timestamp?.toDate(),
+              });
+            });
+          }
+        }
+
+        //console.log(
+        //  `Found ${userActivityLogs.length} activities for classroom ${classroomName}`
+        //);
+
+        let xpByPeriod = { week: 0, month: 0, year: 0 };
+
+        userActivityLogs.forEach((data) => {
+          const xpEarned = data.xpEarned || 0;
+          const activityDate = new Date(data.timestamp).getTime();
+
+          if (activityDate >= startOfYear && activityDate <= endOfYear) {
+            const diffTime = now.getTime() - activityDate;
+            const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+            if (diffDays <= 7) xpByPeriod.week += xpEarned;
+            if (diffDays <= 30) xpByPeriod.month += xpEarned;
+            xpByPeriod.year += xpEarned;
+          }
+        });
+
+        //console.log(
+        //`Calculated XP for classroom ${classroomName}:`,
+        //xpByPeriod
+        //);
+        classXpData.push({ name: classroomName, xp: xpByPeriod });
+      }
+
+      const sortedClasses = classXpData.sort((a, b) => b.xp.year - a.xp.year);
+
+      const dataMostActive = {
+        week: sortedClasses
+          .slice(0, 5)
+          .map((cls) => ({ name: cls.name, xp: cls.xp.week })),
+        month: sortedClasses
+          .slice(0, 5)
+          .map((cls) => ({ name: cls.name, xp: cls.xp.month })),
+        year: sortedClasses
+          .slice(0, 5)
+          .map((cls) => ({ name: cls.name, xp: cls.xp.year })),
+      };
+
+      const dataLeastActive = {
+        week: sortedClasses
+          .slice(-5)
+          .map((cls) => ({ name: cls.name, xp: cls.xp.week })),
+        month: sortedClasses
+          .slice(-5)
+          .map((cls) => ({ name: cls.name, xp: cls.xp.month })),
+        year: sortedClasses
+          .slice(-5)
+          .map((cls) => ({ name: cls.name, xp: cls.xp.year })),
+      };
+
+      //console.log(`Saving XP log for license ${licenseId} in year ${currentYear}`);
+
+      const classXpLogRef = firestore
+        .collection("class-xp-log")
+        .doc(`${currentYear}`)
+        .collection("licenses")
+        .doc(licenseId);
+
+      await classXpLogRef.set({
+        dataMostActive,
+        dataLeastActive,
+        createdAt: new Date(),
+      });
+
+      //console.log(`Saved XP log for license ${licenseId} in year ${currentYear}`);
+    }
+
+    return NextResponse.json(
+      { message: `Data stored successfully for year ${currentYear}` },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error fetching class XP data:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// get Class Xp
+export async function getClassXp(req: NextRequest) {
+  const firestore = admin.firestore();
+  try {
+    const { searchParams } = new URL(req.url);
+    const year = searchParams.get("year");
+    const licenseId = searchParams.get("licenseId");
+
+    if (!year) {
+      return NextResponse.json(
+        { message: "Year parameter is required" },
+        { status: 400 }
+      );
+    }
+
+    //console.log(`Fetching class XP data for year: ${year}`);
+
+    const yearRef = firestore.collection("class-xp-log").doc(year);
+    const licensesCollectionRef = yearRef.collection("licenses");
+
+    if (licenseId) {
+      //console.log(`Fetching data for license: ${licenseId}`);
+      const licenseDoc = await licensesCollectionRef.doc(licenseId).get();
+
+      if (!licenseDoc.exists) {
+        return NextResponse.json(
+          { message: `No data found for license ${licenseId} in ${year}` },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        year,
+        licenseId,
+        data: licenseDoc.data(),
+      });
+    }
+
+    //console.log(`Fetching all license data for year ${year}`);
+    const licensesSnapshot = await licensesCollectionRef.get();
+
+    if (licensesSnapshot.empty) {
+      return NextResponse.json(
+        { message: `No XP data found for year ${year}` },
+        { status: 404 }
+      );
+    }
+
+    const licensesData: Record<string, any> = {};
+    licensesSnapshot.forEach((doc) => {
+      licensesData[doc.id] = doc.data();
+    });
+
+    return NextResponse.json({
+      year,
+      licenses: licensesData,
+    });
+  } catch (error) {
+    console.error("Error fetching XP data:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

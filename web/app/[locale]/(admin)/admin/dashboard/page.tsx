@@ -16,6 +16,7 @@ import { redirect } from "next/navigation";
 import { Role } from "@/server/models/enum";
 import UnauthorizedPage from "@/components/shared/unauthorized-page";
 import ActiveUsersChart from "@/components/system/active-users";
+import ClassRoomXpChart from "@/components/dashboard/classroom-xp-chart";
 
 export default async function AdminDashboardPage() {
   const user = await getCurrentUser();
@@ -61,6 +62,18 @@ export default async function AdminDashboardPage() {
     return fetchdata;
   };
 
+  const xpSum30Days = async () => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/xp?license_id=${user.license_id}`,
+      { method: "GET", headers: headers() }
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch XP data");
+
+    const fetchdata = await res.json();
+    return fetchdata.total_xp;
+  };
+
   const userRoleListfetch = async () => {
     const userRes = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users`,
@@ -84,15 +97,11 @@ export default async function AdminDashboardPage() {
   const schoolList = await schoolListfetch();
   const userRoleList = await userRoleListfetch();
   const averageCefrLevelData = await averageCefrLevelDatafetch();
+  const sumXp30Days = await xpSum30Days();
 
   const UserData = userRoleList?.results?.filter(
     (users: any) => users.license_id && users.license_id === user.license_id
   );
-
-  const sumXp = UserData.reduce((sum: number, user: any) => {
-    const xp = parseInt(user.xp) || 0;
-    return sum + xp;
-  }, 0);
 
   const countTeachers = UserData.filter(
     (users: any) => users.role === "teacher"
@@ -158,7 +167,7 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-center">
-              {sumXp.toLocaleString()} XP
+              {sumXp30Days.toLocaleString()} XP
             </p>
           </CardContent>
         </Card>
@@ -195,6 +204,9 @@ export default async function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+      {/* <div>
+        <ClassRoomXpChart license_id={schoolList.license.id}/>
+      </div> */}
       <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
         <ActiveUsersChart page={"admin"} license_id={schoolList.license.id} />
       </div>
