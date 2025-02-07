@@ -1,5 +1,5 @@
 import { logRequest } from "@/server/middleware";
-import { protect } from "@/server/controllers/auth-controller";
+import { restrictAccessKey } from "@/server/controllers/auth-controller";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 import { calculateXpForLast30Days } from "@/server/controllers/license-controller";
@@ -14,7 +14,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 
 // Middleware
 router.use(logRequest);
-router.use(protect);
+router.use(restrictAccessKey);
 
 // API: GET /api/v1/xp/gained-log
 router.get(calculateXpForLast30Days);
