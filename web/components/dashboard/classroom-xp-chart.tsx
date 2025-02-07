@@ -1,28 +1,31 @@
 "use client";
 
 import React, { useState } from "react";
-import { useTheme } from "next-themes";
+import { BarChart, Bar, XAxis, YAxis } from "recharts";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 interface ClassRoomXpChartProps {
-  license_id?: string;
+  licenseId?: string;
 }
 
 type TimeRange = "week" | "month" | "year";
 type ViewType = "mostActive" | "leastActive";
 type XpData = { name: string; xp: number };
 
-export default function ClassRoomXpChart({ license_id }: ClassRoomXpChartProps) {
-  const { theme } = useTheme();
+export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("week");
   const [view, setView] = useState<ViewType>("mostActive");
   const [data, setData] = useState<XpData[]>([]);
@@ -37,8 +40,8 @@ export default function ClassRoomXpChart({ license_id }: ClassRoomXpChartProps) 
 
       try {
         const year = new Date().getFullYear();
-        const url = license_id
-          ? `/api/v1/classroom/xp-chart?year=${year}&licenseId=${license_id}`
+        const url = licenseId
+          ? `/api/v1/classroom/xp-chart?year=${year}&licenseId=${licenseId}`
           : `/api/v1/classroom/xp-chart?year=${year}`;
 
         const response = await fetch(url);
@@ -48,14 +51,17 @@ export default function ClassRoomXpChart({ license_id }: ClassRoomXpChartProps) 
         const xpData = result.data;
         if (!xpData) throw new Error("No XP data available");
 
-        const key = view === "mostActive" ? "dataMostActive" : "dataLeastActive";
+        const key =
+          view === "mostActive" ? "dataMostActive" : "dataLeastActive";
         let formattedData: XpData[] = xpData[key]?.[timeRange] || [];
 
         formattedData.sort((a, b) => b.xp - a.xp);
         setData(formattedData);
 
         const maxXpValue =
-          formattedData.length > 0 ? Math.max(...formattedData.map((item) => item.xp)) : 0;
+          formattedData.length > 0
+            ? Math.max(...formattedData.map((item) => item.xp))
+            : 0;
         setMaxXP(maxXpValue);
       } catch (error: any) {
         setError(error.message);
@@ -65,7 +71,7 @@ export default function ClassRoomXpChart({ license_id }: ClassRoomXpChartProps) 
     };
 
     fetchXpData();
-  }, [timeRange, view, license_id]);
+  }, [timeRange, view, licenseId]);
 
   const buttons = [
     { id: "mostActive" as const, label: "5 Most Active" },
@@ -78,8 +84,15 @@ export default function ClassRoomXpChart({ license_id }: ClassRoomXpChartProps) 
     { id: "year" as const, label: "Year" },
   ];
 
+  const chartConfig = {
+    xp: {
+      label: "XP",
+      color: "hsl(var(--chart-1))",
+    },
+  } satisfies ChartConfig;
+
   return (
-    <Card className="min-h-[500px] col-span-3 p-4 rounded-lg shadow mt-2 mb-4">
+    <Card className="col-span-3 p-4 rounded-lg shadow mt-2 mb-4">
       <CardHeader>
         <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
           Class Activity
@@ -122,47 +135,39 @@ export default function ClassRoomXpChart({ license_id }: ClassRoomXpChartProps) 
         ) : data.length === 0 ? (
           <p className="text-center text-gray-500">No XP data available</p>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart layout="vertical" data={data}>
+          <ChartContainer config={chartConfig}>
+            <BarChart
+              layout="vertical"
+              data={data}
+              margin={{ left: -50, right: 20 }}
+              width={500}
+              height={300}
+              barCategoryGap={"1%"}
+            >
               <XAxis
                 type="number"
                 domain={[0, maxXP]}
                 tickFormatter={(value) => `${value.toLocaleString()} XP`}
-                axisLine={false}
-                tickLine={false}
-                stroke={theme === "dark" ? "#fff" : "#000"}
               />
               <YAxis
                 type="category"
                 dataKey="name"
-                width={50}
-                axisLine={false}
                 tickLine={false}
-                stroke={theme === "dark" ? "#fff" : "#000"}
+                axisLine={false}
+                width={100}
               />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length > 0 && payload[0]) {
-                    return (
-                      <div
-                        className={`p-2 rounded shadow-lg ${
-                          theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"
-                        }`}
-                      >
-                        <p className="font-bold">{`Classroom: ${payload[0].payload.name}`}</p>
-                        <p>{`XP: ${payload[0].value?.toLocaleString()} XP`}</p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
               />
               <Bar
                 dataKey="xp"
-                fill={theme === "dark" ? "#4F46E5" : "#2662d9"}
+                fill="hsl(var(--primary))"
+                radius={[5, 5, 0, 0]}
+                barSize={70}
               />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>
