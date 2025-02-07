@@ -18,16 +18,14 @@ import {
 } from "@/components/ui/chart";
 
 interface ClassRoomXpChartProps {
-  license_id?: string;
+  licenseId?: string;
 }
 
 type TimeRange = "week" | "month" | "year";
 type ViewType = "mostActive" | "leastActive";
 type XpData = { name: string; xp: number };
 
-export default function ClassRoomXpChart({
-  license_id,
-}: ClassRoomXpChartProps) {
+export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("week");
   const [view, setView] = useState<ViewType>("mostActive");
   const [data, setData] = useState<XpData[]>([]);
@@ -42,8 +40,8 @@ export default function ClassRoomXpChart({
 
       try {
         const year = new Date().getFullYear();
-        const url = license_id
-          ? `/api/v1/classroom/xp-chart?year=${year}&licenseId=${license_id}`
+        const url = licenseId
+          ? `/api/v1/classroom/xp-chart?year=${year}&licenseId=${licenseId}`
           : `/api/v1/classroom/xp-chart?year=${year}`;
 
         const response = await fetch(url);
@@ -73,7 +71,7 @@ export default function ClassRoomXpChart({
     };
 
     fetchXpData();
-  }, [timeRange, view, license_id]);
+  }, [timeRange, view, licenseId]);
 
   const buttons = [
     { id: "mostActive" as const, label: "5 Most Active" },
@@ -164,7 +162,7 @@ export default function ClassRoomXpChart({
               />
               <Bar
                 dataKey="xp"
-                fill="var(--color-xp)"
+                fill="hsl(var(--primary))"
                 radius={[5, 5, 0, 0]}
                 barSize={70}
               />

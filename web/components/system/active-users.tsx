@@ -27,7 +27,7 @@ import {
 
 interface ActiveUsersChartProps {
   page: string;
-  license_id?: string;
+  licenseId?: string;
 }
 
 interface charData {
@@ -48,7 +48,7 @@ const chartConfig = {
 
 export default function ActiveUsersChart({
   page,
-  license_id,
+  licenseId,
 }: ActiveUsersChartProps) {
   const [timeRange, setTimeRange] = React.useState("Daily");
   const [chartType, setChartType] = React.useState<"total" | "license">(
@@ -86,8 +86,8 @@ export default function ActiveUsersChart({
 
       let dataToUse: { date: string; noOfUsers: number }[] = [];
 
-      if (page === "admin" && license_id) {
-        dataToUse = fetchData.licenses?.[license_id] || [];
+      if (page === "admin" && licenseId) {
+        dataToUse = fetchData.licenses?.[licenseId] || [];
       } else {
         if (selectedLicense === "total") {
           dataToUse = fetchData.total || [];
@@ -100,7 +100,7 @@ export default function ActiveUsersChart({
     } catch (error) {
       console.error(error);
     }
-  }, [page, license_id, selectedLicense]);
+  }, [page, licenseId, selectedLicense]);
 
   React.useEffect(() => {
     fetchActiveChart();
