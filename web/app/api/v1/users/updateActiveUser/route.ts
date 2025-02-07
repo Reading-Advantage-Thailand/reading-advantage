@@ -1,5 +1,5 @@
 import { logRequest } from "@/server/middleware";
-import { protect } from "@/server/controllers/auth-controller";
+import { restrictAccessKey } from "@/server/controllers/auth-controller";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 import { updateUserActivityLog } from "@/lib/aggregateUserActiveChart";
@@ -11,7 +11,7 @@ export interface RequestContext {
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
-router.use(protect);
+router.use(restrictAccessKey);
 //api/v1/users/updateActiveUser
 router.get(updateUserActivityLog);
 
