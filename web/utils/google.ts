@@ -16,7 +16,7 @@ const google = createVertex({
   },
 });
 
-const googleModel = "gemini-2.0-flash-exp";
+const googleModel = "gemini-2.0-flash-001";
 
 const googleImages = "imagen-3.0-generate-001";
 

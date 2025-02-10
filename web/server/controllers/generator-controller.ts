@@ -201,24 +201,6 @@ async function generateForGenre(type: ArticleType, amountPerGenre: number) {
     ArticleBaseCefrLevel.C2,
   ];
 
-  // const results = await Promise.all(
-  //   generatedTopic.topics.map(
-  //     async (topic) =>
-  //       await Promise.all(
-  //         cefrLevels.map(
-  //           async (level) =>
-  //             await queue(
-  //               type,
-  //               randomGenre.genre,
-  //               randomGenre.subgenre,
-  //               topic,
-  //               level
-  //             )
-  //         )
-  //       )
-  //   )
-  // );
-
   const results = [];
 
   // Process each CEFR level sequentially
@@ -246,6 +228,28 @@ async function generateForGenre(type: ArticleType, amountPerGenre: number) {
       results.push(result);
     }
   }
+
+  // const results = await Promise.all(
+  //   cefrLevels.map(async (level) => {
+  //     // Step 1: Randomly select a genre for this CEFR level
+  //     const randomGenre = await randomSelectGenre({ type });
+
+  //     // Step 2: Generate topics based on the selected genre
+  //     const generatedTopic = await generateTopic({
+  //       type,
+  //       genre: randomGenre.genre,
+  //       subgenre: randomGenre.subgenre,
+  //       amountPerGenre,
+  //     });
+
+  //     // Step 3: Queue tasks for each topic in this CEFR level
+  //     return Promise.all(
+  //       generatedTopic.topics.map((topic) =>
+  //         queue(type, randomGenre.genre, randomGenre.subgenre, topic, level)
+  //       )
+  //     );
+  //   })
+  // );
 
   // Process each topic concurrently
   // const results = await Promise.all(
