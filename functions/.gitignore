@@ -2,3 +2,4 @@ node_modules/
 config.env
 .gitignore
 .DS_Store
+service_account.json
