@@ -48,6 +48,7 @@ export async function generateAudioForWord({
     try {
       const voice =
         AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
+
       const vocabulary: string[] = Array.isArray(wordList)
         ? wordList.map((item: any) => item?.vocabulary)
         : [];

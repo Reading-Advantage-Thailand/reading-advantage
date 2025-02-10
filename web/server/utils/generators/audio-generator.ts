@@ -14,6 +14,7 @@ import { generateObject } from "ai";
 import { openai, openaiModel } from "@/utils/openai";
 import { google, googleModel } from "@/utils/google";
 import z from "zod";
+import ffmpeg from "fluent-ffmpeg";
 
 interface GenerateAudioParams {
   passage: string;
@@ -83,6 +84,29 @@ async function splitTextIntoChunks(
   return { sentences, chunks };
 }
 
+// Get the duration of an audio file
+function getAudioDuration(filePath: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) return reject(err);
+      resolve(metadata.format.duration || 0);
+    });
+  });
+}
+
+// Function to merge multiple MP3 files
+function mergeAudioFiles(files: string[], outputPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let command = ffmpeg();
+    files.forEach((file) => command.input(file));
+
+    command
+      .on("end", () => resolve())
+      .on("error", (err) => reject(err))
+      .mergeToFile(outputPath, `${process.cwd()}/data/audios`);
+  });
+}
+
 export async function generateAudio({
   passage,
   articleId,
@@ -148,7 +172,7 @@ export async function generateAudio({
       data.timepoints.forEach((tp: any) => {
         result.push({
           markName: `sentence${currentIndex++}`,
-          timeSeconds: (tp.timeSeconds || 0) + cumulativeTime,
+          timeSeconds: tp.timeSeconds + cumulativeTime,
           index: currentIndex - 1,
           file: `${articleId}.mp3`, // Final combined file name
           sentences: sentences[currentIndex - 1],
@@ -156,26 +180,17 @@ export async function generateAudio({
       });
 
       // Update the cumulative time with the duration of the current chunk
-      const chunkDuration =
-        data.timepoints[data.timepoints.length - 1]?.timeSeconds || 0;
+      // const chunkDuration = data.timepoints[data.timepoints.length - 1]?.timeSeconds || 0;
+      const chunkDuration = await getAudioDuration(localPath);
       cumulativeTime += chunkDuration;
     }
 
     // Combine MP3 files using FFmpeg
     const combinedAudioPath = `${process.cwd()}/data/audios/${articleId}.mp3`;
-    const fileListPath = `${process.cwd()}/data/audios/${articleId}.txt`;
-    fs.writeFileSync(
-      fileListPath,
-      audioPaths.map((p) => `file '${p}'`).join("\n")
-    );
-
-    execSync(
-      `ffmpeg -f concat -safe 0 -i ${fileListPath} -c copy ${combinedAudioPath}`
-    );
+    await mergeAudioFiles(audioPaths, combinedAudioPath);
 
     // Cleanup
     audioPaths.forEach((p) => fs.unlinkSync(p));
-    fs.unlinkSync(fileListPath);
 
     await uploadToBucket(combinedAudioPath, `${AUDIO_URL}/${articleId}.mp3`);
 

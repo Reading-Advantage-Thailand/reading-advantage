@@ -1,4 +1,7 @@
-import { protect } from "@/server/controllers/auth-controller";
+import {
+  protect,
+  restrictAccessKey,
+} from "@/server/controllers/auth-controller";
 import {
   getAllRankingLeaderboard,
   postRankingLeaderboard,
@@ -10,7 +13,8 @@ import { NextResponse, type NextRequest } from "next/server";
 const router = createEdgeRouter<NextRequest, NextResponse>();
 
 router.use(logRequest);
-router.use(protect);
+// router.use(protect);
+router.use(restrictAccessKey);
 router.get(getAllRankingLeaderboard);
 router.post(postRankingLeaderboard);
 
