@@ -3,3 +3,4 @@ config.env
 .gitignore
 .DS_Store
 service_account.json
+service_account_key.json
