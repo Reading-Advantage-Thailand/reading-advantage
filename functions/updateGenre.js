@@ -1,125 +1,138 @@
-// require('dotenv').config({ path: './config.env' });
-const admin = require('firebase-admin');
+const admin = require("firebase-admin");
+const fs = require("fs");
+const axios = require("axios");
+require("dotenv").config();
 
-const serviceAccountKey = require('./service_account_key.json');
-// console.log(serviceAccountKey);
-
+const serviceAccountKey = require("./service_account_key.json");
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccountKey)
+  credential: admin.credential.cert(serviceAccountKey),
 });
 
-const genreMapping = {
-    "Adventure":"Adventure and Travel",
-"Art":"Art and Culture",
-"Art History":"Art and Culture",
-"Art and Culture":"Art and Culture",
-"Art and Environment":"Art and Culture",
-"Art and Technology":"Art and Culture",
-"Arts":"Art and Culture",
-"Crossover":"Art and Culture",
-"Visual Arts":"Art and Culture",
-"Culture":"Art and Culture",
-"Cultural":"Art and Culture",
-"Cultural Celebration":"Art and Culture",
-"Cultural Event":"Art and Culture",
-"Cultural Studies":"Art and Culture",
-"Entertainment":"Art and Culture",
-"Film":"Art and Culture",
-"Film Analysis":"Art and Culture",
-"Media":"Art and Culture",
-"Media and Film Studies":"Art and Culture",
-"Music":"Art and Culture",
-"Biography":"Biography and Memoir",
-"Memoir":"Biography and Memoir",
-"Memoirs and Autobiographies":"Biography and Memoir",
-"Biology":"Science and Nature",
-"Botany":"Science and Nature",
-"Earth Science":"Science and Nature",
-"Environmental Science":"Science and Nature",
-"Natural Disasters":"Science and Nature",
-"Natural History":"Science and Nature",
-"Natural Science":"Science and Nature",
-"Natural Sciences":"Science and Nature",
-"Nature":"Science and Nature",
-"Paleontology":"Science and Nature",
-"Cryptozoology":"Science and Nature",
-"Children's":"Science and Nature",
-"Culinary Arts":"Food and Culinary Arts",
-"Food":"Food and Culinary Arts",
-"Food and Cooking":"Food and Culinary Arts",
-"Food and Dining":"Food and Culinary Arts",
-"Food and Drink":"Food and Culinary Arts",
-"Health":"Health and Wellness",
-"Health and Fitness":"Health and Wellness",
-"Health and Nutrition":"Health and Wellness",
-"Health and Wellness":"Health and Wellness",
-"Healthcare":"Health and Wellness",
-"Education":"Education",
-"Education and Technology":"Education",
-"Educational":"Education",
-"Social Issues":"Social Sciences and Issues",
-"Social Media":"Social Sciences and Issues",
-"Social Sciences":"Social Sciences and Issues",
-"Sociology":"Social Sciences and Issues",
-"Political Science":"Social Sciences and Issues",
-"Interdisciplinary Studies":"Social Sciences and Issues",
-"History":"History and Mythology",
-"Mythology":"History and Mythology",
-"Language":"Language and Literature",
-"Language Learning":"Language and Literature",
-"Language and Communication":"Language and Literature",
-"Communication":"Language and Literature",
-"Literary Criticism":"Language and Literature",
-"Literature":"Language and Literature",
-"Writing":"Language and Literature",
-"Professional":"Professional and Personal Development",
-"Professional Development":"Professional and Personal Development",
-"Personal Finance":"Professional and Personal Development",
-"Self-Help":"Professional and Personal Development",
-"self-help":"Professional and Personal Development",
-"Philosophy":"Philosophy and Religion",
-"Religion":"Philosophy and Religion",
-"Religion and Spirituality":"Philosophy and Religion",
-"Psychology":"Psychology",
-"Travel":"Adventure and Travel",
-"Travel Guide":"Adventure and Travel",
-"Sports":"Sports",
-"Science":"Technology and Science",
-"Science and Technology":"Technology and Science",
-"Technology":"Technology and Science",
-"Technology and Art":"Technology and Science",
-"True Crime":"True Crime and Paranormal",
-"Paranormal":"True Crime and Paranormal",
-"Horror":"True Crime and Paranormal",
-"Horror Legends":"True Crime and Paranormal",
-"Family":"Family and Parenting",
-"Parenting":"Family and Parenting"
+const db = admin.firestore();
+const collectionRef = db.collection("new-articles");
+
+const fictionGenres = JSON.parse(
+  fs.readFileSync("./data/genres-fiction.json", "utf8")
+);
+const nonFictionGenres = JSON.parse(
+  fs.readFileSync("./data/genres-nonfiction.json", "utf8")
+);
+
+const genreWhitelist = {
+  fiction: fictionGenres.Genres,
+  nonfiction: nonFictionGenres.Genres,
+};
+
+async function classifyGenre(articleText, type) {
+  try {
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an AI trained to categorize articles based on a given genre list.",
+          },
+          {
+            role: "user",
+            content: `Look at the given passage and choose the most appropriate genre and associated subgenre from the given list.
+         You must return only whitelisted genres and subgenres in a JSON format like this:
+         {
+           "name": "Selected Genre",
+           "subgenres": ["Selected Subgenre"]
+         }
+         
+         Passage: "${articleText}"
+         Genre List: ${JSON.stringify(genreWhitelist[type])}
+         `,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 100,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    let genreClassification = response.data.choices[0].message.content.trim();
+
+    genreClassification = genreClassification
+      .replace(/```json|```/g, "")
+      .trim();
+    return genreClassification;
+  } catch (error) {
+    console.error("Error calling OpenAI API:", error);
+    return null;
+  }
 }
 
-const db = admin.firestore();
+async function updateGenres() {
+  const snapshot = await collectionRef.get();
 
-const collectionRef = db.collection('new-articles');
-
-collectionRef.get()
-  .then((snapshot) => {
-    snapshot.forEach((doc) => {
+  for (const doc of snapshot.docs) {
     const article = doc.data();
-    const oldGenre = article.genre;
+    const articleText =
+      article.passage || article.content || article.text || "";
     const articleType = article.type;
+    const currentGenre = article.genre;
+    const currentSubgenre = article.subgenre;
 
-    if (genreMapping.hasOwnProperty(oldGenre) && articleType === 'nonfiction') {
-       const newGenre = genreMapping[oldGenre];
-       doc.ref.update({ genre: newGenre})
-         .then(() => {
-           console.log('Data merged with document: ', doc.id);
-         })
-         .catch((error) => {
-           console.error('Error updating document: ', error);
-         });
+    if (!["fiction", "nonfiction"].includes(articleType)) {
+      console.log(`Skipping article ${doc.id} - unknown type`);
+      continue;
     }
-    });
-    console.log('Data merged with all documents in Firestore!');
-  })
-  .catch((error) => {
-    console.error('Error getting documents: ', error);
-  });
+
+    const validGenres = genreWhitelist[articleType].map((g) => g.name);
+    const validSubgenres = genreWhitelist[articleType].flatMap(
+      (g) => g.subgenres
+    );
+
+    if (
+      validGenres.includes(currentGenre) &&
+      validSubgenres.includes(currentSubgenre)
+    ) {
+      console.log(`Skipping article ${doc.id} - genre and subgenre are valid`);
+      continue;
+    }
+
+    const genreClassification = await classifyGenre(articleText, articleType);
+    if (!genreClassification) {
+      console.log(`Skipping article ${doc.id} - classification failed`);
+      continue;
+    }
+
+    try {
+      console.log("🔍 AI Response:", genreClassification);
+      const genreData = JSON.parse(genreClassification);
+      await doc.ref.update({
+        genre: genreData.name,
+        subgenre:
+          genreData.subgenres && genreData.subgenres.length > 0
+            ? genreData.subgenres[0]
+            : currentSubgenre,
+      });
+      console.log(
+        `Updated article ${doc.id} with genre: ${
+          genreData.name
+        }, subgenre: ${
+          genreData.subgenres && genreData.subgenres.length > 0
+            ? genreData.subgenres[0]
+            : currentSubgenre
+        }`
+      );
+    } catch (error) {
+      console.error(`JSON Parse Error in document ${doc.id}:`, error);
+      console.error("Raw AI Response:", genreClassification);
+    }
+  }
+
+  console.log("Finished updating all articles.");
+}
+
+updateGenres().catch(console.error);
