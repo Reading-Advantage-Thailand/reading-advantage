@@ -1,4 +1,7 @@
-import { getArticleWithParams } from "@/server/controllers/article-controller";
+import {
+  getArticleWithParams,
+  getArticles,
+} from "@/server/controllers/article-controller";
 import { protect } from "@/server/controllers/auth-controller";
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
@@ -9,13 +12,18 @@ interface RequestContext {
     article_id: string;
   };
 }
-const router = createEdgeRouter<NextRequest, RequestContext>();
+
+const router = createEdgeRouter<NextRequest, { params?: unknown }>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getArticleWithParams);
+// router.get(getArticleWithParams);
+router.get(getArticles);
 
-export async function GET(request: NextRequest, ctx: RequestContext) {
+export async function GET(
+  request: NextRequest,
+  ctx: { params?: unknown }
+): Promise<NextResponse> {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;

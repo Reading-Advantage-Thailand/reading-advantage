@@ -197,7 +197,106 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
   }
 }
 
-export async function getArticle(
+export async function getArticles(req: ExtendedNextRequest) {
+  try {
+    const searchParams = req.nextUrl.searchParams;
+    const title = searchParams.get("title");
+    const date = searchParams.get("date");
+    const rating = searchParams.get("rating");
+    const type = searchParams.get("type");
+    const genre = searchParams.get("genre");
+    const level = searchParams.get("level");
+    const page = Number(searchParams.get("page"));
+    const limitPerPage = 10;
+
+    const convertlevleToArray = (value: string | null) => {
+      if (!value) return [];
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item !== "")
+        .map((item) => Number(item));
+    };
+
+    const convertgenreToString = (value: string | null) => {
+      return value ? value.replace(/\+/g, " ") : "";
+    };
+
+    // Validate the date parameter
+    const validDate = date === "asc" || date === "desc" ? date : "desc";
+
+    let query = db.collection("new-articles");
+
+    if (type)
+      query = query.where(
+        "type",
+        "==",
+        type
+      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
+    if (genre)
+      query = query.where(
+        "genre",
+        "==",
+        convertgenreToString(genre)
+      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
+    if (level)
+      query = query.where(
+        "ra_level",
+        "in",
+        convertlevleToArray(level)
+      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
+    if (rating)
+      query = query
+        .where("average_rating", "<=", Number(rating))
+        .where(
+          "average_rating",
+          ">=",
+          Number(rating)
+        ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
+
+    if (title) {
+      const searchTermLower = title.toLowerCase();
+
+      // Split the search term into words
+      const searchWords = searchTermLower.split(/\s+/);
+      // console.log("searchWords in fetchArticles:", searchWords);
+
+      if (searchWords.length > 0) {
+        //Partial text search for the entire search term to match the title
+        (query = query.orderBy(
+          "title"
+        ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>),
+          startAt(title),
+          endAt(title + "\uf8ff");
+      }
+    }
+
+    //const articles = data.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    // const snapshot = await query.limit(10 + 1).get();
+
+    const snapshot = await query
+      .orderBy("created_at", validDate)
+      .offset((page - 1) * limitPerPage)
+      .limit(limitPerPage)
+      .get();
+
+    const articles = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json(articles, { status: 200 });
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json(
+      { message: "Internal server error", error: error },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getArticleById(
   req: ExtendedNextRequest,
   { params: { article_id } }: RequestContext
 ) {

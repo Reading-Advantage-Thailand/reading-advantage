@@ -4,14 +4,12 @@ import { redirect } from "next/navigation";
 import System from "@/components/system-articles";
 import { fetchMoreArticles } from "@/lib/fetchMoreArticles";
 import { Header } from "@/components/header";
+import HandleArticle from "@/components/handle-article";
 
 export default async function PassagesPage() {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
-  }
-  if (user.cefr_level === "" && user.level === 0) {
-    return redirect("/level");
   }
 
   return (
@@ -20,7 +18,8 @@ export default async function PassagesPage() {
         <Header heading="Passages" />
       </div>
       <main className="container mx-auto px-4 flex-1 py-6">
-        <System fetchMoreData={fetchMoreArticles} />
+        {/* <System fetchMoreData={fetchMoreArticles} /> */}
+        <HandleArticle />
       </main>
     </div>
   );
