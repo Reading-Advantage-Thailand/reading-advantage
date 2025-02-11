@@ -2,14 +2,14 @@ export interface ArticleShowcase {
   average_rating: number;
   cefr_level: string;
   id: string;
-  ra_level: string;
-  summary: string;
+  ra_level?: string;
+  summary?: string;
   title: string;
-  is_read: boolean;
-  is_approved: boolean;
-  type: string;
-  subgenre: string;
-  genre: string;
+  is_read?: boolean;
+  is_approved?: boolean;
+  type?: string;
+  subgenre?: string;
+  genre?: string;
 }
 
 export interface Article {
