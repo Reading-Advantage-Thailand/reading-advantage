@@ -335,6 +335,20 @@ async function queue(
       raLevel,
     } = await evaluateArticle(type, genre, subgenre, topic, cefrLevel);
 
+    // Generate image first
+    try {
+      await generateImage({
+        imageDesc: generatedArticle.imageDesc,
+        articleId: "temp",
+      });
+    } catch (error) {
+      console.error("Image generation failed:", error);
+      return `Failed to generate image for ${cefrLevel} ${
+        type === ArticleType.FICTION ? "F" : "N"
+      } - ${error}`;
+    }
+
+    // Save on database when image generate success
     const ref = db.collection("new-articles").doc();
     const createdAt = new Date().toISOString();
 
@@ -354,34 +368,36 @@ async function queue(
       id: ref.id,
     });
 
-    const mcq = await generateMCQuestion({
-      type,
-      cefrlevel: cefrLevel,
-      passage: generatedArticle.passage,
-      title: generatedArticle.title,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-    });
-    const saq = await generateSAQuestion({
-      type,
-      cefrlevel: cefrLevel,
-      passage: generatedArticle.passage,
-      title: generatedArticle.title,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-    });
-    const laq = await generateLAQuestion({
-      type,
-      cefrlevel: cefrLevel,
-      passage: generatedArticle.passage,
-      title: generatedArticle.title,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-    });
-
-    const wordList = await generateWordList({
-      passage: generatedArticle.passage,
-    });
+    // Generate questions and word list
+    const [mcq, saq, laq, wordList] = await Promise.all([
+      generateMCQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      }),
+      generateSAQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      }),
+      generateLAQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      }),
+      generateWordList({
+        passage: generatedArticle.passage,
+      }),
+    ]);
 
     // const [mcq, saq, laq, wordList] = await Promise.all([
     //   generateMCQuestion({
@@ -420,19 +436,13 @@ async function queue(
       addWordList(ref.id, wordList.word_list, createdAt),
     ]);
 
-    await Promise.all([
-      generateAudio({ passage: generatedArticle.passage, articleId: ref.id }),
-      generateImage({
-        imageDesc: generatedArticle.imageDesc,
-        articleId: ref.id,
-      }),
-      generateAudioForWord({ wordList: wordList.word_list, articleId: ref.id }),
-    ]);
+    await generateAudio({ passage: generatedArticle.passage, articleId: ref.id });
+    await generateAudioForWord({ wordList: wordList.word_list, articleId: ref.id });
+
+    return ref.id;
   } catch (error) {
-    console.log("error => ", error);
-    return `${cefrLevel} ${
-      type === ArticleType.FICTION ? "F" : "N"
-    } - ${error}`;
+    console.log("Error => ", error);
+    return `${cefrLevel} ${type === ArticleType.FICTION ? "F" : "N"} - ${error}`;
   }
 }
 
