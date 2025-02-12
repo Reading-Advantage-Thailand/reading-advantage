@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import LineChartCustom from "@/components/line-chart";
-import LicesneUsageList from "@/components/license-usage-list";
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
