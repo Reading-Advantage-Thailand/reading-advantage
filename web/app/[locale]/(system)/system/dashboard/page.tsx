@@ -2,7 +2,6 @@ import ActivityDistributionPieChart from "@/components/system/activity-distribut
 import React from "react";
 import { Header } from "@/components/header";
 import LowestRatedArticlesTable from "@/components/system/LowestLatedArticlesTable";
-import LicenseUsageOverTimeChart from "@/components/system/license-usage-overtime";
 import LicenseUsageChart from "@/components/system/license-usage";
 import ArticlesByTypeAndGenreChart from "@/components/system/articles-type-genre";
 import TopSchoolByXPGainedChart from "@/components/system/top-schools-xp-gained";
@@ -49,16 +48,13 @@ export default async function SystemDashboardPage({
           <LicenseUsageChart />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
-          <LicenseUsageOverTimeChart />
+        <TopSchoolByXPGainedChart />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
           <LowestRatedArticlesTable />
         </div>
-        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-2">
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
           <ArticlesByTypeAndGenreChart />
-        </div>
-        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
-          <TopSchoolByXPGainedChart />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
           <ArticlesPerLevelChart articlesPerLevel={articlesPerLevel} />

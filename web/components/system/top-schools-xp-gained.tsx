@@ -45,13 +45,13 @@ export default function TopSchoolByXPGainedChart() {
 
   return (
     <>
-      <Card className="">
+      <Card className="h-full">
         <CardHeader>
           <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
             Top Schools by XP Gained
           </CardTitle>
         </CardHeader>
-        <CardContent className="">
+        <CardContent className="mt-14">
           <ChartContainer config={chartConfig}>
             <BarChart accessibilityLayer data={chartData} margin={{ top: 20 }}>
               <CartesianGrid vertical={false} />
