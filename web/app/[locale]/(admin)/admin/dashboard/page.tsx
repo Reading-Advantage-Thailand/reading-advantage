@@ -194,16 +194,6 @@ export default async function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="py-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">License Usage by School</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <LicesneUsageList data={schoolList.license} />
-          </CardContent>
-        </Card>
-      </div>
       <div>
         <ClassRoomXpChart licenseId={schoolList.license.id} />
       </div>
