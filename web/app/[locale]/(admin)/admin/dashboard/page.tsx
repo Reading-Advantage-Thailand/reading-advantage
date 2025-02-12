@@ -141,7 +141,7 @@ export default async function AdminDashboardPage() {
         <Card>
           <CardHeader className="min-h-10">
             <CardTitle className="text-1xl text-center">
-              Total Active Users
+              Total Licensed Users
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -174,7 +174,7 @@ export default async function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-1xl text-center">
-              Active Teachers
+              Licensed Teachers
             </CardTitle>
           </CardHeader>
           <CardContent>
