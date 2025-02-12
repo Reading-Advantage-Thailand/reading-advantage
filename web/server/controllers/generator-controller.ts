@@ -97,10 +97,17 @@ export async function generateQueue(req: ExtendedNextRequest) {
 
     // Generate queue for fiction and nonfiction
     // Run fiction generation first, then nonfiction
-    const fictionResults = await generateForGenre(ArticleType.FICTION, amount);
+    const fictionResults = await generateForGenre(
+      ArticleType.FICTION,
+      amount,
+      reqUrl,
+      userAgent
+    );
     const nonfictionResults = await generateForGenre(
       ArticleType.NONFICTION,
-      amount
+      amount,
+      reqUrl,
+      userAgent
     );
 
     // Combine results from both genres
@@ -182,7 +189,12 @@ export async function generateQueue(req: ExtendedNextRequest) {
 
 // Function to generate queue for a given genre
 // fiction or nonfiction
-async function generateForGenre(type: ArticleType, amountPerGenre: number) {
+async function generateForGenre(
+  type: ArticleType,
+  amountPerGenre: number,
+  reqUrl: string,
+  userAgent: string
+) {
   // const randomGenre = await randomSelectGenre({ type });
 
   // const generatedTopic = await generateTopic({
@@ -223,7 +235,9 @@ async function generateForGenre(type: ArticleType, amountPerGenre: number) {
         randomGenre.genre,
         randomGenre.subgenre,
         topic,
-        level
+        level,
+        reqUrl,
+        userAgent
       );
       results.push(result);
     }
@@ -324,6 +338,8 @@ async function queue(
   subgenre: string,
   topic: string,
   cefrLevel: ArticleBaseCefrLevel,
+  reqUrl: string,
+  userAgent: string,
   maxRetries: number = 5
 ) {
   let attempts = 0;
@@ -492,8 +508,8 @@ async function queue(
         color: 0xff0000,
       },
     ],
-    reqUrl: "unknown",
-    userAgent: "unknown",
+    reqUrl,
+    userAgent,
   });
 
   return null;
