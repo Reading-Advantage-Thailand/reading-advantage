@@ -49,16 +49,13 @@ export default async function SystemDashboardPage({
           <LicenseUsageChart />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
-          <LicenseUsageOverTimeChart />
+        <TopSchoolByXPGainedChart />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
           <LowestRatedArticlesTable />
         </div>
-        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-2">
+        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
           <ArticlesByTypeAndGenreChart />
-        </div>
-        <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
-          <TopSchoolByXPGainedChart />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
           <ArticlesPerLevelChart articlesPerLevel={articlesPerLevel} />
