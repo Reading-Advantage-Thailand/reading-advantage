@@ -7,6 +7,7 @@ import {
   Label,
   LabelList,
   XAxis,
+  YAxis,
 } from "recharts";
 import {
   Card,
@@ -50,27 +51,27 @@ export default function ArticlesPerLevelChart({
   const processData = (data: { [key: string]: number }) => {
     if (!data) return [];
     const processedData = Object.entries(data).map(([key, value]) => ({
-      CEFR_Level: key,
+      RA_Level: key,
       numberOfArticles: value,
     }));
 
     processedData.sort((a, b) => {
-      const getOrderValue = (cefr_Level: string) => {
-        if (cefr_Level.endsWith("-")) return 0;
-        if (cefr_Level.endsWith("+")) return 2;
+      const getOrderValue = (RA_Level: string) => {
+        if (RA_Level.endsWith("-")) return 0;
+        if (RA_Level.endsWith("+")) return 2;
         return 1;
       };
 
-      const extractParts = (cefr_Level: string) => {
-        const match = cefr_Level.match(/(.*?)([-+])?$/);
+      const extractParts = (RA_Level: string) => {
+        const match = RA_Level.match(/(.*?)([-+])?$/);
         return {
-          base: match ? match[1] : cefr_Level,
+          base: match ? match[1] : RA_Level,
           suffix: match && match[2] ? match[2] : "",
         };
       };
 
-      const aParts = extractParts(a.CEFR_Level);
-      const bParts = extractParts(b.CEFR_Level);
+      const aParts = extractParts(a.RA_Level);
+      const bParts = extractParts(b.RA_Level);
 
       const baseLevelComparison = aParts.base.localeCompare(
         bParts.base,
@@ -81,7 +82,7 @@ export default function ArticlesPerLevelChart({
         return baseLevelComparison;
       }
 
-      return getOrderValue(a.CEFR_Level) - getOrderValue(b.CEFR_Level);
+      return getOrderValue(a.RA_Level) - getOrderValue(b.RA_Level);
     });
 
     setChartData(processedData);
@@ -166,12 +167,13 @@ export default function ArticlesPerLevelChart({
             <BarChart data={chartData}>
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="CEFR_Level"
+                dataKey="RA_Level"
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                tickFormatter={(value) => value.slice(0, 3)}
+                tickFormatter={(value) => `RA: ${value.slice(0, 3)}`}
               />
+              <YAxis domain={[0, "dataMax + 100"]} />{" "}
               <ChartTooltip
                 content={<ChartTooltipContent indicator="dashed" />}
                 cursor={false}
@@ -183,7 +185,6 @@ export default function ArticlesPerLevelChart({
               >
                 <LabelList
                   position="top"
-                  offset={12}
                   fontSize={12}
                   className="fill-foreground"
                 />
