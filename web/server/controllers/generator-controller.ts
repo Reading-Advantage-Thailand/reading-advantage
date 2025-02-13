@@ -349,6 +349,9 @@ async function queue(
     try {
       //console.log(`Attempt ${attempts + 1}/${maxRetries} to generate article`);
       // Generate article and evaluate rating
+      const ref = db.collection("new-articles").doc();
+      const articleId = ref.id;
+
       const {
         article: generatedArticle,
         rating,
@@ -359,7 +362,7 @@ async function queue(
       try {
         await generateImage({
           imageDesc: generatedArticle.imageDesc,
-          articleId: "temp",
+          articleId,
         });
       } catch (error) {
         console.error(
@@ -367,18 +370,20 @@ async function queue(
           error
         );
         lastError = error;
+
+        await ref.delete();
+        console.log(
+          `Deleted article with ID: ${articleId} due to image generation failure.`
+        );
+
         attempts++;
-
         const delay = Math.pow(2, attempts) * 1000;
-        //console.log(`Waiting ${delay / 1000} seconds before retrying...`);
+        console.log(`Waiting ${delay / 1000} seconds before retrying...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
-
         continue;
       }
 
-      const ref = db.collection("new-articles").doc();
       const createdAt = new Date().toISOString();
-
       await ref.set({
         average_rating: rating,
         cefr_level: cefrlevel,
@@ -392,10 +397,9 @@ async function queue(
         summary: generatedArticle.summary,
         title: generatedArticle.title,
         type,
-        id: ref.id,
+        id: articleId,
       });
 
-      // Generate questions and word list
       const [mcq, saq, laq, wordList] = await Promise.all([
         generateMCQuestion({
           type,
@@ -427,20 +431,14 @@ async function queue(
       ]);
 
       await Promise.all([
-        addQuestionsToCollection(ref.id, "mc-questions", mcq.questions),
-        addQuestionsToCollection(ref.id, "sa-questions", saq.questions),
-        addQuestionsToCollection(ref.id, "la-questions", [laq]),
-        addWordList(ref.id, wordList.word_list, createdAt),
+        addQuestionsToCollection(articleId, "mc-questions", mcq.questions),
+        addQuestionsToCollection(articleId, "sa-questions", saq.questions),
+        addQuestionsToCollection(articleId, "la-questions", [laq]),
+        addWordList(articleId, wordList.word_list, createdAt),
       ]);
 
-      await generateAudio({
-        passage: generatedArticle.passage,
-        articleId: ref.id,
-      });
-      await generateAudioForWord({
-        wordList: wordList.word_list,
-        articleId: ref.id,
-      });
+      await generateAudio({ passage: generatedArticle.passage, articleId });
+      await generateAudioForWord({ wordList: wordList.word_list, articleId });
 
       // const [mcq, saq, laq, wordList] = await Promise.all([
       //   generateMCQuestion({
@@ -472,20 +470,16 @@ async function queue(
       //   }),
       // ]);
 
-      //console.log("Article generation successful!");
-      return ref.id;
+      console.log("Article generation successful!");
+      return articleId;
     } catch (error) {
-      console.log(
-        `Error during article generation (attempt ${attempts + 1}):`,
-        error
-      );
+      console.error(`Error during article generation (attempt ${attempts + 1}):`, error);
       lastError = error;
     }
 
     attempts++;
-
     const delay = Math.pow(2, attempts) * 1000;
-    //console.log(`Waiting ${delay / 1000} seconds before retrying...`);
+    console.log(`Waiting ${delay / 1000} seconds before retrying...`);
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
 
