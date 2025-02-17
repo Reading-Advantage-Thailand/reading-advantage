@@ -706,7 +706,7 @@ export async function articlesByTypeGenre(req: Request): Promise<Response> {
     //console.log("Aggregated genre counts:", resultData);
 
     //console.log("Deleting old data from 'Articles-by-Type-and-Genre'...");
-    const summaryRef = db.collection("Articles-by-Type-and-Genre");
+    const summaryRef = db.collection("articles-by-type-and-genre");
     const oldData = await summaryRef.get();
     const batch = db.batch();
     oldData.forEach((doc) => batch.delete(doc.ref));
@@ -741,7 +741,7 @@ export async function articlesByTypeGenre(req: Request): Promise<Response> {
 export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
   try {
     //console.log("Fetching all data from 'Articles-by-Type-and-Genre'...");
-    const summaryRef = db.collection("Articles-by-Type-and-Genre");
+    const summaryRef = db.collection("articles-by-type-and-genre");
     const snapshot = await summaryRef.get();
 
     const articles = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
