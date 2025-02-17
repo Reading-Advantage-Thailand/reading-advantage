@@ -49,7 +49,7 @@ export default function TopSchoolByXPGainedChart({
             Top Schools by XP Gained
           </CardTitle>
         </CardHeader>
-        <CardContent className="w-full h-full mt-14">
+        <CardContent className="w-full mt-14">
           <ChartContainer config={chartConfig}>
             <BarChart
               accessibilityLayer
