@@ -687,7 +687,7 @@ export async function articlesByTypeGenre(req: Request): Promise<Response> {
 
     snapshot.forEach((doc) => {
       const data = doc.data() as Article;
-      console.log("Processing document:", data);
+      //console.log("Processing document:", data);
       const { genre, type } = data;
       if (!genre || !type) return;
 
