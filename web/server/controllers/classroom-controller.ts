@@ -13,6 +13,25 @@ interface RequestContext {
   };
 }
 
+interface License {
+  id: string;
+  school_name?: string;
+}
+
+interface License {
+  id: string;
+  school_name?: string;
+}
+
+interface User {
+  xp?: number;
+}
+
+interface SchoolXpData {
+  school: string;
+  xp: number;
+}
+
 // get all classrooms
 export async function getClassroom(req: ExtendedNextRequest) {
   try {
@@ -540,6 +559,77 @@ export async function getClassXp(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching XP data:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function calculateSchoolsXp(req: NextRequest): Promise<NextResponse> {
+  try {
+    //console.log("Starting calculateLicenseXp API");
+
+    const licensesSnapshot = await db.collection("licenses").get();
+    //console.log(`Found ${licensesSnapshot.size} licenses`);
+
+    const licenses: License[] = licensesSnapshot.docs.map((doc) => {
+      const data = doc.data() as License;
+      return { ...data, id: doc.id };
+    });
+
+    if (licenses.length === 0) {
+      console.error("No licenses found.");
+      return NextResponse.json(
+        { message: "No licenses found" },
+        { status: 404 }
+      );
+    }
+
+    const schoolXpData: SchoolXpData[] = [];
+    
+    for (const license of licenses) {
+      const licenseId = license.id;
+      const schoolName = license.school_name || "Unknown School";
+
+      //console.log(`Processing license: ${licenseId}, School: ${schoolName}`);
+
+      if (!licenseId) {
+        console.warn("License ID is missing, skipping...");
+        continue;
+      }
+
+      const usersSnapshot = await db
+        .collection("users")
+        .where("license_id", "==", licenseId)
+        .get();
+
+      //console.log(`Found ${usersSnapshot.size} users for license ${licenseId}`);
+
+      const users: User[] = usersSnapshot.docs.map((doc) => doc.data() as User);
+
+      const totalXp = users.reduce((sum, user) => {
+        const userXp = user.xp || 0;
+        //console.log(`User XP: ${userXp}`);
+        return sum + userXp;
+      }, 0);
+
+      //console.log(`Total XP for license ${licenseId}: ${totalXp}`);
+
+      schoolXpData.push({
+        school: schoolName,
+        xp: totalXp,
+      });
+    }
+
+    //console.log("Finished processing all licenses.");
+    return NextResponse.json(
+      { data: schoolXpData },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("Error fetching license XP data:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
