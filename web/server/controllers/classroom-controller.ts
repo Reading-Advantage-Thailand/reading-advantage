@@ -568,22 +568,22 @@ export async function getClassXp(req: NextRequest) {
 
 export async function calculateSchoolsXp(req: NextRequest): Promise<NextResponse> {
   try {
-    console.log("Starting calculateLicenseXp API");
+    //console.log("Starting calculateLicenseXp API");
 
     const summaryCollection = db.collection("license-xp-summary");
     const summarySnapshot = await summaryCollection.get();
     const batch = db.batch();
 
-    console.log(`Found ${summarySnapshot.size} documents in license-xp-summary, deleting...`);
+    //console.log(`Found ${summarySnapshot.size} documents in license-xp-summary, deleting...`);
     summarySnapshot.forEach((doc) => {
       batch.delete(doc.ref);
     });
 
     await batch.commit();
-    console.log("Cleared license-xp-summary collection");
+    //console.log("Cleared license-xp-summary collection");
 
     const licensesSnapshot = await db.collection("licenses").get();
-    console.log(`Found ${licensesSnapshot.size} licenses`);
+    //console.log(`Found ${licensesSnapshot.size} licenses`);
 
     const licenses: License[] = licensesSnapshot.docs.map((doc) => {
       return { id: doc.id, ...doc.data() } as License;
@@ -601,7 +601,7 @@ export async function calculateSchoolsXp(req: NextRequest): Promise<NextResponse
       const licenseId: string = license.id;
       const schoolName: string = license.school_name || "Unknown School";
 
-      console.log(`Processing license: ${licenseId}, School: ${schoolName}`);
+      //console.log(`Processing license: ${licenseId}, School: ${schoolName}`);
 
       if (!licenseId) {
         console.warn("License ID is missing, skipping...");
@@ -613,17 +613,17 @@ export async function calculateSchoolsXp(req: NextRequest): Promise<NextResponse
         .where("license_id", "==", licenseId)
         .get();
 
-      console.log(`Found ${usersSnapshot.size} users for license ${licenseId}`);
+      //console.log(`Found ${usersSnapshot.size} users for license ${licenseId}`);
 
       const users: User[] = usersSnapshot.docs.map((doc) => doc.data() as User);
 
       const totalXp: number = users.reduce((sum, user) => {
         const userXp: number = user.xp || 0;
-        console.log(`User XP: ${userXp}`);
+        //console.log(`User XP: ${userXp}`);
         return sum + userXp;
       }, 0);
 
-      console.log(`Total XP for license ${licenseId}: ${totalXp}`);
+      //console.log(`Total XP for license ${licenseId}: ${totalXp}`);
 
       await summaryCollection.doc(licenseId).set({
         school: schoolName,
@@ -631,10 +631,10 @@ export async function calculateSchoolsXp(req: NextRequest): Promise<NextResponse
         updatedAt: new Date(),
       });
 
-      console.log(`Saved XP summary for license ${licenseId}`);
+      //console.log(`Saved XP summary for license ${licenseId}`);
     }
 
-    console.log("Finished processing all licenses.");
+    //console.log("Finished processing all licenses.");
     return NextResponse.json(
       { message: "XP data stored successfully" },
       { status: 200 }
@@ -650,7 +650,7 @@ export async function calculateSchoolsXp(req: NextRequest): Promise<NextResponse
 
 export async function getTopSchoolsXp(req: NextRequest): Promise<NextResponse> {
   try {
-    console.log("Fetching top schools by XP");
+    //console.log("Fetching top schools by XP");
     const summaryCollection = db.collection("license-xp-summary");
     const summarySnapshot = await summaryCollection.orderBy("xp", "desc").limit(10).get();
     
