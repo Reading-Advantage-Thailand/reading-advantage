@@ -57,6 +57,13 @@ import type { User } from "@/types";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 
+interface School {
+  id: string;
+  school_name: string;
+  total_licenses: number;
+  used_licenses: number;
+}
+
 export type Payment = {
   id: string;
   name: string;
@@ -69,10 +76,12 @@ export default function UserRoleManagement({
   data,
   page,
   licenseId,
+  schoolList,
 }: {
   data: Payment[];
   page: string;
   licenseId: string;
+  schoolList: School[];
 }) {
   const [userData, setUserData] = React.useState<Payment[]>(data);
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -106,22 +115,24 @@ export default function UserRoleManagement({
           body: JSON.stringify({ role: selectedRole }),
         }
       );
-  
+
       if (!response.ok) {
         throw new Error("Failed to update role.");
       }
-  
+
       setUserData((prevData) =>
         prevData.map((user) =>
-          user.id === currentPayment?.id ? { ...user, role: selectedRole! } : user
+          user.id === currentPayment?.id
+            ? { ...user, role: selectedRole! }
+            : user
         )
       );
-  
+
       toast({
         title: "Role updated.",
         description: `Changed role to ${selectedRole}.`,
       });
-  
+
       setIsEditDialogOpen(false);
     } catch (error) {
       toast({
@@ -131,7 +142,6 @@ export default function UserRoleManagement({
       });
     }
   };
-  
 
   const handleAddSubmit = async () => {
     try {
@@ -188,7 +198,7 @@ export default function UserRoleManagement({
           { name: "Admin", value: "admin" },
         ];
 
-  const columns: ColumnDef<Payment>[] = [
+  const columns: ColumnDef<Payment & { school_name: string }>[] = [
     {
       accessorKey: "display_name",
       header: "User Name",
@@ -200,59 +210,62 @@ export default function UserRoleManagement({
     },
     {
       accessorKey: "email",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Email
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: "Email",
       cell: ({ row }) => (
         <div className="lowercase">{row.getValue("email")}</div>
       ),
     },
     {
       accessorKey: "role",
-      header: () => <div className="text-center">Current Role</div>,
+      header: "Current Role",
       cell: ({ row }) => (
-        <div className="capitalize text-center">{row.getValue("role")}</div>
+        <div className="capitalize">{row.getValue("role")}</div>
+      ),
+    },
+    {
+      accessorKey: "school_name",
+      header: "School Name",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("school_name")}</div>
       ),
     },
     {
       id: "actions",
-      header: () => <div>Actions</div>,
+      header: "Actions",
       enableHiding: false,
       cell: ({ row }) => {
         const payment = row.original;
-
         return (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => handleEditClick(payment)}>
-                  Change Role
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleEditClick(payment)}>
+                Change Role
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },
   ];
 
+  const mergedUserData = React.useMemo(() => {
+    return data.map((user) => {
+      const school = schoolList.find((s) => s.id === user.license_id);
+      return {
+        ...user,
+        school_name: school ? school.school_name : "-",
+      };
+    });
+  }, [data, schoolList]);
+
   const table = useReactTable({
-    data: userData,
+    data: mergedUserData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -289,8 +302,8 @@ export default function UserRoleManagement({
             className="max-w-sm"
           />
         </div>
-        <div className="rounded-md border">
-          <Table>
+        <div className="rounded-md border overflow-x-auto w-full">
+          <Table className="w-full table-fixed min-w-[800px] min-h-[320px]">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
