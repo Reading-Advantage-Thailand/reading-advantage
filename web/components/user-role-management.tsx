@@ -74,6 +74,7 @@ export default function UserRoleManagement({
   page: string;
   licenseId: string;
 }) {
+  const [userData, setUserData] = React.useState<Payment[]>(data);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -99,29 +100,38 @@ export default function UserRoleManagement({
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${currentPayment?.id}`,
         {
           method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({ role: selectedRole }),
         }
       );
+  
       if (!response.ok) {
         throw new Error("Failed to update role.");
       }
-
-      if (response.status === 200) {
-        toast({
-          title: "Role updated.",
-          description: `Changed role to ${selectedRole}.`,
-        });
-      }
+  
+      setUserData((prevData) =>
+        prevData.map((user) =>
+          user.id === currentPayment?.id ? { ...user, role: selectedRole! } : user
+        )
+      );
+  
+      toast({
+        title: "Role updated.",
+        description: `Changed role to ${selectedRole}.`,
+      });
+  
+      setIsEditDialogOpen(false);
     } catch (error) {
       toast({
         title: "An error occurred.",
         description: "Please try again later.",
         variant: "destructive",
       });
-    } finally {
-      router.refresh();
     }
   };
+  
 
   const handleAddSubmit = async () => {
     try {
@@ -180,10 +190,12 @@ export default function UserRoleManagement({
 
   const columns: ColumnDef<Payment>[] = [
     {
-      accessorKey: "name",
+      accessorKey: "display_name",
       header: "User Name",
       cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("name")}</div>
+        <div className="capitalize">
+          {row.getValue("display_name") || "No Name"}
+        </div>
       ),
     },
     {
@@ -240,7 +252,7 @@ export default function UserRoleManagement({
   ];
 
   const table = useReactTable({
-    data,
+    data: userData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
