@@ -95,7 +95,22 @@ export default function UserRoleManagement({
   const [selectedRole, setSelectedRole] = React.useState<string>();
   const [email, setEmail] = React.useState<string>();
   const [currentPayment, setCurrentPayment] = React.useState<Payment>();
+  const [isSchoolDialogOpen, setIsSchoolDialogOpen] = React.useState(false);
+  const [selectedSchool, setSelectedSchool] = React.useState<string>();
+  const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const router = useRouter();
+  const [isDisabled, setIsDisabled] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!dropdownOpen) {
+      setIsDisabled(true);
+      const timer = setTimeout(() => {
+        setIsDisabled(false);
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [dropdownOpen]);
 
   const handleEditClick = (payment: Payment) => {
     setCurrentPayment(payment);
@@ -247,6 +262,14 @@ export default function UserRoleManagement({
               <DropdownMenuItem onClick={() => handleEditClick(payment)}>
                 Change Role
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setCurrentPayment(payment);
+                  setIsSchoolDialogOpen(true);
+                }}
+              >
+                Change School
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -254,15 +277,70 @@ export default function UserRoleManagement({
     },
   ];
 
+  const handleSchoolChangeSubmit = async () => {
+    if (!selectedSchool) {
+      toast({
+        title: "Error",
+        description: "Please select a school before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${currentPayment?.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ license_id: selectedSchool }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update school.");
+      }
+
+      const newSchool = schoolList.find((s) => s.id === selectedSchool);
+
+      setUserData((prevData) =>
+        prevData.map((user) =>
+          user.id === currentPayment?.id
+            ? {
+                ...user,
+                license_id: selectedSchool,
+                school_name: newSchool ? newSchool.school_name : "-",
+              }
+            : user
+        )
+      );
+
+      toast({
+        title: "School updated.",
+        description: `User is now in ${newSchool?.school_name || "Unknown"}.`,
+      });
+
+      setIsSchoolDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "An error occurred.",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const mergedUserData = React.useMemo(() => {
-    return data.map((user) => {
+    return userData.map((user) => {
       const school = schoolList.find((s) => s.id === user.license_id);
       return {
         ...user,
         school_name: school ? school.school_name : "-",
       };
     });
-  }, [data, schoolList]);
+  }, [userData, schoolList]);
 
   const table = useReactTable({
     data: mergedUserData,
@@ -424,31 +502,83 @@ export default function UserRoleManagement({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Change Role</AlertDialogTitle>
-            <AlertDialogDescription>
-              <p>Role</p>
-              <Select
-                defaultValue={currentPayment?.role}
-                onValueChange={(value) => setSelectedRole(value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select a Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {role.map((role, index) => (
-                      <SelectItem key={index} value={role.value}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </AlertDialogDescription>
           </AlertDialogHeader>
+          <AlertDialogDescription>
+            <p>Role</p>
+            <Select
+              defaultValue={currentPayment?.role}
+              onValueChange={(value) => setSelectedRole(value)}
+              onOpenChange={setDropdownOpen}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {role.map((role, index) => (
+                    <SelectItem key={index} value={role.value}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </AlertDialogDescription>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleEditSubmit}>
+            <AlertDialogCancel
+              className={isDisabled ? "pointer-events-none " : ""}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEditSubmit}
+              className={isDisabled ? "pointer-events-none " : ""}
+            >
               Submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={isSchoolDialogOpen}
+        onOpenChange={setIsSchoolDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change School</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            <p>Select a new school for this user.</p>
+            <Select
+              onValueChange={(value) => setSelectedSchool(value)}
+              defaultValue={currentPayment?.license_id}
+              onOpenChange={setDropdownOpen}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a School" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {schoolList.map((school) => (
+                    <SelectItem key={school.id} value={school.id}>
+                      {school.school_name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className={isDisabled ? "pointer-events-none " : ""}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSchoolChangeSubmit}
+              className={isDisabled ? "pointer-events-none " : ""}
+            >
+              Change School
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
