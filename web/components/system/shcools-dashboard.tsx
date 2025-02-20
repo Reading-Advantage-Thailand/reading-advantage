@@ -281,7 +281,7 @@ async function ShcoolsDashboard({
         </Card>
       </div>
       <div className="py-2">
-        <Card>
+        <Card className="min-h-[500px]">
           <CardHeader>
             <CardTitle className="text-xl">Users Role Management</CardTitle>
           </CardHeader>
@@ -290,6 +290,7 @@ async function ShcoolsDashboard({
               data={userRoleData}
               licenseId={schoolSelected}
               page="system"
+              schoolList={schoolList.data}
             />
           </CardContent>
         </Card>

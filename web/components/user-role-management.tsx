@@ -57,6 +57,13 @@ import type { User } from "@/types";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 
+interface School {
+  id: string;
+  school_name: string;
+  total_licenses: number;
+  used_licenses: number;
+}
+
 export type Payment = {
   id: string;
   name: string;
@@ -69,11 +76,14 @@ export default function UserRoleManagement({
   data,
   page,
   licenseId,
+  schoolList,
 }: {
   data: Payment[];
   page: string;
   licenseId: string;
+  schoolList: School[];
 }) {
+  const [userData, setUserData] = React.useState<Payment[]>(data);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -85,7 +95,22 @@ export default function UserRoleManagement({
   const [selectedRole, setSelectedRole] = React.useState<string>();
   const [email, setEmail] = React.useState<string>();
   const [currentPayment, setCurrentPayment] = React.useState<Payment>();
+  const [isSchoolDialogOpen, setIsSchoolDialogOpen] = React.useState(false);
+  const [selectedSchool, setSelectedSchool] = React.useState<string>();
+  const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const router = useRouter();
+  const [isDisabled, setIsDisabled] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!dropdownOpen) {
+      setIsDisabled(true);
+      const timer = setTimeout(() => {
+        setIsDisabled(false);
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [dropdownOpen]);
 
   const handleEditClick = (payment: Payment) => {
     setCurrentPayment(payment);
@@ -99,27 +124,37 @@ export default function UserRoleManagement({
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${currentPayment?.id}`,
         {
           method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({ role: selectedRole }),
         }
       );
+
       if (!response.ok) {
         throw new Error("Failed to update role.");
       }
 
-      if (response.status === 200) {
-        toast({
-          title: "Role updated.",
-          description: `Changed role to ${selectedRole}.`,
-        });
-      }
+      setUserData((prevData) =>
+        prevData.map((user) =>
+          user.id === currentPayment?.id
+            ? { ...user, role: selectedRole! }
+            : user
+        )
+      );
+
+      toast({
+        title: "Role updated.",
+        description: `Changed role to ${selectedRole}.`,
+      });
+
+      setIsEditDialogOpen(false);
     } catch (error) {
       toast({
         title: "An error occurred.",
         description: "Please try again later.",
         variant: "destructive",
       });
-    } finally {
-      router.refresh();
     }
   };
 
@@ -178,69 +213,137 @@ export default function UserRoleManagement({
           { name: "Admin", value: "admin" },
         ];
 
-  const columns: ColumnDef<Payment>[] = [
+  const columns: ColumnDef<Payment & { school_name: string }>[] = [
     {
-      accessorKey: "name",
+      accessorKey: "display_name",
       header: "User Name",
       cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("name")}</div>
+        <div className="capitalize">
+          {row.getValue("display_name") || "No Name"}
+        </div>
       ),
     },
     {
       accessorKey: "email",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Email
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: "Email",
       cell: ({ row }) => (
         <div className="lowercase">{row.getValue("email")}</div>
       ),
     },
     {
       accessorKey: "role",
-      header: () => <div className="text-center">Current Role</div>,
+      header: "Current Role",
       cell: ({ row }) => (
-        <div className="capitalize text-center">{row.getValue("role")}</div>
+        <div className="capitalize">{row.getValue("role")}</div>
+      ),
+    },
+    {
+      accessorKey: "school_name",
+      header: "School Name",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("school_name")}</div>
       ),
     },
     {
       id: "actions",
-      header: () => <div>Actions</div>,
+      header: "Actions",
       enableHiding: false,
       cell: ({ row }) => {
         const payment = row.original;
-
         return (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => handleEditClick(payment)}>
-                  Change Role
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleEditClick(payment)}>
+                Change Role
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setCurrentPayment(payment);
+                  setIsSchoolDialogOpen(true);
+                }}
+              >
+                Change School
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },
   ];
 
+  const handleSchoolChangeSubmit = async () => {
+    if (!selectedSchool) {
+      toast({
+        title: "Error",
+        description: "Please select a school before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${currentPayment?.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ license_id: selectedSchool }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update school.");
+      }
+
+      const newSchool = schoolList.find((s) => s.id === selectedSchool);
+
+      setUserData((prevData) =>
+        prevData.map((user) =>
+          user.id === currentPayment?.id
+            ? {
+                ...user,
+                license_id: selectedSchool,
+                school_name: newSchool ? newSchool.school_name : "-",
+              }
+            : user
+        )
+      );
+
+      toast({
+        title: "School updated.",
+        description: `User is now in ${newSchool?.school_name || "Unknown"}.`,
+      });
+
+      setIsSchoolDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "An error occurred.",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const mergedUserData = React.useMemo(() => {
+    return userData.map((user) => {
+      const school = schoolList.find((s) => s.id === user.license_id);
+      return {
+        ...user,
+        school_name: school ? school.school_name : "-",
+      };
+    });
+  }, [userData, schoolList]);
+
   const table = useReactTable({
-    data,
+    data: mergedUserData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -277,8 +380,8 @@ export default function UserRoleManagement({
             className="max-w-sm"
           />
         </div>
-        <div className="rounded-md border">
-          <Table>
+        <div className="rounded-md border overflow-x-auto w-full">
+          <Table className="w-full table-fixed min-w-[800px] min-h-[320px]">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -399,31 +502,83 @@ export default function UserRoleManagement({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Change Role</AlertDialogTitle>
-            <AlertDialogDescription>
-              <p>Role</p>
-              <Select
-                defaultValue={currentPayment?.role}
-                onValueChange={(value) => setSelectedRole(value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select a Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {role.map((role, index) => (
-                      <SelectItem key={index} value={role.value}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </AlertDialogDescription>
           </AlertDialogHeader>
+          <AlertDialogDescription>
+            <p>Role</p>
+            <Select
+              defaultValue={currentPayment?.role}
+              onValueChange={(value) => setSelectedRole(value)}
+              onOpenChange={setDropdownOpen}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {role.map((role, index) => (
+                    <SelectItem key={index} value={role.value}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </AlertDialogDescription>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleEditSubmit}>
+            <AlertDialogCancel
+              className={isDisabled ? "pointer-events-none " : ""}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEditSubmit}
+              className={isDisabled ? "pointer-events-none " : ""}
+            >
               Submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={isSchoolDialogOpen}
+        onOpenChange={setIsSchoolDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change School</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            <p>Select a new school for this user.</p>
+            <Select
+              onValueChange={(value) => setSelectedSchool(value)}
+              defaultValue={currentPayment?.license_id}
+              onOpenChange={setDropdownOpen}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a School" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {schoolList.map((school) => (
+                    <SelectItem key={school.id} value={school.id}>
+                      {school.school_name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className={isDisabled ? "pointer-events-none " : ""}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSchoolChangeSubmit}
+              className={isDisabled ? "pointer-events-none " : ""}
+            >
+              Change School
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
