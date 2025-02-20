@@ -452,6 +452,32 @@ export default {
         },
       },
 
+      Classroom: {
+        header: "แดชบอร์ด Google Classroom",
+        login: "เข้าสู่ระบบ Google Classroom",
+        sync: "ซิงค์ Google Classroom",
+        courseState: {
+          ACTIVE: "ใช้งาน",
+          PROVISIONED: "จัดเตรียมแล้ว",
+        },
+        link: "เปิดใน Google Classroom",
+        createClassroom: "สร้าง Classroom",
+        title: "สร้าง Classroom ใหม่",
+        className: "ชื่อชั้นเรียน",
+        section: "หมวดหมู่",
+        subject: "วิชา",
+        room: "ห้อง",
+        CancelButton: "ยกเลิก",
+        CreateButton: "สร้าง",
+        toast: {
+          successCreate: "สำเร็จ",
+          successDescription: "สร้างชั้นเรียนสำเร็จ",
+          failedCreate: "ล้มเหลว",
+          failedDescription:
+            "การสร้างชั้นเรียนล้มเหลว โปรดลองซิงค์ Google Classroom อีกครั้ง",
+        },
+      },
+
       edit: {
         title: "แก้ไขรายละเอียดชั้นเรียน",
         description: "อัปเดตรายละเอียดชั้นเรียนด้านล่าง",

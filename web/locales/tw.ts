@@ -431,6 +431,31 @@ export default {
         },
       },
 
+      Classroom: {
+        header: "Google Classroom 儀表板",
+        login: "登入 Google Classroom",
+        sync: "同步 Google Classroom",
+        courseState: {
+          ACTIVE: "活躍",
+          PROVISIONED: "已配置",
+        },
+        link: "在 Google Classroom 開啟",
+        createClassroom: "建立課程",
+        title: "創建新課程",
+        className: "課程名稱",
+        section: "班級",
+        subject: "科目",
+        room: "教室",
+        CancelButton: "取消",
+        CreateButton: "創建",
+        toast: {
+          successCreate: "成功",
+          successDescription: "課程創建成功",
+          failedCreate: "失敗",
+          failedDescription: "課程創建失敗，請再試一次同步 Google Classroom",
+        },
+      },
+
       edit: {
         title: "編輯班級詳情",
         description: "更新下方的班級詳情",

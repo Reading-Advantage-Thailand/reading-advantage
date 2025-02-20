@@ -456,6 +456,32 @@ export default {
         },
       },
 
+      Classroom: {
+        header: "Bảng điều khiển Google Classroom",
+        login: "Đăng nhập Google Classroom",
+        sync: "Đồng bộ Google Classroom",
+        courseState: {
+          ACTIVE: "Đang hoạt động",
+          PROVISIONED: "Đã cung cấp",
+        },
+        link: "Mở trong Google Classroom",
+        createClassroom: "Tạo Classroom",
+        title: "Tạo Classroom mới",
+        className: "Tên lớp học",
+        section: "Môn học",
+        subject: "Môn học",
+        room: "Phòng",
+        CancelButton: "Hủy",
+        CreateButton: "Tạo",
+        toast: {
+          successCreate: "Thành công",
+          successDescription: "Lớp học đã được tạo thành công",
+          failedCreate: "Thất bại",
+          failedDescription:
+            "Tạo lớp học thất bại, vui lòng thử đồng bộ lại Google Classroom",
+        },
+      },
+
       edit: {
         title: "Chỉnh Sửa Chi Tiết Lớp",
         description: "Cập nhật chi tiết lớp học dưới đây",

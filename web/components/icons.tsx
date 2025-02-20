@@ -41,6 +41,8 @@ import {
   BookOpenCheck,
   ScrollText,
   MonitorCog,
+  PlusCircle,
+  ExternalLink,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -85,6 +87,8 @@ export const Icons = {
   assignments: BookOpenCheck,
   scrollText: ScrollText,
   MonitorCog: MonitorCog,
+  PlusCircle: PlusCircle,
+  ExternalLink: ExternalLink,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"
