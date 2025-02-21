@@ -59,6 +59,7 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app/
 
 RUN npm install
+RUN NODE_OPTIONS="--max-old-space-size=12288"
 RUN npm run build
 
 CMD ["npm", "start"]
