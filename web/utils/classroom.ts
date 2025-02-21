@@ -4,7 +4,7 @@ import { google } from "googleapis";
 const oauth2Client = new google.auth.OAuth2(
   process.env.CLASSROOM_CLIENT_ID,
   process.env.CLASSROOM_CLIENT_SECRET,
-  process.env.CLASSROOM_REDIRECT_URI_TEACHER
+  process.env.CLASSROOM_REDIRECT_URI
 );
 
 export const SCOPE = [
