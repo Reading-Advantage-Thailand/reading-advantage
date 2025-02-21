@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse, NextRequest } from "next/server";
 import { google } from "googleapis";
-import oauth2Client from "@/utils/classroom/teacher";
+import oauth2Client from "@/utils/classroom";
 
 export async function POST(req: NextRequest) {
   const cookieStore = cookies();

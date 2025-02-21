@@ -2,7 +2,7 @@ import ClassroomDashboard from "@/components/teacher/classroom-dashboard";
 import { cookies } from "next/headers";
 import { google, classroom_v1 } from "googleapis";
 import React from "react";
-import oauth2Client, { SCOPE } from "@/utils/classroom/teacher";
+import oauth2Client, { SCOPE } from "@/utils/classroom";
 import { Header } from "@/components/header";
 import { getScopedI18n } from "@/locales/server";
 

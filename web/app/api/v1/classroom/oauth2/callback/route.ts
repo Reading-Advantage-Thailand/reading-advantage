@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import oauth2Client from "@/utils/classroom/student";
+import oauth2Client from "@/utils/classroom";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
       maxAge: 60 * 60 * 24 * 7, // 1 week
     });
 
-    return NextResponse.redirect(new URL("/student/classroom", req.url));
+    return NextResponse.redirect(new URL("/teacher/classroom", req.url));
   } catch (error) {
     return NextResponse.json({
       error: "Google Oauth Error failed to exchange code:" + error,
