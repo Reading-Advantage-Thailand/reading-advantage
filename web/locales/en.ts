@@ -458,6 +458,32 @@ export default {
         },
       },
 
+      Classroom: {
+        header: "Google Classroom Dashboard",
+        login: "Login Google Classroom",
+        sync: "Sync Google Classroom",
+        courseState: {
+          ACTIVE: "ACTIVE",
+          PROVISIONED: "PROVISIONED",
+        },
+        link: "Open in Google Classroom",
+        createClassroom: "Create Classroom",
+        title: "Create a New Classroom",
+        className: "Class Name",
+        section: "Section",
+        subject: "Subject",
+        room: "Room",
+        CancelButton: "Cancel",
+        CreateButton: "Create",
+        toast: {
+          successCreate: "Success",
+          successDescription: "Class created successfully",
+          failedCreate: "Failed",
+          failedDescription:
+            "Class created Failed Please try sync Google Classroom again",
+        },
+      },
+
       edit: {
         title: "Edit Class Details",
         description: "Update the class details below",

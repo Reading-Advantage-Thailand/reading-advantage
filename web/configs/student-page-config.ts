@@ -49,5 +49,10 @@ export const studentPageConfig: StudentPageConfig = {
       href: "/student/history",
       icon: "record",
     },
+    {
+      title: "google classroom",
+      href: "/student/classroom",
+      icon: "class",
+    },
   ],
 };
