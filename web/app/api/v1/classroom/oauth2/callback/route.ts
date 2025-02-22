@@ -27,7 +27,9 @@ export async function GET(req: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 1 week
     });
 
-    return NextResponse.redirect(new URL("/teacher/classroom", req.url));
+    return NextResponse.redirect(
+      new URL("/teacher/classroom", process.env.NEXT_PUBLIC_BASE_URL).toString()
+    );
   } catch (error) {
     return NextResponse.json({
       error: "Google Oauth Error failed to exchange code:" + error,
