@@ -32,14 +32,12 @@ interface CoursesResponse {
   courses: Schema$Course[];
   authUrl: string;
   accessToken: boolean;
-  page?: string;
 }
 
 export default function ClassroomDashboard({
   courses,
   authUrl,
   accessToken,
-  page,
 }: CoursesResponse) {
   const [open, setOpen] = useState<boolean>(false);
   const [className, setClassName] = useState<string>("");
@@ -54,8 +52,6 @@ export default function ClassroomDashboard({
     ACTIVE: "bg-green-500",
     PROVISIONED: "bg-yellow-500",
   };
-
-  console.log(courses);
 
   const createCourses = async () => {
     const response = await fetch("/api/v1/classroom/oauth2/classroom/create", {
@@ -86,10 +82,21 @@ export default function ClassroomDashboard({
       router.refresh();
     }
   };
+
+  // const syncStudent = async (courseId: string) => {
+  //   const response = await fetch(
+  //     "/api/v1/classroom/oauth2/classroom/syncstudent",
+  //     {
+  //       method: "POST",
+  //       body: JSON.stringify({ courseId, studentEmail:  }),
+  //     }
+  //   );
+  // };
+
   return (
     <>
       <div className="flex justify-between items-center">
-        {accessToken && page !== "student" ? (
+        {accessToken ? (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -173,10 +180,18 @@ export default function ClassroomDashboard({
                       <CardHeader>
                         <div className="flex justify-between items-center">
                           <h3 className="text-lg font-semibold">{item.name}</h3>
+                          {/* <Button
+                            onClick={() => syncStudent(item.id as string)}
+                          >
+                            Sync Student
+                          </Button> */}
+                        </div>
+                        <div>
                           <Badge
+                            variant="outline"
                             className={`${
                               stateColors[item.courseState as string]
-                            } text-white px-3 py-1`}
+                            } px-3 py-1`}
                           >
                             {state(
                               item.courseState as "ACTIVE" | "PROVISIONED"
