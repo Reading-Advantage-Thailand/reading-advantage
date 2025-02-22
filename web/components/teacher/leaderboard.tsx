@@ -33,7 +33,7 @@ function getInitials(name: string): string {
 
 export default function Leaderboard({ data }: LeaderboardProps) {
   return (
-    <div className="mb-6 px-2 flex flex-col gap-4">
+    <div className="mb-6 flex flex-col gap-4">
       <div>
         <p className="text-center text-2xl font-bold">Leaderboard</p>
         <p className="text-center">
