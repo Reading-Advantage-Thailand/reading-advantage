@@ -89,6 +89,7 @@ export default async function AdminManagementPage() {
               data={filterData}
               licenseId={schoolList.license.id}
               page="admin"
+              schoolList={schoolList.data}
             />
           </CardContent>
         </Card>
