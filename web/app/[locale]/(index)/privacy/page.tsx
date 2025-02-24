@@ -5,9 +5,9 @@ type Props = {};
 export default function PrivacyPage({}: Props) {
   return (
     <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
-      <div className="container max-w-3xl mx-auto px-6 text-gray-300">
+      <div className="container max-w-3xl mx-auto px-6">
         <h1 className="text-3xl font-bold text-center mb-6">Privacy Policy</h1>
-        <p className="text-sm text-center text-gray-300 mb-8">Last updated: February 23, 2025</p>
+        <p className="text-sm text-center mb-8">Last updated: February 23, 2025</p>
         
         <div className="space-y-6">
           <section>
