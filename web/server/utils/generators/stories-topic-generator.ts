@@ -20,7 +20,6 @@ export async function generateStoriesTopic(
   console.log(
     `Generating topics for ${params.type} ${params.genre} ${params.subgenre} with amount: ${params.amountPerGenre}`
   );
-
   const prompts = {
     fiction: `Please provide ${params.amountPerGenre} reading passage topics in the ${params.type} ${params.genre} genre and ${params.subgenre} subgenre appropriate for secondary school students. 
     ### Requirements:
