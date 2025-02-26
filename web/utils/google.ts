@@ -11,13 +11,13 @@ const google = createVertex({
   googleAuthOptions: {
     credentials: {
       client_email: process.env.VERTEX_CLIENT_EMAIL,
-      private_key: process.env.VERTEX_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+      private_key: process.env.VERTEX_PRIVATE_KEY?.replace(/\\n/g, "\n") || "",
     },
   },
 });
 
 const googleModel = "gemini-2.0-flash-001";
-
+const googleFlashThinking = "gemini-2.0-flash-thinking-exp-01-21";
 const googleImages = "imagen-3.0-generate-001";
 
-export { google, googleModel, googleImages };
+export { google, googleModel, googleImages, googleFlashThinking };
