@@ -7,6 +7,7 @@ import {
   Label,
   LabelList,
   XAxis,
+  YAxis,
 } from "recharts";
 import {
   Card,
@@ -49,44 +50,23 @@ export default function ArticlesPerLevelChart({
 
   const processData = (data: { [key: string]: number }) => {
     if (!data) return [];
-    const processedData = Object.entries(data).map(([key, value]) => ({
-      CEFR_Level: key,
-      numberOfArticles: value,
-    }));
-
-    processedData.sort((a, b) => {
-      const getOrderValue = (cefr_Level: string) => {
-        if (cefr_Level.endsWith("-")) return 0;
-        if (cefr_Level.endsWith("+")) return 2;
-        return 1;
-      };
-
-      const extractParts = (cefr_Level: string) => {
-        const match = cefr_Level.match(/(.*?)([-+])?$/);
-        return {
-          base: match ? match[1] : cefr_Level,
-          suffix: match && match[2] ? match[2] : "",
-        };
-      };
-
-      const aParts = extractParts(a.CEFR_Level);
-      const bParts = extractParts(b.CEFR_Level);
-
-      const baseLevelComparison = aParts.base.localeCompare(
-        bParts.base,
-        undefined,
-        { numeric: true, sensitivity: "base" }
-      );
-      if (baseLevelComparison !== 0) {
-        return baseLevelComparison;
-      }
-
-      return getOrderValue(a.CEFR_Level) - getOrderValue(b.CEFR_Level);
-    });
-
+    
+    // แปลงข้อมูลเป็นอาร์เรย์ของอ็อบเจ็กต์
+    const processedData = Object.entries(data)
+      .map(([key, value]) => ({
+        RA_Level: key,
+        numberOfArticles: value,
+      }))
+      // กรองเฉพาะค่าที่อยู่ในช่วง 1-18
+      .filter((item) => {
+        const level = parseInt(item.RA_Level, 10);
+        return !isNaN(level) && level >= 1 && level <= 18;
+      })
+      .sort((a, b) => parseInt(a.RA_Level, 10) - parseInt(b.RA_Level, 10));
+  
     setChartData(processedData);
   };
-
+  
   const handleSendDates = async () => {
     if (startDate && endDate) {
       const url = new URL(
@@ -166,12 +146,13 @@ export default function ArticlesPerLevelChart({
             <BarChart data={chartData}>
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="CEFR_Level"
+                dataKey="RA_Level"
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                tickFormatter={(value) => value.slice(0, 3)}
+                tickFormatter={(value) => `RA: ${value.slice(0, 3)}`}
               />
+              <YAxis domain={[0, "dataMax + 100"]} />{" "}
               <ChartTooltip
                 content={<ChartTooltipContent indicator="dashed" />}
                 cursor={false}
@@ -183,7 +164,6 @@ export default function ArticlesPerLevelChart({
               >
                 <LabelList
                   position="top"
-                  offset={12}
                   fontSize={12}
                   className="fill-foreground"
                 />
