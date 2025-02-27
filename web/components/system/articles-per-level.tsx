@@ -50,44 +50,23 @@ export default function ArticlesPerLevelChart({
 
   const processData = (data: { [key: string]: number }) => {
     if (!data) return [];
-    const processedData = Object.entries(data).map(([key, value]) => ({
-      RA_Level: key,
-      numberOfArticles: value,
-    }));
-
-    processedData.sort((a, b) => {
-      const getOrderValue = (RA_Level: string) => {
-        if (RA_Level.endsWith("-")) return 0;
-        if (RA_Level.endsWith("+")) return 2;
-        return 1;
-      };
-
-      const extractParts = (RA_Level: string) => {
-        const match = RA_Level.match(/(.*?)([-+])?$/);
-        return {
-          base: match ? match[1] : RA_Level,
-          suffix: match && match[2] ? match[2] : "",
-        };
-      };
-
-      const aParts = extractParts(a.RA_Level);
-      const bParts = extractParts(b.RA_Level);
-
-      const baseLevelComparison = aParts.base.localeCompare(
-        bParts.base,
-        undefined,
-        { numeric: true, sensitivity: "base" }
-      );
-      if (baseLevelComparison !== 0) {
-        return baseLevelComparison;
-      }
-
-      return getOrderValue(a.RA_Level) - getOrderValue(b.RA_Level);
-    });
-
+    
+    // แปลงข้อมูลเป็นอาร์เรย์ของอ็อบเจ็กต์
+    const processedData = Object.entries(data)
+      .map(([key, value]) => ({
+        RA_Level: key,
+        numberOfArticles: value,
+      }))
+      // กรองเฉพาะค่าที่อยู่ในช่วง 1-18
+      .filter((item) => {
+        const level = parseInt(item.RA_Level, 10);
+        return !isNaN(level) && level >= 1 && level <= 18;
+      })
+      .sort((a, b) => parseInt(a.RA_Level, 10) - parseInt(b.RA_Level, 10));
+  
     setChartData(processedData);
   };
-
+  
   const handleSendDates = async () => {
     if (startDate && endDate) {
       const url = new URL(
