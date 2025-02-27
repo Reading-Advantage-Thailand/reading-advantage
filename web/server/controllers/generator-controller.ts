@@ -347,7 +347,7 @@ async function queue(
 
   while (attempts < maxRetries) {
     try {
-      console.log(`Attempt ${attempts + 1}/${maxRetries} to generate article`);
+      //console.log(`Attempt ${attempts + 1}/${maxRetries} to generate article`);
       // Generate article and evaluate rating
       const ref = db.collection("new-articles").doc();
       const articleId = ref.id;
@@ -454,7 +454,7 @@ async function queue(
       //   }),
       // ]);
 
-      console.log("Article generation successful!");
+      //console.log("Article generation successful!");
       return articleId;
     } catch (error) {
       console.error(
@@ -466,7 +466,7 @@ async function queue(
 
     attempts++;
     const delay = Math.pow(2, attempts) * 1000;
-    console.log(`Retrying in ${delay / 1000} seconds...`);
+    //console.log(`Retrying in ${delay / 1000} seconds...`);
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
 

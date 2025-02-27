@@ -47,7 +47,7 @@ export async function generateImage(
 
       await uploadToBucket(localPath, `${IMAGE_URL}/${params.articleId}.png`);
 
-      console.log("Image generation successful!");
+      //console.log("Image generation successful!");
       return;
     } catch (error) {
       console.error(
@@ -63,7 +63,7 @@ export async function generateImage(
       }
 
       const delay = Math.pow(2, attempts) * 1000;
-      console.log(`Retrying in ${delay / 1000} seconds...`);
+      //console.log(`Retrying in ${delay / 1000} seconds...`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
