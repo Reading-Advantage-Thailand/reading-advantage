@@ -12,15 +12,20 @@ interface GenerateImageParams {
 }
 
 export async function generateImage(
-  params: GenerateImageParams
+  params: GenerateImageParams,
+  maxRetries = 5
 ): Promise<void> {
-  try {
-    const { image } = await generateImages({
-      model: openai.image(openaiImages),
-      n: 1,
-      prompt: params.imageDesc,
-      size: "1024x1024",
-    });
+  let attempts = 0;
+  while (attempts < maxRetries) {
+    try {
+      console.log(`Generating image (Attempt ${attempts + 1}/${maxRetries})`);
+
+      const { image } = await generateImages({
+        model: openai.image(openaiImages),
+        n: 1,
+        prompt: params.imageDesc,
+        size: "1024x1024",
+      });
 
     // const { image } = await generateImages({
     //   model: google.image(googleImages),
@@ -34,15 +39,32 @@ export async function generateImage(
     //   },
     // });
 
-    const base64 = image.base64;
+      const base64 = image.base64;
+      const base64Image: Buffer = Buffer.from(base64, "base64");
 
-    const base64Image: Buffer = Buffer.from(base64, "base64");
+      const localPath = `${process.cwd()}/data/images/${params.articleId}.png`;
+      fs.writeFileSync(localPath, base64Image as Uint8Array);
 
-    const localPath = `${process.cwd()}/data/images/${params.articleId}.png`;
-    fs.writeFileSync(localPath, base64Image as Uint8Array);
+      await uploadToBucket(localPath, `${IMAGE_URL}/${params.articleId}.png`);
 
-    await uploadToBucket(localPath, `${IMAGE_URL}/${params.articleId}.png`);
-  } catch (error) {
-    throw `failed to generate image: ${error}`;
+      console.log("Image generation successful!");
+      return;
+    } catch (error) {
+      console.error(
+        `Failed to generate image (Attempt ${attempts + 1}):`,
+        error
+      );
+      attempts++;
+
+      if (attempts >= maxRetries) {
+        throw new Error(
+          `Failed to generate image after ${maxRetries} attempts: ${error}`
+        );
+      }
+
+      const delay = Math.pow(2, attempts) * 1000;
+      console.log(`Retrying in ${delay / 1000} seconds...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
 }
