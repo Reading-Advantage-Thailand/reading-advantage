@@ -17,12 +17,17 @@ import {
 } from "@/components/ui/chart";
 
 interface ArticlesByTypeAndGenreChartProps {
-  chartData: { id: string; genre: string; fiction: number }[];
+  chartData: {
+    id: string;
+    genre: string;
+    fiction?: number;
+    nonFiction?: number;
+  }[];
 }
 
 type GenreChartProps = {
-  data: any;
-  dataKey: string;
+  data: { id: string; genre: string; fiction?: number; nonFiction?: number }[];
+  dataKey: "fiction" | "nonFiction";
   config: ChartConfig;
 };
 
@@ -75,21 +80,16 @@ export default function ArticlesByTypeAndGenreChart({
   const [selectedType, setSelectedType] = React.useState<
     "fiction" | "nonFiction" | null
   >("fiction");
-  const fictionData = chartData.filter(
-    (item: any) => item.fiction !== undefined
-  );
+  const fictionData = chartData.filter((item) => item.fiction !== undefined);
   const nonFictionData = chartData.filter(
-    (item: any) => item.nonFiction !== undefined
+    (item) => item.nonFiction !== undefined
   );
 
   const total = React.useMemo(
     () => ({
-      fiction: fictionData.reduce(
-        (acc: number, curr: any) => acc + curr.fiction,
-        0
-      ),
+      fiction: fictionData.reduce((acc, curr) => acc + (curr.fiction ?? 0), 0),
       nonFiction: nonFictionData.reduce(
-        (acc: number, curr: any) => acc + curr.nonFiction,
+        (acc, curr) => acc + (curr.nonFiction ?? 0),
         0
       ),
     }),
