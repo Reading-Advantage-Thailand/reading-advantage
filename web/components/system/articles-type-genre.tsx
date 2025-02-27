@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/chart";
 
 interface ArticlesByTypeAndGenreChartProps {
-  chartData: any;
+  chartData: { id: string; genre: string; fiction: number }[];
 }
 
 type GenreChartProps = {
