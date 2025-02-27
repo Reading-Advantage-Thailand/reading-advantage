@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/chart";
 
 interface TopSchoolByXPGainedChartProps {
-  topSchoolByXP: any;
+  topSchoolByXP: { school: string; xp: number }[];
 }
 
 export default function TopSchoolByXPGainedChart({
