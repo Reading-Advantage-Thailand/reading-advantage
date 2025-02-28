@@ -15,6 +15,12 @@ interface RequestContext {
   };
 }
 
+interface GenreCount {
+  genre: string;
+  fiction?: number;
+  nonFiction?: number;
+}
+
 // GET search articles
 // GET /api/articles?level=10&type=fiction&genre=Fantasy
 // GET /api/v1/articles?type=nonfiction&genre=Career+Guides&subgenre=Career+Change&page=1&limit=10 <--when scroll down
@@ -665,6 +671,89 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
       {
         message: "Internal server error",
         error: error.message || error.toString(),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function articlesByTypeGenre(req: Request): Promise<Response> {
+  try {
+    //console.log("Fetching articles from 'new-articles' collection...");
+    const articlesRef = db.collection("new-articles");
+    const snapshot = await articlesRef.get();
+
+    const genreCounts: Record<string, GenreCount> = {};
+
+    snapshot.forEach((doc) => {
+      const data = doc.data() as Article;
+      //console.log("Processing document:", data);
+      const { genre, type } = data;
+      if (!genre || !type) return;
+
+      if (!genreCounts[genre]) {
+        genreCounts[genre] = { genre };
+      }
+
+      if (type.toLowerCase() === "fiction") {
+        genreCounts[genre].fiction = (genreCounts[genre].fiction || 0) + 1;
+      } else {
+        genreCounts[genre].nonFiction = (genreCounts[genre].nonFiction || 0) + 1;
+      }
+    });
+
+    const resultData = Object.values(genreCounts);
+    //console.log("Aggregated genre counts:", resultData);
+
+    //console.log("Deleting old data from 'Articles-by-Type-and-Genre'...");
+    const summaryRef = db.collection("articles-by-type-and-genre");
+    const oldData = await summaryRef.get();
+    const batch = db.batch();
+    oldData.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    //console.log("Old data deleted.");
+
+    //console.log("Updating new aggregated data...");
+    const newBatch = db.batch();
+    resultData.forEach((data) => {
+      const docRef = summaryRef.doc();
+      newBatch.set(docRef, data);
+    });
+    await newBatch.commit();
+    //console.log("New data successfully updated.");
+
+    return NextResponse.json(
+      { message: "Updated successfully" },
+      { status: 200 }
+    );
+  } catch (error: unknown) {
+    console.error("Error updating articles summary:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
+  try {
+    //console.log("Fetching all data from 'Articles-by-Type-and-Genre'...");
+    const summaryRef = db.collection("articles-by-type-and-genre");
+    const snapshot = await summaryRef.get();
+
+    const articles = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    //console.log("Fetched articles:", articles);
+
+    return NextResponse.json(articles, { status: 200 });
+  } catch (error: unknown) {
+    console.error("Error fetching articles summary:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );

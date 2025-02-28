@@ -16,29 +16,20 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
-  { genre: "Action and Adventure", fiction: 222 },
-  { genre: "Adult Fiction", fiction: 97 },
-  { genre: "Children's Fiction", fiction: 59 },
-  { genre: "Children's Literature", fiction: 261 },
-  { genre: "Classic and Literary Fiction", fiction: 103 },
-  { genre: "Contemporary", fiction: 446 },
-  { genre: "Crafts and Hobbies", nonFiction: 141 },
-  { genre: "Cultural Criticism", nonFiction: 434 },
-  { genre: "Drama and Family", nonFiction: 490 },
-  { genre: "Essays", nonFiction: 200 },
-  { genre: "Adventure and Travel", nonFiction: 120 },
-  { genre: "Art and Culture", nonFiction: 260 },
-  { genre: "Biographies", nonFiction: 290 },
-  { genre: "Business", nonFiction: 340 },
-  { genre: "Business and Economics", nonFiction: 180 },
-  { genre: "Career Guides", nonFiction: 320 },
-];
+interface ArticlesByTypeAndGenreChartProps {
+  chartData: {
+    id: string;
+    genre: string;
+    fiction?: number;
+    nonFiction?: number;
+  }[];
+}
 
-const fictionData = chartData.filter((item) => item.fiction !== undefined);
-const nonFictionData = chartData.filter(
-  (item) => item.nonFiction !== undefined
-);
+type GenreChartProps = {
+  data: { id: string; genre: string; fiction?: number; nonFiction?: number }[];
+  dataKey: "fiction" | "nonFiction";
+  config: ChartConfig;
+};
 
 const chartConfig = {
   fiction: {
@@ -51,17 +42,12 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type GenreChartProps = {
-  data: any;
-  dataKey: string;
-  config: ChartConfig;
-};
-
 const GenreChart = ({ data, dataKey, config }: GenreChartProps) => (
-  <ChartContainer config={config} className="aspect-auto h-[250px] w-full">
+  <ChartContainer config={config} className="aspect-auto h-[800px] w-full">
     <BarChart
       layout="vertical"
       data={data}
+      barSize={20}
       margin={{
         left: 5,
         right: 12,
@@ -88,56 +74,77 @@ const GenreChart = ({ data, dataKey, config }: GenreChartProps) => (
   </ChartContainer>
 );
 
-export default function ArticlesByTypeAndGenreChart() {
+export default function ArticlesByTypeAndGenreChart({
+  chartData,
+}: ArticlesByTypeAndGenreChartProps) {
+  const [selectedType, setSelectedType] = React.useState<
+    "fiction" | "nonFiction" | null
+  >("fiction");
+  const fictionData = chartData.filter((item) => item.fiction !== undefined);
+  const nonFictionData = chartData.filter(
+    (item) => item.nonFiction !== undefined
+  );
+
   const total = React.useMemo(
     () => ({
-      fiction: fictionData.reduce((acc, curr) => acc + curr.fiction, 0),
+      fiction: fictionData.reduce((acc, curr) => acc + (curr.fiction ?? 0), 0),
       nonFiction: nonFictionData.reduce(
-        (acc, curr) => acc + curr.nonFiction,
+        (acc, curr) => acc + (curr.nonFiction ?? 0),
         0
       ),
     }),
-    []
+    [chartData]
   );
 
   return (
-    <Card className="h-full">
+    <Card className="h-full w-full max-w-[1200px] mx-auto">
       <CardHeader>
         <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
           Articles by Type and Genre
         </CardTitle>
-        <div className="flex">
-          {["fiction", "nonFiction"].map((key) => {
+        <div className="flex flex-wrap gap-4">
+          {Object.keys(chartConfig).map((key) => {
             const chart = key as keyof typeof chartConfig;
             return (
               <div
                 key={chart}
-                className="flex flex-1 flex-col justify-center gap-1 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
+                className={`flex flex-1 min-w-[150px] flex-col justify-center gap-1 sm:border-l sm:border-t-0 sm:px-8 sm:py-6 cursor-pointer ${
+                  selectedType === chart
+                    ? "p-2 rounded-xl bg-gradient-to-r from-[hsl(var(--primary)/10%)] to-transparent bg-opacity-10"
+                    : ""
+                }`}
+                onClick={() => {
+                  if (selectedType !== chart) {
+                    setSelectedType(chart);
+                  }
+                }}
               >
                 <span className="text-xs text-muted-foreground">
                   {chartConfig[chart].label}
                 </span>
                 <span className="text-lg font-bold leading-none sm:text-xl">
-                  {total[key as keyof typeof total].toLocaleString()}
+                  {total[chart].toLocaleString()}
                 </span>
               </div>
             );
           })}
         </div>
       </CardHeader>
-      <CardContent className="">
-        <div className="flex">
+      <CardContent className="flex flex-wrap gap-6 justify-center">
+        {(!selectedType || selectedType === "fiction") && (
           <GenreChart
             data={fictionData}
             dataKey="fiction"
             config={chartConfig}
           />
+        )}
+        {(!selectedType || selectedType === "nonFiction") && (
           <GenreChart
             data={nonFictionData}
             dataKey="nonFiction"
             config={chartConfig}
           />
-        </div>
+        )}
       </CardContent>
     </Card>
   );
