@@ -4,7 +4,7 @@ import path from "path";
 import { readJsonFile } from "../read-json";
 import { generateObject } from "ai";
 import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
-import { google, googleModel } from "@/utils/google";
+import { openai, openaiModel4o } from "@/utils/openai";
 
 export interface GenerateStoriesArticleParams {
   type: ArticleType;
@@ -77,11 +77,11 @@ export async function generateStoriesArticle(
 
   try {
     console.log(
-      `${params.cefrLevel} generating article with model ID: ${googleModel} type: ${params.type}`
+      `${params.cefrLevel} generating article with model ID: ${openaiModel4o} type: ${params.type}`
     );
 
     const { object: article } = await generateObject({
-      model: google(googleModel),
+      model: openai(openaiModel4o),
       schema: schema,
       system: levelConfig.systemPrompt,
       prompt: finalPrompt,
