@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { google, googleFlashThinking, googleModel } from "@/utils/google";
+import { openai, openaiModel4o } from "@/utils/openai";
 import { z } from "zod";
 
 const StoryBibleSchema = z.object({
@@ -38,7 +38,7 @@ const StoryBibleSchema = z.object({
           })
         )
         .optional()
-        .default([]), 
+        .default([]),
     })
   ),
   setting: z.object({
@@ -62,7 +62,6 @@ const StoryBibleSchema = z.object({
   "image-description": z.string(),
 });
 
-
 export async function generateStoryBible({
   topic,
   genre,
@@ -83,7 +82,7 @@ export async function generateStoryBible({
       Generate a structured Story Bible for a ${genre} story in the ${subgenre} subgenre. The story is about "${topic}".
       The output should include:
       - A complete main plot structure with premise, exposition, rising action, climax, falling action, and resolution.
-      - A detailed list of characters with full descriptions, backgrounds, speech patterns, character arcs, and relationships.
+      - A detailed list of characters with full descriptions, backgrounds, speech patterns, character arcs, and well-defined relationships with at least one other character in the story.
       - The setting, including time period, significant locations with descriptions, and world rules.
       - The themes explored in the story and how they develop.
       - A concise one-sentence summary of the story.
@@ -92,7 +91,7 @@ export async function generateStoryBible({
     `;
 
     const response = await generateObject({
-      model: google(googleModel),
+      model: openai(openaiModel4o),
       schema: StoryBibleSchema,
       prompt,
       temperature: 1,

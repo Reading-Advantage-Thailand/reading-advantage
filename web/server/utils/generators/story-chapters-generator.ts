@@ -1,7 +1,9 @@
-import { StoryBible } from "./chapter-outline-generator";
+import { StoryBible } from "./full-stories-generator";
 import { ArticleBaseCefrLevel } from "../../models/enum";
 import { generateObject } from "ai";
-import { google, googleModel } from "@/utils/google";
+import { openai, openaiModel4o } from "@/utils/openai";
+import { z } from "zod";
+import { getCEFRRequirements } from "../CEFR-requirements";
 
 interface Chapter {
   title: string;
@@ -28,7 +30,56 @@ interface Chapter {
     }[];
     introducedElements: string[];
   };
+  questions: Question[];
 }
+
+interface Question {
+  type: "MCQ" | "SAQ" | "LAQ";
+  question: string;
+  options?: string[];
+  answer: string;
+}
+
+const ChapterSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  summary: z.string(),
+  "image-description": z.string(),
+  analysis: z.object({
+    wordCount: z.number(),
+    averageSentenceLength: z.number(),
+    vocabulary: z.object({
+      uniqueWords: z.number(),
+      complexWords: z.number(),
+      targetWordsUsed: z.array(z.string()),
+    }),
+    grammarStructures: z.array(z.string()),
+    readabilityScore: z.number(),
+  }),
+  continuityData: z.object({
+    events: z.array(z.string()),
+    characterStates: z.array(
+      z.object({
+        character: z.string(),
+        currentState: z.string(),
+        location: z.string(),
+      })
+    ),
+    introducedElements: z.array(z.string()),
+  }),
+  questions: z.array(
+    z.object({
+      type: z.enum(["MCQ", "SAQ", "LAQ"]),
+      question: z.string(),
+      options: z.array(z.string()).optional(),
+      answer: z.string(),
+    })
+  ),
+});
+
+const ChaptersSchema = z.object({
+  chapters: z.array(ChapterSchema),
+});
 
 interface GenerateChaptersParams {
   fullStory: string;
@@ -36,38 +87,29 @@ interface GenerateChaptersParams {
   cefrLevel: ArticleBaseCefrLevel;
   previousChapters?: Chapter[];
   chapterCount: number;
-}
-
-function findChapters(obj: any): any[] | null {
-  if (obj && typeof obj === "object") {
-    if (obj.hasOwnProperty("chapters") && Array.isArray(obj["chapters"])) {
-      return obj["chapters"];
-    }
-    for (const key in obj) {
-      const result = findChapters(obj[key]);
-      if (result) return result;
-    }
-  }
-  return null;
+  wordCountPerChapter: number;
 }
 
 export async function generateChaptersFromStory({
   fullStory,
   storyBible,
   cefrLevel,
-  previousChapters = [],
   chapterCount,
+  wordCountPerChapter,
 }: GenerateChaptersParams): Promise<Chapter[]> {
-  console.log("Splitting story into chapters with AI assistance...");
+  console.log(
+    `Splitting story into ${chapterCount} chapters with CEFR level ${cefrLevel} constraints...`
+  );
 
   try {
     const structuredChapters = await aiProcessChapters({
       fullStory,
       storyBible,
+      cefrLevel,
       chapterCount,
+      wordCountPerChapter,
     });
 
-    // ตรวจสอบจำนวนบทที่ได้ตามที่ต้องการ
     if (structuredChapters.length !== chapterCount) {
       throw new Error(
         `Expected ${chapterCount} chapters, but got ${structuredChapters.length}`
@@ -84,21 +126,30 @@ export async function generateChaptersFromStory({
 async function aiProcessChapters({
   fullStory,
   storyBible,
+  cefrLevel,
   chapterCount,
+  wordCountPerChapter,
 }: {
   fullStory: string;
   storyBible: StoryBible;
+  cefrLevel: ArticleBaseCefrLevel;
   chapterCount: number;
+  wordCountPerChapter: number;
 }): Promise<Chapter[]> {
-  console.log("Processing story structure with AI...");
+  console.log(
+    `Processing story with AI using CEFR level ${cefrLevel} requirements...`
+  );
 
-  // สร้าง prompt โดยผสมข้อมูลจาก Story Bible ให้ครบถ้วน
+  // ดึงข้อกำหนดของ CEFR
+  const cefrRequirements = getCEFRRequirements(cefrLevel);
+  const minWordCount = Math.floor(wordCountPerChapter * 0.9);
+  const maxWordCount = Math.ceil(wordCountPerChapter * 1.1);
+
   const prompt = `
-Using the following Story Bible details, split the full story into ${chapterCount} well-structured chapters.
-The chapters must incorporate the key plot points, characters, setting, themes, and other elements as specified below.
+Generate ${chapterCount} structured chapters for a story based on the following Story Bible and Full Story. Each chapter should adhere to the specified CEFR level (${cefrLevel}) in vocabulary, grammar, and readability.
 
-Story Bible:
-Main Plot:
+**Story Bible:**
+- **Main Plot:**
   - Premise: ${storyBible.mainPlot.premise}
   - Exposition: ${storyBible.mainPlot.exposition}
   - Rising Action: ${storyBible.mainPlot.risingAction}
@@ -106,80 +157,93 @@ Main Plot:
   - Falling Action: ${storyBible.mainPlot.fallingAction}
   - Resolution: ${storyBible.mainPlot.resolution}
 
-Characters:
+**Full Story**
+- ${fullStory}
+
+- **Characters:**
 ${storyBible.characters
-  .map((c: any) => `  - ${c.name}: ${c.description}`)
+  .map(
+    (c) =>
+      `  - Name: ${c.name}, Description: ${c.description}, Background: ${c.background}`
+  )
   .join("\n")}
 
-Setting:
-  Time: ${storyBible.setting.time}
-  Places:
+- **Setting:**
+  - Time: ${storyBible.setting.time}
+  - Places:
 ${storyBible.setting.places
-  .map((p: any) => `  - ${p.name}: ${p.description}`)
+  .map((p) => `  - ${p.name}: ${p.description}`)
   .join("\n")}
 
-World Rules:
-${storyBible.worldRules ? storyBible.worldRules : "  - None specified."}
+- **Themes:**
+${storyBible.themes.map((t) => `  - ${t.theme}: ${t.development}`).join("\n")}
 
-Themes:
-${storyBible.themes
-  .map((t: any) => `  - ${t.theme}: ${t.development}`)
-  .join("\n")}
-
-Full Story:
-${fullStory}
-
-Please ensure that each chapter reflects these details and maintains consistency with the Story Bible.
-Return the result as a JSON object with the following structure:
-{
-  "chapters": [
-    {  
-      "chapter_number": number
-      "title": "Chapter title",
-      "content": "Complete chapter text including all narrative elements",
-      "summary": "A one-sentence summary without spoilers",
-      "image-description": "Detailed description of an image to be displayed alongside the chapter summary",
-      "analysis": {
-         "wordCount": number,
-         "averageSentenceLength": number,
-         "vocabulary": {
-            "uniqueWords": number,
-            "complexWords": number,
-            "targetWordsUsed": [string]
-         },
-         "grammarStructures": [string],
-         "readabilityScore": number
-      },
-      "continuityData": {
-         "events": [string],
-         "characterStates": [
-            {
-              "character": string,
-              "currentState": string,
-              "location": string
-            }
-         ],
-         "introducedElements": [string]
-      }
+- **CEFR Requirements (${cefrLevel}):**
+    - **Word Count per Chapter:** Between ${minWordCount} and ${maxWordCount} words
+    - **Sentence Structure:**
+    - Average Words per Sentence: ${
+      cefrRequirements.sentenceStructure.averageWords
     }
-  ]
-}
-`;
+    - Complexity: ${cefrRequirements.sentenceStructure.complexity}
+    - Allowed Structures: ${cefrRequirements.sentenceStructure.allowedStructures.join(
+      ", "
+    )}
+    - **Vocabulary Level:** ${cefrRequirements.vocabulary.level}
+    - Restrictions: ${cefrRequirements.vocabulary.restrictions.join(", ")}
+    - Suggested Words: ${cefrRequirements.vocabulary.suggestions.join(", ")}
+    - **Grammar:**
+    - Allowed Tenses: ${cefrRequirements.grammar.allowedTenses.join(", ")}
+    - Allowed Structures: ${cefrRequirements.grammar.allowedStructures.join(
+      ", "
+    )}
+    - Restrictions: ${cefrRequirements.grammar.restrictions.join(", ")}
+    - **Content Complexity:**
+    - Plot Complexity: ${cefrRequirements.content.plotComplexity}
+    - Character Depth: ${cefrRequirements.content.characterDepth}
+    - Themes: ${cefrRequirements.content.themes}
+    - Cultural References: ${cefrRequirements.content.culturalReferences}
+    - **Writing Style:**
+    - Tone: ${cefrRequirements.style.tone}
+    - Literary Devices: ${cefrRequirements.style.literaryDevices.join(", ")}
+    - Narrative Approach: ${cefrRequirements.style.narrativeApproach}
+    - **Text Structure:**
+    - Paragraph Length: ${cefrRequirements.structure.paragraphLength}
+    - Text Organization: ${cefrRequirements.structure.textOrganization}
+    - Transition Complexity: ${cefrRequirements.structure.transitionComplexity}
+
+    Ensure each chapter:
+    - Maintains logical story progression
+    - Adheres to the CEFR level's vocabulary and grammar constraints
+    - Includes readability analysis with word count, vocabulary complexity, and grammar structures
+    - Tracks continuity, including character states and events
+    - Uses language that aligns with the CEFR level constraints
+
+    For each chapter, generate 3 types of comprehension questions that match the difficulty level of CEFR ${cefrLevel}:
+
+    1. **MCQ (Multiple Choice Question - 3 options)**
+      - A question with 3 answer choices, only one of which is correct.
+      - The question should focus on key events, vocabulary, or inferences from the chapter.
+      - Ensure the complexity of the vocabulary and sentence structures matches the CEFR level.
+
+    2. **SAQ (Short Answer Question)**
+      - A question requiring a brief response (1-2 sentences or key points).
+      - The question can test comprehension, character motivations, or cause-effect relationships.
+      - The expected answer should align with CEFR ${cefrLevel} complexity.
+
+    3. **LAQ (Long Answer Question)**
+      - A question that requires an in-depth response, encouraging critical thinking.
+      - The question should prompt the reader to analyze themes, moral dilemmas, or predict future events based on the story.
+      - Ensure that the question structure and depth align with CEFR ${cefrLevel} level.
+
+    Return only valid JSON following the schema.
+      `;
 
   const response = await generateObject({
-    model: google(googleModel),
+    model: openai(openaiModel4o),
+    schema: ChaptersSchema,
     prompt,
     temperature: 1,
-    output: "no-schema", // เพิ่ม property นี้ให้ตรงตาม type definition
   });
 
-  // แปลง response ให้เป็น JSON ธรรมดา
-  const parsedResponse = JSON.parse(JSON.stringify(response));
-
-  const chapters = findChapters(parsedResponse);
-  if (!chapters) {
-    console.error("Invalid AI response format:", parsedResponse);
-    throw new Error("AI did not return a valid array for chapters.");
-  }
-  return chapters as Chapter[];
+  return response.object.chapters;
 }

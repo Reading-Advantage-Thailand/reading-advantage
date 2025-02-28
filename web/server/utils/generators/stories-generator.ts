@@ -7,6 +7,7 @@ import { getCEFRRequirements } from "../CEFR-requirements";
 import { generateFullStory } from "./full-stories-generator";
 import { generateChaptersFromStory } from "./story-chapters-generator";
 import { generateStoriesTopic } from "./stories-topic-generator";
+import { Timestamp } from "firebase-admin/firestore";
 
 const CEFRLevels = [
   ArticleBaseCefrLevel.A1,
@@ -64,12 +65,14 @@ export async function generateStories(req: NextRequest) {
             cefrLevel: level,
             storyBible,
             chapters: [],
+            createdAt: Timestamp.now(),
           });
         }
 
         // สุ่มจำนวนบทระหว่าง 6 ถึง 8 และคำนวณจำนวนคำรวมที่นี่
         const chapterCount = Math.floor(Math.random() * 3) + 6;
-        const wordCountPerChapter = getCEFRRequirements(level).wordCount.fiction;
+        const wordCountPerChapter =
+          getCEFRRequirements(level).wordCount.fiction;
         const totalWordCount = chapterCount * wordCountPerChapter;
 
         // 1. ให้ AI สร้างเรื่องราวเต็ม ๆ ตาม Story Bible
@@ -85,7 +88,9 @@ export async function generateStories(req: NextRequest) {
             (char: { name: string }) => char.name
           ),
           mainPlot: storyBible.mainPlot,
-          themes: storyBible.themes.map((theme: { theme: string }) => theme.theme),
+          themes: storyBible.themes.map(
+            (theme: { theme: string }) => theme.theme
+          ),
           worldRules: storyBible.setting.worldRules ?? [],
         });
 
@@ -99,6 +104,7 @@ export async function generateStories(req: NextRequest) {
           cefrLevel: level,
           previousChapters,
           chapterCount, // ใช้จำนวนบทที่สุ่มได้
+          wordCountPerChapter,
         });
 
         await ref.update({ chapters });
@@ -118,7 +124,7 @@ export async function generateStories(req: NextRequest) {
     }
 
     return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500 },
-    );
+      status: 500,
+    });
   }
 }

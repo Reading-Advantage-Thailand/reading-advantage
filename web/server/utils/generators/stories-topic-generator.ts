@@ -1,7 +1,7 @@
 import { generateObject } from "ai";
 import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 import { z } from "zod";
-import { google, googleFlashThinking, googleModel } from "@/utils/google";
+import { openai, openaiModel4o } from "@/utils/openai";
 
 interface GenerateStoriesTopicParams {
   type: ArticleType;
@@ -11,7 +11,7 @@ interface GenerateStoriesTopicParams {
 }
 
 export interface GenerateStoriesTopicResponse {
-  topics: string[];
+  topics: string[]; 
 }
 
 export async function generateStoriesTopic(
@@ -20,13 +20,15 @@ export async function generateStoriesTopic(
   console.log(
     `Generating topics for ${params.type} ${params.genre} ${params.subgenre} with amount: ${params.amountPerGenre}`
   );
+
   const prompts = {
     fiction: `Please provide ${params.amountPerGenre} reading passage topics in the ${params.type} ${params.genre} genre and ${params.subgenre} subgenre appropriate for secondary school students. Output as a JSON array.`,
     nonfiction: `Please provide ${params.amountPerGenre} reading passage topics in the ${params.type} ${params.genre} genre and ${params.subgenre} subgenre appropriate for secondary school students. Output as a JSON array.`,
   };
+
   try {
     const response = await generateObject({
-      model: google(googleModel),
+      model: openai(openaiModel4o),
       schema: z.object({
         topics: z
           .array(z.string())
