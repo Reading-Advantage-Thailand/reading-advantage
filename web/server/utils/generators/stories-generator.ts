@@ -4,8 +4,7 @@ import { randomSelectGenre } from "./random-select-genre";
 import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 import { generateStoryBible } from "./story-bible-generator";
 import { getCEFRRequirements } from "../CEFR-requirements";
-import { generateFullStory } from "./full-stories-generator";
-import { generateChaptersFromStory } from "./story-chapters-generator";
+import { generateChapters } from "./story-chapters-generator";
 import { generateStoriesTopic } from "./stories-topic-generator";
 import { Timestamp } from "firebase-admin/firestore";
 
@@ -73,33 +72,13 @@ export async function generateStories(req: NextRequest) {
         const chapterCount = Math.floor(Math.random() * 3) + 6;
         const wordCountPerChapter =
           getCEFRRequirements(level).wordCount.fiction;
-        const totalWordCount = chapterCount * wordCountPerChapter;
-
-        // 1. ให้ AI สร้างเรื่องราวเต็ม ๆ ตาม Story Bible
-        const fullStory = await generateFullStory({
-          type,
-          genre,
-          subgenre,
-          topic,
-          cefrLevel: level,
-          storyBible,
-          wordCountLimit: totalWordCount,
-          characterList: storyBible.characters.map(
-            (char: { name: string }) => char.name
-          ),
-          mainPlot: storyBible.mainPlot,
-          themes: storyBible.themes.map(
-            (theme: { theme: string }) => theme.theme
-          ),
-          worldRules: storyBible.setting.worldRules ?? [],
-        });
 
         // 2. ให้ AI แบ่งเรื่องเป็นบท โดยใช้จำนวนบทที่สุ่มได้
         const previousChapters = existingStorySnapshot.empty
           ? []
           : existingStorySnapshot.docs[0].data().chapters;
-        const chapters = await generateChaptersFromStory({
-          fullStory,
+        const chapters = await generateChapters({
+          type,
           storyBible,
           cefrLevel: level,
           previousChapters,
