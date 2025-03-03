@@ -165,9 +165,11 @@ export async function generateChapters({
       wordCountPerChapter,
     });
 
-    if (structuredChapters.length !== chapterCount) {
+    if (!structuredChapters || structuredChapters.length !== chapterCount) {
       throw new Error(
-        `Expected ${chapterCount} chapters, but got ${structuredChapters.length}`
+        `Expected ${chapterCount} chapters, but got ${
+          structuredChapters?.length || 0
+        }`
       );
     }
 
@@ -182,7 +184,18 @@ export async function generateChapters({
         summary: chapter.summary,
         imageDesc: chapter["image-description"],
       });
-      // สร้างคำถามแบบ SAQ
+      const mcQuestions = (mcResponse?.questions || []).map((q) => ({
+        type: "MCQ" as const,
+        question: q.question || "Missing question",
+        options: [
+          q.correct_answer,
+          q.distractor_1 || "Option 1",
+          q.distractor_2 || "Option 2",
+          q.distractor_3 || "Option 3",
+        ].filter(Boolean), // กรองค่า `undefined` ออก
+        answer: q.correct_answer || "No answer",
+      }));
+
       const saResponse = await generateSAQuestion({
         cefrlevel: cefrLevel,
         type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
@@ -191,7 +204,12 @@ export async function generateChapters({
         summary: chapter.summary,
         imageDesc: chapter["image-description"],
       });
-      // สร้างคำถามแบบ LAQ
+      const saQuestions = (saResponse?.questions || []).map((q) => ({
+        type: "SAQ" as const,
+        question: q.question || "Missing question",
+        answer: q.suggested_answer || "No answer",
+      }));
+
       const laResponse = await generateLAQuestion({
         cefrlevel: cefrLevel,
         type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
@@ -200,32 +218,15 @@ export async function generateChapters({
         summary: chapter.summary,
         imageDesc: chapter["image-description"],
       });
-
-      // แปลงผลลัพธ์ของแต่ละคำถามให้อยู่ในรูปแบบเดียวกันกับ Chapter.questions
-      const mcQuestions = (mcResponse.questions || []).map((q) => ({
-        type: "MCQ" as const,
-        question: q.question,
-        options: [
-          q.correct_answer,
-          q.distractor_1,
-          q.distractor_2,
-          q.distractor_3,
-        ].slice(0, 3),
-        answer: q.correct_answer,
-      }));
-
-      const saQuestions = (saResponse.questions || []).map((q) => ({
-        type: "SAQ" as const,
-        question: q.question,
-        answer: q.suggested_answer,
-      }));
-
-      // สมมุติว่า generateLAQuestion ส่งกลับเป็น { question: string }
       const laQuestion = {
         type: "LAQ" as const,
-        question: laResponse.question,
+        question: laResponse?.question || "Missing question",
         answer: "",
       };
+      
+      console.log("Generated MCQ:", JSON.stringify(mcResponse, null, 2));
+      console.log("Generated SAQ:", JSON.stringify(saResponse, null, 2));
+      console.log("Generated LAQ:", JSON.stringify(laResponse, null, 2));
 
       // รวมคำถามทั้งหมดเข้าด้วยกัน
       chapter.questions = [...mcQuestions, ...saQuestions, laQuestion];

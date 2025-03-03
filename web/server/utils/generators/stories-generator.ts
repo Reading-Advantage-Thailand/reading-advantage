@@ -6,6 +6,7 @@ import { generateStoryBible } from "./story-bible-generator";
 import { getCEFRRequirements } from "../CEFR-requirements";
 import { generateChapters } from "./story-chapters-generator";
 import { generateStoriesTopic } from "./stories-topic-generator";
+import { generateImage } from "./image-generator";
 import { Timestamp } from "firebase-admin/firestore";
 
 const CEFRLevels = [
@@ -68,12 +69,21 @@ export async function generateStories(req: NextRequest) {
           });
         }
 
-        // สุ่มจำนวนบทระหว่าง 6 ถึง 8 และคำนวณจำนวนคำรวมที่นี่
+        try {
+          await generateImage({
+            imageDesc: storyBible["image-description"],
+            articleId: ref.id,
+          });
+        } catch (imageError) {
+          console.error("Image generation failed:", imageError);
+          await ref.delete();
+          continue;
+        }
+
         const chapterCount = Math.floor(Math.random() * 3) + 6;
         const wordCountPerChapter =
           getCEFRRequirements(level).wordCount.fiction;
 
-        // 2. ให้ AI แบ่งเรื่องเป็นบท โดยใช้จำนวนบทที่สุ่มได้
         const previousChapters = existingStorySnapshot.empty
           ? []
           : existingStorySnapshot.docs[0].data().chapters;
@@ -82,9 +92,30 @@ export async function generateStories(req: NextRequest) {
           storyBible,
           cefrLevel: level,
           previousChapters,
-          chapterCount, // ใช้จำนวนบทที่สุ่มได้
+          chapterCount,
           wordCountPerChapter,
         });
+
+        // ตรวจสอบให้แน่ใจว่าทุก chapter มี `questions`
+        const validatedChapters = chapters.map((chapter) => ({
+          ...chapter,
+          questions: Array.isArray(chapter.questions) ? chapter.questions : [],
+        }));
+
+        await ref.update({ chapters: validatedChapters });
+
+        for (let i = 0; i < chapters.length; i++) {
+          try {
+            await generateImage({
+              imageDesc: chapters[i]["image-description"],
+              articleId: `${ref.id}-${i + 1}`,
+            });
+          } catch (imageError) {
+            console.error("Chapter image generation failed:", imageError);
+            await ref.delete();
+            continue;
+          }
+        }
 
         await ref.update({ chapters });
       }
