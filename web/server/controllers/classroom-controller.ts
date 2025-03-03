@@ -18,11 +18,6 @@ interface License {
   school_name?: string;
 }
 
-interface License {
-  id: string;
-  school_name?: string;
-}
-
 interface User {
   xp?: number;
 }
