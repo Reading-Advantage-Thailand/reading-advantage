@@ -1,9 +1,64 @@
-import { StoryBible } from "./full-stories-generator";
-import { ArticleBaseCefrLevel } from "../../models/enum";
+import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
 import { generateObject } from "ai";
 import { openai, openaiModel4o } from "@/utils/openai";
 import { z } from "zod";
 import { getCEFRRequirements } from "../CEFR-requirements";
+
+// Import functions สำหรับสร้างคำถามที่มีอยู่แล้ว
+import { generateMCQuestion } from "./mc-question-generator";
+import { generateSAQuestion } from "./sa-question-generator";
+import { generateLAQuestion } from "./la-question-generator";
+
+interface Place {
+  name: string;
+  description: string;
+}
+
+interface CharacterArc {
+  startingState: string;
+  development: string;
+  endState: string;
+}
+
+interface Character {
+  name: string;
+  description: string;
+  background?: string;
+  speechPatterns?: string;
+  arc?: CharacterArc;
+  relationships?: {
+    withCharacter: string;
+    nature: string;
+    evolution: string;
+  }[];
+}
+
+interface StorySetting {
+  time: string;
+  places: Place[];
+}
+
+interface StoryTheme {
+  theme: string;
+  development: string;
+}
+
+interface MainPlot {
+  premise: string;
+  exposition: string;
+  risingAction: string;
+  climax: string;
+  fallingAction: string;
+  resolution: string;
+}
+
+interface StoryBible {
+  mainPlot: MainPlot;
+  characters: Character[];
+  setting: StorySetting;
+  themes: StoryTheme[];
+  worldRules?: String;
+}
 
 interface Chapter {
   title: string;
@@ -38,6 +93,15 @@ interface Question {
   question: string;
   options?: string[];
   answer: string;
+}
+
+interface GenerateChaptersParams {
+  type: string;
+  storyBible: StoryBible;
+  cefrLevel: ArticleBaseCefrLevel;
+  previousChapters?: Chapter[];
+  chapterCount: number;
+  wordCountPerChapter: number;
 }
 
 const ChapterSchema = z.object({
@@ -81,17 +145,8 @@ const ChaptersSchema = z.object({
   chapters: z.array(ChapterSchema),
 });
 
-interface GenerateChaptersParams {
-  fullStory: string;
-  storyBible: StoryBible;
-  cefrLevel: ArticleBaseCefrLevel;
-  previousChapters?: Chapter[];
-  chapterCount: number;
-  wordCountPerChapter: number;
-}
-
-export async function generateChaptersFromStory({
-  fullStory,
+export async function generateChapters({
+  type,
   storyBible,
   cefrLevel,
   chapterCount,
@@ -102,8 +157,8 @@ export async function generateChaptersFromStory({
   );
 
   try {
+    // เรียกสร้างบทโดยไม่รวมส่วนคำถาม (MCQ, SAQ, LAQ) ใน prompt
     const structuredChapters = await aiProcessChapters({
-      fullStory,
       storyBible,
       cefrLevel,
       chapterCount,
@@ -116,6 +171,66 @@ export async function generateChaptersFromStory({
       );
     }
 
+    // สำหรับแต่ละบท ให้เรียกใช้ฟังก์ชันสร้างคำถามที่มีอยู่เดิม
+    for (const chapter of structuredChapters) {
+      // สร้างคำถามแบบ MCQ
+      const mcResponse = await generateMCQuestion({
+        cefrlevel: cefrLevel,
+        type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
+        passage: chapter.content,
+        title: chapter.title,
+        summary: chapter.summary,
+        imageDesc: chapter["image-description"],
+      });
+      // สร้างคำถามแบบ SAQ
+      const saResponse = await generateSAQuestion({
+        cefrlevel: cefrLevel,
+        type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
+        passage: chapter.content,
+        title: chapter.title,
+        summary: chapter.summary,
+        imageDesc: chapter["image-description"],
+      });
+      // สร้างคำถามแบบ LAQ
+      const laResponse = await generateLAQuestion({
+        cefrlevel: cefrLevel,
+        type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
+        passage: chapter.content,
+        title: chapter.title,
+        summary: chapter.summary,
+        imageDesc: chapter["image-description"],
+      });
+
+      // แปลงผลลัพธ์ของแต่ละคำถามให้อยู่ในรูปแบบเดียวกันกับ Chapter.questions
+      const mcQuestions = (mcResponse.questions || []).map((q) => ({
+        type: "MCQ" as const,
+        question: q.question,
+        options: [
+          q.correct_answer,
+          q.distractor_1,
+          q.distractor_2,
+          q.distractor_3,
+        ].slice(0, 3),
+        answer: q.correct_answer,
+      }));
+
+      const saQuestions = (saResponse.questions || []).map((q) => ({
+        type: "SAQ" as const,
+        question: q.question,
+        answer: q.suggested_answer,
+      }));
+
+      // สมมุติว่า generateLAQuestion ส่งกลับเป็น { question: string }
+      const laQuestion = {
+        type: "LAQ" as const,
+        question: laResponse.question,
+        answer: "",
+      };
+
+      // รวมคำถามทั้งหมดเข้าด้วยกัน
+      chapter.questions = [...mcQuestions, ...saQuestions, laQuestion];
+    }
+
     return structuredChapters;
   } catch (error) {
     console.error("Error generating chapters:", error);
@@ -124,13 +239,11 @@ export async function generateChaptersFromStory({
 }
 
 async function aiProcessChapters({
-  fullStory,
   storyBible,
   cefrLevel,
   chapterCount,
   wordCountPerChapter,
 }: {
-  fullStory: string;
   storyBible: StoryBible;
   cefrLevel: ArticleBaseCefrLevel;
   chapterCount: number;
@@ -157,14 +270,11 @@ Generate ${chapterCount} structured chapters for a story based on the following 
   - Falling Action: ${storyBible.mainPlot.fallingAction}
   - Resolution: ${storyBible.mainPlot.resolution}
 
-**Full Story**
-- ${fullStory}
-
 - **Characters:**
 ${storyBible.characters
   .map(
     (c) =>
-      `  - Name: ${c.name}, Description: ${c.description}, Background: ${c.background}`
+      `- Name: ${c.name}, Description: ${c.description}, Background: ${c.background}`
   )
   .join("\n")}
 
@@ -176,67 +286,51 @@ ${storyBible.setting.places
   .join("\n")}
 
 - **Themes:**
-${storyBible.themes.map((t) => `  - ${t.theme}: ${t.development}`).join("\n")}
+${storyBible.themes.map((t) => `- ${t.theme}: ${t.development}`).join("\n")}
 
 - **CEFR Requirements (${cefrLevel}):**
     - **Word Count per Chapter:** Between ${minWordCount} and ${maxWordCount} words
     - **Sentence Structure:**
-    - Average Words per Sentence: ${
-      cefrRequirements.sentenceStructure.averageWords
-    }
-    - Complexity: ${cefrRequirements.sentenceStructure.complexity}
-    - Allowed Structures: ${cefrRequirements.sentenceStructure.allowedStructures.join(
-      ", "
-    )}
+      - Average Words per Sentence: ${
+        cefrRequirements.sentenceStructure.averageWords
+      }
+      - Complexity: ${cefrRequirements.sentenceStructure.complexity}
+      - Allowed Structures: ${cefrRequirements.sentenceStructure.allowedStructures.join(
+        ", "
+      )}
     - **Vocabulary Level:** ${cefrRequirements.vocabulary.level}
-    - Restrictions: ${cefrRequirements.vocabulary.restrictions.join(", ")}
-    - Suggested Words: ${cefrRequirements.vocabulary.suggestions.join(", ")}
+      - Restrictions: ${cefrRequirements.vocabulary.restrictions.join(", ")}
+      - Suggested Words: ${cefrRequirements.vocabulary.suggestions.join(", ")}
     - **Grammar:**
-    - Allowed Tenses: ${cefrRequirements.grammar.allowedTenses.join(", ")}
-    - Allowed Structures: ${cefrRequirements.grammar.allowedStructures.join(
-      ", "
-    )}
-    - Restrictions: ${cefrRequirements.grammar.restrictions.join(", ")}
+      - Allowed Tenses: ${cefrRequirements.grammar.allowedTenses.join(", ")}
+      - Allowed Structures: ${cefrRequirements.grammar.allowedStructures.join(
+        ", "
+      )}
+      - Restrictions: ${cefrRequirements.grammar.restrictions.join(", ")}
     - **Content Complexity:**
-    - Plot Complexity: ${cefrRequirements.content.plotComplexity}
-    - Character Depth: ${cefrRequirements.content.characterDepth}
-    - Themes: ${cefrRequirements.content.themes}
-    - Cultural References: ${cefrRequirements.content.culturalReferences}
+      - Plot Complexity: ${cefrRequirements.content.plotComplexity}
+      - Character Depth: ${cefrRequirements.content.characterDepth}
+      - Themes: ${cefrRequirements.content.themes}
+      - Cultural References: ${cefrRequirements.content.culturalReferences}
     - **Writing Style:**
-    - Tone: ${cefrRequirements.style.tone}
-    - Literary Devices: ${cefrRequirements.style.literaryDevices.join(", ")}
-    - Narrative Approach: ${cefrRequirements.style.narrativeApproach}
+      - Tone: ${cefrRequirements.style.tone}
+      - Literary Devices: ${cefrRequirements.style.literaryDevices.join(", ")}
+      - Narrative Approach: ${cefrRequirements.style.narrativeApproach}
     - **Text Structure:**
-    - Paragraph Length: ${cefrRequirements.structure.paragraphLength}
-    - Text Organization: ${cefrRequirements.structure.textOrganization}
-    - Transition Complexity: ${cefrRequirements.structure.transitionComplexity}
+      - Paragraph Length: ${cefrRequirements.structure.paragraphLength}
+      - Text Organization: ${cefrRequirements.structure.textOrganization}
+      - Transition Complexity: ${
+        cefrRequirements.structure.transitionComplexity
+      }
 
-    Ensure each chapter:
-    - Maintains logical story progression
-    - Adheres to the CEFR level's vocabulary and grammar constraints
-    - Includes readability analysis with word count, vocabulary complexity, and grammar structures
-    - Tracks continuity, including character states and events
-    - Uses language that aligns with the CEFR level constraints
+Ensure each chapter:
+- Maintains logical story progression
+- Adheres to the CEFR level's vocabulary and grammar constraints
+- Includes readability analysis with word count, vocabulary complexity, and grammar structures
+- Tracks continuity, including character states and events
 
-    For each chapter, generate 3 types of comprehension questions that match the difficulty level of CEFR ${cefrLevel}:
-
-    1. **MCQ (Multiple Choice Question - 3 options)**
-      - A question with 3 answer choices, only one of which is correct.
-      - The question should focus on key events, vocabulary, or inferences from the chapter.
-      - Ensure the complexity of the vocabulary and sentence structures matches the CEFR level.
-
-    2. **SAQ (Short Answer Question)**
-      - A question requiring a brief response (1-2 sentences or key points).
-      - The question can test comprehension, character motivations, or cause-effect relationships.
-      - The expected answer should align with CEFR ${cefrLevel} complexity.
-
-    3. **LAQ (Long Answer Question)**
-      - A question that requires an in-depth response, encouraging critical thinking.
-      - The question should prompt the reader to analyze themes, moral dilemmas, or predict future events based on the story.
-      - Ensure that the question structure and depth align with CEFR ${cefrLevel} level.
-
-    Return only valid JSON following the schema.
-      `;
+Return only valid JSON following the schema.
+`;
 
   const response = await generateObject({
     model: openai(openaiModel4o),
