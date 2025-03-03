@@ -53,6 +53,24 @@ export default async function SystemDashboardPage({
 
   const articlesByTypeAndGenreChartData = await fetchArticlesByTypeAndGenre()
 
+  const fetchTopSchoolsByXp = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/system/dashboard/xpBySchools`,
+        {
+          method: "GET",
+          headers: headers(),
+        }
+      );
+      const { data } = await res.json();
+      return data; 
+    } catch (error) {
+      console.error("failed to fetch articles count: ", error);
+    }
+  };
+
+  const topSchoolByXP = await fetchTopSchoolsByXp();
+
   return (
     <>
       <div className="text-xl sm:text-2xl md:text-3xl font-bold  truncate">
@@ -66,7 +84,7 @@ export default async function SystemDashboardPage({
           <LicenseUsageChart />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-1">
-        <TopSchoolByXPGainedChart />
+          <TopSchoolByXPGainedChart  topSchoolByXP={topSchoolByXP} />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
           <LowestRatedArticlesTable />

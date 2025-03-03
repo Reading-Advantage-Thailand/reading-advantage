@@ -26,15 +26,13 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-export default function TopSchoolByXPGainedChart() {
-  const chartData = [
-    { school: "1School", xp: 186 },
-    { school: "2School", xp: 305 },
-    { school: "3School", xp: 237 },
-    { school: "4School", xp: 73 },
-    { school: "5School", xp: 209 },
-    { school: "6School", xp: 214 },
-  ];
+interface TopSchoolByXPGainedChartProps {
+  topSchoolByXP: { school: string; xp: number }[];
+}
+
+export default function TopSchoolByXPGainedChart({
+  topSchoolByXP,
+}: TopSchoolByXPGainedChartProps) {
   const chartConfig = {
     xp: {
       label: "XP",
@@ -51,27 +49,32 @@ export default function TopSchoolByXPGainedChart() {
             Top Schools by XP Gained
           </CardTitle>
         </CardHeader>
-        <CardContent className="mt-14">
+        <CardContent className="w-full mt-14">
           <ChartContainer config={chartConfig}>
-            <BarChart accessibilityLayer data={chartData} margin={{ top: 20 }}>
+            <BarChart
+              accessibilityLayer
+              data={topSchoolByXP}
+              margin={{ top: 20 }}
+            >
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="school"
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                tickFormatter={(value) => value.slice(0, 3)}
+                tickFormatter={(value: string) =>
+                  value.length > 5 ? value.slice(0, 5) + "..." : value
+                }
               />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
               <Bar dataKey="xp" fill="var(--color-xp)" radius={8}>
                 <LabelList
+                  dataKey="xp"
                   position="top"
                   className="fill-foreground"
                   offset={12}
                   fontSize={12}
+                  formatter={(value: number) => value.toLocaleString()}
                 />
               </Bar>
             </BarChart>

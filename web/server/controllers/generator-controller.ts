@@ -97,10 +97,17 @@ export async function generateQueue(req: ExtendedNextRequest) {
 
     // Generate queue for fiction and nonfiction
     // Run fiction generation first, then nonfiction
-    const fictionResults = await generateForGenre(ArticleType.FICTION, amount);
+    const fictionResults = await generateForGenre(
+      ArticleType.FICTION,
+      amount,
+      reqUrl,
+      userAgent
+    );
     const nonfictionResults = await generateForGenre(
       ArticleType.NONFICTION,
-      amount
+      amount,
+      reqUrl,
+      userAgent
     );
 
     // Combine results from both genres
@@ -182,7 +189,12 @@ export async function generateQueue(req: ExtendedNextRequest) {
 
 // Function to generate queue for a given genre
 // fiction or nonfiction
-async function generateForGenre(type: ArticleType, amountPerGenre: number) {
+async function generateForGenre(
+  type: ArticleType,
+  amountPerGenre: number,
+  reqUrl: string,
+  userAgent: string
+) {
   // const randomGenre = await randomSelectGenre({ type });
 
   // const generatedTopic = await generateTopic({
@@ -223,7 +235,9 @@ async function generateForGenre(type: ArticleType, amountPerGenre: number) {
         randomGenre.genre,
         randomGenre.subgenre,
         topic,
-        level
+        level,
+        reqUrl,
+        userAgent
       );
       results.push(result);
     }
@@ -323,117 +337,163 @@ async function queue(
   genre: string,
   subgenre: string,
   topic: string,
-  cefrLevel: ArticleBaseCefrLevel
+  cefrLevel: ArticleBaseCefrLevel,
+  reqUrl: string,
+  userAgent: string,
+  maxRetries: number = 5
 ) {
-  try {
-    // Generate article and evaluate rating
-    // low rating will regenerate article until rating is above 2 or max attempts reached
-    const {
-      article: generatedArticle,
-      rating,
-      cefrlevel,
-      raLevel,
-    } = await evaluateArticle(type, genre, subgenre, topic, cefrLevel);
+  let attempts = 0;
+  let lastError: unknown = null;
 
-    const ref = db.collection("new-articles").doc();
-    const createdAt = new Date().toISOString();
+  while (attempts < maxRetries) {
+    try {
+      //console.log(`Attempt ${attempts + 1}/${maxRetries} to generate article`);
+      // Generate article and evaluate rating
+      const ref = db.collection("new-articles").doc();
+      const articleId = ref.id;
 
-    await ref.set({
-      average_rating: rating,
-      cefr_level: cefrlevel,
-      created_at: createdAt,
-      genre,
-      image_description: generatedArticle.imageDesc,
-      passage: generatedArticle.passage,
-      ra_level: raLevel,
-      read_count: 0,
-      subgenre,
-      summary: generatedArticle.summary,
-      title: generatedArticle.title,
-      type,
-      id: ref.id,
-    });
+      const {
+        article: generatedArticle,
+        rating,
+        cefrlevel,
+        raLevel,
+      } = await evaluateArticle(type, genre, subgenre, topic, cefrLevel);
 
-    const mcq = await generateMCQuestion({
-      type,
-      cefrlevel: cefrLevel,
-      passage: generatedArticle.passage,
-      title: generatedArticle.title,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-    });
-    const saq = await generateSAQuestion({
-      type,
-      cefrlevel: cefrLevel,
-      passage: generatedArticle.passage,
-      title: generatedArticle.title,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-    });
-    const laq = await generateLAQuestion({
-      type,
-      cefrlevel: cefrLevel,
-      passage: generatedArticle.passage,
-      title: generatedArticle.title,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-    });
-
-    const wordList = await generateWordList({
-      passage: generatedArticle.passage,
-    });
-
-    // const [mcq, saq, laq, wordList] = await Promise.all([
-    //   generateMCQuestion({
-    //     type,
-    //     cefrlevel: cefrLevel,
-    //     passage: generatedArticle.passage,
-    //     title: generatedArticle.title,
-    //     summary: generatedArticle.summary,
-    //     imageDesc: generatedArticle.imageDesc,
-    //   }),
-    //   generateSAQuestion({
-    //     type,
-    //     cefrlevel: cefrLevel,
-    //     passage: generatedArticle.passage,
-    //     title: generatedArticle.title,
-    //     summary: generatedArticle.summary,
-    //     imageDesc: generatedArticle.imageDesc,
-    //   }),
-    //   generateLAQuestion({
-    //     type,
-    //     cefrlevel: cefrLevel,
-    //     passage: generatedArticle.passage,
-    //     title: generatedArticle.title,
-    //     summary: generatedArticle.summary,
-    //     imageDesc: generatedArticle.imageDesc,
-    //   }),
-    //   generateWordList({
-    //     passage: generatedArticle.passage,
-    //   }),
-    // ]);
-
-    await Promise.all([
-      addQuestionsToCollection(ref.id, "mc-questions", mcq.questions),
-      addQuestionsToCollection(ref.id, "sa-questions", saq.questions),
-      addQuestionsToCollection(ref.id, "la-questions", [laq]),
-      addWordList(ref.id, wordList.word_list, createdAt),
-    ]);
-
-    await Promise.all([
-      generateAudio({ passage: generatedArticle.passage, articleId: ref.id }),
-      generateImage({
+      // Generate Image with retry
+      await generateImage({
         imageDesc: generatedArticle.imageDesc,
-        articleId: ref.id,
-      }),
-      generateAudioForWord({ wordList: wordList.word_list, articleId: ref.id }),
-    ]);
-  } catch (error) {
-    console.log("error => ", error);
-    return `${cefrLevel} ${
-      type === ArticleType.FICTION ? "F" : "N"
-    } - ${error}`;
+        articleId,
+      });
+
+      const createdAt = new Date().toISOString();
+      await ref.set({
+        average_rating: rating,
+        cefr_level: cefrlevel,
+        created_at: createdAt,
+        genre,
+        image_description: generatedArticle.imageDesc,
+        passage: generatedArticle.passage,
+        ra_level: raLevel,
+        read_count: 0,
+        subgenre,
+        summary: generatedArticle.summary,
+        title: generatedArticle.title,
+        type,
+        id: articleId,
+      });
+
+      // Sequential execution for question generation
+      const mcq = await generateMCQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      });
+
+      const saq = await generateSAQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      });
+
+      const laq = await generateLAQuestion({
+        type,
+        cefrlevel: cefrLevel,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      });
+
+      const wordList = await generateWordList({
+        passage: generatedArticle.passage,
+      });
+
+      // Save generated data to Firestore
+      await addQuestionsToCollection(articleId, "mc-questions", mcq.questions);
+      await addQuestionsToCollection(articleId, "sa-questions", saq.questions);
+      await addQuestionsToCollection(articleId, "la-questions", [laq]);
+      await addWordList(articleId, wordList.word_list, createdAt);
+
+      // Generate audio (Sequential execution)
+      await generateAudio({ passage: generatedArticle.passage, articleId });
+      await generateAudioForWord({ wordList: wordList.word_list, articleId });
+
+      // const [mcq, saq, laq, wordList] = await Promise.all([
+      //   generateMCQuestion({
+      //     type,
+      //     cefrlevel: cefrLevel,
+      //     passage: generatedArticle.passage,
+      //     title: generatedArticle.title,
+      //     summary: generatedArticle.summary,
+      //     imageDesc: generatedArticle.imageDesc,
+      //   }),
+      //   generateSAQuestion({
+      //     type,
+      //     cefrlevel: cefrLevel,
+      //     passage: generatedArticle.passage,
+      //     title: generatedArticle.title,
+      //     summary: generatedArticle.summary,
+      //     imageDesc: generatedArticle.imageDesc,
+      //   }),
+      //   generateLAQuestion({
+      //     type,
+      //     cefrlevel: cefrLevel,
+      //     passage: generatedArticle.passage,
+      //     title: generatedArticle.title,
+      //     summary: generatedArticle.summary,
+      //     imageDesc: generatedArticle.imageDesc,
+      //   }),
+      //   generateWordList({
+      //     passage: generatedArticle.passage,
+      //   }),
+      // ]);
+
+      //console.log("Article generation successful!");
+      return articleId;
+    } catch (error) {
+      console.error(
+        `Error during article generation (Attempt ${attempts + 1}):`,
+        error
+      );
+      lastError = error;
+    }
+
+    attempts++;
+    const delay = Math.pow(2, attempts) * 1000;
+    //console.log(`Retrying in ${delay / 1000} seconds...`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
+
+  console.error("Failed to generate article after max retries.");
+
+  let errorMessage = "Unknown error occurred";
+  if (lastError instanceof Error) {
+    errorMessage = lastError.message;
+  } else if (typeof lastError === "string") {
+    errorMessage = lastError;
+  } else if (lastError) {
+    errorMessage = JSON.stringify(lastError);
+  }
+
+  await sendDiscordWebhook({
+    title: "Queue Generation Failed",
+    embeds: [
+      {
+        description: { message: errorMessage },
+        color: 0xff0000,
+      },
+    ],
+    reqUrl,
+    userAgent,
+  });
+
+  return null;
 }
 
 // Helper function to add questions to a specific subcollection
