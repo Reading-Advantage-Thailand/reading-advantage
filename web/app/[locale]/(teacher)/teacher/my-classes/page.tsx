@@ -13,12 +13,12 @@ export default async function MyClassesPage() {
 
   const ClassesData = async () => {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom?teacherId=${user.id}`,
       { method: "GET", headers: headers() }
     );
     if (!res.ok) throw new Error("Failed to fetch ClassesData list");
     const fetchdata = await res.json();
-
+    
     if (user.role === "system") {
       return fetchdata.data;
     }

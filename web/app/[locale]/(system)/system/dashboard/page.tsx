@@ -35,6 +35,24 @@ export default async function SystemDashboardPage({
 
   const articlesPerLevel = await fetchArticlesCount();
 
+  const fetchArticlesByTypeAndGenre = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/system/dashboard/getArticleByTypeGenre`,
+        {
+          method: "GET",
+          headers: headers(),
+        }
+      );
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      console.error("failed to fetch articles count: ", error);
+    }
+  };
+
+  const articlesByTypeAndGenreChartData = await fetchArticlesByTypeAndGenre()
+
   const fetchTopSchoolsByXp = async () => {
     try {
       const res = await fetch(
@@ -72,7 +90,7 @@ export default async function SystemDashboardPage({
           <LowestRatedArticlesTable />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
-          <ArticlesByTypeAndGenreChart />
+          <ArticlesByTypeAndGenreChart chartData={articlesByTypeAndGenreChartData}  />
         </div>
         <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
           <ArticlesPerLevelChart articlesPerLevel={articlesPerLevel} />

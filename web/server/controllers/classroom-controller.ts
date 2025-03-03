@@ -28,15 +28,29 @@ interface SchoolXP {
 }
 
 // get all classrooms
+// for get all -> GET /api/classroom
+// for get by teacher -> GET /api/classroom?teacherId=abc123
 export async function getClassroom(req: ExtendedNextRequest) {
   try {
-    const classroomsSnapshot = await db.collection("classroom").get();
+    const { searchParams } = new URL(req.url);
+    const teacherId = searchParams.get("teacherId");
+
+    let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
+      db.collection("classroom");
+
+    if (teacherId) {
+      query = query.where("teacherId", "==", teacherId);
+    }
+
+    const classroomsSnapshot = await query.get();
     const classrooms: FirebaseFirestore.DocumentData[] = [];
+
     classroomsSnapshot.forEach((doc) => {
       const classroom = doc.data();
       classroom.id = doc.id;
       classrooms.push(classroom);
     });
+
     classrooms.sort((a, b) => b.createdAt - a.createdAt);
 
     return NextResponse.json(
@@ -49,7 +63,7 @@ export async function getClassroom(req: ExtendedNextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        message: error,
+        message: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );
@@ -561,7 +575,9 @@ export async function getClassXp(req: NextRequest) {
   }
 }
 
-export async function calculateSchoolsXp(req: NextRequest): Promise<NextResponse> {
+export async function calculateSchoolsXp(
+  req: NextRequest
+): Promise<NextResponse> {
   try {
     //console.log("Starting calculateLicenseXp API");
 
@@ -647,9 +663,12 @@ export async function getTopSchoolsXp(req: NextRequest): Promise<NextResponse> {
   try {
     //console.log("Fetching top schools by XP");
     const summaryCollection = db.collection("license-xp-summary");
-    const summarySnapshot = await summaryCollection.orderBy("xp", "desc").limit(10).get();
-    
-    const topSchools: SchoolXP[] = summarySnapshot.docs.map(doc => ({
+    const summarySnapshot = await summaryCollection
+      .orderBy("xp", "desc")
+      .limit(10)
+      .get();
+
+    const topSchools: SchoolXP[] = summarySnapshot.docs.map((doc) => ({
       school: doc.data().school,
       xp: doc.data().xp,
     }));

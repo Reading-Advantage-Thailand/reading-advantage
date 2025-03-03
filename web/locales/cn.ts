@@ -429,6 +429,32 @@ export default {
           successDescription: "班级创建成功",
         },
       },
+
+      Classroom: {
+        header: "Google Classroom 仪表盘",
+        login: "登录 Google Classroom",
+        sync: "同步 Google Classroom",
+        courseState: {
+          ACTIVE: "活跃",
+          PROVISIONED: "已配置",
+        },
+        link: "在 Google Classroom 打开",
+        createClassroom: "创建课堂",
+        title: "创建新课堂",
+        className: "课堂名称",
+        section: "班级",
+        subject: "科目",
+        room: "教室",
+        CancelButton: "取消",
+        CreateButton: "创建",
+        toast: {
+          successCreate: "成功",
+          successDescription: "课堂创建成功",
+          failedCreate: "失败",
+          failedDescription: "课堂创建失败，请再次尝试同步 Google Classroom",
+        },
+      },
+
       edit: {
         title: "编辑班级详细信息",
         description: "更新以下课程详细信息",
