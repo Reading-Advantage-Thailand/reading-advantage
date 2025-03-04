@@ -17,7 +17,7 @@ const publicPages = [
   "/about",
   "/contact",
   "/authors",
-  "/privacy",
+  "/privacy-policy",
   "/terms",
   "/auth/signin",
   "/auth/signup",
