@@ -283,6 +283,7 @@ export default {
     },
     sidebarNav: {
       read: "อ่าน",
+      story: "เนื้อเรื่อง",
       history: "ประวัติ",
       sentences: "ประโยค",
       reports: "รายงาน",
