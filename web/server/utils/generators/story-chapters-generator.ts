@@ -153,192 +153,171 @@ export async function generateChapters({
   wordCountPerChapter,
 }: GenerateChaptersParams): Promise<Chapter[]> {
   console.log(
-    `Splitting story into ${chapterCount} chapters with CEFR level ${cefrLevel} constraints...`
+    `Generating ${chapterCount} chapters for CEFR level ${cefrLevel}...`
   );
 
+  let chapters: Chapter[] = [];
+
   try {
-    // เรียกสร้างบทโดยไม่รวมส่วนคำถาม (MCQ, SAQ, LAQ) ใน prompt
-    const structuredChapters = await aiProcessChapters({
-      storyBible,
-      cefrLevel,
-      chapterCount,
-      wordCountPerChapter,
-    });
+    for (let i = 0; i < chapterCount; i++) {
+      console.log(`Generating Chapter ${i + 1} of ${chapterCount}...`);
 
-    if (!structuredChapters || structuredChapters.length !== chapterCount) {
-      throw new Error(
-        `Expected ${chapterCount} chapters, but got ${
-          structuredChapters?.length || 0
-        }`
-      );
+      const previousChapters = chapters.length > 0 ? chapters : [];
+
+      const newChapter = await generateSingleChapter({
+        storyBible,
+        cefrLevel,
+        wordCountPerChapter,
+        previousChapters, // ส่งบทก่อนหน้าให้ AI ใช้เป็น context
+      });
+
+      if (!newChapter) {
+        throw new Error(`Failed to generate chapter ${i + 1}`);
+      }
+
+      // เพิ่มบทใหม่ในลิสต์
+      chapters.push(newChapter);
+
+      // สร้างคำถาม
+      const questions = await generateChapterQuestions(newChapter, type, cefrLevel);
+      newChapter.questions = questions;
     }
 
-    // สำหรับแต่ละบท ให้เรียกใช้ฟังก์ชันสร้างคำถามที่มีอยู่เดิม
-    for (const chapter of structuredChapters) {
-      // สร้างคำถามแบบ MCQ
-      const mcResponse = await generateMCQuestion({
-        cefrlevel: cefrLevel,
-        type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
-        passage: chapter.content,
-        title: chapter.title,
-        summary: chapter.summary,
-        imageDesc: chapter["image-description"],
-      });
-      const mcQuestions = (mcResponse?.questions || []).map((q) => ({
-        type: "MCQ" as const,
-        question: q.question || "Missing question",
-        options: [
-          q.correct_answer,
-          q.distractor_1 || "Option 1",
-          q.distractor_2 || "Option 2",
-          q.distractor_3 || "Option 3",
-        ].filter(Boolean), // กรองค่า `undefined` ออก
-        answer: q.correct_answer || "No answer",
-      }));
-
-      const saResponse = await generateSAQuestion({
-        cefrlevel: cefrLevel,
-        type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
-        passage: chapter.content,
-        title: chapter.title,
-        summary: chapter.summary,
-        imageDesc: chapter["image-description"],
-      });
-      const saQuestions = (saResponse?.questions || []).map((q) => ({
-        type: "SAQ" as const,
-        question: q.question || "Missing question",
-        answer: q.suggested_answer || "No answer",
-      }));
-
-      const laResponse = await generateLAQuestion({
-        cefrlevel: cefrLevel,
-        type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
-        passage: chapter.content,
-        title: chapter.title,
-        summary: chapter.summary,
-        imageDesc: chapter["image-description"],
-      });
-      const laQuestion = {
-        type: "LAQ" as const,
-        question: laResponse?.question || "Missing question",
-        answer: "",
-      };
-      
-      console.log("Generated MCQ:", JSON.stringify(mcResponse, null, 2));
-      console.log("Generated SAQ:", JSON.stringify(saResponse, null, 2));
-      console.log("Generated LAQ:", JSON.stringify(laResponse, null, 2));
-
-      // รวมคำถามทั้งหมดเข้าด้วยกัน
-      chapter.questions = [...mcQuestions, ...saQuestions, laQuestion];
-    }
-
-    return structuredChapters;
+    return chapters;
   } catch (error) {
     console.error("Error generating chapters:", error);
     throw error;
   }
 }
 
-async function aiProcessChapters({
+/**
+ * ฟังก์ชันให้ AI สร้างบทเดียว โดยอิงจาก Story Bible และบทก่อนหน้า
+ */
+async function generateSingleChapter({
   storyBible,
   cefrLevel,
-  chapterCount,
   wordCountPerChapter,
+  previousChapters,
 }: {
   storyBible: StoryBible;
   cefrLevel: ArticleBaseCefrLevel;
-  chapterCount: number;
   wordCountPerChapter: number;
-}): Promise<Chapter[]> {
-  console.log(
-    `Processing story with AI using CEFR level ${cefrLevel} requirements...`
-  );
+  previousChapters: Chapter[];
+}): Promise<Chapter | null> {
+  console.log(`Processing single chapter with AI (CEFR: ${cefrLevel})...`);
 
-  // ดึงข้อกำหนดของ CEFR
   const cefrRequirements = getCEFRRequirements(cefrLevel);
   const minWordCount = Math.floor(wordCountPerChapter * 0.9);
   const maxWordCount = Math.ceil(wordCountPerChapter * 1.1);
 
+  const previousChapterSummaries = previousChapters
+    .map((c, index) => `Chapter ${index + 1}: ${c.summary}`)
+    .join("\n");
+
   const prompt = `
-Generate ${chapterCount} structured chapters for a story based on the following Story Bible and Full Story. Each chapter should adhere to the specified CEFR level (${cefrLevel}) in vocabulary, grammar, and readability.
+Generate a new structured chapter for a story based on the Story Bible and the previous chapters provided. This chapter should continue the logical progression of the story while maintaining CEFR level (${cefrLevel}) constraints.
 
 **Story Bible:**
-- **Main Plot:**
-  - Premise: ${storyBible.mainPlot.premise}
-  - Exposition: ${storyBible.mainPlot.exposition}
-  - Rising Action: ${storyBible.mainPlot.risingAction}
-  - Climax: ${storyBible.mainPlot.climax}
-  - Falling Action: ${storyBible.mainPlot.fallingAction}
-  - Resolution: ${storyBible.mainPlot.resolution}
+- **Main Plot:** ${storyBible.mainPlot.premise}
+- **Setting:** ${storyBible.setting.time}, Locations: ${storyBible.setting.places.map(p => p.name).join(", ")}
+- **Characters:** ${storyBible.characters.map(c => c.name).join(", ")}
+- **Themes:** ${storyBible.themes.map(t => t.theme).join(", ")}
 
-- **Characters:**
-${storyBible.characters
-  .map(
-    (c) =>
-      `- Name: ${c.name}, Description: ${c.description}, Background: ${c.background}`
-  )
-  .join("\n")}
+**Previous Chapters Summary:**
+${previousChapterSummaries || "None (This is the first chapter)"}
 
-- **Setting:**
-  - Time: ${storyBible.setting.time}
-  - Places:
-${storyBible.setting.places
-  .map((p) => `  - ${p.name}: ${p.description}`)
-  .join("\n")}
+**CEFR Constraints (${cefrLevel}):**
+- **Word Count per Chapter:** ${minWordCount} - ${maxWordCount} words
+- **Vocabulary Level:** ${cefrRequirements.vocabulary.level}
+- **Grammar Restrictions:** ${cefrRequirements.grammar.restrictions.join(", ")}
 
-- **Themes:**
-${storyBible.themes.map((t) => `- ${t.theme}: ${t.development}`).join("\n")}
+Ensure that:
+- The chapter logically follows from previous events.
+- Character states, introduced elements, and locations remain consistent.
+- The text meets CEFR-level requirements for readability, grammar, and vocabulary.
+- Include an **image-description** summarizing the chapter visually.
 
-- **CEFR Requirements (${cefrLevel}):**
-    - **Word Count per Chapter:** Between ${minWordCount} and ${maxWordCount} words
-    - **Sentence Structure:**
-      - Average Words per Sentence: ${
-        cefrRequirements.sentenceStructure.averageWords
-      }
-      - Complexity: ${cefrRequirements.sentenceStructure.complexity}
-      - Allowed Structures: ${cefrRequirements.sentenceStructure.allowedStructures.join(
-        ", "
-      )}
-    - **Vocabulary Level:** ${cefrRequirements.vocabulary.level}
-      - Restrictions: ${cefrRequirements.vocabulary.restrictions.join(", ")}
-      - Suggested Words: ${cefrRequirements.vocabulary.suggestions.join(", ")}
-    - **Grammar:**
-      - Allowed Tenses: ${cefrRequirements.grammar.allowedTenses.join(", ")}
-      - Allowed Structures: ${cefrRequirements.grammar.allowedStructures.join(
-        ", "
-      )}
-      - Restrictions: ${cefrRequirements.grammar.restrictions.join(", ")}
-    - **Content Complexity:**
-      - Plot Complexity: ${cefrRequirements.content.plotComplexity}
-      - Character Depth: ${cefrRequirements.content.characterDepth}
-      - Themes: ${cefrRequirements.content.themes}
-      - Cultural References: ${cefrRequirements.content.culturalReferences}
-    - **Writing Style:**
-      - Tone: ${cefrRequirements.style.tone}
-      - Literary Devices: ${cefrRequirements.style.literaryDevices.join(", ")}
-      - Narrative Approach: ${cefrRequirements.style.narrativeApproach}
-    - **Text Structure:**
-      - Paragraph Length: ${cefrRequirements.structure.paragraphLength}
-      - Text Organization: ${cefrRequirements.structure.textOrganization}
-      - Transition Complexity: ${
-        cefrRequirements.structure.transitionComplexity
-      }
-
-Ensure each chapter:
-- Maintains logical story progression
-- Adheres to the CEFR level's vocabulary and grammar constraints
-- Includes readability analysis with word count, vocabulary complexity, and grammar structures
-- Tracks continuity, including character states and events
-
-Return only valid JSON following the schema.
+Return only valid JSON.
 `;
 
-  const response = await generateObject({
-    model: openai(openaiModel4o),
-    schema: ChaptersSchema,
-    prompt,
-    temperature: 1,
-  });
+  try {
+    const response = await generateObject({
+      model: openai(openaiModel4o),
+      schema: ChapterSchema,
+      prompt,
+      temperature: 1,
+    });
 
-  return response.object.chapters;
+    return response.object;
+  } catch (error) {
+    console.error("Error generating single chapter:", error);
+    return null;
+  }
+}
+
+/**
+ * ฟังก์ชันสร้างคำถามให้แต่ละบท
+ */
+async function generateChapterQuestions(
+  chapter: Chapter,
+  type: string,
+  cefrLevel: ArticleBaseCefrLevel
+): Promise<Question[]> {
+  try {
+    // สร้าง MCQ
+    const mcResponse = await generateMCQuestion({
+      cefrlevel: cefrLevel,
+      type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
+      passage: chapter.content,
+      title: chapter.title,
+      summary: chapter.summary,
+      imageDesc: chapter["image-description"],
+    });
+    const mcQuestions = (mcResponse?.questions || []).map((q) => ({
+      type: "MCQ" as const,
+      question: q.question || "Missing question",
+      options: [
+        q.correct_answer,
+        q.distractor_1 || "Option 1",
+        q.distractor_2 || "Option 2",
+        q.distractor_3 || "Option 3",
+      ].filter(Boolean),
+      answer: q.correct_answer || "No answer",
+    }));
+
+    // สร้าง SAQ
+    const saResponse = await generateSAQuestion({
+      cefrlevel: cefrLevel,
+      type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
+      passage: chapter.content,
+      title: chapter.title,
+      summary: chapter.summary,
+      imageDesc: chapter["image-description"],
+    });
+    const saQuestions = (saResponse?.questions || []).map((q) => ({
+      type: "SAQ" as const,
+      question: q.question || "Missing question",
+      answer: q.suggested_answer || "No answer",
+    }));
+
+    // สร้าง LAQ
+    const laResponse = await generateLAQuestion({
+      cefrlevel: cefrLevel,
+      type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
+      passage: chapter.content,
+      title: chapter.title,
+      summary: chapter.summary,
+      imageDesc: chapter["image-description"],
+    });
+    const laQuestion = {
+      type: "LAQ" as const,
+      question: laResponse?.question || "Missing question",
+      answer: "",
+    };
+
+    return [...mcQuestions, ...saQuestions, laQuestion];
+  } catch (error) {
+    console.error("Error generating questions:", error);
+    return [];
+  }
 }
