@@ -59,7 +59,7 @@ const StoryBibleSchema = z.object({
     })
   ),
   summary: z.string(),
-  "image-description": z.string(),
+  image_description: z.string(),
 });
 
 export async function generateStoryBible({
