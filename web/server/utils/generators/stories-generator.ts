@@ -79,7 +79,7 @@ export async function generateStories(req: NextRequest) {
               title: topic,
               summary: storyBible.summary,
               type,
-              image_description: storyBible["image-description"],
+              image_description: storyBible.image_description,
               passage: storyBible.summary,
               cefrLevel: level,
             });
