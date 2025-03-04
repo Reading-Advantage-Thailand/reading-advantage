@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import db from "@/configs/firestore-config";
 import { randomSelectGenre } from "./random-select-genre";
 import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
@@ -8,6 +8,7 @@ import { generateChapters } from "./story-chapters-generator";
 import { generateStoriesTopic } from "./stories-topic-generator";
 import { generateImage } from "./image-generator";
 import { Timestamp } from "firebase-admin/firestore";
+import { deleteStoryAndImages } from "@/utils/deleteStoryAndImage";
 
 const CEFRLevels = [
   ArticleBaseCefrLevel.A1,
@@ -18,8 +19,6 @@ const CEFRLevels = [
   ArticleBaseCefrLevel.C2,
 ];
 
-let currentCEFRIndex = 0;
-
 export async function generateStories(req: NextRequest) {
   try {
     console.log("Received request to generate stories");
@@ -28,101 +27,133 @@ export async function generateStories(req: NextRequest) {
     if (!amountPerGenre) throw new Error("amountPerGenre is required");
 
     const amount = parseInt(amountPerGenre);
-    const level = CEFRLevels[currentCEFRIndex];
     const articleTypes = [ArticleType.FICTION, ArticleType.NONFICTION];
 
-    for (const type of articleTypes) {
-      const genreData = await randomSelectGenre({ type });
-      const { genre, subgenre } = genreData;
+    let successfulCount = 0;
+    let failedCount = 0;
 
-      const topicData = await generateStoriesTopic({
-        type,
-        genre,
-        subgenre,
-        amountPerGenre: amount,
-      });
-      const topics = topicData.topics;
+    for (const level of CEFRLevels) {
+      console.log(`Generating stories for CEFR Level: ${level}`);
 
-      for (const topic of topics) {
-        const existingStorySnapshot = await db
-          .collection("stories")
-          .where("title", "==", topic)
-          .get();
-        let ref, storyBible;
+      for (const type of articleTypes) {
+        const genreData = await randomSelectGenre({ type });
+        const { genre, subgenre } = genreData;
 
-        if (!existingStorySnapshot.empty) {
-          const existingStory = existingStorySnapshot.docs[0].data();
-          ref = existingStorySnapshot.docs[0].ref;
-          storyBible = existingStory.storyBible;
-        } else {
-          storyBible = await generateStoryBible({ topic, genre, subgenre });
-          ref = db.collection("stories").doc();
-          await ref.set({
-            title: topic,
-            genre,
-            subgenre,
-            type,
-            cefrLevel: level,
-            storyBible,
-            chapters: [],
-            createdAt: Timestamp.now(),
-          });
-        }
-
-        try {
-          await generateImage({
-            imageDesc: storyBible["image-description"],
-            articleId: ref.id,
-          });
-        } catch (imageError) {
-          console.error("Image generation failed:", imageError);
-          await ref.delete();
-          continue;
-        }
-
-        const chapterCount = Math.floor(Math.random() * 3) + 6;
-        const wordCountPerChapter =
-          getCEFRRequirements(level).wordCount.fiction;
-
-        const previousChapters = existingStorySnapshot.empty
-          ? []
-          : existingStorySnapshot.docs[0].data().chapters;
-        const chapters = await generateChapters({
+        const topicData = await generateStoriesTopic({
           type,
-          storyBible,
-          cefrLevel: level,
-          previousChapters,
-          chapterCount,
-          wordCountPerChapter,
+          genre,
+          subgenre,
+          amountPerGenre: amount,
         });
+        const topics = topicData.topics;
 
-        // ตรวจสอบให้แน่ใจว่าทุก chapter มี `questions`
-        const validatedChapters = chapters.map((chapter) => ({
-          ...chapter,
-          questions: Array.isArray(chapter.questions) ? chapter.questions : [],
-        }));
+        for (const topic of topics) {
+          const existingStorySnapshot = await db
+            .collection("stories")
+            .where("title", "==", topic)
+            .where("cefrLevel", "==", level)
+            .get();
+          let ref, storyBible;
 
-        await ref.update({ chapters: validatedChapters });
+          if (!existingStorySnapshot.empty) {
+            const existingStory = existingStorySnapshot.docs[0].data();
+            ref = existingStorySnapshot.docs[0].ref;
+            storyBible = existingStory.storyBible;
+          } else {
+            storyBible = await generateStoryBible({ topic, genre, subgenre });
+            ref = db.collection("stories").doc();
+            await ref.set({
+              id: ref,
+              title: topic,
+              genre,
+              subgenre,
+              type,
+              cefrLevel: level,
+              storyBible,
+              chapters: [],
+              createdAt: Timestamp.now(),
+            });
+          }
 
-        for (let i = 0; i < chapters.length; i++) {
           try {
             await generateImage({
-              imageDesc: chapters[i]["image-description"],
-              articleId: `${ref.id}-${i + 1}`,
+              imageDesc: storyBible["image-description"],
+              articleId: ref.id,
             });
           } catch (imageError) {
-            console.error("Chapter image generation failed:", imageError);
-            await ref.delete();
+            console.error("Image generation failed:", imageError);
+            await deleteStoryAndImages(ref.id);
+            failedCount++;
+            continue;
+          }
+
+          const chapterCount = Math.floor(Math.random() * 3) + 6;
+          const wordCountPerChapter =
+            getCEFRRequirements(level).wordCount.fiction;
+
+          const previousChapters = existingStorySnapshot.empty
+            ? []
+            : existingStorySnapshot.docs[0].data().chapters;
+
+          try {
+            const chapters = await generateChapters({
+              type,
+              storyBible,
+              cefrLevel: level,
+              previousChapters,
+              chapterCount,
+              wordCountPerChapter,
+            });
+
+            // ตรวจสอบให้แน่ใจว่าจำนวน chapter ถูกต้อง
+            if (chapters.length !== chapterCount) {
+              throw new Error(
+                `Expected ${chapterCount} chapters, but got ${chapters.length}`
+              );
+            }
+
+            // ตรวจสอบให้แน่ใจว่าทุก chapter มี `questions`
+            const validatedChapters = chapters.map((chapter) => ({
+              ...chapter,
+              questions: Array.isArray(chapter.questions)
+                ? chapter.questions
+                : [],
+            }));
+
+            await ref.update({ chapters: validatedChapters });
+
+            for (let i = 0; i < chapters.length; i++) {
+              try {
+                await generateImage({
+                  imageDesc: chapters[i]["image-description"],
+                  articleId: `${ref.id}-${i + 1}`,
+                });
+              } catch (imageError) {
+                console.error("Chapter image generation failed:", imageError);
+                await deleteStoryAndImages(ref.id);
+                failedCount++;
+                continue;
+              }
+            }
+
+            await ref.update({ chapters });
+            successfulCount++; // นับว่าเรื่องนี้สร้างสำเร็จ
+          } catch (chapterError) {
+            console.error("Error generating chapters:", chapterError);
+            await deleteStoryAndImages(ref.id);
+            failedCount++;
             continue;
           }
         }
-
-        await ref.update({ chapters });
       }
     }
 
-    return new Response(
-      JSON.stringify({ message: "Stories generated and stored successfully" }),
+    return NextResponse.json(
+      {
+        message: "Stories generation completed",
+        successfulStories: successfulCount,
+        failedStories: failedCount,
+      },
       { status: 200 }
     );
   } catch (error) {
@@ -133,8 +164,6 @@ export async function generateStories(req: NextRequest) {
       errorMessage = error.message;
     }
 
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-    });
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
