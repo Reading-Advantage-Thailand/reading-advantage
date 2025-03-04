@@ -26,7 +26,7 @@ const info = [
   {
     title: "Legal",
     links: [
-      { title: "Privacy Policy", href: "/privacy" },
+      { title: "Privacy Policy", href: "/privacy-policy" },
       { title: "Terms & Conditions", href: "/terms" },
     ],
   },
