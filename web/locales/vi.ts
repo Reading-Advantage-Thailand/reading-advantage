@@ -284,6 +284,7 @@ export default {
     },
     sidebarNav: {
       read: "Đọc",
+      story: "Cốt truyện",
       history: "Lịch sử",
       sentences: "Câu",
       reports: "Báo cáo",
