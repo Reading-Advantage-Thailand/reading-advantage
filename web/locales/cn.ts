@@ -42,6 +42,39 @@ export default {
           },
         },
       },
+      storyPage: {
+        storySelection: "故事选择",
+        story: {
+          storyNotFound: "未找到故事",
+          storyInsufficientLevel: "您的阅读等级不够高，无法阅读此故事。",
+          readBefore: "欢迎回来，您之前已经阅读过这个故事",
+          readBeforeDescription:
+            "您可以尝试再次阅读和练习，以提高您的阅读技能。这是您上次阅读的结果。",
+          status: "状态",
+          statusText: {
+            completed: "已完成",
+            uncompleted: "未完成",
+          },
+          statusDescription: "最后更新时间 {date}",
+          score: "测验分数",
+          scoreText: "{score}",
+          scoreDescription: "共 {total} 题",
+          rated: "评分",
+          ratedText: "{rated} 评分",
+          ratedDescription: "您已对该故事进行评分",
+          timeSpend: "阅读时间",
+          timeSpendText: "{time}",
+          timeSpendDescription: "用于 {total} 题",
+          scoreSuffix: {
+            point: "分",
+            points: "分",
+          },
+          secondSuffix: {
+            second: "秒",
+            seconds: "秒",
+          },
+        },
+      },
       historyPage: {
         title: "为 {userName} 的历史",
         reminderToReread: "重读提醒",

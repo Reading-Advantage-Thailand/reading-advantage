@@ -48,6 +48,40 @@ export default {
           },
         },
       },
+      storyPage: {
+        storySelection: "Chọn câu chuyện",
+        story: {
+          storyNotFound: "Không tìm thấy câu chuyện",
+          storyInsufficientLevel:
+            "Bạn không thể đọc câu chuyện này vì trình độ đọc của bạn chưa đủ cao.",
+          readBefore: "Chào mừng trở lại. Bạn đã đọc câu chuyện này trước đó",
+          readBeforeDescription:
+            "Bạn có thể thử đọc và luyện tập lại để cải thiện kỹ năng đọc của mình. Đây là kết quả từ lần đọc trước của bạn.",
+          status: "Trạng thái",
+          statusText: {
+            completed: "Hoàn thành",
+            uncompleted: "Chưa hoàn thành",
+          },
+          statusDescription: "Cập nhật lần cuối vào {date}",
+          score: "Điểm kiểm tra",
+          scoreText: "{score}",
+          scoreDescription: "trong tổng số {total} câu hỏi",
+          rated: "Đánh giá",
+          ratedText: "{rated} đánh giá",
+          ratedDescription: "Bạn đã đánh giá câu chuyện này",
+          timeSpend: "Thời gian đọc",
+          timeSpendText: "{time}",
+          timeSpendDescription: "trong {total} câu hỏi",
+          scoreSuffix: {
+            point: "điểm",
+            points: "điểm",
+          },
+          secondSuffix: {
+            second: "giây",
+            seconds: "giây",
+          },
+        },
+      },
       historyPage: {
         title: "Lịch sử cho {userName}",
         // Headings
