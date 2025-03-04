@@ -51,6 +51,49 @@ export default {
           },
         },
       },
+      storyPage: {
+        // Headings
+        storySelection: "Stories Selection",
+
+        // nextquiz/[articleId] page
+        story: {
+          storyNotFound: "Story not found",
+          storyInsufficientLevel:
+            "You cannot read this story because your reading level is not high enough.",
+
+          // Headings
+          readBefore: "Welcome back. You have read this story before",
+          readBeforeDescription:
+            "You might try reading and practicing again to improve your reading skills. Here is the result of your previous reading.",
+
+          // Stats
+          status: "Status",
+          statusText: {
+            completed: "Completed",
+            uncompleted: "Uncompleted",
+          },
+          statusDescription: "Last updated on {date}",
+          score: "Quiz Score",
+          scoreText: "{score}",
+          scoreDescription: "from {total} questions",
+          rated: "Rated",
+          ratedText: "{rated} rating",
+          ratedDescription: "You rated this story",
+          timeSpend: "Time spent",
+          timeSpendText: "{time}",
+          timeSpendDescription: "on {total} questions",
+
+          // Suffixes
+          scoreSuffix: {
+            point: "point",
+            points: "points",
+          },
+          secondSuffix: {
+            second: "second",
+            seconds: "seconds",
+          },
+        },
+      },
       historyPage: {
         title: "History for {userName}",
         //Headings

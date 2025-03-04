@@ -48,6 +48,40 @@ export default {
           },
         },
       },
+      storyPage: {
+        storySelection: "เลือกเนื้อเรื่อง",
+        story: {
+          storyNotFound: "ไม่พบเรื่องนี้",
+          storyInsufficientLevel:
+            "คุณไม่สามารถอ่านเรื่องนี้ได้ เพราะระดับการอ่านของคุณยังไม่ถึง",
+          readBefore: "ยินดีต้อนรับกลับมา คุณเคยอ่านเรื่องนี้มาก่อน",
+          readBeforeDescription:
+            "คุณสามารถลองอ่านและฝึกฝนอีกครั้งเพื่อพัฒนาทักษะการอ่านของคุณ นี่คือผลลัพธ์จากการอ่านครั้งก่อนของคุณ",
+          status: "สถานะ",
+          statusText: {
+            completed: "อ่านจบแล้ว",
+            uncompleted: "ยังอ่านไม่จบ",
+          },
+          statusDescription: "อัปเดตล่าสุดเมื่อ {date}",
+          score: "คะแนนแบบทดสอบ",
+          scoreText: "{score}",
+          scoreDescription: "จาก {total} คำถาม",
+          rated: "ให้คะแนน",
+          ratedText: "{rated} คะแนน",
+          ratedDescription: "คุณได้ให้คะแนนเรื่องนี้แล้ว",
+          timeSpend: "เวลาที่ใช้",
+          timeSpendText: "{time}",
+          timeSpendDescription: "ใช้เวลาไปกับ {total} คำถาม",
+          scoreSuffix: {
+            point: "คะแนน",
+            points: "คะแนน",
+          },
+          secondSuffix: {
+            second: "วินาที",
+            seconds: "วินาที",
+          },
+        },
+      },
       historyPage: {
         title: "ประวัติสำหรับ {userName}",
         //Headings

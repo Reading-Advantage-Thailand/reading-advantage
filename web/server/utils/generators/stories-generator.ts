@@ -9,6 +9,7 @@ import { generateStoriesTopic } from "./stories-topic-generator";
 import { generateImage } from "./image-generator";
 import { Timestamp } from "firebase-admin/firestore";
 import { deleteStoryAndImages } from "@/utils/deleteStoryAndImage";
+import { evaluateRating } from "./evaluate-rating-generator";
 
 const CEFRLevels = [
   ArticleBaseCefrLevel.A1,
@@ -55,6 +56,15 @@ export async function generateStories(req: NextRequest) {
             .get();
           let ref, storyBible;
 
+          const evaluatedRating = await evaluateRating({
+            title: topic,
+            summary: storyBible.summary,
+            type,
+            image_description: storyBible["image-description"],
+            passage: storyBible.summary,
+            cefrLevel: level,
+          });
+
           if (!existingStorySnapshot.empty) {
             const existingStory = existingStorySnapshot.docs[0].data();
             ref = existingStorySnapshot.docs[0].ref;
@@ -63,12 +73,13 @@ export async function generateStories(req: NextRequest) {
             storyBible = await generateStoryBible({ topic, genre, subgenre });
             ref = db.collection("stories").doc();
             await ref.set({
-              id: ref,
+              id: ref.id,
               title: topic,
+              average_rating: evaluatedRating,
               genre,
               subgenre,
               type,
-              cefrLevel: level,
+              cefr_level: level,
               storyBible,
               chapters: [],
               createdAt: Timestamp.now(),
