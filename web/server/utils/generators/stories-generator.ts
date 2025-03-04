@@ -57,6 +57,15 @@ export async function generateStories(req: NextRequest) {
             .get();
           let ref, storyBible;
 
+          const evaluatedRating = await evaluateRating({
+            title: topic,
+            summary: storyBible.summary,
+            type,
+            image_description: storyBible["image-description"],
+            passage: storyBible.summary,
+            cefrLevel: level,
+          });
+
           if (!existingStorySnapshot.empty) {
             const existingStory = existingStorySnapshot.docs[0].data();
             ref = existingStorySnapshot.docs[0].ref;
