@@ -10,6 +10,7 @@ import { generateImage } from "./image-generator";
 import { Timestamp } from "firebase-admin/firestore";
 import { deleteStoryAndImages } from "@/utils/deleteStoryAndImage";
 import { evaluateRating } from "./evaluate-rating-generator";
+import { calculateLevel } from "@/lib/calculateLevel";
 
 const CEFRLevels = [
   ArticleBaseCefrLevel.A1,
@@ -28,7 +29,7 @@ export async function generateStories(req: NextRequest) {
     if (!amountPerGenre) throw new Error("amountPerGenre is required");
 
     const amount = parseInt(amountPerGenre);
-    const articleTypes = [ArticleType.FICTION, ArticleType.NONFICTION];
+    const articleTypes = [ArticleType.FICTION];
 
     let successfulCount = 0;
     let failedCount = 0;
@@ -56,15 +57,6 @@ export async function generateStories(req: NextRequest) {
             .get();
           let ref, storyBible;
 
-          const evaluatedRating = await evaluateRating({
-            title: topic,
-            summary: storyBible.summary,
-            type,
-            image_description: storyBible["image-description"],
-            passage: storyBible.summary,
-            cefrLevel: level,
-          });
-
           if (!existingStorySnapshot.empty) {
             const existingStory = existingStorySnapshot.docs[0].data();
             ref = existingStorySnapshot.docs[0].ref;
@@ -72,14 +64,34 @@ export async function generateStories(req: NextRequest) {
           } else {
             storyBible = await generateStoryBible({ topic, genre, subgenre });
             ref = db.collection("stories").doc();
+
+            const evaluatedRating = await evaluateRating({
+              title: topic,
+              summary: storyBible.summary,
+              type,
+              image_description: storyBible["image-description"],
+              passage: storyBible.summary,
+              cefrLevel: level,
+            });
+
+            const { raLevel, cefrLevel: cefr_level } = calculateLevel(
+              storyBible.summary,
+              level
+            );
+
+            console.log(
+              `CEFR ${level}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${cefr_level}, Evaluated raLevel: ${raLevel}`
+            );
+
             await ref.set({
               id: ref.id,
               title: topic,
-              average_rating: evaluatedRating,
+              average_rating: evaluatedRating.rating,
               genre,
               subgenre,
               type,
-              cefr_level: level,
+              ra_level: raLevel,
+              cefr_level: cefr_level,
               storyBible,
               chapters: [],
               createdAt: Timestamp.now(),
