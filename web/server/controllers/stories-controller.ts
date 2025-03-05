@@ -73,6 +73,8 @@ export async function getAllStories(req: NextRequest) {
 
     const results = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
+    console.log(`Returning ${results.length} stories`);
+
     return NextResponse.json({
       params: { genre, subgenre, page, limit },
       results,
