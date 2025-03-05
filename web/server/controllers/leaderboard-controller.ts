@@ -75,15 +75,9 @@ export async function postRankingLeaderboard(
   req: NextRequest
 ): Promise<NextResponse> {
   try {
-    //console.log("Clearing old leaderboard data...");
-
     const leaderboardRef = db.collection("leaderboard");
     const existingDocs = await leaderboardRef.get();
     await Promise.all(existingDocs.docs.map((doc) => doc.ref.delete()));
-
-    //console.log("Old leaderboard data cleared.");
-
-    //console.log("Fetching data...");
 
     const [classSnapshot, userSnapshot] = await Promise.all([
       db.collection("classroom").get(),
@@ -134,7 +128,8 @@ export async function postRankingLeaderboard(
               if (
                 data.timestamp &&
                 data.userId &&
-                data.activityStatus === "completed"
+                data.activityStatus === "completed" &&
+                data.activityType !== "level_test"
               ) {
                 activityLog.push({
                   userId: data.userId,
@@ -149,10 +144,9 @@ export async function postRankingLeaderboard(
       })
     );
 
-    //console.log(`Loaded ${activityLog.length} activity logs.`);
-
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
+
     const filteredActivities = activityLog.filter(({ timestamp }) => {
       return (
         timestamp.getMonth() === currentMonth &&
@@ -160,18 +154,13 @@ export async function postRankingLeaderboard(
       );
     });
 
-    //console.log(`Found ${filteredActivities.length} activities for this month.`);
-
     // รวมค่า XP ตาม userId
     const userXpMap: Record<string, number> = {};
     filteredActivities.forEach(({ userId, xpEarned }) => {
       userXpMap[userId] = (userXpMap[userId] || 0) + xpEarned;
     });
 
-    //console.log("XP Calculation:", userXpMap);
-
     const combinedData = usersData
-      .filter((user) => user.license_id && user.license_id !== "Unknown")
       .map((user) => {
         const { id: userId, display_name: name, license_id: licenseId } = user;
         const xp = userXpMap[userId] || 0;
@@ -187,9 +176,8 @@ export async function postRankingLeaderboard(
           classroom: classroomInfo.classroomName,
           license_id: licenseId || classroomInfo.license_id,
         };
-      });
-
-    //console.log("Final User Data:", combinedData);
+      })
+      .filter((user) => user.classroom !== "Unknown");
 
     for (const [license_id, users] of Object.entries(
       combinedData.reduce((acc, user) => {
@@ -213,14 +201,15 @@ export async function postRankingLeaderboard(
       });
     }
 
-    //console.log("Leaderboard updated successfully");
-
     return NextResponse.json({ message: "Leaderboard updated successfully" });
   } catch (error) {
-    console.error("❌ Error updating leaderboard:", error);
+    console.error("Error updating leaderboard:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
     );
   }
 }
+
+
+
