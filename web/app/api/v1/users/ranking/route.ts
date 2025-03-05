@@ -13,10 +13,8 @@ import { NextResponse, type NextRequest } from "next/server";
 const router = createEdgeRouter<NextRequest, NextResponse>();
 
 router.use(logRequest);
-// router.use(protect);
-router.use(restrictAccessKey);
+router.use(protect);
 router.get(getAllRankingLeaderboard);
-router.post(postRankingLeaderboard);
 
 export async function GET(request: NextRequest, ctx: NextResponse) {
   const result = await router.run(request, ctx);
@@ -27,6 +25,9 @@ export async function GET(request: NextRequest, ctx: NextResponse) {
   // You might want to return a default NextResponse or throw an error
   throw new Error("Expected a NextResponse from router.run");
 }
+
+router.use(restrictAccessKey);
+router.post(postRankingLeaderboard);
 
 export async function POST(request: NextRequest, ctx: NextResponse) {
   const result = await router.run(request, ctx);
