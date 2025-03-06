@@ -11,7 +11,7 @@ interface GenerateStoriesTopicParams {
 }
 
 export interface GenerateStoriesTopicResponse {
-  topics: string[]; 
+  topics: string[];
 }
 
 export async function generateStoriesTopic(
@@ -22,8 +22,24 @@ export async function generateStoriesTopic(
   );
 
   const prompts = {
-    fiction: `Please provide ${params.amountPerGenre} reading passage topics in the ${params.type} ${params.genre} genre and ${params.subgenre} subgenre appropriate for secondary school students. Output as a JSON array.`,
-    nonfiction: `Please provide ${params.amountPerGenre} reading passage topics in the ${params.type} ${params.genre} genre and ${params.subgenre} subgenre appropriate for secondary school students. Output as a JSON array.`,
+    fiction: `Please provide ${params.amountPerGenre} reading passage topics in the ${params.type} ${params.genre} genre and ${params.subgenre} subgenre appropriate for secondary school students. 
+    ### Requirements:
+  - **Only return the book title** (no explanations, no descriptions, no genre labels).
+  - **Do NOT return general genre labels like 'Fantasy YA', 'Science Fiction', 'Mystery Thriller'**.
+  - **Do NOT include the words 'fiction', 'genre', 'subgenre', or any similar category names.**
+  - **Each title must sound like a real book title.**
+  - **Keep each title short (maximum 8 words).**
+  - **Output must be a JSON array of strings ONLY.**
+  Output as a JSON array.`,
+    nonfiction: `Please provide ${params.amountPerGenre} reading passage topics in the ${params.type} ${params.genre} genre and ${params.subgenre} subgenre appropriate for secondary school students. 
+    ### Requirements:
+  - **Only return the book title** (no explanations, no descriptions, no genre labels).
+  - **Do NOT return general genre labels like 'Fantasy YA', 'Science Fiction', 'Mystery Thriller'**.
+  - **Do NOT include the words 'fiction', 'genre', 'subgenre', or any similar category names.**
+  - **Each title must sound like a real book title.**
+  - **Keep each title short (maximum 8 words).**
+  - **Output must be a JSON array of strings ONLY.**
+  Output as a JSON array.`,
   };
 
   try {

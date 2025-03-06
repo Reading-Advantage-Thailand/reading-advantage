@@ -47,6 +47,7 @@ export async function generateStories(req: NextRequest) {
           subgenre,
           amountPerGenre: amount,
         });
+        console.log(topicData);
         const topics = topicData.topics;
 
         for (const topic of topics) {
@@ -56,15 +57,6 @@ export async function generateStories(req: NextRequest) {
             .where("cefrLevel", "==", level)
             .get();
           let ref, storyBible;
-
-          const evaluatedRating = await evaluateRating({
-            title: topic,
-            summary: storyBible.summary,
-            type,
-            image_description: storyBible["image-description"],
-            passage: storyBible.summary,
-            cefrLevel: level,
-          });
 
           if (!existingStorySnapshot.empty) {
             const existingStory = existingStorySnapshot.docs[0].data();
