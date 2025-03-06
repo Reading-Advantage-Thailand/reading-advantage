@@ -12,8 +12,16 @@ export async function getAllStories(req: NextRequest) {
 
     console.log("Received Params:", { storyId, page, limit, genre, subgenre });
 
+    // 🟢 ดึง selectionGenres จาก Firestore
+    const fetchGenres = async () => {
+      const collectionRef = db.collection("genres-fiction");
+      const querySnapshot = await collectionRef.get();
+      return querySnapshot.docs.map((doc) => doc.data().name);
+    };
+
+    const selectionGenres = await fetchGenres();
+
     if (storyId) {
-      // ดึงข้อมูลตาม storyId
       const storyDoc = await db.collection("stories").doc(storyId).get();
       if (!storyDoc.exists) {
         return NextResponse.json(
@@ -28,7 +36,11 @@ export async function getAllStories(req: NextRequest) {
 
     if (page < 1 || limit < 1) {
       return NextResponse.json(
-        { message: "Invalid pagination parameters", results: [] },
+        {
+          message: "Invalid pagination parameters",
+          results: [],
+          selectionGenres,
+        },
         { status: 400 }
       );
     }
@@ -62,13 +74,19 @@ export async function getAllStories(req: NextRequest) {
     return NextResponse.json({
       params: { genre, subgenre, page, limit },
       results,
+      selectionGenres,
       total,
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
     console.error("Error getting stories", error);
     return NextResponse.json(
-      { message: "Internal server error", results: [], error },
+      {
+        message: "Internal server error",
+        results: [],
+        selectionGenres: [],
+        error,
+      },
       { status: 500 }
     );
   }
