@@ -38,6 +38,7 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
 
     React.useEffect(() => {
       handleTranslateSummary();
+      console.log("story", story);
     }, [story, locale]);
 
     async function handleTranslateSummary() {
