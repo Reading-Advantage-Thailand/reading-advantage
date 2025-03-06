@@ -78,6 +78,7 @@ export async function getAllStories(req: NextRequest) {
     return NextResponse.json({
       params: { genre, subgenre, page, limit },
       results,
+      selectionGenres,
       total,
       totalPages: Math.ceil(total / limit),
     });
