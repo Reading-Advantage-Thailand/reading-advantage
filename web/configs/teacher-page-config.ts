@@ -45,11 +45,11 @@ export const teacherPageConfig: TeacherPageConfig = {
       href: "/teacher/passages",
       icon: "article",
     },
-    {
-      title: "google classroom",
-      href: "/teacher/classroom",
-      icon: "class",
-    },
+    // {
+    //   title: "google classroom",
+    //   href: "/teacher/classroom",
+    //   icon: "class",
+    // },
     // {
     //   title: "assignments",
     //   href: "/teacher/assignments",
