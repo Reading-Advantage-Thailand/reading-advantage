@@ -11,7 +11,7 @@ interface GenerateStoriesTopicParams {
 }
 
 export interface GenerateStoriesTopicResponse {
-  topics: string[]; 
+  topics: string[];
 }
 
 export async function generateStoriesTopic(
