@@ -1,3 +1,5 @@
+import { StoryBible } from "@/app/[locale]/(student)/student/stories/[storyId]/page";
+
 export interface ArticleShowcase {
   average_rating: number;
   cefr_level: string;
@@ -10,6 +12,7 @@ export interface ArticleShowcase {
   type?: string;
   subgenre?: string;
   genre?: string;
+  storyBible?: StoryBible;
 }
 
 export interface Article {

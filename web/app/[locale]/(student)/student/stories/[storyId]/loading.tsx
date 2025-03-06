@@ -25,9 +25,8 @@ export default async function Loading() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid sm:grid-cols-2 grid-flow-row gap-4">
-            <Skeleton className="h-[20rem] w-full" />
-            <Skeleton className="h-[20rem] w-full" />
+          <div className="grid grid-flow-row gap-4">
+            <Skeleton className="h-[40rem] w-full" />
           </div>
         </CardContent>
       </Card>

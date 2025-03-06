@@ -38,6 +38,7 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
 
     React.useEffect(() => {
       handleTranslateSummary();
+      console.log("story", story);
     }, [story, locale]);
 
     async function handleTranslateSummary() {
@@ -120,7 +121,7 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             <div className=" bg-black bg-opacity-40">
               <p className="text-sm drop-shadow-lg line-clamp-4 text-white">
                 {locale == "en" ? (
-                  <p>{story.summary}</p>
+                  <p>{story?.storyBible?.summary}</p>
                 ) : (
                   <p>{summarySentence}</p>
                 )}
