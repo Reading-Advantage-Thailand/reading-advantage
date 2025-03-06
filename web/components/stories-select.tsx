@@ -10,7 +10,6 @@ import {
 import { Button } from "./ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
-import ArticleShowcaseCard from "./article-showcase-card";
 import { articleShowcaseType } from "@/types";
 import { useCurrentLocale } from "@/locales/client";
 import { Skeleton } from "./ui/skeleton";
