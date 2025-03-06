@@ -6,7 +6,7 @@ import React from "react";
 import SelectStory from "@/components/stories-select";
 
 type Props = {
-  params: { articleId: string };
+  params: { storyId: string };
   searchParams?: { [key: string]: string | string[] | undefined };
 };
 

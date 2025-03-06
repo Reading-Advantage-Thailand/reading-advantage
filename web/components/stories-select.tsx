@@ -14,6 +14,7 @@ import ArticleShowcaseCard from "./article-showcase-card";
 import { articleShowcaseType } from "@/types";
 import { useCurrentLocale } from "@/locales/client";
 import { Skeleton } from "./ui/skeleton";
+import StoryShowcaseCard from "./stories-showcase-card";
 
 type Props = {
   user: {
@@ -147,9 +148,9 @@ export default function SelectStory({ user }: Props) {
           articleShowcaseData.length > 0 ? (
             <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
               {articleShowcaseData.map((article, index) => (
-                <ArticleShowcaseCard
+                <StoryShowcaseCard
                   key={index}
-                  article={article}
+                  story={article}
                   userId={user.id}
                 />
               ))}
@@ -180,10 +181,10 @@ export default function SelectStory({ user }: Props) {
                   const isLastArticle =
                     index === articleShowcaseData.length - 1;
                   return (
-                    <ArticleShowcaseCard
+                    <StoryShowcaseCard
                       ref={isLastArticle ? lastArticleRef : null}
                       key={article.id}
-                      article={article}
+                      story={article}
                       userId={user.id}
                     />
                   );

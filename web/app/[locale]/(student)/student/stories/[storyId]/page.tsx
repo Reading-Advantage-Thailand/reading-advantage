@@ -1,0 +1,102 @@
+import ArticleCard from "@/components/article-card";
+import { getCurrentUser } from "@/lib/session";
+import { redirect } from "next/navigation";
+import React from "react";
+import { getScopedI18n } from "@/locales/server";
+import { fetchData } from "@/utils/fetch-data";
+import CustomError from "./stories-custom-error";
+import AssignDialog from "@/components/teacher/assign-dialog";
+import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
+import { Article } from "@/components/models/article-model";
+import ArticleActions from "@/components/article-actions";
+import WordList from "@/components/word-list";
+import LAQuestionCard from "@/components/questions/laq-question-card";
+import MCQuestionCard from "@/components/questions/mc-question-card";
+import SAQuestionCard from "@/components/questions/sa-question-card";
+
+export const metadata = {
+  title: "Story",
+  description: "Story",
+};
+
+async function getArticle(storyId: string) {
+  return fetchData(`/api/v1/stories/${storyId}`);
+}
+
+export default async function ArticleQuizPage({
+  params,
+}: {
+  params: { storyId: string };
+}) {
+  const t = await getScopedI18n("pages.student.readPage.article");
+
+  const user = await getCurrentUser();
+  if (!user) return redirect("/auth/signin");
+
+  const articleResponse = await getArticle(params.storyId);
+
+  if (articleResponse.message)
+    return (
+      <CustomError message={articleResponse.message} resp={articleResponse} />
+    );
+
+  return (
+    <>
+      <div className="md:flex md:flex-row md:gap-3 md:mb-5">
+        <ArticleCard
+          article={articleResponse.article}
+          articleId={params.storyId}
+          userId={user.id}
+        />
+        <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
+          <div className="flex justify-evently">
+            {user.role.includes("teacher") && (
+              <AssignDialog
+                article={articleResponse.article}
+                articleId={params.storyId}
+                userId={user.id}
+              />
+            )}
+
+            {user.role.includes("system") && (
+              <div className="flex gap-4">
+                <ArticleActions
+                  article={articleResponse.article}
+                  articleId={params.storyId}
+                />
+              </div>
+            )}
+            <WordList
+              article={articleResponse.article}
+              articleId={params.storyId}
+              userId={user.id}
+            />
+          </div>
+
+          <MCQuestionCard
+            userId={user.id}
+            articleId={params.storyId}
+            articleTitle={articleResponse.article.title}
+            articleLevel={articleResponse.article.ra_level}
+          />
+          <SAQuestionCard
+            userId={user.id}
+            articleId={params.storyId}
+            articleTitle={articleResponse.article.title}
+            articleLevel={articleResponse.article.ra_level}
+          />
+          <LAQuestionCard
+            userId={user.id}
+            articleId={params.storyId}
+            userLevel={user.level}
+            articleTitle={articleResponse.article.title}
+            articleLevel={articleResponse.article.ra_level}
+          />
+        </div>
+      </div>
+      <ChatBotFloatingChatButton
+        article={articleResponse?.article as Article}
+      />
+    </>
+  );
+}
