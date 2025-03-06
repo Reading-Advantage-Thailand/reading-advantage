@@ -63,7 +63,7 @@ interface Question {
   answer: string;
 }
 
-interface StoryBible {
+export interface StoryBible {
   mainPlot: {
     premise: string;
     exposition: string;
