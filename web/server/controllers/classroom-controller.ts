@@ -342,7 +342,7 @@ export async function calculateClassXp(
 ) {
   try {
     const firestore = admin.firestore();
-    //con-sole.log("Fetching licenses...");
+    //console.log("Fetching licenses...");
 
     const licensesSnapshot = await firestore.collection("licenses").get();
     const licenses = licensesSnapshot.docs.map((doc) => ({
@@ -371,6 +371,15 @@ export async function calculateClassXp(
 
       if (!licenseId) {
         console.warn("License ID is missing, skipping...");
+        continue;
+      }
+
+      if (
+        !licenseId ||
+        typeof licenseId !== "string" ||
+        licenseId.trim() === ""
+      ) {
+        console.error("Invalid licenseId:", licenseId);
         continue;
       }
 
@@ -403,6 +412,15 @@ export async function calculateClassXp(
         for (const studentId of studentIds) {
           //console.log(`Fetching activity for student: ${studentId}`);
 
+          if (
+            !studentId ||
+            typeof studentId !== "string" ||
+            studentId.trim() === ""
+          ) {
+            console.warn(`Skipping invalid student ID: ${studentId}`);
+            continue;
+          }
+
           const studentRef = firestore
             .collection("user-activity-log")
             .doc(studentId);
@@ -418,10 +436,17 @@ export async function calculateClassXp(
 
             subCollectionSnapshot.forEach((doc) => {
               const data = doc.data();
-              userActivityLogs.push({
-                ...data,
-                timestamp: data.timestamp?.toDate(),
-              });
+              if (
+                data.timestamp &&
+                data.userId &&
+                data.activityStatus === "completed" &&
+                data.activityType !== "level_test"
+              ) {
+                userActivityLogs.push({
+                  ...data,
+                  timestamp: data.timestamp?.toDate(),
+                });
+              }
             });
           }
         }
