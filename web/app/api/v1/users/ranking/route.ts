@@ -10,31 +10,28 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
-const router = createEdgeRouter<NextRequest, NextResponse>();
-
-router.use(logRequest);
-router.use(protect);
-router.get(getAllRankingLeaderboard);
+const getRouter = createEdgeRouter<NextRequest, NextResponse>();
+getRouter.use(logRequest);
+getRouter.use(protect);
+getRouter.get(getAllRankingLeaderboard);
 
 export async function GET(request: NextRequest, ctx: NextResponse) {
-  const result = await router.run(request, ctx);
+  const result = await getRouter.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
   }
-  // Handle the case where result is not a NextResponse
-  // You might want to return a default NextResponse or throw an error
-  throw new Error("Expected a NextResponse from router.run");
+  throw new Error("Expected a NextResponse from getRouter.run");
 }
 
-router.use(restrictAccessKey);
-router.post(postRankingLeaderboard);
+const postRouter = createEdgeRouter<NextRequest, NextResponse>();
+postRouter.use(logRequest);
+postRouter.use(restrictAccessKey);
+postRouter.post(postRankingLeaderboard);
 
 export async function POST(request: NextRequest, ctx: NextResponse) {
-  const result = await router.run(request, ctx);
+  const result = await postRouter.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
   }
-  // Handle the case where result is not a NextResponse
-  // You might want to return a default NextResponse or throw an error
-  throw new Error("Expected a NextResponse from router.run");
+  throw new Error("Expected a NextResponse from postRouter.run");
 }
