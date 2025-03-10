@@ -91,3 +91,93 @@ export async function getAllStories(req: NextRequest) {
     );
   }
 }
+
+export async function getStoryById(storyId: string) {
+  if (!storyId) {
+    return NextResponse.json(
+      { message: "Missing storyId", result: null },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // 🔹 ดึงข้อมูลเรื่องจาก Firestore
+    const storyDoc = await db.collection("stories").doc(storyId).get();
+
+    if (!storyDoc.exists) {
+      return NextResponse.json(
+        { message: "Story not found", result: null },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      result: { id: storyDoc.id, ...storyDoc.data() },
+    });
+  } catch (error) {
+    console.error("Error getting story", error);
+    return NextResponse.json(
+      { message: "Internal server error", error },
+      { status: 500 }
+    );
+  }
+}
+
+
+export async function getChapter(storyId: string, chapterNumber: number) {
+  if (!storyId || chapterNumber === undefined) {
+    return NextResponse.json(
+      { message: "Missing storyId or chapterNumber", result: null },
+      { status: 400 }
+    );
+  }
+
+  console.log("storyId", storyId);
+  console.log("chapterNumber", chapterNumber);
+
+  try {
+    // 🔹 ดึงข้อมูลเรื่องจาก Firestore
+    const storyDoc = await db.collection("stories").doc(storyId).get();
+
+    // 🔹 ตรวจสอบว่าเอกสารมีอยู่และ storyData ไม่เป็น undefined
+    if (!storyDoc.exists || !storyDoc.data()) {
+      return NextResponse.json(
+        { message: "Story not found", result: null },
+        { status: 404 }
+      );
+    }
+
+    const storyData = storyDoc.data() as FirebaseFirestore.DocumentData;
+
+    // 🔹 ตรวจสอบว่ามี chapters หรือไม่
+    if (!storyData.chapters || !Array.isArray(storyData.chapters)) {
+      return NextResponse.json(
+        { message: "No chapters found for this story", result: null },
+        { status: 404 }
+      );
+    }
+
+    // 🔹 ดึงบทที่ต้องการตามลำดับ (index = chapterNumber - 1)
+    const chapterIndex = chapterNumber - 1;
+    if (chapterIndex < 0 || chapterIndex >= storyData.chapters.length) {
+      return NextResponse.json(
+        { message: `Chapter ${chapterNumber} not found`, result: null },
+        { status: 404 }
+      );
+    }
+
+    const chapter = storyData.chapters[chapterIndex];
+
+    return NextResponse.json({
+      storyId,
+      chapterNumber,
+      result: chapter,
+    });
+  } catch (error) {
+    console.error("Error getting chapter", error);
+    return NextResponse.json(
+      { message: "Internal server error", error },
+      { status: 500 }
+    );
+  }
+}
