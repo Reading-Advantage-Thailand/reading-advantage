@@ -8,141 +8,24 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import ChapterList from "@/components/story-chapter-list";
 
-interface Story {
-  id: string;
-  title: string;
-  average_rating: number;
-  genre: string;
-  subgenre: string;
-  type: string;
-  ra_level: number;
-  cefr_level: string;
-  storyBible: StoryBible;
-  createdAt: {
-    _seconds: number;
-    _nanoseconds: number;
-  };
-  chapters: Chapter[];
-}
-
-interface Chapter {
-  title: string;
-  content: string;
-  summary: string;
-  "image-description": string;
-  analysis: {
-    wordCount: number;
-    averageSentenceLength: number;
-    vocabulary: {
-      uniqueWords: number;
-      complexWords: number;
-      targetWordsUsed: string[];
-    };
-    grammarStructures: string[];
-    readabilityScore: number;
-  };
-  continuityData: {
-    events: string[];
-    characterStates: CharacterState[];
-    introducedElements: string[];
-  };
-  questions: Question[];
-}
-
-interface CharacterState {
-  character: string;
-  currentState: string;
-  location: string;
-}
-
-interface Question {
-  type: "MCQ" | "SAQ" | "LAQ";
-  question: string;
-  options?: string[];
-  answer: string;
-}
-
-export interface StoryBible {
-  mainPlot: {
-    premise: string;
-    exposition: string;
-    risingAction: string;
-    climax: string;
-    fallingAction: string;
-    resolution: string;
-  };
-  characters: Character[];
-  setting: Setting;
-  themes: Theme[];
-  summary: string;
-  "image-description": string;
-}
-
-interface Character {
-  name: string;
-  description: string;
-  background: string;
-  speechPatterns: string;
-  arc: {
-    startingState: string;
-    development: string;
-    endState: string;
-  };
-  relationships: Relationship[];
-}
-
-interface Relationship {
-  withCharacter: string;
-  nature: string;
-  evolution: string;
-}
-
-interface Setting {
-  time: string;
-  places: Place[];
-  worldRules: string[];
-}
-
-interface Place {
-  name: string;
-  description: string;
-  significance: string;
-}
-
-interface Theme {
-  theme: string;
-  development: string;
-}
-
-interface StoryResponse {
-  result: Story;
-  selectionGenres: string[];
-}
-
-export const metadata = {
-  title: "Story",
-  description: "Story",
-};
-
-async function getArticle(storyId: string): Promise<Story> {
-  const data: StoryResponse = await fetchData(
-    `/api/v1/stories?storyId=${storyId}`
-  );
+async function getStory(storyId: string) {
+  const data = await fetchData(`/api/v1/stories/${storyId}`);
   return data.result;
 }
 
 export default async function StoryChapterSelectionPage({
   params,
 }: {
-  params: { storyId: string };
+  params: { locale: string; storyId: string };
 }) {
   const t = await getScopedI18n("pages.student.storyPage.story");
 
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 
-  const storyResponse = await getArticle(params.storyId);
+  const storyResponse = await getStory(params.storyId);
 
   return (
     <div>
@@ -180,26 +63,24 @@ export default async function StoryChapterSelectionPage({
 
             <TabsContent value="characters">
               <ScrollArea className="h-40 p-2">
-                {storyResponse.storyBible.characters.map((char, index) => (
-                  <div key={index} className="mb-4">
-                    <p className="font-semibold">{char.name}</p>
-                    <p className="text-gray-500">{char.description}</p>
-                    <Separator className="my-2" />
-                  </div>
-                ))}
+                {storyResponse.storyBible.characters.map(
+                  (char: any, index: number) => (
+                    <div key={index} className="mb-4">
+                      <p className="font-semibold">{char.name}</p>
+                      <p className="text-gray-500">{char.description}</p>
+                      <Separator className="my-2" />
+                    </div>
+                  )
+                )}
               </ScrollArea>
             </TabsContent>
 
             <TabsContent value="chapters">
-              <ScrollArea className="h-full p-2">
-                {storyResponse.chapters.map((chapter, index) => (
-                  <div key={index} className="mb-4">
-                    <p className="font-semibold">{chapter.title}</p>
-                    <p className="text-gray-500">{chapter.summary}</p>
-                    <Separator className="my-2" />
-                  </div>
-                ))}
-              </ScrollArea>
+              <ChapterList
+                locale={params.locale}
+                storyId={storyResponse.id}
+                chapters={storyResponse.chapters}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>
