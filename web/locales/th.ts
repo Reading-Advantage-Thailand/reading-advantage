@@ -390,6 +390,20 @@ export default {
         close: "ปิดหน้าต่างการแปล",
       },
     },
+    storyChapterContent: {
+      voiceAssistant: "ผู้ช่วยเสียง",
+      soundButton: {
+        play: "เล่นเสียง",
+        pause: "หยุดเสียงชั่วคราว",
+      },
+      previousChapter: "ตอนก่อนหน้า",
+      nextChapter: "ตอนถัดไป",
+      openvoicebutton: "ฟังและอ่านไปพร้อมกัน",
+      translateButton: {
+        open: "แปลภาษา",
+        close: "ปิดแผงแปลภาษา",
+      },
+    },
     mcq: {
       title: "คำถามแบบหลายตัวเลือก",
       description: "ทำแบบทดสอบเพื่อตรวจสอบความเข้าใจของคุณ",
