@@ -1,4 +1,4 @@
-import ArticleCard from "@/components/article-card";
+import StoryChapterCard from "@/components/stories-chapter-card";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import React from "react";
@@ -46,16 +46,17 @@ export default async function ArticleQuizPage({
   return (
     <>
       <div className="md:flex md:flex-row md:gap-3 md:mb-5">
-        <ArticleCard
-          article={storyResponse.result.content}
-          articleId={params.storyId}
+        <StoryChapterCard
+          story={storyResponse}
+          storyId={params.storyId}
           userId={user.id}
+          chapterNumber={params.chapterNumber}
         />
         <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
           <div className="flex justify-evently">
             {user.role.includes("teacher") && (
               <AssignDialog
-                article={storyResponse.result.content}
+                article={storyResponse}
                 articleId={params.storyId}
                 userId={user.id}
               />
@@ -64,13 +65,13 @@ export default async function ArticleQuizPage({
             {user.role.includes("system") && (
               <div className="flex gap-4">
                 <ArticleActions
-                  article={storyResponse.result.content}
+                  article={storyResponse}
                   articleId={params.storyId}
                 />
               </div>
             )}
             <WordList
-              article={storyResponse.result.title}
+              article={storyResponse}
               articleId={params.storyId}
               userId={user.id}
             />
@@ -79,25 +80,24 @@ export default async function ArticleQuizPage({
           <MCQuestionCard
             userId={user.id}
             articleId={params.storyId}
-            articleTitle={storyResponse.result.title}
-            articleLevel={storyResponse.result.chapterNumber}
+            articleTitle={storyResponse}
+            articleLevel={storyResponse}
           />
           <SAQuestionCard
             userId={user.id}
             articleId={params.storyId}
-            articleTitle={storyResponse.result.title}
-            articleLevel={storyResponse.result.chapterNumber}
+            articleTitle={storyResponse}
+            articleLevel={storyResponse}
           />
           <LAQuestionCard
             userId={user.id}
             articleId={params.storyId}
             userLevel={user.level}
-            articleTitle={storyResponse.result.title}
-            articleLevel={storyResponse.result.chapterNumber}
+            articleTitle={storyResponse}
+            articleLevel={storyResponse}
           />
         </div>
       </div>
-      <ChatBotFloatingChatButton article={storyResponse?.article as Article} />
     </>
   );
 }

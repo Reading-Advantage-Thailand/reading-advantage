@@ -392,6 +392,20 @@ export default {
         close: "Đóng cửa sổ dịch",
       },
     },
+    storyChapterContent: {
+      voiceAssistant: "Trợ lý giọng nói",
+      soundButton: {
+        play: "Phát âm thanh",
+        pause: "Tạm dừng âm thanh",
+      },
+      previousChapter: "Chương trước",
+      nextChapter: "Chương tiếp theo",
+      openvoicebutton: "Nghe và đọc theo",
+      translateButton: {
+        open: "Dịch",
+        close: "Đóng bảng dịch",
+      },
+    },
     mcq: {
       title: "Câu hỏi trắc nghiệm",
       description: "Làm bài kiểm tra để kiểm tra sự hiểu biết của bạn",

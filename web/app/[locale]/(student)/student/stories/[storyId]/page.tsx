@@ -8,7 +8,61 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
-import ChapterList from "@/components/story-chapter-list";
+import ChapterList from "@/components/stories-chapter-list";
+
+
+export interface StoryBible {
+  mainPlot: {
+    premise: string;
+    exposition: string;
+    risingAction: string;
+    climax: string;
+    fallingAction: string;
+    resolution: string;
+  };
+  characters: Character[];
+  setting: Setting;
+  themes: Theme[];
+  summary: string;
+  "image-description": string;
+}
+
+interface Character {
+  name: string;
+  description: string;
+  background: string;
+  speechPatterns: string;
+  arc: {
+    startingState: string;
+    development: string;
+    endState: string;
+  };
+  relationships: Relationship[];
+}
+
+interface Relationship {
+  withCharacter: string;
+  nature: string;
+  evolution: string;
+}
+
+interface Setting {
+  time: string;
+  places: Place[];
+  worldRules: string[];
+}
+
+interface Place {
+  name: string;
+  description: string;
+  significance: string;
+}
+
+interface Theme {
+  theme: string;
+  development: string;
+}
+
 
 async function getStory(storyId: string) {
   const data = await fetchData(`/api/v1/stories/${storyId}`);

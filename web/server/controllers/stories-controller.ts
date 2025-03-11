@@ -123,7 +123,6 @@ export async function getStoryById(storyId: string) {
   }
 }
 
-
 export async function getChapter(storyId: string, chapterNumber: number) {
   if (!storyId || chapterNumber === undefined) {
     return NextResponse.json(
@@ -167,11 +166,17 @@ export async function getChapter(storyId: string, chapterNumber: number) {
     }
 
     const chapter = storyData.chapters[chapterIndex];
+    const ra_Level = storyData.ra_level;
+    const cefr_level = storyData.cefr_level;
+    const totalChapters = storyData.chapters.length;
 
     return NextResponse.json({
       storyId,
       chapterNumber,
-      result: chapter,
+      ra_Level,
+      cefr_level,
+      totalChapters,
+      chapter: chapter,
     });
   } catch (error) {
     console.error("Error getting chapter", error);
