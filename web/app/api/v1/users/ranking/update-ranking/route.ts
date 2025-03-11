@@ -1,8 +1,8 @@
 import { logRequest } from "@/server/middleware";
-import { getAllRankingLeaderboard } from "@/server/controllers/leaderboard-controller";
+import { restrictAccessKey } from "@/server/controllers/auth-controller";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
-import { protect } from "@/server/controllers/auth-controller";
+import { postRankingLeaderboard } from "@/server/controllers/leaderboard-controller";
 
 export interface RequestContext {
   params?: unknown;
@@ -11,11 +11,11 @@ export interface RequestContext {
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
-router.use(protect);
+router.use(restrictAccessKey);
 //api/v1/users/updateActiveUser
-router.get(getAllRankingLeaderboard);
+router.post(postRankingLeaderboard);
 
-export async function GET(request: NextRequest, ctx: RequestContext) {
+export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
