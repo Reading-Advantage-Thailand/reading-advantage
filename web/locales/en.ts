@@ -405,6 +405,21 @@ export default {
         close: "Close translate panel",
       },
     },
+    storyChapterContent: {
+      voiceAssistant: "Voice Assistant",
+      soundButton: {
+        play: "Play sound",
+        pause: "Pause sound",
+      },
+      previousChapter: "previousChapter",
+      nextChapter: "nextChapter",
+      openvoicebutton: "Listen and read along",
+      // button translate
+      translateButton: {
+        open: "Translate",
+        close: "Close translate panel",
+      },
+    },
     mcq: {
       title: "Multiple Choice Questions",
       description: "Take the quiz to check your understanding",

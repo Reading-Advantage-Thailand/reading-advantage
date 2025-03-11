@@ -372,6 +372,20 @@ export default {
         close: "關閉翻譯視窗",
       },
     },
+    storyChapterContent: {
+      voiceAssistant: "语音助手",
+      soundButton: {
+        play: "播放声音",
+        pause: "暂停声音",
+      },
+      previousChapter: "上一章",
+      nextChapter: "下一章",
+      openvoicebutton: "听并阅读",
+      translateButton: {
+        open: "翻译",
+        close: "关闭翻译面板",
+      },
+    },
     mcq: {
       title: "多项选择题",
       description: "参加测验以检查你的理解",
