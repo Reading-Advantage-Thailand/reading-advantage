@@ -15,12 +15,14 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 //router.use(protect);
-
-router.get(async (request: NextRequest, ctx: RequestContext) => {
-  const { storyId, chapterNumber } = ctx.params;
-  return getChapter(storyId, chapterNumber);
-});
+router.get(getChapter);
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
-  return router.run(request, ctx);
+  const result = await router.run(request, ctx);
+  if (result instanceof NextResponse) {
+    return result;
+  }
+  // Handle the case where result is not a NextResponse
+  // You might want to return a default NextResponse or throw an error
+  throw new Error("Expected a NextResponse from router.run");
 }
