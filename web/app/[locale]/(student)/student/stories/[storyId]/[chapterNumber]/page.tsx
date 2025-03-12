@@ -11,7 +11,7 @@ import { Article } from "@/components/models/article-model";
 import ArticleActions from "@/components/article-actions";
 import WordList from "@/components/word-list";
 import LAQuestionCard from "@/components/questions/laq-question-card";
-import MCQuestionCard from "@/components/questions/mc-question-card";
+import StoryMCQuestionCard from "@/components/stories-chapter-question/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
 
 export const metadata = {
@@ -37,8 +37,6 @@ export default async function ArticleQuizPage({
     params.storyId,
     params.chapterNumber
   );
-
-  console.log(storyResponse);
 
   if (storyResponse.message)
     return <CustomError message={storyResponse.message} resp={storyResponse} />;
@@ -77,11 +75,12 @@ export default async function ArticleQuizPage({
             />
           </div>
 
-          <MCQuestionCard
+          <StoryMCQuestionCard
             userId={user.id}
-            articleId={params.storyId}
-            articleTitle={storyResponse}
-            articleLevel={storyResponse}
+            storyId={storyResponse.storyId}
+            articleTitle={storyResponse.chapter.title}
+            articleLevel={storyResponse.ra_Level}
+            chapterNumber={storyResponse.chapterNumber}
           />
           <SAQuestionCard
             userId={user.id}

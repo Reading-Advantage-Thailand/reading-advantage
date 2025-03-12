@@ -179,7 +179,11 @@ export async function generateChapters({
       chapters.push(newChapter);
 
       // สร้างคำถาม
-      const questions = await generateChapterQuestions(newChapter, type, cefrLevel);
+      const questions = await generateChapterQuestions(
+        newChapter,
+        type,
+        cefrLevel
+      );
       newChapter.questions = questions;
     }
 
@@ -219,9 +223,11 @@ Generate a new structured chapter for a story based on the Story Bible and the p
 
 **Story Bible:**
 - **Main Plot:** ${storyBible.mainPlot.premise}
-- **Setting:** ${storyBible.setting.time}, Locations: ${storyBible.setting.places.map(p => p.name).join(", ")}
-- **Characters:** ${storyBible.characters.map(c => c.name).join(", ")}
-- **Themes:** ${storyBible.themes.map(t => t.theme).join(", ")}
+- **Setting:** ${
+    storyBible.setting.time
+  }, Locations: ${storyBible.setting.places.map((p) => p.name).join(", ")}
+- **Characters:** ${storyBible.characters.map((c) => c.name).join(", ")}
+- **Themes:** ${storyBible.themes.map((t) => t.theme).join(", ")}
 
 **Previous Chapters Summary:**
 ${previousChapterSummaries || "None (This is the first chapter)"}
@@ -273,17 +279,21 @@ async function generateChapterQuestions(
       summary: chapter.summary,
       imageDesc: chapter["image-description"],
     });
-    const mcQuestions = (mcResponse?.questions || []).map((q) => ({
-      type: "MCQ" as const,
-      question: q.question || "Missing question",
-      options: [
-        q.correct_answer,
-        q.distractor_1 || "Option 1",
-        q.distractor_2 || "Option 2",
-        q.distractor_3 || "Option 3",
-      ].filter(Boolean),
-      answer: q.correct_answer || "No answer",
-    }));
+    const mcQuestions = (mcResponse?.questions || [])
+      .slice(0, 5) // จำกัด MCQ 5 ข้อ
+      .map((q) => ({
+        type: "MCQ" as const,
+        question_number: q.question_number,
+        question: q.question || "Missing question",
+        options: [
+          q.correct_answer,
+          q.distractor_1 || "Option 1",
+          q.distractor_2 || "Option 2",
+          q.distractor_3 || "Option 3",
+        ].filter(Boolean),
+        answer: q.correct_answer || "No answer",
+        textual_evidence: q.textual_evidence,
+      }));
 
     // สร้าง SAQ
     const saResponse = await generateSAQuestion({
@@ -294,11 +304,14 @@ async function generateChapterQuestions(
       summary: chapter.summary,
       imageDesc: chapter["image-description"],
     });
-    const saQuestions = (saResponse?.questions || []).map((q) => ({
-      type: "SAQ" as const,
-      question: q.question || "Missing question",
-      answer: q.suggested_answer || "No answer",
-    }));
+    const saQuestions = (saResponse?.questions || [])
+      .slice(0, 1) // จำกัด SAQ 1 ข้อ
+      .map((q) => ({
+        type: "SAQ" as const,
+        question: q.question || "Missing question",
+        suggested_answer: q.suggested_answer || "Missing suggested answer",
+        answer: q.suggested_answer || "No answer",
+      }));
 
     // สร้าง LAQ
     const laResponse = await generateLAQuestion({
@@ -309,13 +322,17 @@ async function generateChapterQuestions(
       summary: chapter.summary,
       imageDesc: chapter["image-description"],
     });
-    const laQuestion = {
-      type: "LAQ" as const,
-      question: laResponse?.question || "Missing question",
-      answer: "",
-    };
+    const laQuestion = laResponse?.question
+      ? [
+          {
+            type: "LAQ" as const,
+            question: laResponse.question,
+            answer: "",
+          },
+        ]
+      : [];
 
-    return [...mcQuestions, ...saQuestions, laQuestion];
+    return [...mcQuestions, ...saQuestions, ...laQuestion];
   } catch (error) {
     console.error("Error generating questions:", error);
     return [];
