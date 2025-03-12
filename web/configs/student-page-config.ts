@@ -26,7 +26,7 @@ export const studentPageConfig: StudentPageConfig = {
       icon: "book",
     },
     {
-      title: "story",
+      title: "stories",
       href: "/student/stories",
       icon: "storyBook",
     },

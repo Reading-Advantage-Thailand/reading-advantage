@@ -6,27 +6,20 @@ import { handleRequest } from "@/server/utils/handle-request";
 import { createEdgeRouter } from "next-connect";
 import { NextRequest, NextResponse } from "next/server";
 
-interface RequestContext {
+export interface Context {
   params: {
     storyId: string;
   };
 }
 
-const router = createEdgeRouter<NextRequest, RequestContext>();
+const router = createEdgeRouter<NextRequest, Context>();
 
 // Middleware
 router.use(logRequest);
 //router.use(protect);
 
 //GET /api/v1/stories
-router.get(async (request: NextRequest, { params }) => {
-  const { storyId } = params;
-  return getStoryById(storyId);
-});
+router.get(getStoryById);
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { storyId: string } }
-) {
-  return router.run(request, { params });
-}
+export const GET = (request: NextRequest, ctx: Context) =>
+  handleRequest(router, request, ctx);
