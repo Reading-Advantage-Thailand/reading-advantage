@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
 import { useCurrentLocale } from "@/locales/client";
-import { storyChapter } from "./models/article-model";
+import { StoryChapter } from "./models/article-model";
 
 type Props = {
-  story: storyChapter;
+  story: StoryChapter;
   storyId: string;
 };
 
