@@ -9,9 +9,7 @@ export async function getAllStories(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const genre = searchParams.get("genre") || null;
     const subgenre = searchParams.get("subgenre") || null;
-
-    console.log("Received Params:", { storyId, page, limit, genre, subgenre });
-
+    
     // 🟢 ดึง selectionGenres จาก Firestore
     const fetchGenres = async () => {
       const collectionRef = db.collection("genres-fiction");
@@ -69,8 +67,6 @@ export async function getAllStories(req: NextRequest) {
 
     const results = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-    console.log(`Returning ${results.length} stories`);
-
     return NextResponse.json({
       params: { genre, subgenre, page, limit },
       results,
@@ -92,7 +88,12 @@ export async function getAllStories(req: NextRequest) {
   }
 }
 
-export async function getStoryById(storyId: string) {
+export async function getStoryById(
+  req: NextRequest,
+  { params }: { params: { storyId: string } }
+) {
+  const storyId = params.storyId;
+
   if (!storyId) {
     return NextResponse.json(
       { message: "Missing storyId", result: null },
@@ -130,9 +131,6 @@ export async function getChapter(storyId: string, chapterNumber: number) {
       { status: 400 }
     );
   }
-
-  console.log("storyId", storyId);
-  console.log("chapterNumber", chapterNumber);
 
   try {
     // 🔹 ดึงข้อมูลเรื่องจาก Firestore

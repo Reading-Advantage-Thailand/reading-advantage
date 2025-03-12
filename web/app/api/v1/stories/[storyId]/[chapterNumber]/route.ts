@@ -14,7 +14,7 @@ interface RequestContext {
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
-//router.use(protect); // 🔹 ใช้เมื่อระบบต้องมี authentication
+//router.use(protect);
 
 router.get(async (request: NextRequest, ctx: RequestContext) => {
   const { storyId, chapterNumber } = ctx.params;
