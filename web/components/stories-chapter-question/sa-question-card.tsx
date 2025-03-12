@@ -41,13 +41,17 @@ import { levelCalculation } from "@/lib/utils";
 
 type Props = {
   userId: string;
-  articleId: string;
+  storyId: string;
+  chapterNumber: string;
   articleTitle: string;
   articleLevel: number;
 };
 
 export type QuestionResponse = {
-  result: ShortAnswerQuestion;
+  result: {
+    id: string;
+    question: string;
+  };
   suggested_answer: string;
   state: QuestionState;
   answer: string;
@@ -66,9 +70,10 @@ enum QuestionState {
   ERROR = 3,
 }
 
-export default function SAQuestionCard({
+export default function StorySAQuestionCard({
   userId,
-  articleId,
+  storyId,
+  chapterNumber,
   articleTitle,
   articleLevel,
 }: Props) {
@@ -84,7 +89,7 @@ export default function SAQuestionCard({
   });
 
   useEffect(() => {
-    fetch(`/api/v1/articles/${articleId}/questions/sa`)
+    fetch(`/api/v1/stories/${storyId}/${chapterNumber}/question/sa`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -95,7 +100,7 @@ export default function SAQuestionCard({
         console.error("error: ", error);
         setState(QuestionState.ERROR);
       });
-  }, [state, articleId]);
+  }, [state, storyId]);
 
   const handleCompleted = () => {
     setState(QuestionState.LOADING);
@@ -107,9 +112,11 @@ export default function SAQuestionCard({
     case QuestionState.INCOMPLETE:
       return (
         <QuestionCardIncomplete
+          storyId={storyId}
           userId={userId}
+          chapterNumber={chapterNumber}
           resp={data}
-          articleId={articleId}
+          articleId={storyId}
           handleCompleted={handleCompleted}
           articleTitle={articleTitle}
           articleLevel={articleLevel}
@@ -183,17 +190,20 @@ function QuestionCardLoading() {
 function QuestionCardIncomplete({
   userId,
   resp,
-  articleId,
+  storyId,
   handleCompleted,
   articleTitle,
   articleLevel,
+  chapterNumber,
 }: {
   userId: string;
+  storyId: string;
   resp: QuestionResponse;
   articleId: string;
   handleCompleted: () => void;
   articleTitle: string;
   articleLevel: number;
+  chapterNumber: string;
 }) {
   const t = useScopedI18n("components.saq");
   return (
@@ -203,13 +213,14 @@ function QuestionCardIncomplete({
         description={t("description")}
         buttonLabel={t("practiceButton")}
         userId={userId}
-        articleId={articleId}
+        articleId={storyId}
         disabled={false}
       >
         <QuizContextProvider>
           <SAQuestion
             resp={resp}
-            articleId={articleId}
+            storyId={storyId}
+            chapterNumber={chapterNumber}
             handleCompleted={handleCompleted}
             userId={userId}
             articleTitle={articleTitle}
@@ -223,18 +234,20 @@ function QuestionCardIncomplete({
 
 function SAQuestion({
   resp,
-  articleId,
+  storyId,
   userId,
   handleCompleted,
   articleTitle,
   articleLevel,
+  chapterNumber,
 }: {
   resp: QuestionResponse;
-  articleId: string;
+  storyId: string;
   userId: string;
   handleCompleted: () => void;
   articleTitle: string;
   articleLevel: number;
+  chapterNumber: string;
 }) {
   const shortAnswerSchema = z.object({
     answer: z
@@ -265,17 +278,19 @@ function SAQuestion({
   });
 
   const router = useRouter();
-
   async function onSubmitted(data: FormData) {
     setIsLoading(true);
     setPaused(true);
-    fetch(`/api/v1/articles/${articleId}/questions/sa/${resp.result.id}`, {
-      method: "POST",
-      body: JSON.stringify({
-        answer: data.answer,
-        timeRecorded: timer,
-      }),
-    })
+    fetch(
+      `/api/v1/stories/${storyId}/${chapterNumber}/question/sa/${resp.result.id}`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          answer: data.answer,
+          timeRecorded: timer,
+        }),
+      }
+    )
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -286,13 +301,15 @@ function SAQuestion({
   }
 
   async function onRating() {
-    setIsLoading(true);
-    fetch(`/api/v1/articles/${articleId}/questions/sa/${resp.result.id}/rate`, {
-      method: "POST",
-      body: JSON.stringify({
-        rating,
-      }),
-    })
+    fetch(
+      `/api/v1/stories/${storyId}/${chapterNumber}/question/sa/${resp.result.id}/rate`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          rating,
+        }),
+      }
+    )
       .then((res) => res.json())
       .then((data) => {
         if (data) {
@@ -310,7 +327,7 @@ function SAQuestion({
     await fetch(`/api/v1/users/${userId}/activitylog`, {
       method: "POST",
       body: JSON.stringify({
-        articleId: articleId,
+        articleId: storyId,
         activityType: ActivityType.SA_Question,
         activityStatus: ActivityStatus.Completed,
         timeTaken: timer,
@@ -325,6 +342,7 @@ function SAQuestion({
     });
     router.refresh();
   }
+
   return (
     <CardContent>
       <form onSubmit={handleSubmit(onSubmitted)}>
