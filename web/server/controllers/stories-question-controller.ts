@@ -2,7 +2,6 @@ import {
   AnswerStatus,
   QuestionState,
   QuizStatus,
-  SARecord,
   LARecord,
 } from "@/components/models/questions-model";
 import db from "@/configs/firestore-config";
@@ -10,7 +9,6 @@ import { NextResponse } from "next/server";
 import { getFeedbackWritter } from "./assistant-controller";
 import { generateLAQuestion } from "../utils/generators/la-question-generator";
 import { ExtendedNextRequest } from "./auth-controller";
-import { generateSAQuestion } from "../utils/generators/sa-question-generator";
 
 interface RequestContext {
   params: {
@@ -47,11 +45,187 @@ interface MCQRecord {
   id: string;
 }
 
+interface SARecord {
+  id: string;
+  chapter_number: string;
+  question_number: number;
+  question: string;
+  type: "SAQ";
+  suggested_answer: string;
+}
+
 interface Data {
   question: string;
 }
 
 export async function getStoryMCQuestions(
+  req: ExtendedNextRequest,
+  { params: { storyId, chapterNumber } }: RequestContext
+) {
+  try {
+    if (!storyId || typeof storyId !== "string") {
+      //console.log("Invalid storyId!");
+      return NextResponse.json({ message: "Invalid storyId" }, { status: 400 });
+    }
+
+    if (!req.session?.user?.id || typeof req.session.user.id !== "string") {
+      //console.log("User not authenticated!");
+      return NextResponse.json(
+        { message: "User not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const userId = req.session.user.id;
+    const storyRef = db.collection("stories").doc(storyId);
+    const storySnap = await storyRef.get();
+
+    if (!storySnap.exists) {
+      //console.log("Story not found!");
+      return NextResponse.json({ message: "Story not found" }, { status: 404 });
+    }
+
+    const storyData = storySnap.data();
+    if (!storyData || !storyData.chapters) {
+      //console.log("No chapters found!");
+      return NextResponse.json(
+        { message: "No chapters found" },
+        { status: 404 }
+      );
+    }
+
+    const chapterIndex = parseInt(chapterNumber, 10) - 1;
+    if (chapterIndex < 0 || chapterIndex >= storyData.chapters.length) {
+      //console.log("Invalid chapter number!");
+      return NextResponse.json(
+        { message: "Invalid chapter number" },
+        { status: 400 }
+      );
+    }
+
+    const chapter = storyData.chapters[chapterIndex];
+
+    if (!chapter.questions || chapter.questions.length === 0) {
+      //console.log("No questions found in this chapter!");
+      return NextResponse.json(
+        { message: "No questions found" },
+        { status: 404 }
+      );
+    }
+
+    const questions: MCQRecord[] = chapter.questions
+      .filter((q: MCQRecord) => q.type === "MCQ")
+      .map((q: MCQRecord, index: number) => ({
+        ...q,
+        chapter_number: chapterNumber,
+        question_number: index + 1,
+        id: `${chapterNumber}-${index + 1}`,
+      }));
+
+    const userRecordRefs = questions.map((q) =>
+      db
+        .collection("users")
+        .doc(userId)
+        .collection("stories-records")
+        .doc(storyId)
+        .collection("mcq-records")
+        .doc(q.id)
+    );
+
+    const userRecordsSnap = await Promise.all(
+      userRecordRefs.map((ref) => ref.get())
+    );
+
+    const userRecords = new Map<string, any>();
+    userRecordsSnap.forEach((doc, index) => {
+      if (doc.exists) {
+        userRecords.set(questions[index].id, doc.data());
+      }
+    });
+
+    //console.log(
+    //  "User Records from Firestore:",
+    //  userRecordsSnap.map((doc) => (doc.exists ? doc.data() : null))
+    //);
+
+    const progress: AnswerStatus[] = Array(questions.length).fill(
+      AnswerStatus.UNANSWERED
+    );
+
+    userRecordsSnap.forEach((doc, index) => {
+      if (doc.exists) {
+        const userData = doc.exists ? doc.data() : undefined;
+        if (userData) {
+          const questionIndex = questions.findIndex(
+            (q) => q.id === userRecordRefs[index].id
+          );
+          if (questionIndex !== -1) {
+            progress[questionIndex] =
+              userData.status ?? AnswerStatus.UNANSWERED;
+          }
+        }
+      }
+    });
+
+    //console.log("Corrected Progress Before Sending:", progress);
+
+    const unansweredQuestions = questions.filter(
+      (q) =>
+        !userRecords.has(q.id) ||
+        userRecords.get(q.id)?.status === AnswerStatus.UNANSWERED
+    );
+
+    const selectedQuestions = unansweredQuestions
+      .sort((a, b) => a.question_number - b.question_number)
+      .slice(0, 5);
+
+    const mcq = selectedQuestions.map((data: MCQRecord) => {
+      const options: string[] = [
+        data.answer,
+        ...data.options.filter((o: string) => o !== data.answer),
+      ];
+
+      return {
+        id: data.id,
+        chapter_number: data.chapter_number,
+        question_number: data.question_number,
+        question: data.question,
+        options: options.sort(() => Math.random() - 0.5),
+        textual_evidence: data.textual_evidence,
+        status: userRecords.get(data.id)?.status || AnswerStatus.UNANSWERED,
+        time_recorded: userRecords.get(data.id)?.time_recorded || null,
+        created_at: userRecords.get(data.id)?.created_at || null,
+      };
+    });
+
+    //console.log(" Final API Response Before Sending:", {
+    //  state:
+    //    mcq.length === 0 ? QuestionState.COMPLETED : QuestionState.INCOMPLETE,
+    //  total: 5,
+    //  progress,
+    //  results: mcq,
+    //});
+
+    return NextResponse.json(
+      {
+        state:
+          mcq.length === 0 ? QuestionState.COMPLETED : QuestionState.INCOMPLETE,
+        total: 5,
+        progress,
+        results: mcq,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getStorySAQuestion(
   req: ExtendedNextRequest,
   { params: { storyId, chapterNumber } }: RequestContext
 ) {
@@ -97,7 +271,6 @@ export async function getStoryMCQuestions(
     }
 
     const chapter = storyData.chapters[chapterIndex];
-
     if (!chapter.questions || chapter.questions.length === 0) {
       console.log("No questions found in this chapter!");
       return NextResponse.json(
@@ -106,202 +279,63 @@ export async function getStoryMCQuestions(
       );
     }
 
-    // 🔹 ดึงคำถามทั้งหมดจาก Firestore
-    const questions: MCQRecord[] = chapter.questions
-      .filter((q: MCQRecord) => q.type === "MCQ")
-      .map((q: MCQRecord, index: number) => ({
-        ...q,
-        chapter_number: chapterNumber,
-        question_number: index + 1,
-        id: `${chapterNumber}-${index + 1}`,
-      }));
-
-    // 🔹 ดึงข้อมูล `mcq-records` ของผู้ใช้จาก Firestore
-    const userRecordRefs = questions.map((q) =>
-      db
-        .collection("users")
-        .doc(userId)
-        .collection("stories-records")
-        .doc(storyId)
-        .collection("mcq-records")
-        .doc(q.id)
+    // 🔹 ค้นหา SAQ แค่ข้อเดียว
+    const question: SARecord | undefined = chapter.questions.find(
+      (q: SARecord) => q.type === "SAQ"
     );
 
-    const userRecordsSnap = await Promise.all(
-      userRecordRefs.map((ref) => ref.get())
-    );
+    if (!question) {
+      return NextResponse.json(
+        { message: "No SAQ question found" },
+        { status: 404 }
+      );
+    }
 
-    // 🔹 แปลงข้อมูลที่ดึงมาเป็น Map เพื่อง่ายต่อการค้นหา
-    const userRecords = new Map<string, any>();
-    userRecordsSnap.forEach((doc, index) => {
-      if (doc.exists) {
-        userRecords.set(questions[index].id, doc.data());
-      }
-    });
+    const formattedQuestion: SARecord = {
+      ...question,
+      chapter_number: chapterNumber,
+      question_number: 1,
+      id: `${chapterNumber}-1`,
+    };
 
-    console.log(
-      "User Records from Firestore:",
-      userRecordsSnap.map((doc) => (doc.exists ? doc.data() : null))
-    );
+    console.log(formattedQuestion);
 
-    // 🔹 อัปเดตค่า `progress` จาก Firestore ให้ถูกต้อง
-    const progress: AnswerStatus[] = Array(questions.length).fill(
-      AnswerStatus.UNANSWERED
-    );
-
-    userRecordsSnap.forEach((doc, index) => {
-      if (doc.exists) {
-        const userData = doc.exists ? doc.data() : undefined;
-        if (userData) {
-          const questionIndex = questions.findIndex(
-            (q) => q.id === userRecordRefs[index].id
-          );
-          if (questionIndex !== -1) {
-            progress[questionIndex] =
-              userData.status ?? AnswerStatus.UNANSWERED;
-          }
-        }
-      }
-    });
-
-    console.log("Corrected Progress Before Sending:", progress);
-
-    // 🔹 ดึงคำถามที่ยังไม่ได้ตอบ
-    const unansweredQuestions = questions.filter(
-      (q) =>
-        !userRecords.has(q.id) ||
-        userRecords.get(q.id)?.status === AnswerStatus.UNANSWERED
-    );
-
-    // 🔹 เลือกคำถามแบบสุ่ม
-    const selectedQuestions = unansweredQuestions
-      .sort((a, b) => a.question_number - b.question_number)
-      .slice(0, 5);
-
-    // 🔹 แปลงคำถามให้มีโครงสร้างตรงกับ `answerStoryMCQuestion`
-    const mcq = selectedQuestions.map((data: MCQRecord) => {
-      const options: string[] = [
-        data.answer,
-        ...data.options.filter((o: string) => o !== data.answer),
-      ];
-
-      return {
-        id: data.id,
-        chapter_number: data.chapter_number,
-        question_number: data.question_number,
-        question: data.question,
-        options: options.sort(() => Math.random() - 0.5),
-        textual_evidence: data.textual_evidence,
-        status: userRecords.get(data.id)?.status || AnswerStatus.UNANSWERED,
-        time_recorded: userRecords.get(data.id)?.time_recorded || null,
-        created_at: userRecords.get(data.id)?.created_at || null,
-      };
-    });
-
-    console.log(" Final API Response Before Sending:", {
-      state:
-        mcq.length === 0 ? QuestionState.COMPLETED : QuestionState.INCOMPLETE,
-      total: 5,
-      progress,
-      results: mcq,
-    });
-
-    return NextResponse.json(
-      {
-        state:
-          mcq.length === 0 ? QuestionState.COMPLETED : QuestionState.INCOMPLETE,
-        total: 5,
-        progress,
-        results: mcq,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function getStorySAQuestion(
-  req: ExtendedNextRequest,
-  { params: { storyId } }: RequestContext
-) {
-  try {
-    // Check user already answered
-    const record = await db
+    // 🔹 ดึงข้อมูล `saq-records` ของผู้ใช้จาก Firestore
+    const userRecordRef = db
       .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
+      .doc(userId)
+      .collection("stories-records")
       .doc(storyId)
       .collection("saq-records")
-      .get();
+      .doc(formattedQuestion.id);
 
-    if (record.docs.length > 0) {
-      const data = record.docs[0].data();
+    const userRecordSnap = await userRecordRef.get();
+    const userRecord = userRecordSnap.exists ? userRecordSnap.data() : null;
+
+    if (userRecord && userRecord.status !== AnswerStatus.UNANSWERED) {
       return NextResponse.json(
         {
           message: "User already answered",
           result: {
-            id: record.docs[0].id,
-            question: data.question,
+            id: formattedQuestion.id,
+            question: formattedQuestion.question,
           },
-          suggested_answer: data.suggested_answer,
+          suggested_answer: userRecord.suggested_answer ?? "",
           state: QuestionState.COMPLETED,
-          answer: data.answer,
+          answer: userRecord.answer ?? "",
         },
-        { status: 400 }
+        { status: 200 }
       );
-    }
-
-    const questions = await db
-      .collection("new-articles")
-      .doc(storyId)
-      .collection("sa-questions")
-      // Random select 1 question from 5
-      .where("question_number", "==", Math.floor(Math.random() * 5) + 1)
-      .get();
-
-    let data: Data = { question: "" };
-
-    if (questions.docs.length === 0) {
-      const getArticle = await db.collection("new-articles").doc(storyId).get();
-
-      const getData = getArticle.data();
-
-      let cefrlevel = getData?.cefr_level.replace(/[+-]/g, "");
-
-      const generateSAQ = await generateSAQuestion({
-        cefrlevel: cefrlevel,
-        type: getData?.type,
-        passage: getData?.passage,
-        title: getData?.title,
-        summary: getData?.summary,
-        imageDesc: getData?.image_description,
-      });
-
-      for (let i = 0; i < generateSAQ.questions.length; i++) {
-        await db
-          .collection("new-articles")
-          .doc(storyId)
-          .collection("sa-questions")
-          .add(generateSAQ.questions[i]);
-      }
-
-      data = generateSAQ.questions[Math.floor(Math.random() * 5)];
-    } else {
-      data = questions.docs[0].data() as SARecord;
     }
 
     return NextResponse.json(
       {
-        result: {
-          id: questions.docs[0].id,
-          question: data.question,
-        },
         state: QuestionState.INCOMPLETE,
+        progress: AnswerStatus.UNANSWERED,
+        result: {
+          id: formattedQuestion.id,
+          question: formattedQuestion.question,
+        },
       },
       { status: 200 }
     );
@@ -316,70 +350,14 @@ export async function getStorySAQuestion(
 
 export async function answerStorySAQuestion(
   req: ExtendedNextRequest,
-  { params: { storyId, questionNumber } }: SubRequestContext
-) {
-  const { answer, timeRecorded } = await req.json();
-
-  const question = await db
-    .collection("new-articles")
-    .doc(storyId)
-    .collection("sa-questions")
-    .doc(questionNumber)
-    .get();
-
-  const data = question.data() as SARecord;
-  //console.log(data);
-
-  // Update user record
-  await db
-    .collection("users")
-    .doc(req.session?.user.id as string)
-    .collection("article-records")
-    .doc(storyId)
-    .collection("saq-records")
-    .doc(questionNumber)
-    .set({
-      id: questionNumber,
-      time_recorded: timeRecorded,
-      question: data.question,
-      answer,
-      suggested_answer: data.suggested_answer,
-      created_at: new Date().toISOString(),
-    });
-
-  // Update records
-  await db
-    .collection("users")
-    .doc(req.session?.user.id as string)
-    .collection("article-records")
-    .doc(storyId)
-    .set(
-      {
-        status: QuizStatus.COMPLETED_SAQ,
-        updated_at: new Date().toISOString(),
-      },
-      { merge: true }
-    );
-
-  return NextResponse.json(
-    {
-      state: QuestionState.COMPLETED,
-      answer,
-      suggested_answer: data.suggested_answer,
-    },
-    { status: 200 }
-  );
-}
-
-export async function answerStoryMCQuestion(
-  req: ExtendedNextRequest,
-  ctx: {
+  {
+    params: { storyId, chapterNumber, questionNumber },
+  }: {
     params: { storyId: string; chapterNumber: string; questionNumber: string };
   }
 ) {
   try {
     const { answer, timeRecorded } = await req.json();
-    const { storyId, chapterNumber, questionNumber } = ctx.params;
     const userId = req.session?.user.id as string;
 
     if (!userId) {
@@ -425,9 +403,182 @@ export async function answerStoryMCQuestion(
     }
 
     const chapter = storyData.chapters[chapterIndex];
-
     if (!chapter.questions || chapter.questions.length === 0) {
       console.log("No questions found in this chapter!");
+      return NextResponse.json(
+        { message: "No questions found" },
+        { status: 404 }
+      );
+    }
+
+    const questionData: SARecord | undefined = chapter.questions.find(
+      (q: SARecord) => q.type === "SAQ"
+    );
+
+    if (!questionData) {
+      console.log("No SAQ question found!");
+    } else {
+      console.log("SAQ question found:", questionData);
+    }
+
+    console.log("questionData", questionData);
+
+    if (!questionData) {
+      console.log("Question not found!");
+      return NextResponse.json(
+        { message: "Question not found" },
+        { status: 404 }
+      );
+    }
+
+    const recordRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("stories-records")
+      .doc(storyId)
+      .collection("saq-records")
+      .doc(`${questionNumber}`);
+
+    const record = await recordRef.get();
+    if (record.exists) {
+      return NextResponse.json(
+        { message: "User already answered", results: [] },
+        { status: 400 }
+      );
+    }
+
+    console.log("suggested_answer", questionData.suggested_answer);
+
+    await recordRef.set({
+      chapter_number: chapterNumber,
+      question_number: questionNumber,
+      time_recorded: timeRecorded,
+      question: questionData.question,
+      answer,
+      suggested_answer: questionData.suggested_answer,
+      created_at: new Date().toISOString(),
+    });
+
+    console.log("Firestore Updated:", {
+      chapter_number: chapterNumber,
+      question_number: questionNumber,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const userRecordAll = await db
+      .collection("users")
+      .doc(userId)
+      .collection("stories-records")
+      .doc(storyId)
+      .collection("saq-records")
+      .orderBy("created_at", "asc")
+      .get();
+
+    const progress = userRecordAll.docs.map(
+      (doc) => doc.data().status || AnswerStatus.UNANSWERED
+    );
+    for (let i = 0; i < 5 - userRecordAll.docs.length; i++) {
+      progress.push(AnswerStatus.UNANSWERED);
+    }
+
+    console.log("Final Progress:", progress);
+
+    if (!progress.includes(AnswerStatus.UNANSWERED)) {
+      await db
+        .collection("users")
+        .doc(userId)
+        .collection("stories-records")
+        .doc(storyId)
+        .set(
+          {
+            status: QuizStatus.COMPLETED_SAQ,
+            scores: progress.filter((status) => status === AnswerStatus.CORRECT)
+              .length,
+            rated: 0,
+            level: req.session?.user.level,
+            updated_at: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+    }
+
+    return NextResponse.json(
+      {
+        chapter_number: chapterNumber,
+        question_number: questionNumber,
+        progress,
+        answer,
+        suggested_answer: questionData.suggested_answer,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function answerStoryMCQuestion(
+  req: ExtendedNextRequest,
+  ctx: {
+    params: { storyId: string; chapterNumber: string; questionNumber: string };
+  }
+) {
+  try {
+    const { answer, timeRecorded } = await req.json();
+    const { storyId, chapterNumber, questionNumber } = ctx.params;
+    const userId = req.session?.user.id as string;
+
+    if (!userId) {
+      //console.log("User not authenticated!");
+      return NextResponse.json(
+        { message: "User not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    if (!storyId || !chapterNumber || !questionNumber) {
+      //console.log("Invalid parameters!");
+      return NextResponse.json(
+        { message: "Invalid parameters" },
+        { status: 400 }
+      );
+    }
+
+    const storyRef = db.collection("stories").doc(storyId);
+    const storySnap = await storyRef.get();
+
+    if (!storySnap.exists) {
+      //console.log("Story not found!");
+      return NextResponse.json({ message: "Story not found" }, { status: 404 });
+    }
+
+    const storyData = storySnap.data();
+    if (!storyData || !storyData.chapters) {
+      //console.log("No chapters found!");
+      return NextResponse.json(
+        { message: "No chapters found" },
+        { status: 404 }
+      );
+    }
+
+    const chapterIndex = parseInt(chapterNumber, 10) - 1;
+    if (chapterIndex < 0 || chapterIndex >= storyData.chapters.length) {
+      //console.log("Invalid chapter number!");
+      return NextResponse.json(
+        { message: "Invalid chapter number" },
+        { status: 400 }
+      );
+    }
+
+    const chapter = storyData.chapters[chapterIndex];
+
+    if (!chapter.questions || chapter.questions.length === 0) {
+      //console.log("No questions found in this chapter!");
       return NextResponse.json(
         { message: "No questions found" },
         { status: 404 }
@@ -447,7 +598,7 @@ export async function answerStoryMCQuestion(
     );
 
     if (!questionData) {
-      console.log("Question not found!");
+      //console.log("Question not found!");
       return NextResponse.json(
         { message: "Question not found" },
         { status: 404 }
@@ -475,25 +626,22 @@ export async function answerStoryMCQuestion(
       );
     }
 
-    // ✅ อัปเดตค่าลง Firestore
     await recordRef.set({
       chapter_number: chapterNumber,
       question_number: questionNumber,
       time_recorded: timeRecorded,
-      status: isCorrect, // ✅ ใช้ค่า AnswerStatus
+      status: isCorrect,
       created_at: new Date().toISOString(),
     });
 
-    console.log("✅ Firestore Updated:", {
-      chapter_number: chapterNumber,
-      question_number: questionNumber,
-      status: isCorrect,
-    });
+    //console.log("Firestore Updated:", {
+    //  chapter_number: chapterNumber,
+    //  question_number: questionNumber,
+    //  status: isCorrect,
+    //});
 
-    // ✅ รอ Firestore อัปเดตข้อมูล
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // ✅ ดึงข้อมูลทั้งหมดของผู้ใช้ใหม่หลังอัปเดต
     const userRecordAll = await db
       .collection("users")
       .doc(userId)
@@ -503,26 +651,23 @@ export async function answerStoryMCQuestion(
       .orderBy("created_at", "asc")
       .get();
 
-    console.log(
-      "✅ Retrieved User Records:",
-      userRecordAll.docs.map((doc) => doc.data())
-    );
+    //console.log(
+    //  "Retrieved User Records:",
+    //  userRecordAll.docs.map((doc) => doc.data())
+    //);
 
-    // ✅ อัปเดต `progress`
     const progress: AnswerStatus[] = [];
     userRecordAll.docs.forEach((doc) => {
       const data = doc.data();
       progress.push(data.status);
     });
 
-    // ✅ เติมคำถามที่ยังไม่ได้ตอบเป็น UNANSWERED
     for (let i = 0; i < 5 - userRecordAll.docs.length; i++) {
       progress.push(AnswerStatus.UNANSWERED);
     }
 
-    console.log("✅ Final Progress:", progress);
+    //console.log("Final Progress:", progress);
 
-    // ✅ เช็คว่าทำข้อสอบครบหรือยัง
     if (!progress.includes(AnswerStatus.UNANSWERED)) {
       await db
         .collection("users")
@@ -566,20 +711,20 @@ export async function answerStoryMCQuestion(
       );
     }
 
-    console.log("✅ Final API Response:", {
-      chapter_number: chapterNumber,
-      question_number: questionNumber,
-      progress,
-      status: isCorrect,
-      correct_answer: correctAnswer,
-    });
+    //console.log("Final API Response:", {
+    //  chapter_number: chapterNumber,
+    //  question_number: questionNumber,
+    // progress,
+    //  status: isCorrect,
+    //  correct_answer: correctAnswer,
+    //});
 
     return NextResponse.json(
       {
         chapter_number: chapterNumber,
         question_number: questionNumber,
         progress,
-        status: isCorrect, // ✅ ส่งค่าที่ถูกต้องกลับ
+        status: isCorrect,
         correct_answer: correctAnswer,
       },
       { status: 200 }
@@ -595,7 +740,11 @@ export async function answerStoryMCQuestion(
 
 export async function rateStory(
   req: ExtendedNextRequest,
-  { params: { storyId } }: RequestContext
+  {
+    params: { storyId, chapterNumber, questionNumber },
+  }: {
+    params: { storyId: string; chapterNumber: string; questionNumber: string };
+  }
 ) {
   try {
     const { rating } = await req.json();
@@ -613,8 +762,10 @@ export async function rateStory(
     await db
       .collection("users")
       .doc(req.session?.user.id as string)
-      .collection("article-records")
+      .collection("stories-records")
       .doc(storyId)
+      .collection(`rate-chapter-${chapterNumber}`)
+      .doc(`${questionNumber}`)
       .set(
         {
           rated: rating,

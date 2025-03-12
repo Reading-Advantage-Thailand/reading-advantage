@@ -12,7 +12,7 @@ import ArticleActions from "@/components/article-actions";
 import WordList from "@/components/word-list";
 import LAQuestionCard from "@/components/questions/laq-question-card";
 import StoryMCQuestionCard from "@/components/stories-chapter-question/mc-question-card";
-import SAQuestionCard from "@/components/questions/sa-question-card";
+import StorySAQuestionCard from "@/components/stories-chapter-question/sa-question-card";
 
 export const metadata = {
   title: "Story",
@@ -82,19 +82,14 @@ export default async function ArticleQuizPage({
             articleLevel={storyResponse.ra_Level}
             chapterNumber={storyResponse.chapterNumber}
           />
-          <SAQuestionCard
+          <StorySAQuestionCard
             userId={user.id}
-            articleId={params.storyId}
+            storyId={params.storyId}
             articleTitle={storyResponse}
             articleLevel={storyResponse}
+            chapterNumber={storyResponse.chapterNumber}
           />
-          <LAQuestionCard
-            userId={user.id}
-            articleId={params.storyId}
-            userLevel={user.level}
-            articleTitle={storyResponse}
-            articleLevel={storyResponse}
-          />
+
         </div>
       </div>
     </>
