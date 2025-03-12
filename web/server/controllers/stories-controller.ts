@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
 
+interface RequestContext {
+  params: {
+    storyId: string;
+    chapterNumber: number;
+  };
+}
+
 export async function getAllStories(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -9,7 +16,7 @@ export async function getAllStories(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const genre = searchParams.get("genre") || null;
     const subgenre = searchParams.get("subgenre") || null;
-    
+
     // 🟢 ดึง selectionGenres จาก Firestore
     const fetchGenres = async () => {
       const collectionRef = db.collection("genres-fiction");
@@ -124,7 +131,9 @@ export async function getStoryById(
   }
 }
 
-export async function getChapter(storyId: string, chapterNumber: number) {
+export async function getChapter(req: NextRequest, ctx: RequestContext) {
+  const { storyId, chapterNumber } = ctx.params;
+
   if (!storyId || chapterNumber === undefined) {
     return NextResponse.json(
       { message: "Missing storyId or chapterNumber", result: null },

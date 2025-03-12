@@ -270,7 +270,7 @@ export default {
     },
     sidebarNav: {
       read: "阅读",
-      story: "剧情",
+      stories: "剧情",
       history: "历史",
       sentences: "句子",
       reports: "报告",

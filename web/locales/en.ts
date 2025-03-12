@@ -300,7 +300,7 @@ export default {
     },
     sidebarNav: {
       read: "Read",
-      story: "Story",
+      stories: "Story",
       sentences: "Sentences",
       reports: "Reports",
       history: "History",
