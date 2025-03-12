@@ -6,13 +6,13 @@ import { handleRequest } from "@/server/utils/handle-request";
 import { createEdgeRouter } from "next-connect";
 import { NextRequest, NextResponse } from "next/server";
 
-interface RequestContext {
+export interface Context {
   params: {
     storyId: string;
   };
 }
 
-const router = createEdgeRouter<NextRequest, RequestContext>();
+const router = createEdgeRouter<NextRequest, Context>();
 
 // Middleware
 router.use(logRequest);
