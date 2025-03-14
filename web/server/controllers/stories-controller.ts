@@ -17,7 +17,6 @@ export async function getAllStories(req: NextRequest) {
     const genre = searchParams.get("genre") || null;
     const subgenre = searchParams.get("subgenre") || null;
 
-    // 🟢 ดึง selectionGenres จาก Firestore
     const fetchGenres = async () => {
       const collectionRef = db.collection("genres-fiction");
       const querySnapshot = await collectionRef.get();
@@ -109,7 +108,6 @@ export async function getStoryById(
   }
 
   try {
-    // 🔹 ดึงข้อมูลเรื่องจาก Firestore
     const storyDoc = await db.collection("stories").doc(storyId).get();
 
     if (!storyDoc.exists) {
@@ -142,10 +140,8 @@ export async function getChapter(req: NextRequest, ctx: RequestContext) {
   }
 
   try {
-    // 🔹 ดึงข้อมูลเรื่องจาก Firestore
     const storyDoc = await db.collection("stories").doc(storyId).get();
 
-    // 🔹 ตรวจสอบว่าเอกสารมีอยู่และ storyData ไม่เป็น undefined
     if (!storyDoc.exists || !storyDoc.data()) {
       return NextResponse.json(
         { message: "Story not found", result: null },
@@ -155,7 +151,6 @@ export async function getChapter(req: NextRequest, ctx: RequestContext) {
 
     const storyData = storyDoc.data() as FirebaseFirestore.DocumentData;
 
-    // 🔹 ตรวจสอบว่ามี chapters หรือไม่
     if (!storyData.chapters || !Array.isArray(storyData.chapters)) {
       return NextResponse.json(
         { message: "No chapters found for this story", result: null },
@@ -163,7 +158,6 @@ export async function getChapter(req: NextRequest, ctx: RequestContext) {
       );
     }
 
-    // 🔹 ดึงบทที่ต้องการตามลำดับ (index = chapterNumber - 1)
     const chapterIndex = chapterNumber - 1;
     if (chapterIndex < 0 || chapterIndex >= storyData.chapters.length) {
       return NextResponse.json(
