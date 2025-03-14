@@ -10,9 +10,9 @@ import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
 import { Article } from "@/components/models/article-model";
 import ArticleActions from "@/components/article-actions";
 import WordList from "@/components/word-list";
-import LAQuestionCard from "@/components/questions/laq-question-card";
 import StoryMCQuestionCard from "@/components/stories-chapter-question/mc-question-card";
 import StorySAQuestionCard from "@/components/stories-chapter-question/sa-question-card";
+import StoryLAQuestionCard from "@/components/stories-chapter-question/laq-question-card";
 
 export const metadata = {
   title: "Story",
@@ -85,11 +85,18 @@ export default async function ArticleQuizPage({
           <StorySAQuestionCard
             userId={user.id}
             storyId={params.storyId}
-            articleTitle={storyResponse}
-            articleLevel={storyResponse}
+            articleTitle={storyResponse.chapter.title}
+            articleLevel={storyResponse.ra_Level}
             chapterNumber={storyResponse.chapterNumber}
           />
-
+          <StoryLAQuestionCard
+            userId={user.id}
+            storyId={params.storyId}
+            userLevel={user.level}
+            articleTitle={storyResponse.chapter.title}
+            articleLevel={storyResponse.ra_Level}
+            chapterNumber={storyResponse.chapterNumber}
+          />
         </div>
       </div>
     </>

@@ -213,7 +213,7 @@ function QuestionCardIncomplete({
         description={t("description")}
         buttonLabel={t("practiceButton")}
         userId={userId}
-        articleId={storyId}
+        storyId={storyId}
         disabled={false}
       >
         <QuizContextProvider>

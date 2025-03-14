@@ -17,7 +17,7 @@ type Props = {
   className?: string;
   disabled?: boolean;
   userId: string;
-  articleId: string;
+  storyId: string;
 };
 
 type ActivityType = {
@@ -30,7 +30,7 @@ export default function QuestionHeader({
   description,
   buttonLabel,
   userId,
-  articleId,
+  storyId,
   disabled = true,
 }: Props) {
   const [isButtonClicked, setIsButtonClicked] = React.useState<boolean>(false);
@@ -49,7 +49,7 @@ export default function QuestionHeader({
         method: "POST",
         body: JSON.stringify({
           activityType,
-          articleId,
+          storyId,
         }),
       });
     }

@@ -14,7 +14,7 @@ interface RequestContext {
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
-//router.use(protect);
+router.use(protect);
 router.get(getChapter);
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
