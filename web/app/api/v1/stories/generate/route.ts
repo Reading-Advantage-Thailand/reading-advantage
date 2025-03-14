@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { logRequest } from "@/server/middleware";
 import { handleRequest } from "@/server/utils/handle-request";
 import { generateStories } from "@/server/utils/generators/stories-generator";
+import { restrictAccessKey } from "@/server/controllers/auth-controller";
 
 export interface Context {
   params?: unknown;
@@ -12,7 +13,7 @@ const router = createEdgeRouter<NextRequest, Context>();
 
 // Middleware
 router.use(logRequest);
-//router.use(restrictAccessKey);
+router.use(restrictAccessKey);
 
 // POST /api/v1/stories/generate
 // BODY: { amountPerGenre: number }

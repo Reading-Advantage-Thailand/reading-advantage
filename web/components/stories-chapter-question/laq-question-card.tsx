@@ -43,7 +43,8 @@ import { levelCalculation } from "@/lib/utils";
 interface Props {
   userId: string;
   userLevel: number;
-  articleId: string;
+  storyId: string;
+  chapterNumber: string;
   articleTitle: string;
   articleLevel: number;
 }
@@ -87,12 +88,13 @@ enum QuestionState {
   ERROR = 3,
 }
 
-export default function LAQuestionCard({
+export default function StoryLAQuestionCard({
   userId,
   userLevel,
-  articleId,
+  storyId,
   articleTitle,
   articleLevel,
+  chapterNumber,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -104,7 +106,7 @@ export default function LAQuestionCard({
   });
 
   useEffect(() => {
-    fetch(`/api/v1/articles/${articleId}/questions/laq`)
+    fetch(`/api/v1/stories/${storyId}/${chapterNumber}/question/laq`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);
@@ -114,7 +116,7 @@ export default function LAQuestionCard({
       .catch((error) => {
         setState(QuestionState.ERROR);
       });
-  }, [state, articleId]);
+  }, [state, storyId]);
 
   const handleCompleted = () => {
     setState(QuestionState.LOADING);
@@ -133,11 +135,12 @@ export default function LAQuestionCard({
           userId={userId}
           resp={data}
           userLevel={userLevel}
-          articleId={articleId}
+          storyId={storyId}
           handleCompleted={handleCompleted}
           handleCancel={handleCancel}
           articleTitle={articleTitle}
           articleLevel={articleLevel}
+          chapterNumber={chapterNumber}
         />
       );
     case QuestionState.COMPLETED:
@@ -205,20 +208,22 @@ function QuestionCardIncomplete({
   userId,
   resp,
   userLevel,
-  articleId,
+  storyId,
   handleCompleted,
   handleCancel,
   articleTitle,
   articleLevel,
+  chapterNumber,
 }: {
   userId: string;
   resp: QuestionResponse;
   userLevel: number;
-  articleId: string;
+  storyId: string;
   handleCompleted: () => void;
   handleCancel: () => void;
   articleTitle: string;
   articleLevel: number;
+  chapterNumber: string;
 }) {
   const t = useScopedI18n("components.laq");
   return (
@@ -228,7 +233,7 @@ function QuestionCardIncomplete({
         description={t("description")}
         buttonLabel={t("practiceButton")}
         userId={userId}
-        articleId={articleId}
+        storyId={storyId}
         disabled={false}
       >
         <QuizContextProvider>
@@ -236,11 +241,12 @@ function QuestionCardIncomplete({
             userId={userId}
             resp={resp}
             userLevel={userLevel}
-            articleId={articleId}
+            storyId={storyId}
             handleCompleted={handleCompleted}
             handleCancel={handleCancel}
             articleTitle={articleTitle}
             articleLevel={articleLevel}
+            chapterNumber={chapterNumber}
           />
         </QuizContextProvider>
       </QuestionHeader>
@@ -252,20 +258,22 @@ function LAQuestion({
   userId,
   resp,
   userLevel,
-  articleId,
+  storyId,
   handleCompleted,
   handleCancel,
   articleTitle,
   articleLevel,
+  chapterNumber,
 }: {
   userId: string;
   resp: QuestionResponse;
   userLevel: number;
-  articleId: string;
+  storyId: string;
   handleCompleted: () => void;
   handleCancel: () => void;
   articleTitle: string;
   articleLevel: number;
+  chapterNumber: string;
 }) {
   const t = useScopedI18n("components.laq");
   const tf = useScopedI18n("components.rate");
@@ -324,7 +332,7 @@ function LAQuestion({
 
     try {
       const feedbackResponse = await fetch(
-        `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/feedback`,
+        `/api/v1/stories/${storyId}/${chapterNumber}/question/laq/${resp.result.id}/feedback`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -341,7 +349,7 @@ function LAQuestion({
       if (dataForm.method === "submit" && feedback) {
         setPaused(true);
         const submitAnswer = await fetch(
-          `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}`,
+          `/api/v1/stories/${storyId}/${chapterNumber}/question/laq/${resp.result.id}`,
           {
             method: "POST",
             body: JSON.stringify({
@@ -370,15 +378,12 @@ function LAQuestion({
 
   async function onGetExp() {
     setIsLoading(true);
-    fetch(
-      `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/getxp`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          rating,
-        }),
-      }
-    )
+    fetch(`/api/v1/stories/${storyId}/${chapterNumber}/question/laq/${resp.result.id}/getxp`, {
+      method: "POST",
+      body: JSON.stringify({
+        rating,
+      }),
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data) {
@@ -396,7 +401,7 @@ function LAQuestion({
     await fetch(`/api/v1/users/${userId}/activitylog`, {
       method: "POST",
       body: JSON.stringify({
-        articleId: articleId,
+        storyId: storyId,
         activityType: ActivityType.LA_Question,
         activityStatus: ActivityStatus.Completed,
         timeTaken: timer,

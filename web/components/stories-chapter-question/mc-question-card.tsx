@@ -81,7 +81,6 @@ export default function StoryMCQuestionCard({
     fetch(`/api/v1/stories/${storyId}/${chapterNumber}/question/mcq`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("✅ API Response:", data);
         setData(data);
         setState(data.state);
         useQuestionStore.setState({ mcQuestion: data });
@@ -197,7 +196,6 @@ function QuestionCardIncomplete({
   chapterNumber: string;
 }) {
   const t = useScopedI18n("components.mcq");
-  console.log("ParentstoryId", storyId);
   return (
     <Card id="onborda-mcq">
       <QuestionHeader
@@ -205,7 +203,7 @@ function QuestionCardIncomplete({
         description={t("description")}
         buttonLabel={t("startButton")}
         userId={userId}
-        articleId={storyId}
+        storyId={storyId}
         disabled={false}
       >
         <QuizContextProvider>
