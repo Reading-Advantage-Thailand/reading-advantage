@@ -8,6 +8,21 @@ import { Separator } from "./ui/separator";
 import { toast } from "./ui/use-toast";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon, ArrowRightIcon } from "@radix-ui/react-icons";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "./ui/context-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 async function getTranslateSentence(
   storyId: string,
@@ -45,6 +60,8 @@ export default function ChapterContent({
   const sentences = splitTextIntoSentences(story.chapter.content, true);
   const router = useRouter();
   const chapter = Number(chapterNumber);
+  const [isTranslateClicked, setIsTranslateClicked] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   async function handleTranslateSentence() {
     setLoading(true);
@@ -88,10 +105,29 @@ export default function ChapterContent({
     }
   };
 
+  const renderSentence = (sentence: string, i: number) => {
+    return sentence.split("~~").map((line, index, array) => (
+      <span key={index}>
+        {line}
+        {(index !== array.length - 1 || /[.!?]$/.test(line)) && " "}
+        {index !== array.length - 1 && <div className="mt-3" />}
+      </span>
+    ));
+  };
+
+  const handleTranslate = async () => {
+    if (isTranslate === false) {
+      await handleTranslateSentence();
+      setIsTranslateClicked(!isTranslateClicked);
+    } else {
+      setIsTranslateClicked(!isTranslateClicked);
+    }
+  };
+
   return (
     <div>
-      <div className="flex justify-center items-center my-2 gap-6 w-full">
-        <div className="flex flex-[8] justify-end">
+      <div className="flex justify-center items-center my-2 gap-4">
+        <div className="flex flex-grow items-center">
           <Button
             variant="default"
             className="w-full"
@@ -100,11 +136,9 @@ export default function ChapterContent({
             {t("openvoicebutton")}
           </Button>
         </div>
-
-        <div className="flex flex-[2] justify-start">
+        <div>
           <Button
             variant="default"
-            className="w-full"
             onClick={handleTranslateSentence}
             disabled={loading}
           >
@@ -117,29 +151,42 @@ export default function ChapterContent({
         </div>
       </div>
 
-      <div className="leading-relaxed space-y-4">
-        {sentences
-          .reduce((acc: string[][], sentence, index) => {
-            if (index % 4 === 0) acc.push([]);
-            acc[acc.length - 1].push(sentence);
-            return acc;
-          }, [])
-          .map((paragraph, index) => (
-            <p
-              key={index}
-              className="text-muted-foreground hover:text-primary transition-all"
-            >
-              {paragraph.map((sentence, sentenceIndex) => (
-                <span
-                  key={sentenceIndex}
-                  className="cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900 rounded-md p-1"
-                >
-                  {sentence}{" "}
-                </span>
-              ))}
-            </p>
-          ))}
-      </div>
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div className="leading-relaxed">
+            {sentences.map((sentence, index) => (
+              <span
+                key={index}
+                className={cn(
+                  "cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900 rounded-md p-1",
+                  "text-muted-foreground hover:text-primary transition-all",
+                  selectedIndex === index && "bg-blue-200 dark:bg-blue-900"
+                )}
+                onClick={() => setSelectedIndex(index)}
+              >
+                {renderSentence(sentence, index)}
+              </span>
+            ))}
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-64">
+          {loading ? (
+            <ContextMenuItem inset disabled>
+              Loading
+            </ContextMenuItem>
+          ) : (
+            <>
+              <ContextMenuItem
+                inset
+                onClick={handleTranslate}
+                disabled={loading}
+              >
+                Translate
+              </ContextMenuItem>
+            </>
+          )}
+        </ContextMenuContent>
+      </ContextMenu>
 
       {isTranslate && isTranslateOpen && (
         <div className="h-32 md:h-24 flex flex-col justify-between items-center">
@@ -148,6 +195,24 @@ export default function ChapterContent({
           <Separator />
         </div>
       )}
+
+      <AlertDialog open={isTranslateClicked}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Translate</AlertDialogTitle>
+            <AlertDialogDescription>
+              <p>{sentences[selectedIndex]}</p>
+              <p className="text-green-500 mt-3">{translate[selectedIndex]}</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsTranslateClicked(false)}>
+              Cancel
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex flex-row items-center justify-between mt-5">
         {chapter > 1 && (
           <Button
