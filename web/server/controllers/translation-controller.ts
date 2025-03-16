@@ -235,3 +235,235 @@ async function translatePassageWithGPT(sentences: string[]): Promise<string[]> {
     throw new Error("error translating passage with GPT: " + error);
   }
 }
+
+export async function translateChapterContent(
+  request: NextRequest,
+  {
+    params: { storyId, chapterNumber },
+  }: { params: { storyId: string; chapterNumber: string } }
+) {
+  const { type, targetLanguage } = await request.json();
+
+  if (!Object.values(LanguageType).includes(targetLanguage)) {
+    return NextResponse.json({ message: "Invalid target language" }, { status: 400 });
+  }
+
+  if (!storyId || typeof storyId !== "string") {
+    return NextResponse.json({ message: "Invalid storyId" }, { status: 400 });
+  }
+
+  const storyRef = db.collection("stories").doc(storyId);
+  const storySnap = await storyRef.get();
+
+  if (!storySnap.exists) {
+    return NextResponse.json({ message: "Story not found" }, { status: 404 });
+  }
+
+  const storyData = storySnap.data();
+  if (!storyData || !storyData.chapters) {
+    return NextResponse.json({ message: "No chapters found" }, { status: 404 });
+  }
+
+  const chapterIndex = parseInt(chapterNumber, 10) - 1;
+  if (chapterIndex < 0 || chapterIndex >= storyData.chapters.length) {
+    return NextResponse.json({ message: "Invalid chapter number" }, { status: 400 });
+  }
+
+  const chapter = storyData.chapters[chapterIndex];
+  if (!chapter.questions || chapter.questions.length === 0) {
+    return NextResponse.json({ message: "No questions found" }, { status: 404 });
+  }
+
+  if (type === "summary") {
+    const translationSnapshot = await db
+      .collection(`chapter-translations`)
+      .doc(storyId)
+      .collection(chapterNumber)
+      .doc(`summary-translation`)
+      .get();
+
+    const translation = translationSnapshot.data();
+
+    if (translation && translation.summary[targetLanguage]) {
+      return NextResponse.json({
+        message: "Article already translated",
+        translated_sentences: translation.summary[targetLanguage],
+      });
+    }
+
+    const sentences = splitTextIntoSentences(chapter.summary);
+    let translatedSentences: string[] = [];
+    try {
+      if (targetLanguage === LanguageType.EN) {
+        translatedSentences = await translatePassageWithGPT(sentences);
+      } else {
+        translatedSentences = await translatePassageWithGoogle(sentences, targetLanguage);
+      }
+
+      await db
+        .collection(`chapter-summary-translations`)
+        .doc(storyId)
+        .collection(chapterNumber)
+        .doc(`summary-translation`)
+        .set(
+          {
+            id: storyId,
+            updated_at: new Date().toISOString(),
+            summary: { [targetLanguage]: translatedSentences },
+          },
+          { merge: true }
+        );
+
+      return NextResponse.json({
+        message: "Translation successful",
+        translated_sentences: translatedSentences,
+      });
+    } catch (error) {
+      console.error("Translation error:", error);
+      return NextResponse.json({ message: "Translation failed" }, { status: 500 });
+    }
+  }
+
+  if (type === "content") {
+    const translationSnapshot = await db
+      .collection("chapter-translations")
+      .doc(storyId)
+      .collection(chapterNumber)
+      .doc(`content-translation`)
+      .get();
+    const translation = translationSnapshot.data();
+
+    if (translation && translation.translation[targetLanguage]) {
+      return NextResponse.json({
+        message: "Article already translated",
+        translated_sentences: translation.translation[targetLanguage],
+      });
+    }
+
+    const sentences = splitTextIntoSentences(chapter.content);
+    let translatedSentences: string[] = [];
+    try {
+      if (targetLanguage === LanguageType.EN) {
+        translatedSentences = await translatePassageWithGPT(sentences);
+      } else {
+        translatedSentences = await translatePassageWithGoogle(sentences, targetLanguage);
+      }
+
+      await db
+        .collection("chapter-translations")
+        .doc(storyId)
+        .collection(chapterNumber)
+        .doc(`content-translation`)
+        .set(
+          {
+            id: storyId,
+            updated_at: new Date().toISOString(),
+            translation: { [targetLanguage]: translatedSentences },
+          },
+          { merge: true }
+        );
+
+      return NextResponse.json({
+        message: "Translation successful",
+        translated_sentences: translatedSentences,
+      });
+    } catch (error) {
+      console.error("Translation error:", error);
+      return NextResponse.json({ message: "Translation failed" }, { status: 500 });
+    }
+  }
+
+  // ถ้า type ไม่ใช่ "summary" หรือ "content" ให้ return error
+  return NextResponse.json({ message: "Invalid type parameter" }, { status: 400 });
+}
+
+export async function translateStorySummary(
+  request: NextRequest,
+  { params: { storyId } }: { params: { storyId: string } }
+) {
+  const { type, targetLanguage } = await request.json();
+
+  if (!Object.values(LanguageType).includes(targetLanguage)) {
+    return NextResponse.json(
+      {
+        message: "Invalid target language",
+      },
+      { status: 400 }
+    );
+  }
+
+  if (!storyId || typeof storyId !== "string") {
+    //console.log("Invalid storyId!");
+    return NextResponse.json({ message: "Invalid storyId" }, { status: 400 });
+  }
+
+  const storyRef = db.collection("stories").doc(storyId);
+  const storySnap = await storyRef.get();
+
+  if (!storySnap.exists) {
+    //console.log("Story not found!");
+    return NextResponse.json({ message: "Story not found" }, { status: 404 });
+  }
+
+  const storyData = storySnap.data();
+  if (!storyData || !storyData.storyBible) {
+    console.log("No summary found!");
+    return NextResponse.json({ message: "No summary found" }, { status: 404 });
+  }
+
+  if (type === "summary") {
+    // First need to find the translation of the article in db
+    const translationSnapshot = await db
+      .collection(`stories-summary-translations`)
+      .doc(storyId)
+      .get();
+
+    const translation = translationSnapshot.data();
+
+    if (translation && translation.summary[targetLanguage]) {
+      return NextResponse.json({
+        message: "article already translated",
+        translated_sentences: translation.summary[targetLanguage],
+      });
+    }
+
+    const sentences = splitTextIntoSentences(storyData.storyBible.summary);
+    let translatedSentences: string[] = [];
+    try {
+      if (targetLanguage === LanguageType.EN) {
+        translatedSentences = await translatePassageWithGPT(sentences);
+      } else {
+        translatedSentences = await translatePassageWithGoogle(
+          sentences,
+          targetLanguage
+        );
+      }
+      // save translation to db
+      await db
+        .collection(`stories-summary-translations`)
+        .doc(storyId)
+        .set(
+          {
+            id: storyId,
+            updated_at: new Date().toISOString(),
+            // [targetLanguage]: translatedSentences,
+            summary: {
+              [targetLanguage]: translatedSentences,
+            },
+          },
+          { merge: true }
+        );
+      return NextResponse.json({
+        message: "translation successful",
+        translated_sentences: translatedSentences,
+      });
+    } catch (error) {
+      return NextResponse.json(
+        {
+          message: error,
+        },
+        { status: 500 }
+      );
+    }
+  }
+}
