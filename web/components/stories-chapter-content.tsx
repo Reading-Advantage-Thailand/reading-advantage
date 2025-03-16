@@ -26,14 +26,22 @@ import {
 
 async function getTranslateSentence(
   storyId: string,
-  targetLanguage: string
-): Promise<{ message: string; translated_sentences: string[] }> {
+  targetLanguage: string,
+  chapterNumber: string
+): Promise<{
+  message: string;
+  translated_sentences: string[];
+}> {
   try {
-    const res = await fetch(`/api/v1/assistant/translate/${storyId}`, {
-      method: "POST",
-      body: JSON.stringify({ type: "passage", targetLanguage }),
-    });
+    const res = await fetch(
+      `/api/v1/assistant/stories-translate/${storyId}/${chapterNumber}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ type: "content", targetLanguage }),
+      }
+    );
     const data = await res.json();
+    console.log("data", data);
     return data;
   } catch (error) {
     return { message: "error", translated_sentences: [] };
@@ -46,7 +54,7 @@ export default function ChapterContent({
   className = "",
 }: {
   story: StoryChapter;
-  chapterNumber: number;
+  chapterNumber: string;
   className?: string;
 }) {
   const t = useScopedI18n("components.storyChapterContent");
@@ -62,6 +70,7 @@ export default function ChapterContent({
   const chapter = Number(chapterNumber);
   const [isTranslateClicked, setIsTranslateClicked] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
 
   async function handleTranslateSentence() {
     setLoading(true);
@@ -75,7 +84,11 @@ export default function ChapterContent({
         targetLanguage = "zh-TW";
         break;
     }
-    const response = await getTranslateSentence(story.storyId, targetLanguage);
+    const response = await getTranslateSentence(
+      story.storyId,
+      targetLanguage,
+      chapterNumber
+    );
     if (response.message === "error") {
       setIsTranslate(false);
       setIsTranslateOpen(false);
@@ -151,6 +164,23 @@ export default function ChapterContent({
         </div>
       </div>
 
+      {isTranslate && isTranslateOpen && (
+        <div className="h-32 md:h-24 flex flex-col justify-between items-center sticky">
+          <Separator />
+          {/* กรณีกดเล่นเสียง และกดแปล */}
+          {isPlaying === true ? (
+            <p className="text-center text-green-500">
+              {translate[currentAudioIndex]}
+            </p>
+          ) : (
+            <p className="text-center text-green-500">
+              {translate[selectedIndex]}
+            </p>
+          )}
+          <Separator />
+        </div>
+      )}
+
       <ContextMenu>
         <ContextMenuTrigger>
           <div className="leading-relaxed">
@@ -187,14 +217,6 @@ export default function ChapterContent({
           )}
         </ContextMenuContent>
       </ContextMenu>
-
-      {isTranslate && isTranslateOpen && (
-        <div className="h-32 md:h-24 flex flex-col justify-between items-center">
-          <Separator />
-          <p className="text-center text-green-500">{translate.join(" ")}</p>
-          <Separator />
-        </div>
-      )}
 
       <AlertDialog open={isTranslateClicked}>
         <AlertDialogContent>
