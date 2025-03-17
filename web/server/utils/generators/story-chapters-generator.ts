@@ -158,10 +158,6 @@ const ChapterSchema = z.object({
   ),
 });
 
-const ChaptersSchema = z.object({
-  chapters: z.array(ChapterSchema),
-});
-
 export async function generateChapters({
   type,
   storyBible,
@@ -205,7 +201,7 @@ export async function generateChapters({
       newChapter.questions = questions;
 
       console.log("Generating chapter audio...");
-      
+
       await generateChapterAudio({
         content: newChapter.content,
         storyId: storyId,
@@ -281,8 +277,33 @@ ${previousChapterSummaries || "None (This is the first chapter)"}
 
 **CEFR Constraints (${cefrLevel}):**
 - **Word Count per Chapter:** ${minWordCount} - ${maxWordCount} words
-- **Vocabulary Level:** ${cefrRequirements.vocabulary.level}
-- **Grammar Restrictions:** ${cefrRequirements.grammar.restrictions.join(", ")}
+- **Sentence Structure:**
+  - Average Words: ${cefrRequirements.sentenceStructure.averageWords}
+  - Complexity: ${cefrRequirements.sentenceStructure.complexity}
+  - Allowed Structures: ${cefrRequirements.sentenceStructure.allowedStructures.join(
+    ", "
+  )}
+- **Vocabulary:**
+  - Level: ${cefrRequirements.vocabulary.level}
+  - Restrictions: ${cefrRequirements.vocabulary.restrictions.join(", ")}
+  - Suggested Words: ${cefrRequirements.vocabulary.suggestions.join(", ")}
+- **Grammar:**
+  - Allowed Tenses: ${cefrRequirements.grammar.allowedTenses.join(", ")}
+  - Allowed Structures: ${cefrRequirements.grammar.allowedStructures.join(", ")}
+  - Restrictions: ${cefrRequirements.grammar.restrictions.join(", ")}
+- **Content:**
+  - Plot Complexity: ${cefrRequirements.content.plotComplexity}
+  - Character Depth: ${cefrRequirements.content.characterDepth}
+  - Themes: ${cefrRequirements.content.themes}
+  - Cultural References: ${cefrRequirements.content.culturalReferences}
+- **Style:**
+  - Tone: ${cefrRequirements.style.tone}
+  - Literary Devices: ${cefrRequirements.style.literaryDevices.join(", ")}
+  - Narrative Approach: ${cefrRequirements.style.narrativeApproach}
+- **Structure:**
+  - Paragraph Length: ${cefrRequirements.structure.paragraphLength}
+  - Text Organization: ${cefrRequirements.structure.textOrganization}
+  - Transition Complexity: ${cefrRequirements.structure.transitionComplexity}
 
 Ensure that:
 - The chapter logically follows from previous events.

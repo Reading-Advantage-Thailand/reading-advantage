@@ -110,7 +110,7 @@ export async function generateStories(req: NextRequest) {
             failedCount++;
             continue;
           }
-
+          
           const chapterCount = Math.floor(Math.random() * 3) + 6;
           const wordCountPerChapter =
             getCEFRRequirements(level).wordCount.fiction;
