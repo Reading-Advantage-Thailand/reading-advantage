@@ -144,14 +144,17 @@ const ChapterSchema = z.object({
   ),
 });
 
-export async function generateChapters({
-  type,
-  storyBible,
-  cefrLevel,
-  chapterCount,
-  wordCountPerChapter,
-  storyId,
-}: GenerateChaptersParams): Promise<Chapter[]> {
+export async function generateChapters(
+  {
+    type,
+    storyBible,
+    cefrLevel,
+    chapterCount,
+    wordCountPerChapter,
+    storyId,
+  }: GenerateChaptersParams,
+  maxRetries = 3
+): Promise<Chapter[]> {
   console.log(
     `Generating ${chapterCount} chapters for CEFR level ${cefrLevel}...`
   );
@@ -160,61 +163,93 @@ export async function generateChapters({
 
   try {
     for (let i = 0; i < chapterCount; i++) {
-      console.log(`Generating Chapter ${i + 1} of ${chapterCount}...`);
+      let attempts = 0;
+      let newChapter: Chapter | null = null;
 
-      const previousChapters = chapters.length > 0 ? chapters : [];
+      while (attempts < maxRetries) {
+        try {
+          console.log(
+            `Generating Chapter ${i + 1} of ${chapterCount} (Attempt ${
+              attempts + 1
+            }/${maxRetries})...`
+          );
 
-      const newChapter = await generateSingleChapter({
-        storyBible,
-        cefrLevel,
-        wordCountPerChapter,
-        previousChapters, // ส่งบทก่อนหน้าให้ AI ใช้เป็น context
-      });
+          const previousChapters = chapters.length > 0 ? chapters : [];
 
-      if (!newChapter) {
-        throw new Error(`Failed to generate chapter ${i + 1}`);
+          newChapter = await generateSingleChapter({
+            storyBible,
+            cefrLevel,
+            wordCountPerChapter,
+            previousChapters,
+          });
+
+          if (!newChapter) {
+            throw new Error(`Failed to generate chapter ${i + 1}`);
+          }
+
+          // เพิ่มบทใหม่ในลิสต์
+          chapters.push(newChapter);
+
+          // สร้างคำถาม
+          const questions = await generateChapterQuestions(
+            newChapter,
+            type,
+            cefrLevel
+          );
+          newChapter.questions = questions;
+
+          console.log("Generating chapter audio...");
+
+          await generateChapterAudio({
+            content: newChapter.content,
+            storyId: storyId,
+            chapterNumber: `${i + 1}`,
+          });
+          console.log("Chapter audio generated successfully.");
+
+          console.log("Generating chapter audio for words...");
+
+          await generateChapterAudioForWord({
+            wordList: newChapter.analysis.vocabulary.targetWordsUsed.map(
+              (word) => ({
+                vocabulary: word,
+                definition: {
+                  en: "",
+                  th: "",
+                  cn: "",
+                  tw: "",
+                  vi: "",
+                },
+              })
+            ),
+            storyId: storyId,
+            chapterNumber: `${i + 1}`,
+          });
+
+          // ถ้าทำสำเร็จทั้งหมด ให้ออกจาก loop
+          break;
+        } catch (error) {
+          console.error(
+            `Failed to generate chapter ${i + 1} (Attempt ${attempts + 1}):`,
+            error
+          );
+          attempts++;
+
+          if (attempts >= maxRetries) {
+            throw new Error(
+              `Failed to generate chapter ${
+                i + 1
+              } after ${maxRetries} attempts: ${error}`
+            );
+          }
+
+          // รอสักครู่ก่อนลองใหม่
+          const delay = Math.pow(2, attempts) * 1000;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
       }
-
-      // เพิ่มบทใหม่ในลิสต์
-      chapters.push(newChapter);
-
-      // สร้างคำถาม
-      const questions = await generateChapterQuestions(
-        newChapter,
-        type,
-        cefrLevel
-      );
-      newChapter.questions = questions;
-
-      console.log("Generating chapter audio...");
-
-      await generateChapterAudio({
-        content: newChapter.content,
-        storyId: storyId,
-        chapterNumber: `${i + 1}`,
-      });
-      console.log("Chapter audio generated successfully.");
-
-      console.log("Generating chapter audio for words...");
-
-      await generateChapterAudioForWord({
-        wordList: newChapter.analysis.vocabulary.targetWordsUsed.map(
-          (word) => ({
-            vocabulary: word,
-            definition: {
-              en: "",
-              th: "",
-              cn: "",
-              tw: "",
-              vi: "",
-            },
-          })
-        ),
-        storyId: storyId,
-        chapterNumber: `${i + 1}`,
-      });
     }
-    console.log("All chapter audio generated successfully.");
+    console.log("All chapters generated successfully.");
 
     return chapters;
   } catch (error) {
