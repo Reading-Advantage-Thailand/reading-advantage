@@ -19,14 +19,14 @@ export const metadata = {
   description: "Story",
 };
 
-async function getStoryChapter(storyId: string, chapterNumber: number) {
+async function getStoryChapter(storyId: string, chapterNumber: string) {
   return fetchData(`/api/v1/stories/${storyId}/${chapterNumber}`);
 }
 
 export default async function ArticleQuizPage({
   params,
 }: {
-  params: { storyId: string; chapterNumber: number };
+  params: { storyId: string; chapterNumber: string };
 }) {
   const t = await getScopedI18n("pages.student.storyPage.story");
 

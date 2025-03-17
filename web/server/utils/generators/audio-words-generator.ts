@@ -24,6 +24,12 @@ export type GenerateAudioParams = {
   articleId: string;
 };
 
+export type GenerateChapterAudioParams = {
+  wordList: WordListResponse[];
+  storyId: string;
+  chapterNumber: string;
+};
+
 interface TimePoint {
   timeSeconds: number;
   markName: string;
@@ -94,6 +100,76 @@ export async function generateAudioForWord({
         timepoints: allTimePoints,
         id: articleId,
       });
+    } catch (error: any) {
+      throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
+        error.response.data
+      )}`;
+    }
+  }
+}
+
+export async function generateChapterAudioForWord({
+  wordList,
+  storyId,
+  chapterNumber,
+}: GenerateChapterAudioParams): Promise<void> {
+  {
+    try {
+      const voice =
+        AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
+
+      const vocabulary: string[] = Array.isArray(wordList)
+        ? wordList.map((item: any) => item?.vocabulary)
+        : [];
+
+      let allTimePoints: TimePoint[] = [];
+
+      const response = await fetch(
+        `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize?key=${process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            input: { ssml: contentToSSML(vocabulary) },
+            voice: {
+              languageCode: "en-US",
+              name: voice,
+            },
+            audioConfig: {
+              audioEncoding: "MP3",
+            },
+            enableTimePointing: ["SSML_MARK"],
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const audio = data.audioContent;
+      allTimePoints = data?.timepoints;
+      const MP3 = base64.toByteArray(audio);
+
+      const localPath = `${process.cwd()}/data/audios-words/${storyId}-${chapterNumber}.mp3`;
+      fs.writeFileSync(localPath, MP3);
+
+      await uploadToBucket(
+        localPath,
+        `${AUDIO_WORDS_URL}/${storyId}-${chapterNumber}.mp3`
+      );
+
+      await db
+        .collection("stories-word-list")
+        .doc(`${storyId}-${chapterNumber}`)
+        .set({
+          timepoints: allTimePoints,
+          id: storyId,
+          chapterNumber: chapterNumber,
+        });
     } catch (error: any) {
       throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
         error.response.data

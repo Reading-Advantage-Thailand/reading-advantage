@@ -18,7 +18,7 @@ type Props = {
   story: StoryChapter;
   storyId: string;
   userId: string;
-  chapterNumber: number;
+  chapterNumber: string;
 };
 
 export default async function StoryChapterCard({
