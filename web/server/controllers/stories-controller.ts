@@ -149,7 +149,23 @@ export async function getChapter(req: NextRequest, ctx: RequestContext) {
       );
     }
 
+    const timepointsDoc = await db
+      .collection("stories")
+      .doc(storyId)
+      .collection("timepoints")
+      .doc(`${chapterNumber}`)
+      .get();
+
+    if (!timepointsDoc.exists || !timepointsDoc.data()) {
+      return NextResponse.json(
+        { message: "Story not found", result: null },
+        { status: 404 }
+      );
+    }
+
     const storyData = storyDoc.data() as FirebaseFirestore.DocumentData;
+    const timepointsData =
+      timepointsDoc.data() as FirebaseFirestore.DocumentData;
 
     if (!storyData.chapters || !Array.isArray(storyData.chapters)) {
       return NextResponse.json(
@@ -178,6 +194,7 @@ export async function getChapter(req: NextRequest, ctx: RequestContext) {
       cefr_level,
       totalChapters,
       chapter: chapter,
+      timepoints: timepointsData.timepoints,
     });
   } catch (error) {
     console.error("Error getting chapter", error);
