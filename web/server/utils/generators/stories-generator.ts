@@ -8,7 +8,7 @@ import { generateChapters } from "./story-chapters-generator";
 import { generateStoriesTopic } from "./stories-topic-generator";
 import { generateImage } from "./image-generator";
 import { Timestamp } from "firebase-admin/firestore";
-import { deleteStoryAndImages } from "@/utils/deleteStoryAndImage";
+import { deleteStoryAndImages } from "@/utils/deleteStories";
 import { evaluateRating } from "./evaluate-rating-generator";
 import { calculateLevel } from "@/lib/calculateLevel";
 
@@ -127,6 +127,7 @@ export async function generateStories(req: NextRequest) {
               previousChapters,
               chapterCount,
               wordCountPerChapter,
+              storyId: ref.id,
             });
 
             // ตรวจสอบให้แน่ใจว่าจำนวน chapter ถูกต้อง

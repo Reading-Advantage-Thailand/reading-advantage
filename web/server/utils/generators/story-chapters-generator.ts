@@ -3,6 +3,8 @@ import { generateObject } from "ai";
 import { openai, openaiModel4o } from "@/utils/openai";
 import { z } from "zod";
 import { getCEFRRequirements } from "../CEFR-requirements";
+import { generateChapterAudio } from "./audio-generator";
+import { generateChapterAudioForWord } from "./audio-words-generator";
 
 // Import functions สำหรับสร้างคำถามที่มีอยู่แล้ว
 import { generateMCQuestion } from "./mc-question-generator";
@@ -116,6 +118,7 @@ interface GenerateChaptersParams {
   previousChapters?: Chapter[];
   chapterCount: number;
   wordCountPerChapter: number;
+  storyId: string;
 }
 
 const ChapterSchema = z.object({
@@ -165,6 +168,7 @@ export async function generateChapters({
   cefrLevel,
   chapterCount,
   wordCountPerChapter,
+  storyId,
 }: GenerateChaptersParams): Promise<Chapter[]> {
   console.log(
     `Generating ${chapterCount} chapters for CEFR level ${cefrLevel}...`
@@ -199,7 +203,36 @@ export async function generateChapters({
         cefrLevel
       );
       newChapter.questions = questions;
+
+      console.log("Generating chapter audio...");
+      
+      await generateChapterAudio({
+        content: newChapter.content,
+        storyId: storyId,
+        chapterNumber: `${i + 1}`,
+      });
+      console.log("Chapter audio generated successfully.");
+
+      console.log("Generating chapter audio for words...");
+
+      await generateChapterAudioForWord({
+        wordList: newChapter.analysis.vocabulary.targetWordsUsed.map(
+          (word) => ({
+            vocabulary: word,
+            definition: {
+              en: "",
+              th: "",
+              cn: "",
+              tw: "",
+              vi: "",
+            },
+          })
+        ),
+        storyId: storyId,
+        chapterNumber: `${i + 1}`,
+      });
     }
+    console.log("All chapter audio generated successfully.");
 
     return chapters;
   } catch (error) {
