@@ -13,7 +13,7 @@ async function getTranslate(
   targetLanguage: string
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
-    const res = await fetch(`/api/v1/assistant/translate/${storyId}`, {
+    const res = await fetch(`/api/v1/assistant/stories-translate/${storyId}`, {
       method: "POST",
       body: JSON.stringify({ type: "summary", targetLanguage }),
     });

@@ -58,7 +58,11 @@ export default async function StoryChapterCard({
               height={640}
             />
           </div>
-          <ChapterContent story={story} chapterNumber={chapterNumber} />
+          <ChapterContent
+            story={story}
+            chapterNumber={chapterNumber}
+            userId={userId}
+          />
         </CardHeader>
         <ArticleFooter />
       </Card>
