@@ -165,13 +165,34 @@ export async function generateChapterAudioForWord({
       await db
         .collection("stories-word-list")
         .doc(`${storyId}-${chapterNumber}`)
-        .set({
+        .update({
           timepoints: allTimePoints,
           id: storyId,
           chapterNumber: chapterNumber,
         });
     } catch (error: any) {
       throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
+        error.response.data
+      )}`;
+    }
+  }
+}
+
+export async function saveWordList({
+  wordList,
+  storyId,
+  chapterNumber,
+}: GenerateChapterAudioParams): Promise<void> {
+  {
+    try {
+      const wordListRef = db
+        .collection("stories-word-list")
+        .doc(`${storyId}-${chapterNumber}`);
+      await wordListRef.set({
+        word_list: wordList,
+      });
+    } catch (error: any) {
+      throw `failed to save word list: ${error} \n\n error: ${JSON.stringify(
         error.response.data
       )}`;
     }

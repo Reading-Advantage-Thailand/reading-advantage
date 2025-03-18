@@ -9,7 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import ChapterList from "@/components/stories-chapter-list";
-
+import StoriesAssignDialog from "@/components/teacher/stories-assign-dialog";
+import StoriesActions from "@/components/stories-actions";
 
 export interface StoryBible {
   mainPlot: {
@@ -63,7 +64,6 @@ interface Theme {
   development: string;
 }
 
-
 async function getStory(storyId: string) {
   const data = await fetchData(`/api/v1/stories/${storyId}`);
   return data.result;
@@ -82,7 +82,7 @@ export default async function StoryChapterSelectionPage({
   const storyResponse = await getStory(params.storyId);
 
   return (
-    <div>
+    <div className="md:flex md:flex-row md:gap-3 md:mb-5">
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">
@@ -139,6 +139,20 @@ export default async function StoryChapterSelectionPage({
           </Tabs>
         </CardContent>
       </Card>
+
+      {user.role.includes("teacher") && (
+        <StoriesAssignDialog
+          story={storyResponse}
+          storyId={params.storyId}
+          userId={user.id}
+        />
+      )}
+
+      {user.role.includes("system") && (
+        <div className="flex gap-4">
+          <StoriesActions story={storyResponse} storyId={params.storyId} />
+        </div>
+      )}
     </div>
   );
 }

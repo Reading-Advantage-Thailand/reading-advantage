@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
+import { ExtendedNextRequest } from "./auth-controller";
+import { deleteStoryAndImages } from "@/utils/deleteStories";
 
 interface RequestContext {
   params: {
@@ -198,6 +200,27 @@ export async function getChapter(req: NextRequest, ctx: RequestContext) {
     });
   } catch (error) {
     console.error("Error getting chapter", error);
+    return NextResponse.json(
+      { message: "Internal server error", error },
+      { status: 500 }
+    );
+  }
+}
+
+export async function deleteStories(
+  req: ExtendedNextRequest,
+  { params: { storyId } }: { params: { storyId: string } }
+) {
+  try {
+    await deleteStoryAndImages(storyId);
+
+    return NextResponse.json(
+      {
+        message: "Stories Deleted",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
     return NextResponse.json(
       { message: "Internal server error", error },
       { status: 500 }

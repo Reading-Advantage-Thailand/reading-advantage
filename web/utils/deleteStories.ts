@@ -65,6 +65,17 @@ export async function deleteStoryAndImages(storyId: string) {
     console.log(
       `Successfully deleted story ${storyId} and all associated images.`
     );
+
+    // ลบไฟล์เสียงของ word ของแต่ละบท
+    const ttsPrefix = `tts/${storyId}-`;
+    const [ttsFiles] = await bucket.getFiles({ prefix: wordAudioPrefix });
+
+    if (ttsFiles.length > 0) {
+      await Promise.all(ttsFiles.map((file) => file.delete()));
+      console.log(`Deleted chapter word-audio: ${ttsFiles}`);
+    } else {
+      console.warn(`No chapter word-audio found with prefix: ${ttsPrefix}`);
+    }
   } catch (error) {
     console.error(`Failed to delete story ${storyId}:`, error);
   }

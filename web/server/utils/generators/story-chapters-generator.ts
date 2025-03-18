@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getCEFRRequirements } from "../CEFR-requirements";
 import { generateChapterAudio } from "./audio-generator";
 import { generateChapterAudioForWord } from "./audio-words-generator";
+import { saveWordList } from "./audio-words-generator";
 
 // Import functions สำหรับสร้างคำถามที่มีอยู่แล้ว
 import { generateMCQuestion } from "./mc-question-generator";
@@ -73,7 +74,16 @@ interface Chapter {
     vocabulary: {
       uniqueWords: number;
       complexWords: number;
-      targetWordsUsed: string[];
+      targetWordsUsed: {
+        vocabulary: string;
+        definition: {
+          en: string;
+          th: string;
+          cn: string;
+          tw: string;
+          vi: string;
+        };
+      }[];
     };
     grammarStructures: string[];
     readabilityScore: number;
@@ -118,7 +128,18 @@ const ChapterSchema = z.object({
     vocabulary: z.object({
       uniqueWords: z.number(),
       complexWords: z.number(),
-      targetWordsUsed: z.array(z.string()),
+      targetWordsUsed: z.array(
+        z.object({
+          vocabulary: z.string(),
+          definition: z.object({
+            en: z.string(),
+            th: z.string(),
+            cn: z.string(),
+            tw: z.string(),
+            vi: z.string(),
+          }),
+        })
+      ),
     }),
     grammarStructures: z.array(z.string()),
     readabilityScore: z.number(),
@@ -207,24 +228,31 @@ export async function generateChapters(
           });
           console.log("Chapter audio generated successfully.");
 
-          console.log("Generating chapter audio for words...");
+          const wordListForAudio =
+            newChapter.analysis.vocabulary.targetWordsUsed.map((word) => ({
+              vocabulary: word.vocabulary,
+              definition: word.definition,
+            }));
 
-          await generateChapterAudioForWord({
-            wordList: newChapter.analysis.vocabulary.targetWordsUsed.map(
-              (word) => ({
-                vocabulary: word,
-                definition: {
-                  en: "",
-                  th: "",
-                  cn: "",
-                  tw: "",
-                  vi: "",
-                },
-              })
-            ),
+          console.log("Saving word list for audio...");
+
+          await saveWordList({
+            wordList: wordListForAudio,
             storyId: storyId,
             chapterNumber: `${i + 1}`,
           });
+
+          console.log("Word list saved for audio successfully.");
+
+          console.log("Generating chapter audio for words...");
+
+          await generateChapterAudioForWord({
+            wordList: wordListForAudio,
+            storyId: storyId,
+            chapterNumber: `${i + 1}`,
+          });
+
+          console.log("Chapter audio for words generated successfully.");
 
           // ถ้าทำสำเร็จทั้งหมด ให้ออกจาก loop
           break;
