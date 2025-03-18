@@ -9,7 +9,7 @@ import AssignDialog from "@/components/teacher/assign-dialog";
 import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
 import { Article } from "@/components/models/article-model";
 import ArticleActions from "@/components/article-actions";
-import WordList from "@/components/word-list";
+import StoriesWordList from "@/components/stories-word-list";
 import StoryMCQuestionCard from "@/components/stories-chapter-question/mc-question-card";
 import StorySAQuestionCard from "@/components/stories-chapter-question/sa-question-card";
 import StoryLAQuestionCard from "@/components/stories-chapter-question/laq-question-card";
@@ -33,69 +33,56 @@ export default async function ArticleQuizPage({
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 
-  const storyResponse = await getStoryChapter(
+  const chapterResponse = await getStoryChapter(
     params.storyId,
     params.chapterNumber
   );
 
-  if (storyResponse.message)
-    return <CustomError message={storyResponse.message} resp={storyResponse} />;
+  if (chapterResponse.message)
+    return (
+      <CustomError message={chapterResponse.message} resp={chapterResponse} />
+    );
 
   return (
     <>
       <div className="md:flex md:flex-row md:gap-3 md:mb-5">
         <StoryChapterCard
-          story={storyResponse}
+          story={chapterResponse}
           storyId={params.storyId}
           userId={user.id}
           chapterNumber={params.chapterNumber}
         />
         <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
           <div className="flex justify-evently">
-            {user.role.includes("teacher") && (
-              <AssignDialog
-                article={storyResponse}
-                articleId={params.storyId}
-                userId={user.id}
-              />
-            )}
-
-            {user.role.includes("system") && (
-              <div className="flex gap-4">
-                <ArticleActions
-                  article={storyResponse}
-                  articleId={params.storyId}
-                />
-              </div>
-            )}
-            <WordList
-              article={storyResponse}
-              articleId={params.storyId}
+            <StoriesWordList
+              chapter={chapterResponse}
+              storyId={params.storyId}
+              chapterNumber={params.chapterNumber}
               userId={user.id}
             />
           </div>
 
           <StoryMCQuestionCard
             userId={user.id}
-            storyId={storyResponse.storyId}
-            articleTitle={storyResponse.chapter.title}
-            articleLevel={storyResponse.ra_Level}
-            chapterNumber={storyResponse.chapterNumber}
+            storyId={chapterResponse.storyId}
+            articleTitle={chapterResponse.chapter.title}
+            articleLevel={chapterResponse.ra_Level}
+            chapterNumber={chapterResponse.chapterNumber}
           />
           <StorySAQuestionCard
             userId={user.id}
             storyId={params.storyId}
-            articleTitle={storyResponse.chapter.title}
-            articleLevel={storyResponse.ra_Level}
-            chapterNumber={storyResponse.chapterNumber}
+            articleTitle={chapterResponse.chapter.title}
+            articleLevel={chapterResponse.ra_Level}
+            chapterNumber={chapterResponse.chapterNumber}
           />
           <StoryLAQuestionCard
             userId={user.id}
             storyId={params.storyId}
             userLevel={user.level}
-            articleTitle={storyResponse.chapter.title}
-            articleLevel={storyResponse.ra_Level}
-            chapterNumber={storyResponse.chapterNumber}
+            articleTitle={chapterResponse.chapter.title}
+            articleLevel={chapterResponse.ra_Level}
+            chapterNumber={chapterResponse.chapterNumber}
           />
         </div>
       </div>
