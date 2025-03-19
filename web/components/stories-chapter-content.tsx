@@ -227,33 +227,51 @@ export default function ChapterContent({
       await handleTranslate();
     } else {
       try {
-        let card: Card = createEmptyCard();
-        let endTimepoint = 0;
-        if (selectedSentence !== -1) {
-          endTimepoint = sentenceList[selectedSentence as number].endTime;
-        } else {
-          endTimepoint = audioRef.current?.duration as number;
+        if (selectedSentence === -1) {
+          toast({
+            title: "Please select a sentence",
+            description:
+              "You need to select a sentence before saving to flashcard.",
+            variant: "destructive",
+          });
+          return;
         }
+
+        const selectedSentenceData = sentenceList[selectedSentence as number];
+        if (!selectedSentenceData) {
+          toast({
+            title: "Invalid sentence",
+            description: "The selected sentence is not valid.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        let card: Card = createEmptyCard();
+        let endTimepoint = selectedSentenceData.endTime;
 
         const resSaveSentences = await fetch(
           `/api/v1/users/sentences/${userId}`,
           {
             method: "POST",
             body: JSON.stringify({
-              sentence: sentenceList[
-                selectedSentence as number
-              ].sentence.replace("~~", ""),
+              sentence: selectedSentenceData.sentence.replace("~~", ""),
               sn: selectedSentence,
-              storyId: story.storyId,
-              chapterNumber: chapterNumber,
+              articleId: story.storyId,
               translation: {
                 th: translate[selectedSentence as number],
               },
-              audioUrl: sentenceList[selectedSentence as number].audioUrl,
-              timepoint: sentenceList[selectedSentence as number].startTime,
+              audioUrl: selectedSentenceData.audioUrl,
+              timepoint: selectedSentenceData.startTime,
               endTimepoint: endTimepoint,
-              saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
-              ...card,
+              difficulty: card.difficulty,
+              due: card.due,
+              elapsed_days: card.elapsed_days,
+              lapses: card.lapses,
+              reps: card.reps,
+              scheduled_days: card.scheduled_days,
+              stability: card.stability,
+              state: card.state,
             }),
           }
         );
@@ -261,9 +279,10 @@ export default function ChapterContent({
         if (resSaveSentences.status === 200) {
           toast({
             title: "Success",
-            description: `You have saved "${sentenceList[
-              selectedSentence as number
-            ].sentence.replace("~~", "")}" to flashcard`,
+            description: `You have saved "${selectedSentenceData.sentence.replace(
+              "~~",
+              ""
+            )}" to flashcard`,
           });
         } else if (resSaveSentences.status === 400) {
           toast({
@@ -525,8 +544,10 @@ export default function ChapterContent({
                 `${getHighlightedClass(index)}`
               )}
               onClick={() => {
-                setSelectedIndex(index);
                 handleSentenceClick(sentence.startTime, index);
+                setSelectedSentence(index);
+                setSelectedIndex(index);
+                console.log("Selected sentence:", index);
               }}
             >
               {renderSentence(sentence.sentence, index)}
