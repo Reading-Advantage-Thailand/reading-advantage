@@ -262,14 +262,16 @@ export default function UserRoleManagement({
               <DropdownMenuItem onClick={() => handleEditClick(payment)}>
                 Change Role
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setCurrentPayment(payment);
-                  setIsSchoolDialogOpen(true);
-                }}
-              >
-                Change School
-              </DropdownMenuItem>
+              {page === "system" && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    setCurrentPayment(payment);
+                    setIsSchoolDialogOpen(true);
+                  }}
+                >
+                  Change School
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -539,6 +541,7 @@ export default function UserRoleManagement({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
       <AlertDialog
         open={isSchoolDialogOpen}
         onOpenChange={setIsSchoolDialogOpen}
