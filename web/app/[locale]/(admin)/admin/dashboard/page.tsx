@@ -13,7 +13,6 @@ import LicesneUsageList from "@/components/license-usage-list";
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { Role } from "@/server/models/enum";
 import UnauthorizedPage from "@/components/shared/unauthorized-page";
 import ActiveUsersChart from "@/components/system/active-users";
 import ClassRoomXpChart from "@/components/dashboard/classroom-xp-chart";
@@ -25,117 +24,28 @@ export default async function AdminDashboardPage() {
     return redirect("/auth/signin");
   }
 
-  if (user.role !== Role.SYSTEM && user.role !== Role.ADMIN) {
+  if (!user.license_id) {
     return <UnauthorizedPage />;
   }
 
-  // Map CEFR levels to numerical values
-  const cefrToNumber: Record<string, number> = {
-    "A0-": 0,
-    A0: 1,
-    "A0+": 2,
-    A1: 3,
-    "A1+": 4,
-    "A2-": 5,
-    A2: 6,
-    "A2+": 7,
-    "B1-": 8,
-    B1: 9,
-    "B1+": 10,
-    "B2-": 11,
-    B2: 12,
-    "B2+": 13,
-    "C1-": 14,
-    C1: 15,
-    "C1+": 16,
-    "C2-": 17,
-    C2: 18,
-  };
-
-  const schoolListfetch = async () => {
+  const getDashboradData = async () => {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/licenses/${user.license_id}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/admin/dashboard`,
       { method: "GET", headers: headers() }
     );
-    if (!res.ok) throw new Error("Failed to fetch school list");
     const fetchdata = await res.json();
-    return fetchdata;
+    return fetchdata.data;
   };
 
-  const xpSum30Days = async () => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/xp?license_id=${user.license_id}`,
-      { method: "GET", headers: headers() }
-    );
-
-    if (!res.ok) throw new Error("Failed to fetch XP data");
-
-    const fetchdata = await res.json();
-    return fetchdata.total_xp;
-  };
-
-  const userRoleListfetch = async () => {
-    const userRes = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users`,
-      { method: "GET", headers: headers() }
-    );
-    if (!userRes.ok) throw new Error("Failed to fetch user role list");
-    const userData = await userRes.json();
-    return userData;
-  };
-
-  const averageCefrLevelDatafetch = async () => {
-    const cefrRes = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/activity/all`,
-      { method: "GET", headers: headers() }
-    );
-    if (!cefrRes.ok) throw new Error("Failed to fetch CEFR level data");
-    const cefrData = await cefrRes.json();
-    return cefrData;
-  };
-
-  const schoolList = await schoolListfetch();
-  const userRoleList = await userRoleListfetch();
-  const averageCefrLevelData = await averageCefrLevelDatafetch();
-  const sumXp30Days = await xpSum30Days();
-
-  const UserData = userRoleList?.results?.filter(
-    (users: any) => users.license_id && users.license_id === user.license_id
-  );
-
-  const countTeachers = UserData.filter(
-    (users: any) => users.role === "teacher"
-  ).length;
-
-  // Map numerical values back to CEFR levels
-  const numberToCefr = Object.fromEntries(
-    Object.entries(cefrToNumber).map(([k, v]) => [v, k])
-  );
-
-  // // Filter and calculate the average CEFR level
-  const cefrValues = UserData.map(
-    (user: any) => cefrToNumber[user.cefr_level]
-  )?.filter((value: any) => value !== undefined); // Filter out invalid/missing levels
-
-  const averageCefrValue =
-    cefrValues?.reduce((sum: number, value: any) => sum + value, 0) /
-    cefrValues?.length;
-
-  const averageCefrLevel = numberToCefr[Math.round(averageCefrValue)];
-
-  // Get an array of user IDs from the users array
-  const userIds = UserData.map((users: any) => users.id);
-
-  // Filter activityLog based on whether the user_id exists in userIds
-  const filteredActivityLog = averageCefrLevelData.data.filter(
-    (activity: any) => userIds.includes(activity.userId)
-  );
+  const dataDashboard = await getDashboradData();
 
   return (
     <>
       <div className="text-xl sm:text-2xl md:text-3xl font-bold truncate">
         <Header heading="Admin Dashboard Page" />
-        <h1 className="px-2">School : {schoolList.license.school_name}</h1>
+        <h1 className="px-2">
+          School : {dataDashboard?.license[0].school_name}
+        </h1>
       </div>
       <div className="py-2 grid grid-cols-1 gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-4">
         <Card>
@@ -145,7 +55,9 @@ export default async function AdminDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-center">{UserData.length}</p>
+            <p className="text-2xl font-bold text-center">
+              {dataDashboard?.license[0].total_licenses}
+            </p>
           </CardContent>
         </Card>
 
@@ -156,7 +68,9 @@ export default async function AdminDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-center">{averageCefrLevel}</p>
+            <p className="text-2xl font-bold text-center">
+              {dataDashboard?.averageCefrLevel}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -167,7 +81,7 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-center">
-              {sumXp30Days.toLocaleString()} XP
+              {dataDashboard?.xpEarned.toLocaleString()} XP
             </p>
           </CardContent>
         </Card>
@@ -178,7 +92,9 @@ export default async function AdminDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-center">{countTeachers}</p>
+            <p className="text-2xl font-bold text-center">
+              {dataDashboard?.teacherCount}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -190,15 +106,18 @@ export default async function AdminDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <LineChartCustom data={filteredActivityLog} />
+            <LineChartCustom data={dataDashboard?.filteredActivityLog} />
           </CardContent>
         </Card>
       </div>
       <div>
-        <ClassRoomXpChart licenseId={schoolList.license.id} />
+        <ClassRoomXpChart licenseId={dataDashboard?.license[0].id} />
       </div>
       <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-3">
-        <ActiveUsersChart page={"admin"} licenseId={schoolList.license.id} />
+        <ActiveUsersChart
+          page={"admin"}
+          licenseId={dataDashboard?.license[0].id}
+        />
       </div>
     </>
   );
