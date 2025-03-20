@@ -378,6 +378,13 @@ export default {
       cefrLevel: "Trình độ CEFR là {cefrLevel}",
       articleCardDescription:
         "Bài viết liên quan đến chủ đề {topic}, thuộc thể loại {genre}.",
+      previousChapter: "Chương trước",
+      nextChapter: "Chương tiếp theo",
+      chapters: "Chương",
+      characters: "Nhân vật",
+      previouslyRead: "Đã đọc",
+      continueRead: "Tiếp tục đọc Chương",
+      readChapter: "Đọc Chương",
     },
     articleContent: {
       voiceAssistant: "Trợ lý giọng nói",

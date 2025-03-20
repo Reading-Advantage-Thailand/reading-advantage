@@ -358,6 +358,13 @@ export default {
       raLevel: "阅读能力等级为 {raLevel}",
       cefrLevel: "CEFR 等级为 {cefrLevel}",
       articleCardDescription: "该文章涉及 {topic} 主题，属于 {genre} 类别。",
+      previousChapter: "上一章",
+      nextChapter: "下一章",
+      chapters: "章节",
+      characters: "角色",
+      previouslyRead: "已读",
+      continueRead: "继续阅读第",
+      readChapter: "阅读第", 
     },
     articleContent: {
       voiceAssistant: "语音助手",

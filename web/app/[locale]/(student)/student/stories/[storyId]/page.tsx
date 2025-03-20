@@ -12,6 +12,8 @@ import Image from "next/image";
 import ChapterList from "@/components/stories-chapter-list";
 import StoriesAssignDialog from "@/components/teacher/stories-assign-dialog";
 import StoriesActions from "@/components/stories-actions";
+import { ChapterSummary } from "@/components/stories-chapter-summary";
+import { CardDescription } from "@/components/ui/card";
 
 export interface StoryBible {
   mainPlot: {
@@ -76,9 +78,16 @@ export default async function StoryChapterSelectionPage({
   params: { locale: string; storyId: string };
 }) {
   const t = await getScopedI18n("components.articleCard");
-
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
+
+  const translations = {
+    chapters: t("chapters"),
+    characters: t("characters"),
+    previouslyRead: t("previouslyRead"),
+    continueRead: t("continueRead"),
+    readChapter: t("readChapter"),
+  };
 
   const storyResponse = await getStory(params.storyId);
 
@@ -100,7 +109,12 @@ export default async function StoryChapterSelectionPage({
                 cefrLevel: storyResponse.cefr_level,
               })}
             </Badge>
-            <p>{storyResponse.storyBible.summary}</p>
+            <CardDescription>
+              <ChapterSummary
+                story={storyResponse}
+                storyId={storyResponse.id}
+              />
+            </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -124,6 +138,7 @@ export default async function StoryChapterSelectionPage({
                 locale={params.locale}
                 storyId={storyResponse.id}
                 chapters={storyResponse.chapters}
+                translations={translations}
               />
             </TabsContent>
 

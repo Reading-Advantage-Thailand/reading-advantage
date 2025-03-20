@@ -75,10 +75,12 @@ export async function generateStories(req: NextRequest) {
               cefrLevel: level,
             });
 
-            const { raLevel, cefrLevel: cefr_level } = calculateLevel(
+            const { raLevel, cefrLevel } = calculateLevel(
               storyBible.summary,
               level
             );
+
+            const cefr_level = cefrLevel.replace(/[+-]/g, "");
 
             console.log(
               `CEFR ${level}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${cefr_level}, Evaluated raLevel: ${raLevel}`
@@ -110,7 +112,7 @@ export async function generateStories(req: NextRequest) {
             failedCount++;
             continue;
           }
-          
+
           const chapterCount = Math.floor(Math.random() * 3) + 6;
           const wordCountPerChapter =
             getCEFRRequirements(level).wordCount.fiction;
