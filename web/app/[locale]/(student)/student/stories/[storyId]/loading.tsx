@@ -10,11 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getScopedI18n } from "@/locales/server";
 
 export default async function Loading() {
-  const t = await getScopedI18n("pages.student.readPage");
+  const t = await getScopedI18n("pages.student.storyPage");
 
   return (
     <>
-      <Header heading={t("articleSelection")} />
+      <Header heading={t("storySelection")} />
       <Card className="my-2">
         <CardHeader>
           <CardTitle>

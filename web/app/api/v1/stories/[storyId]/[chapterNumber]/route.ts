@@ -4,20 +4,20 @@ import { createEdgeRouter } from "next-connect";
 import { NextRequest, NextResponse } from "next/server";
 import { getChapter } from "@/server/controllers/stories-controller";
 
-interface RequestContext {
+interface ExtendedNextRequest {
   params: {
     storyId: string;
     chapterNumber: number;
   };
 }
 
-const router = createEdgeRouter<NextRequest, RequestContext>();
+const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
 
 router.use(logRequest);
 router.use(protect);
 router.get(getChapter);
 
-export async function GET(request: NextRequest, ctx: RequestContext) {
+export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;

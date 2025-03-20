@@ -48,6 +48,7 @@ export default function SelectStory({ user }: Props) {
     articleShowcaseType[]
   >([]);
   const [page, setPage] = React.useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
   const observer = React.useRef<IntersectionObserver | null>(null);
 
   const selectedGenre = searchParams.get("genre");
@@ -84,7 +85,7 @@ export default function SelectStory({ user }: Props) {
       setLoading(true);
       const params = new URLSearchParams(window.location.search);
       params.set("page", page.toString());
-      params.set("limit", "10");
+      params.set("limit", "8");
 
       const response = await fetchStories(params.toString());
 
@@ -94,7 +95,8 @@ export default function SelectStory({ user }: Props) {
         setArticleShowcaseData((prev) => [...prev, ...response.results]);
       }
 
-      if (response.results.length === 0) {
+      setTotalPages(response.totalPages);
+      if (page >= response.totalPages) {
         setHasMore(false);
       }
 
@@ -107,7 +109,7 @@ export default function SelectStory({ user }: Props) {
 
   const lastArticleRef = React.useCallback(
     (node: HTMLDivElement | null) => {
-      if (loading || !hasMore) return;
+      if (loading || !hasMore || page >= totalPages) return;
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
@@ -118,7 +120,7 @@ export default function SelectStory({ user }: Props) {
 
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [loading, hasMore, page, totalPages]
   );
 
   return (
@@ -139,7 +141,7 @@ export default function SelectStory({ user }: Props) {
       <CardContent>
         {loading && page === 1 ? (
           <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
-            {Array.from({ length: 6 }).map((_, index) => (
+            {Array.from({ length: 8 }).map((_: unknown, index: number) => (
               <Skeleton key={index} className="h-80 w-full" />
             ))}
           </div>
