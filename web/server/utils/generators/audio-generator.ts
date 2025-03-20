@@ -12,7 +12,7 @@ import uploadToBucket from "@/utils/uploadToBucket";
 import db from "@/configs/firestore-config";
 import { generateObject } from "ai";
 import { openai, openaiModel } from "@/utils/openai";
-import { google, googleModel } from "@/utils/google";
+import { google, googleModelAudio } from "@/utils/google";
 import z from "zod";
 import ffmpeg from "fluent-ffmpeg";
 
@@ -40,18 +40,40 @@ const generateSSML = async (article: string) => {
 
     //and Add a <speak> tag before and end article only.
     const { object: ssml } = await generateObject({
-      model: google(googleModel),
-      schema: z
-        .array(
-          z.string().describe("A single complete sentence from the article")
-        )
-        .describe("Array of sentences extracted from the input article"),
+      model: google(googleModelAudio),
+      // schema: z
+      //   .array(
+      //     z.string().describe("A single complete sentence from the article")
+      //   )
+      //   .describe("Array of sentences extracted from the input article"),
+      schema: z.object({
+        input: z
+          .object({
+            article: z
+              .string()
+              .min(10)
+              .describe(
+                "The input article as a string. Must be at least 10 characters long."
+              ),
+          })
+          .describe("The input object containing the article to be processed."),
+
+        output: z
+          .object({
+            sentences: z
+              .array(z.string().min(1))
+              .describe(
+                "An array of sentences extracted from the article. Each sentence must be a non-empty string."
+              ),
+          })
+          .describe("The output object containing the extracted sentences."),
+      }),
       system: systemPrompt,
       prompt: userPrompt,
       temperature: 0.2,
     });
 
-    return ssml;
+    return ssml.output.sentences;
   } catch (error: any) {
     throw `failed to generate ssml: ${error}`;
   }
@@ -202,8 +224,8 @@ export async function generateAudio({
     });
   } catch (error: any) {
     console.log(error);
-    // throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
-    //   error.response.data
-    // )}`;
+    throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
+      error.response.data
+    )}`;
   }
 }

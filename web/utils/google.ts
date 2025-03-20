@@ -16,8 +16,10 @@ const google = createVertex({
   },
 });
 
+const googleModelAudio = "gemini-2.0-flash-lite";
+
 const googleModel = "gemini-2.0-flash-001";
 
 const googleImages = "imagen-3.0-generate-001";
 
-export { google, googleModel, googleImages };
+export { google, googleModel, googleImages, googleModelAudio };
