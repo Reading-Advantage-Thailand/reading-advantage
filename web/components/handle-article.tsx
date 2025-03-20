@@ -206,7 +206,7 @@ function HandleArticle() {
         <div className="md:flex grid grid-cols-2 gap-4">
           {/* Sort New or Older */}
           <div>
-            <span className="font-bold">Sort Date</span>
+            <span className="font-bold">Sort by Date</span>
             <Select value={date} onValueChange={(value) => setDate(value)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Sort by Date" />
@@ -221,13 +221,13 @@ function HandleArticle() {
           </div>
           {/* Sort Rating */}
           <div>
-            <span className="font-bold">Sort Rating</span>
+            <span className="font-bold">Filter by Rating</span>
             <Select
               value={rating || ""}
               onValueChange={(value) => setRating(value)}
             >
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Sort by Rating" />
+                <SelectValue placeholder="Filter by Rating" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -242,13 +242,13 @@ function HandleArticle() {
           </div>
           {/* Sort Type */}
           <div>
-            <span className="font-bold">Sort Type</span>
+            <span className="font-bold">Filter by Type</span>
             <Select
               value={type || ""}
               onValueChange={(value) => settype(value)}
             >
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Sort by Type" />
+                <SelectValue placeholder="Filter by Type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -260,10 +260,10 @@ function HandleArticle() {
           </div>
           {/* Sort Genre */}
           <div>
-            <span className="font-bold">Sort Genre</span>
+            <span className="font-bold">Filter by Genre</span>
             <Select value={genre} onValueChange={(value) => setGenre(value)}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Sort by Genre" />
+                <SelectValue placeholder="Filter by Genre" />
               </SelectTrigger>
               <SelectContent className="h-60">
                 <SelectGroup>
@@ -355,10 +355,10 @@ function HandleArticle() {
           </div>
           {/* Sort Level */}
           <div>
-            <p className="font-bold">Sort Level</p>
+            <p className="font-bold">Filter by Level</p>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">Level</Button>
+                <Button variant="outline">Filter by Level</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="min-w-0">
                 <ScrollArea className="h-40">
