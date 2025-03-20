@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
 import { ExtendedNextRequest } from "./auth-controller";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
+import { QuizStatus } from "@/components/models/questions-model";
 
 interface RequestContext {
   params: {
@@ -10,14 +11,25 @@ interface RequestContext {
   };
 }
 
-export async function getAllStories(req: NextRequest) {
+export async function getAllStories(req: ExtendedNextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const storyId = searchParams.get("storyId");
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const limit = parseInt(searchParams.get("limit") || "8", 10);
     const genre = searchParams.get("genre") || null;
     const subgenre = searchParams.get("subgenre") || null;
+    const userId = req.session?.user.id as string;
+    const userLevel = req.session?.user.level as number;
+
+    console.log("Request params:", {
+      page,
+      limit,
+      genre,
+      subgenre,
+      userId,
+      userLevel,
+    });
 
     const fetchGenres = async () => {
       const collectionRef = db.collection("genres-fiction");
@@ -35,8 +47,15 @@ export async function getAllStories(req: NextRequest) {
           { status: 404 }
         );
       }
+      const storyData = storyDoc.data();
+      if (storyData?.ra_level > userLevel) {
+        return NextResponse.json(
+          { message: "Story level too high for user", result: null },
+          { status: 403 }
+        );
+      }
       return NextResponse.json({
-        result: { id: storyDoc.id, ...storyDoc.data() },
+        result: { id: storyDoc.id, ...storyData },
       });
     }
 
@@ -58,29 +77,58 @@ export async function getAllStories(req: NextRequest) {
     if (subgenre) query = query.where("subgenre", "==", subgenre);
     if (!genre && !subgenre) query = query.orderBy("createdAt", "desc");
 
+    // Get total count first
     const totalSnapshot = await query.get();
-    const total = totalSnapshot.docs.length;
 
-    let snapshot;
-    if (page === 1) {
-      snapshot = await query.limit(limit).get();
-    } else {
-      const previousSnapshot = await query.limit((page - 1) * limit).get();
-      const lastVisible =
-        previousSnapshot.docs[previousSnapshot.docs.length - 1];
-      snapshot = lastVisible
-        ? await query.startAfter(lastVisible).limit(limit).get()
-        : await query.limit(limit).get();
-    }
+    // กรองบทความตามระดับก่อน
+    const availableStories = totalSnapshot.docs.filter(
+      (doc) => doc.data().ra_level <= userLevel
+    );
 
-    const results = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const totalAvailableStories = availableStories.length;
+    console.log("Total available stories:", totalAvailableStories);
+
+    // คำนวณ pagination จากบทความที่กรองแล้ว
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedDocs = availableStories.slice(startIndex, endIndex);
+    console.log("Pagination range:", {
+      startIndex,
+      endIndex,
+      paginatedDocsLength: paginatedDocs.length,
+    });
+
+    const results = await Promise.all(
+      paginatedDocs.map(async (doc) => {
+        const storyData = doc.data();
+        console.log("Story data:", {
+          id: doc.id,
+          title: storyData.title,
+          ra_level: storyData.ra_level,
+          userLevel,
+        });
+
+        const articleRecord = await db
+          .collection("users")
+          .doc(userId)
+          .collection("stories-records")
+          .doc(doc.id)
+          .get();
+
+        return {
+          id: doc.id,
+          ...storyData,
+          is_read: articleRecord.exists,
+        };
+      })
+    );
 
     return NextResponse.json({
       params: { genre, subgenre, page, limit },
       results,
       selectionGenres,
-      total,
-      totalPages: Math.ceil(total / limit),
+      total: totalAvailableStories,
+      totalPages: Math.ceil(totalAvailableStories / limit),
     });
   } catch (error) {
     console.error("Error getting stories", error);
@@ -97,12 +145,14 @@ export async function getAllStories(req: NextRequest) {
 }
 
 export async function getStoryById(
-  req: NextRequest,
+  req: ExtendedNextRequest,
   { params }: { params: { storyId: string } }
 ) {
   const storyId = params.storyId;
+  const userId = req.session?.user.id as string;
 
   if (!storyId) {
+    console.log("Missing storyId");
     return NextResponse.json(
       { message: "Missing storyId", result: null },
       { status: 400 }
@@ -110,17 +160,84 @@ export async function getStoryById(
   }
 
   try {
+    console.log(`Fetching story with ID: ${storyId}`);
     const storyDoc = await db.collection("stories").doc(storyId).get();
 
     if (!storyDoc.exists) {
+      console.log("Story not found");
       return NextResponse.json(
         { message: "Story not found", result: null },
         { status: 404 }
       );
     }
 
+    console.log(`Checking user record for story ID: ${storyId}`);
+    const record = await db
+      .collection("users")
+      .doc(userId)
+      .collection("stories-records")
+      .doc(storyId)
+      .get();
+
+    if (!record.exists) {
+      console.log("No existing record found, creating new record");
+      await db
+        .collection("users")
+        .doc(req.session?.user.id as string)
+        .collection("stories-records")
+        .doc(storyId)
+        .set({
+          id: storyId,
+          rated: 0,
+          scores: 0,
+          title: storyDoc.data()?.title,
+          status: QuizStatus.READ,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          level: req.session?.user.level,
+        });
+    }
+
+    console.log("Fetching chapter tracking data");
+    const chapterTrackingRef = await db
+      .collection("users")
+      .doc(userId)
+      .collection("stories-records")
+      .doc(storyId)
+      .collection("chapter-tracking")
+      .get();
+
+    const storyData = storyDoc.data();
+    if (!storyData) {
+      console.log("Story data not found");
+      return NextResponse.json(
+        { message: "Story data not found", result: null },
+        { status: 404 }
+      );
+    }
+
+    const chapters = storyData.chapters || [];
+    console.log(`Processing ${chapters.length} chapters`);
+
+    for (let i = 0; i < chapters.length; i++) {
+      const chapterNumber = i + 1;
+      const doc = chapterTrackingRef.docs.find(
+        (doc) => doc.id === chapterNumber.toString()
+      );
+      if (doc) {
+        chapters[i].is_read = true;
+        console.log(`Chapter ${chapterNumber} marked as read`);
+      }
+    }
+
+    storyData.chapters = chapters;
+
+    console.log("Returning story data");
     return NextResponse.json({
-      result: { id: storyDoc.id, ...storyDoc.data() },
+      result: {
+        id: storyDoc.id,
+        ...storyData,
+      },
     });
   } catch (error) {
     console.error("Error getting story", error);
@@ -131,8 +248,12 @@ export async function getStoryById(
   }
 }
 
-export async function getChapter(req: NextRequest, ctx: RequestContext) {
+export async function getChapter(
+  req: ExtendedNextRequest,
+  ctx: RequestContext
+) {
   const { storyId, chapterNumber } = ctx.params;
+  const userId = req.session?.user.id as string;
 
   if (!storyId || chapterNumber === undefined) {
     return NextResponse.json(
@@ -182,6 +303,35 @@ export async function getChapter(req: NextRequest, ctx: RequestContext) {
         { message: `Chapter ${chapterNumber} not found`, result: null },
         { status: 404 }
       );
+    }
+
+    const record = await db
+      .collection("users")
+      .doc(userId)
+      .collection("stories-records")
+      .doc(storyId)
+      .collection(`chapter-tracking`)
+      .doc(`${chapterNumber}`)
+      .get();
+
+    if (!record.exists) {
+      await db
+        .collection("users")
+        .doc(req.session?.user.id as string)
+        .collection("stories-records")
+        .doc(storyId)
+        .collection(`chapter-tracking`)
+        .doc(`${chapterNumber}`)
+        .set({
+          id: storyId,
+          rated: 0,
+          scores: 0,
+          title: storyDoc.data()?.title,
+          status: QuizStatus.READ,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          level: req.session?.user.level,
+        });
     }
 
     const chapter = storyData.chapters[chapterIndex];

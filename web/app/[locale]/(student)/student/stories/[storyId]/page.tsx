@@ -4,6 +4,7 @@ import React from "react";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -74,7 +75,7 @@ export default async function StoryChapterSelectionPage({
 }: {
   params: { locale: string; storyId: string };
 }) {
-  const t = await getScopedI18n("pages.student.storyPage.story");
+  const t = await getScopedI18n("components.articleCard");
 
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
@@ -88,9 +89,19 @@ export default async function StoryChapterSelectionPage({
           <CardTitle className="text-2xl font-bold">
             {storyResponse.title}
           </CardTitle>
-          <p className="text-gray-500">
-            {storyResponse.genre} - {storyResponse.subgenre}
-          </p>
+          <div className="flex flex-wrap gap-3">
+            <Badge>
+              {t("raLevel", {
+                raLevel: storyResponse.ra_level,
+              })}
+            </Badge>
+            <Badge>
+              {t("cefrLevel", {
+                cefrLevel: storyResponse.cefr_level,
+              })}
+            </Badge>
+            <p>{storyResponse.storyBible.summary}</p>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="w-full h-auto aspect-[16/9] overflow-hidden">
@@ -102,17 +113,18 @@ export default async function StoryChapterSelectionPage({
               className="w-full h-full object-cover object-center"
             />
           </div>
-          <Tabs defaultValue="summary" className="w-full mt-4">
+          <Tabs defaultValue="chapters" className="w-full mt-4">
             <TabsList className="flex justify-start space-x-2">
-              <TabsTrigger value="summary">Summary</TabsTrigger>
-              <TabsTrigger value="characters">Characters</TabsTrigger>
               <TabsTrigger value="chapters">Chapters</TabsTrigger>
+              <TabsTrigger value="characters">Characters</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="summary">
-              <ScrollArea className="h-40 p-2">
-                <p>{storyResponse.storyBible.summary}</p>
-              </ScrollArea>
+            <TabsContent value="chapters">
+              <ChapterList
+                locale={params.locale}
+                storyId={storyResponse.id}
+                chapters={storyResponse.chapters}
+              />
             </TabsContent>
 
             <TabsContent value="characters">
@@ -127,14 +139,6 @@ export default async function StoryChapterSelectionPage({
                   )
                 )}
               </ScrollArea>
-            </TabsContent>
-
-            <TabsContent value="chapters">
-              <ChapterList
-                locale={params.locale}
-                storyId={storyResponse.id}
-                chapters={storyResponse.chapters}
-              />
             </TabsContent>
           </Tabs>
         </CardContent>

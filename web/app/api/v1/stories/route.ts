@@ -6,13 +6,13 @@ import { handleRequest } from "@/server/utils/handle-request";
 import { createEdgeRouter } from "next-connect";
 import { NextRequest, NextResponse } from "next/server";
 
-interface RequestContext {
+interface ExtendedNextRequest {
   params: {
     storyId: string;
   };
 }
 
-const router = createEdgeRouter<NextRequest, RequestContext>();
+const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
 
 // Middleware
 router.use(logRequest);
@@ -21,7 +21,7 @@ router.use(protect);
 //GET /api/v1/stories
 router.get(getAllStories);
 
-export async function GET(request: NextRequest, ctx: RequestContext) {
+export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
