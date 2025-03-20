@@ -16,7 +16,6 @@ interface RequestContext {
   params: {
     storyId: string;
     chapterNumber: string;
-    id: string;
   };
 }
 
@@ -202,9 +201,9 @@ export async function getChapterWordlist(
 
 export async function postFlashCard(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
 ) {
   try {
+    const id = req.session?.user.id as string;
     const json = await req.json();
 
     if (json.page === "vocabulary") {

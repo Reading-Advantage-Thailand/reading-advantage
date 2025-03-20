@@ -547,7 +547,7 @@ export default function ChapterContent({
                 handleSentenceClick(sentence.startTime, index);
                 setSelectedSentence(index);
                 setSelectedIndex(index);
-                console.log("Selected sentence:", index);
+                //console.log("Selected sentence:", index);
               }}
             >
               {renderSentence(sentence.sentence, index)}
