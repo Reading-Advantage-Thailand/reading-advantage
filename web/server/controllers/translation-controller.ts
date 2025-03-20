@@ -245,7 +245,10 @@ export async function translateChapterContent(
   const { type, targetLanguage } = await request.json();
 
   if (!Object.values(LanguageType).includes(targetLanguage)) {
-    return NextResponse.json({ message: "Invalid target language" }, { status: 400 });
+    return NextResponse.json(
+      { message: "Invalid target language" },
+      { status: 400 }
+    );
   }
 
   if (!storyId || typeof storyId !== "string") {
@@ -266,12 +269,18 @@ export async function translateChapterContent(
 
   const chapterIndex = parseInt(chapterNumber, 10) - 1;
   if (chapterIndex < 0 || chapterIndex >= storyData.chapters.length) {
-    return NextResponse.json({ message: "Invalid chapter number" }, { status: 400 });
+    return NextResponse.json(
+      { message: "Invalid chapter number" },
+      { status: 400 }
+    );
   }
 
   const chapter = storyData.chapters[chapterIndex];
   if (!chapter.questions || chapter.questions.length === 0) {
-    return NextResponse.json({ message: "No questions found" }, { status: 404 });
+    return NextResponse.json(
+      { message: "No questions found" },
+      { status: 404 }
+    );
   }
 
   if (type === "summary") {
@@ -297,7 +306,10 @@ export async function translateChapterContent(
       if (targetLanguage === LanguageType.EN) {
         translatedSentences = await translatePassageWithGPT(sentences);
       } else {
-        translatedSentences = await translatePassageWithGoogle(sentences, targetLanguage);
+        translatedSentences = await translatePassageWithGoogle(
+          sentences,
+          targetLanguage
+        );
       }
 
       await db
@@ -320,7 +332,10 @@ export async function translateChapterContent(
       });
     } catch (error) {
       console.error("Translation error:", error);
-      return NextResponse.json({ message: "Translation failed" }, { status: 500 });
+      return NextResponse.json(
+        { message: "Translation failed" },
+        { status: 500 }
+      );
     }
   }
 
@@ -346,7 +361,10 @@ export async function translateChapterContent(
       if (targetLanguage === LanguageType.EN) {
         translatedSentences = await translatePassageWithGPT(sentences);
       } else {
-        translatedSentences = await translatePassageWithGoogle(sentences, targetLanguage);
+        translatedSentences = await translatePassageWithGoogle(
+          sentences,
+          targetLanguage
+        );
       }
 
       await db
@@ -369,12 +387,18 @@ export async function translateChapterContent(
       });
     } catch (error) {
       console.error("Translation error:", error);
-      return NextResponse.json({ message: "Translation failed" }, { status: 500 });
+      return NextResponse.json(
+        { message: "Translation failed" },
+        { status: 500 }
+      );
     }
   }
 
   // ถ้า type ไม่ใช่ "summary" หรือ "content" ให้ return error
-  return NextResponse.json({ message: "Invalid type parameter" }, { status: 400 });
+  return NextResponse.json(
+    { message: "Invalid type parameter" },
+    { status: 400 }
+  );
 }
 
 export async function translateStorySummary(
@@ -382,8 +406,10 @@ export async function translateStorySummary(
   { params: { storyId } }: { params: { storyId: string } }
 ) {
   const { type, targetLanguage } = await request.json();
+  // console.log(`Received request to translate story summary with type: ${type} and targetLanguage: ${targetLanguage}`);
 
   if (!Object.values(LanguageType).includes(targetLanguage)) {
+    // console.log("Invalid target language");
     return NextResponse.json(
       {
         message: "Invalid target language",
@@ -393,7 +419,7 @@ export async function translateStorySummary(
   }
 
   if (!storyId || typeof storyId !== "string") {
-    //console.log("Invalid storyId!");
+    // console.log("Invalid storyId!");
     return NextResponse.json({ message: "Invalid storyId" }, { status: 400 });
   }
 
@@ -401,18 +427,18 @@ export async function translateStorySummary(
   const storySnap = await storyRef.get();
 
   if (!storySnap.exists) {
-    //console.log("Story not found!");
+    // console.log("Story not found!");
     return NextResponse.json({ message: "Story not found" }, { status: 404 });
   }
 
   const storyData = storySnap.data();
   if (!storyData || !storyData.storyBible) {
-    console.log("No summary found!");
+    // console.log("No summary found!");
     return NextResponse.json({ message: "No summary found" }, { status: 404 });
   }
 
   if (type === "summary") {
-    // First need to find the translation of the article in db
+    // console.log("Translating story summary...");
     const translationSnapshot = await db
       .collection(`stories-summary-translations`)
       .doc(storyId)
@@ -421,6 +447,7 @@ export async function translateStorySummary(
     const translation = translationSnapshot.data();
 
     if (translation && translation.summary[targetLanguage]) {
+      // console.log("Article already translated");
       return NextResponse.json({
         message: "article already translated",
         translated_sentences: translation.summary[targetLanguage],
@@ -438,7 +465,6 @@ export async function translateStorySummary(
           targetLanguage
         );
       }
-      // save translation to db
       await db
         .collection(`stories-summary-translations`)
         .doc(storyId)
@@ -446,18 +472,95 @@ export async function translateStorySummary(
           {
             id: storyId,
             updated_at: new Date().toISOString(),
-            // [targetLanguage]: translatedSentences,
             summary: {
               [targetLanguage]: translatedSentences,
             },
           },
           { merge: true }
         );
+      // console.log("Translation successful");
       return NextResponse.json({
         message: "translation successful",
         translated_sentences: translatedSentences,
       });
     } catch (error) {
+      console.error("Translation error:", error);
+      return NextResponse.json(
+        {
+          message: error,
+        },
+        { status: 500 }
+      );
+    }
+  }
+
+  if (type === "chapter") {
+    // console.log("Translating chapter summaries...");
+    const translationSnapshot = await db
+      .collection(`stories-chapter-summary-translations`)
+      .doc(storyId)
+      .get();
+
+    const translation = translationSnapshot.data();
+
+    let allTranslatedSentences: { [key: string]: string[] } = {};
+    let allTranslationsExist = true;
+
+    storyData.chapters.forEach((chapter: any, index: number) => {
+      if (!translation || !translation.summary[targetLanguage] || !translation.summary[targetLanguage][index]) {
+        allTranslationsExist = false;
+      } else {
+        allTranslatedSentences[index] = translation.summary[targetLanguage][index];
+      }
+    });
+
+    if (allTranslationsExist) {
+      // console.log("Chapter summary already translated ", allTranslatedSentences);
+      return NextResponse.json({
+        message: "chapter summary already translated",
+        translated_sentences: allTranslatedSentences,
+      });
+    }
+
+    try {
+      for (let index = 0; index < storyData.chapters.length; index++) {
+        const chapter = storyData.chapters[index];
+        let translatedSentences: string[] = [];
+
+        if (targetLanguage === LanguageType.EN) {
+          translatedSentences = await translatePassageWithGPT([chapter.summary]);
+        } else {
+          translatedSentences = await translatePassageWithGoogle(
+            [chapter.summary],
+            targetLanguage
+          );
+        }
+
+        allTranslatedSentences[index] = translatedSentences;
+      }
+
+      await db
+        .collection(`stories-chapter-summary-translations`)
+        .doc(storyId)
+        .set(
+          {
+            id: storyId,
+            updated_at: new Date().toISOString(),
+            summary: {
+              [targetLanguage]: allTranslatedSentences,
+            },
+          },
+          { merge: true }
+        );
+
+      // console.log("Translation successful", allTranslatedSentences);
+
+      return NextResponse.json({
+        message: "translation successful",
+        translated_sentences: allTranslatedSentences,
+      });
+    } catch (error) {
+      console.error("Translation error:", error);
       return NextResponse.json(
         {
           message: error,

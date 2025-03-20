@@ -376,6 +376,13 @@ export default {
       // The article pertains to the topic of A clever girl outsmarts an evil sorceress and saves her village from a curse., which falls within the tales and myths genre.
       articleCardDescription:
         "บทความนี้หัวข้อเกี่ยวกับ {topic} ซึ่งอยู่ในประเภท {genre}",
+      previousChapter: "บทก่อนหน้า",
+      nextChapter: "บทถัดไป",
+      chapters: "บท",
+      characters: "ตัวละคร",
+      previouslyRead: "อ่านแล้ว",
+      continueRead: "อ่านต่อ บทที่",
+      readChapter: "อ่าน บทที่",
     },
     articleContent: {
       voiceAssistant: "ผู้ช่วยเสียง",

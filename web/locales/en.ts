@@ -391,6 +391,13 @@ export default {
       cefrLevel: "CEFR level is {cefrLevel}",
       // The article pertains to the topic of A clever girl outsmarts an evil sorceress and saves her village from a curse., which falls within the tales and myths genre.
       articleCardDescription: "This {genre} article is about {topic}.",
+      previousChapter: "previousChapter",
+      nextChapter: "nextChapter",
+      chapters: "Chapters",
+      characters: "Characters",
+      previouslyRead: "Previously Read",
+      continueRead: "Continue Read Chapter",
+      readChapter: "Read Chapter",
     },
     articleContent: {
       voiceAssistant: "Voice Assistant",
