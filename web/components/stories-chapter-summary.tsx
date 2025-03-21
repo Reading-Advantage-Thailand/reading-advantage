@@ -52,5 +52,5 @@ export function ChapterSummary({ story, storyId }: Props) {
     setSummarySentence(res.translated_sentences);
   }
 
-  return <>{locale == "en" ? story.chapter.summary : summarySentence}</>;
+  return <>{locale == "en" ? story.storyBible.summary : summarySentence}</>;
 }
