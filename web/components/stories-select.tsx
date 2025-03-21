@@ -44,6 +44,7 @@ export default function SelectStory({ user }: Props) {
   const [articleGenresData, setArticleGenresData] = React.useState<string[]>(
     []
   );
+  const [subgenres, setSubgenres] = React.useState<string[]>([]);
   const [articleShowcaseData, setArticleShowcaseData] = React.useState<
     articleShowcaseType[]
   >([]);
@@ -69,6 +70,12 @@ export default function SelectStory({ user }: Props) {
       params.set("subgenre", value);
     }
 
+    // Reset state before navigation
+    setPage(1);
+    setHasMore(true);
+    setArticleShowcaseData([]);
+    setLoading(true);
+
     router.push("?" + params.toString(), { scroll: false });
   }
 
@@ -82,30 +89,44 @@ export default function SelectStory({ user }: Props) {
     async function fetchData() {
       if (!hasMore) return;
 
-      setLoading(true);
-      const params = new URLSearchParams(window.location.search);
-      params.set("page", page.toString());
-      params.set("limit", "8");
+      try {
+        setLoading(true);
+        const params = new URLSearchParams(window.location.search);
+        params.set("page", page.toString());
+        params.set("limit", "8");
 
-      const response = await fetchStories(params.toString());
+        //console.log("Fetching stories with params:", params.toString());
+        const response = await fetchStories(params.toString());
+        //console.log("API Response:", response);
 
-      if (page === 1) {
-        setArticleShowcaseData(response.results);
-      } else {
-        setArticleShowcaseData((prev) => [...prev, ...response.results]);
+        if (page === 1) {
+          setArticleShowcaseData(response.results);
+          // Get unique subgenres from stories
+          if (selectedGenre && !selectedSubgenre) {
+            const uniqueSubgenres = Array.from(
+              new Set(response.results.map((story: any) => story.subgenre))
+            ) as string[];
+            setSubgenres(uniqueSubgenres);
+          }
+        } else {
+          setArticleShowcaseData((prev) => [...prev, ...response.results]);
+        }
+
+        setTotalPages(response.totalPages);
+        if (page >= response.totalPages) {
+          setHasMore(false);
+        }
+
+        setArticleGenresData(response.selectionGenres);
+      } catch (error) {
+        console.error("Error fetching stories:", error);
+      } finally {
+        setLoading(false);
       }
-
-      setTotalPages(response.totalPages);
-      if (page >= response.totalPages) {
-        setHasMore(false);
-      }
-
-      setArticleGenresData(response.selectionGenres);
-      setLoading(false);
     }
 
     fetchData();
-  }, [selectedGenre, selectedSubgenre, page]);
+  }, [selectedGenre, selectedSubgenre, page, hasMore]);
 
   const lastArticleRef = React.useCallback(
     (node: HTMLDivElement | null) => {
@@ -145,16 +166,56 @@ export default function SelectStory({ user }: Props) {
               <Skeleton key={index} className="h-80 w-full" />
             ))}
           </div>
+        ) : selectedGenre && !selectedSubgenre ? (
+          <>
+            <div className="flex flex-wrap gap-2">
+              {subgenres.map((subgenre) => (
+                <Button
+                  key={subgenre}
+                  onClick={() => handleButtonClick(subgenre)}
+                  disabled={loading}
+                >
+                  {tf(subgenre)}
+                </Button>
+              ))}
+            </div>
+            {articleShowcaseData.length > 0 ? (
+              <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
+                {articleShowcaseData.map((article, index) => {
+                  const isLastArticle =
+                    index === articleShowcaseData.length - 1;
+                  return (
+                    <StoryShowcaseCard
+                      ref={isLastArticle ? lastArticleRef : null}
+                      key={article.id}
+                      story={article}
+                      userId={user.id}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex justify-center items-center w-full mt-4">
+                <p className="text-gray-500 text-lg">
+                  There are no stories in this category.
+                </p>
+              </div>
+            )}
+          </>
         ) : selectedGenre && selectedSubgenre ? (
           articleShowcaseData.length > 0 ? (
             <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
-              {articleShowcaseData.map((article, index) => (
-                <StoryShowcaseCard
-                  key={index}
-                  story={article}
-                  userId={user.id}
-                />
-              ))}
+              {articleShowcaseData.map((article, index) => {
+                const isLastArticle = index === articleShowcaseData.length - 1;
+                return (
+                  <StoryShowcaseCard
+                    ref={isLastArticle ? lastArticleRef : null}
+                    key={article.id}
+                    story={article}
+                    userId={user.id}
+                  />
+                );
+              })}
             </div>
           ) : (
             <div className="flex justify-center items-center w-full mt-4">
@@ -176,9 +237,9 @@ export default function SelectStory({ user }: Props) {
                 </Button>
               ))}
             </div>
-            <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
-              {articleShowcaseData.length > 0 ? (
-                articleShowcaseData.map((article, index) => {
+            {articleShowcaseData.length > 0 ? (
+              <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
+                {articleShowcaseData.map((article, index) => {
                   const isLastArticle =
                     index === articleShowcaseData.length - 1;
                   return (
@@ -189,15 +250,15 @@ export default function SelectStory({ user }: Props) {
                       userId={user.id}
                     />
                   );
-                })
-              ) : (
-                <div className="flex justify-center items-center col-span-2 mt-4">
-                  <p className="text-gray-500 text-lg">
-                    There are no articles in this category.
-                  </p>
-                </div>
-              )}
-            </div>
+                })}
+              </div>
+            ) : (
+              <div className="flex justify-center items-center w-full mt-4">
+                <p className="text-gray-500 text-lg">
+                  There are no articles in this category.
+                </p>
+              </div>
+            )}
           </>
         )}
       </CardContent>
