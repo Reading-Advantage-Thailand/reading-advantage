@@ -97,9 +97,11 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
                 : 1,
           }}
         >
-          <Badge className="shadow-lg max-w-max" variant="destructive">
-            Reading Advantage Level: {article.ra_level}
-          </Badge>
+          {article.ra_level && (
+            <Badge className="shadow-lg max-w-max" variant="destructive">
+              Reading Advantage Level: {article.ra_level}
+            </Badge>
+          )}
           <Badge className="shadow-lg max-w-max" variant="destructive">
             CEFR Level: {article.cefr_level}
           </Badge>

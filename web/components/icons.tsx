@@ -43,6 +43,7 @@ import {
   MonitorCog,
   PlusCircle,
   ExternalLink,
+  BookCopy,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -55,6 +56,7 @@ export const Icons = {
   system: Laptop,
   user: User,
   book: Book,
+  storyBook: BookCopy,
   dashboard: LayoutDashboard,
   record: History,
   unChecked: MinusCircle,

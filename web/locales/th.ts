@@ -48,6 +48,40 @@ export default {
           },
         },
       },
+      storyPage: {
+        storySelection: "เลือกเนื้อเรื่อง",
+        story: {
+          storyNotFound: "ไม่พบเรื่องนี้",
+          storyInsufficientLevel:
+            "คุณไม่สามารถอ่านเรื่องนี้ได้ เพราะระดับการอ่านของคุณยังไม่ถึง",
+          readBefore: "ยินดีต้อนรับกลับมา คุณเคยอ่านเรื่องนี้มาก่อน",
+          readBeforeDescription:
+            "คุณสามารถลองอ่านและฝึกฝนอีกครั้งเพื่อพัฒนาทักษะการอ่านของคุณ นี่คือผลลัพธ์จากการอ่านครั้งก่อนของคุณ",
+          status: "สถานะ",
+          statusText: {
+            completed: "อ่านจบแล้ว",
+            uncompleted: "ยังอ่านไม่จบ",
+          },
+          statusDescription: "อัปเดตล่าสุดเมื่อ {date}",
+          score: "คะแนนแบบทดสอบ",
+          scoreText: "{score}",
+          scoreDescription: "จาก {total} คำถาม",
+          rated: "ให้คะแนน",
+          ratedText: "{rated} คะแนน",
+          ratedDescription: "คุณได้ให้คะแนนเรื่องนี้แล้ว",
+          timeSpend: "เวลาที่ใช้",
+          timeSpendText: "{time}",
+          timeSpendDescription: "ใช้เวลาไปกับ {total} คำถาม",
+          scoreSuffix: {
+            point: "คะแนน",
+            points: "คะแนน",
+          },
+          secondSuffix: {
+            second: "วินาที",
+            seconds: "วินาที",
+          },
+        },
+      },
       historyPage: {
         title: "ประวัติสำหรับ {userName}",
         //Headings
@@ -249,6 +283,7 @@ export default {
     },
     sidebarNav: {
       read: "อ่าน",
+      stories: "เนื้อเรื่อง",
       history: "ประวัติ",
       sentences: "ประโยค",
       reports: "รายงาน",
@@ -341,6 +376,13 @@ export default {
       // The article pertains to the topic of A clever girl outsmarts an evil sorceress and saves her village from a curse., which falls within the tales and myths genre.
       articleCardDescription:
         "บทความนี้หัวข้อเกี่ยวกับ {topic} ซึ่งอยู่ในประเภท {genre}",
+      previousChapter: "บทก่อนหน้า",
+      nextChapter: "บทถัดไป",
+      chapters: "บท",
+      characters: "ตัวละคร",
+      previouslyRead: "อ่านแล้ว",
+      continueRead: "อ่านต่อ บทที่",
+      readChapter: "อ่าน บทที่",
     },
     articleContent: {
       voiceAssistant: "ผู้ช่วยเสียง",
@@ -353,6 +395,20 @@ export default {
       translateButton: {
         open: "แปล",
         close: "ปิดหน้าต่างการแปล",
+      },
+    },
+    storyChapterContent: {
+      voiceAssistant: "ผู้ช่วยเสียง",
+      soundButton: {
+        play: "เล่นเสียง",
+        pause: "หยุดเสียงชั่วคราว",
+      },
+      previousChapter: "ตอนก่อนหน้า",
+      nextChapter: "ตอนถัดไป",
+      openvoicebutton: "ฟังและอ่านไปพร้อมกัน",
+      translateButton: {
+        open: "แปลภาษา",
+        close: "ปิดแผงแปลภาษา",
       },
     },
     mcq: {

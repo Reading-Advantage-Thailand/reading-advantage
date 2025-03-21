@@ -12,6 +12,7 @@ export interface GenerateArticleParams {
   subgenre: string;
   topic: string;
   cefrLevel: ArticleBaseCefrLevel;
+  previousContent?: string;
 }
 
 export interface GenerateArticleResponse {

@@ -11,7 +11,7 @@ interface GenerateTopicParams {
   amountPerGenre: number;
 }
 
-interface GenerateTopicResponse {
+export interface GenerateTopicResponse {
   topics: string[];
 }
 

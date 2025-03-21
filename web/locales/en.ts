@@ -51,6 +51,49 @@ export default {
           },
         },
       },
+      storyPage: {
+        // Headings
+        storySelection: "Stories Selection",
+
+        // nextquiz/[articleId] page
+        story: {
+          storyNotFound: "Story not found",
+          storyInsufficientLevel:
+            "You cannot read this story because your reading level is not high enough.",
+
+          // Headings
+          readBefore: "Welcome back. You have read this story before",
+          readBeforeDescription:
+            "You might try reading and practicing again to improve your reading skills. Here is the result of your previous reading.",
+
+          // Stats
+          status: "Status",
+          statusText: {
+            completed: "Completed",
+            uncompleted: "Uncompleted",
+          },
+          statusDescription: "Last updated on {date}",
+          score: "Quiz Score",
+          scoreText: "{score}",
+          scoreDescription: "from {total} questions",
+          rated: "Rated",
+          ratedText: "{rated} rating",
+          ratedDescription: "You rated this story",
+          timeSpend: "Time spent",
+          timeSpendText: "{time}",
+          timeSpendDescription: "on {total} questions",
+
+          // Suffixes
+          scoreSuffix: {
+            point: "point",
+            points: "points",
+          },
+          secondSuffix: {
+            second: "second",
+            seconds: "seconds",
+          },
+        },
+      },
       historyPage: {
         title: "History for {userName}",
         //Headings
@@ -257,6 +300,7 @@ export default {
     },
     sidebarNav: {
       read: "Read",
+      stories: "stories",
       sentences: "Sentences",
       reports: "Reports",
       history: "History",
@@ -347,6 +391,13 @@ export default {
       cefrLevel: "CEFR level is {cefrLevel}",
       // The article pertains to the topic of A clever girl outsmarts an evil sorceress and saves her village from a curse., which falls within the tales and myths genre.
       articleCardDescription: "This {genre} article is about {topic}.",
+      previousChapter: "previousChapter",
+      nextChapter: "nextChapter",
+      chapters: "Chapters",
+      characters: "Characters",
+      previouslyRead: "Previously Read",
+      continueRead: "Continue Read Chapter",
+      readChapter: "Read Chapter",
     },
     articleContent: {
       voiceAssistant: "Voice Assistant",
@@ -354,6 +405,21 @@ export default {
         play: "Play sound",
         pause: "Pause sound",
       },
+      openvoicebutton: "Listen and read along",
+      // button translate
+      translateButton: {
+        open: "Translate",
+        close: "Close translate panel",
+      },
+    },
+    storyChapterContent: {
+      voiceAssistant: "Voice Assistant",
+      soundButton: {
+        play: "Play sound",
+        pause: "Pause sound",
+      },
+      previousChapter: "previousChapter",
+      nextChapter: "nextChapter",
       openvoicebutton: "Listen and read along",
       // button translate
       translateButton: {
