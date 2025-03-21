@@ -22,14 +22,14 @@ export async function getAllStories(req: ExtendedNextRequest) {
     const userId = req.session?.user.id as string;
     const userLevel = req.session?.user.level as number;
 
-    console.log("Request params:", {
-      page,
-      limit,
-      genre,
-      subgenre,
-      userId,
-      userLevel,
-    });
+    //console.log("Request params:", {
+    //  page,
+    //  limit,
+    //  genre,
+    //  subgenre,
+    //  userId,
+    //  userLevel,
+    //});
 
     const fetchGenres = async () => {
       const collectionRef = db.collection("genres-fiction");
@@ -38,6 +38,7 @@ export async function getAllStories(req: ExtendedNextRequest) {
     };
 
     const selectionGenres = await fetchGenres();
+    //console.log("Available genres:", selectionGenres);
 
     if (storyId) {
       const storyDoc = await db.collection("stories").doc(storyId).get();
@@ -73,12 +74,24 @@ export async function getAllStories(req: ExtendedNextRequest) {
     let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
       db.collection("stories");
 
-    if (genre) query = query.where("genre", "==", genre);
+    if (genre) {
+      //console.log("Filtering by genre:", genre);
+      query = query.where("genre", "==", genre);
+    }
     if (subgenre) query = query.where("subgenre", "==", subgenre);
     if (!genre && !subgenre) query = query.orderBy("createdAt", "desc");
 
     // Get total count first
     const totalSnapshot = await query.get();
+    //console.log("Total stories found before filtering:", totalSnapshot.size);
+    //console.log(
+    //  "Stories found:",
+    //  totalSnapshot.docs.map((doc) => ({
+    //    id: doc.id,
+    //    genre: doc.data().genre,
+    //    ra_level: doc.data().ra_level,
+    //  }))
+    //);
 
     // กรองบทความตามระดับก่อน
     const availableStories = totalSnapshot.docs.filter(
@@ -86,27 +99,27 @@ export async function getAllStories(req: ExtendedNextRequest) {
     );
 
     const totalAvailableStories = availableStories.length;
-    console.log("Total available stories:", totalAvailableStories);
+    //console.log("Total available stories:", totalAvailableStories);
 
     // คำนวณ pagination จากบทความที่กรองแล้ว
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
     const paginatedDocs = availableStories.slice(startIndex, endIndex);
-    console.log("Pagination range:", {
-      startIndex,
-      endIndex,
-      paginatedDocsLength: paginatedDocs.length,
-    });
+    //console.log("Pagination range:", {
+    //  startIndex,
+    //  endIndex,
+    //  paginatedDocsLength: paginatedDocs.length,
+    //});
 
     const results = await Promise.all(
       paginatedDocs.map(async (doc) => {
         const storyData = doc.data();
-        console.log("Story data:", {
-          id: doc.id,
-          title: storyData.title,
-          ra_level: storyData.ra_level,
-          userLevel,
-        });
+        //console.log("Story data:", {
+        //  id: doc.id,
+        //  title: storyData.title,
+        //  ra_level: storyData.ra_level,
+        //  userLevel,
+        //});
 
         const articleRecord = await db
           .collection("users")
@@ -122,6 +135,14 @@ export async function getAllStories(req: ExtendedNextRequest) {
         };
       })
     );
+
+    //console.log("Final results:", {
+    //  params: { genre, subgenre, page, limit },
+    //  results,
+    //  selectionGenres,
+    //  total: totalAvailableStories,
+    //  totalPages: Math.ceil(totalAvailableStories / limit),
+    //});
 
     return NextResponse.json({
       params: { genre, subgenre, page, limit },
@@ -160,18 +181,18 @@ export async function getStoryById(
   }
 
   try {
-    console.log(`Fetching story with ID: ${storyId}`);
+    //console.log(`Fetching story with ID: ${storyId}`);
     const storyDoc = await db.collection("stories").doc(storyId).get();
 
     if (!storyDoc.exists) {
-      console.log("Story not found");
+      //console.log("Story not found");
       return NextResponse.json(
         { message: "Story not found", result: null },
         { status: 404 }
       );
     }
 
-    console.log(`Checking user record for story ID: ${storyId}`);
+    //console.log(`Checking user record for story ID: ${storyId}`);
     const record = await db
       .collection("users")
       .doc(userId)
@@ -180,7 +201,7 @@ export async function getStoryById(
       .get();
 
     if (!record.exists) {
-      console.log("No existing record found, creating new record");
+      //console.log("No existing record found, creating new record");
       await db
         .collection("users")
         .doc(req.session?.user.id as string)
@@ -198,7 +219,7 @@ export async function getStoryById(
         });
     }
 
-    console.log("Fetching chapter tracking data");
+    //console.log("Fetching chapter tracking data");
     const chapterTrackingRef = await db
       .collection("users")
       .doc(userId)
@@ -217,7 +238,7 @@ export async function getStoryById(
     }
 
     const chapters = storyData.chapters || [];
-    console.log(`Processing ${chapters.length} chapters`);
+    //console.log(`Processing ${chapters.length} chapters`);
 
     for (let i = 0; i < chapters.length; i++) {
       const chapterNumber = i + 1;
@@ -226,13 +247,13 @@ export async function getStoryById(
       );
       if (doc) {
         chapters[i].is_read = true;
-        console.log(`Chapter ${chapterNumber} marked as read`);
+        //console.log(`Chapter ${chapterNumber} marked as read`);
       }
     }
 
     storyData.chapters = chapters;
 
-    console.log("Returning story data");
+    //console.log("Returning story data");
     return NextResponse.json({
       result: {
         id: storyDoc.id,
