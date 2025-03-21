@@ -288,7 +288,6 @@ export async function getStorySAQuestion(
       );
     }
 
-    // 🔹 ค้นหา SAQ แค่ข้อเดียว
     const question: SARecord | undefined = chapter.questions.find(
       (q: SARecord) => q.type === "SAQ"
     );
@@ -309,7 +308,6 @@ export async function getStorySAQuestion(
 
     //console.log(formattedQuestion);
 
-    // 🔹 ดึงข้อมูล `saq-records` ของผู้ใช้จาก Firestore
     const userRecordRef = db
       .collection("users")
       .doc(userId)
@@ -654,21 +652,21 @@ export async function answerStoryMCQuestion(
       .get();
 
     const userRecords = userRecordAll.docs
-      .filter((doc) => doc.id.startsWith(`${chapterNumber}-`)) // ดึงเฉพาะของ chapter นี้
+      .filter((doc) => doc.id.startsWith(`${chapterNumber}-`))
       .sort((a, b) => {
         const qA = parseInt(a.id.split("-")[1], 10);
         const qB = parseInt(b.id.split("-")[1], 10);
-        return qA - qB; // เรียงลำดับคำถาม 1-5
+        return qA - qB;
       });
 
-    let progress: AnswerStatus[] = new Array(5).fill(AnswerStatus.UNANSWERED); // เตรียม progress ที่เป็น UNANSWERED ทั้งหมด
+    let progress: AnswerStatus[] = new Array(5).fill(AnswerStatus.UNANSWERED);
 
     userRecords.forEach((doc) => {
       const data = doc.data();
-      const questionIndex = parseInt(doc.id.split("-")[1], 10) - 1; // แปลง "1-2" -> 2 (index = 1)
+      const questionIndex = parseInt(doc.id.split("-")[1], 10) - 1;
 
       if (questionIndex >= 0 && questionIndex < 5) {
-        progress[questionIndex] = data.status; // อัปเดตสถานะคำถามที่มีข้อมูล
+        progress[questionIndex] = data.status;
       }
     });
 
@@ -817,7 +815,6 @@ export async function rateStory(
 //     }
 // }
 
-//Retake quiz
 export async function retakeStoryMCQuestion(
   req: ExtendedNextRequest,
   { params: { storyId, chapterNumber } }: RequestContext
@@ -841,7 +838,6 @@ export async function retakeStoryMCQuestion(
       );
     }
 
-    // 🔹 ดึง MCQ Records ทั้งหมดของผู้ใช้สำหรับ story นี้
     const userRecordSnap = await db
       .collection("users")
       .doc(userId)
@@ -850,24 +846,21 @@ export async function retakeStoryMCQuestion(
       .collection("mcq-records")
       .get();
 
-    // 🔹 คัดกรองเฉพาะคำถามที่เริ่มต้นด้วย `chapterNumber-`
     const recordsToDelete = userRecordSnap.docs.filter((doc) =>
       doc.id.startsWith(`${chapterNumber}-`)
     );
 
     if (recordsToDelete.length === 0) {
-      //console.log(`No MCQ records found for chapter ${chapterNumber}`);
       return NextResponse.json(
         { message: `No records found for chapter ${chapterNumber}` },
         { status: 404 }
       );
     }
 
-    // 🔹 ใช้ batch delete เพื่อลบทั้งหมดในครั้งเดียว
     const batch = db.batch();
     recordsToDelete.forEach((doc) => batch.delete(doc.ref));
 
-    await batch.commit(); // ✅ ลบทั้งหมดในครั้งเดียว
+    await batch.commit();
 
     //console.log(
     //  `Deleted ${recordsToDelete.length} MCQ records from chapter ${chapterNumber}`
@@ -1194,7 +1187,6 @@ export async function answerStoryLAQuestion(
       created_at: new Date().toISOString(),
     });
 
-  // Update laq-status
   await db
     .collection("users")
     .doc(userId)

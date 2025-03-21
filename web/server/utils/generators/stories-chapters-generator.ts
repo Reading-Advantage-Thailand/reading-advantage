@@ -6,8 +6,6 @@ import { getCEFRRequirements } from "../CEFR-requirements";
 import { generateChapterAudio } from "./audio-generator";
 import { generateChapterAudioForWord } from "./audio-words-generator";
 import { saveWordList } from "./audio-words-generator";
-
-// Import functions สำหรับสร้างคำถามที่มีอยู่แล้ว
 import { generateMCQuestion } from "./mc-question-generator";
 import { generateSAQuestion } from "./sa-question-generator";
 import { generateLAQuestion } from "./la-question-generator";
@@ -222,10 +220,8 @@ export async function generateChapters(
             throw new Error(`Failed to generate chapter ${i + 1}`);
           }
 
-          // เพิ่มบทใหม่ในลิสต์
           chapters.push(newChapter);
 
-          // สร้างคำถาม
           const questions = await generateChapterQuestions(
             newChapter,
             type,
@@ -268,7 +264,6 @@ export async function generateChapters(
 
           console.log("Chapter audio for words generated successfully.");
 
-          // ถ้าทำสำเร็จทั้งหมด ให้ออกจาก loop
           break;
         } catch (error) {
           console.error(
@@ -285,7 +280,6 @@ export async function generateChapters(
             );
           }
 
-          // รอสักครู่ก่อนลองใหม่
           const delay = Math.pow(2, attempts) * 1000;
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
@@ -300,9 +294,6 @@ export async function generateChapters(
   }
 }
 
-/**
- * ฟังก์ชันให้ AI สร้างบทเดียว โดยอิงจาก Story Bible และบทก่อนหน้า
- */
 async function generateSingleChapter({
   storyBible,
   cefrLevel,
@@ -392,16 +383,12 @@ Return only valid JSON.
   }
 }
 
-/**
- * ฟังก์ชันสร้างคำถามให้แต่ละบท
- */
 async function generateChapterQuestions(
   chapter: Chapter,
   type: string,
   cefrLevel: ArticleBaseCefrLevel
 ): Promise<Question[]> {
   try {
-    // สร้าง MCQ
     const mcResponse = await generateMCQuestion({
       cefrlevel: cefrLevel,
       type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
@@ -411,7 +398,7 @@ async function generateChapterQuestions(
       imageDesc: chapter["image-description"],
     });
     const mcQuestions = (mcResponse?.questions || [])
-      .slice(0, 5) // จำกัด MCQ 5 ข้อ
+      .slice(0, 5)
       .map((q) => ({
         type: "MCQ" as const,
         question_number: q.question_number,
@@ -426,7 +413,6 @@ async function generateChapterQuestions(
         textual_evidence: q.textual_evidence,
       }));
 
-    // สร้าง SAQ
     const saResponse = await generateSAQuestion({
       cefrlevel: cefrLevel,
       type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
@@ -436,7 +422,7 @@ async function generateChapterQuestions(
       imageDesc: chapter["image-description"],
     });
     const saQuestions = (saResponse?.questions || [])
-      .slice(0, 1) // จำกัด SAQ 1 ข้อ
+      .slice(0, 1)
       .map((q) => ({
         type: "SAQ" as const,
         question: q.question || "Missing question",
@@ -444,7 +430,6 @@ async function generateChapterQuestions(
         answer: q.suggested_answer || "No answer",
       }));
 
-    // สร้าง LAQ
     const laResponse = await generateLAQuestion({
       cefrlevel: cefrLevel,
       type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,

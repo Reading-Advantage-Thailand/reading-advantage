@@ -2,9 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import db from "@/configs/firestore-config";
 import { randomSelectGenre } from "./random-select-genre";
 import { ArticleBaseCefrLevel, ArticleType } from "../../models/enum";
-import { generateStoryBible } from "./story-bible-generator";
+import { generateStoryBible } from "./stories-bible-generator";
 import { getCEFRRequirements } from "../CEFR-requirements";
-import { generateChapters } from "./story-chapters-generator";
+import { generateChapters } from "./stories-chapters-generator";
 import { generateStoriesTopic } from "./stories-topic-generator";
 import { generateImage } from "./image-generator";
 import { Timestamp } from "firebase-admin/firestore";
@@ -132,14 +132,12 @@ export async function generateStories(req: NextRequest) {
               storyId: ref.id,
             });
 
-            // ตรวจสอบให้แน่ใจว่าจำนวน chapter ถูกต้อง
             if (chapters.length !== chapterCount) {
               throw new Error(
                 `Expected ${chapterCount} chapters, but got ${chapters.length}`
               );
             }
 
-            // ตรวจสอบให้แน่ใจว่าทุก chapter มี `questions`
             const validatedChapters = chapters.map((chapter) => ({
               ...chapter,
               questions: Array.isArray(chapter.questions)
@@ -164,7 +162,7 @@ export async function generateStories(req: NextRequest) {
             }
 
             await ref.update({ chapters });
-            successfulCount++; // นับว่าเรื่องนี้สร้างสำเร็จ
+            successfulCount++;
           } catch (chapterError) {
             console.error("Error generating chapters:", chapterError);
             await deleteStoryAndImages(ref.id);
