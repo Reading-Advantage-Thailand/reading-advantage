@@ -81,7 +81,6 @@ export async function getAllStories(req: ExtendedNextRequest) {
     if (subgenre) query = query.where("subgenre", "==", subgenre);
     if (!genre && !subgenre) query = query.orderBy("createdAt", "desc");
 
-    // Get total count first
     const totalSnapshot = await query.get();
     //console.log("Total stories found before filtering:", totalSnapshot.size);
     //console.log(
@@ -93,7 +92,6 @@ export async function getAllStories(req: ExtendedNextRequest) {
     //  }))
     //);
 
-    // กรองบทความตามระดับก่อน
     const availableStories = totalSnapshot.docs.filter(
       (doc) => doc.data().ra_level <= userLevel
     );
@@ -101,7 +99,6 @@ export async function getAllStories(req: ExtendedNextRequest) {
     const totalAvailableStories = availableStories.length;
     //console.log("Total available stories:", totalAvailableStories);
 
-    // คำนวณ pagination จากบทความที่กรองแล้ว
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
     const paginatedDocs = availableStories.slice(startIndex, endIndex);

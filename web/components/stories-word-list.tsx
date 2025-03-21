@@ -72,7 +72,7 @@ export default function StoriesWordList({
 
   const handleWordList = useCallback(async () => {
     try {
-      setLoading(true); // Start loading
+      setLoading(true);
       const resWordlist = await fetch(
         `/api/v1/assistant/stories-wordlist/${storyId}/${chapterNumber}`,
         {
@@ -82,24 +82,24 @@ export default function StoriesWordList({
       );
 
       const data = await resWordlist.json();
-      console.log("API Response Full Data:", {
-        message: data.messeges,
-        timepoints: JSON.stringify(data.timepoints, null, 2),
-        wordList: JSON.stringify(data.word_list, null, 2),
-        chapter: JSON.stringify(chapter, null, 2),
-      });
+      //console.log("API Response Full Data:", {
+      //  message: data.messeges,
+      //  timepoints: JSON.stringify(data.timepoints, null, 2),
+      //  wordList: JSON.stringify(data.word_list, null, 2),
+      //  chapter: JSON.stringify(chapter, null, 2),
+      //});
 
       let wordList = [];
 
       if (data?.timepoints?.length > 0 && Array.isArray(data?.word_list)) {
-        console.log("Creating wordList with:", {
-          timepoints_length: data.timepoints.length,
-          word_list_length: data.word_list?.length,
-          minLength: Math.min(
-            data.timepoints.length,
-            data.word_list?.length || 0
-          ),
-        });
+        //  console.log("Creating wordList with:", {
+        //  timepoints_length: data.timepoints.length,
+        //  word_list_length: data.word_list?.length,
+        //  minLength: Math.min(
+        //  data.timepoints.length,
+        //  data.word_list?.length || 0
+        //  ),
+        //});
 
         const minLength = Math.min(
           data.timepoints.length,
@@ -110,11 +110,11 @@ export default function StoriesWordList({
           const nextTimepoint = data.timepoints[index + 1];
           const word = data.word_list[index];
 
-          console.log(`Processing item ${index}:`, {
-            timepoint,
-            nextTimepoint,
-            word,
-          });
+          //  console.log(`Processing item ${index}:`, {
+          //    timepoint,
+          //    nextTimepoint,
+          //    word,
+          //  });
 
           return {
             vocabulary: word.vocabulary,
@@ -128,25 +128,25 @@ export default function StoriesWordList({
           };
         });
       } else {
-        console.log("Falling back to word_list only:", {
-          has_timepoints: !!data?.timepoints,
-          timepoints_length: data?.timepoints?.length,
-          is_word_list_array: Array.isArray(data?.word_list),
-          word_list: data?.word_list,
-        });
+        //console.log("Falling back to word_list only:", {
+        //  has_timepoints: !!data?.timepoints,
+        //  timepoints_length: data?.timepoints?.length,
+        //  is_word_list_array: Array.isArray(data?.word_list),
+        //  word_list: data?.word_list,
+        //});
         wordList = data?.word_list || [];
       }
       setWordList(wordList);
       form.reset();
     } catch (error: any) {
-      console.log("error: ", error);
+      //console.log("error: ", error);
       toast({
         title: "Something went wrong.",
         description: `${error?.response?.data?.message || error?.message}`,
         variant: "destructive",
       });
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   }, [chapter, storyId, chapterNumber, form]);
 
@@ -193,13 +193,12 @@ export default function StoriesWordList({
     }
   };
 
-  // Calculate the height based on the number of items in the wordList
   const calculateHeight = () => {
-    const baseHeight = 300; // Base height for content without wordList
-    const itemHeight = 50; // Height of each word list item
-    const maxDialogHeight = 490; // Maximum height of the dialog
+    const baseHeight = 300;
+    const itemHeight = 50;
+    const maxDialogHeight = 490;
     const calculatedHeight = baseHeight + wordList.length * itemHeight;
-    return Math.min(calculatedHeight, maxDialogHeight); // Limit to max height
+    return Math.min(calculatedHeight, maxDialogHeight);
   };
 
   return (

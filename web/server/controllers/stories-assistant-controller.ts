@@ -19,7 +19,6 @@ interface RequestContext {
   };
 }
 
-// Define the schema for the request body
 const createChatbotSchema = z.object({
   title: z.string(),
   passage: z.string(),
@@ -38,7 +37,6 @@ export async function getFeedbackWritter(res: object) {
     "utf-8"
   );
 
-  // Input Schema
   const inputSchema = z.object({
     preferredLanguage: z.string(),
     targetCEFRLevel: z.enum(["A0", "A1", "A2", "B1", "B2", "C1", "C2"]),
@@ -47,7 +45,6 @@ export async function getFeedbackWritter(res: object) {
     studentResponse: z.string(),
   });
 
-  // Output Schema
   const outputSchema = z.object({
     feedback: z.object({
       scores: z.object({
@@ -139,7 +136,6 @@ export async function getChapterWordlist(
   const { chapter } = await req.json();
   console.log(`[getChapterWordlist] Got chapter content`);
 
-  // First need to find the word list of the article in db
   const wordListRef = db
     .collection(`stories-word-list`)
     .doc(`${storyId}-${chapterNumber}`);
