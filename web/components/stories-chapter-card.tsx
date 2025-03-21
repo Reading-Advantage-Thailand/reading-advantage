@@ -48,7 +48,7 @@ export default async function StoryChapterCard({
             </Badge>
           </div>
           <CardDescription>
-            <ChapterSummary story={story} storyId={storyId} />
+            <ChapterSummary story={story} storyId={storyId} chapterNumber={chapterNumber} />
           </CardDescription>
           <div className="flex justify-center">
             <Image

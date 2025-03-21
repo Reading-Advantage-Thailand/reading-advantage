@@ -2,12 +2,10 @@
 import React from "react";
 import { useCurrentLocale } from "@/locales/client";
 import { StoryChapter } from "./models/article-model";
-import { number } from "zod";
 
 type Props = {
   story: StoryChapter;
   storyId: string;
-  chapterNumber: string;
 };
 
 async function getTranslate(
@@ -17,7 +15,7 @@ async function getTranslate(
   try {
     const res = await fetch(`/api/v1/assistant/stories-translate/${storyId}`, {
       method: "POST",
-      body: JSON.stringify({ type: "chapter", targetLanguage }),
+      body: JSON.stringify({ type: "summary", targetLanguage }),
     });
     const data = await res.json();
     return data;
@@ -26,10 +24,9 @@ async function getTranslate(
   }
 }
 
-export function ChapterSummary({ story, storyId, chapterNumber }: Props) {
+export function StoriesSummary({ story, storyId }: Props) {
   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
   const locale = useCurrentLocale();
-  const chapterIndex = Number(chapterNumber) - 1;
 
   React.useEffect(() => {
     handleTranslateSummary();
@@ -52,8 +49,8 @@ export function ChapterSummary({ story, storyId, chapterNumber }: Props) {
 
     const res = await getTranslate(storyId, localeTarget);
 
-    setSummarySentence([res.translated_sentences[chapterIndex]]);
+    setSummarySentence(res.translated_sentences);
   }
 
-  return <>{locale == "en" ? story.chapter.summary : summarySentence}</>;
+  return <>{locale == "en" ? story.storyBible.summary : summarySentence}</>;
 }
