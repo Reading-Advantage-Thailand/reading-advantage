@@ -11,6 +11,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
 import { evaluateRating } from "./evaluate-rating-generator";
 import { calculateLevel } from "@/lib/calculateLevel";
+import { sendDiscordWebhook } from "../send-discord-webhook";
 
 const CEFRLevels = [
   ArticleBaseCefrLevel.A1,
@@ -23,6 +24,7 @@ const CEFRLevels = [
 
 export async function generateStories(req: NextRequest) {
   try {
+    const startTime = Date.now();
     console.log("Received request to generate stories");
     const body = await req.json();
     const { amountPerGenre } = body;
@@ -33,6 +35,22 @@ export async function generateStories(req: NextRequest) {
 
     let successfulCount = 0;
     let failedCount = 0;
+
+    await sendDiscordWebhook({
+      title: "Generate Stories",
+      embeds: [
+        {
+          description: {
+            "Amount per genre": amountPerGenre,
+            "Total stories generating": `${amount * CEFRLevels.length}`,
+          },
+          color: 0x0099ff,
+        },
+      ],
+      color: 0x0099ff,
+      reqUrl: req.url,
+      userAgent: req.headers.get("user-agent") || "",
+    });
 
     for (const level of CEFRLevels) {
       console.log(`Generating stories for CEFR Level: ${level}`);
@@ -172,6 +190,27 @@ export async function generateStories(req: NextRequest) {
         }
       }
     }
+
+    const endTime = Date.now();
+    const duration = (endTime - startTime) / 60000;
+
+    await sendDiscordWebhook({
+      title: "Stories Generation Complete",
+      embeds: [
+        {
+          description: {
+            "Total stories generated": `${amount * CEFRLevels.length}`,
+            "Successful stories": `${successfulCount.toString()} stories`,
+            "Failed stories": `${failedCount.toString()} stories`,
+            "Time Taken": `${duration.toString()} minutes`,
+          },
+          color: 0xff0000,
+        },
+      ],
+      color: 0xff0000,
+      reqUrl: req.url,
+      userAgent: req.headers.get("user-agent") || "",
+    });
 
     return NextResponse.json(
       {
