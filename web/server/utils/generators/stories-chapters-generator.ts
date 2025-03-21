@@ -105,20 +105,6 @@ interface Question {
   answer: string;
 }
 
-interface Question {
-  type: "MCQ" | "SAQ" | "LAQ";
-  question: string;
-  options?: string[];
-  answer: string;
-}
-
-interface Question {
-  type: "MCQ" | "SAQ" | "LAQ";
-  question: string;
-  options?: string[];
-  answer: string;
-}
-
 interface GenerateChaptersParams {
   type: string;
   storyBible: StoryBible;

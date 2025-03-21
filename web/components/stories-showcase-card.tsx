@@ -120,11 +120,7 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             <div className=" bg-black bg-opacity-40">
               <p className="text-sm drop-shadow-lg line-clamp-4 text-white">
                 {locale == "en" ? (
-<<<<<<< HEAD
                   <p>{story?.storyBible?.summary}</p>
-=======
-                  <p>{story.summary}</p>
->>>>>>> a8c931e3 (create : new component for stories and modify get story api)
                 ) : (
                   <p>{summarySentence}</p>
                 )}
