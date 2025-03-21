@@ -12,8 +12,8 @@ import Image from "next/image";
 import ChapterList from "@/components/stories-chapter-list";
 import StoriesAssignDialog from "@/components/teacher/stories-assign-dialog";
 import StoriesActions from "@/components/stories-actions";
-import { ChapterSummary } from "@/components/stories-chapter-summary";
 import { CardDescription } from "@/components/ui/card";
+import { StoriesSummary } from "@/components/stories-summary";
 
 export interface StoryBible {
   mainPlot: {
@@ -110,7 +110,7 @@ export default async function StoryChapterSelectionPage({
               })}
             </Badge>
             <CardDescription>
-              <ChapterSummary
+              <StoriesSummary
                 story={storyResponse}
                 storyId={storyResponse.id}
               />
