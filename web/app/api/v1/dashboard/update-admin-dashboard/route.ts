@@ -1,7 +1,7 @@
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
-import { updateAdminDashboard } from "@/server/controllers/update-dashboard-controller";
+import { updateAdminDashboard } from "@/server/controllers/dashboard-controller";
 import { restrictAccessKey } from "@/server/controllers/auth-controller";
 
 export interface ExtendedNextRequest {

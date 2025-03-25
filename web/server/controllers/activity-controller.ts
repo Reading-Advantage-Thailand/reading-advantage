@@ -12,6 +12,7 @@ export async function getAllUserActivity() {
       .split("/")
       .reverse()
       .join("-");
+
     const userActivityLogRef = db
       .collection("activity-distribution")
       .doc(toDay);
@@ -21,6 +22,8 @@ export async function getAllUserActivity() {
     if (!userActivityData) {
       return NextResponse.json({ message: "No data found" }, { status: 404 });
     }
+
+    console.log(userActivityData);
 
     return NextResponse.json(
       {
