@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -25,7 +25,7 @@ import {
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "../ui/use-toast";
 import { Header } from "../header";
 
@@ -55,14 +55,11 @@ type Classroom = {
 };
 
 type MyEnrollProps = {
-  enrolledClasses: Classroom[];
-  studentData: Student;
+  classroom: Classroom[];
+  student: Student;
 };
 
-export default function MyUnEnrollClasses({
-  enrolledClasses,
-  studentData,
-}: MyEnrollProps) {
+export default function MyUnEnrollClasses() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -73,8 +70,8 @@ export default function MyUnEnrollClasses({
   const t = useScopedI18n("components.articleRecordsTable");
   const tu = useScopedI18n("components.myStudent.unEnrollPage");
   const router = useRouter();
-
-  console.log(enrolledClasses);
+  const params = useParams();
+  const [data, setData] = useState<MyEnrollProps>();
 
   const handleStudentUnEnrollment = async (classroomId: string[]) => {
     if (classroomId.length === 0) {
@@ -86,10 +83,10 @@ export default function MyUnEnrollClasses({
       return;
     }
     for (const classId of classroomId) {
-      const studentDelete = enrolledClasses
+      const studentDelete = data?.classroom
         .find((classroom: Classroom) => classroom.id === classId)
         ?.student.filter(
-          (student: StudentInClass) => student.studentId !== studentData.id
+          (student: StudentInClass) => student.studentId !== params.studentId
         );
 
       try {
@@ -107,6 +104,20 @@ export default function MyUnEnrollClasses({
             title: tu("toast.errorUnenrollment"),
             description: tu("toast.errorUnenrollDescription"),
             variant: "destructive",
+          });
+        } else {
+          setData((prevData) => {
+            const safePrevData = prevData ?? {
+              classroom: [],
+              student: {} as Student,
+            };
+
+            return {
+              ...safePrevData,
+              classroom: safePrevData.classroom.filter(
+                (classroom: Classroom) => classroom.id !== classId
+              ),
+            };
           });
         }
       } catch (error) {
@@ -163,7 +174,7 @@ export default function MyUnEnrollClasses({
   ];
 
   const table = useReactTable({
-    data: enrolledClasses,
+    data: data?.classroom || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -181,11 +192,30 @@ export default function MyUnEnrollClasses({
     },
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetch(
+        `/api/v1/classroom/students/unenroll?studentId=${params.studentId}`,
+        {
+          method: "GET",
+        }
+      )
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Failed to fetch data");
+          }
+          return res.json();
+        })
+        .then((res) => setData(res));
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="flex flex-col gap-4">
       <Header
         heading={tu("title", {
-          studentName: studentData ? studentData.display_name : "Unknown",
+          studentName: data ? data.student?.display_name : "Unknown",
         })}
       />
       <div className="flex items-center justify-between">

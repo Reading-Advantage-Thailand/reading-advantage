@@ -2,10 +2,9 @@ import db from "@/configs/firestore-config";
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import * as z from "zod";
-import exp from "constants";
-import { last } from "lodash";
 import admin from "firebase-admin";
 import { getAllLicenses } from "./license-controller";
+import { getCurrentUser } from "@/lib/session";
 
 interface RequestContext {
   params: {
@@ -27,19 +26,64 @@ interface SchoolXP {
   xp: number;
 }
 
+interface Student {
+  studentId?: string;
+  email?: string;
+  lastActivity?: string;
+  profile?: {
+    emailAddress?: string;
+  };
+}
+
+interface Course {
+  teacherId?: string;
+  userId?: string;
+  classCode?: string;
+  enrollmentCode?: string;
+  classroomName?: string;
+  name?: string;
+  grade?: string;
+  classroom?: {
+    student?: Student[];
+  };
+  title?: string;
+  creationTime?: string;
+  alternateLink?: string;
+  studentCount?: Student[];
+  id?: string;
+}
+
+interface Classroom {
+  teacherId: string;
+  archived: boolean;
+  classCode: string;
+  classroomName: string;
+  grade: string;
+  student: Student[];
+  title: string;
+  createdAt: Date;
+  importedFromGoogle: boolean;
+  alternateLink: string;
+  license_id: string;
+  googleClassroomId?: string;
+}
+
 // get all classrooms
 // for get all -> GET /api/classroom
 // for get by teacher -> GET /api/classroom?teacherId=abc123
 export async function getClassroom(req: ExtendedNextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const teacherId = searchParams.get("teacherId");
+    const user = await getCurrentUser();
 
     let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
       db.collection("classroom");
 
-    if (teacherId) {
-      query = query.where("teacherId", "==", teacherId);
+    if (user?.role === "teacher") {
+      query = query.where("teacherId", "==", user?.id);
+    }
+
+    if (user?.role === "admin") {
+      query = query.where("license_id", "==", user?.license_id);
     }
 
     const classroomsSnapshot = await query.get();
@@ -72,12 +116,231 @@ export async function getClassroom(req: ExtendedNextRequest) {
 // get all classrooms students
 export async function getClassroomStudent(req: ExtendedNextRequest) {
   try {
-    const userRef = db.collection("users").where("role", "==", "student");
-    const snapshot = await userRef.get();
-    const students = snapshot.docs.map((doc) => doc.data());
+    const user = await getCurrentUser();
 
-    return NextResponse.json({ students }, { status: 200 });
+    let studentQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
+      db.collection("users");
+
+    if (user?.role === "system") {
+      studentQuery = studentQuery.where("role", "==", "student");
+
+      const studentsSnapshot = await studentQuery.get();
+      const students = studentsSnapshot.docs.map((doc) => doc.data());
+
+      return NextResponse.json({ students }, { status: 200 });
+    }
+
+    const studentsSnapshot = await studentQuery.get();
+    const students = studentsSnapshot.docs.map((doc) => doc.data());
+
+    let classroomQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
+      db.collection("classroom");
+
+    if (user?.role === "teacher") {
+      classroomQuery = classroomQuery.where("teacherId", "==", user?.id);
+    }
+
+    if (user?.role === "admin") {
+      classroomQuery = classroomQuery.where(
+        "license_id",
+        "==",
+        user?.license_id
+      );
+    }
+
+    const classroomsSnapshot = await classroomQuery.get();
+    const classrooms: FirebaseFirestore.DocumentData[] = [];
+
+    classroomsSnapshot.forEach((doc) => {
+      const classroom = doc.data();
+      classroom.id = doc.id;
+      classrooms.push(classroom);
+    });
+
+    const filteredStudents = (users: any[], classroom: any[]) => {
+      const studentIdentifiers = new Set<string>();
+
+      // Extract student IDs and emails from data1
+      classroom.forEach((classroom) => {
+        classroom.student.forEach((student: any) => {
+          if (student.studentId) studentIdentifiers.add(student.studentId);
+          if (student.email) studentIdentifiers.add(student.email);
+        });
+      });
+
+      // Filter data2 to return only matching students
+      return users.filter(
+        (student) =>
+          studentIdentifiers.has(student.id) ||
+          studentIdentifiers.has(student.email)
+      );
+    };
+
+    const filteredStudent = filteredStudents(students, classrooms);
+
+    return NextResponse.json({ students: filteredStudent }, { status: 200 });
   } catch (error) {
+    console.log(error);
+    return NextResponse.json({ error }, { status: 500 });
+  }
+}
+
+// get enroll classroom
+export async function getEnrollClassroom(req: ExtendedNextRequest) {
+  try {
+    const params = req.nextUrl.searchParams.get("studentId");
+    const user = await getCurrentUser();
+
+    if (!params) {
+      return NextResponse.json(
+        { messages: "Invalid user ID" },
+        { status: 501 }
+      );
+    }
+
+    const studentRef = await db.collection("users").doc(params).get();
+    const studentData = studentRef.data();
+
+    if (studentData && studentData.last_activity) {
+      studentData.last_activity = new Date(
+        studentData.last_activity._seconds * 1000
+      );
+    }
+
+    let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
+      db.collection("classroom");
+
+    if (user?.role === "teacher") {
+      query = query.where("teacherId", "==", user?.id);
+    }
+
+    if (user?.role === "admin") {
+      query = query.where("license_id", "==", user?.license_id);
+    }
+
+    const classroomsSnapshot = await query.get();
+    const classrooms: FirebaseFirestore.DocumentData[] = [];
+
+    classroomsSnapshot.forEach((doc) => {
+      const classroom = doc.data();
+      classroom.id = doc.id;
+      classrooms.push(classroom);
+    });
+
+    const filteredClassrooms = classrooms.filter(
+      (classroom) =>
+        classroom.importedFromGoogle !== true &&
+        classroom.student.every(
+          (student: { studentId: string }) => student.studentId !== params
+        )
+    );
+
+    return NextResponse.json(
+      { student: studentData, classroom: filteredClassrooms },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json({ error }, { status: 500 });
+  }
+}
+
+// get unenroll classroom
+export async function getUnenrollClassroom(req: ExtendedNextRequest) {
+  try {
+    const params = req.nextUrl.searchParams.get("studentId");
+    const user = await getCurrentUser();
+
+    if (!params) {
+      return NextResponse.json(
+        { messages: "Invalid user ID" },
+        { status: 501 }
+      );
+    }
+
+    const studentRef = await db.collection("users").doc(params).get();
+    const studentData = studentRef.data();
+
+    if (studentData && studentData.last_activity) {
+      studentData.last_activity = new Date(
+        studentData.last_activity._seconds * 1000
+      );
+    }
+
+    let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
+      db.collection("classroom");
+
+    if (user?.role === "teacher") {
+      query = query.where("teacherId", "==", user?.id);
+    }
+
+    if (user?.role === "admin") {
+      query = query.where("license_id", "==", user?.license_id);
+    }
+
+    const classroomsSnapshot = await query.get();
+    const classrooms: FirebaseFirestore.DocumentData[] = [];
+
+    classroomsSnapshot.forEach((doc) => {
+      const classroom = doc.data();
+      classroom.id = doc.id;
+      classrooms.push(classroom);
+    });
+
+    const filteredClassrooms = classrooms.filter(
+      (classroom) =>
+        classroom.importedFromGoogle !== true &&
+        classroom.student.some(
+          (student: { studentId: string }) => student.studentId === params
+        )
+    );
+
+    return NextResponse.json(
+      { student: studentData, classroom: filteredClassrooms },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json({ error }, { status: 500 });
+  }
+}
+
+export async function getStudentInClassroom(
+  req: ExtendedNextRequest,
+  { params }: { params: { classroomId: string } }
+) {
+  try {
+    const { classroomId } = params;
+    let studentQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
+      db.collection("users");
+
+    const studentsSnapshot = await studentQuery.get();
+    const students = studentsSnapshot.docs.map((doc) => doc.data());
+
+    const classroomRef = await db
+      .collection("classroom")
+      .doc(classroomId)
+      .get();
+    const classroomDoc = classroomRef.data();
+
+    const filteredUsers = students
+      .filter((user) =>
+        classroomDoc?.student.some(
+          (student: { email: string; studentId: string }) =>
+            student.studentId === user.id || student.email === user.email
+        )
+      )
+      .map((user) => ({
+        ...user,
+        last_activity: user.last_activity
+          ? new Date(user.last_activity._seconds * 1000)
+          : null,
+      }));
+
+    return NextResponse.json(
+      { studentInClass: filteredUsers, classroom: classroomDoc },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.log(error);
     return NextResponse.json({ error }, { status: 500 });
   }
 }
@@ -117,25 +380,50 @@ export async function getClassroomTeacher(req: ExtendedNextRequest) {
 // create classroom
 export async function createdClassroom(req: ExtendedNextRequest) {
   try {
-    const json = await req.json();
-    const body = json.classroom;
-    const classroom = {
-      teacherId: body.teacherId,
-      archived: false,
-      classCode: body.classCode,
-      classroomName: body.classroomName,
-      grade: body.grade,
-      student: body.student.map((student: any) => {
-        return {
-          studentId: student.studentId,
-          lastActivity: student.lastActivity,
-        };
-      }),
-      title: body.title,
-      createdAt: new Date(),
-    };
+    const user = await getCurrentUser();
+    const json: { classroom?: Course; courses?: Course[] } = await req.json();
+    const isImportedFromGoogle: boolean = Array.isArray(json.courses);
+    const courses: Course[] = isImportedFromGoogle
+      ? json.courses!
+      : [json.classroom!];
 
-    await db.collection("classroom").add(classroom);
+    const classrooms: Classroom[] = courses
+      .filter((course): course is Course => !!course)
+      .map((data) => ({
+        teacherId: user?.id || "",
+        archived: false,
+        classCode: data.classCode || data.enrollmentCode || "",
+        classroomName: data.classroomName || data.name || "",
+        grade: data.grade || "",
+        student: isImportedFromGoogle
+          ? (data.studentCount ?? []).map((student) => ({
+              email: student.profile?.emailAddress || "",
+              lastActivity: student.lastActivity || "No activity",
+            }))
+          : (data.classroom?.student ?? []).map((student) => ({
+              studentId: student.studentId,
+              lastActivity: student.lastActivity,
+            })),
+        title: data.title || "",
+        createdAt: data.creationTime ? new Date(data.creationTime) : new Date(),
+        importedFromGoogle: isImportedFromGoogle,
+        alternateLink: data.alternateLink || "",
+        license_id: user?.license_id || "",
+        ...(isImportedFromGoogle && {
+          googleClassroomId: data.id,
+        }),
+      }));
+
+    // Save all classrooms to Firestore
+    const batch = db.batch();
+    const classroomCollection = db.collection("classroom");
+
+    classrooms.forEach((classroom) => {
+      const docRef = classroomCollection.doc();
+      batch.set(docRef, classroom);
+    });
+
+    await batch.commit();
 
     return NextResponse.json(
       {
@@ -144,6 +432,7 @@ export async function createdClassroom(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    console.log(error);
     return NextResponse.json({ message: error }, { status: 500 });
   }
 }
@@ -276,6 +565,7 @@ export async function patchClassroomEnroll(
 
     return NextResponse.json({ message: "success" }, { status: 200 });
   } catch (error) {
+    console.log(error);
     return NextResponse.json({ message: error }, { status: 500 });
   }
 

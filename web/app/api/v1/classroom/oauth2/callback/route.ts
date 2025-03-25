@@ -16,19 +16,30 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const { tokens } = await oauth2Client.getToken(code);
+    const { tokens } = await oauth2Client.getToken(code as string);
 
     cookies().set({
       name: "google_access_token",
-      value: tokens.access_token || "", // the access token
-      httpOnly: true, // for security, the cookie is accessible only by the server
-      secure: process.env.NODE_ENV === "production", // send cookie over HTTPS only in production
-      path: "/", // cookie is available on every route
-      maxAge: 60 * 60 * 24 * 7, // 1 week
+      value: tokens.access_token || "",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 3600,
+    });
+    cookies().set({
+      name: "google_refresh_token",
+      value: tokens.refresh_token || "",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60,
     });
 
     return NextResponse.redirect(
-      new URL("/teacher/classroom", process.env.NEXT_PUBLIC_BASE_URL).toString()
+      new URL(
+        "/teacher/my-classes",
+        process.env.NEXT_PUBLIC_BASE_URL
+      ).toString()
     );
   } catch (error) {
     return NextResponse.json({
