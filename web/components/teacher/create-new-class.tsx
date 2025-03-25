@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "../ui/label";
+import { useClassroomStore } from "@/store/classroom-store";
 
 function CreateNewClass() {
   const [classroomName, setClassroomName] = useState<string>("");
@@ -29,6 +30,7 @@ function CreateNewClass() {
   const [classCode, setClassCode] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const router = useRouter();
+  const { fetchClassrooms } = useClassroomStore();
   const t = useScopedI18n("components.myClasses.createNewClass");
 
   const handleCreateClass = async () => {
@@ -50,10 +52,14 @@ function CreateNewClass() {
         });
         return;
       } else {
-        await fetch(`/api/v1/classroom`, {
+        const res = await fetch(`/api/v1/classroom`, {
           method: "POST",
           body: JSON.stringify({ classroom }),
         });
+
+        if (res.ok) {
+          fetchClassrooms();
+        }
       }
     } catch (error) {
       console.error(error);

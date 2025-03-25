@@ -75,36 +75,26 @@ export async function getClassroom(req: ExtendedNextRequest) {
   try {
     const user = await getCurrentUser();
 
-    let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
-      db.collection("classroom");
+    const docRef = db
+      .collection("classroom")
+      .where("teacherId", "==", user?.id)
+      .orderBy("createdAt", "desc")
+      .get();
 
-    if (user?.role === "teacher") {
-      query = query.where("teacherId", "==", user?.id);
-    }
-
-    if (user?.role === "admin") {
-      query = query.where("license_id", "==", user?.license_id);
-    }
-
-    const classroomsSnapshot = await query.get();
-    const classrooms: FirebaseFirestore.DocumentData[] = [];
-
-    classroomsSnapshot.forEach((doc) => {
-      const classroom = doc.data();
-      classroom.id = doc.id;
-      classrooms.push(classroom);
-    });
-
-    classrooms.sort((a, b) => b.createdAt - a.createdAt);
+    const docData = (await docRef).docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
     return NextResponse.json(
       {
         message: "success",
-        data: classrooms,
+        data: docData,
       },
       { status: 200 }
     );
   } catch (error) {
+    console.log(error);
     return NextResponse.json(
       {
         message: error instanceof Error ? error.message : String(error),
@@ -118,44 +108,18 @@ export async function getClassroomStudent(req: ExtendedNextRequest) {
   try {
     const user = await getCurrentUser();
 
-    let studentQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
-      db.collection("users");
+    const studentRef = await db.collection("users").get();
+    const studentData = studentRef.docs.map((doc) => doc.data());
 
-    if (user?.role === "system") {
-      studentQuery = studentQuery.where("role", "==", "student");
+    const classroomRef = db
+      .collection("classroom")
+      .where("teacherId", "==", user?.id)
+      .get();
 
-      const studentsSnapshot = await studentQuery.get();
-      const students = studentsSnapshot.docs.map((doc) => doc.data());
-
-      return NextResponse.json({ students }, { status: 200 });
-    }
-
-    const studentsSnapshot = await studentQuery.get();
-    const students = studentsSnapshot.docs.map((doc) => doc.data());
-
-    let classroomQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
-      db.collection("classroom");
-
-    if (user?.role === "teacher") {
-      classroomQuery = classroomQuery.where("teacherId", "==", user?.id);
-    }
-
-    if (user?.role === "admin") {
-      classroomQuery = classroomQuery.where(
-        "license_id",
-        "==",
-        user?.license_id
-      );
-    }
-
-    const classroomsSnapshot = await classroomQuery.get();
-    const classrooms: FirebaseFirestore.DocumentData[] = [];
-
-    classroomsSnapshot.forEach((doc) => {
-      const classroom = doc.data();
-      classroom.id = doc.id;
-      classrooms.push(classroom);
-    });
+    const classroomData = (await classroomRef).docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
     const filteredStudents = (users: any[], classroom: any[]) => {
       const studentIdentifiers = new Set<string>();
@@ -176,7 +140,7 @@ export async function getClassroomStudent(req: ExtendedNextRequest) {
       );
     };
 
-    const filteredStudent = filteredStudents(students, classrooms);
+    const filteredStudent = filteredStudents(studentData, classroomData);
 
     return NextResponse.json({ students: filteredStudent }, { status: 200 });
   } catch (error) {
@@ -210,13 +174,7 @@ export async function getEnrollClassroom(req: ExtendedNextRequest) {
     let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
       db.collection("classroom");
 
-    if (user?.role === "teacher") {
-      query = query.where("teacherId", "==", user?.id);
-    }
-
-    if (user?.role === "admin") {
-      query = query.where("license_id", "==", user?.license_id);
-    }
+    query = query.where("teacherId", "==", user?.id);
 
     const classroomsSnapshot = await query.get();
     const classrooms: FirebaseFirestore.DocumentData[] = [];
@@ -269,13 +227,7 @@ export async function getUnenrollClassroom(req: ExtendedNextRequest) {
     let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
       db.collection("classroom");
 
-    if (user?.role === "teacher") {
-      query = query.where("teacherId", "==", user?.id);
-    }
-
-    if (user?.role === "admin") {
-      query = query.where("license_id", "==", user?.license_id);
-    }
+    query = query.where("teacherId", "==", user?.id);
 
     const classroomsSnapshot = await query.get();
     const classrooms: FirebaseFirestore.DocumentData[] = [];
