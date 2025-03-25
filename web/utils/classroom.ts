@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { cookies } from "next/headers";
 
 // Configure OAuth2 client
 const oauth2Client = new google.auth.OAuth2(
@@ -8,14 +9,34 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 export const SCOPE = [
-  "https://www.googleapis.com/auth/classroom.courses",
+  "https://www.googleapis.com/auth/classroom.courses.readonly",
   "https://www.googleapis.com/auth/classroom.coursework.me",
   "https://www.googleapis.com/auth/classroom.coursework.students",
-  "https://www.googleapis.com/auth/classroom.courseworkmaterials",
-  "https://www.googleapis.com/auth/classroom.rosters",
-  "https://www.googleapis.com/auth/classroom.topics",
+  "https://www.googleapis.com/auth/classroom.rosters.readonly",
   "https://www.googleapis.com/auth/classroom.profile.emails",
-  "https://www.googleapis.com/auth/classroom.profile.photos",
 ];
+
+export async function getAuthenticatedClient(refreshToken?: string) {
+  oauth2Client.setCredentials({
+    refresh_token: refreshToken,
+  });
+
+  // Auto-refresh token if expired
+  oauth2Client.on("tokens", (tokens) => {
+    if (tokens.refresh_token) {
+      console.log("New refresh token received:", tokens.refresh_token);
+    }
+    cookies().set({
+      name: "google_refresh_token",
+      value: tokens.refresh_token || "",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60,
+    });
+  });
+
+  return oauth2Client;
+}
 
 export default oauth2Client;

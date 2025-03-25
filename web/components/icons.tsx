@@ -43,6 +43,10 @@ import {
   MonitorCog,
   PlusCircle,
   ExternalLink,
+  RefreshCcw,
+  CircleAlert,
+  CircleCheckBig,
+  UserRound,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -89,6 +93,10 @@ export const Icons = {
   MonitorCog: MonitorCog,
   PlusCircle: PlusCircle,
   ExternalLink: ExternalLink,
+  Refresh: RefreshCcw,
+  CircleAlert: CircleAlert,
+  CircleCheckBig: CircleCheckBig,
+  UserRound: UserRound,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"
