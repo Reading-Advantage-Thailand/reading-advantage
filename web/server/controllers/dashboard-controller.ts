@@ -7,6 +7,7 @@ import { ExtendedNextRequest } from "./auth-controller";
 import { postRankingLeaderboard } from "./leaderboard-controller";
 import { updateArticlesByTypeGenre } from "./article-controller";
 import { calculateSchoolsXp } from "./classroom-controller";
+import { updateAllUserActivity } from "./activity-controller";
 
 export async function updateAdminDashboard(req: ExtendedNextRequest) {
   const userAgent = req.headers.get("user-agent") || "";
@@ -31,7 +32,8 @@ export async function updateAdminDashboard(req: ExtendedNextRequest) {
 
     const updateClassXp = await calculateClassXp(req);
     const updateXp30days = await calculateXpForLast30Days();
-    const updateUserActivity = await updateUserActivityLog();
+    const updateUserActive = await updateUserActivityLog();
+    const updateUserActivity = await updateAllUserActivity();
 
     const classXpStatus = updateClassXp
       ? "Class Activity updated successfully."
@@ -39,9 +41,12 @@ export async function updateAdminDashboard(req: ExtendedNextRequest) {
     const xp30daysStatus = updateXp30days
       ? "Total XP Gained (Last 30 Days) updated successfully."
       : "Failed to update Total XP Gained (Last 30 Days).";
-    const userActivityStatus = updateUserActivity
+    const userActieStatus = updateUserActive
       ? "Active Users updated successfully."
       : "Failed to update Active Users.";
+    const updateUserActivityStatus = updateUserActivity
+      ? "User Activity updated successfully."
+      : "Failed to update User Activity.";
 
     const timeTakenMinutes = ((Date.now() - timeTaken) / (1000 * 60)).toFixed(
       2
@@ -52,7 +57,7 @@ export async function updateAdminDashboard(req: ExtendedNextRequest) {
       embeds: [
         {
           description: {
-            "update-status": `\n${classXpStatus}\n${xp30daysStatus}\n${userActivityStatus}\nTime taken: ${timeTakenMinutes} minutes`,
+            "update-status": `\n${classXpStatus}\n${xp30daysStatus}\n${userActieStatus}\n${updateUserActivityStatus}\nTime taken: ${timeTakenMinutes} minutes`,
           },
           color: 0x0099ff,
         },
