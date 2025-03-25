@@ -13,14 +13,28 @@ export async function getAllUserActivity() {
       .reverse()
       .join("-");
 
-    const userActivityLogRef = db
-      .collection("activity-distribution")
-      .doc(toDay);
-    const userActivityLogSnapshot = await userActivityLogRef.get();
+    let userActivityLogRef = db.collection("activity-distribution").doc(toDay);
+    let userActivityLogSnapshot = await userActivityLogRef.get();
+    let userActivityData = userActivityLogSnapshot.data();
 
-    const userActivityData = userActivityLogSnapshot.data();
     if (!userActivityData) {
-      return NextResponse.json({ message: "No data found" }, { status: 404 });
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const previousDay = yesterday
+        .toLocaleDateString("en-GB")
+        .split("/")
+        .reverse()
+        .join("-");
+
+      userActivityLogRef = db
+        .collection("activity-distribution")
+        .doc(previousDay);
+      userActivityLogSnapshot = await userActivityLogRef.get();
+      userActivityData = userActivityLogSnapshot.data();
+
+      if (!userActivityData) {
+        return NextResponse.json({ message: "No data found" }, { status: 404 });
+      }
     }
 
     console.log(userActivityData);
