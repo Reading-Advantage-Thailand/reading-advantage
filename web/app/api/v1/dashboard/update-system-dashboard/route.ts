@@ -1,7 +1,7 @@
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
-import { updateAdminDashboard } from "@/server/controllers/update-admin-dashboard-controller";
+import { updateSystemDashboard } from "@/server/controllers/update-dashboard-controller";
 import { restrictAccessKey } from "@/server/controllers/auth-controller";
 
 export interface ExtendedNextRequest {
@@ -17,8 +17,8 @@ const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
 router.use(logRequest);
 router.use(restrictAccessKey);
 
-// API: POST api/v1/admin/update-admin-dashboard
-router.post(updateAdminDashboard);
+// API: POST api/v1/dashboard/update-system-dashboard
+router.post(updateSystemDashboard);
 
 export async function POST(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);
