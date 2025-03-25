@@ -298,10 +298,10 @@ export default function Reports() {
       <div>
         <Header heading="Class Roster" />
         <Select value={selectedClassroom} onValueChange={handleClassChange}>
-          <SelectTrigger className="mt-4 w-[180px]">
+          <SelectTrigger className="mt-4 h-auto w-[180px]">
             <SelectValue placeholder="Select a Classroom" />
           </SelectTrigger>
-          <SelectContent className="h-44">
+          <SelectContent className="max-h-48 overflow-y-auto">
             {classrooms?.map((classroom, index) => (
               <SelectItem key={index} value={classroom.id}>
                 {classroom.classroomName}
