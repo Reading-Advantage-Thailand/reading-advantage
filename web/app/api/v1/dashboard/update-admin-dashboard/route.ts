@@ -1,26 +1,26 @@
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
-import { calculateSchoolsXp } from "@/server/controllers/classroom-controller";
+import { updateAdminDashboard } from "@/server/controllers/update-dashboard-controller";
 import { restrictAccessKey } from "@/server/controllers/auth-controller";
 
-export interface RequestContext {
+export interface ExtendedNextRequest {
   params?: {
-    license_id: string;
+    licenseId: string;
+    classroomId: string;
   };
 }
 
-const router = createEdgeRouter<NextRequest, RequestContext>();
+const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
 
 // Middleware
 router.use(logRequest);
 router.use(restrictAccessKey);
 
-// API: POST /api/v1/xp/schoolsXp
-router.post(calculateSchoolsXp);
+// API: POST api/v1/dashboard/update-admin-dashboard
+router.post(updateAdminDashboard);
 
-// Export API Route for Next.js
-export async function POST(request: NextRequest, ctx: RequestContext) {
+export async function POST(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
