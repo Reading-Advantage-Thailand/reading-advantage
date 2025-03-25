@@ -13,6 +13,7 @@ import { Icons } from "@/components/icons";
 import { toast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
+import { useClassroomStore } from "@/store/classroom-store";
 
 interface DeleteClassProps {
   classroomData: Classes;
@@ -27,6 +28,7 @@ type Classes = {
 function DeleteClass({ classroomData }: DeleteClassProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { classrooms, setClassrooms } = useClassroomStore();
 
   const t = useScopedI18n("components.myClasses.delete");
 
@@ -42,6 +44,10 @@ function DeleteClass({ classroomData }: DeleteClassProps) {
           description: t("toast.successDeleteDescription"),
           variant: "default",
         });
+        const newClassrooms = classrooms.filter(
+          (classroom) => classroom.id !== classroomId
+        );
+        setClassrooms(newClassrooms);
       } else {
         toast({
           title: t("toast.errorDelete"),

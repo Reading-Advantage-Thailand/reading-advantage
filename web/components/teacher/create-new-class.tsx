@@ -23,13 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "../ui/label";
 
-function CreateNewClass({
-  userId,
-  userName,
-}: {
-  userId: string;
-  userName: string;
-}) {
+function CreateNewClass() {
   const [classroomName, setClassroomName] = useState<string>("");
   const [grade, setGrade] = useState<string>("");
   const [classCode, setClassCode] = useState<string>("");
@@ -41,16 +35,14 @@ function CreateNewClass({
     setOpen(true);
     try {
       const classroom = {
-        teacherId: userId,
         classCode: classCode,
         classroomName: classroomName,
         description: "description",
         grade: grade,
         student: [],
-        title: `${userName}'s Classes`,
       };
 
-      if (!userId || !classCode || !classroomName || !grade) {
+      if (!classCode || !classroomName || !grade) {
         toast({
           title: t("toast.attention"),
           description: t("toast.attentionDescription"),
@@ -58,7 +50,7 @@ function CreateNewClass({
         });
         return;
       } else {
-        await fetch(`/api/v1/classroom/`, {
+        await fetch(`/api/v1/classroom`, {
           method: "POST",
           body: JSON.stringify({ classroom }),
         });
@@ -70,9 +62,9 @@ function CreateNewClass({
         title: t("toast.successCreate"),
         description: t("toast.successDescription"),
       });
-      router.refresh();
       setClassCode(generateRandomCode());
       setOpen(false);
+      router.refresh();
     }
   };
 
@@ -130,7 +122,7 @@ function CreateNewClass({
                 </SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: 10 }, (_, i) => i + 3).map(
-                    (grade, index) => (
+                    (grade: number, index: number) => (
                       <SelectItem key={index} value={String(grade)}>
                         {t("grade")} {grade}
                       </SelectItem>

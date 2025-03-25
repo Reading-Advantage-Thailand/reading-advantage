@@ -41,6 +41,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "../ui/use-toast";
+import { useClassroomStore } from "@/store/classroom-store";
 
 type Student = {
   id: string;
@@ -52,7 +53,7 @@ type MyStudentProps = {
   matchedStudents: Student[];
 };
 
-export default function MyStudents({ matchedStudents }: MyStudentProps) {
+export default function MyStudents() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -65,6 +66,29 @@ export default function MyStudents({ matchedStudents }: MyStudentProps) {
   const router = useRouter();
   const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [students, setStudents] = useState<Student[]>([]);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/students`,
+          { method: "GET" }
+        )
+          .then((response) => {
+            if (!response.ok)
+              throw new Error("Failed to fetch StudentData list");
+            return response.json();
+          })
+          .then((studentsData) => {
+            setStudents(studentsData.students);
+          });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchStudents();
+  }, []);
 
   const handleResetProgress = async (selectedStudentId: string) => {
     try {
@@ -201,7 +225,7 @@ export default function MyStudents({ matchedStudents }: MyStudentProps) {
   ];
 
   const table = useReactTable({
-    data: matchedStudents,
+    data: students,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

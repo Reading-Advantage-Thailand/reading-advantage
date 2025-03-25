@@ -16,12 +16,12 @@ import { useScopedI18n } from "@/locales/client";
 
 interface RemoveStudentProps {
   userData: Student;
-  classroomData: Classrooms[];
+  classroomData: Classrooms;
 }
 
 type StudentInClass = {
   studentId: string;
-  lastActivity: string;
+  lastActivity: Date;
 };
 
 type Classrooms = {
@@ -46,14 +46,14 @@ function RemoveStudent({ userData, classroomData }: RemoveStudentProps) {
 
   const handleRemoveStudentInClass = async (
     studentId: string,
-    studentInClass: Classrooms[]
+    studentInClass: Classrooms
   ) => {
-    const studentDelete = studentInClass[0]?.student.filter(
+    const studentDelete = studentInClass?.student.filter(
       (student: StudentInClass) => student.studentId !== studentId
     );
     try {
       const response = await fetch(
-        `/api/v1/classroom/${studentInClass[0].id}/unenroll`,
+        `/api/v1/classroom/${studentInClass.id}/unenroll`,
         {
           method: "PATCH",
           headers: {

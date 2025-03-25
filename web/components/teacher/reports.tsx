@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -30,12 +30,22 @@ import {
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import EditStudent from "./edit-student";
 import RemoveStudent from "./remove-student-inclass";
 import { Header } from "@/components/header";
 import { ScrollArea } from "../ui/scroll-area";
+import { useClassroomState, useClassroomStore } from "@/store/classroom-store";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type StudentData = {
   id: string;
@@ -46,33 +56,30 @@ type StudentData = {
   xp: number;
 };
 
-type Classrooms = {
-  id: string;
+interface Classes {
   classroomName: string;
-  student: StudentInClass[];
-};
-
-type StudentInClass = {
-  studentId: string;
-  lastActivity: string;
-};
-
-type Classes = {
+  classCode: string;
+  noOfStudents: number;
+  grade: string;
+  coTeacher: {
+    coTeacherId: string;
+    name: string;
+  };
   id: string;
-  classroomName: string;
-};
+  archived: boolean;
+  title: string;
+  student: [
+    {
+      studentId: string;
+      lastActivity: Date;
+    }
+  ];
+  importedFromGoogle: boolean;
+  alternateLink: string;
+  googleClassroomId: string;
+}
 
-type MyStudentProps = {
-  studentInClass?: StudentData[];
-  classrooms?: Classrooms[];
-  classes?: Classes[];
-};
-
-export default function Reports({
-  studentInClass,
-  classrooms,
-  classes,
-}: MyStudentProps) {
+export default function Reports() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -83,6 +90,16 @@ export default function Reports({
   const t = useScopedI18n("components.articleRecordsTable");
   const trp = useScopedI18n("components.reports");
   const router = useRouter();
+  const { classrooms, fetchClassrooms } = useClassroomStore();
+  const {
+    classes,
+    selectedClassroom,
+    studentInClass,
+    setClasses,
+    setSelectedClassroom,
+    setStudentInClass,
+  } = useClassroomState();
+  const pathname = usePathname();
 
   const calculateAverageLevel = (data: any) => {
     if (!data || !Array.isArray(data) || data.length === 0) {
@@ -152,7 +169,7 @@ export default function Reports({
         return (
           <div className="captoliza text-center">
             {row.getValue("last_activity")
-              ? row.getValue("last_activity")
+              ? new Date(row.getValue("last_activity")).toLocaleString()
               : "No Activity"}
           </div>
         );
@@ -199,8 +216,8 @@ export default function Reports({
         return (
           <div className="flex gap-2 justify-center">
             <EditStudent userData={payment} />
-            {classrooms && (
-              <RemoveStudent userData={payment} classroomData={classrooms} />
+            {!classes.importedFromGoogle && (
+              <RemoveStudent userData={payment} classroomData={classes} />
             )}
           </div>
         );
@@ -227,40 +244,76 @@ export default function Reports({
     },
   });
 
+  useEffect(() => {
+    const pathSegments = pathname.split("/");
+    const currentClassroomId = pathSegments[4];
+    if (classrooms.some((c) => c.id === currentClassroomId)) {
+      setSelectedClassroom(currentClassroomId);
+      fetchStudentInClass(currentClassroomId);
+    }
+    if (!currentClassroomId) {
+      setClasses({} as Classes);
+      setSelectedClassroom("");
+      setStudentInClass([]);
+    }
+  }, [pathname, classrooms]);
+
+  useEffect(() => {
+    if (!classrooms.length) {
+      fetchClassrooms();
+    }
+  }, []);
+
+  const fetchStudentInClass = async (classId: string) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${classId}`,
+        {
+          method: "GET",
+        }
+      );
+      if (!res.ok) throw new Error("Failed to fetch Classroom list");
+
+      const data = await res.json();
+      setStudentInClass(data.studentInClass);
+      setClasses(data.classroom);
+    } catch (error) {
+      console.error("Error fetching Classroom list:", error);
+    }
+  };
+
+  const handleClassChange = async (value: string) => {
+    try {
+      setSelectedClassroom(value);
+
+      await fetchStudentInClass(value);
+      router.push(`/teacher/reports/${value}`);
+    } catch (error) {
+      console.error("Error fetching Classroom list:", error);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
-      {classes && (
-        <div>
-          <Header heading="Reports" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="mt-4">
-                {classrooms?.[0]?.classroomName || "Select a Classroom"}
-                <ChevronDownIcon className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <ScrollArea className="h-[300px]">
-                {classes.map((classroom) => (
-                  <DropdownMenuItem
-                    key={classroom.id}
-                    className="capitalize"
-                    onClick={() =>
-                      router.push(`/teacher/reports/${classroom.id}`)
-                    }
-                  >
-                    {classroom.classroomName}
-                  </DropdownMenuItem>
-                ))}
-              </ScrollArea>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
-      {classrooms &&
-        (studentInClass?.length ? (
+      <div>
+        <Header heading="Class Roster" />
+        <Select value={selectedClassroom} onValueChange={handleClassChange}>
+          <SelectTrigger className="mt-4 w-[180px]">
+            <SelectValue placeholder="Select a Classroom" />
+          </SelectTrigger>
+          <SelectContent className="h-44">
+            {classrooms?.map((classroom, index) => (
+              <SelectItem key={index} value={classroom.id}>
+                {classroom.classroomName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {classes &&
+        (studentInClass.length ? (
           <Header
-            heading={trp("title", { className: classrooms[0].classroomName })}
+            heading={trp("title", { className: classes.classroomName })}
           />
         ) : (
           <Header heading={trp("noStudent")} />

@@ -30,7 +30,7 @@ import {
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
-import { useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +43,17 @@ import { Icons } from "@/components/icons";
 import { Header } from "@/components/header";
 import { toast } from "../ui/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
+import { useClassroomState, useClassroomStore } from "@/store/classroom-store";
+import Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type StudentData = {
   id: string;
@@ -51,18 +62,7 @@ type StudentData = {
   last_activity: string;
 };
 
-type StudentInClass = {
-  studentId: string;
-  lastActivity: string;
-};
-
-type Classrooms = {
-  id: string;
-  classroomName: string;
-  student: StudentInClass[];
-};
-
-type Classes = {
+interface Classes {
   classroomName: string;
   classCode: string;
   noOfStudents: number;
@@ -74,20 +74,18 @@ type Classes = {
   id: string;
   archived: boolean;
   title: string;
-  student: StudentInClass[];
-};
+  student: [
+    {
+      studentId: string;
+      lastActivity: Date;
+    }
+  ];
+  importedFromGoogle: boolean;
+  alternateLink: string;
+  googleClassroomId: string;
+}
 
-type MyRosterProps = {
-  studentInClass?: StudentData[];
-  classrooms?: Classrooms[];
-  classes?: Classes[];
-};
-
-export default function ClassRoster({
-  studentInClass,
-  classrooms,
-  classes,
-}: MyRosterProps) {
+export default function ClassRoster() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -98,10 +96,20 @@ export default function ClassRoster({
   const t = useScopedI18n("components.articleRecordsTable");
   const tr = useScopedI18n("components.classRoster");
   const ts = useScopedI18n("components.myStudent");
-
   const router = useRouter();
   const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const { classrooms, fetchClassrooms } = useClassroomStore();
+  const [loading, setLoading] = useState<boolean>(false);
+  const pathname = usePathname();
+  const {
+    classes,
+    selectedClassroom,
+    studentInClass,
+    setClasses,
+    setSelectedClassroom,
+    setStudentInClass,
+  } = useClassroomState();
 
   const handleResetProgress = async (selectedStudentId: string) => {
     try {
@@ -164,7 +172,7 @@ export default function ClassRoster({
         return (
           <div className="captoliza text-center">
             {row.getValue("last_activity")
-              ? row.getValue("last_activity")
+              ? new Date(row.getValue("last_activity")).toLocaleString()
               : "No Activity"}
           </div>
         );
@@ -250,41 +258,102 @@ export default function ClassRoster({
     },
   });
 
+  const syncStudents = async (courseId: string) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        `/api/v1/classroom/oauth2/classroom/courses/${courseId}`,
+        {
+          method: "GET",
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Students synced successfully",
+        });
+      } else {
+        window.location.href = data.authUrl;
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    const pathSegments = pathname.split("/");
+    const currentClassroomId = pathSegments[4];
+    if (classrooms.some((c) => c.id === currentClassroomId)) {
+      setSelectedClassroom(currentClassroomId);
+      fetchStudentInClass(currentClassroomId);
+    }
+    if (!currentClassroomId) {
+      setClasses({} as Classes);
+      setSelectedClassroom("");
+      setStudentInClass([]);
+    }
+  }, [pathname, classrooms]);
+
+  useEffect(() => {
+    if (!classrooms.length) {
+      fetchClassrooms();
+    }
+  }, []);
+
+  const fetchStudentInClass = async (classId: string) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${classId}`,
+        {
+          method: "GET",
+        }
+      );
+      if (!res.ok) throw new Error("Failed to fetch Classroom list");
+
+      const data = await res.json();
+      setStudentInClass(data.studentInClass);
+      setClasses(data.classroom);
+    } catch (error) {
+      console.error("Error fetching Classroom list:", error);
+    }
+  };
+
+  const handleClassChange = async (value: string) => {
+    try {
+      setSelectedClassroom(value);
+
+      await fetchStudentInClass(value);
+      router.push(`/teacher/class-roster/${value}`);
+    } catch (error) {
+      console.error("Error fetching Classroom list:", error);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
-      {classes && (
-        <div>
-          <Header heading="Class Roster" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="mt-4">
-                {classrooms?.[0]?.classroomName || "Select a Classroom"}
-                <ChevronDownIcon className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <ScrollArea className="h-[300px]">
-                {classes.map((classroom) => (
-                  <DropdownMenuItem
-                    key={classroom.id}
-                    className="capitalize"
-                    onClick={() =>
-                      router.push(`/teacher/class-roster/${classroom.id}`)
-                    }
-                  >
-                    {classroom.classroomName}
-                  </DropdownMenuItem>
-                ))}
-              </ScrollArea>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
-      {classrooms &&
-        (studentInClass?.length ? (
-          <Header
-            heading={tr("title", { className: classrooms[0].classroomName })}
-          />
+      <div>
+        <Header heading="Class Roster" />
+        <Select value={selectedClassroom} onValueChange={handleClassChange}>
+          <SelectTrigger className="mt-4 w-[180px]">
+            <SelectValue placeholder="Select a Classroom" />
+          </SelectTrigger>
+          <SelectContent className="min-h-fit h-44 ">
+            {classrooms?.map((classroom, index) => (
+              <SelectItem key={index} value={classroom.id}>
+                {classroom.classroomName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {classes &&
+        (studentInClass.length ? (
+          <Header heading={tr("title", { className: classes.classroomName })} />
         ) : (
           <Header heading={tr("noStudent")} />
         ))}
@@ -299,19 +368,43 @@ export default function ClassRoster({
           }
           className="max-w-sm"
         />
-        {classrooms && (
-          <Button
-            variant="outline"
-            onClick={() =>
-              router.push(
-                `/teacher/class-roster/${classrooms[0].id}/create-new-student`
-              )
-            }
-          >
-            <Icons.add />
-            {tr("addStudentButton")}
-          </Button>
-        )}
+        {selectedClassroom &&
+          (!classes.importedFromGoogle ? (
+            <Button
+              variant="outline"
+              onClick={() =>
+                router.push(
+                  `/teacher/class-roster/${classes.id}/create-new-student`
+                )
+              }
+            >
+              <Icons.add />
+              {tr("addStudentButton")}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => syncStudents(classes.googleClassroomId)}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                  Sync students
+                </>
+              ) : (
+                <>
+                  <Image
+                    className="mr-2"
+                    src={"/96x96_yellow_stroke_icon@1x.png"}
+                    alt="google-classroom"
+                    width={20}
+                    height={20}
+                  />
+                  Sync students
+                </>
+              )}
+            </Button>
+          ))}
       </div>
       <div className="rounded-md border">
         <Table style={{ tableLayout: "fixed", width: "100%" }}>

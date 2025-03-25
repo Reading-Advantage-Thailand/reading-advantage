@@ -25,7 +25,7 @@ import {
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "../ui/use-toast";
 import { Header } from "../header";
 
@@ -50,24 +50,20 @@ type Classroom = {
 };
 
 type MyEnrollProps = {
-  enrolledClasses: Classroom[];
-  studentData: Student;
+  classroom: Classroom[];
+  student: Student;
 };
 
-export default function MyEnrollClasses({
-  enrolledClasses,
-  studentData,
-}: MyEnrollProps) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+export default function MyEnrollClasses() {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
   const t = useScopedI18n("components.articleRecordsTable");
   const te = useScopedI18n("components.myStudent.enrollPage");
   const router = useRouter();
+  const params = useParams();
+  const [data, setData] = useState<MyEnrollProps>();
 
   const handleStudentEnrollment = async (classroomId: string[]) => {
     // Find the selected classroom
@@ -79,11 +75,12 @@ export default function MyEnrollClasses({
       });
       return;
     }
+
     const studentdata = [
       {
-        studentId: studentData.id,
-        lastActivity: studentData.last_activity
-          ? studentData.last_activity
+        studentId: params.studentId,
+        lastActivity: data?.student.last_activity
+          ? data.student.last_activity
           : "No Activity",
       },
     ];
@@ -103,6 +100,20 @@ export default function MyEnrollClasses({
             title: te("toast.errorEnrollment"),
             description: te("toast.errorEnrollDescription"),
             variant: "destructive",
+          });
+        } else {
+          setData((prevData) => {
+            const safePrevData = prevData ?? {
+              classroom: [],
+              student: {} as Student,
+            };
+
+            return {
+              ...safePrevData,
+              classroom: safePrevData.classroom.filter(
+                (classroom: Classroom) => classroom.id !== classId
+              ),
+            };
           });
         }
       } catch (error) {
@@ -163,7 +174,7 @@ export default function MyEnrollClasses({
   ];
 
   const table = useReactTable({
-    data: enrolledClasses,
+    data: data?.classroom || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -181,11 +192,30 @@ export default function MyEnrollClasses({
     },
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetch(
+        `/api/v1/classroom/students/enroll?studentId=${params.studentId}`,
+        {
+          method: "GET",
+        }
+      )
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Failed to fetch data");
+          }
+          return res.json();
+        })
+        .then((res) => setData(res));
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="flex flex-col gap-4">
       <Header
         heading={te("title", {
-          studentName: studentData ? studentData.display_name : "Unknown",
+          studentName: data ? data.student?.display_name : "Unknown",
         })}
       />
       <div className="flex items-center justify-between">
