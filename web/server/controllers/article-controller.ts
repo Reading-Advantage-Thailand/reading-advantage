@@ -677,7 +677,7 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
   }
 }
 
-export async function articlesByTypeGenre(req: Request): Promise<Response> {
+export async function updateArticlesByTypeGenre(req: Request): Promise<Response> {
   try {
     //console.log("Fetching articles from 'new-articles' collection...");
     const articlesRef = db.collection("new-articles");
@@ -698,7 +698,8 @@ export async function articlesByTypeGenre(req: Request): Promise<Response> {
       if (type.toLowerCase() === "fiction") {
         genreCounts[genre].fiction = (genreCounts[genre].fiction || 0) + 1;
       } else {
-        genreCounts[genre].nonFiction = (genreCounts[genre].nonFiction || 0) + 1;
+        genreCounts[genre].nonFiction =
+          (genreCounts[genre].nonFiction || 0) + 1;
       }
     });
 
@@ -738,13 +739,18 @@ export async function articlesByTypeGenre(req: Request): Promise<Response> {
   }
 }
 
-export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
+export async function getArticlesByTypeGenre(
+  req: Request
+): Promise<Response> {
   try {
     //console.log("Fetching all data from 'Articles-by-Type-and-Genre'...");
     const summaryRef = db.collection("articles-by-type-and-genre");
     const snapshot = await summaryRef.get();
 
-    const articles = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const articles = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     //console.log("Fetched articles:", articles);
 
     return NextResponse.json(articles, { status: 200 });
