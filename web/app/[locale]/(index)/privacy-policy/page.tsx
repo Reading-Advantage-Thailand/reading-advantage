@@ -91,6 +91,26 @@ export default function PrivacyPolicy({}: Props) {
 
           <section>
             <h2 className="text-2xl font-semibold">
+              Use of Google Workspace APIs
+            </h2>
+            <p>
+              Our application integrates with certain Google Workspace APIs to
+              provide functionality related to user accounts, data access, or
+              productivity tools. We <strong>do not</strong> use any data
+              obtained from Google Workspace APIs to develop, improve, or train{" "}
+              <strong>generalized</strong> artificial intelligence (AI) or
+              machine learning (ML) models.
+            </p>
+            <p>
+              All data retrieved via Google Workspace APIs is used{" "}
+              <strong>solely</strong> for the purpose of providing the requested
+              features within our application and is handled in accordance with
+              our privacy and security standards.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold">
               Information Sharing and Disclosure
             </h2>
             <p>{`We do not sell your personal information. We may share data:`}</p>
