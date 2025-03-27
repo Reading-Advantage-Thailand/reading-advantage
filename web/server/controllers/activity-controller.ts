@@ -37,7 +37,7 @@ export async function getAllUserActivity() {
       }
     }
 
-    console.log(userActivityData);
+    //console.log(userActivityData);
 
     return NextResponse.json(
       {
@@ -46,7 +46,7 @@ export async function getAllUserActivity() {
       { status: 200 }
     );
   } catch (err) {
-    console.log("Error getting documents", err);
+    console.error("Error getting documents", err);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -87,7 +87,7 @@ export async function getAllUsersActivity() {
       { status: 200 }
     );
   } catch (err) {
-    console.log("Error getting documents", err);
+    console.error("Error getting documents", err);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -281,7 +281,7 @@ export async function updateAllUserActivity() {
       ...totalCounts,
     };
 
-    console.log(userActivityData);
+    //console.log(userActivityData);
 
     const updateUserActivity = await db
       .collection("activity-distribution")
@@ -297,7 +297,7 @@ export async function updateAllUserActivity() {
       { status: 200 }
     );
   } catch (err) {
-    console.log("Error getting documents", err);
+    console.error("Error getting documents", err);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

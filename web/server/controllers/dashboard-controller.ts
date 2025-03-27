@@ -74,7 +74,7 @@ export async function updateAdminDashboard(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } catch (err) {
-    console.log("Error updating admin dashboard", err);
+    console.error("Error updating admin dashboard", err);
     await sendDiscordWebhook({
       title: "Error Updating Admin Dashboard",
       embeds: [
@@ -158,7 +158,7 @@ export async function updateSystemDashboard(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } catch (err) {
-    console.log("Error updating system dashboard", err);
+    console.error("Error updating system dashboard", err);
     await sendDiscordWebhook({
       title: "Error Updating System Dashboard",
       embeds: [
