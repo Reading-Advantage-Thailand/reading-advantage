@@ -260,6 +260,7 @@ export async function getStudentInClassroom(
   { params }: { params: { classroomId: string } }
 ) {
   try {
+
     const { classroomId } = params;
     let studentQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
       db.collection("users");
