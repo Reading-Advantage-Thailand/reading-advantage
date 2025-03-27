@@ -6,7 +6,7 @@ import { generateStoryBible } from "./stories-bible-generator";
 import { getCEFRRequirements } from "../CEFR-requirements";
 import { generateChapters } from "./stories-chapters-generator";
 import { generateStoriesTopic } from "./stories-topic-generator";
-import { generateImage } from "./image-generator";
+import { generateImage, generateImageFlash } from "./image-generator";
 import { Timestamp } from "firebase-admin/firestore";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
 import { evaluateRating } from "./evaluate-rating-generator";
@@ -167,7 +167,7 @@ export async function generateStories(req: NextRequest) {
 
             for (let i = 0; i < chapters.length; i++) {
               try {
-                await generateImage({
+                await generateImageFlash({
                   imageDesc: chapters[i]["image-description"],
                   articleId: `${ref.id}-${i + 1}`,
                 });
