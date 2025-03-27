@@ -18,7 +18,7 @@ export async function generateImage(
   let attempts = 0;
   while (attempts < maxRetries) {
     try {
-      console.log(`Generating image (Attempt ${attempts + 1}/${maxRetries})`);
+      //console.log(`Generating image (Attempt ${attempts + 1}/${maxRetries})`);
 
       const { image } = await generateImages({
         model: openai.image(openaiImages),

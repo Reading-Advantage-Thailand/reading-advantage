@@ -1,3 +1,5 @@
+import { StoryBible } from "@/app/[locale]/(student)/student/stories/[storyId]/page";
+
 export interface ArticleShowcase {
   average_rating: number;
   cefr_level: string;
@@ -10,6 +12,40 @@ export interface ArticleShowcase {
   type?: string;
   subgenre?: string;
   genre?: string;
+  storyBible?: StoryBible;
+}
+
+export interface StoryChapter {
+  storyId: string;
+  chapterNumber: string;
+  ra_Level: number;
+  cefr_level: string;
+  totalChapters: number;
+  storyBible: StoryBible;
+  chapter: {
+    title: string;
+    content: string;
+    summary: string;
+    "image-description": string;
+    analysis: {
+      wordCount: number;
+      averageSentenceLength: number;
+      vocabulary: {
+        uniqueWords: number;
+        complexWords: number;
+        targetWordsUsed: [];
+      };
+      grammarStructures: [];
+      readabilityScore: number;
+    };
+    questions: {
+      type: string;
+      question: string;
+      options: string[];
+      answer: string;
+    }[];
+  };
+  timepoints: Timepoint[];
 }
 
 export interface Article {

@@ -42,6 +42,39 @@ export default {
           },
         },
       },
+      storyPage: {
+        storySelection: "故事选择",
+        story: {
+          storyNotFound: "未找到故事",
+          storyInsufficientLevel: "您的阅读等级不够高，无法阅读此故事。",
+          readBefore: "欢迎回来，您之前已经阅读过这个故事",
+          readBeforeDescription:
+            "您可以尝试再次阅读和练习，以提高您的阅读技能。这是您上次阅读的结果。",
+          status: "状态",
+          statusText: {
+            completed: "已完成",
+            uncompleted: "未完成",
+          },
+          statusDescription: "最后更新时间 {date}",
+          score: "测验分数",
+          scoreText: "{score}",
+          scoreDescription: "共 {total} 题",
+          rated: "评分",
+          ratedText: "{rated} 评分",
+          ratedDescription: "您已对该故事进行评分",
+          timeSpend: "阅读时间",
+          timeSpendText: "{time}",
+          timeSpendDescription: "用于 {total} 题",
+          scoreSuffix: {
+            point: "分",
+            points: "分",
+          },
+          secondSuffix: {
+            second: "秒",
+            seconds: "秒",
+          },
+        },
+      },
       historyPage: {
         title: "为 {userName} 的历史",
         reminderToReread: "重读提醒",
@@ -237,6 +270,7 @@ export default {
     },
     sidebarNav: {
       read: "阅读",
+      stories: "剧情",
       history: "历史",
       sentences: "句子",
       reports: "报告",
@@ -324,6 +358,13 @@ export default {
       raLevel: "阅读能力等级为 {raLevel}",
       cefrLevel: "CEFR 等级为 {cefrLevel}",
       articleCardDescription: "该文章涉及 {topic} 主题，属于 {genre} 类别。",
+      previousChapter: "上一章",
+      nextChapter: "下一章",
+      chapters: "章节",
+      characters: "角色",
+      previouslyRead: "已读",
+      continueRead: "继续阅读第",
+      readChapter: "阅读第", 
     },
     articleContent: {
       voiceAssistant: "语音助手",
@@ -336,6 +377,20 @@ export default {
       translateButton: {
         open: "翻译",
         close: "關閉翻譯視窗",
+      },
+    },
+    storyChapterContent: {
+      voiceAssistant: "语音助手",
+      soundButton: {
+        play: "播放声音",
+        pause: "暂停声音",
+      },
+      previousChapter: "上一章",
+      nextChapter: "下一章",
+      openvoicebutton: "听并阅读",
+      translateButton: {
+        open: "翻译",
+        close: "关闭翻译面板",
       },
     },
     mcq: {

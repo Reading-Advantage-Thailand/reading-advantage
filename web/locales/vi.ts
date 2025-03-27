@@ -48,6 +48,40 @@ export default {
           },
         },
       },
+      storyPage: {
+        storySelection: "Chọn câu chuyện",
+        story: {
+          storyNotFound: "Không tìm thấy câu chuyện",
+          storyInsufficientLevel:
+            "Bạn không thể đọc câu chuyện này vì trình độ đọc của bạn chưa đủ cao.",
+          readBefore: "Chào mừng trở lại. Bạn đã đọc câu chuyện này trước đó",
+          readBeforeDescription:
+            "Bạn có thể thử đọc và luyện tập lại để cải thiện kỹ năng đọc của mình. Đây là kết quả từ lần đọc trước của bạn.",
+          status: "Trạng thái",
+          statusText: {
+            completed: "Hoàn thành",
+            uncompleted: "Chưa hoàn thành",
+          },
+          statusDescription: "Cập nhật lần cuối vào {date}",
+          score: "Điểm kiểm tra",
+          scoreText: "{score}",
+          scoreDescription: "trong tổng số {total} câu hỏi",
+          rated: "Đánh giá",
+          ratedText: "{rated} đánh giá",
+          ratedDescription: "Bạn đã đánh giá câu chuyện này",
+          timeSpend: "Thời gian đọc",
+          timeSpendText: "{time}",
+          timeSpendDescription: "trong {total} câu hỏi",
+          scoreSuffix: {
+            point: "điểm",
+            points: "điểm",
+          },
+          secondSuffix: {
+            second: "giây",
+            seconds: "giây",
+          },
+        },
+      },
       historyPage: {
         title: "Lịch sử cho {userName}",
         // Headings
@@ -250,6 +284,7 @@ export default {
     },
     sidebarNav: {
       read: "Đọc",
+      stories: "Cốt truyện",
       history: "Lịch sử",
       sentences: "Câu",
       reports: "Báo cáo",
@@ -343,6 +378,13 @@ export default {
       cefrLevel: "Trình độ CEFR là {cefrLevel}",
       articleCardDescription:
         "Bài viết liên quan đến chủ đề {topic}, thuộc thể loại {genre}.",
+      previousChapter: "Chương trước",
+      nextChapter: "Chương tiếp theo",
+      chapters: "Chương",
+      characters: "Nhân vật",
+      previouslyRead: "Đã đọc",
+      continueRead: "Tiếp tục đọc Chương",
+      readChapter: "Đọc Chương",
     },
     articleContent: {
       voiceAssistant: "Trợ lý giọng nói",
@@ -355,6 +397,20 @@ export default {
       translateButton: {
         open: "Dịch",
         close: "Đóng cửa sổ dịch",
+      },
+    },
+    storyChapterContent: {
+      voiceAssistant: "Trợ lý giọng nói",
+      soundButton: {
+        play: "Phát âm thanh",
+        pause: "Tạm dừng âm thanh",
+      },
+      previousChapter: "Chương trước",
+      nextChapter: "Chương tiếp theo",
+      openvoicebutton: "Nghe và đọc theo",
+      translateButton: {
+        open: "Dịch",
+        close: "Đóng bảng dịch",
       },
     },
     mcq: {

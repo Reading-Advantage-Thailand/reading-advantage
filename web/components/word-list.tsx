@@ -100,7 +100,7 @@ export default function WordList({ article, articleId, userId }: Props) {
       setWordList(wordList);
       form.reset();
     } catch (error: any) {
-      console.log("error: ", error);
+      console.error("error: ", error);
       toast({
         title: "Something went wrong.",
         description: `${error?.response?.data?.message || error?.message}`,
