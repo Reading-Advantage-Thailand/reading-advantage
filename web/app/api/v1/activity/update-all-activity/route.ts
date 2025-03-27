@@ -1,28 +1,27 @@
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
-import { articlesByTypeGenre } from "@/server/controllers/article-controller";
+import { updateAllUserActivity } from "@/server/controllers/activity-controller";
 import { restrictAccessKey } from "@/server/controllers/auth-controller";
 
 export interface RequestContext {
-  params?: {
-    license_id: string;
-  };
+  params?: unknown;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
-// Middleware
 router.use(logRequest);
 router.use(restrictAccessKey);
 
-// API: POST api/v1/system/dashboard/updateArticleByTypeGenre
-router.post(articlesByTypeGenre);
+//api/activity
+router.post(updateAllUserActivity);
 
 export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
   }
+  // Handle the case where result is not a NextResponse
+  // You might want to return a default NextResponse or throw an error
   throw new Error("Expected a NextResponse from router.run");
 }

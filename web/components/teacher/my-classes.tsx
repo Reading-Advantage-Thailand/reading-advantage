@@ -99,7 +99,6 @@ export default function MyClasses() {
   const { classrooms, fetchClassrooms } = useClassroomStore();
   const [loading, setLoading] = useState<boolean>(false);
   const [coursesOpen, setCoursesOpen] = useState<boolean>(false);
-  const [selectAll, setSelectAll] = useState<boolean>(false);
   const [importState, setImportState] = useState(0);
   const [selected, setSelected] = useState("");
 
@@ -270,40 +269,6 @@ export default function MyClasses() {
     setLoading(false);
   };
 
-  // function handleSelectCourse(id: string) {
-  //   const updatedCourses = selectedCourses.includes(id)
-  //     ? selectedCourses.filter((courseId) => courseId !== id)
-  //     : [...selectedCourses, id];
-
-  //   setSelectedCourses(updatedCourses);
-  // }
-
-  // function handleSelectAll() {
-  //   if (selectAll) {
-  //     const newSelectedCourses = courses
-  //       .filter(
-  //         (course: Schema$Course) =>
-  //           selectedCourses.includes(course.id as string) &&
-  //           classrooms.some((cls) => cls.googleClassroomId === course.id)
-  //       )
-  //       .map((course: Schema$Course) => course.id as string);
-
-  //     setSelectedCourses(newSelectedCourses);
-  //   } else {
-  //     const newSelectedCourses = courses
-  //       .filter(
-  //         (course: Schema$Course) =>
-  //           !selectedCourses.includes(course.id as string) &&
-  //           !classrooms.some((cls) => cls.googleClassroomId === course.id)
-  //       )
-  //       .map((course: Schema$Course) => course.id as string);
-
-  //     setSelectedCourses([...selectedCourses, ...newSelectedCourses]);
-  //   }
-
-  //   setSelectAll(!selectAll);
-  // }
-
   async function handleImportCourses() {
     try {
       setImportState(1);
@@ -323,8 +288,6 @@ export default function MyClasses() {
       console.error("Error importing courses:", error);
     }
   }
-
-  console.log(selectedCourses);
 
   return (
     <>

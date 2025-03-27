@@ -81,7 +81,7 @@ export default function ActivityDistributionPieChart() {
   useEffect(() => {
     async function loadActivityData() {
       const activity = await fetchActivity();
-      setActivityData(activity.userActivityStats);
+      setActivityData([activity.userActivityData]);
     }
     loadActivityData();
   }, []);
@@ -145,16 +145,16 @@ export default function ActivityDistributionPieChart() {
 
   return (
     <>
-      <Card className="h-full">
+      <Card className="h-full flex flex-col justify-center items-center">
         <CardHeader>
           <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
             Activity Distribution
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 pb-0">
+        <CardContent className="flex-1">
           <ChartContainer
             config={chartConfig}
-            className="w-full max-h-[350px] [&_.recharts-pie-label-text]:fill-foreground"
+            className="w-full h-full [&_.recharts-pie-label-text]:fill-foreground"
           >
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
@@ -165,6 +165,8 @@ export default function ActivityDistributionPieChart() {
                 label={(entry) => entry.activity}
                 labelLine={true}
                 outerRadius="80%"
+                cx="50%"
+                cy="55%"
               />
             </PieChart>
           </ChartContainer>
