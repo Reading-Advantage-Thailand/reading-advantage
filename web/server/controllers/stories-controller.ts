@@ -92,9 +92,10 @@ export async function getAllStories(req: ExtendedNextRequest) {
     //  }))
     //);
 
-    const availableStories = totalSnapshot.docs.filter(
-      (doc) => doc.data().ra_level <= userLevel
-    );
+    const availableStories = totalSnapshot.docs.filter((doc) => {
+      const raLevel = doc.data().ra_level;
+      return raLevel <= 3 || raLevel <= userLevel;
+    });
 
     const totalAvailableStories = availableStories.length;
     //console.log("Total available stories:", totalAvailableStories);
