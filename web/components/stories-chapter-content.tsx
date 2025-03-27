@@ -156,7 +156,7 @@ export default function ChapterContent({
       audioRef.current.currentTime = startTime;
       const playAudio = () => {
         audioRef.current!.play().catch((error) => {
-          console.log("Error playing audio: ", error);
+          console.error("Error playing audio: ", error);
         });
         audioRef.current!.removeEventListener("canplaythrough", playAudio);
       };
@@ -179,7 +179,7 @@ export default function ChapterContent({
           audioRef.current!.currentTime =
             sentenceList[nextAudioIndex].startTime;
           audioRef.current!.play().catch((error) => {
-            console.log("Error playing audio: ", error);
+            console.error("Error playing audio: ", error);
           });
           audioRef.current!.removeEventListener("canplaythrough", playAudio);
         };
@@ -353,7 +353,7 @@ export default function ChapterContent({
             audioRef.current!.currentTime =
               sentenceList[nextAudioIndex].startTime;
             audioRef.current!.play().catch((error) => {
-              console.log("Error playing audio: ", error);
+              console.error("Error playing audio: ", error);
             });
             audioRef.current!.removeEventListener("canplaythrough", playAudio);
           };
@@ -377,7 +377,7 @@ export default function ChapterContent({
             audioRef.current!.currentTime =
               sentenceList[prevAudioIndex].startTime;
             audioRef.current!.play().catch((error) => {
-              console.log("Error playing audio: ", error);
+              console.error("Error playing audio: ", error);
             });
             audioRef.current!.removeEventListener("canplaythrough", playAudio);
           };
@@ -394,7 +394,7 @@ export default function ChapterContent({
             audioRef.current!.currentTime =
               sentenceList[currentAudioIndex].startTime;
             audioRef.current!.play().catch((error) => {
-              console.log("Error playing audio: ", error);
+              console.error("Error playing audio: ", error);
             });
             audioRef.current!.removeEventListener("canplaythrough", playAudio);
           };

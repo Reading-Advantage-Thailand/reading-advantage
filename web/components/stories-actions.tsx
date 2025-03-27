@@ -33,7 +33,7 @@ export default function StoriesActions({ story, storyId }: Props) {
   };
 
   const handleDelete = async (storyId: string) => {
-    console.log(`Deleted article with ID: ${storyId}`);
+    //console.log(`Deleted article with ID: ${storyId}`);
     try {
       await fetch(`/api/v1/stories/${storyId}`, { method: "DELETE" });
       setOpen(false);
@@ -53,7 +53,7 @@ export default function StoriesActions({ story, storyId }: Props) {
   };
 
   const handleApprove = (storyId: string) => {
-    console.log(`Approved article with ID: ${storyId}`);
+    //console.log(`Approved article with ID: ${storyId}`);
     toast({
       title: "Article Approved",
       description: "The  article has been approved",

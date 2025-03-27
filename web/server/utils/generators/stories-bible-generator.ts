@@ -71,11 +71,11 @@ export async function generateStoryBible({
   genre: string;
   subgenre: string;
 }) {
-  console.log("Generating StoryBible using AI for:", {
-    topic,
-    genre,
-    subgenre,
-  });
+  //console.log("Generating StoryBible using AI for:", {
+  //  topic,
+  //  genre,
+  //  subgenre,
+  //});
 
   try {
     const prompt = `

@@ -25,7 +25,7 @@ const CEFRLevels = [
 export async function generateStories(req: NextRequest) {
   try {
     const startTime = Date.now();
-    console.log("Received request to generate stories");
+    //console.log("Received request to generate stories");
     const body = await req.json();
     const { amountPerGenre } = body;
     if (!amountPerGenre) throw new Error("amountPerGenre is required");
@@ -53,7 +53,7 @@ export async function generateStories(req: NextRequest) {
     });
 
     for (const level of CEFRLevels) {
-      console.log(`Generating stories for CEFR Level: ${level}`);
+      //console.log(`Generating stories for CEFR Level: ${level}`);
 
       for (const type of articleTypes) {
         const genreData = await randomSelectGenre({ type });
@@ -65,7 +65,7 @@ export async function generateStories(req: NextRequest) {
           subgenre,
           amountPerGenre: amount,
         });
-        console.log(topicData);
+        //console.log(topicData);
         const topics = topicData.topics;
 
         for (const topic of topics) {
@@ -100,9 +100,9 @@ export async function generateStories(req: NextRequest) {
 
             const cefr_level = cefrLevel.replace(/[+-]/g, "");
 
-            console.log(
-              `CEFR ${level}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${cefr_level}, Evaluated raLevel: ${raLevel}`
-            );
+            //console.log(
+            //  `CEFR ${level}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${cefr_level}, Evaluated raLevel: ${raLevel}`
+            //);
 
             await ref.set({
               id: ref.id,

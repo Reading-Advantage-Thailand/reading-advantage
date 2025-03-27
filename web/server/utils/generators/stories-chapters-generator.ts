@@ -174,9 +174,9 @@ export async function generateChapters(
   }: GenerateChaptersParams,
   maxRetries = 3
 ): Promise<Chapter[]> {
-  console.log(
-    `Generating ${chapterCount} chapters for CEFR level ${cefrLevel}...`
-  );
+  //console.log(
+  //  `Generating ${chapterCount} chapters for CEFR level ${cefrLevel}...`
+  //);
 
   let chapters: Chapter[] = [];
 
@@ -187,11 +187,11 @@ export async function generateChapters(
 
       while (attempts < maxRetries) {
         try {
-          console.log(
-            `Generating Chapter ${i + 1} of ${chapterCount} (Attempt ${
-              attempts + 1
-            }/${maxRetries})...`
-          );
+          //console.log(
+          //  `Generating Chapter ${i + 1} of ${chapterCount} (Attempt ${
+          //    attempts + 1
+          //  }/${maxRetries})...`
+          //);
 
           const previousChapters = chapters.length > 0 ? chapters : [];
 
@@ -215,14 +215,14 @@ export async function generateChapters(
           );
           newChapter.questions = questions;
 
-          console.log("Generating chapter audio...");
+          //console.log("Generating chapter audio...");
 
           await generateChapterAudio({
             content: newChapter.content,
             storyId: storyId,
             chapterNumber: `${i + 1}`,
           });
-          console.log("Chapter audio generated successfully.");
+          //console.log("Chapter audio generated successfully.");
 
           const wordListForAudio =
             newChapter.analysis.vocabulary.targetWordsUsed.map((word) => ({
@@ -230,7 +230,7 @@ export async function generateChapters(
               definition: word.definition,
             }));
 
-          console.log("Saving word list for audio...");
+          //console.log("Saving word list for audio...");
 
           await saveWordList({
             wordList: wordListForAudio,
@@ -238,9 +238,9 @@ export async function generateChapters(
             chapterNumber: `${i + 1}`,
           });
 
-          console.log("Word list saved for audio successfully.");
+          //console.log("Word list saved for audio successfully.");
 
-          console.log("Generating chapter audio for words...");
+          //console.log("Generating chapter audio for words...");
 
           await generateChapterAudioForWord({
             wordList: wordListForAudio,
@@ -248,7 +248,7 @@ export async function generateChapters(
             chapterNumber: `${i + 1}`,
           });
 
-          console.log("Chapter audio for words generated successfully.");
+          //console.log("Chapter audio for words generated successfully.");
 
           break;
         } catch (error) {
@@ -271,7 +271,7 @@ export async function generateChapters(
         }
       }
     }
-    console.log("All chapters generated successfully.");
+    //console.log("All chapters generated successfully.");
 
     return chapters;
   } catch (error) {
@@ -291,7 +291,7 @@ async function generateSingleChapter({
   wordCountPerChapter: number;
   previousChapters: Chapter[];
 }): Promise<Chapter | null> {
-  console.log(`Processing single chapter with AI (CEFR: ${cefrLevel})...`);
+  //console.log(`Processing single chapter with AI (CEFR: ${cefrLevel})...`);
 
   const cefrRequirements = getCEFRRequirements(cefrLevel);
   const minWordCount = Math.floor(wordCountPerChapter * 0.9);

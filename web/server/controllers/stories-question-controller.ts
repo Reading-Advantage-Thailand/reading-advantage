@@ -263,7 +263,7 @@ export async function getStorySAQuestion(
 
     const storyData = storySnap.data();
     if (!storyData || !storyData.chapters) {
-      console.log("No chapters found!");
+      //console.log("No chapters found!");
       return NextResponse.json(
         { message: "No chapters found" },
         { status: 404 }
@@ -272,7 +272,7 @@ export async function getStorySAQuestion(
 
     const chapterIndex = parseInt(chapterNumber, 10) - 1;
     if (chapterIndex < 0 || chapterIndex >= storyData.chapters.length) {
-      console.log("Invalid chapter number!");
+      //console.log("Invalid chapter number!");
       return NextResponse.json(
         { message: "Invalid chapter number" },
         { status: 400 }

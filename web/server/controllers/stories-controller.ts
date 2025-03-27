@@ -170,7 +170,7 @@ export async function getStoryById(
   const userId = req.session?.user.id as string;
 
   if (!storyId) {
-    console.log("Missing storyId");
+    //console.log("Missing storyId");
     return NextResponse.json(
       { message: "Missing storyId", result: null },
       { status: 400 }
@@ -227,7 +227,7 @@ export async function getStoryById(
 
     const storyData = storyDoc.data();
     if (!storyData) {
-      console.log("Story data not found");
+      //console.log("Story data not found");
       return NextResponse.json(
         { message: "Story data not found", result: null },
         { status: 404 }

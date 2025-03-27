@@ -3,7 +3,7 @@ import db from "@/configs/firestore-config";
 
 export async function deleteStoryAndImages(storyId: string) {
   try {
-    console.log(`Deleting story and images for: ${storyId}`);
+    //console.log(`Deleting story and images for: ${storyId}`);
 
     const bucketName = "artifacts.reading-advantage.appspot.com";
     const bucket = storage.bucket(bucketName);
@@ -19,7 +19,7 @@ export async function deleteStoryAndImages(storyId: string) {
       );
     });
 
-    console.log(`Deleted story image: ${storyImagePath}`);
+    //console.log(`Deleted story image: ${storyImagePath}`);
 
     // ลบไฟล์ภาพของบททั้งหมด (เช่น storyId-1.png, storyId-2.png)
     const chapterPrefix = `images/${storyId}-`; // เปลี่ยนเป็นโฟลเดอร์ที่เก็บรูปจริง
@@ -27,9 +27,9 @@ export async function deleteStoryAndImages(storyId: string) {
 
     if (files.length > 0) {
       await Promise.all(files.map((file) => file.delete()));
-      console.log(`Deleted all chapter images with prefix: ${chapterPrefix}`);
+      //console.log(`Deleted all chapter images with prefix: ${chapterPrefix}`);
     } else {
-      console.warn(`No chapter images found with prefix: ${chapterPrefix}`);
+      //console.warn(`No chapter images found with prefix: ${chapterPrefix}`);
     }
 
     // ลบไฟล์เสียงของ content ของแต่ละบท
@@ -40,7 +40,7 @@ export async function deleteStoryAndImages(storyId: string) {
 
     if (contentAudioFiles.length > 0) {
       await Promise.all(contentAudioFiles.map((file) => file.delete()));
-      console.log(`Deleted chapter audio : ${contentAudioPrefix}  }`);
+      //console.log(`Deleted chapter audio : ${contentAudioPrefix}  }`);
     } else {
       console.warn(
         `No chapter audio found with prefix: : ${contentAudioPrefix}`
@@ -53,7 +53,7 @@ export async function deleteStoryAndImages(storyId: string) {
 
     if (wordAudioFiles.length > 0) {
       await Promise.all(wordAudioFiles.map((file) => file.delete()));
-      console.log(`Deleted chapter word-audio: ${wordAudioPrefix}`);
+      //console.log(`Deleted chapter word-audio: ${wordAudioPrefix}`);
     } else {
       console.warn(
         `No chapter word-audio found with prefix: ${wordAudioPrefix}`
@@ -62,9 +62,9 @@ export async function deleteStoryAndImages(storyId: string) {
 
     // ลบเอกสารของเรื่องราวจาก Firestore
     await db.collection("stories").doc(storyId).delete();
-    console.log(
-      `Successfully deleted story ${storyId} and all associated images.`
-    );
+    //console.log(
+    //  `Successfully deleted story ${storyId} and all associated images.`
+    //);
 
     // ลบไฟล์เสียงของ word ของแต่ละบท
     const ttsPrefix = `tts/${storyId}-`;
@@ -72,7 +72,7 @@ export async function deleteStoryAndImages(storyId: string) {
 
     if (ttsFiles.length > 0) {
       await Promise.all(ttsFiles.map((file) => file.delete()));
-      console.log(`Deleted chapter word-audio: ${ttsFiles}`);
+      //console.log(`Deleted chapter word-audio: ${ttsFiles}`);
     } else {
       console.warn(`No chapter word-audio found with prefix: ${ttsPrefix}`);
     }

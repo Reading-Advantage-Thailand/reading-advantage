@@ -129,20 +129,20 @@ export async function getChapterWordlist(
   req: ExtendedNextRequest,
   { params: { storyId, chapterNumber } }: RequestContext
 ) {
-  console.log(
-    `[getChapterWordlist] Starting - storyId: ${storyId}, chapter: ${chapterNumber}`
-  );
+  //console.log(
+  //  `[getChapterWordlist] Starting - storyId: ${storyId}, chapter: ${chapterNumber}`
+  //);
 
   const { chapter } = await req.json();
-  console.log(`[getChapterWordlist] Got chapter content`);
+  //console.log(`[getChapterWordlist] Got chapter content`);
 
   const wordListRef = db
     .collection(`stories-word-list`)
     .doc(`${storyId}-${chapterNumber}`);
   const wordListSnapshot = await wordListRef.get();
-  console.log(
-    `[getChapterWordlist] Word list exists in DB: ${wordListSnapshot}`
-  );
+  //console.log(
+  //  `[getChapterWordlist] Word list exists in DB: ${wordListSnapshot}`
+  //);
 
   const fileExtension = ".mp3";
 
@@ -150,12 +150,12 @@ export async function getChapterWordlist(
     .bucket("artifacts.reading-advantage.appspot.com")
     .file(`${AUDIO_WORDS_URL}/${storyId}-${chapterNumber}${fileExtension}`)
     .exists();
-  console.log(`[getChapterWordlist] Audio file exists: ${fileExists[0]}`);
+  //console.log(`[getChapterWordlist] Audio file exists: ${fileExists[0]}`);
 
   if (wordListSnapshot?.exists && fileExists[0]) {
-    console.log(`[getChapterWordlist] Found existing word list and audio`);
+    //console.log(`[getChapterWordlist] Found existing word list and audio`);
     const dataList = wordListSnapshot.data();
-    console.log(`[getChapterWordlist] Data list: ${dataList}`);
+    //console.log(`[getChapterWordlist] Data list: ${dataList}`);
     return NextResponse.json(
       {
         messeges: "success",
@@ -165,25 +165,25 @@ export async function getChapterWordlist(
       { status: 200 }
     );
   } else {
-    console.log(`[getChapterWordlist] Generating new word list and audio`);
+    //console.log(`[getChapterWordlist] Generating new word list and audio`);
     const wordList = await generateWordList({
       passage: chapter.chapter.content,
     });
-    console.log(`[getChapterWordlist] Generated ${wordList.word_list} words`);
+    //console.log(`[getChapterWordlist] Generated ${wordList.word_list} words`);
 
     await wordListRef.set({
       word_list: wordList.word_list,
       storyId: storyId,
       chapterNumber: chapterNumber,
     });
-    console.log(`[getChapterWordlist] Saved word list to DB`);
+    //console.log(`[getChapterWordlist] Saved word list to DB`);
 
     await generateChapterAudioForWord({
       wordList: wordList.word_list,
       storyId: storyId,
       chapterNumber: chapterNumber,
     });
-    console.log(`[getChapterWordlist] Generated audio file`);
+    //console.log(`[getChapterWordlist] Generated audio file`);
 
     return NextResponse.json(
       {
