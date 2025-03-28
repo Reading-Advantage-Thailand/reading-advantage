@@ -18,8 +18,11 @@ import {
 } from "firebase/auth";
 import { firebaseApp, firebaseAuth } from "@/lib/firebase";
 import { toast } from "@/components/ui/use-toast";
+import { cookies } from "next/headers";
+import GoogleClassroomButtonLink from "@/components/googleClassroomButtonLink";
 export default async function UserProfileSettingsPage() {
   const user = await getCurrentUser();
+  const googleActive = cookies().get("google_refresh_token")?.value;
 
   // check if user is not logged in and redirect to signin page
   if (!user) {
@@ -49,6 +52,8 @@ export default async function UserProfileSettingsPage() {
             resetPassword
             showVerified
           />
+          <DisplaySettingInfo title="Google Classroom Link" />
+          <GoogleClassroomButtonLink status={Boolean(googleActive)} />
           <DisplaySettingInfo
             title="Reading advantage level"
             data={user.cefr_level || "unknown"}
@@ -80,7 +85,7 @@ export default async function UserProfileSettingsPage() {
 interface DisplaySettingInfoProps {
   title: string;
   desc?: string;
-  data: string;
+  data?: string;
   badge?: string;
   verified?: boolean;
   showVerified?: boolean;
@@ -186,24 +191,27 @@ const DisplaySettingInfo: React.FC<DisplaySettingInfoProps> = ({
       )}
     </div>
     {desc && <p className="text-[0.8rem] text-muted-foreground mt-2">{desc}</p>}
-    <div className="flex justify-between items-center text-[0.8rem] text-muted-foreground rounded-lg border bg-card shadow px-3 py-2 my-2">
-      <p>{data}</p>
-      {showVerified && (
-        <div className="flex items-center gap-1">
-          {verified ? (
-            <span className="text-green-800 dark:text-green-300 flex items-center gap-1">
-              <BadgeCheck size={16} />
-              Verified
-            </span>
-          ) : (
-            <span className="text-red-800 dark:text-red-300 flex items-center gap-1">
-              <Icons.unVerified size={16} />
-              Not verified
-            </span>
-          )}
-        </div>
-      )}
-    </div>
+    {data && (
+      <div className="flex justify-between items-center text-[0.8rem] text-muted-foreground rounded-lg border bg-card shadow px-3 py-2 my-2">
+        <p>{data}</p>
+        {showVerified && (
+          <div className="flex items-center gap-1">
+            {verified ? (
+              <span className="text-green-800 dark:text-green-300 flex items-center gap-1">
+                <BadgeCheck size={16} />
+                Verified
+              </span>
+            ) : (
+              <span className="text-red-800 dark:text-red-300 flex items-center gap-1">
+                <Icons.unVerified size={16} />
+                Not verified
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    )}
+
     <div className="flex gap-2">
       {/* {resetPassword && (
         <Button

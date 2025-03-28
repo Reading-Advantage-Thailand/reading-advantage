@@ -9,14 +9,26 @@ type Schema$Course = classroom_v1.Schema$Course;
 export async function GET(req: NextRequest) {
   const accessToken = req.cookies.get("google_access_token")?.value;
   const refreshToken = req.cookies.get("google_refresh_token")?.value;
+  const lastUrl =
+    req.nextUrl.searchParams.get("redirect") || "/teacher/my-classes";
 
   if (!accessToken && !refreshToken) {
+    cookies().set({
+      name: "last_url",
+      value: lastUrl,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 300, // 5 minutes expiration
+    });
+
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: "offline",
       scope: SCOPE,
       prompt: "consent",
       include_granted_scopes: true,
     });
+
     return NextResponse.json({ authUrl }, { status: 200 });
   }
 
