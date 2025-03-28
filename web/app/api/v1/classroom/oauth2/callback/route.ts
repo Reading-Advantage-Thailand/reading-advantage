@@ -35,11 +35,10 @@ export async function GET(req: NextRequest) {
       maxAge: 30 * 24 * 60 * 60,
     });
 
+    const lastUrl = cookies().get("last_url")?.value || "/teacher/my-classes";
+
     return NextResponse.redirect(
-      new URL(
-        "/teacher/my-classes",
-        process.env.NEXT_PUBLIC_BASE_URL
-      ).toString()
+      new URL(lastUrl, process.env.NEXT_PUBLIC_BASE_URL).toString()
     );
   } catch (error) {
     return NextResponse.json({

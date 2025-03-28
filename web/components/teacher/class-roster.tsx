@@ -262,8 +262,11 @@ export default function ClassRoster() {
     setLoading(true);
 
     try {
+      const lastUrl = window.location.pathname;
       const response = await fetch(
-        `/api/v1/classroom/oauth2/classroom/courses/${courseId}`,
+        `/api/v1/classroom/oauth2/classroom/courses/${courseId}?redirect=${encodeURIComponent(
+          lastUrl
+        )}`,
         {
           method: "GET",
         }
@@ -271,10 +274,15 @@ export default function ClassRoster() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && !data.authUrl) {
         toast({
           title: "Success",
           description: "Students synced successfully",
+        });
+      } else if (response.status === 401) {
+        toast({
+          title: "Error",
+          description: "No student in class",
         });
       } else {
         window.location.href = data.authUrl;

@@ -243,8 +243,11 @@ export default function MyClasses() {
   const syncClassroom = async () => {
     setLoading(true);
     try {
+      const lastUrl = window.location.pathname;
       const response = await fetch(
-        "/api/v1/classroom/oauth2/classroom/courses",
+        `/api/v1/classroom/oauth2/classroom/courses?redirect=${encodeURIComponent(
+          lastUrl
+        )}`,
         {
           method: "GET",
         }
@@ -566,8 +569,7 @@ export default function MyClasses() {
               <p className="text-sm">
                 This feature allows teachers to easily import their Google
                 Classroom students into Reading Advantage. Students will be
-                automatically enrolled in your class with default CEFR levels.
-                You can adjust their levels later.
+                automatically enrolled in your class.
               </p>
             </div>
           </DialogFooter>
