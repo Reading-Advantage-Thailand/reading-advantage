@@ -6,12 +6,13 @@ import { generateStoryBible } from "./stories-bible-generator";
 import { getCEFRRequirements } from "../CEFR-requirements";
 import { generateChapters } from "./stories-chapters-generator";
 import { generateStoriesTopic } from "./stories-topic-generator";
-import { generateImage, generateImageFlash } from "./image-generator";
+import { generateImage } from "./image-generator";
 import { Timestamp } from "firebase-admin/firestore";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
 import { evaluateRating } from "./evaluate-rating-generator";
 import { calculateLevel } from "@/lib/calculateLevel";
 import { sendDiscordWebhook } from "../send-discord-webhook";
+import { Provider } from "jotai";
 
 const CEFRLevels = [
   ArticleBaseCefrLevel.A1,
@@ -123,6 +124,7 @@ export async function generateStories(req: NextRequest) {
             await generateImage({
               imageDesc: storyBible["image-description"],
               articleId: ref.id,
+              provider: "google",
             });
           } catch (imageError) {
             console.error("Image generation failed:", imageError);
@@ -131,7 +133,8 @@ export async function generateStories(req: NextRequest) {
             continue;
           }
 
-          const chapterCount = Math.floor(Math.random() * 3) + 6;
+          //const chapterCount = Math.floor(Math.random() * 3) + 6;
+          const chapterCount = 2;
           const wordCountPerChapter =
             getCEFRRequirements(level).wordCount.fiction;
 
@@ -165,14 +168,31 @@ export async function generateStories(req: NextRequest) {
 
             await ref.update({ chapters: validatedChapters });
 
-            for (let i = 0; i < chapters.length; i++) {
+            try {
+              await generateImage({
+                imageDesc: chapters[0]["image-description"],
+                articleId: `${ref.id}-1`,
+                provider: "google",
+              });
+            } catch (imageError) {
+              console.error("Chapter 1 image generation failed:", imageError);
+              await deleteStoryAndImages(ref.id);
+              continue;
+            }
+
+            for (let i = 1; i < chapters.length; i++) {
               try {
-                await generateImageFlash({
+                await generateImage({
+                  prevImageDesc: chapters[i - 1]["image-description"],
                   imageDesc: chapters[i]["image-description"],
                   articleId: `${ref.id}-${i + 1}`,
+                  provider: "google",
                 });
               } catch (imageError) {
-                console.error("Chapter image generation failed:", imageError);
+                console.error(
+                  `Chapter ${i + 1} image generation failed:`,
+                  imageError
+                );
                 await deleteStoryAndImages(ref.id);
                 failedCount++;
                 continue;
