@@ -124,7 +124,7 @@ export async function generateStories(req: NextRequest) {
             await generateImage({
               imageDesc: storyBible["image-description"],
               articleId: ref.id,
-              provider: "google",
+              provider: "openai",
             });
           } catch (imageError) {
             console.error("Image generation failed:", imageError);
@@ -172,7 +172,7 @@ export async function generateStories(req: NextRequest) {
               await generateImage({
                 imageDesc: chapters[0]["image-description"],
                 articleId: `${ref.id}-1`,
-                provider: "google",
+                provider: "openai",
               });
             } catch (imageError) {
               console.error("Chapter 1 image generation failed:", imageError);
@@ -186,7 +186,7 @@ export async function generateStories(req: NextRequest) {
                   prevImageDesc: chapters[i - 1]["image-description"],
                   imageDesc: chapters[i]["image-description"],
                   articleId: `${ref.id}-${i + 1}`,
-                  provider: "google",
+                  provider: "openai",
                 });
               } catch (imageError) {
                 console.error(

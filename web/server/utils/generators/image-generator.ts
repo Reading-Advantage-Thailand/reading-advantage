@@ -3,7 +3,7 @@ import { generateText } from "ai";
 import { IMAGE_URL } from "../../constants";
 import uploadToBucket from "@/utils/uploadToBucket";
 import { openai, openaiImages } from "@/utils/openai";
-import { google, googleImages } from "@/utils/google";
+import { google, googleImages, googleFlashImage } from "@/utils/google";
 import { experimental_generateImage as generateImages } from "ai";
 import { GeneratedFile } from "ai";
 
@@ -53,20 +53,22 @@ Style: cinematic, hyper-realistic, concept art quality.`;
 
         base64 = image.base64;
       } else if (provider === "google") {
-        // const { image } = await generateImages({
-        //   model: google.image(googleImages),
-        //   prompt: params.imageDesc,
-        //   providerOptions: {
-        //     vertex: {
-        //       aspectRatio: "1:1",
-        //       safetySetting: "block_some",
-        //       personGeneration: "allow_all",
-        //     },
-        //   },
-        // });
+        //const { image } = await generateImages({
+        //  model: google.image(googleImages),
+        //  prompt: params.imageDesc,
+        //  providerOptions: {
+        //   vertex: {
+        //      aspectRatio: "1:1",
+        //      safetySetting: "block_some",
+        //      personGeneration: "allow_all",
+        //    },
+        //  },
+        //});
+
+        //base64 = image.base64;
 
         const result = await generateText({
-          model: google("gemini-2.0-flash-exp"),
+          model: google(googleFlashImage),
           providerOptions: {
             google: { responseModalities: ["TEXT", "IMAGE"] },
           },
