@@ -365,7 +365,8 @@ export default {
       characters: "角色",
       previouslyRead: "已读",
       continueRead: "继续阅读第",
-      readChapter: "阅读第",
+      readChapter: "阅读第", 
+      completed: "完成",
     },
     articleContent: {
       voiceAssistant: "语音助手",
