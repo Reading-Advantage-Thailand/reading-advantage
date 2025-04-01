@@ -396,7 +396,7 @@ export default {
       chapters: "Chapters",
       characters: "Characters",
       previouslyRead: "Previously Read",
-      continueRead: "Continue Read Chapter",
+      continueRead: "Continue Chapter",
       readChapter: "Read Chapter",
     },
     articleContent: {
