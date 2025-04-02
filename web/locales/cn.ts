@@ -353,6 +353,7 @@ export default {
       article: "文章",
       deleteButton: "删除",
       appoveButton: "批准",
+      printButton: "打印文章",
     },
     articleCard: {
       raLevel: "阅读能力等级为 {raLevel}",
@@ -364,7 +365,7 @@ export default {
       characters: "角色",
       previouslyRead: "已读",
       continueRead: "继续阅读第",
-      readChapter: "阅读第", 
+      readChapter: "阅读第",
     },
     articleContent: {
       voiceAssistant: "语音助手",

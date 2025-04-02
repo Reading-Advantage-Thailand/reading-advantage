@@ -353,6 +353,7 @@ export default {
       article: "文章",
       deleteButton: "刪除",
       appoveButton: "批准",
+      printButton: "列印文章",
     },
     articleCard: {
       raLevel: "閱讀能力等級為 {raLevel}",

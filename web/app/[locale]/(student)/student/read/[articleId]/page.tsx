@@ -13,6 +13,7 @@ import WordList from "@/components/word-list";
 import LAQuestionCard from "@/components/questions/laq-question-card";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
+import PrintArticle from "@/components/teacher/print-article";
 
 export const metadata = {
   title: "Article",
@@ -51,15 +52,20 @@ export default async function ArticleQuizPage({
         <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
           <div className="flex justify-evently">
             {user.role.includes("teacher") && (
-              <AssignDialog
-                article={articleResponse.article}
-                articleId={params.articleId}
-                userId={user.id}
-              />
+              <>
+                <PrintArticle
+                  articleId={params.articleId}
+                  article={articleResponse.article}
+                />
+                <AssignDialog
+                  article={articleResponse.article}
+                  articleId={params.articleId}
+                  userId={user.id}
+                />
+              </>
             )}
-
             {user.role.includes("system") && (
-              <div className="flex gap-4">
+              <div className="flex">
                 <ArticleActions
                   article={articleResponse.article}
                   articleId={params.articleId}
