@@ -372,6 +372,7 @@ export default {
       article: "Bài viết",
       deleteButton: "Xóa",
       appoveButton: "Duyệt",
+      printButton: "In bài viết",
     },
     articleCard: {
       raLevel: "Trình độ đọc là {raLevel}",

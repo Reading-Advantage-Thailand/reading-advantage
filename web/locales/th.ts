@@ -369,6 +369,7 @@ export default {
       article: "บทความ",
       deleteButton: "ลบ",
       appoveButton: "อนุมัติ",
+      printButton: "พิมพ์บทความ",
     },
     articleCard: {
       raLevel: "ระดับการอ่านของบทความคือ {raLevel}",

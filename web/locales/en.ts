@@ -385,6 +385,7 @@ export default {
       article: "article",
       deleteButton: "Delete",
       appoveButton: "Approve",
+      printButton: "Print Article",
     },
     articleCard: {
       raLevel: "Reading Advantage level is {raLevel}",

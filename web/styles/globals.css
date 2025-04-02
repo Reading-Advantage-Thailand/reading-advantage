@@ -379,3 +379,26 @@
 .text-right {
   text-align: right;
 }
+
+@media print {
+  @page {
+    margin-top: 10mm;
+  }
+  .break-inside-avoid-page {
+    break-inside: avoid-page;
+  }
+  .article-paragraph {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .maq-question {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .translation-paragraph {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
