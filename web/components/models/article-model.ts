@@ -8,7 +8,7 @@ export interface ArticleShowcase {
   summary?: string;
   title: string;
   is_read?: boolean;
-  is_complete?: boolean;
+  is_completed?: boolean;
   is_approved?: boolean;
   type?: string;
   subgenre?: string;
