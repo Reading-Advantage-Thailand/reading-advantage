@@ -3,6 +3,7 @@ import db from "@/configs/firestore-config";
 import { ExtendedNextRequest } from "./auth-controller";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
 import { QuizStatus } from "@/components/models/questions-model";
+import { FieldPath } from "firebase-admin/firestore";
 
 interface RequestContext {
   params: {
@@ -86,6 +87,8 @@ export async function getAllStories(req: ExtendedNextRequest) {
     const results = await Promise.all(
       paginatedDocs.map(async (doc) => {
         const storyData = doc.data();
+        const chapters = storyData.chapters || [];
+        const chapterCount = chapters.length;
 
         const articleRecord = await db
           .collection("users")
@@ -94,22 +97,50 @@ export async function getAllStories(req: ExtendedNextRequest) {
           .doc(doc.id)
           .get();
 
-        const chapterCount = storyData.chapters?.length || 0;
-        const chapterTrackingRef = await db
-          .collection("users")
-          .doc(userId)
-          .collection("stories-records")
-          .doc(doc.id)
-          .collection("chapter-tracking")
-          .get();
+        const completedChapters = await Promise.all(
+          chapters.map(async (chapter: any, index: number) => {
+            const chapterNumber = index + 1;
 
-        const is_complete = chapterTrackingRef.size === chapterCount;
+            const mcqSnap = await db
+              .collection("users")
+              .doc(userId)
+              .collection("stories-records")
+              .doc(doc.id)
+              .collection("mcq-records")
+              .where(FieldPath.documentId(), ">=", `${chapterNumber}-`)
+              .where(FieldPath.documentId(), "<", `${chapterNumber + 1}-`)
+              .get();
+
+            const saqSnap = await db
+              .collection("users")
+              .doc(userId)
+              .collection("stories-records")
+              .doc(doc.id)
+              .collection("saq-records")
+              .where(FieldPath.documentId(), "==", `${chapterNumber}-1`)
+              .get();
+
+            const laqSnap = await db
+              .collection("users")
+              .doc(userId)
+              .collection("stories-records")
+              .doc(doc.id)
+              .collection("laq-records")
+              .where(FieldPath.documentId(), "==", `${chapterNumber}-1`)
+              .get();
+
+            return mcqSnap.size >= 5 && saqSnap.size >= 1 && laqSnap.size >= 1;
+          })
+        );
+
+        const is_complete =
+          completedChapters.filter(Boolean).length === chapterCount;
 
         return {
           id: doc.id,
           ...storyData,
           is_read: articleRecord.exists,
-          is_complete,
+          is_completed: is_complete,
         };
       })
     );
@@ -227,12 +258,6 @@ export async function getStoryById(
           .get();
 
         const is_completed = mcqCount === 5 && saqDoc.exists && laqDoc.exists;
-
-        console.log("chapter", chapterNumber);
-        console.log("mcqCount", mcqCount);
-        console.log("SAQ exists:", saqDoc.exists);
-        console.log("LAQ exists:", laqDoc.exists);
-        console.log("is_completed", is_completed);
 
         return {
           ...chapter,
