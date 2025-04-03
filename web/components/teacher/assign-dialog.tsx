@@ -55,92 +55,90 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
 
   return (
     <div>
-      <div className="flex gap-4">
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-            <Button>Assigngingment</Button>
-          </DialogTrigger>
-          <DialogContent className="z-50">
-            <DialogHeader>
-              <DialogTitle>Create Assignment</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Class</Label>
-                <Select
-                  onValueChange={(value) => handleChange("courseId", value)}
-                >
-                  <SelectTrigger className="w-full mb-4">
-                    <SelectValue placeholder="Select a Class" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {courses.map((course) => (
-                      <SelectItem key={course.id} value={course.id!}>
-                        {course.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Title</Label>
-                <Input
-                  placeholder="Assignment Title"
-                  value={form.title}
-                  onChange={(e) => handleChange("title", e.target.value)}
-                  className="mb-4"
-                />
-              </div>
-              <div>
-                <Label>Due Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full flex justify-between"
-                    >
-                      {date ? format(date, "PPP") : "Select Due Date"}
-                      <CalendarIcon className="w-4 h-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent>
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={(date) => {
-                        setDate(date);
-                        handleChange(
-                          "dueDate",
-                          date?.toISOString().split("T")[0]
-                        );
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-            <DialogFooter className="flex justify-end gap-2">
-              <Button className="w-full">Create Assignment</Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  setForm({
-                    courseId: "",
-                    title: "",
-                    description: "",
-                    dueDate: "",
-                    maxPoints: undefined,
-                    state: "DRAFT",
-                  })
-                }
-                className="w-full"
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button>Assigngingment</Button>
+        </DialogTrigger>
+        <DialogContent className="z-50">
+          <DialogHeader>
+            <DialogTitle>Create Assignment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Class</Label>
+              <Select
+                onValueChange={(value) => handleChange("courseId", value)}
               >
-                Reset
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+                <SelectTrigger className="w-full mb-4">
+                  <SelectValue placeholder="Select a Class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.map((course) => (
+                    <SelectItem key={course.id} value={course.id!}>
+                      {course.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Title</Label>
+              <Input
+                placeholder="Assignment Title"
+                value={form.title}
+                onChange={(e) => handleChange("title", e.target.value)}
+                className="mb-4"
+              />
+            </div>
+            <div>
+              <Label>Due Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full flex justify-between"
+                  >
+                    {date ? format(date, "PPP") : "Select Due Date"}
+                    <CalendarIcon className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(date) => {
+                      setDate(date);
+                      handleChange(
+                        "dueDate",
+                        date?.toISOString().split("T")[0]
+                      );
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button className="w-full">Create Assignment</Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setForm({
+                  courseId: "",
+                  title: "",
+                  description: "",
+                  dueDate: "",
+                  maxPoints: undefined,
+                  state: "DRAFT",
+                })
+              }
+              className="w-full"
+            >
+              Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

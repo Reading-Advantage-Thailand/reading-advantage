@@ -101,7 +101,7 @@ export default function PrintArticle({
   const paragraphs = article.passage.split("\n\n");
 
   return (
-    <div>
+    <div className="flex items-center">
       <Button onClick={() => reactToPrintFn()}>{t("printButton")}</Button>
       <div className="hidden">
         <div

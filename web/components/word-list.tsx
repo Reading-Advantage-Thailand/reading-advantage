@@ -164,10 +164,10 @@ export default function WordList({ article, articleId, userId }: Props) {
   };
 
   return (
-    <div id="onborda-wordbutton">
+    <div id="onborda-wordbutton" className="flex items-center">
       <Dialog>
         <DialogTrigger asChild>
-          <Button onClick={handleWordList} className="mb-4 ml-3">
+          <Button onClick={handleWordList} className="">
             {t("title")}
           </Button>
         </DialogTrigger>
