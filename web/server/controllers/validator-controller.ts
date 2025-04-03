@@ -185,11 +185,11 @@ export async function validateArticle(
     embeds: [
       {
         description: embeds,
-        color: 0xff0000,
+        color: 0x0099ff,
       },
     ],
     reqUrl,
-    color: 0xff0000,
+    color: 0x0099ff,
     userAgent,
   });
 
