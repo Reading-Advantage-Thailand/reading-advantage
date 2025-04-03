@@ -399,6 +399,7 @@ export default {
       continueRead: "Continue Chapter",
       readChapter: "Read Chapter",
       completed: "Completed",
+      started: "Started",
     },
     articleContent: {
       voiceAssistant: "Voice Assistant",

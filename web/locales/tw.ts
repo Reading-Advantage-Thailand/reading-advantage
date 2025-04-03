@@ -366,6 +366,7 @@ export default {
       continueRead: "繼續閱讀第",
       readChapter: "閱讀第",
       completed: "完成",
+      started: "開始了",
     },
     articleContent: {
       voiceAssistant: "語音助手",
