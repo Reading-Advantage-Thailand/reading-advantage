@@ -387,6 +387,7 @@ export default {
       continueRead: "Tiếp tục đọc Chương",
       readChapter: "Đọc Chương",
       completed: "Hoàn thành",
+      started: "Đã bắt đầu",
     },
     articleContent: {
       voiceAssistant: "Trợ lý giọng nói",

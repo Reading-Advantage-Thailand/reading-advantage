@@ -25,6 +25,7 @@ interface ChapterListProps {
     continueRead: string;
     readChapter: string;
     completed: string;
+    started: string;
   };
 }
 
@@ -110,7 +111,7 @@ export default function ChapterList({
               <span className="text-green-500">
                 <span className="text-gray-500">
                   <span className="text-green-500">
-                    {translations.previouslyRead}
+                    {translations.started}
                   </span>
                 </span>
               </span>
