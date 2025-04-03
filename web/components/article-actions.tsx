@@ -58,7 +58,7 @@ export default function ArticleActions({ article, articleId }: Props) {
   };
 
   return (
-    <div className="flex gap-4 mb-4 ml-4">
+    <div className="flex gap-2">
       <Button
         onClick={() => {
           handleOpen();

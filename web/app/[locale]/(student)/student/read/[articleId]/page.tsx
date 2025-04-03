@@ -34,6 +34,14 @@ export default async function ArticleQuizPage({
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 
+  const isAtLeastTeacher = (role: string) =>
+    role.includes("teacher") ||
+    role.includes("admin") ||
+    role.includes("system");
+
+  const isAboveTeacher = (role: string) =>
+    role.includes("admin") || role.includes("system");
+
   const articleResponse = await getArticle(params.articleId);
 
   if (articleResponse.message)
@@ -49,9 +57,9 @@ export default async function ArticleQuizPage({
           articleId={params.articleId}
           userId={user.id}
         />
-        <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
-          <div className="flex justify-evently">
-            {user.role.includes("teacher") && (
+        <div className="flex flex-col gap-4 mb-40 mt-4">
+          <div className="flex gap-2 justify-center items-center sm:flex-nowrap flex-wrap">
+            {isAtLeastTeacher(user.role) && (
               <>
                 <PrintArticle
                   articleId={params.articleId}
@@ -64,14 +72,13 @@ export default async function ArticleQuizPage({
                 />
               </>
             )}
-            {user.role.includes("system") && (
-              <div className="flex">
-                <ArticleActions
-                  article={articleResponse.article}
-                  articleId={params.articleId}
-                />
-              </div>
+            {isAboveTeacher(user.role) && (
+              <ArticleActions
+                article={articleResponse.article}
+                articleId={params.articleId}
+              />
             )}
+
             <WordList
               article={articleResponse.article}
               articleId={params.articleId}
