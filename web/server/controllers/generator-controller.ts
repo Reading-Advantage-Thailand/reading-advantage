@@ -151,10 +151,10 @@ export async function generateQueue(req: ExtendedNextRequest) {
             "time taken": `${timeTakenMinutes.toFixed(2)} minutes\n`,
             // ":star: failed reasons": failedCount ? "\n" + failedReasons.join("\n") : "none",
           },
-          color: 0xff0000,
+          color: 0x0099ff,
         },
       ],
-      color: 0xff0000,
+      color: 0x0099ff,
       reqUrl,
       userAgent,
     });

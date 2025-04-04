@@ -76,19 +76,18 @@ export async function updateAdminDashboard(req: ExtendedNextRequest) {
   } catch (err) {
     console.error("Error updating admin dashboard", err);
     await sendDiscordWebhook({
-      title: "Error Updating Admin Dashboard",
+      title: "Update Admin Dashboard Failed",
       embeds: [
         {
           description: {
-            status: "Error updating admin dashboard",
-            error: String(err),
+            "Error Detail": `${err}`,
           },
           color: 0xff0000,
         },
       ],
       color: 0xff0000,
       reqUrl,
-      userAgent,
+      userAgent
     });
     return NextResponse.json(
       { message: "Internal server error" },
@@ -153,26 +152,25 @@ export async function updateSystemDashboard(req: ExtendedNextRequest) {
 
     return NextResponse.json(
       {
-        "update System Dashboard": "success",
+        "Update System Dashboard": "success",
       },
       { status: 200 }
     );
   } catch (err) {
-    console.error("Error updating system dashboard", err);
+    console.error("Error Updating System Dashboard", err);
     await sendDiscordWebhook({
-      title: "Error Updating System Dashboard",
+      title: "Update System Dashboard Failed",
       embeds: [
         {
           description: {
-            status: "Error updating system dashboard",
-            error: String(err),
+            "Error Detail": `${err}`,
           },
           color: 0xff0000,
         },
       ],
       color: 0xff0000,
       reqUrl,
-      userAgent,
+      userAgent
     });
     return NextResponse.json(
       { message: "Internal server error" },
