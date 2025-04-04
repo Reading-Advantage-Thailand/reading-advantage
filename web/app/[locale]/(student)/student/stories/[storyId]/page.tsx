@@ -85,6 +85,8 @@ export default async function StoryChapterSelectionPage({
     chapters: t("chapters"),
     characters: t("characters"),
     previouslyRead: t("previouslyRead"),
+    started: t("started"),
+    completed: t("completed"),
     continueRead: t("continueRead"),
     readChapter: t("readChapter"),
   };

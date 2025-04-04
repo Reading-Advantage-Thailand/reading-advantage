@@ -128,10 +128,18 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             </div>
           </div>
         </div>
-        {story.is_read && (
+        {story.is_read && !story.is_completed && (
           <div className="flex justify-center">
             <Badge className="relative m-auto -top-[11rem] text-md left-0 right-0 shadow-lg max-w-max bg-slate-200 text-slate-900">
-              Previously Read
+              Started
+            </Badge>
+          </div>
+        )}
+
+        {story.is_completed && (
+          <div className="flex justify-center">
+            <Badge className="relative m-auto -top-[11rem] text-md left-0 right-0 shadow-lg max-w-max bg-slate-200 text-slate-900">
+              Completed
             </Badge>
           </div>
         )}
