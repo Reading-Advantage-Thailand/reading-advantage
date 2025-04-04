@@ -164,6 +164,45 @@ export async function translate(
   }
 }
 
+export async function translateForPrint(request: NextRequest) {
+  const { passage, targetLanguage } = await request.json();
+
+  const paragraphs = passage.split("\n\n");
+
+  if (!Object.values(LanguageType).includes(targetLanguage)) {
+    return NextResponse.json(
+      {
+        message: "Invalid target language",
+      },
+      { status: 400 }
+    );
+  }
+
+  let translatedSentences: string[] = [];
+  try {
+    if (targetLanguage === LanguageType.EN) {
+      translatedSentences = await translatePassageWithGPT(paragraphs);
+    } else {
+      translatedSentences = await translatePassageWithGoogle(
+        paragraphs,
+        targetLanguage
+      );
+    }
+
+    return NextResponse.json({
+      message: "translation successful",
+      translated_sentences: translatedSentences,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: error,
+      },
+      { status: 500 }
+    );
+  }
+}
+
 async function translatePassageWithGoogle(
   sentences: string[],
   targetLanguage: string
@@ -507,10 +546,15 @@ export async function translateStorySummary(
     let allTranslationsExist = true;
 
     storyData.chapters.forEach((chapter: any, index: number) => {
-      if (!translation || !translation.summary[targetLanguage] || !translation.summary[targetLanguage][index]) {
+      if (
+        !translation ||
+        !translation.summary[targetLanguage] ||
+        !translation.summary[targetLanguage][index]
+      ) {
         allTranslationsExist = false;
       } else {
-        allTranslatedSentences[index] = translation.summary[targetLanguage][index];
+        allTranslatedSentences[index] =
+          translation.summary[targetLanguage][index];
       }
     });
 
@@ -528,7 +572,9 @@ export async function translateStorySummary(
         let translatedSentences: string[] = [];
 
         if (targetLanguage === LanguageType.EN) {
-          translatedSentences = await translatePassageWithGPT([chapter.summary]);
+          translatedSentences = await translatePassageWithGPT([
+            chapter.summary,
+          ]);
         } else {
           translatedSentences = await translatePassageWithGoogle(
             [chapter.summary],
