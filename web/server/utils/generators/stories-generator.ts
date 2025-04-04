@@ -204,10 +204,10 @@ export async function generateStories(req: NextRequest) {
             "Failed stories": `${failedCount.toString()} stories`,
             "Time Taken": `${duration.toString()} minutes`,
           },
-          color: 0xff0000,
+          color: 0x0099ff,
         },
       ],
-      color: 0xff0000,
+      color: 0x0099ff,
       reqUrl: req.url,
       userAgent: req.headers.get("user-agent") || "",
     });
@@ -227,6 +227,21 @@ export async function generateStories(req: NextRequest) {
     if (error instanceof Error) {
       errorMessage = error.message;
     }
+
+    await sendDiscordWebhook({
+      title: "Stories Generation Complete",
+      embeds: [
+        {
+          description: {
+            "Error Detail": `${error}`,
+          },
+          color: 0xff0000,
+        },
+      ],
+      color: 0xff0000,
+      reqUrl: req.url,
+      userAgent: req.headers.get("user-agent") || "",
+    });
 
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

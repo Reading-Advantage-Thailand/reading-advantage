@@ -384,6 +384,8 @@ export default {
       previouslyRead: "อ่านแล้ว",
       continueRead: "อ่านต่อ บทที่",
       readChapter: "อ่าน บทที่",
+      completed: "ทำเสร็จแล้ว",
+      started: "เริ่มแล้ว",
     },
     articleContent: {
       voiceAssistant: "ผู้ช่วยเสียง",

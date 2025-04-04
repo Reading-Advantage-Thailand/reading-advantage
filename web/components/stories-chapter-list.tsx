@@ -11,6 +11,7 @@ interface Chapter {
   title: string;
   summary: string;
   is_read: boolean;
+  is_completed: boolean;
 }
 
 interface ChapterListProps {
@@ -23,6 +24,8 @@ interface ChapterListProps {
     previouslyRead: string;
     continueRead: string;
     readChapter: string;
+    completed: string;
+    started: string;
   };
 }
 
@@ -104,11 +107,20 @@ export default function ChapterList({
         <div key={index} className="mb-4">
           <p className="font-semibold flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             {chapter.title}
-            {chapter.is_read && (
+            {chapter.is_read && !chapter.is_completed && (
               <span className="text-green-500">
                 <span className="text-gray-500">
                   <span className="text-green-500">
-                    {translations.previouslyRead}
+                    {translations.started}
+                  </span>
+                </span>
+              </span>
+            )}
+            {chapter.is_read && chapter.is_completed && (
+              <span className="text-green-500">
+                <span className="text-gray-500">
+                  <span className="text-green-500">
+                    {translations.completed}
                   </span>
                 </span>
               </span>

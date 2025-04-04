@@ -145,8 +145,44 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
           .collection("article-records")
           .doc(doc.id)
           .get();
+
+        const mcqSnapshot = await db
+          .collection("users")
+          .doc(userId)
+          .collection("article-records")
+          .doc(doc.id)
+          .collection("mcq-records")
+          .get();
+
+        const hasFiveMcqs = mcqSnapshot.size === 5;
+
+        const saqSnapshot = await db
+          .collection("users")
+          .doc(userId)
+          .collection("article-records")
+          .doc(doc.id)
+          .collection("saq-records")
+          .get();
+
+        const laqSnapshot = await db
+          .collection("users")
+          .doc(userId)
+          .collection("article-records")
+          .doc(doc.id)
+          .collection("laq-records")
+          .get();
+
+        const saqExists = !saqSnapshot.empty;
+        const laqExists = !laqSnapshot.empty;
+
         if (articleRecord.exists) {
-          results.push({ ...doc.data(), is_read: true });
+          const data = { ...doc.data(), is_read: true };
+
+          if (hasFiveMcqs && saqExists && laqExists) {
+            data.is_completed = true;
+          }
+
+          results.push(data);
         } else {
           results.push(doc.data());
         }
@@ -677,7 +713,9 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
   }
 }
 
-export async function updateArticlesByTypeGenre(req: Request): Promise<Response> {
+export async function updateArticlesByTypeGenre(
+  req: Request
+): Promise<Response> {
   try {
     //console.log("Fetching articles from 'new-articles' collection...");
     const articlesRef = db.collection("new-articles");
@@ -739,9 +777,7 @@ export async function updateArticlesByTypeGenre(req: Request): Promise<Response>
   }
 }
 
-export async function getArticlesByTypeGenre(
-  req: Request
-): Promise<Response> {
+export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
   try {
     //console.log("Fetching all data from 'Articles-by-Type-and-Genre'...");
     const summaryRef = db.collection("articles-by-type-and-genre");
