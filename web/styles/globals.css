@@ -381,9 +381,19 @@
 }
 
 @media print {
-  @page {
-    margin-top: 10mm;
+  /* @page {
+    margin-top: 15mm;
+  } */
+
+  body {
+    counter-reset: page;
   }
+
+  .page-number::after {
+    counter-increment: page;
+    content: " Page " counter(page);
+  }
+
   .break-inside-avoid-page {
     break-inside: avoid-page;
   }
