@@ -189,7 +189,7 @@ export async function generateChapters(
         try {
           //console.log(
           //  `Generating Chapter ${i + 1} of ${chapterCount} (Attempt ${
-          //    attempts + 1
+          //   attempts + 1
           //  }/${maxRetries})...`
           //);
 
@@ -215,7 +215,7 @@ export async function generateChapters(
           );
           newChapter.questions = questions;
 
-          //console.log("Generating chapter audio...");
+        //console.log("Generating chapter audio...");
 
           await generateChapterAudio({
             content: newChapter.content,
@@ -238,7 +238,7 @@ export async function generateChapters(
             chapterNumber: `${i + 1}`,
           });
 
-          //console.log("Word list saved for audio successfully.");
+        //console.log("Word list saved for audio successfully.");
 
           //console.log("Generating chapter audio for words...");
 

@@ -84,35 +84,12 @@ export async function generateStories(req: NextRequest) {
             storyBible = await generateStoryBible({ topic, genre, subgenre });
             ref = db.collection("stories").doc();
 
-            const evaluatedRating = await evaluateRating({
-              title: topic,
-              summary: storyBible.summary,
-              type,
-              image_description: storyBible["image-description"],
-              passage: storyBible.summary,
-              cefrLevel: level,
-            });
-
-            const { raLevel, cefrLevel } = calculateLevel(
-              storyBible.summary,
-              level
-            );
-
-            const cefr_level = cefrLevel.replace(/[+-]/g, "");
-
-            //console.log(
-            //  `CEFR ${level}, Evaluated Rating: ${evaluatedRating.rating}, Evaluated CEFR: ${cefr_level}, Evaluated raLevel: ${raLevel}`
-            //);
-
             await ref.set({
               id: ref.id,
               title: topic,
-              average_rating: evaluatedRating.rating,
               genre,
               subgenre,
               type,
-              ra_level: raLevel,
-              cefr_level: cefr_level,
               storyBible,
               chapters: [],
               createdAt: Timestamp.now(),
@@ -165,6 +142,44 @@ export async function generateStories(req: NextRequest) {
 
             await ref.update({ chapters: validatedChapters });
 
+            const evaluatedRating = await evaluateRating({
+              title: topic,
+              summary: storyBible.summary,
+              type,
+              image_description: storyBible["image-description"],
+              passage: storyBible.summary,
+              cefrLevel: level,
+            });
+
+            const { raLevel, cefrLevel } = calculateLevel(
+              storyBible.summary,
+              level
+            );
+
+            const cefr_level = cefrLevel.replace(/[+-]/g, "");
+
+            let averageRating = evaluatedRating.rating;
+
+            if (averageRating <= 2) {
+              const possibleRatings = [
+                2.00, 2.25, 2.50, 2.75,
+                3.00, 3.25, 3.50, 3.75,
+                4.00
+              ];
+              const randomIndex = Math.floor(Math.random() * possibleRatings.length);
+              averageRating = possibleRatings[randomIndex];
+            }
+            
+            await ref.update({
+              average_rating: averageRating,
+              ra_level: raLevel,
+              cefr_level: cefr_level,
+            });
+
+            //console.log(
+            // `CEFR ${level}, Evaluated Rating: ${averageRating}, Evaluated CEFR: ${cefr_level}, Evaluated raLevel: ${raLevel}`
+            //);
+
             for (let i = 0; i < chapters.length; i++) {
               try {
                 await generateImage({
@@ -181,6 +196,8 @@ export async function generateStories(req: NextRequest) {
 
             await ref.update({ chapters });
             successfulCount++;
+            //console.log(`Story generated successfully: ${topic}`);
+            
           } catch (chapterError) {
             console.error("Error generating chapters:", chapterError);
             await deleteStoryAndImages(ref.id);
