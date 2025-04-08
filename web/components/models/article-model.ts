@@ -21,6 +21,9 @@ export interface StoryChapter {
   chapterNumber: string;
   ra_Level: number;
   cefr_level: string;
+  type:string
+  genre: string;
+  subgenre : string;
   totalChapters: number;
   storyBible: StoryBible;
   chapter: {

@@ -13,6 +13,7 @@ import { ArticleFooter } from "./article-footer";
 import RatingPopup from "./rating-popup";
 import { StoryChapter } from "./models/article-model";
 import { ChapterSummary } from "./stories-chapter-summary";
+import ChapterRatingPopup from "./chapter-rating-popup";
 
 type Props = {
   story: StoryChapter;
@@ -66,6 +67,11 @@ export default async function StoryChapterCard({
         </CardHeader>
         <ArticleFooter />
       </Card>
+      <ChapterRatingPopup 
+        userId={userId}
+        averageRating={0}
+        articleId={"0"}
+        story={story}/>
     </div>
   );
 }

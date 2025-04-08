@@ -375,11 +375,17 @@ export async function getChapter(
     const ra_Level = storyData.ra_level;
     const cefr_level = storyData.cefr_level;
     const totalChapters = storyData.chapters.length;
+    const type = storyData.type;
+    const genre = storyData.genre;
+    const subgenre = storyData.subgenre;
 
     return NextResponse.json({
       storyId,
       chapterNumber,
       ra_Level,
+      type,
+      genre,
+      subgenre,
       cefr_level,
       totalChapters,
       chapter: chapter,
