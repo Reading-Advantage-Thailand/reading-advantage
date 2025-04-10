@@ -16,16 +16,18 @@ interface RateDialogProps {
   disabled?: boolean;
   averageRating: number;
   userId: string;
-  articleId: string;
+  storyId: string;
   story: StoryChapter;
+  chapterNumber: string;
 }
 
 export default function ChapterRatingPopup({
   disabled = false,
   averageRating,
   userId,
-  articleId,
+  storyId,
   story,
+  chapterNumber
 }: RateDialogProps) {
   const t = useScopedI18n("components.rateChapter"); 
   const [value, setValue] = React.useState<number | null>(-1);
@@ -36,7 +38,7 @@ export default function ChapterRatingPopup({
 
   React.useEffect(() => {
     ratedFetch();
-  }, [userId, articleId]);
+  }, [userId, storyId]);
 
   const ratedFetch = async () => {
     try {
@@ -45,10 +47,11 @@ export default function ChapterRatingPopup({
       ).then((data) => data.json());
       const filterRating = ratingData.results.filter(
         (data: any) =>
-          data.articleId === articleId &&
+          data.storyId === storyId &&
+          data.chapterNumber === chapterNumber &&
           data.activityType === ActivityType.ChapterRating
       );
-
+      
       setOldRating(filterRating[0].details.rating);
     } catch (error) {
       console.log("Error fetching rating: ", error);
@@ -63,7 +66,8 @@ export default function ChapterRatingPopup({
         {
           method: "POST",
           body: JSON.stringify({
-            articleId: articleId,
+            storyId: storyId,
+            chapterNumber: chapterNumber,
             activityType: ActivityType.ChapterRating,
             activityStatus: ActivityStatus.Completed,
             xpEarned: UserXpEarned.Chapter_Rating,
@@ -76,10 +80,24 @@ export default function ChapterRatingPopup({
           }),
         }
       );
+
+      const updateAverageRating = await fetch(
+        `/api/v1/stories/${storyId}/${chapterNumber}`,
+        {
+
+          method: "PUT",
+          body: JSON.stringify({
+            rating: value,
+            chapterNumber: chapterNumber,
+          }),
+        }
+      );
+
       const readActivity = await fetch(`/api/v1/users/${userId}/activitylog`, {
         method: "POST",
         body: JSON.stringify({
-          articleId: articleId,
+          storyId: storyId,
+          chapterNumber: chapterNumber,
           activityType: ActivityType.ChapterRead,
           activityStatus: ActivityStatus.Completed,
           details: {
@@ -109,7 +127,8 @@ export default function ChapterRatingPopup({
       await fetch(`/api/v1/users/${userId}/activitylog`, {
         method: "POST",
         body: JSON.stringify({
-          articleId: articleId,
+          storyId: storyId,
+          chapterNumber: chapterNumber,
           activityType: ActivityType.ChapterRead,
           activityStatus: ActivityStatus.Completed,
           xpEarned: UserXpEarned.Chapter_Rating,
@@ -144,7 +163,7 @@ export default function ChapterRatingPopup({
     await fetch(`/api/v1/users/${userId}/activitylog`, {
       method: "POST",
       body: JSON.stringify({
-        articleId: articleId,
+        articleId: storyId,
         activityType: "chapter_rating",
         activityStatus: "in_progress",
         details: {

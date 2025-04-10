@@ -98,6 +98,7 @@ interface Chapter {
   };
   questions: Question[];
   rating?: number;
+  user_rating_count?: number;
 }
 
 interface Question {
@@ -219,6 +220,7 @@ export async function generateChapters(
           });
 
           newChapter.rating = evaluatedRating.rating;
+          newChapter.user_rating_count = 1
 
           const questions = await generateChapterQuestions(
             newChapter,

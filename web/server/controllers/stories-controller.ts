@@ -305,6 +305,64 @@ export async function getStoryById(
   }
 }
 
+export async function updateAverageRating(
+  req: ExtendedNextRequest,
+  { params }: { params: { storyId: string } }
+) {
+  const storyId = params.storyId;
+  try {
+    const data = await req.json();
+    const chapterIndex = Number(data.chapterNumber) - 1;
+    const rating = data.rating;
+
+    const storyRef = await db
+      .collection("stories")
+      .doc(storyId)
+      .get();
+
+    const storyData = storyRef.data() as FirebaseFirestore.DocumentData;
+
+    if (!storyData || !storyRef.exists) {
+      return NextResponse.json(
+        { message: "Story not found", results: [] },
+        { status: 404 }
+      );
+    }
+
+    storyData.chapters[chapterIndex].rating = Math.round((rating as number) * 4) / 4; // Round to nearest 0.25
+    storyData.chapters[chapterIndex].user_rating_count =
+      (storyData.chapters[chapterIndex].user_rating_count || 0) + 1;
+
+    let totalRating = 0;
+    let totalUserCount = 0;
+
+    storyData.chapters.forEach((chapter: any) => {
+      if (chapter.rating && chapter.user_rating_count) {
+      totalRating += chapter.rating * chapter.user_rating_count;
+      totalUserCount += chapter.user_rating_count;
+      }
+    });
+
+    const averageRating = totalUserCount > 0 ? Math.round((totalRating / totalUserCount) * 4) / 4 : 0;
+
+    await db.collection("stories").doc(storyId).update({
+      chapters: storyData.chapters,
+      averageRating: averageRating,
+    });
+
+    return NextResponse.json(
+      { message: "Update average rating successfully", averageRating },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating average rating", error);
+    return NextResponse.json(
+      { message: "Internal server error", results: [] },
+      { status: 500 }
+    );
+  }
+}
+
 export async function getChapter(
   req: ExtendedNextRequest,
   ctx: RequestContext

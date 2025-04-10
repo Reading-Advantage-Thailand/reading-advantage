@@ -15,11 +15,11 @@ import { sendDiscordWebhook } from "../send-discord-webhook";
 
 const CEFRLevels = [
   ArticleBaseCefrLevel.A1,
-  //ArticleBaseCefrLevel.A2,
-  //ArticleBaseCefrLevel.B1,
-  //ArticleBaseCefrLevel.B2,
-  //ArticleBaseCefrLevel.C1,
-  //ArticleBaseCefrLevel.C2,
+  ArticleBaseCefrLevel.A2,
+  ArticleBaseCefrLevel.B1,
+  ArticleBaseCefrLevel.B2,
+  ArticleBaseCefrLevel.C1,
+  ArticleBaseCefrLevel.C2,
 ];
 
 export async function generateStories(req: NextRequest) {

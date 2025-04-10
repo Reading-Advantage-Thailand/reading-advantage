@@ -69,9 +69,11 @@ export default async function StoryChapterCard({
       </Card>
       <ChapterRatingPopup 
         userId={userId}
-        averageRating={0}
-        articleId={"0"}
-        story={story}/>
+        averageRating={story.chapter.rating || 0}
+        storyId={story.storyId}
+        story={story}
+        chapterNumber={chapterNumber}/>
+        
     </div>
   );
 }

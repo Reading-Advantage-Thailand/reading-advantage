@@ -31,6 +31,8 @@ export interface StoryChapter {
     content: string;
     summary: string;
     "image-description": string;
+    rating: number;
+    user_rating_count: number;
     analysis: {
       wordCount: number;
       averageSentenceLength: number;
