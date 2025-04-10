@@ -438,6 +438,19 @@ export default {
         successDescription: "您的新级别是 {level}。",
       },
     },
+    rateChapter:{
+      title: "为本章节评分",
+      content: "您如何评价本章节的质量？",
+      description: "此评分用于计算您下一级别。",
+      newLevel: "您的新级别是 {level}",
+      submitButton: "提交",
+      backToHomeButton: "返回主页",
+      nextQuizButton: "下一个测验",
+      toast: {
+        success: "成功",
+        successDescription: "您的新级别是 {level}。",
+      },
+    },
     audioButton: {
       play: "播放声音",
       pause: "暂停声音",

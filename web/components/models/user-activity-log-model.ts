@@ -36,6 +36,7 @@ export interface UserActivityLog {
 export enum UserXpEarned {
   MC_Question = 2,
   Article_Rating = 10,
+  Chapter_Rating = 10,
   Vocabulary_Flashcards = 15,
   Vocabulary_Matching = 5,
   Sentence_Flashcards = 15,
@@ -48,6 +49,10 @@ export enum UserXpEarned {
 export enum ActivityType {
   ArticleRating = "article_rating",
   ArticleRead = "article_read",
+  StoriesRating = "stories_rating",
+  StoriesRead = "stories_read",
+  ChapterRating = "chapter_rating",
+  ChapterRead = "chapter_read",
   LevelTest = "level_test",
   MC_Question = "mc_question",
   SA_Question = "sa_question",
