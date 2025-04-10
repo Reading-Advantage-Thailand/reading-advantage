@@ -63,13 +63,13 @@ steps:
         "--build-arg",
         "CLASSROOM_REDIRECT_URI=$_CLASSROOM_REDIRECT_URI",
         "-t",
-        "gcr.io/$PROJECT_ID/reading-advantage-web",
+        "asia-southeast1-docker.pkg.dev/$PROJECT_ID/web/reading-advantage-web",
         "./web",
       ]
 
   # push the container images to Container Registry
   - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "gcr.io/$PROJECT_ID/reading-advantage-web"]
+    args: ["push", "asia-southeast1-docker.pkg.dev/$PROJECT_ID/web/reading-advantage-web"]
 
   # Deploy container images to Cloud Run
   - name: "gcr.io/cloud-builders/gcloud"
@@ -79,7 +79,7 @@ steps:
         "deploy",
         "reading-advantage-web",
         "--image",
-        "gcr.io/$PROJECT_ID/reading-advantage-web",
+        "asia-southeast1-docker.pkg.dev/$PROJECT_ID/web/reading-advantage-web",
         "--timeout=60m",
         "--region",
         "asia-southeast1",
@@ -102,7 +102,7 @@ steps:
   #     ]
 
 images:
-  - gcr.io/$PROJECT_ID/reading-advantage-web
+  - asia-southeast1-docker.pkg.dev/$PROJECT_ID/web/reading-advantage-web
 
 options:
   logging: CLOUD_LOGGING_ONLY
