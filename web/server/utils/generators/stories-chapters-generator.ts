@@ -9,6 +9,7 @@ import { saveWordList } from "./audio-words-generator";
 import { generateMCQuestion } from "./mc-question-generator";
 import { generateSAQuestion } from "./sa-question-generator";
 import { generateLAQuestion } from "./la-question-generator";
+import { evaluateRating } from "./evaluate-rating-generator";
 
 interface Place {
   name: string;
@@ -96,6 +97,7 @@ interface Chapter {
     introducedElements: string[];
   };
   questions: Question[];
+  rating?: number;
 }
 
 interface Question {
@@ -208,6 +210,16 @@ export async function generateChapters(
 
           chapters.push(newChapter);
 
+          const evaluatedRating = await evaluateRating({
+            title: chapters[i].title,
+            summary: chapters[i].summary,
+            image_description: chapters[i]["image-description"],
+            passage: chapters[i].summary,
+            cefrLevel: cefrLevel,
+          });
+
+          newChapter.rating = evaluatedRating.rating;
+
           const questions = await generateChapterQuestions(
             newChapter,
             type,
@@ -215,7 +227,7 @@ export async function generateChapters(
           );
           newChapter.questions = questions;
 
-        //console.log("Generating chapter audio...");
+          //console.log("Generating chapter audio...");
 
           await generateChapterAudio({
             content: newChapter.content,
@@ -238,7 +250,7 @@ export async function generateChapters(
             chapterNumber: `${i + 1}`,
           });
 
-        //console.log("Word list saved for audio successfully.");
+          //console.log("Word list saved for audio successfully.");
 
           //console.log("Generating chapter audio for words...");
 
@@ -383,21 +395,19 @@ async function generateChapterQuestions(
       summary: chapter.summary,
       imageDesc: chapter["image-description"],
     });
-    const mcQuestions = (mcResponse?.questions || [])
-      .slice(0, 5)
-      .map((q) => ({
-        type: "MCQ" as const,
-        question_number: q.question_number,
-        question: q.question || "Missing question",
-        options: [
-          q.correct_answer,
-          q.distractor_1 || "Option 1",
-          q.distractor_2 || "Option 2",
-          q.distractor_3 || "Option 3",
-        ].filter(Boolean),
-        answer: q.correct_answer || "No answer",
-        textual_evidence: q.textual_evidence,
-      }));
+    const mcQuestions = (mcResponse?.questions || []).slice(0, 5).map((q) => ({
+      type: "MCQ" as const,
+      question_number: q.question_number,
+      question: q.question || "Missing question",
+      options: [
+        q.correct_answer,
+        q.distractor_1 || "Option 1",
+        q.distractor_2 || "Option 2",
+        q.distractor_3 || "Option 3",
+      ].filter(Boolean),
+      answer: q.correct_answer || "No answer",
+      textual_evidence: q.textual_evidence,
+    }));
 
     const saResponse = await generateSAQuestion({
       cefrlevel: cefrLevel,
@@ -407,14 +417,12 @@ async function generateChapterQuestions(
       summary: chapter.summary,
       imageDesc: chapter["image-description"],
     });
-    const saQuestions = (saResponse?.questions || [])
-      .slice(0, 1)
-      .map((q) => ({
-        type: "SAQ" as const,
-        question: q.question || "Missing question",
-        suggested_answer: q.suggested_answer || "Missing suggested answer",
-        answer: q.suggested_answer || "No answer",
-      }));
+    const saQuestions = (saResponse?.questions || []).slice(0, 1).map((q) => ({
+      type: "SAQ" as const,
+      question: q.question || "Missing question",
+      suggested_answer: q.suggested_answer || "Missing suggested answer",
+      answer: q.suggested_answer || "No answer",
+    }));
 
     const laResponse = await generateLAQuestion({
       cefrlevel: cefrLevel,

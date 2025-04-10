@@ -4,6 +4,9 @@ import { ExtendedNextRequest } from "./auth-controller";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
 import { QuizStatus } from "@/components/models/questions-model";
 import { FieldPath } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
+import { title } from "process";
+import { update } from "lodash";
 
 interface RequestContext {
   params: {
@@ -196,6 +199,23 @@ export async function getStoryById(
       .collection("stories-records")
       .doc(storyId)
       .get();
+
+    if (!record.exists) {
+      await db.collection("users")
+        .doc(userId)
+        .collection("stories-records")
+        .doc(storyId)
+        .set({
+          created_at: Timestamp.now(),
+          id: storyId,
+          level: req.session?.user.level,
+          rated: 0,
+          score: 0,
+          status: QuizStatus.READ,
+          title: storyDoc.data()?.title,
+          updated_at: Timestamp.now(),
+        })
+    }
 
     const is_read = record.exists;
 
