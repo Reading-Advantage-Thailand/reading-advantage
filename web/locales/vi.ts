@@ -464,6 +464,20 @@ export default {
         successDescription: "Trình độ mới của bạn là {level}.",
       },
     },
+    rateChapter:{
+      title: "Đánh giá chương này",
+      content: "Bạn đánh giá chất lượng chương này như thế nào?",
+      description:
+        "Điểm đánh giá này được sử dụng để tính trình độ mới của bạn.",
+      newLevel: "Trình độ mới của bạn là {level}",
+      submitButton: "Gửi",
+      backToHomeButton: "Trở về Trang chủ",
+      nextQuizButton: "Bài kiểm tra tiếp theo",
+      toast: {
+        success: "Thành công",
+        successDescription: "Trình độ mới của bạn là {level}.",
+      },
+    },
     audioButton: {
       play: "Phát âm thanh",
       pause: "Tạm dừng âm thanh",

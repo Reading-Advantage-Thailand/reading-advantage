@@ -477,6 +477,19 @@ export default {
         successDescription: "Your new level is {level}.",
       },
     },
+  rateChapter: {
+    title: "Rate this chapter",
+    content: "How do you rate the quality of this chapter?",
+    description: "This rating is used for calculating your next level.",
+    newLevel: "Your new level is {level}",
+    submitButton: "Submit",
+    backToHomeButton: "Back to Home",
+    nextQuizButton: "Next Quiz",
+    toast: {
+      success: "Success",
+      successDescription: "Your new level is {level}.",
+    },
+  },
     audioButton: {
       play: "Play sound",
       pause: "Pause sound",

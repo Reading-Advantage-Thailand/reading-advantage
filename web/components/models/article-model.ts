@@ -21,6 +21,9 @@ export interface StoryChapter {
   chapterNumber: string;
   ra_Level: number;
   cefr_level: string;
+  type:string
+  genre: string;
+  subgenre : string;
   totalChapters: number;
   storyBible: StoryBible;
   chapter: {
@@ -28,6 +31,8 @@ export interface StoryChapter {
     content: string;
     summary: string;
     "image-description": string;
+    rating: number;
+    user_rating_count: number;
     analysis: {
       wordCount: number;
       averageSentenceLength: number;

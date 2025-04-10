@@ -4,6 +4,7 @@ import { levelCalculation } from "@/lib/utils";
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
+import { create, update } from "lodash";
 
 export const getUser = getOne(DBCollection.USERS);
 export const updateUser = updateOne(DBCollection.USERS);
@@ -31,6 +32,10 @@ export async function postActivityLog(
       "la_question",
       "article_rating",
       "article_read",
+      "stories_rating",
+      "stories_read",
+      "chapter_rating",
+      "chapter_read",
     ];
 
     const collectionRef = db
@@ -39,7 +44,7 @@ export async function postActivityLog(
       .collection(`${replType}-activity-log`);
 
     const documentId =
-      data.articleId || id || data.contentId || collectionRef.doc().id;
+      data.articleId || data.storyId || id || data.contentId || collectionRef.doc().id;
 
     const getActivity = await db
       .collection("user-activity-log")
@@ -50,6 +55,7 @@ export async function postActivityLog(
 
     const commonData = {
       userId: id,
+      chapterNumber: data.chapterNumber || 0,
       // articleId: data.articleId || "STSTEM",
       activityType: data.activityType,
       activityStatus: data.activityStatus || "in_progress",
@@ -113,8 +119,48 @@ export async function postActivityLog(
           .doc(id)
           .collection("article-records")
           .doc(commonData.articleId)
-          .update({ rated: commonData.details.Rating });
+          .update({ rated: commonData.details.Rating});
       }
+
+      if (commonData.activityType === "chapter_rating" && 
+        commonData.details.Rating
+      ) {
+         const storiesRecords = await db
+          .collection("users")
+          .doc(id)
+          .collection("stories-records")
+          .doc(commonData.storyId)
+          .get()
+
+        if (storiesRecords.exists) {
+          await db
+            .collection("users")
+            .doc(id)
+            .collection("stories-records")
+            .doc(commonData.storyId)
+            .update({ rated: commonData.details.Rating, chapterNumber: commonData.chapterNumber });
+        }else{
+          await db
+            .collection("users")
+            .doc(id)
+            .collection("stories-records")
+            .doc(commonData.storyId)
+            .set({
+              created_at: commonData.timestamp,
+              rated: commonData.details.Rating,
+              score: 0,
+              status: 0,
+              chapterNumber: commonData.chapterNumber,
+              storyId: commonData.storyId,
+              title: commonData.details.title,
+              raLevel: commonData.details.raLevel,
+              cefr_level: commonData.details.cefr_level,
+              updated_at: commonData.timestamp,
+            });
+        }
+        
+      }
+
       return NextResponse.json({
         message: "Success",
         status: 200,

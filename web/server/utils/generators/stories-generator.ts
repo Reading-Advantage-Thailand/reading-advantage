@@ -142,14 +142,11 @@ export async function generateStories(req: NextRequest) {
 
             await ref.update({ chapters: validatedChapters });
 
-            const evaluatedRating = await evaluateRating({
-              title: topic,
-              summary: storyBible.summary,
-              type,
-              image_description: storyBible["image-description"],
-              passage: storyBible.summary,
-              cefrLevel: level,
-            });
+            const chapterRatings = chapters.map((chapter) => chapter.rating || 0);
+            const totalRating = chapterRatings.reduce((sum, rating) => sum + rating, 0);
+            let averageRating = chapters.length > 0 ? totalRating / chapters.length : 0;
+
+            averageRating = Math.min(5, Math.max(1, Math.round(averageRating * 4) / 4));
 
             const { raLevel, cefrLevel } = calculateLevel(
               storyBible.summary,
@@ -158,27 +155,15 @@ export async function generateStories(req: NextRequest) {
 
             const cefr_level = cefrLevel.replace(/[+-]/g, "");
 
-            let averageRating = evaluatedRating.rating;
-
-            if (averageRating <= 2) {
-              const possibleRatings = [
-                2.00, 2.25, 2.50, 2.75,
-                3.00, 3.25, 3.50, 3.75,
-                4.00
-              ];
-              const randomIndex = Math.floor(Math.random() * possibleRatings.length);
-              averageRating = possibleRatings[randomIndex];
-            }
-            
             await ref.update({
               average_rating: averageRating,
               ra_level: raLevel,
               cefr_level: cefr_level,
             });
 
-            //console.log(
-            // `CEFR ${level}, Evaluated Rating: ${averageRating}, Evaluated CEFR: ${cefr_level}, Evaluated raLevel: ${raLevel}`
-            //);
+            console.log(
+             `CEFR ${level}, Evaluated Rating: ${averageRating}, Evaluated CEFR: ${cefr_level}, Evaluated raLevel: ${raLevel}`
+            );
 
             for (let i = 0; i < chapters.length; i++) {
               try {
@@ -196,7 +181,7 @@ export async function generateStories(req: NextRequest) {
 
             await ref.update({ chapters });
             successfulCount++;
-            //console.log(`Story generated successfully: ${topic}`);
+            console.log(`Story generated successfully: ${topic}`);
             
           } catch (chapterError) {
             console.error("Error generating chapters:", chapterError);
