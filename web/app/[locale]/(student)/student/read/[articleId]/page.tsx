@@ -65,11 +65,6 @@ export default async function ArticleQuizPage({
                   articleId={params.articleId}
                   article={articleResponse.article}
                 />
-                <AssignDialog
-                  article={articleResponse.article}
-                  articleId={params.articleId}
-                  userId={user.id}
-                />
               </>
             )}
             {isAboveTeacher(user.role) && (
