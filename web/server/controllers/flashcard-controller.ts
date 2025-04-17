@@ -155,6 +155,8 @@ export async function postSentendcesFlashcard(
   try {
     const {
       articleId,
+      storyId,
+      chapterNumber,
       sentence,
       translation,
       sn,
@@ -171,14 +173,29 @@ export async function postSentendcesFlashcard(
       audioUrl,
     } = await req.json();
 
-    // Check if user has already saved this sentence
-    const userSentenceRecord = await db
+    // Validate that one source is provided (either article or story+chapter)
+    if (!articleId && (!storyId || chapterNumber === undefined)) {
+      return NextResponse.json(
+        { message: "Must provide articleId or storyId with chapterNumber" },
+        { status: 400 }
+      );
+    }
+
+    // Check if sentence is already saved
+    let query = db
       .collection("user-sentence-records")
       .where("userId", "==", id)
-      .where("articleId", "==", articleId)
-      .where("sn", "==", sn)
-      .limit(1)
-      .get();
+      .where("sn", "==", sn);
+
+    if (articleId) {
+      query = query.where("articleId", "==", articleId);
+    } else {
+      query = query
+        .where("storyId", "==", storyId)
+        .where("chapterNumber", "==", chapterNumber);
+    }
+
+    const userSentenceRecord = await query.limit(1).get();
 
     if (!userSentenceRecord.empty) {
       return NextResponse.json(
@@ -186,10 +203,10 @@ export async function postSentendcesFlashcard(
         { status: 400 }
       );
     }
-    // Create user article record
-    await db.collection("user-sentence-records").add({
+
+    // Prepare data for saving
+    const recordData: Record<string, any> = {
       userId: id,
-      articleId,
       sentence,
       translation,
       sn,
@@ -205,9 +222,20 @@ export async function postSentendcesFlashcard(
       stability,
       state,
       audioUrl,
-    });
+    };
+
+    // Add source type
+    if (articleId) {
+      recordData.articleId = articleId;
+    } else {
+      recordData.storyId = storyId;
+      recordData.chapterNumber = chapterNumber;
+    }
+
+    await db.collection("user-sentence-records").add(recordData);
+
     return NextResponse.json({
-      message: "Sentence updated",
+      message: "Sentence saved",
       status: 200,
     });
   } catch (error) {
