@@ -50,26 +50,36 @@ export default function OrderSentences({ userId }: Props) {
     try {
       const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
-
-      // step 1 : find Article sentence: ID and SN due date expired
+  
+      // Step 1: เรียงตาม due date ใกล้หมดอายุก่อน
       const closest = data.sentences.sort((a: Sentence, b: Sentence) => {
         return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
       });
-
+  
       const newTodos = [...articleBeforeRandom];
-
-      // step 3 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
-      for (const article of closest) {
-        let resultList = await getArticle(article?.articleId, article?.sn);
-        newTodos.push(resultList);
+  
+      // Step 2: Loop แต่ละ sentence และเลือกใช้ getArticle หรือ getStories ตามประเภท
+      for (const sentence of closest) {
+        let resultList = null;
+  
+        if (sentence.articleId) {
+          resultList = await getArticle(sentence.articleId, sentence.sn);
+        } else if (sentence.storyId && sentence.chapterNumber !== undefined) {
+          resultList = await getStories(sentence.storyId, sentence.chapterNumber, sentence.sn);
+        }
+  
+        if (resultList) {
+          newTodos.push(resultList);
+        }
       }
-
+  
       setArticleBeforeRandom(flatten(newTodos));
       setArticleRandom(flatten(shuffleArray(newTodos)));
     } catch (error) {
       console.error(error);
     }
   };
+  
 
   const getArticle = async (articleId: string, sn: number) => {
     const res = await fetch(`/api/v1/articles/${articleId}`);
@@ -108,6 +118,54 @@ export default function OrderSentences({ userId }: Props) {
         surroundingSentences: result,
         articleId,
         timepoint: data.article.timepoints[index].file,
+      };
+    });
+
+    return dataSplit;
+  };
+
+  const getStories = async (
+    storyId: string,
+    chapterNumber: string,
+    sn: number
+  ) => {
+    const res = await fetch(`/api/v1/stories/${storyId}/${chapterNumber}`);
+
+    const data = await res.json();
+
+    const textList = splitTextIntoSentences(data.chapter.content);
+
+    const dataSplit = [sn].map((index) => {
+      let result: any[] = [];
+
+      // Determine how many sentences can be included above the current index
+      let sentencesAbove = index;
+
+      // Determine how many sentences can be included below the current index
+      let sentencesBelow = textList.length - index - 1;
+
+      // Calculate m based on available sentences above and below
+      let m = Math.min(sentencesAbove, 4);
+      let n = 4 - m;
+
+      // If the current index is at or near the end, adjust m and n accordingly
+      if (sentencesBelow < n) {
+        n = sentencesBelow;
+        m = Math.min(4, sentencesAbove + (4 - n));
+      }
+
+      let from = Math.max(index - m, 0);
+      let to = Math.min(index + n + 1, textList.length);
+
+      // Add the selected range of sentences to the result array
+      result = textList.slice(from, to);
+
+      return {
+        index: index,
+        title: data.chapter.title,
+        surroundingSentences: result,
+        storyId,
+        timepoint: data.timepoints[index].file,
       };
     });
 
