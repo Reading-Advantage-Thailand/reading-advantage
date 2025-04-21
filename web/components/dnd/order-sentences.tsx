@@ -50,36 +50,39 @@ export default function OrderSentences({ userId }: Props) {
     try {
       const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
-  
+
       // Step 1: เรียงตาม due date ใกล้หมดอายุก่อน
       const closest = data.sentences.sort((a: Sentence, b: Sentence) => {
         return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
       });
-  
+
       const newTodos = [...articleBeforeRandom];
-  
+
       // Step 2: Loop แต่ละ sentence และเลือกใช้ getArticle หรือ getStories ตามประเภท
       for (const sentence of closest) {
         let resultList = null;
-  
+
         if (sentence.articleId) {
           resultList = await getArticle(sentence.articleId, sentence.sn);
         } else if (sentence.storyId && sentence.chapterNumber !== undefined) {
-          resultList = await getStories(sentence.storyId, sentence.chapterNumber, sentence.sn);
+          resultList = await getStories(
+            sentence.storyId,
+            sentence.chapterNumber,
+            sentence.sn
+          );
         }
-  
+
         if (resultList) {
           newTodos.push(resultList);
         }
       }
-  
+
       setArticleBeforeRandom(flatten(newTodos));
       setArticleRandom(flatten(shuffleArray(newTodos)));
     } catch (error) {
       console.error(error);
     }
   };
-  
 
   const getArticle = async (articleId: string, sn: number) => {
     const res = await fetch(`/api/v1/articles/${articleId}`);

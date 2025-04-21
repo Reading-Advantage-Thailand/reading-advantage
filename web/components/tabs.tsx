@@ -1,24 +1,40 @@
 "use client";
 import React, { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import FlashCard from "@/components/flash-card";
-import OrderSentences from "@/components/dnd/order-sentences";
-import ClozeTest from "@/components/cloze-test";
-import OrderWords from "@/components/order-words";
-import Matching from "@/components/matching";
-import ManageTab from "./manage-tab";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { useScopedI18n } from "@/locales/client";
+import dynamic from "next/dynamic";
 
 type Props = {
   userId: string;
 };
 
+const FlashCard = dynamic(() => import("@/components/flash-card"));
+const OrderSentences = dynamic(() => import("@/components/dnd/order-sentences"));
+const ClozeTest = dynamic(() => import("@/components/cloze-test"));
+const OrderWords = dynamic(() => import("@/components/order-words"));
+const Matching = dynamic(() => import("@/components/matching"));
+const ManageTab = dynamic(() => import("./manage-tab"));
+
 export default function TabsPractice({ userId }: Props) {
+  const [activeTab, setActiveTab] = useState("tab1");
   const [showButton, setShowButton] = useState(true);
   const t = useScopedI18n("pages.student.practicePage");
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   return (
-    <Tabs defaultValue="tab1" className="w-full">
+    <Tabs
+      defaultValue="tab1"
+      className="w-full"
+      onValueChange={handleTabChange}
+    >
       <TabsList className="h-fit grid grid-cols-1 md:grid-cols-6">
         <TabsTrigger value="tab1">{t("flashcard").toString()}</TabsTrigger>
         <TabsTrigger value="tab2">{t("orderSentences").toString()}</TabsTrigger>
@@ -27,27 +43,30 @@ export default function TabsPractice({ userId }: Props) {
         <TabsTrigger value="tab5">{t("matching").toString()}</TabsTrigger>
         <TabsTrigger value="tab6">{t("manage").toString()}</TabsTrigger>
       </TabsList>
+
       <TabsContent className="space-y-2" value="tab1">
-        <FlashCard
-          userId={userId}
-          showButton={showButton}
-          setShowButton={setShowButton}
-        />
+        {activeTab === "tab1" && (
+          <FlashCard
+            userId={userId}
+            showButton={showButton}
+            setShowButton={setShowButton}
+          />
+        )}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab2">
-        <OrderSentences userId={userId} />
+        {activeTab === "tab2" && <OrderSentences userId={userId} />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab3">
-        <ClozeTest userId={userId} />
+        {activeTab === "tab3" && <ClozeTest userId={userId} />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab4">
-        <OrderWords userId={userId} />
+        {activeTab === "tab4" && <OrderWords userId={userId} />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab5">
-        <Matching userId={userId} />
+        {activeTab === "tab5" && <Matching userId={userId} />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab6">
-        <ManageTab userId={userId} />
+        {activeTab === "tab6" && <ManageTab userId={userId} />}
       </TabsContent>
     </Tabs>
   );
