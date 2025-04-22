@@ -257,7 +257,8 @@ export default function ChapterContent({
             body: JSON.stringify({
               sentence: selectedSentenceData.sentence.replace("~~", ""),
               sn: selectedSentence,
-              articleId: story.storyId,
+              storyId: story.storyId,
+              chapterNumber,
               translation: {
                 th: translate[selectedSentence as number],
               },

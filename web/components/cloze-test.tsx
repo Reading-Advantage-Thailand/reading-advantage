@@ -91,9 +91,22 @@ export default function ClozeTest({ userId }: Props) {
       const newTodos = [...articleClozeTest];
 
       // step 2 : เรียงลำดับค่า sn สำหรับแต่ละ articleId
-      for (const article of closest) {
-        let resultList = await getArticle(article?.articleId, article?.sn);
-        newTodos.push(resultList);
+      for (const sentence of closest) {
+        let resultList = null;
+
+        if (sentence.articleId) {
+          resultList = await getArticle(sentence.articleId, sentence.sn);
+        } else if (sentence.storyId && sentence.chapterNumber !== undefined) {
+          resultList = await getStories(
+            sentence.storyId,
+            sentence.chapterNumber,
+            sentence.sn
+          );
+        }
+
+        if (resultList) {
+          newTodos.push(resultList);
+        }
       }
 
       setArticleClozeTest(flatten(newTodos));
@@ -172,6 +185,85 @@ export default function ClozeTest({ userId }: Props) {
         beforeRandomWords: minCountByList, // คำในแต่ละประโยคที่มีความถี่ต่ำสุด
         randomWords: swapWordPositions(minCountByList), // คำในแต่ละประโยคที่มีการสลับตำแหน่ง
         audioFile: data.article.timepoints[index].file,
+      };
+    });
+    return dataSplit;
+  };
+
+  const getStories = async (
+    storyId: string,
+    chapterNumber: string,
+    sn: number
+  ) => {
+    const res = await fetch(`/api/v1/stories/${storyId}/${chapterNumber}`);
+    const data = await res.json();
+    const textList = splitTextIntoSentences(data.chapter.content);
+
+    // step 3 : find data split text, text count max level, position text max level, position text for show and replace dropdown
+    const dataSplit = [sn].map((index) => {
+      let result: string[] = [];
+
+      // กำหนดว่าสามารถรวมประโยคได้กี่ประโยคเหนือ index ปัจจุบัน;
+      let sentencesAbove = index;
+
+      // กำหนดว่าสามารถรวมประโยคได้กี่ประโยคใต้ index ปัจจุบัน;
+      let sentencesBelow = textList.length - index - 1;
+
+      // คำนวณ m ตามจำนวนประโยคที่มีอยู่ด้านบนและด้านล่าง
+      let m = Math.min(sentencesAbove, 4);
+      let n = 4 - m;
+
+      // ถ้าดัชนีปัจจุบันอยู่ที่หรือใกล้กับตอนท้ายแล้ว ให้ปรับ m และ n ตามที่เหมาะสม
+      if (sentencesBelow < n) {
+        n = sentencesBelow;
+        m = Math.min(4, sentencesAbove + (4 - n));
+      }
+
+      let from = Math.max(index - m, 0);
+      let to = Math.min(index + n + 1, textList.length);
+
+      // เพิ่มช่วงของประโยคที่เลือกไปยังอาร์เรย์ผลลัพธ์
+      result = textList.slice(from, to);
+
+      // แบ่งประโยคออกเป็นคำ
+      const textArraySplit = result.map((text, index) => {
+        return {
+          id: index,
+          textSplit: text.split(" "),
+        };
+      });
+
+      // สร้างอาร์เรย์ของคำที่จะใช้แทนที่ โดยเลือกคำที่มีความถี่สูงสุด
+      const textCountSplit = textArraySplit?.map((textArray) => {
+        // ใช้ map ที่นี่เพื่อ return อาร์เรย์ของผลลัพธ์จากการประมวลผลแต่ละคำ
+        const resultTextArray = textArray?.textSplit?.map(
+          (word: string, index) => {
+            let wordReplace = word.replace(/(?<!\w)'|'(?!\w)|[?.",!]+/g, "");
+
+            // คำนวณความถี่ของคำ
+            const result: any = subtlex?.filter(
+              ({ word }) => word === wordReplace.toLowerCase()
+            )[0];
+
+            return {
+              subtlexResult: result,
+              indexWord: index,
+            };
+          }
+        );
+        return { textArrayId: textArray.id, resultTextArray };
+      });
+      const minCountByList = textCountSplit && findMinimumCount(textCountSplit);
+
+      return {
+        title: data.chapter.title,
+        surroundingSentences: result,
+        index,
+        storyId,
+        textArraySplit, // คำในแต่ละประโยคที่มีการแยกออกมา
+        beforeRandomWords: minCountByList, // คำในแต่ละประโยคที่มีความถี่ต่ำสุด
+        randomWords: swapWordPositions(minCountByList), // คำในแต่ละประโยคที่มีการสลับตำแหน่ง
+        audioFile: data.timepoints[index].file,
       };
     });
     return dataSplit;
