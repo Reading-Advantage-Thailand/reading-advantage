@@ -64,7 +64,7 @@ export function Footer({ className }: FooterProps) {
                 </span>
               </a>
               <p className="mt-2 text-gray-400">
-                Provinding the best English learning experience.
+                Providing the best English learning experience.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-2">
