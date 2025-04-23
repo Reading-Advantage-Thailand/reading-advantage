@@ -1,3 +1,5 @@
+import next from "next";
+
 export default {
   pages: {
     indexPage: {
@@ -248,7 +250,10 @@ export default {
         },
       },
       lessonPage: {
+        lesson: "Lesson",
         startLesson: "Begin Lesson",
+        nextPhase: "Next Phase",
+        previousPhase: "Previous Phase",
         phases: [
           "Introduction",
           "Vocabulary Preview",

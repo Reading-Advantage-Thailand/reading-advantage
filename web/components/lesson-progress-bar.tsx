@@ -12,6 +12,8 @@ export default function VerticalProgress({
   phases: Array<string>;
   translate: {
     startLesson: string;
+    nextPhase: string;
+    previousPhase: string;
   };
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -26,7 +28,7 @@ export default function VerticalProgress({
   }, [isExpanded]);
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 md:mt-24">
       <Card className="p-4">
         {/* Mobile view */}
         <div className="md:hidden">
@@ -142,7 +144,7 @@ export default function VerticalProgress({
             className="w-full"
             onClick={() => setCurrentPhase(currentPhase + 1)}
           >
-            Next Phase
+            {translate.nextPhase}
           </Button>
         </div>
       )}
@@ -153,7 +155,7 @@ export default function VerticalProgress({
             className="w-full"
             onClick={() => setCurrentPhase(currentPhase - 1)}
           >
-            Previous Phase
+            {translate.previousPhase}
           </Button>
         </div>
       )}

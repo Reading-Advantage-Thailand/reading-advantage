@@ -220,7 +220,10 @@ export default {
         },
       },
       lessonPage: {
+        lesson: "課程",
         startLesson: "開始課程",
+        nextPhase: "下一階段",
+        previousPhase: "上一階段",
         phases: [
           "介紹",
           "詞彙預覽",

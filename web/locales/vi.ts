@@ -233,7 +233,10 @@ export default {
         },
       },
       lessonPage: {
+        lesson: "bài học",
         startLesson: "Bắt đầu bài học",
+        nextPhase: "Giai đoạn tiếp theo",
+        previousPhase: "Giai đoạn trước",
         phases: [
           "Giới thiệu",
           "Xem trước từ vựng",
