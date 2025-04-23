@@ -11,7 +11,7 @@ import { getScopedI18n } from "@/locales/server";
 import { Article } from "./models/article-model";
 import { ArticleSummary } from "./article-summary";
 import VerticalProgress from "./lesson-progress-bar";
-import { Icons } from "@/components/icons";
+import CollapsibleNotice from "./lesson-collapsible-notice";
 import { Button } from "./ui/button";
 
 type Props = {
@@ -79,21 +79,7 @@ export default async function LessonCard({
                 />
               </div>
             </CardHeader>
-            <div className="flex items-center gap-4 px-8">
-              <Icons.AlertCircle />
-              <p className="text-sm leading-loose">
-                For language learners: This lesson is designed to take
-                approximately 30 to 45 minutes to complete. Each phase within
-                the lesson includes a built-in timer that tracks how much time
-                is spent on different activities. This timing data will be used
-                for learning analytics and may contribute to your overall
-                performance score. The time tracking also helps us better
-                understand how students interact with different parts of the
-                lesson and improve future learning experiences. Please try to
-                work through the lesson at a steady pace for the most accurate
-                results.
-              </p>
-            </div>
+            <CollapsibleNotice />
           </Card>
         </div>
         <div className="flex flex-col gap-4">
