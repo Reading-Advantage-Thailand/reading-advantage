@@ -220,7 +220,10 @@ export default {
         },
       },
       lessonPage: {
+        lesson: "课程",
         startLesson: "开始课程",
+        nextPhase: "下一阶段",
+        previousPhase: "上一阶段",
         phases: [
           "介绍",
           "词汇预览",

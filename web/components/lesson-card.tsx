@@ -12,7 +12,7 @@ import { Article } from "./models/article-model";
 import { ArticleSummary } from "./article-summary";
 import VerticalProgress from "./lesson-progress-bar";
 import CollapsibleNotice from "./lesson-collapsible-notice";
-import { Button } from "./ui/button";
+import { Header } from "./header";
 
 type Props = {
   article: Article;
@@ -46,18 +46,18 @@ export default async function LessonCard({
 
   const translateProgress = {
     startLesson: tb("startLesson"),
+    nextPhase: tb("nextPhase"),
+    previousPhase: tb("previousPhase"),
   };
 
   const phases = phaseKeys.map((key) => tb(key));
   return (
     <div>
       <div className="md:flex md:flex-row md:gap-3 md:mb-5">
-        <div className="mt-4 md:basis-3/5">
-          <Card className="pb-6">
+        <div className=" md:basis-3/5">
+          <Header heading={tb("lesson")} text={article.title} />
+          <Card className="pb-6 mt-6">
             <CardHeader>
-              <CardTitle className="font-bold text-3xl md:text-3xl">
-                {article.title}
-              </CardTitle>
               <div className="flex flex-wrap gap-3">
                 <Badge>
                   {t("raLevel", {
