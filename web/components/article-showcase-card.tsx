@@ -101,18 +101,19 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
                 }),
               })
             }
-          ></Link>
-          <Badge
-            className={`text-white px-1 py-2 shadow-md ${
-              article.is_read
-                ? "opacity-50 cursor-not-allowed"
-                : "cursor-pointer"
-            }`}
-            onClick={!article.is_read ? onClickLesson : undefined}
-            variant="destructive"
           >
-            ▶ Study as 45-min Lesson
-          </Badge>
+            <Badge
+              className={`text-white px-1 py-2 shadow-md ${
+                article.is_read
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer"
+              }`}
+              onClick={!article.is_read ? onClickLesson : undefined}
+              variant="destructive"
+            >
+              ▶ Study as 45-min Lesson
+            </Badge>
+          </Link>
         </div>
 
         <Link

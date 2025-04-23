@@ -232,6 +232,25 @@ export default {
           },
         },
       },
+      lessonPage: {
+        startLesson: "Bắt đầu bài học",
+        phases: [
+          "Giới thiệu",
+          "Xem trước từ vựng",
+          "Đọc lần đầu kèm âm thanh",
+          "Thu thập từ vựng",
+          "Đọc chuyên sâu",
+          "Thu thập câu",
+          "Câu hỏi trắc nghiệm",
+          "Câu hỏi ngắn",
+          "Luyện từ vựng - Thẻ ghi nhớ",
+          "Luyện từ vựng - Chọn hoạt động",
+          "Luyện câu - Thẻ ghi nhớ",
+          "Luyện câu - Chọn hoạt động",
+          "Câu hỏi về ngôn ngữ",
+          "Tóm tắt bài học",
+        ],
+      },
     },
     teacher: {
       studentProgressPage: {
