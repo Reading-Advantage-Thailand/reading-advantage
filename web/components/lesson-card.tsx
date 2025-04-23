@@ -44,6 +44,10 @@ export default async function LessonCard({
     "phases.13",
   ] as const;
 
+  const translateProgress = {
+    startLesson: tb("startLesson"),
+  };
+
   const phases = phaseKeys.map((key) => tb(key));
   return (
     <div>
@@ -83,8 +87,7 @@ export default async function LessonCard({
           </Card>
         </div>
         <div className="flex flex-col gap-4">
-          <VerticalProgress currentPhase={2} phases={phases} />
-          <Button>{tb("startLesson")}</Button>
+          <VerticalProgress phases={phases} translate={translateProgress} />
         </div>
       </div>
       <div className="md:flex mt-[50px]"></div>

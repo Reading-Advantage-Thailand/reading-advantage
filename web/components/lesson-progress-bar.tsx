@@ -6,15 +6,18 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function VerticalProgress({
-  currentPhase,
+  translate,
   phases,
 }: {
-  currentPhase: number;
   phases: Array<string>;
+  translate: {
+    startLesson: string;
+  };
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [maxHeight, setMaxHeight] = useState("0px");
   const contentRef = useRef<HTMLDivElement>(null);
+  const [currentPhase, setCurrentPhase] = useState(1);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -88,7 +91,7 @@ export default function VerticalProgress({
         </div>
 
         {/* Desktop view */}
-        <div className="hidden md:flex flex-col space-y-4 font-bold items-start">
+        <div className="hidden md:flex flex-col space-y-4 font-bold items-start max-w-[300px] min-w-[300px]">
           {phases.map((phase, index) => {
             const isActive = index + 1 === currentPhase;
             const isCompleted = index + 1 < currentPhase;
@@ -122,6 +125,38 @@ export default function VerticalProgress({
           })}
         </div>
       </Card>
+      {currentPhase === 1 && (
+        <div className="mt-4">
+          <Button
+            className="w-full"
+            onClick={() => setCurrentPhase(currentPhase + 1)}
+          >
+            {translate.startLesson}
+          </Button>
+        </div>
+      )}
+
+      {currentPhase < phases.length && currentPhase > 1 && (
+        <div className="mt-4">
+          <Button
+            className="w-full"
+            onClick={() => setCurrentPhase(currentPhase + 1)}
+          >
+            Next Phase
+          </Button>
+        </div>
+      )}
+
+      {currentPhase <= phases.length && currentPhase > 1 && (
+        <div className="mt-4">
+          <Button
+            className="w-full"
+            onClick={() => setCurrentPhase(currentPhase - 1)}
+          >
+            Previous Phase
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
