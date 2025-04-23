@@ -62,10 +62,6 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
       setSummarySentence(data.translated_sentences);
     }
 
-    const onClickLesson = () => {
-      console.log("Lesson clicked");
-    };
-
     return (
       <div
         className="relative hover:scale-105 transition-all duration-300"
@@ -102,17 +98,25 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
               })
             }
           >
-            <Badge
-              className={`text-white px-1 py-2 shadow-md ${
+            <div
+              className={`group relative inline-flex overflow-hidden transition-all duration-1000 ease-in-out ${
                 article.is_read
                   ? "opacity-50 cursor-not-allowed"
                   : "cursor-pointer"
               }`}
-              onClick={!article.is_read ? onClickLesson : undefined}
-              variant="destructive"
             >
-              ▶ Study as 45-min Lesson
-            </Badge>
+              <span
+                className="bg-red-800 text-white pl-2 py-1 flex items-center space-x-2 transition-all duration-300 ease-in-out
+                   group-hover:pr-6 group-hover:pl-3 rounded shadow-md"
+              >
+                <span className="transition-all duration-300 ease-in-out">
+                  ▶
+                </span>
+                <span className="whitespace-nowrap overflow-hidden max-w-0 group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 ease-in-out text-[12px] font-semibold">
+                  Study as 45-min Lesson
+                </span>
+              </span>
+            </div>
           </Link>
         </div>
 
