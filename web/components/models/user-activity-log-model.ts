@@ -51,6 +51,8 @@ export enum ActivityType {
   ArticleRead = "article_read",
   StoriesRating = "stories_rating",
   StoriesRead = "stories_read",
+  LessonRead = "lesson_read",
+  LessonRating = "lesson_rating",
   ChapterRating = "chapter_rating",
   ChapterRead = "chapter_read",
   LevelTest = "level_test",

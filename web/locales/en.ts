@@ -18,6 +18,7 @@ export default {
         articleSelection: "Article Selection",
         // nextquiz/[articleId] page
         article: {
+          lessonButton: "Study as 45-min Lesson",
           articleNotFound: "Article not found",
           articleInsufficientLevel:
             "You cannot read this article because your reading level is not high enough.",
@@ -477,19 +478,19 @@ export default {
         successDescription: "Your new level is {level}.",
       },
     },
-  rateChapter: {
-    title: "Rate this chapter",
-    content: "How do you rate the quality of this chapter?",
-    description: "This rating is used for calculating your next level.",
-    newLevel: "Your new level is {level}",
-    submitButton: "Submit",
-    backToHomeButton: "Back to Home",
-    nextQuizButton: "Next Quiz",
-    toast: {
-      success: "Success",
-      successDescription: "Your new level is {level}.",
+    rateChapter: {
+      title: "Rate this chapter",
+      content: "How do you rate the quality of this chapter?",
+      description: "This rating is used for calculating your next level.",
+      newLevel: "Your new level is {level}",
+      submitButton: "Submit",
+      backToHomeButton: "Back to Home",
+      nextQuizButton: "Next Quiz",
+      toast: {
+        success: "Success",
+        successDescription: "Your new level is {level}.",
+      },
     },
-  },
     audioButton: {
       play: "Play sound",
       pause: "Pause sound",

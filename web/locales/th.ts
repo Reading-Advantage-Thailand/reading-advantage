@@ -15,6 +15,7 @@ export default {
         articleSelection: "การเลือกบทความ",
         // nextquiz/[articleId] page
         article: {
+          lessonButton: "เรียนในบทเรียน 45 นาที",
           articleNotFound: "ไม่พบบทความ",
           articleInsufficientLevel:
             "คุณไม่สามารถอ่านบทความนี้ได้เนื่องจากระดับการอ่านของคุณไม่เพียงพอ",
@@ -461,19 +462,19 @@ export default {
       },
     },
     rateChapter: {
-    title: "ให้คะแนนบทนี้",
-    content: "คุณให้คะแนนคุณภาพของบทนี้อย่างไร?",
-    description:
-    "การให้คะแนนนี้จะถูกนำไปใช้ในการคำนวณระดับของคุณในครั้งต่อไป",
-    newLevel: "ระดับใหม่ของคุณคือ {level}",
-    submitButton: "ส่งคะแนน",
-    backToHomeButton: "กลับไปหน้าหลัก",
-    nextQuizButton: "ไปทำแบบทดสอบต่อไป",
-    toast: {
-      success: "สำเร็จ",
-      successDescription: "ระดับใหม่ของคุณคือ {level}"
+      title: "ให้คะแนนบทนี้",
+      content: "คุณให้คะแนนคุณภาพของบทนี้อย่างไร?",
+      description:
+        "การให้คะแนนนี้จะถูกนำไปใช้ในการคำนวณระดับของคุณในครั้งต่อไป",
+      newLevel: "ระดับใหม่ของคุณคือ {level}",
+      submitButton: "ส่งคะแนน",
+      backToHomeButton: "กลับไปหน้าหลัก",
+      nextQuizButton: "ไปทำแบบทดสอบต่อไป",
+      toast: {
+        success: "สำเร็จ",
+        successDescription: "ระดับใหม่ของคุณคือ {level}",
+      },
     },
-  },
     audioButton: {
       play: "เล่นเสียง",
       pause: "หยุดเสียง",

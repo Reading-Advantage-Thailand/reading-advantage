@@ -15,6 +15,7 @@ export default {
         articleSelection: "Chọn bài viết",
         // Trang nextquiz/[articleId]
         article: {
+          lessonButton: "Học trong bài học 45 phút",
           articleNotFound: "Không tìm thấy bài viết",
           articleInsufficientLevel:
             "Bạn không thể đọc bài viết này vì trình độ đọc của bạn chưa đủ.",
@@ -464,7 +465,7 @@ export default {
         successDescription: "Trình độ mới của bạn là {level}.",
       },
     },
-    rateChapter:{
+    rateChapter: {
       title: "Đánh giá chương này",
       content: "Bạn đánh giá chất lượng chương này như thế nào?",
       description:
