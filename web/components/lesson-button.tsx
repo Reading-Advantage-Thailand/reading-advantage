@@ -16,7 +16,6 @@ export default function ArticleLesson({ article, articleId, userId }: Props) {
   const t = useScopedI18n("pages.student.readPage.article");
   return (
     <div className="flex gap-2">
-      <Button>{t("lessonButton")}</Button>
       <Link
         href={`/student/lesson/${articleId}`}
         onClick={() =>
@@ -37,7 +36,9 @@ export default function ArticleLesson({ article, articleId, userId }: Props) {
             }),
           })
         }
-      ></Link>
+      >
+        <Button>{t("lessonButton")}</Button>
+      </Link>
     </div>
   );
 }

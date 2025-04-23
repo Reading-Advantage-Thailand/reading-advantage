@@ -247,6 +247,25 @@ export default {
           },
         },
       },
+      lessonPage: {
+        startLesson: "Begin Lesson",
+        phases: [
+          "Introduction",
+          "Vocabulary Preview",
+          "First Reading with Audio",
+          "Vocabulary Collection",
+          "Deep Reading",
+          "Sentence Collection",
+          "Multiple-Choice Questions",
+          "Short-Answer Questions",
+          "Vocabulary Practice - Flashcards",
+          "Vocabulary Practice - Activity Choice",
+          "Sentence Practice - Flashcards",
+          "Sentence Practice - Activity Choice",
+          "Language Questions",
+          "Lesson Summary",
+        ],
+      },
     },
     teacher: {
       studentProgressPage: {
