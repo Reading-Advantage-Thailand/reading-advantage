@@ -12,6 +12,7 @@ export default {
       readPage: {
         articleSelection: "文章选择",
         article: {
+          lessonButton: "在45分钟课程中学习",
           articleNotFound: "找不到文章",
           articleInsufficientLevel: "您的阅读水平不足，无法阅读此文章。",
           readBefore: "您之前读过这篇文章",
@@ -366,7 +367,7 @@ export default {
       previouslyRead: "已读",
       continueRead: "继续阅读第",
       readChapter: "阅读第",
-      started: "开始于", 
+      started: "开始于",
       completed: "完成",
     },
     articleContent: {
@@ -438,7 +439,7 @@ export default {
         successDescription: "您的新级别是 {level}。",
       },
     },
-    rateChapter:{
+    rateChapter: {
       title: "为本章节评分",
       content: "您如何评价本章节的质量？",
       description: "此评分用于计算您下一级别。",

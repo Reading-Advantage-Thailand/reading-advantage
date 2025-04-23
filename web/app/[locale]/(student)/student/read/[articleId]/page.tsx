@@ -14,6 +14,7 @@ import LAQuestionCard from "@/components/questions/laq-question-card";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
 import PrintArticle from "@/components/teacher/print-article";
+import ArticleLesson from "@/components/lesson-button";
 
 export const metadata = {
   title: "Article",
@@ -75,6 +76,11 @@ export default async function ArticleQuizPage({
             )}
 
             <WordList
+              article={articleResponse.article}
+              articleId={params.articleId}
+              userId={user.id}
+            />
+            <ArticleLesson
               article={articleResponse.article}
               articleId={params.articleId}
               userId={user.id}
