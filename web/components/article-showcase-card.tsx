@@ -103,7 +103,7 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             }
           ></Link>
           <Badge
-            className={`text-white text-sm px-3 py-3 shadow-md ${
+            className={`text-white px-1 py-2 shadow-md ${
               article.is_read
                 ? "opacity-50 cursor-not-allowed"
                 : "cursor-pointer"
