@@ -1,25 +1,40 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Image from "next/image";
+import { Badge } from "./ui/badge";
+import { ArticleSummary } from "./article-summary";
+import CollapsibleNotice from "./lesson-collapsible-notice";
+import LessonWordList from "./lesson-preview-vocabulary";
+import { Article } from "./models/article-model";
+import { Book } from "lucide-react";
+import { useScopedI18n } from "@/locales/client";
 
 export default function VerticalProgress({
-  translate,
+  article,
+  articleId,
+  userId,
   phases,
 }: {
   phases: Array<string>;
-  translate: {
-    startLesson: string;
-    nextPhase: string;
-    previousPhase: string;
-  };
+  article: Article;
+  articleId: string;
+  userId: string;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [maxHeight, setMaxHeight] = useState("0px");
   const contentRef = useRef<HTMLDivElement>(null);
   const [currentPhase, setCurrentPhase] = useState(1);
+  const t = useScopedI18n("pages.student.lessonPage");
+  const tc = useScopedI18n("components.articleCard");
 
   useEffect(() => {
     if (contentRef.current) {
@@ -28,44 +43,93 @@ export default function VerticalProgress({
   }, [isExpanded]);
 
   return (
-    <div className="mt-4 md:mt-24">
-      <Card className="p-4">
-        {/* Mobile view */}
-        <div className="md:hidden">
-          <div className="flex justify-between items-center mb-2">
-            <span className="font-semibold text-blue-700">
-              Phase {currentPhase}: {phases[currentPhase - 1]}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? (
-                <>
-                  Hide <ChevronUp className="ml-1 h-4 w-4" />
-                </>
-              ) : (
-                <>
-                  Show All <ChevronDown className="ml-1 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
-          {/* Smooth Dropdown */}
-          <div
-            ref={contentRef}
-            style={{ maxHeight }}
-            className="transition-all duration-500 ease-in-out overflow-hidden space-y-3"
-          >
-            {phases.map((phase, index) => {
-              const isActive = index + 1 === currentPhase;
-              const isCompleted = index + 1 < currentPhase;
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+      <div className=" mt-6">
+        {/*Phase 1 Introduction */}
+        {currentPhase === 1 && (
+          <Card>
+            <CardHeader className="pb-6">
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase1Title")}</div>
+              </CardTitle>
+              <div>
+                <span className="font-bold">
+                  {t("phase1Description", { topic: article.title })}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Badge>{tc("raLevel", { raLevel: article.ra_level })}</Badge>
+                <Badge>
+                  {tc("cefrLevel", { cefrLevel: article.cefr_level })}
+                </Badge>
+              </div>
+              <CardDescription>
+                <ArticleSummary article={article} articleId={articleId} />
+              </CardDescription>
+              <div className="flex justify-center h-[350px] overflow-hidden">
+                <Image
+                  src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${articleId}.png`}
+                  alt="Malcolm X"
+                  width={840}
+                  height={250}
+                  className="object-cover"
+                />
+              </div>
+            </CardHeader>
+            <CollapsibleNotice />
+          </Card>
+        )}
 
-              return (
-                <div key={index} className="flex items-center space-x-2">
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 
+        {/* Phase 2 */}
+
+        {currentPhase === 2 && (
+          <LessonWordList
+            article={article}
+            articleId={articleId}
+            userId={userId}
+          />
+        )}
+      </div>
+
+      <div className="lg:mt-6">
+        <Card className="p-4">
+          {/* Mobile view */}
+          <div className="lg:hidden">
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-semibold text-blue-700">
+                Phase {currentPhase}: {phases[currentPhase - 1]}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                {isExpanded ? (
+                  <>
+                    Hide <ChevronUp className="ml-1 h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    Show All <ChevronDown className="ml-1 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+            {/* Smooth Dropdown */}
+            <div
+              ref={contentRef}
+              style={{ maxHeight }}
+              className="transition-all duration-500 ease-in-out overflow-hidden space-y-3"
+            >
+              {phases.map((phase, index) => {
+                const isActive = index + 1 === currentPhase;
+                const isCompleted = index + 1 < currentPhase;
+
+                return (
+                  <div key={index} className="flex items-center space-x-2">
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 
                       ${isActive ? "bg-blue-500 border-blue-500" : ""}
                       ${isCompleted ? "bg-green-500 border-green-500" : ""}
                       ${
@@ -74,6 +138,42 @@ export default function VerticalProgress({
                           : ""
                       }
                     `}
+                    />
+                    <span
+                      className={`text-sm ${
+                        isCompleted
+                          ? "text-gray-400 line-through"
+                          : isActive
+                          ? "text-blue-700 font-semibold"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {index + 1}. {phase}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop view */}
+          <div className="hidden lg:flex flex-col space-y-4 font-bold items-start max-w-[300px] min-w-[300px]">
+            {phases.map((phase, index) => {
+              const isActive = index + 1 === currentPhase;
+              const isCompleted = index + 1 < currentPhase;
+
+              return (
+                <div key={index} className="flex items-center space-x-2">
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 
+                    ${isActive ? "bg-blue-500 border-blue-500" : ""}
+                    ${isCompleted ? "bg-green-500 border-green-500" : ""}
+                    ${
+                      !isActive && !isCompleted
+                        ? "bg-white border-gray-300"
+                        : ""
+                    }
+                  `}
                   />
                   <span
                     className={`text-sm ${
@@ -90,75 +190,40 @@ export default function VerticalProgress({
               );
             })}
           </div>
-        </div>
+        </Card>
+        {currentPhase === 1 && (
+          <div className="mt-4">
+            <Button
+              className="w-full"
+              onClick={() => setCurrentPhase(currentPhase + 1)}
+            >
+              {t("startLesson")}
+            </Button>
+          </div>
+        )}
 
-        {/* Desktop view */}
-        <div className="hidden md:flex flex-col space-y-4 font-bold items-start max-w-[300px] min-w-[300px]">
-          {phases.map((phase, index) => {
-            const isActive = index + 1 === currentPhase;
-            const isCompleted = index + 1 < currentPhase;
+        {currentPhase < phases.length && currentPhase > 1 && (
+          <div className="mt-4">
+            <Button
+              className="w-full"
+              onClick={() => setCurrentPhase(currentPhase + 1)}
+            >
+              {t("nextPhase")}
+            </Button>
+          </div>
+        )}
 
-            return (
-              <div key={index} className="flex items-center space-x-2">
-                <div
-                  className={`w-4 h-4 rounded-full border-2 
-                    ${isActive ? "bg-blue-500 border-blue-500" : ""}
-                    ${isCompleted ? "bg-green-500 border-green-500" : ""}
-                    ${
-                      !isActive && !isCompleted
-                        ? "bg-white border-gray-300"
-                        : ""
-                    }
-                  `}
-                />
-                <span
-                  className={`text-sm ${
-                    isCompleted
-                      ? "text-gray-400 line-through"
-                      : isActive
-                      ? "text-blue-700 font-semibold"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {index + 1}. {phase}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </Card>
-      {currentPhase === 1 && (
-        <div className="mt-4">
-          <Button
-            className="w-full"
-            onClick={() => setCurrentPhase(currentPhase + 1)}
-          >
-            {translate.startLesson}
-          </Button>
-        </div>
-      )}
-
-      {currentPhase < phases.length && currentPhase > 1 && (
-        <div className="mt-4">
-          <Button
-            className="w-full"
-            onClick={() => setCurrentPhase(currentPhase + 1)}
-          >
-            {translate.nextPhase}
-          </Button>
-        </div>
-      )}
-
-      {currentPhase <= phases.length && currentPhase > 1 && (
-        <div className="mt-4">
-          <Button
-            className="w-full"
-            onClick={() => setCurrentPhase(currentPhase - 1)}
-          >
-            {translate.previousPhase}
-          </Button>
-        </div>
-      )}
+        {currentPhase <= phases.length && currentPhase > 1 && (
+          <div className="mt-4">
+            <Button
+              className="w-full"
+              onClick={() => setCurrentPhase(currentPhase - 1)}
+            >
+              {t("previousPhase")}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

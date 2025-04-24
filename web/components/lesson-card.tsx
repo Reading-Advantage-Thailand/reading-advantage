@@ -1,17 +1,10 @@
 import React from "react";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import Image from "next/image";
-import { Badge } from "./ui/badge";
+
 import { getScopedI18n } from "@/locales/server";
 import { Article } from "./models/article-model";
-import { ArticleSummary } from "./article-summary";
+
 import VerticalProgress from "./lesson-progress-bar";
-import CollapsibleNotice from "./lesson-collapsible-notice";
+
 import { Header } from "./header";
 
 type Props = {
@@ -50,44 +43,29 @@ export default async function LessonCard({
     previousPhase: tb("previousPhase"),
   };
 
+  const translateContent = {
+    raLevel: t("raLevel", {
+      raLevel: article.ra_level,
+    }),
+    cefrLevel: t("cefrLevel", {
+      cefrLevel: article.cefr_level,
+    }),
+  };
+
   const phases = phaseKeys.map((key) => tb(key));
   return (
     <div>
-      <div className="md:flex md:flex-row md:gap-3 md:mb-5">
+      <div>
         <div className=" md:basis-3/5">
           <Header heading={tb("lesson")} text={article.title} />
-          <Card className="pb-6 mt-6">
-            <CardHeader>
-              <div className="flex flex-wrap gap-3">
-                <Badge>
-                  {t("raLevel", {
-                    raLevel: article.ra_level,
-                  })}
-                </Badge>
-                <Badge>
-                  {t("cefrLevel", {
-                    cefrLevel: article.cefr_level,
-                  })}
-                </Badge>
-              </div>
-              <CardDescription>
-                <ArticleSummary article={article} articleId={articleId} />
-              </CardDescription>
-              <div className="flex justify-center h-[350px] overflow-hidden">
-                <Image
-                  src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${articleId}.png`}
-                  alt="Malcolm X"
-                  width={840}
-                  height={250}
-                  className="object-cover"
-                />
-              </div>
-            </CardHeader>
-            <CollapsibleNotice />
-          </Card>
         </div>
         <div className="flex flex-col gap-4">
-          <VerticalProgress phases={phases} translate={translateProgress} />
+          <VerticalProgress
+            phases={phases}
+            article={article}
+            articleId={articleId}
+            userId={userId}
+          />
         </div>
       </div>
       <div className="md:flex mt-[50px]"></div>
