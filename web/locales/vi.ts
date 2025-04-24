@@ -237,6 +237,49 @@ export default {
         startLesson: "Bắt đầu bài học",
         nextPhase: "Giai đoạn tiếp theo",
         previousPhase: "Giai đoạn trước",
+        phase1Title: "Giới thiệu",
+        phase1Description:
+          "Trong bài học này, bạn sẽ đọc một bài viết về {topic}",
+        phase2Title: "Xem trước từ vựng",
+        phase2Description: "Đây là những từ vựng bạn sẽ gặp trong bài viết",
+        phase3Title: "Đọc lần đầu có âm thanh",
+        phase3Description:
+          "Đọc bài viết lần đầu tiên với âm thanh. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase4Title: "Thu thập từ chưa biết",
+        phase4Description:
+          "Thu thập các từ bạn chưa biết trong bài viết. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase5Title: "Đọc sâu",
+        phase5Description:
+          "Đọc lại bài viết mà không có âm thanh. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase6Title: "Thu thập câu chưa biết",
+        phase6Description:
+          "Thu thập các câu bạn chưa hiểu trong bài viết. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase7Title: "Câu hỏi trắc nghiệm",
+        phase7Description:
+          "Trả lời các câu hỏi trắc nghiệm về bài viết này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase8Title: "Câu hỏi tự luận",
+        phase8Description:
+          "Trả lời các câu hỏi tự luận về bài viết này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase9Title: "Luyện từ vựng - Thẻ từ",
+        phase9Description:
+          "Luyện tập từ vựng bạn đã học trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase10Title: "Luyện từ vựng - Sắp xếp từ",
+        phase10Description:
+          "Luyện tập từ vựng bạn đã học trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase11Title: "Luyện câu - Thẻ câu",
+        phase11Description:
+          "Luyện tập các câu bạn đã học trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase12Title: "Luyện câu - Sắp xếp câu",
+        phase12Description:
+          "Luyện tập các câu bạn đã học trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase13Title: "Câu hỏi ngôn ngữ",
+        phase13Description:
+          "Trả lời các câu hỏi về ngôn ngữ trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase14Title: "Tóm tắt bài học",
+        phase14Description:
+          "Ôn lại bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase15Title: "Bài tập về nhà",
+        phase15Description: "Bài tập về nhà của bài học này",
         phases: [
           "Giới thiệu",
           "Xem trước từ vựng",

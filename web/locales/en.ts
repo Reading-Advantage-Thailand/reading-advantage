@@ -254,6 +254,50 @@ export default {
         startLesson: "Begin Lesson",
         nextPhase: "Next Phase",
         previousPhase: "Previous Phase",
+        phase1Title: "Introduction",
+        phase1Description:
+          "In this lesson, you will read an article about {topic}",
+        phase2Title: "Preview Vocabulary",
+        phase2Description:
+          "These are the words you will encounter in the article",
+        phase3Title: "First Reading with Audio",
+        phase3Description:
+          "Read the article for the first time with audio. You can click on a word to see its meaning",
+        phase4Title: "Collect Unknown Words",
+        phase4Description:
+          "Collect the words you don't know in this article. You can click on a word to see its meaning",
+        phase5Title: "In-depth Reading",
+        phase5Description:
+          "Read the article again without audio. You can click on a word to see its meaning",
+        phase6Title: "Collect Unknown Sentences",
+        phase6Description:
+          "Collect the sentences you don’t understand in this article. You can click on a word to see its meaning",
+        phase7Title: "Multiple Choice Questions",
+        phase7Description:
+          "Answer multiple-choice questions about this article. You can click on a word to see its meaning",
+        phase8Title: "Short Answer Questions",
+        phase8Description:
+          "Answer short-answer questions about this article. You can click on a word to see its meaning",
+        phase9Title: "Vocabulary Practice - Flashcards",
+        phase9Description:
+          "Practice the vocabulary you learned in this lesson. You can click on a word to see its meaning",
+        phase10Title: "Vocabulary Practice - Word Order",
+        phase10Description:
+          "Practice the vocabulary you learned in this lesson. You can click on a word to see its meaning",
+        phase11Title: "Sentence Practice - Flashcards",
+        phase11Description:
+          "Practice the sentences you learned in this lesson. You can click on a word to see its meaning",
+        phase12Title: "Sentence Practice - Sentence Order",
+        phase12Description:
+          "Practice the sentences you learned in this lesson. You can click on a word to see its meaning",
+        phase13Title: "Language Questions",
+        phase13Description:
+          "Answer language-related questions in this lesson. You can click on a word to see its meaning",
+        phase14Title: "Lesson Summary",
+        phase14Description:
+          "Review the summary of this lesson. You can click on a word to see its meaning",
+        phase15Title: "Homework",
+        phase15Description: "Homework for this lesson",
         phases: [
           "Introduction",
           "Vocabulary Preview",
