@@ -236,6 +236,7 @@ export default {
         startLesson: "เริ่มบทเรียน",
         nextPhase: "ขั้นถัดไป",
         previousPhase: "ขั้นก่อนหน้า",
+        saveButton: "บันทึก",
         phase1Title: "บทนำ",
         phase1Description: "ในบทเรียนนี้ คุณจะได้อ่านบทความเกี่ยวกับ {topic}",
         phase2Title: "ดูคำศัพท์เบื้องต้น",

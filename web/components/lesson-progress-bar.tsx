@@ -13,12 +13,13 @@ import Image from "next/image";
 import { Badge } from "./ui/badge";
 import { ArticleSummary } from "./article-summary";
 import CollapsibleNotice from "./lesson-collapsible-notice";
-import LessonWordList from "./lesson-preview-vocabulary";
+import LessonWordList from "./lesson-vocabulary-preview";
 import { Article } from "./models/article-model";
 import { Book } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 import LessonSentensePreview from "./lesson-sentense-preview";
 import { useCurrentLocale } from "@/locales/client";
+import LessonWordCollection from "./lesson-vocabulary-collection";
 
 export default function VerticalProgress({
   article,
@@ -85,7 +86,6 @@ export default function VerticalProgress({
         )}
 
         {/* Phase 2 Vocabulary Preview */}
-
         {currentPhase === 2 && (
           <LessonWordList
             article={article}
@@ -95,7 +95,6 @@ export default function VerticalProgress({
         )}
 
         {/* Phase 3 First Reading with Audio */}
-
         {currentPhase === 3 && (
           <Card className="pb-6">
             <CardHeader>
@@ -116,6 +115,15 @@ export default function VerticalProgress({
               />
             </CardDescription>
           </Card>
+        )}
+
+        {/* Phase 4 Vocabulary Collection */}
+        {currentPhase === 4 && (
+          <LessonWordCollection
+            article={article}
+            articleId={articleId}
+            userId={userId}
+          />
         )}
       </div>
       {/* Progress Bar */}

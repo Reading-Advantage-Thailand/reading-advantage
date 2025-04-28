@@ -237,6 +237,7 @@ export default {
         startLesson: "Bắt đầu bài học",
         nextPhase: "Giai đoạn tiếp theo",
         previousPhase: "Giai đoạn trước",
+        saveButton: "Lưu",
         phase1Title: "Giới thiệu",
         phase1Description:
           "Trong bài học này, bạn sẽ đọc một bài viết về {topic}",

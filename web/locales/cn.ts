@@ -224,6 +224,7 @@ export default {
         startLesson: "开始课程",
         nextPhase: "下一阶段",
         previousPhase: "上一阶段",
+        saveButton: "保存",
         phase1Title: "引言",
         phase1Description: "在本课中，你将阅读一篇关于 {topic} 的文章",
         phase2Title: "预览词汇",
