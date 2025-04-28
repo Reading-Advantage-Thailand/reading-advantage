@@ -254,6 +254,7 @@ export default {
         startLesson: "Begin Lesson",
         nextPhase: "Next Phase",
         previousPhase: "Previous Phase",
+        saveButton: "Save",
         phase1Title: "Introduction",
         phase1Description:
           "In this lesson, you will read an article about {topic}",
