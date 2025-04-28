@@ -17,6 +17,8 @@ import LessonWordList from "./lesson-preview-vocabulary";
 import { Article } from "./models/article-model";
 import { Book } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
+import LessonSentensePreview from "./lesson-sentense-preview";
+import { useCurrentLocale } from "@/locales/client";
 
 export default function VerticalProgress({
   article,
@@ -35,6 +37,7 @@ export default function VerticalProgress({
   const [currentPhase, setCurrentPhase] = useState(1);
   const t = useScopedI18n("pages.student.lessonPage");
   const tc = useScopedI18n("components.articleCard");
+  const locale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
 
   useEffect(() => {
     if (contentRef.current) {
@@ -47,7 +50,7 @@ export default function VerticalProgress({
       <div className=" mt-6">
         {/*Phase 1 Introduction */}
         {currentPhase === 1 && (
-          <Card>
+          <Card className="pb-6">
             <CardHeader className="pb-6">
               <CardTitle className="flex items-center">
                 <Book />
@@ -81,7 +84,7 @@ export default function VerticalProgress({
           </Card>
         )}
 
-        {/* Phase 2 */}
+        {/* Phase 2 Vocabulary Preview */}
 
         {currentPhase === 2 && (
           <LessonWordList
@@ -90,8 +93,32 @@ export default function VerticalProgress({
             userId={userId}
           />
         )}
-      </div>
 
+        {/* Phase 3 First Reading with Audio */}
+
+        {currentPhase === 3 && (
+          <Card className="pb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase3Title")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">{t("phase3Description")}</span>
+            </div>
+            <CardDescription className="px-6">
+              <LessonSentensePreview
+                article={article}
+                articleId={articleId}
+                userId={userId}
+                targetLanguage={locale}
+              />
+            </CardDescription>
+          </Card>
+        )}
+      </div>
+      {/* Progress Bar */}
       <div className="lg:mt-6">
         <Card className="p-4">
           {/* Mobile view */}

@@ -18,7 +18,6 @@ export default async function LessonCard({
   articleId,
   userId,
 }: Props) {
-  const t = await getScopedI18n("components.articleCard");
   const tb = await getScopedI18n("pages.student.lessonPage");
   const phaseKeys = [
     "phases.0",
@@ -36,21 +35,6 @@ export default async function LessonCard({
     "phases.12",
     "phases.13",
   ] as const;
-
-  const translateProgress = {
-    startLesson: tb("startLesson"),
-    nextPhase: tb("nextPhase"),
-    previousPhase: tb("previousPhase"),
-  };
-
-  const translateContent = {
-    raLevel: t("raLevel", {
-      raLevel: article.ra_level,
-    }),
-    cefrLevel: t("cefrLevel", {
-      cefrLevel: article.cefr_level,
-    }),
-  };
 
   const phases = phaseKeys.map((key) => tb(key));
   return (
