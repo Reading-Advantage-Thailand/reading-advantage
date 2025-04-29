@@ -43,6 +43,7 @@ type Props = {
   articleId: string;
   userId: string;
   className?: string;
+  phase: "phase3" | "phase5" | "phase6";
   targetLanguage: "en" | "th" | "cn" | "tw" | "vi";
 };
 
@@ -74,11 +75,12 @@ export default function LessonSentensePreview({
   article,
   className = "",
   userId,
+  phase,
 }: Props) {
   const t = useScopedI18n("components.articleContent");
   const sentences = splitTextIntoSentences(article.passage, true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
   const [togglePlayer, setTogglePlayer] = useState<Boolean>(false);
@@ -436,20 +438,24 @@ export default function LessonSentensePreview({
             {t("openvoicebutton")}
           </Button>
         </div>
-        <div id="onborda-translate">
-          <Button
-            variant="default"
-            onClick={handleTranslateSentence}
-            disabled={loading}
-          >
-            {loading
-              ? "Loading"
-              : isTranslate && isTranslateOpen
-              ? t("translateButton.close")
-              : t("translateButton.open")}
-          </Button>
-        </div>
+        {phase === "phase5" ||
+          (phase === "phase6" && (
+            <div id="onborda-translate">
+              <Button
+                variant="default"
+                onClick={handleTranslateSentence}
+                disabled={loading}
+              >
+                {loading
+                  ? "Loading"
+                  : isTranslate && isTranslateOpen
+                  ? t("translateButton.close")
+                  : t("translateButton.open")}
+              </Button>
+            </div>
+          ))}
       </div>
+
       {togglePlayer && (
         <div
           id="audioPlayer"
@@ -539,6 +545,34 @@ export default function LessonSentensePreview({
             <source src={sentenceList[currentAudioIndex].audioUrl} />
           </audio>
         </ContextMenuTrigger>
+        {phase === "phase6" && (
+          <ContextMenuContent className="w-64">
+            {loading ? (
+              <ContextMenuItem inset disabled>
+                Loading
+              </ContextMenuItem>
+            ) : (
+              <>
+                <ContextMenuItem
+                  inset
+                  onClick={() => {
+                    saveToFlashcard();
+                  }}
+                  disabled={loading}
+                >
+                  Save to flashcard
+                </ContextMenuItem>
+                <ContextMenuItem
+                  inset
+                  onClick={handleTranslate}
+                  disabled={loading}
+                >
+                  Translate
+                </ContextMenuItem>
+              </>
+            )}
+          </ContextMenuContent>
+        )}
       </ContextMenu>
       <AlertDialog open={isTranslateClicked}>
         <AlertDialogContent>
