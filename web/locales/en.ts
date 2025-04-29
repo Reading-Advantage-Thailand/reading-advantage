@@ -266,13 +266,13 @@ export default {
           "Read the article for the first time with audio. You can click on a word to see its meaning",
         phase4Title: "Collect Unknown Words",
         phase4Description:
-          "Collect the words you don't know in this article. You can click on a word to see its meaning",
+          "Collect the vocabulary you don't know from this article and select words to save to your vocabulary cards.",
         phase5Title: "In-depth Reading",
         phase5Description:
-          "Read the article again without audio. You can click on a word to see its meaning",
+          "Read this article again without listening to the audio. You can click the translation button to see the meaning",
         phase6Title: "Collect Unknown Sentences",
         phase6Description:
-          "Collect the sentences you don’t understand in this article. You can click on a word to see its meaning",
+          "Collect the sentences you don’t understand in this article. You can click on a word to see its meaning and long-press a sentence to save it to your sentence cards.",
         phase7Title: "Multiple Choice Questions",
         phase7Description:
           "Answer multiple-choice questions about this article. You can click on a word to see its meaning",

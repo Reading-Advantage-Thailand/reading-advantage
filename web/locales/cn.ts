@@ -233,11 +233,12 @@ export default {
         phase3Description: "第一次阅读文章并播放音频。你可以点击单词查看其含义",
         phase4Title: "收集不认识的词汇",
         phase4Description:
-          "收集你在文章中不认识的词汇。你可以点击单词查看其含义",
+          "收集你在本文中不认识的单词，并选择单词保存到你的词汇卡中。",
         phase5Title: "深入阅读",
-        phase5Description: "再次阅读文章，不播放音频。你可以点击单词查看其含义",
+        phase5Description:
+          "再次阅读本文时请不要听音频。你可以点击翻译按钮查看意思",
         phase6Title: "收集不懂的句子",
-        phase6Description: "收集你在文章中不懂的句子。你可以点击单词查看其含义",
+        phase6Description: "收集你在文章中不懂的句子。你可以点击单词查看其含义 ，并长按句子将其保存到你的句子卡中。",
         phase7Title: "选择题",
         phase7Description: "回答关于这篇文章的选择题。你可以点击单词查看其含义",
         phase8Title: "简答题",

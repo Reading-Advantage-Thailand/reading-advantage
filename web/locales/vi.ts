@@ -248,13 +248,13 @@ export default {
           "Đọc bài viết lần đầu tiên với âm thanh. Bạn có thể nhấp vào từ để xem nghĩa",
         phase4Title: "Thu thập từ chưa biết",
         phase4Description:
-          "Thu thập các từ bạn chưa biết trong bài viết. Bạn có thể nhấp vào từ để xem nghĩa",
+          "Thu thập các từ vựng bạn chưa biết trong bài viết này và chọn từ để lưu vào thẻ từ vựng của bạn.",
         phase5Title: "Đọc sâu",
         phase5Description:
-          "Đọc lại bài viết mà không có âm thanh. Bạn có thể nhấp vào từ để xem nghĩa",
+          "Đọc lại bài viết này mà không nghe âm thanh. Bạn có thể nhấn nút dịch để xem nghĩa.",
         phase6Title: "Thu thập câu chưa biết",
         phase6Description:
-          "Thu thập các câu bạn chưa hiểu trong bài viết. Bạn có thể nhấp vào từ để xem nghĩa",
+          "Thu thập các câu bạn chưa hiểu trong bài viết. Bạn có thể nhấp vào từ để xem nghĩa và nhấn giữ câu để lưu vào thẻ câu của bạn.",
         phase7Title: "Câu hỏi trắc nghiệm",
         phase7Description:
           "Trả lời các câu hỏi trắc nghiệm về bài viết này. Bạn có thể nhấp vào từ để xem nghĩa",

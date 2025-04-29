@@ -112,6 +112,7 @@ export default function VerticalProgress({
                 articleId={articleId}
                 userId={userId}
                 targetLanguage={locale}
+                phase="phase3"
               />
             </CardDescription>
           </Card>
@@ -124,6 +125,54 @@ export default function VerticalProgress({
             articleId={articleId}
             userId={userId}
           />
+        )}
+
+        {/* Phase 5 Vocabulary Collection */}
+        {currentPhase === 5 && (
+          <Card className="pb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase5Title")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">{t("phase5Description")}</span>
+            </div>
+            <CardDescription className="px-6">
+              <LessonSentensePreview
+                article={article}
+                articleId={articleId}
+                userId={userId}
+                targetLanguage={locale}
+                phase="phase5"
+              />
+            </CardDescription>
+          </Card>
+        )}
+
+        {/* Phase 6 Sentence Collection */}
+        {currentPhase === 6 && (
+          <Card className="pb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase6Title")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">{t("phase6Description")}</span>
+            </div>
+            <CardDescription className="px-6">
+              <LessonSentensePreview
+                article={article}
+                articleId={articleId}
+                userId={userId}
+                targetLanguage={locale}
+                phase="phase6"
+              />
+            </CardDescription>
+          </Card>
         )}
       </div>
       {/* Progress Bar */}

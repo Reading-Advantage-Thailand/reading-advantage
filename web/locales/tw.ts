@@ -233,11 +233,13 @@ export default {
         phase3Description:
           "第一次閱讀這篇文章並搭配音訊。你可以點擊單字查看意思",
         phase4Title: "收集不熟悉的詞彙",
-        phase4Description: "收集你在文章中不熟悉的詞彙。你可以點擊單字查看意思",
+        phase4Description:
+          "收集你在本文中不認識的單字，並選擇單字保存到你的單字卡中。",
         phase5Title: "深度閱讀",
-        phase5Description: "再次閱讀文章，不播放音訊。你可以點擊單字查看意思",
+        phase5Description:
+          "再次閱讀本文時請不要聆聽音訊。你可以點擊翻譯按鈕查看意思",
         phase6Title: "收集不懂的句子",
-        phase6Description: "收集你在文章中不懂的句子。你可以點擊單字查看意思",
+        phase6Description: "收集你在文章中不懂的句子。你可以點擊單字查看意思，並長按句子將其保存到你的句子卡中。",
         phase7Title: "選擇題",
         phase7Description: "回答關於這篇文章的選擇題。你可以點擊單字查看意思",
         phase8Title: "簡答題",
