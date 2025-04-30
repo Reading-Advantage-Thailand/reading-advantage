@@ -35,6 +35,7 @@ type Props = {
   articleId: string;
   articleTitle: string;
   articleLevel: number;
+  page?: "lesson" | "article";
 };
 
 export type QuestionResponse = {
@@ -49,6 +50,7 @@ export default function MCQuestionCard({
   articleId,
   articleTitle,
   articleLevel,
+  page,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -91,7 +93,7 @@ export default function MCQuestionCard({
 
   switch (state) {
     case QuestionState.LOADING:
-      return <QuestionCardLoading />;
+      return <QuestionCardLoading page={page} />;
     case QuestionState.INCOMPLETE:
       return (
         <QuestionCardIncomplete
@@ -101,60 +103,113 @@ export default function MCQuestionCard({
           handleCompleted={handleCompleted}
           articleTitle={articleTitle}
           articleLevel={articleLevel}
+          page={page}
         />
       );
     case QuestionState.COMPLETED:
-      return <QuestionCardComplete resp={data} onRetake={onRetake} />;
+      return (
+        <QuestionCardComplete resp={data} onRetake={onRetake} page={page} />
+      );
     default:
-      return <QuestionCardLoading />;
+      return <QuestionCardLoading page={page} />;
   }
 }
 
 function QuestionCardComplete({
   resp,
+  page,
   onRetake,
 }: {
   resp: QuestionResponse;
   onRetake: () => void;
+  page?: "lesson" | "article";
 }) {
   const t = useScopedI18n("components.mcq");
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          {t("title")}
-        </CardTitle>
-        <CardDescription>
-          {t("descriptionSuccess")}{" "}
-          <p className="text-green-500 dark:text-green-400 inline font-bold">
-            {t("descriptionSuccess2", {
-              score: resp.progress.filter(
-                (status) => status === AnswerStatus.CORRECT
-              ).length,
-              total: resp.total,
-            })}
-          </p>
-        </CardDescription>
-        <Button size={"sm"} variant={"outline"} onClick={onRetake}>
-          {t("retakeButton")}
-        </Button>
-      </CardHeader>
-    </Card>
+    <>
+      {page === "article" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
+              {t("title")}
+            </CardTitle>
+            <CardDescription>
+              {t("descriptionSuccess")}{" "}
+              <p className="text-green-500 dark:text-green-400 inline font-bold">
+                {t("descriptionSuccess2", {
+                  score: resp.progress.filter(
+                    (status) => status === AnswerStatus.CORRECT
+                  ).length,
+                  total: resp.total,
+                })}
+              </p>
+            </CardDescription>
+            <Button size={"sm"} variant={"outline"} onClick={onRetake}>
+              {t("retakeButton")}
+            </Button>
+          </CardHeader>
+        </Card>
+      )}
+
+      {page === "lesson" && (
+        <>
+          <div className="flex flex-col gap-6 mt-4 items-center justify-center">
+            {t("descriptionSuccess")}
+            <p className="text-green-500 dark:text-green-400 inline font-bold">
+              {t("descriptionSuccess2", {
+                score: resp.progress.filter(
+                  (status) => status === AnswerStatus.CORRECT
+                ).length,
+                total: resp.total,
+              })}
+            </p>
+          </div>
+          <div className="flex items-center justify-end mt-6">
+            <Button
+              className="w-full lg:w-1/4"
+              size={"sm"}
+              variant={"outline"}
+              onClick={onRetake}
+            >
+              {t("retakeButton")}
+            </Button>
+          </div>
+        </>
+      )}
+    </>
   );
 }
 
-function QuestionCardLoading() {
+function QuestionCardLoading({ page }: { page?: "lesson" | "article" }) {
   const t = useScopedI18n("components.mcq");
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          {t("title")}
-        </CardTitle>
-        <CardDescription>{t("descriptionLoading")}</CardDescription>
-        <Skeleton className="h-8 w-full mt-2" />
-      </CardHeader>
-    </Card>
+    <>
+      {page === "article" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
+              {t("title")}
+            </CardTitle>
+            <CardDescription>{t("descriptionLoading")}</CardDescription>
+            <Skeleton className="h-8 w-full mt-2" />
+          </CardHeader>
+        </Card>
+      )}
+      {page === "lesson" && (
+        <div className="flex items-start xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+          <div className="space-y-8 w-full">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -165,6 +220,7 @@ function QuestionCardIncomplete({
   handleCompleted,
   articleTitle,
   articleLevel,
+  page,
 }: {
   userId: string;
   resp: QuestionResponse;
@@ -172,18 +228,35 @@ function QuestionCardIncomplete({
   handleCompleted: () => void;
   articleTitle: string;
   articleLevel: number;
+  page?: "lesson" | "article";
 }) {
   const t = useScopedI18n("components.mcq");
   return (
-    <Card id="onborda-mcq">
-      <QuestionHeader
-        heading={t("title")}
-        description={t("description")}
-        buttonLabel={t("startButton")}
-        userId={userId}
-        articleId={articleId}
-        disabled={false}
-      >
+    <>
+      {page === "article" && (
+        <Card id="onborda-mcq">
+          <QuestionHeader
+            heading={t("title")}
+            description={t("description")}
+            buttonLabel={t("startButton")}
+            userId={userId}
+            articleId={articleId}
+            disabled={false}
+          >
+            <QuizContextProvider>
+              <MCQeustion
+                articleId={articleId}
+                resp={resp}
+                handleCompleted={handleCompleted}
+                userId={userId}
+                articleTitle={articleTitle}
+                articleLevel={articleLevel}
+              />
+            </QuizContextProvider>
+          </QuestionHeader>
+        </Card>
+      )}
+      {page === "lesson" && (
         <QuizContextProvider>
           <MCQeustion
             articleId={articleId}
@@ -192,10 +265,11 @@ function QuestionCardIncomplete({
             userId={userId}
             articleTitle={articleTitle}
             articleLevel={articleLevel}
+            page="lesson"
           />
         </QuizContextProvider>
-      </QuestionHeader>
-    </Card>
+      )}
+    </>
   );
 }
 
@@ -206,6 +280,7 @@ function MCQeustion({
   userId,
   articleTitle,
   articleLevel,
+  page,
 }: {
   articleId: string;
   resp: QuestionResponse;
@@ -213,6 +288,7 @@ function MCQeustion({
   userId: string;
   articleTitle: string;
   articleLevel: number;
+  page?: "lesson" | "article";
 }) {
   const [progress, setProgress] = useState(resp.progress);
   const [isLoadingAnswer, setLoadingAnswer] = useState(false);
@@ -247,6 +323,9 @@ function MCQeustion({
   };
 
   useEffect(() => {
+    if (page === "lesson") {
+      setPaused(false);
+    }
     let count = 0;
     let countTest = 0;
     progress.forEach(async (status) => {
@@ -354,7 +433,7 @@ function MCQeustion({
           </p>
         </Button>
       ))}
-      {
+      {page === "article" && (
         <Button
           variant={"outline"}
           size={"sm"}
@@ -381,7 +460,37 @@ function MCQeustion({
             <>{t("submitButton")}</>
           )}
         </Button>
-      }
+      )}
+      {page === "lesson" && (
+        <div className="flex items-center justify-end">
+          <Button
+            variant={"outline"}
+            size={"sm"}
+            className="mt-4 w-full lg:w-1/4"
+            disabled={isLoadingAnswer || selectedOption === -1}
+            onClick={() => {
+              if (5 - resp.results.length + 1 + index < resp.total) {
+                setIndex((prevIndex) => prevIndex + 1);
+                setSelectedOption(-1);
+                setCorrectAnswer("");
+                setPaused(false);
+                setTextualEvidence("");
+              } else {
+                handleCompleted();
+              }
+            }}
+          >
+            {isLoadingAnswer && (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {5 - resp.results.length + 1 + index < resp.total ? (
+              <>{t("nextQuestionButton")}</>
+            ) : (
+              <>{t("submitButton")}</>
+            )}
+          </Button>
+        </div>
+      )}
     </CardContent>
   );
 }

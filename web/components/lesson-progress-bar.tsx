@@ -20,6 +20,8 @@ import { useScopedI18n } from "@/locales/client";
 import LessonSentensePreview from "./lesson-sentense-preview";
 import { useCurrentLocale } from "@/locales/client";
 import LessonWordCollection from "./lesson-vocabulary-collection";
+import MCQuestionCard from "./questions/mc-question-card";
+import SAQuestionCard from "./questions/sa-question-card";
 
 export default function VerticalProgress({
   article,
@@ -174,7 +176,32 @@ export default function VerticalProgress({
             </CardDescription>
           </Card>
         )}
+
+        {/* Phase 7 Multiple-Choice Questions*/}
+        {currentPhase === 7 && (
+          <Card className="pb-7 w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase7Title")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">{t("phase7Description")}</span>
+            </div>
+            <CardDescription className="px-6">
+              <MCQuestionCard
+                userId={userId}
+                articleId={articleId}
+                articleTitle={article.title}
+                articleLevel={article.ra_level}
+                page="lesson"
+              />
+            </CardDescription>
+          </Card>
+        )}
       </div>
+
       {/* Progress Bar */}
       <div className="lg:mt-6">
         <Card className="p-4">
