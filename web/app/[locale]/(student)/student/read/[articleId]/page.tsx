@@ -92,6 +92,7 @@ export default async function ArticleQuizPage({
             articleId={params.articleId}
             articleTitle={articleResponse.article.title}
             articleLevel={articleResponse.article.ra_level}
+            page="article"
           />
           <SAQuestionCard
             userId={user.id}
