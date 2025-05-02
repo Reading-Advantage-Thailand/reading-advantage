@@ -901,6 +901,7 @@ export default {
       submitButton: "Save Answer",
       elapsedTime: "{time} seconds elapsed",
       scorerate: "Let's Rate Your Answer",
+      wordCount: "Word Count is {count}",
     },
   },
 

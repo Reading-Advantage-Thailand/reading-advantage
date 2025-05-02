@@ -200,6 +200,33 @@ export default function VerticalProgress({
             </CardDescription>
           </Card>
         )}
+
+        {/* Phase 8 Short-Answer Questions*/}
+        {currentPhase === 8 && (
+          <Card className="pb-7 w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase8Title")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">{t("phase8Description")}</span>
+            </div>
+            <CardDescription className="px-6">
+              <SAQuestionCard
+                userId={userId}
+                articleId={articleId}
+                articleTitle={article.title}
+                articleLevel={article.ra_level}
+                page="lesson"
+              />
+            </CardDescription>
+          </Card>
+        )}
+
+        {/* Phase 8 Short-Answer Questions*/}
+
       </div>
 
       {/* Progress Bar */}

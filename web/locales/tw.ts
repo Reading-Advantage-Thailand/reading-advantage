@@ -844,6 +844,7 @@ export default {
       submitButton: "保存答案",
       elapsedTime: "已用時間 {time} 秒",
       scorerate: "讓我們評價你的答案",
+      wordCount: "字數 {count}",
     },
   },
   selectType: {
