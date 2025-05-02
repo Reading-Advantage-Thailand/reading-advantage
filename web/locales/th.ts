@@ -880,6 +880,7 @@ export default {
       submitButton: "บันทึกคำตอบ",
       elapsedTime: "ใช้เวลาไป {time} วินาที",
       scorerate: "มาประเมินคำตอบของคุณกัน",
+      wordCount: "จำนวนคำ {count}",
     },
   },
 

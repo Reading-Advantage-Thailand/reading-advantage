@@ -44,6 +44,7 @@ type Props = {
   articleId: string;
   articleTitle: string;
   articleLevel: number;
+  page: "article" | "lesson";
 };
 
 export type QuestionResponse = {
@@ -71,6 +72,7 @@ export default function SAQuestionCard({
   articleId,
   articleTitle,
   articleLevel,
+  page,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -103,7 +105,7 @@ export default function SAQuestionCard({
 
   switch (state) {
     case QuestionState.LOADING:
-      return <QuestionCardLoading />;
+      return <QuestionCardLoading page={page} />;
     case QuestionState.INCOMPLETE:
       return (
         <QuestionCardIncomplete
@@ -113,10 +115,11 @@ export default function SAQuestionCard({
           handleCompleted={handleCompleted}
           articleTitle={articleTitle}
           articleLevel={articleLevel}
+          page={page}
         />
       );
     case QuestionState.COMPLETED:
-      return <QuestionCardComplete resp={data} />;
+      return <QuestionCardComplete resp={data} page={page} />;
     default:
       return <QuestionCardError data={data} />;
   }
@@ -138,45 +141,94 @@ function QuestionCardError(data: any) {
   );
 }
 
-function QuestionCardComplete({ resp }: { resp: QuestionResponse }) {
+function QuestionCardComplete({
+  resp,
+  page,
+}: {
+  resp: QuestionResponse;
+  page: "article" | "lesson";
+}) {
   const t = useScopedI18n("components.saq");
   return (
-    <Card className="mt-4">
-      <CardHeader>
-        <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          {t("title")}
-        </CardTitle>
-        <CardDescription>
-          {t("descriptionSuccess")}
-          <p className="font-bold text-lg mt-4">{t("question")}</p>
-          <p>{resp.result.question}</p>
-          <p className="font-bold text-lg mt-4">{t("suggestedAnswer")}</p>
-          <p>{resp.suggested_answer}</p>
-          <p className="font-bold text-lg mt-4">{t("yourAnswer")}</p>
-          <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
-            {resp.answer}
-          </p>
-        </CardDescription>
-      </CardHeader>
-    </Card>
+    <>
+      {page === "article" && (
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
+              {t("title")}
+            </CardTitle>
+            <CardDescription>
+              {t("descriptionSuccess")}
+              <p className="font-bold text-lg mt-4">{t("question")}</p>
+              <p>{resp.result.question}</p>
+              <p className="font-bold text-lg mt-4">{t("suggestedAnswer")}</p>
+              <p>{resp.suggested_answer}</p>
+              <p className="font-bold text-lg mt-4">{t("yourAnswer")}</p>
+              <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
+                {resp.answer}
+              </p>
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
+
+      {page === "lesson" && (
+        <div className="flex items-start w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+          <div className="space-y-8 w-full">
+            <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
+              {t("title")}
+            </CardTitle>
+            <CardDescription className="text-green-500 dark:text-green-400 inline font-bold mt-2">
+              {t("descriptionSuccess")}
+            </CardDescription>
+            <p className="font-bold text-lg mt-2">{t("question")}</p>
+            <p>{resp.result.question}</p>
+            <p className="font-bold text-lg mt-2">{t("suggestedAnswer")}</p>
+            <p>{resp.suggested_answer}</p>
+            <p className="font-bold text-lg mt-2">{t("yourAnswer")}</p>
+            <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
+              {resp.answer}
+            </p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
-function QuestionCardLoading() {
+function QuestionCardLoading({ page }: { page: "article" | "lesson" }) {
   const t = useScopedI18n("components.saq");
   return (
-    <Card className="mt-3">
-      <CardHeader>
-        <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
-          {t("title")}
-        </CardTitle>
-        <CardDescription>{t("descriptionLoading")}</CardDescription>
-        <Skeleton className={"h-10 w-full mt-2"} />
-        <Skeleton className={"h-40 w-full mt-2"} />
-        <Skeleton className={"h-8 w-full mt-2"} />
-        <Skeleton className={"h-20 w-full mt-2"} />
-      </CardHeader>
-    </Card>
+    <>
+      {page === "article" && (
+        <Card className="mt-3">
+          <CardHeader>
+            <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
+              {t("title")}
+            </CardTitle>
+            <CardDescription>{t("descriptionLoading")}</CardDescription>
+            <Skeleton className={"h-10 w-full mt-2"} />
+            <Skeleton className={"h-40 w-full mt-2"} />
+            <Skeleton className={"h-8 w-full mt-2"} />
+            <Skeleton className={"h-20 w-full mt-2"} />
+          </CardHeader>
+        </Card>
+      )}
+      {page === "lesson" && (
+        <div className="flex items-start xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+          <div className="space-y-8 w-full">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -187,6 +239,7 @@ function QuestionCardIncomplete({
   handleCompleted,
   articleTitle,
   articleLevel,
+  page,
 }: {
   userId: string;
   resp: QuestionResponse;
@@ -194,31 +247,57 @@ function QuestionCardIncomplete({
   handleCompleted: () => void;
   articleTitle: string;
   articleLevel: number;
+  page: "article" | "lesson";
 }) {
   const t = useScopedI18n("components.saq");
   return (
-    <Card id="onborda-saq" className="mt-3">
-      <QuestionHeader
-        heading={t("title")}
-        description={t("description")}
-        buttonLabel={t("practiceButton")}
-        userId={userId}
-        articleId={articleId}
-        disabled={false}
-      >
+    <>
+      {page === "article" && (
+        <Card id="onborda-saq" className="mt-3">
+          <QuestionHeader
+            heading={t("title")}
+            description={t("description")}
+            buttonLabel={t("practiceButton")}
+            userId={userId}
+            articleId={articleId}
+            disabled={false}
+          >
+            <QuizContextProvider>
+              <SAQuestion
+                resp={resp}
+                articleId={articleId}
+                handleCompleted={handleCompleted}
+                userId={userId}
+                articleTitle={articleTitle}
+                articleLevel={articleLevel}
+                page={page}
+              />
+            </QuizContextProvider>
+          </QuestionHeader>
+        </Card>
+      )}
+      {page === "lesson" && (
         <QuizContextProvider>
           <SAQuestion
-            resp={resp}
             articleId={articleId}
+            resp={resp}
             handleCompleted={handleCompleted}
             userId={userId}
             articleTitle={articleTitle}
             articleLevel={articleLevel}
+            page="lesson"
           />
         </QuizContextProvider>
-      </QuestionHeader>
-    </Card>
+      )}
+    </>
   );
+}
+
+function countWords(text: string): number {
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter((word) => word.length > 0).length;
 }
 
 function SAQuestion({
@@ -228,6 +307,7 @@ function SAQuestion({
   handleCompleted,
   articleTitle,
   articleLevel,
+  page,
 }: {
   resp: QuestionResponse;
   articleId: string;
@@ -235,6 +315,7 @@ function SAQuestion({
   handleCompleted: () => void;
   articleTitle: string;
   articleLevel: number;
+  page: "article" | "lesson";
 }) {
   const shortAnswerSchema = z.object({
     answer: z
@@ -263,8 +344,13 @@ function SAQuestion({
   const { register, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(shortAnswerSchema),
   });
-
+  const [wordCount, setWordCount] = React.useState<number>(0);
   const router = useRouter();
+
+  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = event.target.value;
+    setWordCount(countWords(text));
+  };
 
   async function onSubmitted(data: FormData) {
     setIsLoading(true);
@@ -348,70 +434,154 @@ function SAQuestion({
           placeholder="Type your answer here..."
           className="w-full my-3 p-3 rounded-sm resize-none appearance-none overflow-hidden bg-gray-100 dark:bg-gray-900 focus:outline-none"
           {...register("answer")}
+          onChange={(e) => {
+            handleTextChange(e);
+            register("answer").onChange(e);
+          }}
         />
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              type="submit"
-              size="sm"
-              variant="outline"
-              disabled={isLoading}
-            >
-              {isLoading && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              {t("submitButton")}
-            </Button>
-          </DialogTrigger>
-          {!isLoading && (
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader className="text-left">
-                <DialogTitle className="font-bold text-2xl">
-                  {t("scorerate")}
-                </DialogTitle>
-                <DialogDescription>
-                  <p className="font-bold text-lg mt-4">{t("question")}</p>
-                  <p>{resp.result.question}</p>
-                  <p className="font-bold text-lg mt-4">
-                    {t("suggestedAnswer")}
-                  </p>
-                  <p>{data.suggested_answer}</p>
-                  <p className="font-bold text-lg mt-4">{t("yourAnswer")}</p>
-                  <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
-                    {data.answer}
-                  </p>
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex items-center justify-center">
-                <Rating
-                  sx={{
-                    // change unselected color
-                    "& .MuiRating-iconEmpty": {
-                      color: "#f6a904",
-                    },
-                  }}
-                  name="simple-controlled"
-                  value={rating}
-                  onChange={(event, newValue) => {
-                    setRating(newValue ? newValue : 0);
-                  }}
-                  size="large"
-                />
-              </div>
-              <DialogFooter>
+        {page === "lesson" && (
+          <p className="text-sm text-gray-500 mt-2 flex items-center justify-end mb-4">
+            {t("wordCount", { count: wordCount })}
+          </p>
+        )}
+        {page === "article" && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                type="submit"
+                size="sm"
+                variant="outline"
+                disabled={isLoading}
+              >
+                {isLoading && (
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {t("submitButton")}
+              </Button>
+            </DialogTrigger>
+            {!isLoading && (
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader className="text-left">
+                  <DialogTitle className="font-bold text-2xl">
+                    {t("scorerate")}
+                  </DialogTitle>
+                  <DialogDescription>
+                    <p className="font-bold text-lg mt-4">{t("question")}</p>
+                    <p>{resp.result.question}</p>
+                    <p className="font-bold text-lg mt-4">
+                      {t("suggestedAnswer")}
+                    </p>
+                    <p>{data.suggested_answer}</p>
+                    <p className="font-bold text-lg mt-4">{t("yourAnswer")}</p>
+                    <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
+                      {data.answer}
+                    </p>
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex items-center justify-center">
+                  <Rating
+                    sx={{
+                      // change unselected color
+                      "& .MuiRating-iconEmpty": {
+                        color: "#f6a904",
+                      },
+                    }}
+                    name="simple-controlled"
+                    value={rating}
+                    onChange={(event, newValue) => {
+                      setRating(newValue ? newValue : 0);
+                    }}
+                    size="large"
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    disabled={isLoading}
+                    onClick={() => {
+                      setIsCompleted(true);
+                      onRating();
+                    }}
+                  >
+                    {t("rateButton")}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            )}
+          </Dialog>
+        )}
+        {page === "lesson" && (
+          <div className="flex items-center lg:justify-end">
+            <Dialog>
+              <DialogTrigger asChild>
                 <Button
+                  className="w-full lg:w-1/4"
+                  type="submit"
+                  size="sm"
+                  variant="outline"
                   disabled={isLoading}
-                  onClick={() => {
-                    setIsCompleted(true);
-                    onRating();
-                  }}
                 >
-                  {t("rateButton")}
+                  {isLoading && (
+                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {t("submitButton")}
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          )}
-        </Dialog>
+              </DialogTrigger>
+              {!isLoading && (
+                <DialogContent
+                  className="sm:max-w-[425px]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DialogHeader className="text-left">
+                    <DialogTitle className="font-bold text-2xl">
+                      {t("scorerate")}
+                    </DialogTitle>
+                    <DialogDescription>
+                      <p className="font-bold text-lg mt-4">{t("question")}</p>
+                      <p>{resp.result.question}</p>
+                      <p className="font-bold text-lg mt-4">
+                        {t("suggestedAnswer")}
+                      </p>
+                      <p>{data.suggested_answer}</p>
+                      <p className="font-bold text-lg mt-4">
+                        {t("yourAnswer")}
+                      </p>
+                      <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
+                        {data.answer}
+                      </p>
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex items-center justify-center">
+                    <Rating
+                      sx={{
+                        // change unselected color
+                        "& .MuiRating-iconEmpty": {
+                          color: "#f6a904",
+                        },
+                      }}
+                      name="simple-controlled"
+                      value={rating}
+                      onChange={(event, newValue) => {
+                        setRating(newValue ? newValue : 0);
+                      }}
+                      size="large"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      disabled={isLoading}
+                      onClick={() => {
+                        setIsCompleted(true);
+                        onRating();
+                      }}
+                    >
+                      {t("rateButton")}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              )}
+            </Dialog>
+          </div>
+        )}
       </form>
     </CardContent>
   );

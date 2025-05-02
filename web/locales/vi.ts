@@ -887,6 +887,7 @@ export default {
       submitButton: "Lưu câu trả lời",
       elapsedTime: "{time} giây đã trôi qua",
       scorerate: "Hãy đánh giá câu trả lời của bạn",
+      wordCount: "Số từ {count}",
     },
   },
 

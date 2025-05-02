@@ -844,6 +844,7 @@ export default {
       submitButton: "保存答案",
       elapsedTime: "已用时间 {time} 秒",
       scorerate: "让我们评价你的答案",
+      wordCount: "字数 {count}",
     },
   },
 
