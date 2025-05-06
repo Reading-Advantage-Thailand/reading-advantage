@@ -16,7 +16,7 @@ import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import { AUDIO_WORDS_URL } from "@/server/constants";
-import LessonFlashCardVocabularyPracticeButton from "./lesson-flash-card-button";
+import LessonFlashCardVocabularyPracticeButton from "./lesson-vocabulary-flash-card-button";
 import FlipCardPracticeButton from "./flip-card-button";
 import {
   UserXpEarned,
