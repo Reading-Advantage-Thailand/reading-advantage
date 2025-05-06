@@ -28,6 +28,7 @@ import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
+import Image from "next/image";
 
 type Props = {
   userId: string;
@@ -262,15 +263,8 @@ export default function LessonFlashCard({
   return (
     <>
       <div className="flex flex-col items-center justify-center space-y-2 mt-4">
-        {words.length === 0 && !isLoadingWords && (
-          <div className="text-center flex items-center justify-center mt-4">
-            <p className="text-lg font-medium text-green-500 dark:text-green-400">
-              {t("flashcardPractice.completedMessage")}
-            </p>
-          </div>
-        )}
         {isLoadingWords ? (
-          <div className="flex flex-col w-full md:w-[725px] xl:w-[710px] space-x-4 space-y-20 mt-5 animate-pulse">
+          <div className="flex h-[300px] xl:h-[500px] flex-col w-full md:w-[725px] xl:w-[710px] space-x-4 space-y-20 mt-5 ">
             <div className="h-40 bg-muted rounded-lg" />
             <div className="flex justify-center">
               <div className="w-24 h-6 bg-muted rounded" />
@@ -282,20 +276,40 @@ export default function LessonFlashCard({
             <div className="w-full h-10 bg-muted rounded" />
           </div>
         ) : (
-          <div className="flex flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
-            <FlashcardArray
-              cards={cards}
-              controls={false}
-              showCount={false}
-              onCardChange={(index) => setCurrentCardIndex(index)}
-              forwardRef={controlRef}
-              currentCardFlipRef={currentCardFlipRef}
-            />
-            <div className="flex flex-row justify-center items-center">
-              <p className="mx-4 my-4 font-medium">
-                {currentCardIndex + 1} / {cards.length}
-              </p>
-            </div>
+          <div className="flex h-[300px] xl:h-[500px] flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+            {(words.length === 0 && !isLoadingWords) || !showButton ? (
+              <div className="text-center h-full flex flex-col items-center justify-center mt-4">
+                <p className="text-lg font-medium text-green-500 dark:text-green-400">
+                  {t("flashcardPractice.completedMessage")}
+                </p>
+                <div className="flex flex-wrap justify-center mt-10 ">
+                  <Image
+                    src={"/man-mage-light.svg"}
+                    alt="winners"
+                    width={250}
+                    height={100}
+                    className="animate__animated animate__jackInTheBox"
+                  />
+                </div>
+              </div>
+            ) : (
+              <FlashcardArray
+                cards={cards}
+                controls={false}
+                showCount={false}
+                onCardChange={(index) => setCurrentCardIndex(index)}
+                forwardRef={controlRef}
+                currentCardFlipRef={currentCardFlipRef}
+              />
+            )}
+            {(words.length > 0 && isLoadingWords) ||
+              (showButton && (
+                <div className="flex flex-row justify-center items-center">
+                  <p className="mx-4 my-4 font-medium">
+                    {currentCardIndex + 1} / {cards.length}
+                  </p>
+                </div>
+              ))}
             {words.map((data, index) =>
               index === currentCardIndex ? (
                 <div
@@ -303,7 +317,7 @@ export default function LessonFlashCard({
                   key={uuidv4()}
                 >
                   <div className="flex space-x-3 justify-center items-center">
-                    {data.word.audioUrl && (
+                    {data.word.audioUrl && showButton && (
                       <AudioButton
                         key={index}
                         audioUrl={
@@ -314,20 +328,24 @@ export default function LessonFlashCard({
                         endTimestamp={data?.word?.endTime}
                       />
                     )}
-                    <FlipCardPracticeButton
-                      currentCard={() => currentCardFlipRef.current()}
-                    />
+                    {showButton && (
+                      <FlipCardPracticeButton
+                        currentCard={() => currentCardFlipRef.current()}
+                      />
+                    )}
                   </div>
                   <div className="flex flex-col gap-2 justify-center items-center">
-                    <LessonFlashCardVocabularyPracticeButton
-                      index={currentCardIndex}
-                      nextCard={() => controlRef.current.nextCard()}
-                      words={words}
-                      showButton={showButton}
-                      setShowButton={setShowButton}
-                    />
+                    {showButton && (
+                      <LessonFlashCardVocabularyPracticeButton
+                        index={currentCardIndex}
+                        nextCard={() => controlRef.current.nextCard()}
+                        words={words}
+                        showButton={showButton}
+                        setShowButton={setShowButton}
+                      />
+                    )}
                     <div>
-                      {loading ? (
+                      {loading && showButton ? (
                         <Button className="ml-auto font-medium" disabled>
                           <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                           {tWordList("flashcard.neverPracticeButton")}
