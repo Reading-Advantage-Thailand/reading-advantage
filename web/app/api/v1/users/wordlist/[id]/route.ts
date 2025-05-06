@@ -11,6 +11,7 @@ import {
 interface RequestContext {
   params: {
     id: string;
+    articleId?: string;
   };
 }
 const router = createEdgeRouter<NextRequest, RequestContext>();

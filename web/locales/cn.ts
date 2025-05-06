@@ -116,6 +116,7 @@ export default {
           flipCard: "翻转",
           nextButton: "下一个",
           yourXp: "您已经获得了 {xp} XP 为这个活动。",
+          completedMessage: "恭喜！您已完成此活动。",
         },
         orderSentencesPractice: {
           orderSentences: "排列句子",

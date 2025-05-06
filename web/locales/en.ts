@@ -144,6 +144,7 @@ export default {
           nextButton: "Next",
           yourXp:
             "Congratulations!, You received {xp} XP for completing this activity.",
+          completedMessage: "You have completed this flash card.",
         },
         orderSentencesPractice: {
           //Order Sentences
