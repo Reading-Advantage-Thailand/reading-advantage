@@ -127,6 +127,7 @@ export default {
           flipCard: "พลิกการ์ด",
           nextButton: "ถัดไป",
           yourXp: "คุณได้รับ {xp} XP สำหรับกิจกรรมนี้",
+          completedMessage: "คุณทำการ์ดเสร็จแล้ว",
         },
         orderSentencesPractice: {
           orderSentences: "เรียงประโยค",

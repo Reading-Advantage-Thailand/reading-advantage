@@ -128,6 +128,7 @@ export default {
           flipCard: "Lật thẻ",
           nextButton: "Tiếp theo",
           yourXp: "Bạn đã nhận được {xp} XP cho hoạt động này",
+          completedMessage: "Bạn đã hoàn thành hoạt động này",
         },
         orderSentencesPractice: {
           orderSentences: "Sắp xếp câu",

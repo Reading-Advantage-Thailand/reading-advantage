@@ -5,6 +5,7 @@ import db from "@/configs/firestore-config";
 interface RequestContext {
   params: {
     id: string;
+    articleId?: string;
   };
 }
 
@@ -97,15 +98,23 @@ export async function postSaveWordList(
 }
 
 export async function getWordList(
-  req: ExtendedNextRequest,
+  req: NextRequest,
   { params: { id } }: RequestContext
 ) {
   try {
-    // Get words
-    const wordSnapshot = await db
-      .collection("user-word-records")
-      .where("userId", "==", id)
-      .get();
+    const articleId = req.nextUrl.searchParams.get("articleId");
+    console.log("articleId", articleId);
+
+    const wordSnapshot = articleId
+      ? await db
+          .collection("user-word-records")
+          .where("userId", "==", id)
+          .where("articleId", "==", articleId)
+          .get()
+      : await db
+          .collection("user-word-records")
+          .where("userId", "==", id)
+          .get();
 
     const word = wordSnapshot.docs.map((doc) => ({
       id: doc.id,
