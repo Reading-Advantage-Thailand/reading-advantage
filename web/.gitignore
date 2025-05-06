@@ -45,3 +45,6 @@ node_modules
 **/yarn.lock
 **/npm-shrinkwrap.json
 **/pnpm-lock.yaml
+
+# service accounts
+service-account.json
