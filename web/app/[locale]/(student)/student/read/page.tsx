@@ -28,3 +28,4 @@ export default async function ReadPage({ params, searchParams }: Props) {
     </>
   );
 }
+
