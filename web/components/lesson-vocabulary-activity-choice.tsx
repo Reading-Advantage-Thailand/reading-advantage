@@ -202,7 +202,7 @@ export default function LessonMatchingWords({ userId, articleId }: Props) {
                     <>
                       <div
                         key={index}
-                        className={`cursor-pointer rounded-xl p-5 m-2 w-20 h-18 sm:w-64 text-center dark:bg-[#020817] border-solid border border-[#282e3e14] bg-slate-50 hover:bg-slate-200 shadow-lg 
+                        className={`cursor-pointer rounded-xl px-1 py-4 m-2 w-28 h-18 sm:w-64 text-center dark:bg-[#020817] border-solid border border-[#282e3e14] bg-slate-50 hover:bg-slate-200 shadow-lg 
   ${correctMatches.includes(word.text) && "hidden"}
   ${animateShake}  
   ${selectedCard?.text === word.text && "dark:text-black"}            
@@ -229,7 +229,7 @@ export default function LessonMatchingWords({ userId, articleId }: Props) {
           </>
         )}
         {correctMatches.length === 10 && (
-          <div className="flex flex-wrap justify-center mt-10 ">
+          <div className="flex flex-wrap justify-center xl:h-[400px] w-full md:w-[725px] xl:w-[710px] mt-10 ">
             <Image
               src={"/winners.svg"}
               alt="winners"

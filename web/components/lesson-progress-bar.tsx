@@ -22,8 +22,9 @@ import { useCurrentLocale } from "@/locales/client";
 import LessonWordCollection from "./lesson-vocabulary-collection";
 import MCQuestionCard from "./questions/mc-question-card";
 import SAQuestionCard from "./questions/sa-question-card";
-import LessonFlashCard from "./lesson-vocabulary-flash-card";
+import LessonVocabularyFlashCard from "./lesson-vocabulary-flash-card";
 import LessonMatchingWords from "./lesson-vocabulary-activity-choice";
+import LessonSentenseFlashCard from "./lesson-sentense-flash-card";
 
 export default function VerticalProgress({
   article,
@@ -43,7 +44,8 @@ export default function VerticalProgress({
   const t = useScopedI18n("pages.student.lessonPage");
   const tc = useScopedI18n("components.articleCard");
   const locale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
-  const [showButton, setShowButton] = useState(true);
+  const [showVocabularyButton, setShowVocabularyButton] = useState(true);
+  const [showSentenseButton, setShowSentenseButton] = useState(true);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -234,18 +236,18 @@ export default function VerticalProgress({
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Book />
-                <div className="ml-2">{t("phase9Title")}</div>
+                <div className="ml-2">{t("phase10Title")}</div>
               </CardTitle>
             </CardHeader>
             <div className="px-6">
-              <span className="font-bold">{t("phase9Description")}</span>
+              <span className="font-bold">{t("phase10Description")}</span>
             </div>
             <CardDescription className="px-6">
-              <LessonFlashCard
+              <LessonVocabularyFlashCard
                 userId={userId}
                 articleId={articleId}
-                showButton={showButton}
-                setShowButton={setShowButton}
+                showButton={showVocabularyButton}
+                setShowButton={setShowVocabularyButton}
               />
             </CardDescription>
           </Card>
@@ -268,6 +270,30 @@ export default function VerticalProgress({
             </CardDescription>
           </Card>
         )}
+
+        {/* Phase 11 Sentence Practice Flashcards*/}
+        {currentPhase === 11 && (
+          <Card className="pb-7 w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase11Title")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">{t("phase11Description")}</span>
+            </div>
+            <CardDescription className="px-6">
+              <LessonSentenseFlashCard
+                userId={userId}
+                articleId={articleId}
+                showButton={showSentenseButton}
+                setShowButton={setShowSentenseButton}
+              />
+            </CardDescription>
+          </Card>
+        )}
+        
       </div>
 
       {/* Progress Bar */}

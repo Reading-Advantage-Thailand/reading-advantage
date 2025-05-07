@@ -68,7 +68,7 @@ export type Word = {
   last_review?: Date; // The most recent review date, if applicable
 };
 
-export default function LessonFlashCard({
+export default function LessonVocabularyFlashCard({
   userId,
   showButton,
   setShowButton,
@@ -261,71 +261,62 @@ export default function LessonFlashCard({
   }, []);
 
   return (
-    <>
-      <div className="flex flex-col items-center justify-center space-y-2 mt-4">
-        {isLoadingWords ? (
-          <div className="flex h-[300px] xl:h-[500px] flex-col w-full md:w-[725px] xl:w-[710px] space-x-4 space-y-20 mt-5 ">
-            <div className="h-40 bg-muted rounded-lg" />
-            <div className="flex justify-center">
-              <div className="w-24 h-6 bg-muted rounded" />
-            </div>
-            <div className="flex justify-center space-x-3">
-              <div className="w-10 h-10 bg-muted rounded-full" />
-              <div className="w-10 h-10 bg-muted rounded-full" />
-            </div>
-            <div className="w-full h-10 bg-muted rounded" />
+    <div className="flex flex-col items-center justify-center space-y-2 mt-4">
+      {isLoadingWords ? (
+        <div className="flex h-[300px] xl:h-[500px] flex-col w-full md:w-[725px] xl:w-[710px] space-x-4 space-y-20 mt-5">
+          <div className="h-40 bg-muted rounded-lg" />
+          <div className="flex justify-center">
+            <div className="w-24 h-6 bg-muted rounded" />
           </div>
-        ) : (
-          <div className="flex h-[300px] xl:h-[500px] flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
-            {(words.length === 0 && !isLoadingWords) || !showButton ? (
-              <div className="text-center h-full flex flex-col items-center justify-center mt-4">
-                <p className="text-lg font-medium text-green-500 dark:text-green-400">
-                  {t("flashcardPractice.completedMessage")}
-                </p>
-                <div className="flex flex-wrap justify-center mt-10 ">
-                  <Image
-                    src={"/man-mage-light.svg"}
-                    alt="winners"
-                    width={250}
-                    height={100}
-                    className="animate__animated animate__jackInTheBox"
-                  />
-                </div>
+          <div className="flex justify-center space-x-3">
+            <div className="w-10 h-10 bg-muted rounded-full" />
+            <div className="w-10 h-10 bg-muted rounded-full" />
+          </div>
+          <div className="w-full h-10 bg-muted rounded" />
+        </div>
+      ) : (
+        <div className="flex h-[300px] xl:h-[500px] flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+          {words.length === 0 || !showButton ? (
+            <div className="text-center h-full flex flex-col items-center justify-center mt-4">
+              <p className="text-lg font-medium text-green-500 dark:text-green-400">
+                {t("flashcardPractice.completedMessage")}
+              </p>
+              <div className="flex flex-wrap justify-center mt-10">
+                <Image
+                  src="/man-mage-light.svg"
+                  alt="winners"
+                  width={250}
+                  height={100}
+                  className="animate__animated animate__jackInTheBox"
+                />
               </div>
-            ) : (
+            </div>
+          ) : (
+            <>
               <FlashcardArray
                 cards={cards}
                 controls={false}
                 showCount={false}
-                onCardChange={(index) => setCurrentCardIndex(index)}
+                onCardChange={setCurrentCardIndex}
                 forwardRef={controlRef}
                 currentCardFlipRef={currentCardFlipRef}
               />
-            )}
-            {(words.length > 0 && isLoadingWords) ||
-              (showButton && (
-                <div className="flex flex-row justify-center items-center">
-                  <p className="mx-4 my-4 font-medium">
-                    {currentCardIndex + 1} / {cards.length}
-                  </p>
-                </div>
-              ))}
-            {words.map((data, index) =>
-              index === currentCardIndex ? (
-                <div
-                  className="flex flex-col justify-center items-center space-x-3 gap-2"
-                  key={uuidv4()}
-                >
+              <div className="flex flex-row justify-center items-center">
+                <p className="mx-4 my-4 font-medium">
+                  {currentCardIndex + 1} / {cards.length}
+                </p>
+              </div>
+              {words[currentCardIndex] && (
+                <div className="flex flex-col justify-center items-center space-x-3 gap-2">
                   <div className="flex space-x-3 justify-center items-center">
-                    {data.word.audioUrl && showButton && (
+                    {words[currentCardIndex].word.audioUrl && showButton && (
                       <AudioButton
-                        key={index}
                         audioUrl={
-                          data.word.audioUrl ||
-                          `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${data.articleId}.mp3`
+                          words[currentCardIndex].word.audioUrl ||
+                          `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${words[currentCardIndex].articleId}.mp3`
                         }
-                        startTimestamp={data?.word?.startTime}
-                        endTimestamp={data?.word?.endTime}
+                        startTimestamp={words[currentCardIndex]?.word?.startTime}
+                        endTimestamp={words[currentCardIndex]?.word?.endTime}
                       />
                     )}
                     {showButton && (
@@ -345,29 +336,32 @@ export default function LessonFlashCard({
                       />
                     )}
                     <div>
-                      {loading && showButton ? (
-                        <Button className="ml-auto font-medium" disabled>
-                          <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                          {tWordList("flashcard.neverPracticeButton")}
-                        </Button>
-                      ) : (
-                        <Button
-                          className="ml-auto font-medium"
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDelete(data?.id)}
-                        >
-                          {tWordList("flashcard.neverPracticeButton")}
-                        </Button>
-                      )}
+                      <Button
+                        className="ml-auto font-medium"
+                        size="sm"
+                        variant={loading ? "default" : "destructive"}
+                        onClick={() =>
+                          !loading && handleDelete(words[currentCardIndex]?.id)
+                        }
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                            {tWordList("flashcard.neverPracticeButton")}
+                          </>
+                        ) : (
+                          tWordList("flashcard.neverPracticeButton")
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </div>
-              ) : null
-            )}
-          </div>
-        )}
-      </div>
-    </>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
