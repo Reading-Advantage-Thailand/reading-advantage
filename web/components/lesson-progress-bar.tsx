@@ -26,6 +26,7 @@ import SAQuestionCard from "./questions/sa-question-card";
 import LessonVocabularyFlashCard from "./lesson-vocabulary-flash-card";
 import LessonMatchingWords from "./lesson-vocabulary-activity-choice";
 import LessonSentenseFlashCard from "./lesson-sentense-flash-card";
+import LessonOrderSentences from "./lesson-order-sentence";
 
 export default function VerticalProgress({
   article,
@@ -386,6 +387,33 @@ export default function VerticalProgress({
             </CardContent>
           </Card>
         )}
+
+        {/* Phase 12 Sentence Practice - orderSentences*/}
+        {currentPhase === 12 && sentenceActivity === "order-sentences" && (
+          <Card className="pb-7 w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">
+                  {tb("orderSentencesPractice.orderSentences")}
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">
+                {tb("orderSentencesPractice.orderSentencesDescription")}
+              </span>
+            </div>
+
+            <LessonOrderSentences articleId={articleId} userId={userId} />
+          </Card>
+        )}
+
+        {/* Phase 12 Sentence Practice - clozeTest*/}
+
+        {/* Phase 12 Sentence Practice - orderWords*/}
+
+        {/* Phase 12 Sentence Practice - matching*/}
       </div>
 
       {/* Progress Bar */}
