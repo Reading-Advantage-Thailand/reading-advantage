@@ -29,6 +29,7 @@ import LessonSentenseFlashCard from "./lesson-sentense-flash-card";
 import LessonOrderSentences from "./lesson-order-sentence";
 import LessonClozeTest from "./lesson-cloze-test";
 import LessonOrderWords from "./lesson-order-word";
+import LessonMatching from "./lesson-matching-word";
 
 export default function VerticalProgress({
   article,
@@ -449,6 +450,22 @@ export default function VerticalProgress({
         )}
 
         {/* Phase 12 Sentence Practice - matching*/}
+        {currentPhase === 12 && sentenceActivity === "matching" && (
+          <Card className="pb-7 w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{tb("matching")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">
+                {tb("matchingPractice.matchingDescription")}
+              </span>
+            </div>
+            <LessonMatching articleId={articleId} userId={userId} />
+          </Card>
+        )}
       </div>
 
       {/* Progress Bar */}
