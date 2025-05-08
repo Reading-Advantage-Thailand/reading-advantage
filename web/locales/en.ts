@@ -153,6 +153,7 @@ export default {
             "Reorder these sentences from a passage you've read. Match the original order to receive 5 XP.",
           saveOrder: "Continue",
           errorOrder: "Please order correctly",
+          completedMessage: "You have finished arranging the sentence.",
         },
         clozeTestPractice: {
           clozeTest: "Cloze Test",
@@ -312,8 +313,10 @@ export default {
           "Language Questions",
           "Lesson Summary",
         ],
-        collapsibleNotice45Min: "For language learners: This lesson is designed to take approximately 30 to 45 minutes to complete." ,
-        collapsibleNoticeDescription: "Each phase within the lesson includes a built-in timer that tracks how much time is spent on different activities. This timing data will be used for learning analytics and may contribute to your overall performance score. The time tracking also helps us better understand how students interact with different parts of the lesson and improve future learning experiences. Please try to work through the lesson at a steady pace for the most accurate results."
+        collapsibleNotice45Min:
+          "For language learners: This lesson is designed to take approximately 30 to 45 minutes to complete.",
+        collapsibleNoticeDescription:
+          "Each phase within the lesson includes a built-in timer that tracks how much time is spent on different activities. This timing data will be used for learning analytics and may contribute to your overall performance score. The time tracking also helps us better understand how students interact with different parts of the lesson and improve future learning experiences. Please try to work through the lesson at a steady pace for the most accurate results.",
       },
     },
     teacher: {

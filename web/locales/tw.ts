@@ -124,6 +124,7 @@ export default {
             "这是你读过的一篇文章中的一些句子。请将这些句子排列成对你有意义的顺序。如果顺序与文章中的相同，你将获得5经验值。",
           saveOrder: "儲存 & 稍後繼續",
           errorOrder: "請正確排序",
+          completedMessage: "你已經完成句子排序了。",
         },
         clozeTestPractice: {
           clozeTest: "填空測試",
