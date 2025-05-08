@@ -234,7 +234,7 @@ export default {
         },
       },
       lessonPage: {
-        lesson: "bài học",
+        lesson: "Bài học",
         startLesson: "Bắt đầu bài học",
         nextPhase: "Giai đoạn tiếp theo",
         previousPhase: "Giai đoạn trước",
@@ -243,61 +243,60 @@ export default {
         phase1Description:
           "Trong bài học này, bạn sẽ đọc một bài viết về {topic}",
         phase2Title: "Xem trước từ vựng",
-        phase2Description: "Đây là những từ vựng bạn sẽ gặp trong bài viết",
-        phase3Title: "Đọc lần đầu có âm thanh",
-        phase3Description:
-          "Đọc bài viết lần đầu tiên với âm thanh. Bạn có thể nhấp vào từ để xem nghĩa",
-        phase4Title: "Thu thập từ chưa biết",
+        phase2Description: "Đây là những từ bạn sẽ gặp trong bài viết",
+        phase3Title: "Đọc lần đầu với âm thanh",
+        phase3Description: "Đọc bài viết lần đầu tiên kèm âm thanh",
+        phase4Title: "Thu thập từ vựng",
         phase4Description:
-          "Thu thập các từ vựng bạn chưa biết trong bài viết này và chọn từ để lưu vào thẻ từ vựng của bạn.",
-        phase5Title: "Đọc sâu",
+          "Thu thập các từ bạn chưa biết và lưu ít nhất 5 từ vào thẻ từ vựng",
+        phase5Title: "Đọc chuyên sâu",
         phase5Description:
-          "Đọc lại bài viết này mà không nghe âm thanh. Bạn có thể nhấn nút dịch để xem nghĩa.",
-        phase6Title: "Thu thập câu chưa biết",
+          "Đọc lại bài viết mà không có âm thanh. Bạn có thể nhấn nút dịch để xem nghĩa",
+        phase6Title: "Thu thập câu",
         phase6Description:
-          "Thu thập các câu bạn chưa hiểu trong bài viết. Bạn có thể nhấp vào từ để xem nghĩa và nhấn giữ câu để lưu vào thẻ câu của bạn.",
+          "Thu thập các câu bạn chưa biết và lưu ít nhất 5 câu vào thẻ câu",
         phase7Title: "Câu hỏi trắc nghiệm",
-        phase7Description:
-          "Trả lời các câu hỏi trắc nghiệm về bài viết này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase7Description: "Trả lời các câu hỏi trắc nghiệm về bài viết này",
         phase8Title: "Câu hỏi tự luận",
-        phase8Description:
-          "Trả lời các câu hỏi tự luận về bài viết này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase8Description: "Trả lời các câu hỏi tự luận ngắn về bài viết này",
         phase9Title: "Luyện từ vựng - Thẻ từ",
         phase9Description:
-          "Luyện tập từ vựng bạn đã học trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
-        phase10Title: "Luyện từ vựng - Sắp xếp từ",
-        phase10Description:
-          "Luyện tập từ vựng bạn đã học trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+          "Luyện các từ vựng đã học và tự đánh giá khả năng của bạn",
+        phase10Title: "Luyện từ vựng - Ghép từ",
+        phase10Description: "Luyện ghép từ với nghĩa tương ứng",
         phase11Title: "Luyện câu - Thẻ câu",
         phase11Description:
-          "Luyện tập các câu bạn đã học trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
-        phase12Title: "Luyện câu - Sắp xếp câu",
-        phase12Description:
-          "Luyện tập các câu bạn đã học trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+          "Luyện các câu đã học và tự đánh giá khả năng đọc của bạn",
+        phase12Title: "Luyện câu - Chọn hoạt động",
+        phase12Description: "Luyện câu với hoạt động bạn chọn",
         phase13Title: "Câu hỏi ngôn ngữ",
         phase13Description:
-          "Trả lời các câu hỏi về ngôn ngữ trong bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+          "Trả lời các câu hỏi liên quan đến ngôn ngữ. Nhấp vào từ để xem nghĩa",
         phase14Title: "Tóm tắt bài học",
-        phase14Description:
-          "Ôn lại bài học này. Bạn có thể nhấp vào từ để xem nghĩa",
+        phase14Description: "Tóm tắt bài học này. Nhấp vào từ để xem nghĩa",
         phase15Title: "Bài tập về nhà",
-        phase15Description: "Bài tập về nhà của bài học này",
+        phase15Description:
+          "Hoàn thành bài tập về nhà. Nhấp vào từ để xem nghĩa",
         phases: [
           "Giới thiệu",
           "Xem trước từ vựng",
-          "Đọc lần đầu kèm âm thanh",
+          "Đọc lần đầu với âm thanh",
           "Thu thập từ vựng",
           "Đọc chuyên sâu",
           "Thu thập câu",
           "Câu hỏi trắc nghiệm",
-          "Câu hỏi ngắn",
-          "Luyện từ vựng - Thẻ ghi nhớ",
-          "Luyện từ vựng - Chọn hoạt động",
-          "Luyện câu - Thẻ ghi nhớ",
+          "Câu hỏi tự luận",
+          "Luyện từ vựng - Thẻ từ",
+          "Luyện từ vựng - Ghép từ",
+          "Luyện câu - Thẻ câu",
           "Luyện câu - Chọn hoạt động",
-          "Câu hỏi về ngôn ngữ",
+          "Câu hỏi ngôn ngữ",
           "Tóm tắt bài học",
         ],
+        collapsibleNotice45Min:
+          "Dành cho người học ngôn ngữ: Bài học này được thiết kế để hoàn thành trong khoảng 30 đến 45 phút.",
+        collapsibleNoticeDescription:
+          "Mỗi giai đoạn trong bài học đều có bộ đếm thời gian tích hợp để theo dõi thời gian bạn dành cho từng hoạt động. Dữ liệu này sẽ được sử dụng cho phân tích học tập và có thể ảnh hưởng đến điểm hiệu suất tổng thể của bạn. Việc theo dõi thời gian cũng giúp chúng tôi hiểu rõ hơn cách học viên tương tác với các phần khác nhau của bài học và cải thiện trải nghiệm học tập trong tương lai. Vui lòng học với tốc độ ổn định để có kết quả chính xác nhất.",
       },
     },
     teacher: {
