@@ -252,7 +252,7 @@ export default {
       },
       lessonPage: {
         lesson: "Lesson",
-        startLesson: "Begin Lesson",
+        startLesson: "Start Lesson",
         nextPhase: "Next Phase",
         previousPhase: "Previous Phase",
         saveButton: "Save",
@@ -263,59 +263,57 @@ export default {
         phase2Description:
           "These are the words you will encounter in the article",
         phase3Title: "First Reading with Audio",
-        phase3Description:
-          "Read the article for the first time with audio. You can click on a word to see its meaning",
-        phase4Title: "Collect Unknown Words",
+        phase3Description: "Read this article for the first time with audio",
+        phase4Title: "Collect Vocabulary",
         phase4Description:
-          "Collect the vocabulary you don't know from this article and select words to save to your vocabulary cards.",
+          "Collect unfamiliar words from the article and save at least 5 to your vocabulary cards",
         phase5Title: "In-depth Reading",
         phase5Description:
-          "Read this article again without listening to the audio. You can click the translation button to see the meaning",
-        phase6Title: "Collect Unknown Sentences",
+          "Read the article again without audio. You can click the translate button for help",
+        phase6Title: "Collect Sentences",
         phase6Description:
-          "Collect the sentences you don’t understand in this article. You can click on a word to see its meaning and long-press a sentence to save it to your sentence cards.",
-        phase7Title: "Multiple Choice Questions",
-        phase7Description:
-          "Answer multiple-choice questions about this article. You can click on a word to see its meaning",
+          "Collect unfamiliar sentences from the article. Long press to save at least 5 to your sentence cards",
+        phase7Title: "Multiple-Choice Questions",
+        phase7Description: "Answer multiple-choice questions about the article",
         phase8Title: "Short Answer Questions",
-        phase8Description:
-          "Answer short-answer questions about this article. You can click on a word to see its meaning",
+        phase8Description: "Answer short answer questions about the article",
         phase9Title: "Vocabulary Practice - Flashcards",
         phase9Description:
-          "Practice the vocabulary you learned in this lesson. You can click on a word to see its meaning",
-        phase10Title: "Vocabulary Practice - Word Order",
+          "Practice the vocabulary you’ve learned. Use this activity to self-assess",
+        phase10Title: "Vocabulary Practice - Matching",
         phase10Description:
-          "Practice the vocabulary you learned in this lesson. You can click on a word to see its meaning",
+          "Practice matching vocabulary words with their meanings",
         phase11Title: "Sentence Practice - Flashcards",
         phase11Description:
-          "Practice the sentences you learned in this lesson. You can click on a word to see its meaning",
-        phase12Title: "Sentence Practice - Sentence Order",
-        phase12Description:
-          "Practice the sentences you learned in this lesson. You can click on a word to see its meaning",
+          "Practice the sentences you’ve learned. Use this activity to self-assess your reading",
+        phase12Title: "Sentence Practice - Choose Activity",
+        phase12Description: "Practice sentences with your choice of activity",
         phase13Title: "Language Questions",
         phase13Description:
-          "Answer language-related questions in this lesson. You can click on a word to see its meaning",
+          "Answer language-related questions. Click on words to see meanings",
         phase14Title: "Lesson Summary",
-        phase14Description:
-          "Review the summary of this lesson. You can click on a word to see its meaning",
+        phase14Description: "Review the lesson. Click on words to see meanings",
         phase15Title: "Homework",
-        phase15Description: "Homework for this lesson",
+        phase15Description:
+          "Complete the homework. Click on words to see meanings",
         phases: [
           "Introduction",
-          "Vocabulary Preview",
+          "Preview Vocabulary",
           "First Reading with Audio",
-          "Vocabulary Collection",
-          "Deep Reading",
-          "Sentence Collection",
+          "Collect Vocabulary",
+          "In-depth Reading",
+          "Collect Sentences",
           "Multiple-Choice Questions",
-          "Short-Answer Questions",
+          "Short Answer Questions",
           "Vocabulary Practice - Flashcards",
-          "Vocabulary Practice - Activity Choice",
+          "Vocabulary Practice - Matching",
           "Sentence Practice - Flashcards",
-          "Sentence Practice - Activity Choice",
+          "Sentence Practice - Choose Activity",
           "Language Questions",
           "Lesson Summary",
         ],
+        collapsibleNotice45Min: "For language learners: This lesson is designed to take approximately 30 to 45 minutes to complete." ,
+        collapsibleNoticeDescription: "Each phase within the lesson includes a built-in timer that tracks how much time is spent on different activities. This timing data will be used for learning analytics and may contribute to your overall performance score. The time tracking also helps us better understand how students interact with different parts of the lesson and improve future learning experiences. Please try to work through the lesson at a steady pace for the most accurate results."
       },
     },
     teacher: {

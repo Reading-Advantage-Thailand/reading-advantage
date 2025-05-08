@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardContent,
 } from "@/components/ui/card";
 import Image from "next/image";
 import { Badge } from "./ui/badge";
@@ -17,7 +18,7 @@ import LessonWordList from "./lesson-vocabulary-preview";
 import { Article } from "./models/article-model";
 import { Book } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
-import LessonSentensePreview from "./lesson-sentense-preview";
+import LessonSentensePreview from "./lesson-sentence-preview";
 import { useCurrentLocale } from "@/locales/client";
 import LessonWordCollection from "./lesson-vocabulary-collection";
 import MCQuestionCard from "./questions/mc-question-card";
@@ -43,9 +44,11 @@ export default function VerticalProgress({
   const [currentPhase, setCurrentPhase] = useState(1);
   const t = useScopedI18n("pages.student.lessonPage");
   const tc = useScopedI18n("components.articleCard");
+  const tb = useScopedI18n("pages.student.practicePage");
   const locale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
   const [showVocabularyButton, setShowVocabularyButton] = useState(true);
   const [showSentenseButton, setShowSentenseButton] = useState(true);
+  const [sentenceActivity, setSentenceActivity] = useState("none");
 
   useEffect(() => {
     if (contentRef.current) {
@@ -293,7 +296,96 @@ export default function VerticalProgress({
             </CardDescription>
           </Card>
         )}
-        
+
+        {/* Phase 12 Sentence Practice - Activity Choice*/}
+        {currentPhase === 12 && sentenceActivity === "none" && (
+          <Card className="pb-7 w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase12Title")}</div>
+              </CardTitle>
+            </CardHeader>
+
+            <div className="px-6">
+              <span className="font-bold">{t("phase12Description")}</span>
+            </div>
+
+            <CardContent className="px-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* Order Sentences */}
+                <Card className="pb-4">
+                  <CardHeader>
+                    <CardTitle>{tb("orderSentences")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mb-4">
+                      {tb("orderSentencesPractice.orderSentencesDescription")}
+                    </p>
+                  </CardContent>
+                  <div className="flex justify-end items-end pr-4">
+                    <Button
+                      onClick={() => setSentenceActivity("order-sentences")}
+                    >
+                      {tb("orderSentencesPractice.orderSentences")}
+                    </Button>
+                  </div>
+                </Card>
+
+                {/* Cloze Test */}
+                <Card className="pb-4">
+                  <CardHeader>
+                    <CardTitle>{tb("clozeTest")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mb-4">
+                      {tb("clozeTestPractice.clozeTestDescription")}
+                    </p>
+                  </CardContent>
+                  <div className="flex justify-end items-end pr-4">
+                    <Button onClick={() => setSentenceActivity("cloze-test")}>
+                      {tb("clozeTestPractice.clozeTest")}
+                    </Button>
+                  </div>
+                </Card>
+
+                {/* Order Words */}
+                <Card className="pb-4">
+                  <CardHeader>
+                    <CardTitle>{tb("orderWords")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mb-4">
+                      {tb("orderWordsPractice.orderWordsDescription")}
+                    </p>
+                  </CardContent>
+                  <div className="flex justify-end items-end pr-4">
+                    <Button onClick={() => setSentenceActivity("order-words")}>
+                      {tb("orderWordsPractice.orderWords")}
+                    </Button>
+                  </div>
+                </Card>
+
+                {/* Matching */}
+                <Card className="pb-4">
+                  <CardHeader>
+                    <CardTitle>{tb("matching")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mb-4">
+                      {tb("matchingPractice.matchingDescription")}
+                    </p>
+                  </CardContent>
+                  <div className="flex justify-end items-end pr-4">
+                    <Button onClick={() => setSentenceActivity("matching")}>
+                      {tb("matchingPractice.matching")}
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Progress Bar */}
