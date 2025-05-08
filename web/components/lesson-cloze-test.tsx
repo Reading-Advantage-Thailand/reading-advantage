@@ -668,21 +668,21 @@ export default function LessonClozeTest({ userId, articleId }: Props) {
           </>
         )}
         {isCompleted && (
-                  <div className="text-center xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-y-6 mt-5 flex flex-col items-center justify-center">
-                    <p className="text-lg font-medium text-green-500 dark:text-green-400">
-                      {t("clozeTestPractice.completedMessage")}
-                    </p>
-                    <div className="flex flex-wrap justify-center mt-10 ">
-                      <Image
-                        src={"/man-mage-light.svg"}
-                        alt="winners"
-                        width={250}
-                        height={100}
-                        className="animate__animated animate__jackInTheBox"
-                      />
-                    </div>
-                  </div>
-                )}
+          <div className="text-center xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-y-6 mt-5 flex flex-col items-center justify-center">
+            <p className="text-lg font-medium text-green-500 dark:text-green-400">
+              {t("orderWordsPractice.completedMessage")}
+            </p>
+            <div className="flex flex-wrap justify-center mt-10 ">
+              <Image
+                src={"/man-mage-light.svg"}
+                alt="winners"
+                width={250}
+                height={100}
+                className="animate__animated animate__jackInTheBox"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

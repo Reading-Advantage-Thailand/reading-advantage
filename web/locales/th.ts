@@ -157,6 +157,7 @@ export default {
           submitArticle: "ตรวจสอบคำตอบของคุณ",
           nextPassage: "ตอนต่อไป",
           tryToSortThisSentence: "ลองเรียงประโยคนี้",
+          completedMessage: "คุณทำแบบทดสอบเรียงคำเสร็จแล้ว",
         },
         matchingPractice: {
           matching: "การจับคู่",

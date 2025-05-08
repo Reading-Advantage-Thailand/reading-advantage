@@ -28,6 +28,7 @@ import LessonMatchingWords from "./lesson-vocabulary-activity-choice";
 import LessonSentenseFlashCard from "./lesson-sentense-flash-card";
 import LessonOrderSentences from "./lesson-order-sentence";
 import LessonClozeTest from "./lesson-cloze-test";
+import LessonOrderWords from "./lesson-order-word";
 
 export default function VerticalProgress({
   article,
@@ -429,6 +430,23 @@ export default function VerticalProgress({
         )}
 
         {/* Phase 12 Sentence Practice - orderWords*/}
+        {currentPhase === 12 && sentenceActivity === "order-words" && (
+          <Card className="pb-7 w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{tb("orderWords")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">
+                {tb("orderWordsPractice.orderWordsDescription")}
+              </span>
+            </div>
+
+            <LessonOrderWords articleId={articleId} userId={userId} />
+          </Card>
+        )}
 
         {/* Phase 12 Sentence Practice - matching*/}
       </div>

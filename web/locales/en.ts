@@ -174,6 +174,7 @@ export default {
           submitArticle: "Check your answers",
           nextPassage: "Next Passage",
           tryToSortThisSentence: "Try to sort this sentence",
+          completedMessage: "You have completed the word ordering quiz.",
         },
         matchingPractice: {
           matching: "Matching",
