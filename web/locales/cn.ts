@@ -134,6 +134,7 @@ export default {
           errorCloze: "请填写所有空白处",
           submitArticle: "检查你的答案",
           nextPassage: "下一段",
+          completedMessage: "你已完成填空测验。",
         },
         orderWordsPractice: {
           orderWords: "排序单词",
