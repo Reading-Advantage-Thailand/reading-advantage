@@ -145,6 +145,8 @@ export default {
           errorOrder: "กรุณาเรียงลำดับให้ถูกต้อง",
           submitArticle: "ตรวจสอบคำตอบของคุณ",
           nextPassage: "เนื้อหาถัดไป",
+          completedMessage: "คุณทำแบบทดสอบเติมคำในช่องว่างเสร็จแล้ว",
+
         },
         orderWordsPractice: {
           orderWords: "เรียงคำ",

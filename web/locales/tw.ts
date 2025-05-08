@@ -134,6 +134,7 @@ export default {
           errorOrder: "請正確排序",
           submitArticle: "檢查你的答案",
           nextPassage: "下一段",
+          completedMessage: "你已完成填空測驗。",
         },
         orderWordsPractice: {
           orderWords: "排序單詞",

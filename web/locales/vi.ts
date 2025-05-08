@@ -146,6 +146,7 @@ export default {
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
           submitArticle: "Kiểm tra câu trả lời của bạn",
           nextPassage: "Đoạn tiếp theo",
+          completedMessage: "Bạn đã hoàn thành bài kiểm tra điền vào chỗ trống.",
         },
         orderWordsPractice: {
           orderWords: "Sắp xếp từ",

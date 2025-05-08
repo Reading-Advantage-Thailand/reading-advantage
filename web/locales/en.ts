@@ -163,6 +163,7 @@ export default {
           errorAnswer: "Please answer correctly",
           submitArticle: "Check your answers",
           nextPassage: "Next Passage",
+          completedMessage: "You have completed the fill-in-the-blank quiz.",
         },
         orderWordsPractice: {
           orderWords: "Order Words",
