@@ -145,6 +145,7 @@ export default {
           submitArticle: "检查你的答案",
           nextPassage: "下一段落",
           tryToSortThisSentence: "尝试排序这个句子",
+          completedMessage: "你已完成词语排序测验。",
         },
         matchingPractice: {
           matching: "配对",

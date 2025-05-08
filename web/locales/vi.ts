@@ -157,6 +157,7 @@ export default {
           submitArticle: "Kiểm tra câu trả lời của bạn",
           nextPassage: "Đoạn tiếp theo",
           tryToSortThisSentence: "Hãy sắp xếp câu này.",
+          completedMessage: "Bạn đã hoàn thành bài kiểm tra sắp xếp từ.",
         },
         matchingPractice: {
           matching: "Ghép cặp",

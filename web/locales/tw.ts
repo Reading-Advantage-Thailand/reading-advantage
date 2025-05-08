@@ -145,6 +145,7 @@ export default {
           submitArticle: "檢查您的答案",
           nextPassage: "下一段",
           tryToSortThisSentence: "試著排序這句話",
+          completedMessage: "你已完成詞語排序測驗。",
         },
         matchingPractice: {
           matching: "配對",
