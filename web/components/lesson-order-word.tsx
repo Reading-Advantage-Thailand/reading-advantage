@@ -193,7 +193,7 @@ export default function LessonOrderWords({ userId, articleId }: Props) {
       <div className="mt-5">
         {articleOrderWords?.length === 0 ? (
           <div className="grid w-full gap-10">
-            <div className="mx-auto xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-y-6 mt-5">
+            <div className="mx-auto px-12 xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-y-6 mt-5">
               <Skeleton className="h-[200px] w-full" />
               <Skeleton className="h-[20px] w-2/3" />
               <Skeleton className="h-[20px] w-full" />

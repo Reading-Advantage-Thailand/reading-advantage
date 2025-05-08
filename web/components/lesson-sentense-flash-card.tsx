@@ -226,7 +226,7 @@ export default function LessonSentenseFlashCard({
 
   return (
     <>
-      <div className="flex h-[300px] xl:h-[500px] flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+      <div className="flex xl:h-[500px] flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
         {(sentences.length === 0 && !isLoadingSentences) || !showButton ? (
           <div className="text-center h-full flex flex-col items-center justify-center mt-4">
             <p className="text-lg font-medium text-green-500 dark:text-green-400">

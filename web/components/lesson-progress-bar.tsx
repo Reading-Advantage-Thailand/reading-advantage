@@ -45,7 +45,7 @@ export default function VerticalProgress({
   const [isExpanded, setIsExpanded] = useState(false);
   const [maxHeight, setMaxHeight] = useState("0px");
   const contentRef = useRef<HTMLDivElement>(null);
-  const [currentPhase, setCurrentPhase] = useState(1);
+  const [currentPhase, setCurrentPhase] = useState(12);
   const t = useScopedI18n("pages.student.lessonPage");
   const tc = useScopedI18n("components.articleCard");
   const tb = useScopedI18n("pages.student.practicePage");
