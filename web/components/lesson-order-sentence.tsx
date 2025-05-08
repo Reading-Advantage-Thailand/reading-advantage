@@ -271,7 +271,7 @@ export default function LessonOrderSentences({ userId, articleId }: Props) {
       <div className="flex flex-col items-center justify-center space-y-2 mt-4">
         {articleRandom.length === 0 ? (
           <div className="grid w-full gap-10">
-            <div className="mx-auto xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-y-6 mt-5">
+            <div className="mx-auto w-full px-16 xl:h-[400px] md:w-[725px] xl:w-[710px] space-y-6 mt-5">
               <Skeleton className="h-[200px] w-full" />
               <Skeleton className="h-[20px] w-2/3" />
               <Skeleton className="h-[20px] w-full" />

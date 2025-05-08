@@ -219,7 +219,7 @@ export default function LessonMatching({ userId, articleId }: Props) {
         {articleMatching.length === 0 ? (
           <>
             <div className="grid w-full gap-10">
-              <div className="mx-auto xl:h-[400px] w-full md:w-[725px] xl:w-[760px] space-y-6 ">
+              <div className="mx-auto px-12 xl:h-[400px] w-full md:w-[725px] xl:w-[760px] space-y-6 ">
                 <Skeleton className="h-[200px] w-full" />
                 <Skeleton className="h-[20px] w-2/3" />
                 <Skeleton className="h-[20px] w-full" />
