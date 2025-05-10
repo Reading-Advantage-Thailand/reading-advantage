@@ -141,7 +141,7 @@ export default function VerticalProgress({
           />
         )}
 
-        {/* Phase 5 Vocabulary Collection */}
+        {/* Phase 5 Sentence Collection */}
         {currentPhase === 5 && (
           <Card className="pb-6">
             <CardHeader>
@@ -165,7 +165,7 @@ export default function VerticalProgress({
           </Card>
         )}
 
-        {/* Phase 6 Sentence Collection */}
+        {/* Phase 6 Deep Reading */}
         {currentPhase === 6 && (
           <Card className="pb-6">
             <CardHeader>
