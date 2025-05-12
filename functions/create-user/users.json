@@ -1,0 +1,16 @@
+[
+  {
+    "email": "test1@gmail.com",
+    "password": " ใส่ Password ตรงนี้",
+    "role": "student",
+    "license_id": "ใส่ license key ตรงนี้",
+    "displayName": "test 1"
+  },
+  {
+    "email": "test2@gmail.com",
+    "password": " ใส่ Password ตรงนี้",
+    "role": "student",
+    "license_id": "ใส่ license key ตรงนี้",
+    "displayName": "test 2"
+  }
+]
