@@ -49,13 +49,25 @@ export default async function AddNewStudent(params: {
     return { classData, studentsMapped, studentDataInClass };
   };
 
-  const classData = await ClassesData();
+  const allStudentEmailData = async () => {
+    const resStudent = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/all-students`,
+      { method: "GET", headers: headers() }
+    );
+    if (!resStudent.ok) throw new Error("Failed to fetch ClassesData list");
+    const allStudentEmail = await resStudent.json();
 
+    return allStudentEmail;
+  };
+
+  const allStudentEmail = await allStudentEmailData();
+  const classData = await ClassesData();
+  
   return (
     <>
       <CreateNewStudent
         studentDataInClass={classData.studentDataInClass}
-        allStudentEmail={classData.studentsMapped}
+        allStudentEmail={allStudentEmail.students}
         classrooms={classData.classData}
       />
     </>

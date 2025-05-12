@@ -102,6 +102,7 @@ export default function ClassRoster() {
   const { classrooms, fetchClassrooms } = useClassroomStore();
   const [loading, setLoading] = useState<boolean>(false);
   const pathname = usePathname();
+  const [classroomId, setClassroomId] = useState<string>("");
   const {
     classes,
     selectedClassroom,
@@ -294,16 +295,22 @@ export default function ClassRoster() {
   };
 
   useEffect(() => {
-    const pathSegments = pathname.split("/");
-    const currentClassroomId = pathSegments[4];
-    if (classrooms.some((c) => c.id === currentClassroomId)) {
-      setSelectedClassroom(currentClassroomId);
-      fetchStudentInClass(currentClassroomId);
-    }
-    if (!currentClassroomId) {
-      setClasses({} as Classes);
-      setSelectedClassroom("");
-      setStudentInClass([]);
+    if (classrooms.length) {
+      const pathSegments = pathname.split("/");
+      const currentClassroomId = pathSegments[4];
+      setClassroomId(currentClassroomId);
+
+      if (
+        currentClassroomId &&
+        classrooms.some((c) => c.id === currentClassroomId)
+      ) {
+        setSelectedClassroom(currentClassroomId);
+        fetchStudentInClass(currentClassroomId);
+      } else {
+        setClasses({} as Classes);
+        setSelectedClassroom("");
+        setStudentInClass([]);
+      }
     }
   }, [pathname, classrooms]);
 
@@ -377,14 +384,22 @@ export default function ClassRoster() {
           className="max-w-sm"
         />
         {selectedClassroom &&
+          classroomId &&
           (!classes.importedFromGoogle ? (
             <Button
               variant="outline"
-              onClick={() =>
-                router.push(
-                  `/teacher/class-roster/${classes.id}/create-new-student`
-                )
-              }
+              onClick={() => {
+                if (classroomId) {
+                  router.push(
+                    `/teacher/class-roster/${classroomId}/create-new-student`
+                  );
+                } else {
+                  toast({
+                    title: "Error",
+                    description: "Classroom ID is not available.",
+                  });
+                }
+              }}
             >
               <Icons.add />
               {tr("addStudentButton")}
