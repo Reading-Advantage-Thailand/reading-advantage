@@ -70,7 +70,28 @@ interface Classroom {
 
 // get all classrooms
 // for get all -> GET /api/classroom
+// for get all students -> GET /api/classroom/students
 // for get by teacher -> GET /api/classroom?teacherId=abc123
+
+export async function getAllStudentList(req: ExtendedNextRequest) {
+  try {
+    const user = await getCurrentUser();
+    const licenseId = user?.license_id;
+
+    const studentRef = await db
+      .collection("users")
+      .where("role", "==", "student")
+      .where("license_id", "==", licenseId)
+      .get();
+    const studentData = studentRef.docs.map((doc) => doc.data());
+
+    return NextResponse.json({ students: studentData }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching student list:", error);
+    return NextResponse.json({ error }, { status: 500 });
+  }
+}
+
 export async function getClassroom(req: ExtendedNextRequest) {
   try {
     const user = await getCurrentUser();
@@ -260,7 +281,6 @@ export async function getStudentInClassroom(
   { params }: { params: { classroomId: string } }
 ) {
   try {
-
     const { classroomId } = params;
     let studentQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
       db.collection("users");

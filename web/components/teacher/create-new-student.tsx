@@ -14,10 +14,11 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
 import { last } from "lodash";
+import { Timestamp } from "firebase-admin/firestore";
 
 type Student = {
   id: string;
-  last_activity: string;
+  last_activity: { _seconds?: number } | "No Activity";
   email: string;
 };
 
@@ -73,7 +74,11 @@ export default function CreateNewStudent({
 
       const updateStudentListBuilder = updatedStudentList.map((item) => ({
         studentId: item.id,
-        lastActivity: item.last_activity || "No Activity",
+        lastActivity:
+          typeof item.last_activity === "object" &&
+          "_seconds" in item.last_activity
+            ? new Date(item.last_activity._seconds! * 1000).toISOString()
+            : "No Activity",
       }));
 
       try {
