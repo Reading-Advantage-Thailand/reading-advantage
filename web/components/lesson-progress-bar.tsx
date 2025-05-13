@@ -30,6 +30,8 @@ import LessonOrderSentences from "./lesson-order-sentence";
 import LessonClozeTest from "./lesson-cloze-test";
 import LessonOrderWords from "./lesson-order-word";
 import LessonMatching from "./lesson-matching-word";
+import LessonLanguageQuestion from "./lesson-language-question";
+import LessonSummary from "./lesson-summary";
 
 export default function VerticalProgress({
   article,
@@ -45,7 +47,7 @@ export default function VerticalProgress({
   const [isExpanded, setIsExpanded] = useState(false);
   const [maxHeight, setMaxHeight] = useState("0px");
   const contentRef = useRef<HTMLDivElement>(null);
-  const [currentPhase, setCurrentPhase] = useState(12);
+  const [currentPhase, setCurrentPhase] = useState(1);
   const t = useScopedI18n("pages.student.lessonPage");
   const tc = useScopedI18n("components.articleCard");
   const tb = useScopedI18n("pages.student.practicePage");
@@ -464,6 +466,47 @@ export default function VerticalProgress({
               </span>
             </div>
             <LessonMatching articleId={articleId} userId={userId} />
+          </Card>
+        )}
+
+        {/* Phase 13 Language Questions (Optional)*/}
+        {currentPhase === 13 && (
+          <Card className="pb-7 w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase13Title")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">{t("phase13Description")}</span>
+            </div>
+            <CardDescription className="px-6">
+              <LessonLanguageQuestion article={article} />
+            </CardDescription>
+          </Card>
+        )}
+
+        {/* Phase 14 Lesson Summary */}
+        {currentPhase === 14 && (
+          <Card className="pb-7 w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Book />
+                <div className="ml-2">{t("phase14Title")}</div>
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6">
+              <span className="font-bold">{t("phase14Description")}</span>
+            </div>
+            <CardDescription className="px-6">
+              <LessonSummary
+                wordsSaved={5}
+                sentencesSaved={5}
+                quizPerformance={"string"}
+                xpEarned={5}
+              />
+            </CardDescription>
           </Card>
         )}
       </div>

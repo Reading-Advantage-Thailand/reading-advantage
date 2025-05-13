@@ -153,7 +153,7 @@ function QuestionCardComplete({
 
       {page === "lesson" && (
         <>
-          <div className="flex flex-col gap-6 mt-4 items-center justify-center">
+          <div className="flex flex-col gap-6 xl:h-[350px] h-full w-full md:w-[725px] xl:w-[710px] mt-4 items-center justify-center">
             {t("descriptionSuccess")}
             <p className="text-green-500 dark:text-green-400 inline font-bold">
               {t("descriptionSuccess2", {

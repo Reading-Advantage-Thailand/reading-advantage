@@ -32,6 +32,20 @@ const createChatbotSchema = z.object({
   }),
 });
 
+const createLessonChatbotQuestionSchema = z.object({
+  messages: z.array(
+    z.object({
+      text: z.string(),
+      sender: z.enum(["user", "bot"]),
+    })
+  ),
+  title: z.string(),
+  passage: z.string(),
+  summary: z.string(),
+  image_description: z.string(),
+  isInitial: z.boolean().optional().default(false),
+});
+
 export async function getFeedbackWritter(res: object) {
   const systemPrompt = fs.readFileSync(
     path.join(process.cwd(), "data", "writing-feedback.md"),
@@ -257,6 +271,95 @@ export async function chatBot(req: ExtendedNextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ errors: error.errors }, { status: 400 });
     }
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function lessonChatBotQuestion(req: ExtendedNextRequest) {
+  try {
+    const param = await req.json();
+    //console.log("Received Params:", param);
+    const validatedData = createLessonChatbotQuestionSchema.parse(param);
+    //console.log("Validated Data:", validatedData);
+
+    const { messages, title, passage, summary, image_description, isInitial } =
+      validatedData;
+
+    // เตรียม system prompt ตามว่าเริ่มบทสนทนาใหม่หรือไม่
+    const systemMessage = {
+      role: "system" as const,
+      content: isInitial
+        ? `You are a helpful and friendly AI language tutor. Start the conversation by asking the user one engaging, open-ended question related to the following article to encourage reflection or discussion. Do not answer anything yet.
+
+Article:
+Title: "${title}"
+Summary: "${summary}"
+Passage: "${passage}"
+Image Description: "${image_description}"`
+        : `You are an AI English tutor. The user is practicing their English conversation skills.
+
+When the user responds, you should do the following:
+1. Correct any grammar or sentence structure errors.
+2. Provide a revised version of their response (if needed).
+3. Give constructive feedback and encouragement on their answer.
+4. Ask a related follow-up question to continue the conversation.
+
+Use clear, friendly, and helpful language. Do not just say "Good job" — be specific about what they did well or how they can improve.
+
+Article:
+Title: "${title}"
+Summary: "${summary}"
+Passage: "${passage}"
+Image Description: "${image_description}"`,
+    };
+
+    //console.log("System Message:", systemMessage);
+
+    // แปลงข้อความทั้งหมดจาก frontend เป็น messages สำหรับ OpenAI
+    const chatMessages = messages.map((msg) => ({
+      role: msg.sender === "user" ? ("user" as const) : ("assistant" as const),
+      content: msg.text,
+    }));
+
+    //console.log("Chat Messages:", chatMessages);
+
+    // ส่ง prompt เข้า OpenAI พร้อมประวัติ
+    const { textStream } = await streamText({
+      model: openai(openaiModel),
+      messages: [systemMessage, ...chatMessages],
+    });
+
+    const streamChunks: string[] = [];
+
+    for await (const chunk of textStream) {
+      if (chunk && chunk !== "{" && chunk !== "}") {
+        streamChunks.push(chunk);
+      }
+    }
+
+    const fullMessage = streamChunks.join("").trim();
+
+    //console.log("Stream Chunks:", streamChunks);
+    //console.log("Full Message:", fullMessage);
+
+    return NextResponse.json(
+      {
+        messages: "success",
+        sender: "bot",
+        text: fullMessage,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error("Validation Error:", error.errors);
+      return NextResponse.json({ errors: error.errors }, { status: 400 });
+    }
+
+    console.error("ChatBot API Error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
