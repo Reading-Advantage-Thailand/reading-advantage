@@ -290,19 +290,24 @@ export default function FirstRunLevelTest({
                         questionIndex: number
                       ) => (
                         <div key={questionIndex}>
-                          <p className="font-bold">
+                          <p className="font-bold text-xl mt-4">
                             {questionIndex + 1}. {question.prompt}
                           </p>
                           <form key={formkey + 1}>
                             {Object.entries(question.options).map(
                               ([key, { id, text }]) => (
-                                <div key={id}>
+                                <label
+                                  key={id}
+                                  htmlFor={`${currentSectionIndex}-${questionIndex}-${key}`}
+                                  className="flex items-center text-sm cursor-pointer border md:w-1/4 mt-2 p-3 rounded-lg transition-all"
+                                  style={{ fontSize: "1.1rem" }}
+                                >
                                   <input
                                     type="radio"
-                                    name={`option${+questionIndex}`}
+                                    name={`option-${currentSectionIndex}-${questionIndex}`}
                                     value={text}
-                                    id={key}
-                                    className="mr-3"
+                                    id={`${currentSectionIndex}-${questionIndex}-${key}`}
+                                    className="mr-3 w-5 h-5 accent-blue-600"
                                     onChange={(e) =>
                                       onAnswerSelected(
                                         id,
@@ -310,9 +315,10 @@ export default function FirstRunLevelTest({
                                         questionIndex
                                       )
                                     }
+                                    style={{ accentColor: "#2563eb" }}
                                   />
-                                  <label htmlFor={key}>{text}</label>
-                                </div>
+                                  {text}
+                                </label>
                               )
                             )}
                           </form>
