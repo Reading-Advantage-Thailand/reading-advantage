@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { FlashcardArray } from "react-quizlet-flashcard";
@@ -11,11 +10,7 @@ import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
 import { useRouter } from "next/navigation";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import AudioButton from "./audio-button";
-import FlashCardPracticeButton from "./flash-card-practice-button";
-import FlipCardPracticeButton from "./flip-card-button";
 import { Button } from "./ui/button";
-import { Header } from "./header";
 import { toast } from "./ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
 import {
@@ -28,12 +23,15 @@ dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 import Image from "next/image";
+import AudioButton from "./audio-button";
+import FlipCardPracticeButton from "./flip-card-button";
+import FlashCardPracticeButton from "./flash-card-practice-button";
 
 type Props = {
   userId: string;
-  showButton: boolean;
-  setShowButton: Function;
   articleId: string;
+  showButton: boolean;
+  setShowButton: (value: boolean) => void;
 };
 
 export type Sentence = {
@@ -46,23 +44,24 @@ export type Sentence = {
   translation: { th: string };
   userId: string;
   id: string;
-  due: Date; // Date when the card is next due for review
-  stability: number; // A measure of how well the information is retained
-  difficulty: number; // Reflects the inherent difficulty of the card content
-  elapsed_days: number; // Days since the card was last reviewed
-  scheduled_days: number; // The interval at which the card is next scheduled
-  reps: number; // Total number of times the card has been reviewed
-  lapses: number; // Times the card was forgotten or remembered incorrectly
-  state: State; // The current state of the card (New, Learning, Review, Relearning)
-  last_review?: Date; // The most recent review date, if applicable
+  due: Date;
+  stability: number;
+  difficulty: number;
+  elapsed_days: number;
+  scheduled_days: number;
+  reps: number;
+  lapses: number;
+  state: State;
+  last_review?: Date;
   audioUrl?: string;
+  updateScore?: boolean;
 };
 
 export default function LessonSentenseFlashCard({
   userId,
+  articleId,
   showButton,
   setShowButton,
-  articleId,
 }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
@@ -77,115 +76,54 @@ export default function LessonSentenseFlashCard({
   const [isLoadingSentences, setIsLoadingSentences] = useState(true);
 
   const getUserSentenceSaved = async () => {
+    console.log("Fetching user sentences...");
+    setIsLoadingSentences(true);
     try {
-      setIsLoadingSentences(true);
       const res = await fetch(
         `/api/v1/users/sentences/${userId}?articleId=${articleId}`
       );
       const data = await res.json();
+      console.log("Fetched sentences data:", data);
 
       const startOfDay = date_scheduler(new Date(), 0, true);
-      const filteredData = await data.sentences
+      console.log("Start of day:", startOfDay);
+
+      const filteredData = data.sentences
         .filter((record: Sentence) => {
           const dueDate = new Date(record.due);
-          return record.state === 0 || dueDate < startOfDay;
+          const isDue = record.state === 0 || dueDate < startOfDay;
+          console.log("Filtering record:", record, "Is due:", isDue);
+          return isDue;
         })
         .sort((a: Sentence, b: Sentence) => {
-          return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
+          const comparison = dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
+          console.log(
+            "Sorting records:",
+            a,
+            b,
+            "Comparison result:",
+            comparison
+          );
+          return comparison;
         });
 
+      console.log("Filtered and sorted data:", filteredData);
+
       setSentences(filteredData);
-
-      if (filteredData.length === 0) {
-        setShowButton(false);
-      }
-
-      //updateScore
-      let filterDataUpdateScore = filter(data.sentences, (param) => {
-        const dueDate = new Date(param.due);
-        return (param.state === 2 || param.state === 3) && dueDate < startOfDay;
-      });
-
-      if (filterDataUpdateScore.length > 0) {
-        for (let i = 0; i < filterDataUpdateScore.length; i++) {
-          try {
-            if (!filterDataUpdateScore[i]?.update_score) {
-              await fetch(
-                `/api/v1/assistant/ts-fsrs-test/flash-card/${filterDataUpdateScore[i]?.id}`,
-                {
-                  method: "POST",
-                  body: JSON.stringify({
-                    ...filterDataUpdateScore[i],
-                    update_score: true,
-                  }),
-                }
-              );
-
-              const updateScrore = await fetch(
-                `/api/v1/users/${userId}/activitylog`,
-                {
-                  method: "POST",
-                  body: JSON.stringify({
-                    articleId: filterDataUpdateScore[i]?.articleId,
-                    activityType: ActivityType.SentenceFlashcards,
-                    activityStatus: ActivityStatus.Completed,
-                    xpEarned: UserXpEarned.Sentence_Flashcards,
-                    details: {
-                      ...filterDataUpdateScore[i],
-                      cefr_level: levelCalculation(
-                        UserXpEarned.Sentence_Flashcards
-                      ).cefrLevel,
-                    },
-                  }),
-                }
-              );
-
-              if (updateScrore?.status === 200) {
-                toast({
-                  title: t("toast.success"),
-                  imgSrc: true,
-                  description: tUpdateScore("yourXp", {
-                    xp: UserXpEarned.Sentence_Flashcards,
-                  }),
-                });
-                router.refresh();
-              }
-            }
-            setIsLoadingSentences(false);
-          } catch (error) {
-            console.error(`Failed to update data`);
-          }
-        }
-      }
+      setIsLoadingSentences(false);
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching sentences:", error);
+      toast({
+        title: "Something went wrong.",
+        description: "Your sentences were not saved. Please try again.",
+        variant: "destructive",
+      });
     }
   };
-
-  useEffect(() => {
-    getUserSentenceSaved();
-  }, [currentCardIndex]);
-
-  const cards = sentences.map((sentence, index) => {
-    return {
-      id: index,
-      frontHTML: (
-        <div className="flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground">
-          {sentence.sentence}
-        </div>
-      ),
-      backHTML: (
-        <div className="flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground">
-          {sentence.translation.th}
-        </div>
-      ),
-    };
-  });
 
   const handleDelete = async (id: string) => {
     try {
       setLoading(true);
-      // loop for delete all sentences
       const res = await fetch(`/api/v1/users/sentences/${id}`, {
         method: "DELETE",
         body: JSON.stringify({
@@ -196,9 +134,7 @@ export default function LessonSentenseFlashCard({
       const resData = await res.json();
 
       if (resData.status === 200) {
-        const newSentences = sentences.filter(
-          (sentences) => sentences.id !== id
-        );
+        const newSentences = sentences.filter((sentence) => sentence.id !== id);
         setSentences(newSentences);
         setLoading(false);
         toast({
@@ -224,100 +160,173 @@ export default function LessonSentenseFlashCard({
     }
   };
 
+  const handleCardCompletion = async () => {
+    if (currentCardIndex === sentences.length - 1) {
+      console.log("Last card completed. Awarding XP...");
+      try {
+        const res = await fetch(`/api/v1/users/${userId}/activitylog`, {
+          method: "POST",
+          body: JSON.stringify({
+            articleId: articleId,
+            activityType: ActivityType.SentenceFlashcards,
+            activityStatus: ActivityStatus.Completed,
+            xpEarned: UserXpEarned.Sentence_Flashcards,
+            details: {
+              completedCards: sentences.length,
+              cefr_level: levelCalculation(UserXpEarned.Sentence_Flashcards)
+                .cefrLevel,
+            },
+          }),
+        });
+
+        if (res.status === 200) {
+          toast({
+            title: t("toast.success"),
+            description: tUpdateScore("yourXp", {
+              xp: UserXpEarned.Sentence_Flashcards,
+            }),
+          });
+          router.refresh();
+        } else {
+          console.error("Failed to award XP.");
+        }
+      } catch (error) {
+        console.error("Error awarding XP:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    getUserSentenceSaved();
+  }, []);
+
+  const cards = sentences.map((sentence, index) => {
+    return {
+      id: index,
+      frontHTML: (
+        <div className="flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground">
+          {sentence.sentence}
+        </div>
+      ),
+      backHTML: (
+        <div className="flex p-4 text-2xl font-bold text-center justify-center items-center h-full dark:bg-accent dark:rounded-lg dark:text-muted-foreground">
+          {sentence.translation.th}
+        </div>
+      ),
+    };
+  });
+
   return (
-    <>
-      <div className="flex xl:h-[500px] flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
-        {(sentences.length === 0 && !isLoadingSentences) || !showButton ? (
-          <div className="text-center h-full flex flex-col items-center justify-center mt-4">
-            <p className="text-lg font-medium text-green-500 dark:text-green-400">
-              {t("flashcardPractice.completedMessage")}
-            </p>
-            <div className="flex flex-wrap justify-center mt-10 ">
-              <Image
-                src={"/man-mage-light.svg"}
-                alt="winners"
-                width={250}
-                height={100}
-                className="animate__animated animate__jackInTheBox"
-              />
-            </div>
+    <div className="flex flex-col items-center justify-center space-y-2 mt-4">
+      {isLoadingSentences ? (
+        <div className="flex h-[300px] xl:h-[500px] flex-col w-full md:w-[725px] xl:w-[710px] space-x-4 space-y-20 mt-5">
+          <div className="h-40 bg-muted rounded-lg" />
+          <div className="flex justify-center">
+            <div className="w-24 h-6 bg-muted rounded" />
           </div>
-        ) : (
-          <>
-            <FlashcardArray
-              cards={cards}
-              controls={false}
-              showCount={false}
-              onCardChange={(index) => {
-                setCurrentCardIndex(index);
-              }}
-              forwardRef={controlRef}
-              currentCardFlipRef={currentCardFlipRef}
-            />
-            <div className="flex flex-row justify-center items-center">
-              <p className="mx-4 my-4 font-medium">
-                {currentCardIndex + 1} / {cards.length}
+          <div className="flex justify-center space-x-3">
+            <div className="w-10 h-10 bg-muted rounded-full" />
+            <div className="w-10 h-10 bg-muted rounded-full" />
+          </div>
+          <div className="w-full h-10 bg-muted rounded" />
+        </div>
+      ) : (
+        <div className="flex h-[300px] xl:h-[500px] flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+          {sentences.length === 0 || !showButton ? (
+            <div className="text-center h-full flex flex-col items-center justify-center mt-4">
+              <p className="text-lg font-medium text-green-500 dark:text-green-400">
+                {t("flashcardPractice.completedMessage")}
               </p>
+              <div className="flex flex-wrap justify-center mt-10">
+                <Image
+                  src="/man-mage-light.svg"
+                  alt="winners"
+                  width={250}
+                  height={100}
+                  className="animate__animated animate__jackInTheBox"
+                />
+              </div>
             </div>
-            {sentences.map((sentence, index) => {
-              if (index === currentCardIndex) {
-                return (
-                  <div
-                    className="flex flex-col justify-center items-center space-x-3 gap-2"
-                    key={uuidv4()}
-                  >
-                    <div className="flex space-x-3 justify-center items-center">
-                      {sentence.audioUrl && (
-                        <AudioButton
-                          key={sentence.id}
-                          audioUrl={
-                            sentence.audioUrl
-                              ? sentence.audioUrl
-                              : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${sentence.articleId}.mp3`
-                          }
-                          startTimestamp={sentence.timepoint}
-                          endTimestamp={sentence.endTimepoint}
-                        />
-                      )}
+          ) : (
+            <>
+              <FlashcardArray
+                cards={cards}
+                controls={false}
+                showCount={false}
+                onCardChange={(index) => {
+                  setCurrentCardIndex(index);
+                  if (index === sentences.length - 1) {
+                    handleCardCompletion();
+                  }
+                }}
+                forwardRef={controlRef}
+                currentCardFlipRef={currentCardFlipRef}
+              />
+              <div className="flex flex-row justify-center items-center">
+                <p className="mx-4 my-4 font-medium">
+                  {currentCardIndex + 1} / {cards.length}
+                </p>
+              </div>
+              {sentences[currentCardIndex] && (
+                <div className="flex flex-col justify-center items-center space-x-3 gap-2">
+                  <div className="flex space-x-3 justify-center items-center">
+                    {sentences[currentCardIndex].audioUrl && showButton && (
+                      <AudioButton
+                        audioUrl={
+                          sentences[currentCardIndex].audioUrl ||
+                          `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${sentences[currentCardIndex].articleId}.mp3`
+                        }
+                        startTimestamp={sentences[currentCardIndex]?.timepoint}
+                        endTimestamp={sentences[currentCardIndex]?.endTimepoint}
+                      />
+                    )}
+                    {showButton && (
                       <FlipCardPracticeButton
                         currentCard={() => currentCardFlipRef.current()}
                       />
-                    </div>
-                    {sentences.length != 0 && (
-                      <div className="flex flex-col gap-2 justify-center items-center">
-                        <FlashCardPracticeButton
-                          index={currentCardIndex}
-                          nextCard={() => controlRef.current.nextCard()}
-                          sentences={sentences}
-                          showButton={showButton}
-                          setShowButton={setShowButton}
-                        />
-                        <div>
-                          {loading ? (
-                            <Button className="ml-auto font-medium" disabled>
-                              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                              {t("neverPracticeButton")}
-                            </Button>
-                          ) : (
-                            <Button
-                              className="ml-auto font-medium"
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDelete(sentence.id)}
-                            >
-                              {t("neverPracticeButton")}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
                     )}
                   </div>
-                );
-              }
-            })}
-          </>
-        )}
-      </div>
-    </>
+                  <div className="flex flex-col gap-2 justify-center items-center">
+                    {showButton && (
+                      <FlashCardPracticeButton
+                        index={currentCardIndex}
+                        nextCard={() => {
+                          controlRef.current.nextCard();
+                          handleCardCompletion();
+                        }}
+                        sentences={sentences}
+                        showButton={showButton}
+                        setShowButton={setShowButton}
+                      />
+                    )}
+                    <div>
+                      <Button
+                        className="ml-auto font-medium"
+                        size="sm"
+                        variant={loading ? "default" : "destructive"}
+                        onClick={() =>
+                          !loading &&
+                          handleDelete(sentences[currentCardIndex]?.id)
+                        }
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                            {t("neverPracticeButton")}
+                          </>
+                        ) : (
+                          t("neverPracticeButton")
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

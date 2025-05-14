@@ -442,6 +442,7 @@ export default function LessonClozeTest({ userId, articleId }: Props) {
               {
                 method: "POST",
                 body: JSON.stringify({
+                  artileId: articleId,
                   activityType: ActivityType.SentenceClozeTest,
                   activityStatus: ActivityStatus.Completed,
                   xpEarned: UserXpEarned.Sentence_Cloze_Test,

@@ -151,6 +151,7 @@ export default function LessonOrderWords({ userId, articleId }: Props) {
           {
             method: "POST",
             body: JSON.stringify({
+              articleId: articleId,
               activityType: ActivityType.SentenceWordOrdering,
               activityStatus: ActivityStatus.Completed,
               xpEarned: UserXpEarned.Sentence_Word_Ordering,

@@ -154,6 +154,7 @@ export default function LessonVocabularyFlashCard({
                 {
                   method: "POST",
                   body: JSON.stringify({
+                    articleId: articleId,
                     activityType: ActivityType.VocabularyFlashcards,
                     activityStatus: ActivityStatus.Completed,
                     xpEarned: UserXpEarned.Vocabulary_Flashcards,

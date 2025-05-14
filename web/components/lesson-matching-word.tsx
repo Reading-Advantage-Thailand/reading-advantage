@@ -82,6 +82,7 @@ export default function LessonMatching({ userId, articleId }: Props) {
             {
               method: "POST",
               body: JSON.stringify({
+                articleId: articleId,
                 activityType: ActivityType.SentenceMatching,
                 activityStatus: ActivityStatus.Completed,
                 xpEarned: UserXpEarned.Sentence_Matching,
@@ -274,8 +275,7 @@ export default function LessonMatching({ userId, articleId }: Props) {
             )}
           </>
         )}
-        {correctMatches.length === 10 ||
-          (isCompleted && (
+        {isCompleted && (
             <div className="flex flex-wrap justify-center mt-10 xl:h-[400px] w-full md:w-[725px] xl:w-[760px] space-y-6">
               <Image
                 src={"/winners.svg"}
@@ -285,7 +285,7 @@ export default function LessonMatching({ userId, articleId }: Props) {
                 className="animate__animated animate__jackInTheBox"
               />
             </div>
-          ))}
+          )}
       </div>
     </>
   );
