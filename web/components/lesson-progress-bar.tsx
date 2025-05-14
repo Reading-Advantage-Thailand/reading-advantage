@@ -482,7 +482,10 @@ export default function VerticalProgress({
               <span className="font-bold">{t("phase13Description")}</span>
             </div>
             <CardDescription className="px-6">
-              <LessonLanguageQuestion article={article} />
+              <LessonLanguageQuestion
+                article={article}
+                skipPhase={() => setCurrentPhase((prev) => prev + 1)}
+              />
             </CardDescription>
           </Card>
         )}
@@ -496,15 +499,11 @@ export default function VerticalProgress({
                 <div className="ml-2">{t("phase14Title")}</div>
               </CardTitle>
             </CardHeader>
-            <div className="px-6">
-              <span className="font-bold">{t("phase14Description")}</span>
-            </div>
             <CardDescription className="px-6">
               <LessonSummary
-                wordsSaved={5}
-                sentencesSaved={5}
                 quizPerformance={"string"}
-                xpEarned={5}
+                articleId={articleId}
+                userId={userId}
               />
             </CardDescription>
           </Card>

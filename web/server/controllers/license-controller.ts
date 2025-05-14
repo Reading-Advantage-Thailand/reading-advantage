@@ -14,6 +14,12 @@ interface RequestContext {
   };
 }
 
+export interface Context {
+  params: {
+    userId: string;
+  };
+}
+
 export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
   const {
     total_licenses,
@@ -343,7 +349,10 @@ export const getXp30days = async (request: NextRequest) => {
     let querySnapshot;
 
     if (license_id) {
-      querySnapshot = await db.collection("xp-gained-log").where("license_id", "==", license_id).get();
+      querySnapshot = await db
+        .collection("xp-gained-log")
+        .where("license_id", "==", license_id)
+        .get();
     } else {
       querySnapshot = await db.collection("xp-gained-log").get();
     }
@@ -357,14 +366,61 @@ export const getXp30days = async (request: NextRequest) => {
 
     //console.log(`Total XP Retrieved: ${totalXp}`);
 
-    return NextResponse.json({ 
-      success: true, 
-      license_id: license_id || "all", 
-      total_xp: totalXp 
+    return NextResponse.json({
+      success: true,
+      license_id: license_id || "all",
+      total_xp: totalXp,
     });
-
   } catch (error) {
     console.error("Error fetching XP logs:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+};
+
+export const getLessonXp = async (
+  req: NextRequest,
+  { params: { userId } }: Context
+) => {
+  const articleId = req.nextUrl.searchParams.get("articleId");
+
+  try {
+    const subcollections = [
+      "mc-question-activity-log",
+      "sa-question-activity-log",
+      "sentence-cloze-test-activity-log",
+      "sentence-flashcards-activity-log",
+      "sentence-matching-activity-log",
+      "sentence-ordering-activity-log",
+      "sentence-word-ordering-activity-log",
+      "vocabulary-flashcards-activity-log",
+      "vocabulary-matching-activity-log",
+    ];
+
+    let totalXp = 0;
+
+    for (const sub of subcollections) {
+      const snapshot = await db
+        .collection("user-activity-log")
+        .doc(userId)
+        .collection(sub)
+        .where("articleId", "==", articleId)
+        .get();
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        totalXp += data?.xpEarned ?? 0;
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      total_xp: totalXp,
+    });
+  } catch (error) {
+    console.error("Error fetching lesson XP:", error);
     return NextResponse.json(
       { success: false, error: "Internal Server Error" },
       { status: 500 }

@@ -222,6 +222,7 @@ export default function LessonOrderSentences({ userId, articleId }: Props) {
           {
             method: "POST",
             body: JSON.stringify({
+              articleId: articleId,
               activityType: ActivityType.SentenceOrdering,
               activityStatus: ActivityStatus.Completed,
               xpEarned: UserXpEarned.Sentence_Ordering,
