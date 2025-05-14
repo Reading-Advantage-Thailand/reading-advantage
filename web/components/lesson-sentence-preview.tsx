@@ -45,6 +45,7 @@ type Props = {
   className?: string;
   phase: "phase3" | "phase5" | "phase6";
   targetLanguage: "en" | "th" | "cn" | "tw" | "vi";
+  onCompleteChange: (complete: boolean) => void;
 };
 
 type Sentence = {
@@ -395,7 +396,7 @@ export default function LessonSentensePreview({
       //if translate, set isTranslate to false
       setIsTranslateClicked(!isTranslateClicked);
     }
-  };
+  }; 
 
   useEffect(() => {
     const audio = audioRef.current;

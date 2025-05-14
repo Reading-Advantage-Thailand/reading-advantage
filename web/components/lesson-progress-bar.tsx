@@ -10,13 +10,9 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
-import Image from "next/image";
-import { Badge } from "./ui/badge";
-import { ArticleSummary } from "./article-summary";
-import CollapsibleNotice from "./lesson-collapsible-notice";
 import LessonWordList from "./lesson-vocabulary-preview";
 import { Article } from "./models/article-model";
-import { Book } from "lucide-react";
+import { Book, Timer } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 import LessonSentensePreview from "./lesson-sentence-preview";
 import { useCurrentLocale } from "@/locales/client";
@@ -32,6 +28,7 @@ import LessonOrderWords from "./lesson-order-word";
 import LessonMatching from "./lesson-matching-word";
 import LessonLanguageQuestion from "./lesson-language-question";
 import LessonSummary from "./lesson-summary";
+import LessonIntroduction from "./lesson-introduction";
 
 export default function VerticalProgress({
   article,
@@ -47,14 +44,98 @@ export default function VerticalProgress({
   const [isExpanded, setIsExpanded] = useState(false);
   const [maxHeight, setMaxHeight] = useState("0px");
   const contentRef = useRef<HTMLDivElement>(null);
-  const [currentPhase, setCurrentPhase] = useState(1);
+  const [currentPhase, setCurrentPhase] = useState(3);
   const t = useScopedI18n("pages.student.lessonPage");
-  const tc = useScopedI18n("components.articleCard");
   const tb = useScopedI18n("pages.student.practicePage");
   const locale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
   const [showVocabularyButton, setShowVocabularyButton] = useState(true);
   const [showSentenseButton, setShowSentenseButton] = useState(true);
   const [sentenceActivity, setSentenceActivity] = useState("none");
+  const [elapsedTime, setElapsedTime] = useState(0); // Time in seconds
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [phaseCompletion, setPhaseCompletion] = useState<boolean[]>(
+    Array(phases.length).fill(false)
+  );
+  const [shakeButton, setShakeButton] = useState(false);
+
+  /*useEffect(() => {
+    const fetchCurrentPhase = async () => {
+      try {
+        setPhaseLoading(true)
+        const response = await fetch(
+          `/api/v1/lesson/${userId}?articleId=${articleId}`
+        );
+        const phase = await response.json();
+        setCurrentPhase(phase.currentPhase);
+        setElapsedTime(phase.elapsedTime);
+      } catch (error) {
+        console.error("Error fetching current phase:", error);
+      } finally{
+        setPhaseLoading(false)
+      }
+    };
+
+    fetchCurrentPhase();
+  }, [userId, articleId]);*/
+
+  const updatePhaseCompletion = (phaseIndex: number, isComplete: boolean) => {
+    setPhaseCompletion((prev) => {
+      const updated = [...prev];
+      updated[phaseIndex] = isComplete;
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    if (currentPhase >= 2 && currentPhase < 14) {
+      // Start timer if within Phase 2 to 13
+      if (!timerRef.current) {
+        timerRef.current = setInterval(() => {
+          setElapsedTime((prev) => prev + 1);
+        }, 1000);
+      }
+    } else {
+      // Stop timer if outside Phase 2 to 13 or at Phase 14
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      // Cleanup timer when component unmounts or phase changes
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [currentPhase]);
+
+  const startLesson = async () => {
+    setCurrentPhase(currentPhase + 1);
+    await fetch(`/api/v1/lesson/${userId}?articleId=${articleId}`, {
+      method: "POST",
+    });
+  };
+
+  const nextPhase = async (Phase: number, elapsedTime: number) => {
+    if (!phaseCompletion[Phase - 1]) {
+      // Trigger shake effect
+      setShakeButton(true);
+      setTimeout(() => setShakeButton(false), 500); // reset after 500ms
+      return;
+    }
+
+    setCurrentPhase(Phase + 1);
+    await fetch(`/api/v1/lesson/${userId}?articleId=${articleId}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        phase: Phase,
+        status: 2,
+        elapsedTime: elapsedTime,
+      }),
+    });
+  };
 
   useEffect(() => {
     if (contentRef.current) {
@@ -67,38 +148,12 @@ export default function VerticalProgress({
       <div className=" mt-6">
         {/*Phase 1 Introduction */}
         {currentPhase === 1 && (
-          <Card className="pb-6">
-            <CardHeader className="pb-6">
-              <CardTitle className="flex items-center">
-                <Book />
-                <div className="ml-2">{t("phase1Title")}</div>
-              </CardTitle>
-              <div>
-                <span className="font-bold">
-                  {t("phase1Description", { topic: article.title })}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <Badge>{tc("raLevel", { raLevel: article.ra_level })}</Badge>
-                <Badge>
-                  {tc("cefrLevel", { cefrLevel: article.cefr_level })}
-                </Badge>
-              </div>
-              <CardDescription>
-                <ArticleSummary article={article} articleId={articleId} />
-              </CardDescription>
-              <div className="flex justify-center h-[350px] overflow-hidden">
-                <Image
-                  src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${articleId}.png`}
-                  alt="Malcolm X"
-                  width={840}
-                  height={250}
-                  className="object-cover"
-                />
-              </div>
-            </CardHeader>
-            <CollapsibleNotice />
-          </Card>
+          <LessonIntroduction
+            article={article}
+            articleId={articleId}
+            userId={userId}
+            onCompleteChange={(complete) => updatePhaseCompletion(0, complete)}
+          />
         )}
 
         {/* Phase 2 Vocabulary Preview */}
@@ -107,6 +162,7 @@ export default function VerticalProgress({
             article={article}
             articleId={articleId}
             userId={userId}
+            onCompleteChange={(complete) => updatePhaseCompletion(1, complete)}
           />
         )}
 
@@ -129,6 +185,7 @@ export default function VerticalProgress({
                 userId={userId}
                 targetLanguage={locale}
                 phase="phase3"
+                onCompleteChange={(complete) => updatePhaseCompletion(2, complete)}
               />
             </CardDescription>
           </Card>
@@ -162,6 +219,7 @@ export default function VerticalProgress({
                 userId={userId}
                 targetLanguage={locale}
                 phase="phase5"
+                onCompleteChange={(complete) => updatePhaseCompletion(2, complete)}
               />
             </CardDescription>
           </Card>
@@ -186,6 +244,7 @@ export default function VerticalProgress({
                 userId={userId}
                 targetLanguage={locale}
                 phase="phase6"
+                onCompleteChange={(complete) => updatePhaseCompletion(2, complete)}
               />
             </CardDescription>
           </Card>
@@ -504,6 +563,9 @@ export default function VerticalProgress({
                 quizPerformance={"string"}
                 articleId={articleId}
                 userId={userId}
+                elapsedTime={` ${Math.floor(elapsedTime / 60)}m ${
+                  elapsedTime % 60
+                }s`}
               />
             </CardDescription>
           </Card>
@@ -516,6 +578,9 @@ export default function VerticalProgress({
           {/* Mobile view */}
           <div className="lg:hidden">
             <div className="flex justify-between items-center mb-2">
+              <p className="text-xs">{` ${Math.floor(elapsedTime / 60)}m ${
+                elapsedTime % 60
+              }s`}</p>
               <span className="font-semibold text-blue-700">
                 Phase {currentPhase}: {phases[currentPhase - 1]}
               </span>
@@ -576,7 +641,15 @@ export default function VerticalProgress({
           </div>
 
           {/* Desktop view */}
-          <div className="hidden lg:flex flex-col space-y-4 font-bold items-start max-w-[300px] min-w-[300px]">
+          <div className="hidden lg:flex flex-col space-y-4 font-bold items-start max-w-[300px] min-w-[300px] relative">
+            {currentPhase >= 2 && currentPhase < 14 && (
+              <div className="absolute top-0 right-0 text-center font-bold text-blue-700">
+                <span className="flex flex-row gap-3">
+                  <Timer />
+                  {` ${Math.floor(elapsedTime / 60)}m ${elapsedTime % 60}s`}
+                </span>
+              </div>
+            )}
             {phases.map((phase, index) => {
               const isActive = index + 1 === currentPhase;
               const isCompleted = index + 1 < currentPhase;
@@ -585,14 +658,10 @@ export default function VerticalProgress({
                 <div key={index} className="flex items-center space-x-2">
                   <div
                     className={`w-4 h-4 rounded-full border-2 
-                    ${isActive ? "bg-blue-500 border-blue-500" : ""}
-                    ${isCompleted ? "bg-green-500 border-green-500" : ""}
-                    ${
-                      !isActive && !isCompleted
-                        ? "bg-white border-gray-300"
-                        : ""
-                    }
-                  `}
+                ${isActive ? "bg-blue-500 border-blue-500" : ""}
+                ${isCompleted ? "bg-green-500 border-green-500" : ""}
+                ${!isActive && !isCompleted ? "bg-white border-gray-300" : ""}
+                `}
                   />
                   <span
                     className={`text-sm ${
@@ -612,10 +681,7 @@ export default function VerticalProgress({
         </Card>
         {currentPhase === 1 && (
           <div className="mt-4">
-            <Button
-              className="w-full"
-              onClick={() => setCurrentPhase(currentPhase + 1)}
-            >
+            <Button className="w-full" onClick={startLesson}>
               {t("startLesson")}
             </Button>
           </div>
@@ -624,21 +690,13 @@ export default function VerticalProgress({
         {currentPhase < phases.length && currentPhase > 1 && (
           <div className="mt-4">
             <Button
-              className="w-full"
-              onClick={() => setCurrentPhase(currentPhase + 1)}
+              className={`w-full transition duration-300 ${
+                shakeButton ? "animate-shake" : ""
+              }`}
+              onClick={() => nextPhase(currentPhase, elapsedTime)}
+              
             >
               {t("nextPhase")}
-            </Button>
-          </div>
-        )}
-
-        {currentPhase <= phases.length && currentPhase > 1 && (
-          <div className="mt-4">
-            <Button
-              className="w-full"
-              onClick={() => setCurrentPhase(currentPhase - 1)}
-            >
-              {t("previousPhase")}
             </Button>
           </div>
         )}
