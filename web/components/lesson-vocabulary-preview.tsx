@@ -15,6 +15,7 @@ interface Props {
   article: Article;
   articleId: string;
   userId: string;
+  onCompleteChange: (complete: boolean) => void;
 }
 
 interface WordList {
@@ -32,13 +33,22 @@ interface WordList {
   audioUrl: string;
 }
 
-export default function LessonWordList({ article, articleId, userId }: Props) {
+export default function LessonWordList({
+  article,
+  articleId,
+  userId,
+  onCompleteChange,
+}: Props) {
   const t = useScopedI18n("pages.student.lessonPage");
   const [loading, setLoading] = useState<boolean>(false);
   const [wordList, setWordList] = useState<WordList[]>([]);
 
   // Get the current locale
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
+
+  useEffect(() => {
+    onCompleteChange(true);
+  }, []);
 
   useEffect(() => {
     const fetchWordList = async () => {

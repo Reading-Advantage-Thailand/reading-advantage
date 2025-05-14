@@ -8,6 +8,7 @@ interface LessonSummaryProps {
   quizPerformance: string;
   articleId: string;
   userId: string;
+  elapsedTime: string;
 }
 
 interface WordList {
@@ -29,6 +30,7 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
   quizPerformance,
   articleId,
   userId,
+  elapsedTime,
 }) => {
   const [loading, setLoading] = useState(false);
   const [wordList, setWordList] = useState<WordList[]>([]);
@@ -169,7 +171,7 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
               <strong className="text-orange-500 dark:text-orange-300">
                 ⏱️ Time Taken:
               </strong>{" "}
-              Time Taken Placeholder
+              {elapsedTime}
             </li>
             <li>
               <strong className="text-yellow-500 dark:text-yellow-300">
