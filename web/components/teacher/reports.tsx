@@ -103,14 +103,15 @@ export default function Reports() {
 
   const calculateAverageLevel = (data: any) => {
     if (!data || !Array.isArray(data) || data.length === 0) {
-      return 0; // Handle case where data is invalid or empty
+      return 0;
     }
     let sum = 0;
     let count = 0;
 
-    data?.forEach((student: any) => {
-      if (student?.level !== undefined && student?.level !== null) {
-        sum += student.level;
+    data.forEach((student: any) => {
+      const level = Number(student.level);
+      if (!isNaN(level)) {
+        sum += level;
         count++;
       }
     });
