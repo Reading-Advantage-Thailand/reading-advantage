@@ -1,4 +1,4 @@
-import LessonCard from "@/components/lesson-card";
+import LessonCard from "@/components/lesson/lesson-card";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import React from "react";

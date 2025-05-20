@@ -10,10 +10,10 @@ import {
 import { Book } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
-import { Badge } from "./ui/badge";
+import { Badge } from "../ui/badge";
 import Image from "next/image";
 import CollapsibleNotice from "./lesson-collapsible-notice";
-import { ArticleSummary } from "./article-summary";
+import { ArticleSummary } from "../article-summary";
 import { useEffect } from "react";
 
 interface Props {

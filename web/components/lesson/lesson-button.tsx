@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { Article } from "@/components/models/article-model";
 import { useScopedI18n } from "@/locales/client";
 import Link from "next/link";
-import { ActivityType, ActivityStatus } from "./models/user-activity-log-model";
+import { ActivityType, ActivityStatus } from "../models/user-activity-log-model";
 
 type Props = {
   article: Article;

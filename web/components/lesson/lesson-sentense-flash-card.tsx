@@ -10,22 +10,22 @@ import { date_scheduler, State } from "ts-fsrs";
 import { filter } from "lodash";
 import { useRouter } from "next/navigation";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import { Button } from "./ui/button";
-import { toast } from "./ui/use-toast";
+import { Button } from "../ui/button";
+import { toast } from "../ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
 import {
   UserXpEarned,
   ActivityStatus,
   ActivityType,
-} from "./models/user-activity-log-model";
+} from "../models/user-activity-log-model";
 import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
 import Image from "next/image";
-import AudioButton from "./audio-button";
-import FlipCardPracticeButton from "./flip-card-button";
-import FlashCardPracticeButton from "./flash-card-practice-button";
+import AudioButton from "../audio-button";
+import FlipCardPracticeButton from "../flip-card-button";
+import FlashCardPracticeButton from "../flash-card-practice-button";
 
 type Props = {
   userId: string;

@@ -11,17 +11,17 @@ import Image from "next/image";
 import styled from "@emotion/styled";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import "animate.css";
-import { Header } from "./header";
-import { Button } from "./ui/button";
-import { toast } from "./ui/use-toast";
-import { Skeleton } from "./ui/skeleton";
-import { Sentence } from "./dnd/types";
-import AudioButton from "./audio-button";
+import { Header } from "../header";
+import { Button } from "../ui/button";
+import { toast } from "../ui/use-toast";
+import { Skeleton } from "../ui/skeleton";
+import { Sentence } from "../dnd/types";
+import AudioButton from "../audio-button";
 import {
   UserXpEarned,
   ActivityStatus,
   ActivityType,
-} from "./models/user-activity-log-model";
+} from "../models/user-activity-log-model";
 import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);

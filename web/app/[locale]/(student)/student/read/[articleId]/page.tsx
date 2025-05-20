@@ -14,7 +14,7 @@ import LAQuestionCard from "@/components/questions/laq-question-card";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
 import PrintArticle from "@/components/teacher/print-article";
-import ArticleLesson from "@/components/lesson-button";
+import ArticleLesson from "@/components/lesson/lesson-button";
 
 export const metadata = {
   title: "Article",

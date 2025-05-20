@@ -10,7 +10,7 @@ import {
   UserXpEarned,
   ActivityStatus,
   ActivityType,
-} from "./models/user-activity-log-model";
+} from "../models/user-activity-log-model";
 import { Word } from "./lesson-vocabulary-flash-card";
 
 interface Props {

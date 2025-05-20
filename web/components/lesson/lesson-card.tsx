@@ -1,11 +1,11 @@
 import React from "react";
 
 import { getScopedI18n } from "@/locales/server";
-import { Article } from "./models/article-model";
+import { Article } from "../models/article-model";
 import { TimerProvider } from "@/contexts/timer-context";
 import VerticalProgress from "./lesson-progress-bar";
 
-import { Header } from "./header";
+import { Header } from "../header";
 
 type Props = {
   article: Article;

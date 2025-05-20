@@ -9,16 +9,16 @@ import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { useScopedI18n } from "@/locales/client";
 import "animate.css";
 import Image from "next/image";
-import { Header } from "./header";
-import { toast } from "./ui/use-toast";
-import { Skeleton } from "./ui/skeleton";
-import { Sentence } from "./dnd/types";
-import AudioButton from "./audio-button";
+import { Header } from "../header";
+import { toast } from "../ui/use-toast";
+import { Skeleton } from "../ui/skeleton";
+import { Sentence } from "../dnd/types";
+import AudioButton from "../audio-button";
 import {
   UserXpEarned,
   ActivityStatus,
   ActivityType,
-} from "./models/user-activity-log-model";
+} from "../models/user-activity-log-model";
 import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);

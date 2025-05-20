@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { Sentence } from "./lesson-sentense-flash-card";
 import { useScopedI18n } from "@/locales/client";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 
 interface LessonSummaryProps {

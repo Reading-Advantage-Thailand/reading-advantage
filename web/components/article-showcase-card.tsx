@@ -69,55 +69,59 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
         ref={ref}
       >
         {/* ปุ่ม ▶ + Dropdown Menu พร้อม Animation */}
-        <div
-          className={`group absolute top-2 right-2 z-10 transition-transform duration-300 ${
-            article.is_read ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-          }`}
-        >
+        {!article.is_read && (
           <div
-            className={`text-[30px] text-white rounded transition-transform duration-300 ${
-              playToggle ? "rotate-180" : "rotate-0"
-            }`}
-            onClick={() => setPlayToggle(!playToggle)}
-          >
-            {playToggle ? "❌" : "▶"}
-          </div>
-          <div
-            className={`absolute top-full mt-2 right-0 w-max flex flex-col rounded text-sm z-20 transition-transform duration-300 gap-5 ${
-              playToggle ? "translate-x-0" : "translate-x-full"
+            className={`group absolute top-2 right-2 z-10 transition-transform duration-300 ${
+              article.is_read
+                ? "opacity-50 cursor-not-allowed"
+                : "cursor-pointer"
             }`}
           >
-            {playToggle && (
-              <div className="flex flex-col gap-2 p-2">
-                <Link
-                  href={`/student/lesson/${article.id}`}
-                  onClick={() =>
-                    fetch(`/api/v1/users/${userId}/activitylog`, {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        articleId: article.id,
-                        activityType: ActivityType.LessonRead,
-                        activityStatus: ActivityStatus.InProgress,
-                        details: {
-                          title: article.title,
-                          level: article.ra_level,
-                          cefr_level: article.cefr_level,
-                          type: article.type,
-                          genre: article.genre,
-                          subgenre: article.subgenre,
-                        },
-                      }),
-                    })
-                  }
-                  className="hover:bg-red-600 bg-red-800 text-[12px] font-semibold p-1 rounded-md"
-                >
-                  ▶ Study as 45-min Lesson
-                </Link>
-              </div>
-            )}
+            <div
+              className={`text-[30px] text-white rounded transition-transform duration-300 ${
+                playToggle ? "rotate-180" : "rotate-0"
+              }`}
+              onClick={() => setPlayToggle(!playToggle)}
+            >
+              {playToggle ? "❌" : "▶"}
+            </div>
+            <div
+              className={`absolute top-full mt-2 right-0 w-max flex flex-col rounded text-sm z-20 transition-transform duration-300 gap-5 ${
+                playToggle ? "translate-x-0" : "translate-x-full"
+              }`}
+            >
+              {playToggle && (
+                <div className="flex flex-col gap-2 p-2">
+                  <Link
+                    href={`/student/lesson/${article.id}`}
+                    onClick={() =>
+                      fetch(`/api/v1/users/${userId}/activitylog`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          articleId: article.id,
+                          activityType: ActivityType.LessonRead,
+                          activityStatus: ActivityStatus.InProgress,
+                          details: {
+                            title: article.title,
+                            level: article.ra_level,
+                            cefr_level: article.cefr_level,
+                            type: article.type,
+                            genre: article.genre,
+                            subgenre: article.subgenre,
+                          },
+                        }),
+                      })
+                    }
+                    className="hover:bg-red-600 bg-red-800 text-[12px] font-semibold p-1 rounded-md"
+                  >
+                    ▶ Study as 45-min Lesson
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <Link
           href={`/student/read/${article.id}`}
           onClick={() =>

@@ -11,19 +11,19 @@ import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import Image from "next/image";
 import "animate.css";
 import { useScopedI18n } from "@/locales/client";
-import { Header } from "./header";
-import { Button } from "./ui/button";
-import { toast } from "./ui/use-toast";
-import { Skeleton } from "./ui/skeleton";
-import { Sentence } from "./dnd/types";
-import QuoteList from "./dnd/quote-list";
-import { Icons } from "./icons";
+import { Header } from "../header";
+import { Button } from "../ui/button";
+import { toast } from "../ui/use-toast";
+import { Skeleton } from "../ui/skeleton";
+import { Sentence } from "../dnd/types";
+import QuoteList from "../dnd/quote-list";
+import { Icons } from "../icons";
 import { levelCalculation, splitTextIntoSentences } from "@/lib/utils";
 import {
   UserXpEarned,
   ActivityStatus,
   ActivityType,
-} from "./models/user-activity-log-model";
+} from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);

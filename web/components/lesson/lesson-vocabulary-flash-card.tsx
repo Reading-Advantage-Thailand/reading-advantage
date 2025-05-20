@@ -11,19 +11,19 @@ import { date_scheduler, State } from "ts-fsrs";
 import { filter, method } from "lodash";
 import { useRouter } from "next/navigation";
 import { ReloadIcon } from "@radix-ui/react-icons";
-import { Button } from "./ui/button";
-import { Header } from "./header";
-import { toast } from "./ui/use-toast";
+import { Button } from "../ui/button";
+import { Header } from "../header";
+import { toast } from "../ui/use-toast";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import { AUDIO_WORDS_URL } from "@/server/constants";
 import LessonFlashCardVocabularyPracticeButton from "./lesson-vocabulary-flash-card-button";
-import FlipCardPracticeButton from "./flip-card-button";
+import FlipCardPracticeButton from "../flip-card-button";
 import {
   UserXpEarned,
   ActivityStatus,
   ActivityType,
-} from "./models/user-activity-log-model";
-import AudioButton from "./audio-button";
+} from "../models/user-activity-log-model";
+import AudioButton from "../audio-button";
 import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
