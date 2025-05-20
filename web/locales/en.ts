@@ -259,6 +259,7 @@ export default {
         nextPhase: "Next Phase",
         previousPhase: "Previous Phase",
         saveButton: "Save",
+        readPageButton: "Back to Home",
         phase1Title: "Introduction",
         phase1Description:
           "In this lesson, you will read an article about {topic}",
@@ -319,6 +320,29 @@ export default {
           "For language learners: This lesson is designed to take approximately 30 to 45 minutes to complete.",
         collapsibleNoticeDescription:
           "Each phase within the lesson includes a built-in timer that tracks how much time is spent on different activities. This timing data will be used for learning analytics and may contribute to your overall performance score. The time tracking also helps us better understand how students interact with different parts of the lesson and improve future learning experiences. Please try to work through the lesson at a steady pace for the most accurate results.",
+        congratulations: "Congratulations!",
+        summaryDescription:
+          "You’ve completed the lesson. Here’s what you achieved",
+        wordSaved: "Words Saved",
+        sentencesSaved: "Sentences Saved",
+        quizPerformance: "Quiz Performance",
+        mcqScore: "MAQ Score",
+        saqScore: "SAQ Score",
+        timeTaken: "Time Taken",
+        xpEarned: "XP Earned",
+        MCQ1point:
+          "You need to review the material and try again — don’t give up!",
+        MCQ2points: "Some progress, but there’s still room for improvement.",
+        MCQ3points:
+          "You’re getting there — keep practicing and refining your understanding.",
+        MCQ4points: "Great work! Just a small step away from full marks.",
+        MCQ5points: "Excellent! You’ve mastered this topic well.",
+        SAQ1point:
+          "Your answer needs more clarity and depth — try to be more specific.",
+        SAQ2points: "A good start, but key details are missing.",
+        SAQ3points: "Fair response — consider expanding your explanation.",
+        SAQ4points: "Strong answer with minor improvements needed.",
+        SAQ5points: "Excellent answer — clear, complete, and well-reasoned.",
       },
     },
     teacher: {

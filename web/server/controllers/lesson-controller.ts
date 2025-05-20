@@ -165,3 +165,61 @@ export async function putLessonPhaseStatus(
     );
   }
 }
+
+export async function getUserQuizPerformance(
+  req: NextRequest,
+  { params: { userId } }: Context
+) {
+  try {
+    const articleId = req.nextUrl.searchParams.get("articleId");
+
+    if (!articleId) {
+      throw new Error("articleId is required");
+    }
+
+    // Decode the articleId to handle any URL encoding
+    const decodedArticleId = decodeURIComponent(articleId);
+
+    // Remove any trailing "/quize-performance" if present
+    const cleanArticleId = decodedArticleId.split("/")[0];
+
+    const mcqData = await db
+      .collection("users")
+      .doc(userId)
+      .collection("article-records")
+      .doc(cleanArticleId)
+      .get();
+
+    const mcqQuizData = mcqData.data();
+    const mcqScore = mcqQuizData?.scores;
+
+    if (!mcqData) {
+      return NextResponse.json({ message: "No Data Exists" }, { status: 404 });
+    }
+
+    const saqData = await db
+      .collection("users")
+      .doc(userId)
+      .collection("article-records")
+      .doc(cleanArticleId)
+      .get();
+
+    const saqQuizData = saqData.data();
+    const saqScore = saqQuizData?.scores;
+
+    if (!saqData) {
+      return NextResponse.json({ message: "No Data Exists" }, { status: 404 });
+    }
+
+    return NextResponse.json({ mcqScore, saqScore });
+  } catch (error) {
+    console.error("Error getting documents", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
