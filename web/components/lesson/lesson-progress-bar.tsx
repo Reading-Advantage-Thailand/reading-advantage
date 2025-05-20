@@ -223,7 +223,7 @@ export default function VerticalProgress({
             />
           )}
 
-          {/* Phase 5 Sentence Collection */}
+          {/* Phase 5 Deep Reading */}
           {currentPhase === 5 && (
             <Card className="pb-6">
               <CardHeader>
@@ -250,7 +250,7 @@ export default function VerticalProgress({
             </Card>
           )}
 
-          {/* Phase 6 Deep Reading */}
+          {/* Phase 6 Sentence Collection */}
           {currentPhase === 6 && (
             <Card className="pb-6">
               <CardHeader>
@@ -279,7 +279,7 @@ export default function VerticalProgress({
 
           {/* Phase 7 Multiple-Choice Questions*/}
           {currentPhase === 7 && (
-            <Card className="pb-7 w-full">
+            <Card className="pb-7 xl:h-[550px] w-full md:w-[725px] xl:w-[750px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Book />
@@ -306,7 +306,7 @@ export default function VerticalProgress({
 
           {/* Phase 8 Short-Answer Questions*/}
           {currentPhase === 8 && (
-            <Card className="pb-7 w-full">
+            <Card className="pb-7 xl:h-[550px] w-full md:w-[725px] xl:w-[750px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Book />
@@ -359,7 +359,7 @@ export default function VerticalProgress({
 
           {/* Phase 10 Vocabulary Practice - Activity Choice*/}
           {currentPhase === 10 && (
-            <Card className="pb-7 w-full">
+            <Card className="pb-7 xl:h-[550px] w-full md:w-[725px] xl:w-[750px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Book />

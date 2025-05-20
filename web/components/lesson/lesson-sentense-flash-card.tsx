@@ -227,7 +227,7 @@ export default function LessonSentenseFlashCard({
   return (
     <div className="flex flex-col items-center justify-center space-y-2 mt-4">
       {isLoadingSentences ? (
-        <div className="flex h-[300px] xl:h-[500px] flex-col w-full md:w-[725px] xl:w-[710px] space-x-4 space-y-20 mt-5">
+        <div className="flex h-[490px] xl:h-[500px] flex-col w-full md:w-[725px] xl:w-[710px] space-x-4 space-y-20 mt-5">
           <div className="h-40 bg-muted rounded-lg" />
           <div className="flex justify-center">
             <div className="w-24 h-6 bg-muted rounded" />
@@ -239,7 +239,7 @@ export default function LessonSentenseFlashCard({
           <div className="w-full h-10 bg-muted rounded" />
         </div>
       ) : (
-        <div className="flex h-[300px] xl:h-[500px] flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+        <div className="flex h-[490px] xl:h-[500px] flex-col items-center w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
           {sentences.length === 0 || !showButton ? (
             <div className="text-center h-full flex flex-col items-center justify-center mt-4">
               <p className="text-lg font-medium text-green-500 dark:text-green-400">
