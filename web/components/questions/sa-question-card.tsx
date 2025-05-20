@@ -45,7 +45,7 @@ type Props = {
   articleTitle: string;
   articleLevel: number;
   page: "article" | "lesson";
-  onCompleteChange: (complete: boolean) => void;
+  onCompleteChange?: (complete: boolean) => void;
 };
 
 export type QuestionResponse = {
@@ -107,7 +107,7 @@ export default function SAQuestionCard({
 
   useEffect(() => {
     if (state === QuestionState.COMPLETED && page === "lesson") {
-      onCompleteChange(true);
+      onCompleteChange ? true : null;
     }
   }, [state, onCompleteChange, page]);
 

@@ -32,17 +32,19 @@ import LessonIntroduction from "./lesson-introduction";
 import { useTimer } from "@/contexts/timer-context";
 import { Skeleton } from "@mui/material";
 
-export default function VerticalProgress({
-  article,
-  articleId,
-  userId,
-  phases,
-}: {
-  phases: Array<string>;
+interface LessonProgressBar {
+  phases: string[];
   article: Article;
   articleId: string;
   userId: string;
-}) {
+}
+
+const LessonProgressBar: React.FC<LessonProgressBar> = ({
+  phases,
+  article,
+  articleId,
+  userId,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [maxHeight, setMaxHeight] = useState("0px");
   const contentRef = useRef<HTMLDivElement>(null);
@@ -81,7 +83,7 @@ export default function VerticalProgress({
     };
 
     fetchCurrentPhase();
-  }, [userId, articleId]);
+  }, [userId, articleId, setTimer]);
 
   const LessonTimer = React.memo(() => {
     const { elapsedTime } = useTimer();
@@ -94,6 +96,7 @@ export default function VerticalProgress({
       </div>
     );
   });
+  LessonTimer.displayName = "LessonTimer";
 
   const updatePhaseCompletion = (phaseIndex: number, isComplete: boolean) => {
     setPhaseCompletion((prev) => {
@@ -774,4 +777,7 @@ export default function VerticalProgress({
       </div>
     </div>
   );
-}
+};
+
+LessonProgressBar.displayName = "LessonProgressBar";
+export default LessonProgressBar;

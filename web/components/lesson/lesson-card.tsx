@@ -3,7 +3,7 @@ import React from "react";
 import { getScopedI18n } from "@/locales/server";
 import { Article } from "../models/article-model";
 import { TimerProvider } from "@/contexts/timer-context";
-import VerticalProgress from "./lesson-progress-bar";
+import LessonProgressBar from "./lesson-progress-bar";
 
 import { Header } from "../header";
 
@@ -45,7 +45,7 @@ export default async function LessonCard({
         </div>
         <div className="flex flex-col gap-4">
           <TimerProvider>
-            <VerticalProgress
+            <LessonProgressBar
               phases={phases}
               article={article}
               articleId={articleId}
