@@ -11,14 +11,14 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import LessonWordList from "./lesson-vocabulary-preview";
-import { Article } from "./models/article-model";
+import { Article } from "../models/article-model";
 import { Book, Timer } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 import LessonSentensePreview from "./lesson-sentence-preview";
 import { useCurrentLocale } from "@/locales/client";
 import LessonWordCollection from "./lesson-vocabulary-collection";
-import MCQuestionCard from "./questions/mc-question-card";
-import SAQuestionCard from "./questions/sa-question-card";
+import MCQuestionCard from "../questions/mc-question-card";
+import SAQuestionCard from "../questions/sa-question-card";
 import LessonVocabularyFlashCard from "./lesson-vocabulary-flash-card";
 import LessonMatchingWords from "./lesson-vocabulary-activity-choice";
 import LessonSentenseFlashCard from "./lesson-sentense-flash-card";

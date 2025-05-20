@@ -7,9 +7,9 @@ import { useCurrentLocale } from "@/locales/client";
 import { Article } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AUDIO_WORDS_URL } from "@/server/constants";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { toast } from "@/components/ui/use-toast";
-import AudioImg from "./audio-img";
+import AudioImg from "../audio-img";
 
 interface Props {
   article: Article;

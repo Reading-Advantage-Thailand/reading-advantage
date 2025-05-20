@@ -11,25 +11,25 @@ import { ReloadIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import styled from "@emotion/styled";
 import "animate.css";
-import { Header } from "./header";
-import { Button } from "./ui/button";
-import { toast } from "./ui/use-toast";
-import { Skeleton } from "./ui/skeleton";
-import { Icons } from "./icons";
+import { Header } from "../header";
+import { Button } from "../ui/button";
+import { toast } from "../ui/use-toast";
+import { Skeleton } from "../ui/skeleton";
+import { Icons } from "../icons";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "../ui/select";
 import { levelCalculation, splitTextIntoSentences } from "@/lib/utils";
-import { Sentence } from "./dnd/types";
+import { Sentence } from "../dnd/types";
 import {
   UserXpEarned,
   ActivityStatus,
   ActivityType,
-} from "./models/user-activity-log-model";
+} from "../models/user-activity-log-model";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);

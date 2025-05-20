@@ -9,15 +9,15 @@ import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import Image from "next/image";
 import "animate.css";
-import { Header } from "./header";
-import { toast } from "./ui/use-toast";
-import { Skeleton } from "./ui/skeleton";
+import { Header } from "../header";
+import { toast } from "../ui/use-toast";
+import { Skeleton } from "../ui/skeleton";
 import { Word } from "./lesson-vocabulary-flash-card";
 import {
   UserXpEarned,
   ActivityStatus,
   ActivityType,
-} from "./models/user-activity-log-model";
+} from "../models/user-activity-log-model";
 import { levelCalculation } from "@/lib/utils";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);

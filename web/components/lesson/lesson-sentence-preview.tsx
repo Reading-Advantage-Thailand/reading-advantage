@@ -1,17 +1,17 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Article } from "./models/article-model";
+import { Article } from "../models/article-model";
 import { cn, splitTextIntoSentences } from "@/lib/utils";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
-import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 import { createEmptyCard, Card } from "ts-fsrs";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "./ui/context-menu";
+} from "../ui/context-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,8 +20,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "./ui/alert-dialog";
-import { toast } from "./ui/use-toast";
+} from "../ui/alert-dialog";
+import { toast } from "../ui/use-toast";
 import {
   PlayIcon,
   ResumeIcon,
@@ -36,7 +36,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "../ui/select";
 
 type Props = {
   article: Article;
