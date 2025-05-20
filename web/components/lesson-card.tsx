@@ -2,7 +2,7 @@ import React from "react";
 
 import { getScopedI18n } from "@/locales/server";
 import { Article } from "./models/article-model";
-
+import { TimerProvider } from "@/contexts/timer-context";
 import VerticalProgress from "./lesson-progress-bar";
 
 import { Header } from "./header";
@@ -44,12 +44,14 @@ export default async function LessonCard({
           <Header heading={tb("lesson")} text={article.title} />
         </div>
         <div className="flex flex-col gap-4">
-          <VerticalProgress
-            phases={phases}
-            article={article}
-            articleId={articleId}
-            userId={userId}
-          />
+          <TimerProvider>
+            <VerticalProgress
+              phases={phases}
+              article={article}
+              articleId={articleId}
+              userId={userId}
+            />
+          </TimerProvider>
         </div>
       </div>
       <div className="md:flex mt-[50px]"></div>

@@ -35,6 +35,7 @@ type Props = {
   articleId: string;
   showButton: boolean;
   setShowButton: (value: boolean) => void;
+  onCompleteChange: (complete: boolean) => void;
 };
 
 export type Word = {
@@ -73,6 +74,7 @@ export default function LessonVocabularyFlashCard({
   showButton,
   setShowButton,
   articleId,
+  onCompleteChange,
 }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
@@ -261,6 +263,12 @@ export default function LessonVocabularyFlashCard({
     getUserSentenceSaved();
   }, []);
 
+  useEffect(() => {
+    if (words.length === 0 || !showButton) {
+      onCompleteChange(true);
+    }
+  }, [showButton, words.length]);
+
   return (
     <div className="flex flex-col items-center justify-center space-y-2 mt-4">
       {isLoadingWords ? (
@@ -316,7 +324,9 @@ export default function LessonVocabularyFlashCard({
                           words[currentCardIndex].word.audioUrl ||
                           `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${words[currentCardIndex].articleId}.mp3`
                         }
-                        startTimestamp={words[currentCardIndex]?.word?.startTime}
+                        startTimestamp={
+                          words[currentCardIndex]?.word?.startTime
+                        }
                         endTimestamp={words[currentCardIndex]?.word?.endTime}
                       />
                     )}

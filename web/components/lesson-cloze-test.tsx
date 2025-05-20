@@ -37,6 +37,7 @@ dayjs.extend(dayjs_plugin_isSameOrAfter);
 type Props = {
   userId: string;
   articleId: string;
+  onCompleteChange: (complete: boolean) => void;
 };
 
 type RootObject = {
@@ -59,7 +60,11 @@ type TextArraySplit = {
   textSplit: string[];
 };
 
-export default function LessonClozeTest({ userId, articleId }: Props) {
+export default function LessonClozeTest({
+  userId,
+  articleId,
+  onCompleteChange,
+}: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const tUpdateScore = useScopedI18n(
@@ -357,60 +362,53 @@ export default function LessonClozeTest({ userId, articleId }: Props) {
     margin-right: 10px;
   `;
 
-  const dropdownWords = (indexTextArraySplit: number) => {
+  const answerChoices = (indexTextArraySplit: number) => {
     const listRandomWords = JSON.parse(JSON.stringify(articleClozeTest));
     return (
-      <Select
-        onValueChange={(e) => {
-          let value: any = JSON.parse(e);
-          setSelectedWord((prev: any) => {
-            return {
-              ...prev,
-              [indexTextArraySplit]: value,
-            };
-          });
+      <div className="flex flex-wrap gap-2 my-2 mt-4">
+        {listRandomWords[currentArticleIndex]?.randomWords?.map(
+          (obj: ResultTextArray, index: number) => {
+            const isSelected =
+              selectedWord[indexTextArraySplit]?.obj?.subtlexResult.word ===
+              obj.subtlexResult.word;
 
-          const isCorrect =
-            articleClozeTest[currentArticleIndex].beforeRandomWords[
-              indexTextArraySplit
-            ].subtlexResult.word === value.obj.subtlexResult.word;
-
-          let updatedArticleClozeTest = [...articleClozeTest];
-          updatedArticleClozeTest[currentArticleIndex].randomWords[
-            indexTextArraySplit
-          ].correctWords = isCorrect;
-
-          setArticleClozeTest(updatedArticleClozeTest);
-          setShowButtonNextPassage(false);
-          setShowBadges(false);
-        }}
-      >
-        <SelectTrigger className="w-[150px] my-2 text-[#091e42]">
-          <SelectValue
-            placeholder={
-              selectedWord[indexTextArraySplit]?.obj?.subtlexResult.word ||
-              "Select a word"
-            }
-          />
-        </SelectTrigger>
-        <SelectContent>
-          {listRandomWords[currentArticleIndex]?.randomWords?.map(
-            (obj: ResultTextArray, index: number) => {
-              return (
-                <SelectItem
-                  key={index}
-                  value={JSON.stringify({
+            return (
+              <Button
+                key={index}
+                size="sm"
+                variant={isSelected ? "destructive" : "secondary"}
+                onClick={() => {
+                  const value = {
                     obj: obj,
                     indexRow: indexTextArraySplit,
-                  })}
-                >
-                  {obj.subtlexResult.word}
-                </SelectItem>
-              );
-            }
-          )}
-        </SelectContent>
-      </Select>
+                  };
+
+                  setSelectedWord((prev: any) => ({
+                    ...prev,
+                    [indexTextArraySplit]: value,
+                  }));
+
+                  const isCorrect =
+                    articleClozeTest[currentArticleIndex].beforeRandomWords[
+                      indexTextArraySplit
+                    ].subtlexResult.word === obj.subtlexResult.word;
+
+                  let updatedArticleClozeTest = [...articleClozeTest];
+                  updatedArticleClozeTest[currentArticleIndex].randomWords[
+                    indexTextArraySplit
+                  ].correctWords = isCorrect;
+
+                  setArticleClozeTest(updatedArticleClozeTest);
+                  setShowButtonNextPassage(false);
+                  setShowBadges(false);
+                }}
+              >
+                {obj.subtlexResult.word}
+              </Button>
+            );
+          }
+        )}
+      </div>
     );
   };
 
@@ -433,48 +431,50 @@ export default function LessonClozeTest({ userId, articleId }: Props) {
     );
 
     // update score by words
-    articleClozeTest[currentArticleIndex].randomWords.forEach(
-      async (item: ResultTextArray) => {
-        if (item.correctWords) {
-          try {
-            const updateScrore = await fetch(
-              `/api/v1/users/${userId}/activitylog`,
-              {
-                method: "POST",
-                body: JSON.stringify({
-                  artileId: articleId,
-                  activityType: ActivityType.SentenceClozeTest,
-                  activityStatus: ActivityStatus.Completed,
-                  xpEarned: UserXpEarned.Sentence_Cloze_Test,
-                  details: {
-                    cefr_level: levelCalculation(
-                      UserXpEarned.Sentence_Cloze_Test
-                    ).cefrLevel,
-                  },
-                }),
+    if (areAllCorrect) {
+      articleClozeTest[currentArticleIndex].randomWords.forEach(
+        async (item: ResultTextArray) => {
+          if (item.correctWords) {
+            try {
+              const updateScrore = await fetch(
+                `/api/v1/users/${userId}/activitylog`,
+                {
+                  method: "POST",
+                  body: JSON.stringify({
+                    artileId: articleId,
+                    activityType: ActivityType.SentenceClozeTest,
+                    activityStatus: ActivityStatus.Completed,
+                    xpEarned: UserXpEarned.Sentence_Cloze_Test,
+                    details: {
+                      cefr_level: levelCalculation(
+                        UserXpEarned.Sentence_Cloze_Test
+                      ).cefrLevel,
+                    },
+                  }),
+                }
+              );
+              if (updateScrore?.status === 200) {
+                router.refresh();
+                toast({
+                  title: t("toast.success"),
+                  imgSrc: true,
+                  description: tUpdateScore("yourXp", {
+                    xp: UserXpEarned.Sentence_Cloze_Test,
+                  }),
+                });
+                setIsCompleted(true);
               }
-            );
-            if (updateScrore?.status === 200) {
-              router.refresh();
+            } catch (error) {
               toast({
-                title: t("toast.success"),
-                imgSrc: true,
-                description: tUpdateScore("yourXp", {
-                  xp: UserXpEarned.Sentence_Cloze_Test,
-                }),
+                title: t("toast.error"),
+                description: t("toast.errorDescription"),
+                variant: "destructive",
               });
-              setIsCompleted(true);
             }
-          } catch (error) {
-            toast({
-              title: t("toast.error"),
-              description: t("toast.errorDescription"),
-              variant: "destructive",
-            });
           }
         }
-      }
-    );
+      );
+    }
 
     setShowBadges(true);
     if (areAllCorrect) {
@@ -496,6 +496,12 @@ export default function LessonClozeTest({ userId, articleId }: Props) {
     setShowButtonNextPassage(false);
     setIsPlaying(false);
   };
+
+  useEffect(() => {
+    if (isCompleted) {
+      onCompleteChange(true);
+    }
+  }, [isCompleted]);
 
   return (
     <>
@@ -601,7 +607,7 @@ export default function LessonClozeTest({ userId, articleId }: Props) {
                                     }
                                   )}
                                 </p>
-                                {dropdownWords(indexTextArraySplit)}
+                                {answerChoices(indexTextArraySplit)}
                                 <Footer>
                                   {showBadges ? (
                                     <>

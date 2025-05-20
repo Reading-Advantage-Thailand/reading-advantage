@@ -31,9 +31,14 @@ dayjs.extend(dayjs_plugin_isSameOrAfter);
 type Props = {
   userId: string;
   articleId: string;
+  onCompleteChange: (complete: boolean) => void;
 };
 
-export default function LessonOrderSentences({ userId, articleId }: Props) {
+export default function LessonOrderSentences({
+  userId,
+  articleId,
+  onCompleteChange,
+}: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const router = useRouter();
@@ -266,6 +271,12 @@ export default function LessonOrderSentences({ userId, articleId }: Props) {
   useEffect(() => {
     getUserSentenceSaved();
   }, []);
+
+  useEffect(() => {
+    if (isCompleted) {
+      onCompleteChange(true);
+    }
+  }, [isCompleted]);
 
   return (
     <>

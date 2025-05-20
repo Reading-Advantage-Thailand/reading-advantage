@@ -36,6 +36,7 @@ type Props = {
   articleTitle: string;
   articleLevel: number;
   page?: "lesson" | "article";
+  onCompleteChange: (complete: boolean) => void;
 };
 
 export type QuestionResponse = {
@@ -51,6 +52,7 @@ export default function MCQuestionCard({
   articleTitle,
   articleLevel,
   page,
+  onCompleteChange,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -90,6 +92,12 @@ export default function MCQuestionCard({
         });
       });
   };
+
+  useEffect(() => {
+    if (state === QuestionState.COMPLETED) {
+      onCompleteChange(true);
+    }
+  }, [state, onCompleteChange]);
 
   switch (state) {
     case QuestionState.LOADING:

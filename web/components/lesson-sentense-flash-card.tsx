@@ -32,6 +32,7 @@ type Props = {
   articleId: string;
   showButton: boolean;
   setShowButton: (value: boolean) => void;
+  onCompleteChange: (complete: boolean) => void;
 };
 
 export type Sentence = {
@@ -62,6 +63,7 @@ export default function LessonSentenseFlashCard({
   articleId,
   showButton,
   setShowButton,
+  onCompleteChange,
 }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
@@ -215,6 +217,12 @@ export default function LessonSentenseFlashCard({
       ),
     };
   });
+
+  useEffect(() => {
+    if (sentences.length === 0 || !showButton) {
+      onCompleteChange(true);
+    }
+  }, [showButton, sentences.length]);
 
   return (
     <div className="flex flex-col items-center justify-center space-y-2 mt-4">

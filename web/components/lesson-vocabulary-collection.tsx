@@ -16,13 +16,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createEmptyCard, Card as FsrsCard } from "ts-fsrs";
-import { filter, includes } from "lodash";
+import { filter, includes, set } from "lodash";
 import { Button } from "@/components/ui/button";
 
 interface Props {
   article: Article;
   articleId: string;
   userId: string;
+  onCompleteChange: (complete: boolean) => void;
 }
 
 interface WordList {
@@ -44,10 +45,12 @@ export default function LessonWordCollection({
   article,
   articleId,
   userId,
+  onCompleteChange,
 }: Props) {
   const t = useScopedI18n("pages.student.lessonPage");
   const [loading, setLoading] = useState<boolean>(false);
   const [wordList, setWordList] = useState<WordList[]>([]);
+  const [savedWordlistCount, setSavedWordlistCount] = useState(0);
 
   const FormSchema = z.object({
     items: z.array(z.string()).refine((value) => value.some((item) => item), {
@@ -65,6 +68,16 @@ export default function LessonWordCollection({
       const foundWordsList = filter(wordList, (vocab) =>
         includes(data?.items, vocab?.vocabulary)
       );
+
+      if (foundWordsList.length < 5) {
+        toast({
+          title: "คำศัพท์ไม่ครบ",
+          description: "กรุณาเลือกคำศัพท์อย่างน้อย 5 คำ",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (foundWordsList.length > 0) {
         const param = {
           ...card,
@@ -85,6 +98,7 @@ export default function LessonWordCollection({
             title: "Success",
             description: `You have saved ${foundWordsList.length} words to flashcard`,
           });
+          await checkSavedWordlist();
         } else if (data.status === 400) {
           toast({
             title: "Word already saved",
@@ -99,6 +113,8 @@ export default function LessonWordCollection({
         description: "Your word was not saved. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      onCompleteChange(true);
     }
   };
 
@@ -169,6 +185,27 @@ export default function LessonWordCollection({
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.play();
   };
+
+  const checkSavedWordlist = async () => {
+    try {
+      const res = await fetch(
+        `/api/v1/users/wordlist/${userId}?articleId=${articleId}`
+      );
+      const data = await res.json();
+      if (data.word.length > 5) {
+        setSavedWordlistCount(data.word.length);
+        onCompleteChange(true);
+      }
+    } catch (error) {
+      console.error;
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      await checkSavedWordlist();
+    })();
+  }, []);
 
   return (
     <Card className="w-full">
@@ -284,11 +321,11 @@ export default function LessonWordCollection({
                     }}
                   />
                 </div>
-                <div className="mt-4 flex justify-end items-end">
-                  <Button
-                  className="w-full lg:w-1/4"
-                    type="submit"
-                  >
+                <div className="mt-4 flex justify-between items-center">
+                  <div className="text-sm text-gray-500">
+                    {`บันทึกแล้ว ${savedWordlistCount} คำ`}
+                  </div>
+                  <Button className="w-full lg:w-1/4" type="submit">
                     {t("saveButton")}
                   </Button>
                 </div>

@@ -30,9 +30,14 @@ dayjs.extend(dayjs_plugin_isSameOrAfter);
 type Props = {
   userId: string;
   articleId: string;
+  onCompleteChange: (complete: boolean) => void;
 };
 
-export default function LessonOrderWords({ userId, articleId }: Props) {
+export default function LessonOrderWords({
+  userId,
+  articleId,
+  onCompleteChange,
+}: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tc = useScopedI18n("components.articleContent");
   const tUpdateScore = useScopedI18n(
@@ -188,6 +193,12 @@ export default function LessonOrderWords({ userId, articleId }: Props) {
       }
     }
   };
+
+  useEffect(() => {
+    if (isCompleted) {
+      onCompleteChange(true);
+    }
+  }, [isCompleted]);
 
   return (
     <>

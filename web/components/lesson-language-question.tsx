@@ -18,9 +18,14 @@ interface Message {
 interface Props {
   article: Article;
   skipPhase: () => void;
+  onCompleteChange: (complete: boolean) => void;
 }
 
-export default function LessonLanguageQuestion({ article, skipPhase }: Props) {
+export default function LessonLanguageQuestion({
+  article,
+  skipPhase,
+  onCompleteChange,
+}: Props) {
   const t = useScopedI18n("components.chatBot");
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState<string>("");
@@ -192,7 +197,10 @@ export default function LessonLanguageQuestion({ article, skipPhase }: Props) {
                   )}
                   <Button
                     type="button"
-                    onClick={() => skipPhase()}
+                    onClick={() => {
+                      onCompleteChange(true);
+                      skipPhase();
+                    }}
                     className="ml-2 hover:bg-gray-600"
                   >
                     Skip

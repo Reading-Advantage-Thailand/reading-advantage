@@ -45,6 +45,7 @@ type Props = {
   articleTitle: string;
   articleLevel: number;
   page: "article" | "lesson";
+  onCompleteChange: (complete: boolean) => void;
 };
 
 export type QuestionResponse = {
@@ -73,6 +74,7 @@ export default function SAQuestionCard({
   articleTitle,
   articleLevel,
   page,
+  onCompleteChange,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -102,6 +104,12 @@ export default function SAQuestionCard({
   const handleCompleted = () => {
     setState(QuestionState.LOADING);
   };
+
+  useEffect(() => {
+    if (state === QuestionState.COMPLETED) {
+      onCompleteChange(true);
+    }
+  }, [state, onCompleteChange]);
 
   switch (state) {
     case QuestionState.LOADING:
