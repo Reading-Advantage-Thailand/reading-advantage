@@ -74,17 +74,18 @@ async function getTranslateSentence(
 
 export default function LessonSentensePreview({
   article,
-  className = "",
   userId,
   phase,
+  articleId,
+  onCompleteChange,
 }: Props) {
   const t = useScopedI18n("components.articleContent");
   const sentences = splitTextIntoSentences(article.passage, true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
-  const [togglePlayer, setTogglePlayer] = useState<Boolean>(false);
+  const [togglePlayer, setTogglePlayer] = useState<Boolean>(true);
   const [selectedSentence, setSelectedSentence] = React.useState<Number>(-1);
   const [loading, setLoading] = React.useState(false);
   const [translate, setTranslate] = React.useState<string[]>([]);
@@ -94,6 +95,22 @@ export default function LessonSentensePreview({
   const [isTranslateClicked, setIsTranslateClicked] = React.useState(false);
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const [speed, setSpeed] = useState<string>("1");
+  const [savedSentenceCount, setSavedSentenceCount] = useState(0);
+
+  const checkSavedSentences = async () => {
+    try {
+      const res = await fetch(
+        `/api/v1/users/sentences/${userId}?articleId=${articleId}`
+      );
+      const data = await res.json();
+      if (data.sentences.length > 5) {
+        setSavedSentenceCount(data.sentences.length);
+        onCompleteChange(true);
+      }
+    } catch (error) {
+      console.error;
+    }
+  };
 
   const sentenceList: Sentence[] = article.timepoints.map(
     (timepoint, index) => {
@@ -269,6 +286,7 @@ export default function LessonSentensePreview({
               selectedSentence as number
             ].sentence.replace("~~", "")}" to flashcard`,
           });
+          setSavedSentenceCount(savedSentenceCount + 1);
         } else if (resSaveSentences.status === 400) {
           toast({
             title: "Sentence already saved",
@@ -396,36 +414,71 @@ export default function LessonSentensePreview({
       //if translate, set isTranslate to false
       setIsTranslateClicked(!isTranslateClicked);
     }
-  }; 
+  };
 
   useEffect(() => {
     const audio = audioRef.current;
     setSelectedIndex(-1);
     if (audio) {
       audio.src = sentenceList[currentAudioIndex].audioUrl;
-
       audio.load();
       const handleLoadedMetadata = () => {
         audio.currentTime = sentenceList[currentAudioIndex].startTime;
-
         audio.playbackRate = Number(speed);
-
         if (isPlaying) {
           audio.play().catch((error) => {
-            // Handle any errors (e.g., user interaction required)
             console.error("Playback error:", error);
           });
+        } else {
+          audio.pause();
         }
       };
-
       audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-
       return () => {
         audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
         audio.pause();
       };
     }
-  }, [currentAudioIndex, speed]);
+  }, [currentAudioIndex, speed, isPlaying]);
+
+  useEffect(() => {
+    if (phase === "phase3" && currentAudioIndex === sentenceList.length - 1) {
+      onCompleteChange(true);
+    }
+  }, [currentAudioIndex]);
+
+  useEffect(() => {
+    if (phase === "phase5") {
+      setIsPlaying(false);
+      setTogglePlayer(false);
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      onCompleteChange(true);
+    }
+  }, [phase, onCompleteChange]);
+
+  useEffect(() => {
+    if (phase === "phase6" && savedSentenceCount > 5) {
+      onCompleteChange(true);
+    }
+  }, [phase, savedSentenceCount, onCompleteChange]);
+
+  useEffect(() => {
+    if (phase === "phase6") {
+      setIsPlaying(false);
+      setTogglePlayer(false);
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    }
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === "phase6") {
+      checkSavedSentences();
+    }
+  }, [phase, userId, articleId]);
 
   return (
     <div className="w-full">

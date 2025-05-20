@@ -27,6 +27,7 @@ dayjs.extend(dayjs_plugin_isSameOrAfter);
 type Props = {
   userId: string;
   articleId: string;
+  onCompleteChange: (complete: boolean) => void;
 };
 
 type Word = {
@@ -38,7 +39,11 @@ type Word = {
   audioUrl: string;
 };
 
-export default function LessonMatching({ userId, articleId }: Props) {
+export default function LessonMatching({
+  userId,
+  articleId,
+  onCompleteChange,
+}: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
@@ -191,6 +196,12 @@ export default function LessonMatching({ userId, articleId }: Props) {
     return styles;
   };
 
+  useEffect(() => {
+    if (isCompleted) {
+      onCompleteChange(true);
+    }
+  }, [isCompleted]);
+
   return (
     <>
       {correctMatches.length !== 10 && (
@@ -276,16 +287,16 @@ export default function LessonMatching({ userId, articleId }: Props) {
           </>
         )}
         {isCompleted && (
-            <div className="flex flex-wrap justify-center mt-10 xl:h-[400px] w-full md:w-[725px] xl:w-[760px] space-y-6">
-              <Image
-                src={"/winners.svg"}
-                alt="winners"
-                width={250}
-                height={100}
-                className="animate__animated animate__jackInTheBox"
-              />
-            </div>
-          )}
+          <div className="flex flex-wrap justify-center mt-10 xl:h-[400px] w-full md:w-[725px] xl:w-[760px] space-y-6">
+            <Image
+              src={"/winners.svg"}
+              alt="winners"
+              width={250}
+              height={100}
+              className="animate__animated animate__jackInTheBox"
+            />
+          </div>
+        )}
       </div>
     </>
   );

@@ -26,6 +26,7 @@ dayjs.extend(dayjs_plugin_isSameOrAfter);
 type Props = {
   userId: string;
   articleId: string;
+  onCompleteChange: (complete: boolean) => void;
 };
 
 type Matching = {
@@ -33,7 +34,11 @@ type Matching = {
   match: string;
 };
 
-export default function LessonMatchingWords({ userId, articleId }: Props) {
+export default function LessonMatchingWords({
+  userId,
+  articleId,
+  onCompleteChange,
+}: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
     "pages.student.practicePage.flashcardPractice"
@@ -173,6 +178,12 @@ export default function LessonMatchingWords({ userId, articleId }: Props) {
     };
     updateScoreCorrectMatches();
   }, [correctMatches]);
+
+  useEffect(() => {
+    if (correctMatches.length === 10) {
+      onCompleteChange(true);
+    }
+  }, [correctMatches.length]);
 
   return (
     <>
