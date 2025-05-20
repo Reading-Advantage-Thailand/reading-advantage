@@ -192,10 +192,7 @@ export default function LessonWordCollection({
         `/api/v1/users/wordlist/${userId}?articleId=${articleId}`
       );
       const data = await res.json();
-      if (data.word.length > 5) {
-        setSavedWordlistCount(data.word.length);
-        onCompleteChange(true);
-      }
+      setSavedWordlistCount(data.word.length);
     } catch (error) {
       console.error;
     }
@@ -206,6 +203,12 @@ export default function LessonWordCollection({
       await checkSavedWordlist();
     })();
   }, []);
+
+  useEffect(() => {
+    if (savedWordlistCount > 5) {
+      onCompleteChange(true);
+    }
+  }, [savedWordlistCount]);
 
   return (
     <Card className="w-full">
@@ -323,7 +326,7 @@ export default function LessonWordCollection({
                 </div>
                 <div className="mt-4 flex justify-between items-center">
                   <div className="text-sm text-gray-500">
-                    {`บันทึกแล้ว ${savedWordlistCount} คำ`}
+                    {`Saved: ${savedWordlistCount} word`}
                   </div>
                   <Button className="w-full lg:w-1/4" type="submit">
                     {t("saveButton")}

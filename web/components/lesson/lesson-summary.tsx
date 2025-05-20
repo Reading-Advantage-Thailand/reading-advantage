@@ -230,7 +230,7 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
                   <div className="w-full bg-purple-200 dark:bg-purple-700 rounded-full h-2 mb-2">
                     <div
                       className="bg-purple-500 h-2 rounded-full"
-                      style={{ width: `${(quizeScores?.mcqScore ?? 0) * 10}%` }}
+                      style={{ width: `${(quizeScores?.mcqScore ?? 0) * 20}%` }}
                     ></div>
                   </div>
                   <p className="text-sm text-purple-600 dark:text-purple-300">
@@ -253,7 +253,7 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
                   <div className="w-full bg-purple-200 dark:bg-purple-700 rounded-full h-2 mb-2">
                     <div
                       className="bg-purple-500 h-2 rounded-full"
-                      style={{ width: `${(quizeScores?.saqScore ?? 0) * 10}%` }}
+                      style={{ width: `${(quizeScores?.saqScore ?? 0) * 20}%` }}
                     ></div>
                   </div>
                   <p className="text-sm text-purple-600 dark:text-purple-300">
@@ -278,8 +278,11 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
               {totalXp}
             </li>
           </ul>
-          <div className="flex items-end justify-end" onClick={backToReadPage}>
-            <Button>{t("readPageButton")}</Button>
+          <div
+            className="flex items-end justify-end w-full mt-4"
+            onClick={backToReadPage}
+          >
+            <Button className="w-full md:w-1/4">{t("readPageButton")}</Button>
           </div>
         </>
       )}

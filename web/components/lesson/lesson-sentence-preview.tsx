@@ -459,7 +459,7 @@ export default function LessonSentensePreview({
   }, [phase, onCompleteChange]);
 
   useEffect(() => {
-    if (phase === "phase6" && savedSentenceCount > 5) {
+    if (phase === "phase6" && savedSentenceCount >= 5) {
       onCompleteChange(true);
     }
   }, [phase, savedSentenceCount, onCompleteChange]);
@@ -599,6 +599,9 @@ export default function LessonSentensePreview({
             <source src={sentenceList[currentAudioIndex].audioUrl} />
           </audio>
         </ContextMenuTrigger>
+        {phase === "phase6" && (
+          <p className="text-sm text-gray-500 mt-4">{`saved: ${savedSentenceCount} sentences`}</p>
+        )}
         {phase === "phase6" && (
           <ContextMenuContent className="w-64">
             {loading ? (
