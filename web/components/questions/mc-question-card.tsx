@@ -36,7 +36,7 @@ type Props = {
   articleTitle: string;
   articleLevel: number;
   page?: "lesson" | "article";
-  onCompleteChange: (complete: boolean) => void;
+  onCompleteChange?: (complete: boolean) => void;
 };
 
 export type QuestionResponse = {
@@ -95,7 +95,7 @@ export default function MCQuestionCard({
 
   useEffect(() => {
     if (state === QuestionState.COMPLETED && page === "lesson") {
-      onCompleteChange(true);
+      onCompleteChange ? true : null;
     }
   }, [state, onCompleteChange, page]);
 
