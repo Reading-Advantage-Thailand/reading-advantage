@@ -136,7 +136,7 @@ export default {
             "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy xếp các câu theo trật tự có ý nghĩa với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 5 XP.",
           saveOrder: "Lưu & Tiếp tục sau",
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
-          completedMessage: "Bạn đã hoàn thành việc sắp xếp câu."
+          completedMessage: "Bạn đã hoàn thành việc sắp xếp câu.",
         },
         clozeTestPractice: {
           clozeTest: "Bài kiểm tra lỗ hổng",
@@ -146,7 +146,8 @@ export default {
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
           submitArticle: "Kiểm tra câu trả lời của bạn",
           nextPassage: "Đoạn tiếp theo",
-          completedMessage: "Bạn đã hoàn thành bài kiểm tra điền vào chỗ trống.",
+          completedMessage:
+            "Bạn đã hoàn thành bài kiểm tra điền vào chỗ trống.",
         },
         orderWordsPractice: {
           orderWords: "Sắp xếp từ",
@@ -242,6 +243,7 @@ export default {
         nextPhase: "Giai đoạn tiếp theo",
         previousPhase: "Giai đoạn trước",
         saveButton: "Lưu",
+        readPageButton: "Quay lại trang chính",
         phase1Title: "Giới thiệu",
         phase1Description:
           "Trong bài học này, bạn sẽ đọc một bài viết về {topic}",
@@ -300,6 +302,28 @@ export default {
           "Dành cho người học ngôn ngữ: Bài học này được thiết kế để hoàn thành trong khoảng 30 đến 45 phút.",
         collapsibleNoticeDescription:
           "Mỗi giai đoạn trong bài học đều có bộ đếm thời gian tích hợp để theo dõi thời gian bạn dành cho từng hoạt động. Dữ liệu này sẽ được sử dụng cho phân tích học tập và có thể ảnh hưởng đến điểm hiệu suất tổng thể của bạn. Việc theo dõi thời gian cũng giúp chúng tôi hiểu rõ hơn cách học viên tương tác với các phần khác nhau của bài học và cải thiện trải nghiệm học tập trong tương lai. Vui lòng học với tốc độ ổn định để có kết quả chính xác nhất.",
+        congratulations: "Chúc mừng bạn!",
+        summaryDescription:
+          "Bạn đã hoàn thành bài học. Đây là những gì bạn đã đạt được",
+        wordSaved: "Từ đã lưu",
+        sentencesSaved: "Câu đã lưu",
+        quizPerformance: "Hiệu suất làm bài kiểm tra",
+        mcqScore: "Điểm trắc nghiệm",
+        saqScore: "Điểm tự luận",
+        timeTaken: "Thời gian đã dùng",
+        xpEarned: "XP đã đạt được",
+        MCQ1point: "Bạn cần ôn lại bài và thử lại — đừng bỏ cuộc!",
+        MCQ2points: "Có tiến bộ, nhưng vẫn còn chỗ cần cải thiện.",
+        MCQ3points:
+          "Bạn đang tiến bộ — hãy tiếp tục luyện tập và hiểu sâu hơn.",
+        MCQ4points: "Làm tốt lắm! Chỉ còn chút nữa là đạt điểm tuyệt đối.",
+        MCQ5points: "Xuất sắc! Bạn đã nắm vững nội dung này.",
+        SAQ1point:
+          "Câu trả lời của bạn cần rõ ràng và chi tiết hơn — hãy cụ thể hơn.",
+        SAQ2points: "Khởi đầu tốt, nhưng còn thiếu một số chi tiết quan trọng.",
+        SAQ3points: "Câu trả lời tạm ổn — nên mở rộng giải thích thêm.",
+        SAQ4points: "Câu trả lời mạnh, chỉ cần điều chỉnh nhỏ.",
+        SAQ5points: "Câu trả lời tuyệt vời — rõ ràng, đầy đủ và hợp lý.",
       },
     },
     teacher: {

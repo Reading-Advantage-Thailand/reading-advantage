@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { Sentence } from "./lesson-sentense-flash-card";
+import { useScopedI18n } from "@/locales/client";
+import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 interface LessonSummaryProps {
-  quizPerformance: string;
   articleId: string;
   userId: string;
   elapsedTime: string;
@@ -26,8 +28,12 @@ interface WordList {
   audioUrl: string;
 }
 
+interface QuizeScores {
+  mcqScore: number;
+  saqScore: number;
+}
+
 const LessonSummary: React.FC<LessonSummaryProps> = ({
-  quizPerformance,
   articleId,
   userId,
   elapsedTime,
@@ -36,6 +42,25 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
   const [wordList, setWordList] = useState<WordList[]>([]);
   const [sentenceList, setSentenceList] = useState<Sentence[]>([]);
   const [totalXp, setTotalXp] = useState(0);
+  const [quizeScores, setQuizScores] = useState<QuizeScores>();
+  const t = useScopedI18n("pages.student.lessonPage");
+  const router = useRouter();
+
+  const mcqFeedback = {
+    1: t("MCQ1point"),
+    2: t("MCQ2points"),
+    3: t("MCQ3points"),
+    4: t("MCQ4points"),
+    5: t("MCQ5points"),
+  };
+
+  const saqFeedback = {
+    1: t("SAQ1point"),
+    2: t("SAQ2points"),
+    3: t("SAQ3points"),
+    4: t("SAQ4points"),
+    5: t("SAQ5points"),
+  };
 
   const fetchWordList = async () => {
     try {
@@ -88,12 +113,38 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
     }
   };
 
+  const backToReadPage = () => {
+    router.push("/student/read");
+  };
+
+  const fetchQuizScores = async () => {
+    try {
+      const res = await fetch(
+        `/api/v1/lesson/${userId}/quize-performance?articleId=${articleId}`
+      );
+      const data = await res.json();
+      setQuizScores(data);
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        title: "Something went wrong.",
+        description: error?.message || "Unknown error",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchAllData = async () => {
       if (!userId || !articleId) return;
       try {
         setLoading(true);
-        await Promise.all([fetchWordList(), fetchSentence(), fetchXp()]);
+        await Promise.all([
+          fetchWordList(),
+          fetchSentence(),
+          fetchXp(),
+          fetchQuizScores(),
+        ]);
       } catch (err) {
         console.error(err);
       } finally {
@@ -116,16 +167,16 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
       ) : (
         <>
           <h1 className="text-3xl font-bold text-center text-green-600 dark:text-green-400 mb-4">
-            🎉 Congratulations! 🎉
+            🎉 {t("congratulations")} 🎉
           </h1>
           <p className="text-lg text-center mb-6 text-gray-800 dark:text-gray-200">
-            You’ve completed the lesson. Here’s what you achieved:
+            {t("summaryDescription")}:
           </p>
 
           <ul className="space-y-3 text-gray-800 dark:text-gray-100">
             <li>
               <strong className="text-green-500 dark:text-green-300">
-                🌟 Words Saved:
+                🌟 {t("wordSaved")}:
               </strong>{" "}
               {wordList.length}
               <ul className="mt-3">
@@ -145,7 +196,7 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
             </li>
             <li>
               <strong className="text-blue-500 dark:text-blue-300">
-                📘 Sentences Saved:
+                📘 {t("sentencesSaved")}:
               </strong>{" "}
               {sentenceList.length}
               <ul className="mt-3 space-y-2">
@@ -161,25 +212,75 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
                 ))}
               </ul>
             </li>
-            <li>
-              <strong className="text-purple-500 dark:text-purple-300">
-                📊 Quiz Performance:
-              </strong>{" "}
-              {quizPerformance}
+            <li className="mb-6">
+              <strong className="block text-purple-500 dark:text-purple-300 mb-3 text-lg">
+                📊 {t("quizPerformance")}:
+              </strong>
+              <div className="space-y-4 ml-2">
+                <div className="bg-purple-50 dark:bg-purple-900 p-4 rounded-lg shadow">
+                  <h4 className="text-md font-semibold text-purple-700 dark:text-purple-200 mb-1">
+                    Multiple Choice (MCQ)
+                  </h4>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="font-medium">Score:</span>
+                    <span className="font-bold text-purple-800 dark:text-purple-100">
+                      {quizeScores?.mcqScore ?? "-"}
+                    </span>
+                  </div>
+                  <div className="w-full bg-purple-200 dark:bg-purple-700 rounded-full h-2 mb-2">
+                    <div
+                      className="bg-purple-500 h-2 rounded-full"
+                      style={{ width: `${(quizeScores?.mcqScore ?? 0) * 10}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-purple-600 dark:text-purple-300">
+                    {quizeScores?.mcqScore !== undefined &&
+                      mcqFeedback[
+                        quizeScores.mcqScore as keyof typeof mcqFeedback
+                      ]}
+                  </p>
+                </div>
+                <div className="bg-purple-50 dark:bg-purple-900 p-4 rounded-lg shadow">
+                  <h4 className="text-md font-semibold text-purple-700 dark:text-purple-200 mb-1">
+                    Short Answer (SAQ)
+                  </h4>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="font-medium">Score:</span>
+                    <span className="font-bold text-purple-800 dark:text-purple-100">
+                      {quizeScores?.saqScore ?? "-"}
+                    </span>
+                  </div>
+                  <div className="w-full bg-purple-200 dark:bg-purple-700 rounded-full h-2 mb-2">
+                    <div
+                      className="bg-purple-500 h-2 rounded-full"
+                      style={{ width: `${(quizeScores?.saqScore ?? 0) * 10}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-purple-600 dark:text-purple-300">
+                    {quizeScores?.saqScore !== undefined &&
+                      saqFeedback[
+                        quizeScores.saqScore as keyof typeof saqFeedback
+                      ]}
+                  </p>
+                </div>
+              </div>
             </li>
             <li>
               <strong className="text-orange-500 dark:text-orange-300">
-                ⏱️ Time Taken:
+                ⏱️ {t("timeTaken")}:
               </strong>{" "}
               {elapsedTime}
             </li>
             <li>
               <strong className="text-yellow-500 dark:text-yellow-300">
-                🏆 XP Earned:
+                🏆 {t("xpEarned")}:
               </strong>{" "}
               {totalXp}
             </li>
           </ul>
+          <div className="flex items-end justify-end" onClick={backToReadPage}>
+            <Button>{t("readPageButton")}</Button>
+          </div>
         </>
       )}
     </div>

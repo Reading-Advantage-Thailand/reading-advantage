@@ -13,6 +13,7 @@ type TimerContextType = {
   startTimer: () => void;
   stopTimer: () => void;
   resetTimer: () => void;
+  setTimer: (seconds: number) => void;
 };
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -41,6 +42,11 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     setElapsedTime(0);
   };
 
+  const setTimer = (seconds: number) => {
+    stopTimer();
+    setElapsedTime(seconds);
+  };
+
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -51,7 +57,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <TimerContext.Provider
-      value={{ elapsedTime, startTimer, stopTimer, resetTimer }}
+      value={{ elapsedTime, startTimer, stopTimer, resetTimer, setTimer }}
     >
       {children}
     </TimerContext.Provider>
