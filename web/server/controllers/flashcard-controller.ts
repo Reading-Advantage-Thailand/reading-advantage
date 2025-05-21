@@ -5,6 +5,7 @@ import db from "@/configs/firestore-config";
 interface RequestContext {
   params: {
     id: string;
+    articleId?: string;
   };
 }
 
@@ -97,15 +98,23 @@ export async function postSaveWordList(
 }
 
 export async function getWordList(
-  req: ExtendedNextRequest,
+  req: NextRequest,
   { params: { id } }: RequestContext
 ) {
   try {
-    // Get words
-    const wordSnapshot = await db
-      .collection("user-word-records")
-      .where("userId", "==", id)
-      .get();
+    const articleId = req.nextUrl.searchParams.get("articleId");
+    console.log("articleId", articleId);
+
+    const wordSnapshot = articleId
+      ? await db
+          .collection("user-word-records")
+          .where("userId", "==", id)
+          .where("articleId", "==", articleId)
+          .get()
+      : await db
+          .collection("user-word-records")
+          .where("userId", "==", id)
+          .get();
 
     const word = wordSnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -251,12 +260,21 @@ export async function getSentencesFlashcard(
   req: ExtendedNextRequest,
   { params: { id } }: RequestContext
 ) {
+  const articleId = req.nextUrl.searchParams.get("articleId");
   try {
     // Get sentences
-    const sentencesRef = db
-      .collection("user-sentence-records")
-      .where("userId", "==", id)
-      .orderBy("createdAt", "desc");
+    console.log(articleId, "articleId");
+
+    const sentencesRef = articleId
+      ? db
+          .collection("user-sentence-records")
+          .where("userId", "==", id)
+          .where("articleId", "==", articleId)
+      : db
+          .collection("user-sentence-records")
+          .where("userId", "==", id)
+          .orderBy("createdAt", "desc");
+
     const sentencesSnapshot = await sentencesRef.get();
     const sentences = sentencesSnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -269,6 +287,7 @@ export async function getSentencesFlashcard(
       status: 200,
     });
   } catch (error) {
+    console.error("Error retrieving sentences:", error);
     return NextResponse.json({
       message: "Internal server error",
       error,

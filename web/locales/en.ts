@@ -1,3 +1,5 @@
+import next from "next";
+
 export default {
   pages: {
     indexPage: {
@@ -18,6 +20,7 @@ export default {
         articleSelection: "Article Selection",
         // nextquiz/[articleId] page
         article: {
+          lessonButton: "Study as 45-min Lesson",
           articleNotFound: "Article not found",
           articleInsufficientLevel:
             "You cannot read this article because your reading level is not high enough.",
@@ -141,6 +144,7 @@ export default {
           nextButton: "Next",
           yourXp:
             "Congratulations!, You received {xp} XP for completing this activity.",
+          completedMessage: "You have completed this flash card.",
         },
         orderSentencesPractice: {
           //Order Sentences
@@ -149,6 +153,7 @@ export default {
             "Reorder these sentences from a passage you've read. Match the original order to receive 5 XP.",
           saveOrder: "Continue",
           errorOrder: "Please order correctly",
+          completedMessage: "You have finished arranging the sentence.",
         },
         clozeTestPractice: {
           clozeTest: "Cloze Test",
@@ -158,6 +163,7 @@ export default {
           errorAnswer: "Please answer correctly",
           submitArticle: "Check your answers",
           nextPassage: "Next Passage",
+          completedMessage: "You have completed the fill-in-the-blank quiz.",
         },
         orderWordsPractice: {
           orderWords: "Order Words",
@@ -168,6 +174,7 @@ export default {
           submitArticle: "Check your answers",
           nextPassage: "Next Passage",
           tryToSortThisSentence: "Try to sort this sentence",
+          completedMessage: "You have completed the word ordering quiz.",
         },
         matchingPractice: {
           matching: "Matching",
@@ -245,6 +252,93 @@ export default {
             "A0-": "You are just getting started!",
           },
         },
+      },
+      lessonPage: {
+        lesson: "Lesson",
+        startLesson: "Start Lesson",
+        nextPhase: "Next Phase",
+        previousPhase: "Previous Phase",
+        saveButton: "Save",
+        readPageButton: "Back to Home",
+        phase1Title: "Introduction",
+        phase1Description:
+          "In this lesson, you will read an article about {topic}",
+        phase2Title: "Preview Vocabulary",
+        phase2Description:
+          "These are the vocabulary words you will encounter in the article",
+        phase3Title: "First Reading with Audio",
+        phase3Description:
+          "Read the article for the first time while listening to the audio",
+        phase4Title: "Collect Vocabulary",
+        phase4Description:
+          "Collect unfamiliar vocabulary from the article and select at least 5 words to save to your vocabulary cards",
+        phase5Title: "In-depth Reading",
+        phase5Description: "Read the article again by yourself without audio",
+        phase6Title: "Collect Sentences",
+        phase6Description:
+          "Collect unfamiliar sentences from the article. You can press the translate button to see the meaning and long-press (mobile) or right-click (mouse) to save at least 5 sentences to your sentence cards",
+        phase7Title: "Multiple Choice Questions",
+        phase7Description: "Answer multiple choice questions about the article",
+        phase8Title: "Short Answer Questions",
+        phase8Description: "Answer short written questions about the article",
+        phase9Title: "Vocabulary Practice - Flashcards",
+        phase9Description:
+          "Practice the vocabulary you've learned in this lesson. You can use this activity to assess your vocabulary recognition skills",
+        phase10Title: "Vocabulary Practice - Matching",
+        phase10Description:
+          "Practice the vocabulary you've learned in this lesson by matching words with their meanings",
+        phase11Title: "Sentence Practice - Flashcards",
+        phase11Description:
+          "Practice the sentences you've learned in this lesson. You can use this activity to assess your sentence recognition skills",
+        phase12Title: "Sentence Practice - Activity Selection",
+        phase12Description:
+          "Practice the sentences you've learned in this lesson by choosing activities you want to do",
+        phase13Title: "Language Questions",
+        phase13Description:
+          "Answer language-related questions about this lesson. An AI assistant will evaluate your answers (optional)",
+        phase14Title: "Lesson Summary",
+        phase14Description: "Summary of this lesson",
+        phases: [
+          "Introduction",
+          "Preview Vocabulary",
+          "First Reading with Audio",
+          "Collect Vocabulary",
+          "In-depth Reading",
+          "Collect Sentences",
+          "Multiple Choice Questions",
+          "Short Answer Questions",
+          "Vocabulary Practice - Flashcards",
+          "Vocabulary Practice - Matching",
+          "Sentence Practice - Flashcards",
+          "Sentence Practice - Activity Selection",
+          "Language Questions",
+          "Lesson Summary",
+        ],
+        collapsibleNotice45Min:
+          "For language learners: This lesson is designed to take about 30 to 45 minutes to complete",
+        collapsibleNoticeDescription:
+          "Each phase of the lesson includes a timer that tracks how long you spend on each activity. This data is used to analyze learning patterns and may affect your overall score. Tracking your time also helps us improve future learning experiences. Try to proceed at a steady pace for the most accurate results.",
+        congratulations: "Congratulations!",
+        summaryDescription:
+          "You have completed the lesson. Here's what you've accomplished",
+        wordSaved: "Saved Words",
+        sentencesSaved: "Saved Sentences",
+        quizPerformance: "Quiz Performance",
+        mcqScore: "Multiple Choice Score",
+        saqScore: "Short Answer Score",
+        timeTaken: "Time Taken",
+        xpEarned: "XP Earned",
+        MCQ1point:
+          "You need to review the material and try again. Don’t give up!",
+        MCQ2points: "A small improvement, but more work is needed",
+        MCQ3points: "Getting there! Keep practicing",
+        MCQ4points: "Great job! Almost full score",
+        MCQ5points: "Excellent! You fully understand the content",
+        SAQ1point: "Your answer is unclear. Try to be more specific",
+        SAQ2points: "Good start, but missing key details",
+        SAQ3points: "Decent answer. Try to elaborate more",
+        SAQ4points: "Strong answer. Just a little refinement needed",
+        SAQ5points: "Excellent! Clear, complete, and well-reasoned answer",
       },
     },
     teacher: {
@@ -477,19 +571,19 @@ export default {
         successDescription: "Your new level is {level}.",
       },
     },
-  rateChapter: {
-    title: "Rate this chapter",
-    content: "How do you rate the quality of this chapter?",
-    description: "This rating is used for calculating your next level.",
-    newLevel: "Your new level is {level}",
-    submitButton: "Submit",
-    backToHomeButton: "Back to Home",
-    nextQuizButton: "Next Quiz",
-    toast: {
-      success: "Success",
-      successDescription: "Your new level is {level}.",
+    rateChapter: {
+      title: "Rate this chapter",
+      content: "How do you rate the quality of this chapter?",
+      description: "This rating is used for calculating your next level.",
+      newLevel: "Your new level is {level}",
+      submitButton: "Submit",
+      backToHomeButton: "Back to Home",
+      nextQuizButton: "Next Quiz",
+      toast: {
+        success: "Success",
+        successDescription: "Your new level is {level}.",
+      },
     },
-  },
     audioButton: {
       play: "Play sound",
       pause: "Pause sound",
@@ -831,6 +925,7 @@ export default {
       submitButton: "Save Answer",
       elapsedTime: "{time} seconds elapsed",
       scorerate: "Let's Rate Your Answer",
+      wordCount: "Word Count is {count}",
     },
   },
 

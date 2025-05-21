@@ -14,6 +14,7 @@ import LAQuestionCard from "@/components/questions/laq-question-card";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
 import PrintArticle from "@/components/teacher/print-article";
+import ArticleLesson from "@/components/lesson/lesson-button";
 
 export const metadata = {
   title: "Article",
@@ -79,6 +80,11 @@ export default async function ArticleQuizPage({
               articleId={params.articleId}
               userId={user.id}
             />
+            <ArticleLesson
+              article={articleResponse.article}
+              articleId={params.articleId}
+              userId={user.id}
+            />
           </div>
 
           <MCQuestionCard
@@ -86,12 +92,14 @@ export default async function ArticleQuizPage({
             articleId={params.articleId}
             articleTitle={articleResponse.article.title}
             articleLevel={articleResponse.article.ra_level}
+            page="article"
           />
           <SAQuestionCard
             userId={user.id}
             articleId={params.articleId}
             articleTitle={articleResponse.article.title}
             articleLevel={articleResponse.article.ra_level}
+            page="article"
           />
           <LAQuestionCard
             userId={user.id}
