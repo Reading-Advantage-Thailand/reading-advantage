@@ -76,10 +76,19 @@ module.exports = {
             height: 0,
           },
         },
+        shake: {
+          "0%": { transform: "translateX(0)" },
+          "20%": { transform: "translateX(-5px)" },
+          "40%": { transform: "translateX(5px)" },
+          "60%": { transform: "translateX(-5px)" },
+          "80%": { transform: "translateX(5px)" },
+          "100%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        shake: "shake 0.5s ease-in-out",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

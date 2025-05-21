@@ -15,6 +15,7 @@ export default {
         articleSelection: "Chọn bài viết",
         // Trang nextquiz/[articleId]
         article: {
+          lessonButton: "Học trong bài học 45 phút",
           articleNotFound: "Không tìm thấy bài viết",
           articleInsufficientLevel:
             "Bạn không thể đọc bài viết này vì trình độ đọc của bạn chưa đủ.",
@@ -127,6 +128,7 @@ export default {
           flipCard: "Lật thẻ",
           nextButton: "Tiếp theo",
           yourXp: "Bạn đã nhận được {xp} XP cho hoạt động này",
+          completedMessage: "Bạn đã hoàn thành hoạt động này",
         },
         orderSentencesPractice: {
           orderSentences: "Sắp xếp câu",
@@ -134,6 +136,7 @@ export default {
             "Đây là một số câu từ một đoạn văn bạn đã đọc. Hãy xếp các câu theo trật tự có ý nghĩa với bạn. Nếu trật tự giống như trong đoạn văn, bạn sẽ nhận được 5 XP.",
           saveOrder: "Lưu & Tiếp tục sau",
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
+          completedMessage: "Bạn đã hoàn thành việc sắp xếp câu.",
         },
         clozeTestPractice: {
           clozeTest: "Bài kiểm tra lỗ hổng",
@@ -143,6 +146,8 @@ export default {
           errorOrder: "Vui lòng sắp xếp theo thứ tự chính xác",
           submitArticle: "Kiểm tra câu trả lời của bạn",
           nextPassage: "Đoạn tiếp theo",
+          completedMessage:
+            "Bạn đã hoàn thành bài kiểm tra điền vào chỗ trống.",
         },
         orderWordsPractice: {
           orderWords: "Sắp xếp từ",
@@ -153,6 +158,7 @@ export default {
           submitArticle: "Kiểm tra câu trả lời của bạn",
           nextPassage: "Đoạn tiếp theo",
           tryToSortThisSentence: "Hãy sắp xếp câu này.",
+          completedMessage: "Bạn đã hoàn thành bài kiểm tra sắp xếp từ.",
         },
         matchingPractice: {
           matching: "Ghép cặp",
@@ -230,6 +236,93 @@ export default {
             "A0-": "Bạn mới chỉ bắt đầu thôi!",
           },
         },
+      },
+      lessonPage: {
+        lesson: "Bài học",
+        startLesson: "Bắt đầu bài học",
+        nextPhase: "Giai đoạn tiếp theo",
+        previousPhase: "Giai đoạn trước",
+        saveButton: "Lưu",
+        readPageButton: "Quay về trang chính",
+        phase1Title: "Giới thiệu",
+        phase1Description:
+          "Trong bài học này, bạn sẽ đọc một bài viết về {topic}",
+        phase2Title: "Xem trước từ vựng",
+        phase2Description: "Đây là các từ vựng bạn sẽ gặp trong bài viết",
+        phase3Title: "Đọc lần đầu kèm âm thanh",
+        phase3Description: "Đọc bài viết lần đầu kèm theo âm thanh",
+        phase4Title: "Thu thập từ vựng",
+        phase4Description:
+          "Thu thập những từ bạn chưa biết trong bài viết và chọn ít nhất 5 từ để lưu vào thẻ từ vựng",
+        phase5Title: "Đọc chuyên sâu",
+        phase5Description:
+          "Đọc lại bài viết một lần nữa mà không sử dụng âm thanh",
+        phase6Title: "Thu thập câu",
+        phase6Description:
+          "Thu thập các câu bạn chưa biết trong bài viết. Bạn có thể nhấn nút dịch để xem nghĩa và nhấn giữ (trên điện thoại) hoặc nhấp chuột phải (trên máy tính) để lưu vào thẻ câu (ít nhất 5 câu)",
+        phase7Title: "Câu hỏi trắc nghiệm",
+        phase7Description:
+          "Trả lời các câu hỏi trắc nghiệm liên quan đến bài viết",
+        phase8Title: "Câu hỏi tự luận",
+        phase8Description:
+          "Trả lời các câu hỏi tự luận ngắn liên quan đến bài viết",
+        phase9Title: "Luyện từ - Thẻ từ vựng",
+        phase9Description:
+          "Luyện tập các từ vựng đã học trong bài. Bạn có thể dùng hoạt động này để tự đánh giá khả năng nhận diện từ",
+        phase10Title: "Luyện từ - Ghép từ",
+        phase10Description:
+          "Luyện tập các từ vựng bằng cách ghép các từ với nghĩa tương ứng",
+        phase11Title: "Luyện câu - Thẻ câu",
+        phase11Description:
+          "Luyện các câu đã học bằng thẻ. Bạn có thể tự đánh giá khả năng hiểu câu của mình",
+        phase12Title: "Luyện câu - Chọn hoạt động",
+        phase12Description:
+          "Luyện tập các câu đã học thông qua hoạt động bạn muốn chọn",
+        phase13Title: "Câu hỏi về ngôn ngữ",
+        phase13Description:
+          "Trả lời các câu hỏi liên quan đến ngôn ngữ trong bài học này. Trợ lý AI sẽ đánh giá câu trả lời của bạn (có thể bỏ qua)",
+        phase14Title: "Tóm tắt bài học",
+        phase14Description: "Tóm tắt nội dung bài học này",
+        phases: [
+          "Giới thiệu",
+          "Xem trước từ vựng",
+          "Đọc lần đầu kèm âm thanh",
+          "Thu thập từ vựng",
+          "Đọc chuyên sâu",
+          "Thu thập câu",
+          "Câu hỏi trắc nghiệm",
+          "Câu hỏi tự luận",
+          "Luyện từ - Thẻ từ vựng",
+          "Luyện từ - Ghép từ",
+          "Luyện câu - Thẻ câu",
+          "Luyện câu - Chọn hoạt động",
+          "Câu hỏi về ngôn ngữ",
+          "Tóm tắt bài học",
+        ],
+        collapsibleNotice45Min:
+          "Dành cho người học ngôn ngữ: Bài học này được thiết kế để hoàn thành trong khoảng 30 đến 45 phút",
+        collapsibleNoticeDescription:
+          "Mỗi giai đoạn có đồng hồ bấm giờ để theo dõi thời gian bạn dành cho mỗi hoạt động. Dữ liệu này sẽ được sử dụng để phân tích việc học và có thể ảnh hưởng đến điểm tổng thể. Theo dõi thời gian cũng giúp chúng tôi cải thiện trải nghiệm học tập trong tương lai. Hãy cố gắng học với tốc độ đều đặn để có kết quả chính xác nhất.",
+        congratulations: "Chúc mừng!",
+        summaryDescription:
+          "Bạn đã hoàn thành bài học. Đây là những gì bạn đã đạt được",
+        wordSaved: "Từ đã lưu",
+        sentencesSaved: "Câu đã lưu",
+        quizPerformance: "Hiệu suất làm bài kiểm tra",
+        mcqScore: "Điểm trắc nghiệm",
+        saqScore: "Điểm tự luận",
+        timeTaken: "Thời gian hoàn thành",
+        xpEarned: "Kinh nghiệm đạt được",
+        MCQ1point: "Bạn cần ôn tập lại và thử lại lần nữa. Đừng bỏ cuộc!",
+        MCQ2points: "Có tiến bộ nhỏ, nhưng vẫn cần cải thiện",
+        MCQ3points: "Bắt đầu hiểu rồi, hãy tiếp tục luyện tập",
+        MCQ4points: "Tốt lắm! Gần đạt điểm tối đa rồi",
+        MCQ5points: "Xuất sắc! Bạn đã hiểu rõ nội dung",
+        SAQ1point: "Câu trả lời chưa rõ ràng. Hãy viết cụ thể hơn",
+        SAQ2points: "Khởi đầu tốt nhưng thiếu chi tiết quan trọng",
+        SAQ3points: "Trả lời ổn, hãy cố gắng diễn giải thêm",
+        SAQ4points: "Câu trả lời mạnh mẽ, chỉ cần chỉnh sửa nhỏ",
+        SAQ5points: "Tuyệt vời! Câu trả lời rõ ràng, đầy đủ và hợp lý",
       },
     },
     teacher: {
@@ -464,7 +557,7 @@ export default {
         successDescription: "Trình độ mới của bạn là {level}.",
       },
     },
-    rateChapter:{
+    rateChapter: {
       title: "Đánh giá chương này",
       content: "Bạn đánh giá chất lượng chương này như thế nào?",
       description:
@@ -820,6 +913,7 @@ export default {
       submitButton: "Lưu câu trả lời",
       elapsedTime: "{time} giây đã trôi qua",
       scorerate: "Hãy đánh giá câu trả lời của bạn",
+      wordCount: "Số từ {count}",
     },
   },
 
