@@ -107,7 +107,7 @@ export default function SAQuestionCard({
 
   useEffect(() => {
     if (state === QuestionState.COMPLETED && page === "lesson") {
-      onCompleteChange ? true : null;
+      onCompleteChange?.(true);
     }
   }, [state, onCompleteChange, page]);
 
