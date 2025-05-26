@@ -83,7 +83,7 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
     };
 
     fetchCurrentPhase();
-  }, [userId, articleId, setTimer]);
+  }, [userId, articleId]);
 
   const LessonTimer = React.memo(() => {
     const { elapsedTime } = useTimer();

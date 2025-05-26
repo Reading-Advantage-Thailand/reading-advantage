@@ -95,7 +95,7 @@ export default function MCQuestionCard({
 
   useEffect(() => {
     if (state === QuestionState.COMPLETED && page === "lesson") {
-      onCompleteChange ? true : null;
+      onCompleteChange?.(true);
     }
   }, [state, onCompleteChange, page]);
 

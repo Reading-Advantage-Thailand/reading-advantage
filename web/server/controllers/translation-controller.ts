@@ -123,7 +123,10 @@ export async function translate(
       });
     }
 
-    const sentences = splitTextIntoSentences(article.passage);
+    const sentences: string[] = Array.isArray(article.timepoints)
+      ? article.timepoints.map((tp: any) => tp.sentences)
+      : [];
+
     let translatedSentences: string[] = [];
     try {
       if (targetLanguage === LanguageType.EN) {
