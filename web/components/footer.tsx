@@ -12,18 +12,6 @@ interface FooterProps {
 
 const info = [
   {
-    title: "About",
-    links: [
-      { title: "About Us", href: "/about" },
-      { title: "Features", href: "/#features" },
-      { title: "Pricing", href: "/pricing" },
-      {
-        title: "Support",
-        href: "https://docs.google.com/forms/d/e/1FAIpQLSe_Ew100kef6j4O4IuiHm4ZeGhOj5FN6JRyJ7-0gvZV9eFgjQ/viewform?usp=sf_link",
-      },
-    ],
-  },
-  {
     title: "Legal",
     links: [
       { title: "Privacy Policy", href: "/privacy-policy" },
@@ -44,7 +32,7 @@ const info = [
 
 export function Footer({ className }: FooterProps) {
   return (
-    <footer className="text-white">
+    <footer className="text-white md:mt-36">
       <svg viewBox="0 0 800 23" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
           fillRule="evenodd"
@@ -74,7 +62,7 @@ export function Footer({ className }: FooterProps) {
                     <h2 className="mb-6 text-sm font-semibold uppercase text-white">
                       {item.title}
                     </h2>
-                    <ul className="text-gray-400 font-medium">
+                    <ul className="text-gray-400 text-sm font-medium">
                       {item.links.map((link) => (
                         <li key={link.title} className="mb-4">
                           <Link href={link.href}>{link.title}</Link>

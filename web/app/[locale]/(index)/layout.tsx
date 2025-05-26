@@ -19,7 +19,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen flex-col">
         <header className="container z-40">
           <div className="flex h-20 items-center justify-between py-6">
-            <MainNav items={indexPageConfig.mainNav} />
+            <MainNav />
             <nav>
               <Link
                 href="/auth/signin"
@@ -45,7 +45,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         <div className="flex min-h-screen flex-col">
           <header className="container z-40 bg-background">
             <div className="flex h-20 items-center justify-between py-6">
-              <MainNav items={indexPageConfig.mainNav} />
+              <MainNav />
               <nav>
                 <UserAccountNav user={user} />
               </nav>
@@ -62,7 +62,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         <div className="flex min-h-screen flex-col">
           <header className="container z-40">
             <div className="flex h-20 items-center justify-between py-6">
-              <MainNav items={indexPageConfig.mainNav} />
+              <MainNav />
               {/* <ProgressBar progress={user.xp} level={user.level!} /> */}
               <nav>
                 <UserAccountNav user={user} />
