@@ -5,6 +5,12 @@ import * as z from "zod";
 import admin from "firebase-admin";
 import { getAllLicenses } from "./license-controller";
 import { getCurrentUser } from "@/lib/session";
+import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isoWeek from "dayjs/plugin/isoWeek";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isoWeek);
 
 interface RequestContext {
   params: {
@@ -964,6 +970,191 @@ export async function getTopSchoolsXp(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ data: topSchools }, { status: 200 });
   } catch (error) {
     console.error("Error fetching top schools XP data:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function processAllLicensesXP() {
+  try {
+    const licensesSnap = await db.collection("licenses").get();
+
+    const studentToLicense = new Map<
+      string,
+      { licenseId: string; classroomId: string }
+    >();
+    const licenseData = new Map<
+      string,
+      Map<
+        string,
+        Map<
+          string,
+          { today: number; week: number; month: number; allTime: number }
+        >
+      >
+    >();
+
+    // 1. Loop licenses → classrooms → students
+    for (const licenseDoc of licensesSnap.docs) {
+      const licenseId = licenseDoc.id;
+      const classSnap = await db
+        .collection("classroom")
+        .where("license_id", "==", licenseId)
+        .get();
+
+      const licenseMap = new Map();
+      for (const classDoc of classSnap.docs) {
+        const classData = classDoc.data();
+        const classroomId = classDoc.id;
+        const students = classData.student || [];
+
+        const studentMap = new Map();
+        for (const s of students) {
+          const studentId = s.studentId;
+          studentToLicense.set(studentId, { licenseId, classroomId });
+          studentMap.set(studentId, {
+            today: 0,
+            week: 0,
+            month: 0,
+            allTime: 0,
+          });
+        }
+        licenseMap.set(classroomId, studentMap);
+      }
+      licenseData.set(licenseId, licenseMap);
+    }
+
+    // 2. Prepare dates
+    const today = dayjs().startOf("day");
+    const weekStart = dayjs().startOf("isoWeek");
+    const monthStart = dayjs().startOf("month");
+
+    // 3. Scan activity logs
+    const activitySnap = await db.collection("user-activity-log").get();
+
+    for (const activityDoc of activitySnap.docs) {
+      const subcollections = await activityDoc.ref.listCollections();
+
+      for (const sub of subcollections) {
+        const subSnap = await sub.get();
+        for (const doc of subSnap.docs) {
+          const data = doc.data();
+          const userId = data.userId;
+          const xp = data.xpEarned || 0;
+          const ts = data.timestamp?.toDate?.();
+          if (!ts || !studentToLicense.has(userId)) continue;
+
+          const { licenseId, classroomId } = studentToLicense.get(userId)!;
+          const classMap = licenseData.get(licenseId);
+          const studentMap = classMap?.get(classroomId);
+          const entry = studentMap?.get(userId);
+          if (!entry) continue;
+
+          const date = dayjs(ts);
+          entry.allTime += xp;
+          if (date.isSameOrAfter(monthStart)) entry.month += xp;
+          if (date.isSameOrAfter(weekStart)) entry.week += xp;
+          if (date.isSameOrAfter(today)) entry.today += xp;
+        }
+      }
+    }
+
+    // 4. Save summary to Firestore
+    for (const [licenseId, classMap] of licenseData) {
+      const payload: Record<string, any> = {};
+      for (const [classroomId, studentMap] of classMap) {
+        payload[classroomId] = {};
+        for (const [studentId, xp] of studentMap) {
+          payload[classroomId][studentId] = xp;
+        }
+      }
+      await db.collection("xp-summary").doc(licenseId).set(payload);
+    }
+
+    return NextResponse.json({ message: "XP summary processed" });
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getClassXpPerStudents(
+  req: NextRequest,
+  ctx: RequestContext
+) {
+  try {
+    const classroomId = ctx.params?.classroomId;
+    if (!classroomId) {
+      return NextResponse.json(
+        { message: "Missing classroomId" },
+        { status: 400 }
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const filter = searchParams.get("filter"); // เช่น "today", "month", "allTime"
+
+    const classroomRef = await db
+      .collection("classroom")
+      .doc(classroomId)
+      .get();
+    const classroomDoc = classroomRef.data();
+
+    const license_id = classroomDoc?.license_id;
+    if (!license_id) {
+      return NextResponse.json(
+        { message: "Classroom not found or license_id is missing" },
+        { status: 404 }
+      );
+    }
+
+    const studentsXpSnapshot = await db
+      .collection("xp-summary")
+      .doc(license_id)
+      .get();
+
+    const studentsXpData = studentsXpSnapshot.data();
+    if (!studentsXpData) {
+      return NextResponse.json(
+        { message: "XP data not found" },
+        { status: 404 }
+      );
+    }
+
+    const classroomXpData = studentsXpData[classroomId];
+    if (!classroomXpData) {
+      return NextResponse.json(
+        { message: "XP data for classroom not found" },
+        { status: 404 }
+      );
+    }
+
+    const result: Record<string, number> = {};
+
+    // Loop เพื่อดึง display_name ทีละคน
+    for (const [studentId, xpData] of Object.entries(classroomXpData)) {
+      // ดึง display_name จาก users/{studentId}
+      const userSnapshot = await db.collection("users").doc(studentId).get();
+      const userData = userSnapshot.data();
+      const displayName = userData?.display_name || studentId;
+
+      // filter ค่า XP ที่ต้องการ
+      if (filter) {
+        const xpValue = (xpData as any)[filter] ?? 0;
+        result[displayName] = xpValue;
+      } else {
+        // ถ้าไม่ filter ก็เก็บทั้ง object
+        result[displayName] = xpData as number;
+      }
+    }
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Error fetching XP data:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
