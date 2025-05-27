@@ -1038,6 +1038,8 @@ export async function processAllLicensesXP() {
       const subcollections = await activityDoc.ref.listCollections();
 
       for (const sub of subcollections) {
+        if (sub.id === "level-test-activity-log") continue;
+
         const subSnap = await sub.get();
         for (const doc of subSnap.docs) {
           const data = doc.data();
@@ -1096,7 +1098,7 @@ export async function getClassXpPerStudents(
     }
 
     const { searchParams } = new URL(req.url);
-    const filter = searchParams.get("filter"); // เช่น "today", "month", "allTime"
+    const filter = searchParams.get("filter"); // "today", "week", "month", "allTime"
 
     const classroomRef = await db
       .collection("classroom")

@@ -810,6 +810,19 @@ export default {
       viewDetails: "Xem Chi Tiết",
       noStudent: "Không có học sinh trong lớp này",
       noStudentDescription: "Vui lòng chọn lớp từ Lớp Học Của Tôi",
+      studentXpDashboard: "Bảng XP của học sinh",
+      studentXpDashboardDescription: "Theo dõi tiến độ của từng học sinh",
+      selectTimeRange: "Chọn khoảng thời gian",
+      timeRangeDropdown: {
+        today: "Hôm nay",
+        weekly: "Hàng tuần",
+        Monthly: "Hàng tháng",
+        allTime: "Tất cả thời gian",
+      },
+      target: "Mục tiêu",
+      timeRange: "Khoảng thời gian",
+      average: "Trung bình",
+      footer: "Dữ liệu được cập nhật vào {yesterday} lúc 23:00",
 
       editStudent: {
         title: "Chỉnh Sửa Chi Tiết Học Sinh",

@@ -824,6 +824,19 @@ export default {
       viewDetails: "View Details",
       noStudent: "No student in this class",
       noStudentDescription: "Please select class from My Classes",
+      studentXpDashboard: "Student XP Dashboard",
+      studentXpDashboardDescription: "Track each student's progress",
+      selectTimeRange: "Select Time Range",
+      timeRangeDropdown: {
+        today: "Today",
+        weekly: "Weekly",
+        Monthly: "Monthly",
+        allTime: "All Time",
+      },
+      target: "Target",
+      timeRange: "Time Range",
+      average: "Average",
+      footer: "Data updated on {yesterday} at 11:00 PM",
 
       editStudent: {
         title: "Edit Student Details",

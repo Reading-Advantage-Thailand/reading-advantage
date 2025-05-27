@@ -14,7 +14,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 
 // Middleware
 router.use(logRequest);
-//router.use(restrictAccessKey);
+router.use(restrictAccessKey);
 
 router.get(processAllLicensesXP);
 

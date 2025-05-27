@@ -14,7 +14,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 
 // Middleware
 router.use(logRequest);
-//router.use(protect);
+router.use(protect);
 
 // API: GET /api/v1/classroom/xp-per-student/classrom_id
 router.get(getClassXpPerStudents);
