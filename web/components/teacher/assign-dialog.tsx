@@ -62,6 +62,7 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingStudents, setLoadingStudents] = useState<boolean>(false);
   const t = useScopedI18n("pages.teacher.AssignmentPage");
+  const [assignedStudentIds, setAssignedStudentIds] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     classroomId: "",
@@ -88,11 +89,65 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
     fetchCourses();
   }, [setCourses]);
 
-  // Fetch students when classroom is selected
+  useEffect(() => {
+    if (!form.classroomId || !articleId) {
+      return;
+    }
+
+    async function checkExistingAssignment() {
+      setLoadingStudents(true);
+      try {
+        const res = await fetch(
+          `/api/v1/assignments?classroomId=${form.classroomId}&articleId=${articleId}`
+        );
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const assignments = await res.json();
+
+        if (assignments.length > 0) {
+          const assignment = assignments[0];
+
+          setForm((prev) => ({
+            ...prev,
+            title: assignment.title,
+            description: assignment.description,
+            classroomId: assignment.classroomId,
+            dueDate: assignment.dueDate,
+          }));
+
+          setDate(new Date(assignment.dueDate));
+          const studentIdsFromServer = assignments.map((a: any) => a.studentId);
+          setSelectedStudents(studentIdsFromServer);
+          setAssignedStudentIds(studentIdsFromServer);
+        } else {
+          setForm((prev) => ({
+            ...prev,
+            title: "",
+            description: "",
+          }));
+          setSelectedStudents([]);
+          setAssignedStudentIds([]);
+        }
+        setLoadingStudents(false);
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+        setSelectedStudents([]);
+        setAssignedStudentIds([]);
+        setForm((prev) => ({
+          ...prev,
+          title: "",
+          description: "",
+        }));
+      }
+    }
+
+    checkExistingAssignment();
+  }, [form.classroomId, articleId]);
+
   useEffect(() => {
     async function fetchStudents() {
       if (!form.classroomId) {
         setStudents([]);
+        setSelectedStudents([]);
         return;
       }
 
@@ -103,15 +158,14 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = await res.json();
-
-        // Assuming the API returns students in data.students or similar structure
-        // Adjust this based on your actual API response structure
         const studentsData =
           data.studentInClass || data.data?.studentInClass || [];
         setStudents(studentsData);
-
-        // Reset selected students when classroom changes
-        setSelectedStudents([]);
+        setSelectedStudents(
+          studentsData
+            .map((s: { id: string }) => s.id)
+            .filter((id: string) => assignedStudentIds.includes(id))
+        );
         if (errors.selectedStudents) {
           setErrors((prev) => ({ ...prev, selectedStudents: "" }));
         }
@@ -123,13 +177,14 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
           variant: "destructive",
         });
         setStudents([]);
+        setSelectedStudents([]);
       } finally {
         setLoadingStudents(false);
       }
     }
 
     fetchStudents();
-  }, [form.classroomId]);
+  }, [form.classroomId, assignedStudentIds, errors.selectedStudents]);
 
   // Handle form input changes
   const handleChange = (key: string, value: any) => {
@@ -400,7 +455,12 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
                       <Checkbox
                         id={student.id}
                         checked={selectedStudents.includes(student.id)}
-                        onCheckedChange={() => handleStudentToggle(student.id)}
+                        disabled={assignedStudentIds.includes(student.id)}
+                        onCheckedChange={() => {
+                          if (!assignedStudentIds.includes(student.id)) {
+                            handleStudentToggle(student.id);
+                          }
+                        }}
                       />
                       <Label
                         htmlFor={student.id}
