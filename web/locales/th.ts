@@ -1,3 +1,5 @@
+import { Target } from "lucide-react";
+
 export default {
   pages: {
     indexPage: {
@@ -798,6 +800,19 @@ export default {
       viewDetails: "ดูรายละเอียด",
       noStudent: "ไม่มีนักเรียนในชั้นนี้",
       noStudentDescription: "กรุณาเลือกชั้นเรียนจากชั้นเรียนของฉัน",
+      studentXpDashboard: "แดชบอร์ด XP นักเรียน",
+      studentXpDashboardDescription: "ติดตามความก้าวหน้าของนักเรียนแต่ละคน",
+      selectTimeRange: "เลือกช่วงเวลา",
+      timeRangeDropdown: {
+        today: "วันนี้",
+        weekly: "รายสัปดาห์",
+        Monthly: "รายเดือน",
+        allTime: "ทั้งหมด",
+      },
+      target: "เป้าหมาย",
+      timeRange: "ช่วงเวลา",
+      average: "ค่าเฉลี่ย",
+      footer: "ข้อมูลอัพเดท ณ วันที่ {yesterday} เวลา 23.00 น.",
 
       editStudent: {
         title: "แก้ไขรายละเอียดนักเรียน",

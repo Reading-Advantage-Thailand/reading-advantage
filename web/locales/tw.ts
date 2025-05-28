@@ -768,6 +768,19 @@ export default {
       viewDetails: "查看詳情",
       noStudent: "此班級中沒有學生",
       noStudentDescription: "請從我的班級中選擇班級",
+      studentXpDashboard: "學生XP儀表板",
+      studentXpDashboardDescription: "追蹤每位學生的進度",
+      selectTimeRange: "選擇時間範圍",
+      timeRangeDropdown: {
+        today: "今天",
+        weekly: "每週",
+        Monthly: "每月",
+        allTime: "全部時間",
+      },
+      target: "目標",
+      timeRange: "時間範圍",
+      average: "平均值",
+      footer: "資料更新於{yesterday}日晚上11點",
 
       editStudent: {
         title: "編輯學生詳情",
