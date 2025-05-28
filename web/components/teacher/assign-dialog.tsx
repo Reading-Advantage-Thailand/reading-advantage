@@ -258,31 +258,65 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
         dueDate: date!.toISOString(),
       };
 
-      // Replace this with your actual API call
-      const response = await fetch("/api/v1/assignments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(assignmentData),
-      });
+      // แยก student ใหม่กับที่มีอยู่แล้ว
+      const newStudents = selectedStudents.filter(
+        (id) => !assignedStudentIds.includes(id)
+      );
+      const existingStudents = selectedStudents.filter((id) =>
+        assignedStudentIds.includes(id)
+      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // POST สำหรับ student ใหม่
+      if (newStudents.length > 0) {
+        const response = await fetch("/api/v1/assignments", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...assignmentData,
+            selectedStudents: newStudents,
+          }),
+        });
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
+      console.log("assignedStudentIds", assignedStudentIds);
+      console.log("selectedStudents", selectedStudents);
+      console.log("existingStudents", existingStudents);
+
+      // PUT สำหรับ student ที่มี assignment อยู่แล้ว
+      for (const studentId of existingStudents) {
+        const response = await fetch("/api/v1/assignments", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            classroomId: form.classroomId,
+            articleId,
+            studentId,
+            updates: {
+              title: form.title,
+              description: form.description,
+              dueDate: date!.toISOString(),
+            },
+          }),
+        });
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       toast({
         title: `${t("toast.success")}`,
         description: `${t("toast.assignmentCreated", { title: form.title })}`,
       });
 
-      // Reset form and close dialog
       handleReset();
       setIsOpen(false);
     } catch (error) {
-      console.error("Error creating assignment:", error);
+      console.error("Error creating/updating assignment:", error);
       toast({
         title: `${t("toast.error")}`,
         description: `${t("toast.creationFailed")}`,
