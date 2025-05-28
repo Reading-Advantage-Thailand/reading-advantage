@@ -46,6 +46,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ClassroomXPBarChartPerStudents from "../classroom-xp-chart-per-students";
+import { set } from "lodash";
 
 type StudentData = {
   id: string;
@@ -91,6 +93,7 @@ export default function Reports() {
   const trp = useScopedI18n("components.reports");
   const router = useRouter();
   const { classrooms, fetchClassrooms } = useClassroomStore();
+  const [xpData, setXpData] = React.useState<any>({});
   const {
     classes,
     selectedClassroom,
@@ -251,11 +254,13 @@ export default function Reports() {
     if (classrooms.some((c) => c.id === currentClassroomId)) {
       setSelectedClassroom(currentClassroomId);
       fetchStudentInClass(currentClassroomId);
+      fetchXpPerStudents(currentClassroomId);
     }
     if (!currentClassroomId) {
       setClasses({} as Classes);
       setSelectedClassroom("");
       setStudentInClass([]);
+      setXpData({});
     }
   }, [pathname, classrooms]);
 
@@ -280,6 +285,23 @@ export default function Reports() {
       setClasses(data.classroom);
     } catch (error) {
       console.error("Error fetching Classroom list:", error);
+    }
+  };
+
+  const fetchXpPerStudents = async (classId: string) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/xp-per-students/${classId}`,
+        {
+          method: "GET",
+        }
+      );
+      if (!res.ok) throw new Error("Failed to fetch Classroom XP");
+
+      const data = await res.json();
+      setXpData(data);
+    } catch (error) {
+      console.error("Error fetching Classroom XP:", error);
     }
   };
 
@@ -412,6 +434,7 @@ export default function Reports() {
           </Button>
         </div>
       </div>
+      <ClassroomXPBarChartPerStudents data={xpData} />
     </div>
   );
 }
