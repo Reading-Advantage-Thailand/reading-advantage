@@ -10,7 +10,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const router = createEdgeRouter<NextRequest, NextResponse>();
 
 router.use(logRequest);
-//router.use(protect);
+router.use(protect);
 //GET /api/v1/assignments?classroomId=abc123&articleId=xyz456
 router.get(getAssignments);
 // POST /api/v1/assignments {request body with classroomId, articleId, title, description, dueDate, selectedStudents, userId}
