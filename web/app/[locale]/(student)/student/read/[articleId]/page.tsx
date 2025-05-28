@@ -79,7 +79,7 @@ export default async function ArticleQuizPage({
               />
             )}
 
-            {user.role.includes("teacher") && (
+            {isAtLeastTeacher("teacher") && (
               <AssignDialog
                 article={articleResponse.article}
                 articleId={params.articleId}
