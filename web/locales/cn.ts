@@ -1,3 +1,5 @@
+import AssignmentPage from "@/app/[locale]/(teacher)/teacher/assignments/page";
+
 export default {
   pages: {
     indexPage: {
@@ -308,6 +310,44 @@ export default {
         levelDescription: "您当前的等级是 {level}",
         progressOf: "{nameOfStudent} 的进度",
         noUserProgress: "没有用户进度，因为学生从未阅读过文章或进行其他活动。",
+      },
+      AssignmentPage: {
+        assignment: "作业",
+        createAssignment: "创建作业",
+        createAssignmentDescription: "根据所选文章为学生创建新作业。",
+        classroom: "班级",
+        assignmentTitle: "作业标题",
+        description: "描述",
+        students: "学生",
+        deselectAllStudents: "取消全选学生",
+        selectAllStudents: "全选学生",
+        loadingStudents: "正在加载学生...",
+        noStudentsFound: "该班级中未找到学生",
+        pleaseSelectClassroomFirst: "请先选择一个班级",
+        selectedStudentsCount: "已选择：{studentsCount} 名学生",
+        dueDate: "截止日期",
+        selectedDueDate: "截止日期",
+        creating: "正在创建...",
+        createAssignmentButton: "创建作业",
+        cancel: "取消",
+        enterAssignmentTitle: "输入作业标题",
+        enterAssignmentDescription: "输入作业描述和说明",
+        selectClass: "选择班级",
+        error: {
+          pleaseSelectClass: "请选择一个班级",
+          titleRequired: "作业标题为必填项",
+          descriptionRequired: "作业描述为必填项",
+          dueDateRequired: "截止日期为必填项",
+          selectAtLeastOneStudent: "请至少选择一位学生",
+        },
+        toast: {
+          validationError: "验证错误",
+          fixErrorsAndTryAgain: "请修复错误后再试一次",
+          success: "成功！",
+          assignmentCreated: "作业 {title} 创建成功。",
+          error: "错误",
+          creationFailed: "创建作业失败，请重试。",
+        },
       },
     },
   },

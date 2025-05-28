@@ -1,3 +1,4 @@
+import AssignmentPage from "@/app/[locale]/(teacher)/teacher/assignments/page";
 import { Target } from "lucide-react";
 
 export default {
@@ -328,6 +329,46 @@ export default {
         progressOf: "ความคืบหน้าของ {nameOfStudent}",
         noUserProgress:
           "ไม่มีความคืบหน้าของผู้ใช้เนื่องจากนักเรียนไม่เคยอ่านบทความหรือกิจกรรมอื่น ๆ",
+      },
+      AssignmentPage: {
+        assignment: "งานที่มอบหมาย",
+        createAssignment: "สร้างงานที่มอบหมาย",
+        createAssignmentDescription:
+          "สร้างงานที่มอบหมายใหม่ให้กับนักเรียนของคุณจากบทความที่เลือก",
+        classroom: "ชั้นเรียน",
+        assignmentTitle: "ชื่อหัวข้องาน",
+        description: "คำอธิบาย",
+        students: "นักเรียน",
+        deselectAllStudents: "ยกเลิกเลือกนักเรียนทั้งหมด",
+        selectAllStudents: "เลือกนักเรียนทั้งหมด",
+        loadingStudents: "กำลังโหลดรายชื่อนักเรียน...",
+        noStudentsFound: "ไม่พบนักเรียนในชั้นเรียนนี้",
+        pleaseSelectClassroomFirst: "กรุณาเลือกชั้นเรียนก่อน",
+        selectedStudentsCount: "เลือกแล้ว: {studentsCount} คน",
+        dueDate: "กำหนดส่ง",
+        selectedDueDate: "วันกำหนดส่งที่เลือก",
+        creating: "กำลังสร้าง...",
+        createAssignmentButton: "สร้างงานที่มอบหมาย",
+        cancel: "ยกเลิก",
+        enterAssignmentTitle: "กรอกชื่อหัวข้องานที่มอบหมาย",
+        enterAssignmentDescription:
+          "กรอกรายละเอียดและคำแนะนำสำหรับงานที่มอบหมาย",
+        selectClass: "เลือกชั้นเรียน",
+        error: {
+          pleaseSelectClass: "กรุณาเลือกชั้นเรียน",
+          titleRequired: "กรุณากรอกชื่อหัวข้องานที่มอบหมาย",
+          descriptionRequired: "กรุณากรอกรายละเอียดของงานที่มอบหมาย",
+          dueDateRequired: "กรุณากำหนดวันส่ง",
+          selectAtLeastOneStudent: "กรุณาเลือกนักเรียนอย่างน้อยหนึ่งคน",
+        },
+        toast: {
+          validationError: "เกิดข้อผิดพลาดในการตรวจสอบข้อมูล",
+          fixErrorsAndTryAgain: "กรุณาแก้ไขข้อผิดพลาดแล้วลองใหม่อีกครั้ง",
+          success: "สำเร็จ!",
+          assignmentCreated: "สร้างงานที่มอบหมาย {title} เรียบร้อยแล้ว",
+          error: "เกิดข้อผิดพลาด",
+          creationFailed: "ไม่สามารถสร้างงานที่มอบหมายได้ กรุณาลองใหม่อีกครั้ง",
+        },
       },
     },
   },

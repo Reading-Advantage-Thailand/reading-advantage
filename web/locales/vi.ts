@@ -1,3 +1,5 @@
+import AssignmentPage from "@/app/[locale]/(teacher)/teacher/assignments/page";
+
 export default {
   pages: {
     indexPage: {
@@ -333,6 +335,45 @@ export default {
         progressOf: "Tiến Độ Của {nameOfStudent}",
         noUserProgress:
           "Không có tiến độ người dùng do học sinh chưa từng đọc bài viết hoặc hoạt động khác.",
+      },
+      AssignmentPage: {
+        assignment: "Bài tập",
+        createAssignment: "Tạo bài tập",
+        createAssignmentDescription:
+          "Tạo bài tập mới cho học sinh của bạn dựa trên bài viết đã chọn.",
+        classroom: "Lớp học",
+        assignmentTitle: "Tiêu đề bài tập",
+        description: "Mô tả",
+        students: "Học sinh",
+        deselectAllStudents: "Bỏ chọn tất cả học sinh",
+        selectAllStudents: "Chọn tất cả học sinh",
+        loadingStudents: "Đang tải danh sách học sinh...",
+        noStudentsFound: "Không tìm thấy học sinh trong lớp này",
+        pleaseSelectClassroomFirst: "Vui lòng chọn một lớp học trước",
+        selectedStudentsCount: "Đã chọn: {studentsCount} học sinh",
+        dueDate: "Hạn nộp",
+        selectedDueDate: "Hạn nộp",
+        creating: "Đang tạo...",
+        createAssignmentButton: "Tạo bài tập",
+        cancel: "Hủy",
+        enterAssignmentTitle: "Nhập tiêu đề bài tập",
+        enterAssignmentDescription: "Nhập mô tả và hướng dẫn cho bài tập",
+        selectClass: "Chọn lớp học",
+        error: {
+          pleaseSelectClass: "Vui lòng chọn một lớp học",
+          titleRequired: "Tiêu đề bài tập là bắt buộc",
+          descriptionRequired: "Mô tả bài tập là bắt buộc",
+          dueDateRequired: "Hạn nộp là bắt buộc",
+          selectAtLeastOneStudent: "Vui lòng chọn ít nhất một học sinh",
+        },
+        toast: {
+          validationError: "Lỗi xác thực",
+          fixErrorsAndTryAgain: "Vui lòng sửa lỗi và thử lại",
+          success: "Thành công!",
+          assignmentCreated: "Bài tập {title} đã được tạo thành công.",
+          error: "Lỗi",
+          creationFailed: "Không thể tạo bài tập. Vui lòng thử lại.",
+        },
       },
     },
   },

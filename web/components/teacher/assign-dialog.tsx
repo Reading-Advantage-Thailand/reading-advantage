@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Article } from "@/components/models/article-model";
 import { toast } from "../ui/use-toast";
@@ -23,10 +23,12 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 import { useCourseStore } from "@/store/classroom-store";
 import { Label } from "../ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Checkbox } from "../ui/checkbox";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import { useScopedI18n } from "@/locales/client";
 
 type Props = {
   article: Article;
@@ -34,107 +36,468 @@ type Props = {
   userId: string;
 };
 
+// Student interface
+interface Student {
+  id: string;
+  display_name: string;
+}
+
+interface AssignmentFormData {
+  classroomId: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  selectedStudents: string[];
+  articleId: string;
+  userId: string;
+}
+
 export default function AssignDialog({ article, articleId, userId }: Props) {
-  const { courses } = useCourseStore();
+  const { courses, setCourses } = useCourseStore();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState<boolean>(false);
+  const t = useScopedI18n("pages.teacher.AssignmentPage");
 
   const [form, setForm] = useState({
-    courseId: "",
+    classroomId: "",
     title: "",
     description: "",
     dueDate: "",
-    maxPoints: undefined,
-    state: "DRAFT",
   });
+
+  useEffect(() => {
+    async function fetchCourses() {
+      try {
+        const res = await fetch("/api/v1/classroom");
+        const data = await res.json();
+        setCourses(data.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch courses",
+          variant: "destructive",
+        });
+      }
+    }
+    fetchCourses();
+  }, [setCourses]);
+
+  // Fetch students when classroom is selected
+  useEffect(() => {
+    async function fetchStudents() {
+      if (!form.classroomId) {
+        setStudents([]);
+        return;
+      }
+
+      setLoadingStudents(true);
+      try {
+        const res = await fetch(`/api/v1/classroom/${form.classroomId}`);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+
+        // Assuming the API returns students in data.students or similar structure
+        // Adjust this based on your actual API response structure
+        const studentsData =
+          data.studentInClass || data.data?.studentInClass || [];
+        setStudents(studentsData);
+
+        // Reset selected students when classroom changes
+        setSelectedStudents([]);
+        if (errors.selectedStudents) {
+          setErrors((prev) => ({ ...prev, selectedStudents: "" }));
+        }
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch students for this classroom",
+          variant: "destructive",
+        });
+        setStudents([]);
+      } finally {
+        setLoadingStudents(false);
+      }
+    }
+
+    fetchStudents();
+  }, [form.classroomId]);
 
   // Handle form input changes
   const handleChange = (key: string, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+    // Clear error when user starts typing
+    if (errors[key]) {
+      setErrors((prev) => ({ ...prev, [key]: "" }));
+    }
+  };
+
+  // Handle student selection
+  const handleStudentToggle = (studentId: string) => {
+    setSelectedStudents((prev) =>
+      prev.includes(studentId)
+        ? prev.filter((id) => id !== studentId)
+        : [...prev, studentId]
+    );
+    // Clear students error when selecting
+    if (errors.selectedStudents) {
+      setErrors((prev) => ({ ...prev, selectedStudents: "" }));
+    }
+  };
+
+  // Validation function
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!form.classroomId) {
+      newErrors.classroomId = `${t("error.pleaseSelectClass")}`;
+    }
+
+    if (!form.title.trim()) {
+      newErrors.title = `${t("error.titleRequired")}`;
+    }
+
+    if (!form.description.trim()) {
+      newErrors.description = `${t("error.descriptionRequired")}`;
+    }
+
+    if (!date) {
+      newErrors.dueDate = `${t("error.dueDateRequired")}`;
+    }
+
+    if (selectedStudents.length === 0) {
+      newErrors.selectedStudents = `${t("error.selectAtLeastOneStudent")}`;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Submit function
+  const onSubmit = async () => {
+    if (!validateForm()) {
+      toast({
+        title: `${t("toast.validationError")}`,
+        description: `${t("toast.fixErrorsAndTryAgain")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const assignmentData: AssignmentFormData = {
+        ...form,
+        selectedStudents,
+        articleId,
+        userId,
+        dueDate: date!.toISOString(),
+      };
+
+      // Replace this with your actual API call
+      const response = await fetch("/api/v1/assignments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(assignmentData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      toast({
+        title: `${t("toast.success")}`,
+        description: `${t("toast.assignmentCreated", { title: form.title })}`,
+      });
+
+      // Reset form and close dialog
+      handleReset();
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error creating assignment:", error);
+      toast({
+        title: `${t("toast.error")}`,
+        description: `${t("toast.creationFailed")}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReset = () => {
+    setForm({
+      classroomId: "",
+      title: "",
+      description: "",
+      dueDate: "",
+    });
+    setDate(new Date());
+    setSelectedStudents([]);
+    setStudents([]);
+    setErrors({});
   };
 
   return (
     <div>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button>Assigngingment</Button>
+          <Button>{t("assignment")}</Button>
         </DialogTrigger>
-        <DialogContent className="z-50">
+        <DialogContent className="z-50 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Assignment</DialogTitle>
+            <DialogTitle>{t("createAssignment")}</DialogTitle>
+            <DialogDescription>
+              {t("createAssignmentDescription")}
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Class</Label>
-              <Select
-                onValueChange={(value) => handleChange("courseId", value)}
+
+          {/* Article Info */}
+          <div className="mb-4 rounded-lg">
+            <h3 className="font-semibold text-lg">
+              {article?.title || "The Great Gatsby"}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {article?.summary || "A novel by F. Scott Fitzgerald"}
+            </p>
+          </div>
+
+          {/* Class Selection */}
+          <div>
+            <Label className="text-sm font-medium">{t("classroom")} *</Label>
+            <Select
+              onValueChange={(value) => handleChange("classroomId", value)}
+              value={form.classroomId}
+            >
+              <SelectTrigger
+                className={cn(
+                  "w-full mt-1",
+                  errors.classroomId && "border-red-500"
+                )}
               >
-                <SelectTrigger className="w-full mb-4">
-                  <SelectValue placeholder="Select a Class" />
-                </SelectTrigger>
-                <SelectContent>
-                  {courses.map((course) => (
-                    <SelectItem key={course.id} value={course.id!}>
-                      {course.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                <SelectValue placeholder={`${t("selectClass")}`} />
+              </SelectTrigger>
+              <SelectContent>
+                {courses.map((classroom) => (
+                  <SelectItem key={classroom.id} value={classroom.id!}>
+                    {classroom.classroomName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.classroomId && (
+              <p className="text-red-500 text-sm mt-1">{errors.classroomId}</p>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            {/* Assignment Title */}
             <div>
-              <Label>Title</Label>
+              <Label className="text-sm font-medium">
+                {t("assignmentTitle")} *
+              </Label>
               <Input
-                placeholder="Assignment Title"
+                placeholder={`${t("enterAssignmentTitle")}`}
                 value={form.title}
                 onChange={(e) => handleChange("title", e.target.value)}
-                className="mb-4"
+                className={cn("mt-1", errors.title && "border-red-500")}
               />
+              {errors.title && (
+                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+              )}
             </div>
+
+            {/* Assignment Description */}
             <div>
-              <Label>Due Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full flex justify-between"
+              <Label className="text-sm font-medium">
+                {t("description")} *
+              </Label>
+              <Textarea
+                placeholder={`${t("enterAssignmentDescription")}`}
+                value={form.description}
+                onChange={(e) => handleChange("description", e.target.value)}
+                className={cn("mt-1", errors.description && "border-red-500")}
+                rows={3}
+              />
+              {errors.description && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.description}
+                </p>
+              )}
+            </div>
+
+            {/* Students Selection */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-medium">{t("students")} *</Label>
+                {students.length > 0 && (
+                  <button
+                    type="button"
+                    className={`${
+                      selectedStudents.length === students.length
+                        ? `text-red-600`
+                        : `text-blue-600`
+                    } text-sm underline hover:no-underline`}
+                    onClick={() => {
+                      if (selectedStudents.length === students.length) {
+                        setSelectedStudents([]);
+                      } else {
+                        setSelectedStudents(students.map((s) => s.id));
+                        setErrors((prev) => ({
+                          ...prev,
+                          selectedStudents: "",
+                        }));
+                      }
+                    }}
+                    disabled={loadingStudents}
                   >
-                    {date ? format(date, "PPP") : "Select Due Date"}
-                    <CalendarIcon className="w-4 h-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent>
+                    {selectedStudents.length === students.length
+                      ? `${t("deselectAllStudents")}`
+                      : `${t("selectAllStudents")}`}
+                  </button>
+                )}
+              </div>
+
+              <div
+                className={cn(
+                  "space-y-2 max-h-32 overflow-y-auto border rounded-md p-3",
+                  errors.selectedStudents && "border-red-500"
+                )}
+              >
+                {loadingStudents ? (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-500">
+                      {t("loadingStudents")}
+                    </p>
+                  </div>
+                ) : students.length === 0 ? (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-gray-500">
+                      {form.classroomId
+                        ? `${t("noStudentsFound")}`
+                        : `${t("pleaseSelectClassroomFirst")}`}
+                    </p>
+                  </div>
+                ) : (
+                  students.map((student) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={student.id}
+                        checked={selectedStudents.includes(student.id)}
+                        onCheckedChange={() => handleStudentToggle(student.id)}
+                      />
+                      <Label
+                        htmlFor={student.id}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {student.display_name}
+                      </Label>
+                    </div>
+                  ))
+                )}
+              </div>
+              {errors.selectedStudents && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.selectedStudents}
+                </p>
+              )}
+              <p className="text-sm text-gray-500 mt-1">
+                {t("selectedStudentsCount", {
+                  studentsCount: selectedStudents.length,
+                })}
+              </p>
+            </div>
+
+            {/* Due Date */}
+            <div>
+              <Label className="text-sm font-medium">{t("dueDate")} *</Label>
+              {date && (
+                <p className="text-sm text-gray-600 mb-2">
+                  {t("selectedDueDate")}:{" "}
+                  <span className="font-medium text-green-600">
+                    {format(date, "PPP")}
+                  </span>
+                </p>
+              )}
+              <div
+                className={cn(
+                  "mt-2",
+                  errors.dueDate && "border-red-500 rounded-md"
+                )}
+              >
+                <div className="flex items-center justify-center border rounded-md p-3">
                   <Calendar
                     mode="single"
+                    classNames={{
+                      months:
+                        "flex flex-col sm:flex-row w-full space-y-4 sm:space-x-4 sm:space-y-0",
+                      month: "space-y-4 w-full",
+                      table: "w-full border-collapse",
+                      day: cn(
+                        buttonVariants({ variant: "ghost" }),
+                        "h-12 w-12 sm:w-16 sm:h-18 p-0 font-normal aria-selected:opacity-100"
+                      ),
+                      head_cell:
+                        "text-muted-foreground rounded-md w-12 sm:w-16 font-normal text-[0.8rem]",
+                    }}
                     selected={date}
-                    onSelect={(date) => {
-                      setDate(date);
+                    onSelect={(selectedDate) => {
+                      if (!selectedDate) return;
+                      setDate(selectedDate);
                       handleChange(
                         "dueDate",
-                        date?.toISOString().split("T")[0]
+                        selectedDate.toISOString().split("T")[0]
                       );
                     }}
+                    disabled={(date) =>
+                      date < new Date(new Date().setHours(0, 0, 0, 0))
+                    }
+                    initialFocus
                   />
-                </PopoverContent>
-              </Popover>
+                </div>
+              </div>
+              {errors.dueDate && (
+                <p className="text-red-500 text-sm mt-1">{errors.dueDate}</p>
+              )}
             </div>
           </div>
-          <DialogFooter className="flex justify-end gap-2">
-            <Button className="w-full">Create Assignment</Button>
+
+          <DialogFooter className="flex justify-between gap-2 mt-6">
             <Button
               variant="outline"
-              onClick={() =>
-                setForm({
-                  courseId: "",
-                  title: "",
-                  description: "",
-                  dueDate: "",
-                  maxPoints: undefined,
-                  state: "DRAFT",
-                })
-              }
-              className="w-full"
+              onClick={() => {
+                handleReset();
+                setIsOpen(false);
+              }}
+              className="flex-1"
+              disabled={isSubmitting}
             >
-              Reset
+              Cancel
+            </Button>
+            <Button
+              onClick={onSubmit}
+              className="flex-1"
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? `${t("creating")}`
+                : `${t("createAssignmentButton")}`}
             </Button>
           </DialogFooter>
         </DialogContent>

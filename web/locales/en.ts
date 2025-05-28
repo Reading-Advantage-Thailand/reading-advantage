@@ -1,3 +1,4 @@
+import AssignmentPage from "@/app/[locale]/(teacher)/teacher/assignments/page";
 import next from "next";
 
 export default {
@@ -349,6 +350,47 @@ export default {
         progressOf: "Progress for {nameOfStudent}",
         noUserProgress:
           "No user progress available because the student has never read an article or completed any other activity.",
+      },
+      AssignmentPage: {
+        assignment: "Assignment",
+        createAssignment: "Create Assignment",
+        createAssignmentDescription:
+          "Create a new assignment for your students based on the selected article.",
+        classroom: "Classroom",
+        assignmentTitle: "Assignment Title",
+        description: "Description",
+        students: "Students",
+        deselectAllStudents: "Deselect All Students",
+        selectAllStudents: "Select All Students",
+        loadingStudents: "Loading students...",
+        noStudentsFound: "No students found in this classroom",
+        pleaseSelectClassroomFirst: "Please select a classroom first",
+        selectedStudentsCount: "Selected: {studentsCount} students",
+        dueDate: "Due Date",
+        selectedDueDate: "Selected Due Date",
+        creating: "Creating...",
+        createAssignmentButton: "Create Assignment",
+        cancel: "Cancel",
+        enterAssignmentTitle: "Enter assignment title",
+        enterAssignmentDescription:
+          "Enter assignment description and instructions",
+        selectClass: "Select a class",
+        error: {
+          pleaseSelectClass: "Please select a class",
+          titleRequired: "Assignment title is required",
+          descriptionRequired: "Assignment description is required",
+          dueDateRequired: "Due date is required",
+          selectAtLeastOneStudent: "Please select at least one student",
+        },
+        toast: {
+          validationError: "Validation Error",
+          fixErrorsAndTryAgain: "Please fix the errors and try again",
+          success: "Success!",
+          assignmentCreated:
+            "Assignment {title} has been created successfully.",
+          error: "Error",
+          creationFailed: "Failed to create assignment. Please try again.",
+        },
       },
     },
   },

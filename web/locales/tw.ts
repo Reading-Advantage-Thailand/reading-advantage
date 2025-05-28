@@ -1,3 +1,5 @@
+import AssignmentPage from "@/app/[locale]/(teacher)/teacher/assignments/page";
+
 export default {
   pages: {
     indexPage: {
@@ -309,6 +311,44 @@ export default {
         levelDescription: "您當前的等級是 {level}",
         progressOf: "{nameOfStudent} 的進度",
         noUserProgress: "沒有用戶進度，因為學生從未閱讀過文章或進行其他活動。",
+      },
+      AssignmentPage: {
+        assignment: "作業",
+        createAssignment: "建立作業",
+        createAssignmentDescription: "根據所選文章為學生建立新作業。",
+        classroom: "班級",
+        assignmentTitle: "作業標題",
+        description: "描述",
+        students: "學生",
+        deselectAllStudents: "取消全選學生",
+        selectAllStudents: "全選學生",
+        loadingStudents: "正在載入學生...",
+        noStudentsFound: "此班級中找不到學生",
+        pleaseSelectClassroomFirst: "請先選擇班級",
+        selectedStudentsCount: "已選擇：{studentsCount} 位學生",
+        dueDate: "繳交期限",
+        selectedDueDate: "繳交期限",
+        creating: "正在建立...",
+        createAssignmentButton: "建立作業",
+        cancel: "取消",
+        enterAssignmentTitle: "輸入作業標題",
+        enterAssignmentDescription: "輸入作業描述與說明",
+        selectClass: "選擇班級",
+        error: {
+          pleaseSelectClass: "請選擇一個班級",
+          titleRequired: "作業標題為必填項",
+          descriptionRequired: "作業描述為必填項",
+          dueDateRequired: "繳交期限為必填項",
+          selectAtLeastOneStudent: "請至少選擇一位學生",
+        },
+        toast: {
+          validationError: "驗證錯誤",
+          fixErrorsAndTryAgain: "請修正錯誤後再試一次",
+          success: "成功！",
+          assignmentCreated: "作業 {title} 已成功建立。",
+          error: "錯誤",
+          creationFailed: "建立作業失敗，請再試一次。",
+        },
       },
     },
   },
