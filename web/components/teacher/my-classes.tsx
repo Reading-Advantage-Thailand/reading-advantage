@@ -444,7 +444,7 @@ export default function MyClasses() {
                             )}
                           >
                             <h3 className="font-medium">
-                              {data.classroomName}
+                              {data.name}
                             </h3>
                             <div className="flex items-center text-gray-500 text-sm">
                               <Icons.student width={16} height={16} />
@@ -507,7 +507,7 @@ export default function MyClasses() {
                   <>
                     <p className="text-gray-600 text-center mb-6 ">
                       Successfully imported {course?.studentCount?.length ?? 0}{" "}
-                      students from {course.classroomName}.
+                      students from {course.name}.
                     </p>
                     <div className="rounded-md border p-4 mb-6">
                       <h3 className="font-medium mb-2">Students Added</h3>
