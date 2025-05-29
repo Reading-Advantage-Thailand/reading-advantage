@@ -443,7 +443,9 @@ export default function MyClasses() {
                               selected === data.id ? "border-primary" : ""
                             )}
                           >
-                            <h3 className="font-medium">{data.name}</h3>
+                            <h3 className="font-medium">
+                              {data.name}
+                            </h3>
                             <div className="flex items-center text-gray-500 text-sm">
                               <Icons.student width={16} height={16} />
                               <span>
