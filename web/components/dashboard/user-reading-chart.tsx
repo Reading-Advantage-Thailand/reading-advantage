@@ -47,18 +47,38 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
   const { resolvedTheme } = useTheme();
   const [seletedValue, setSeletedValue] = React.useState<string>("type");
   const t = useScopedI18n("pages.student.reportpage");
+
   const formatData = (value: UserActivityLog[], selected: string) => {
     const filterArtcileRead = value.filter(
-      (item) => item.activityType === "article_read"
+      (item) =>
+        item.activityType === "article_read" ||
+        item.activityType === "lesson_read"
     );
+    const articleMap = new Map<string, UserActivityLog>();
 
+    filterArtcileRead.forEach((item) => {
+      const articleId =
+        (item as any).articleId ||
+        (item as any).contentId ||
+        (item.details as any)?.articleId ||
+        (item.details as any)?.contentId ||
+        undefined;
+      if (!articleId) return;
+
+      const existing = articleMap.get(articleId);
+      if (
+        !existing ||
+        (existing.activityStatus !== "completed" &&
+          item.activityStatus === "completed")
+      ) {
+        articleMap.set(articleId, item);
+      }
+    });
     const result: Record<string, { inProgress: number; completed: number }> =
       {};
 
-    filterArtcileRead.forEach((item) => {
+    Array.from(articleMap.values()).forEach((item) => {
       const key = item.details[selected as keyof typeof item.details] as string;
-
-      // Skip if key is undefined or empty
       if (!key) return;
 
       const status =
@@ -71,13 +91,15 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
       result[key][status]++;
     });
 
-    return Object.keys(result)
-      .filter((category) => category) // Remove undefined or empty categories
+    const formattedData = Object.keys(result)
+      .filter((category) => category)
       .map((category) => ({
         category,
         inProgressRead: result[category].inProgress,
         completedRead: result[category].completed,
       }));
+
+    return formattedData;
   };
 
   const getData = formatData(data, seletedValue);

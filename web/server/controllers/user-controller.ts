@@ -44,7 +44,11 @@ export async function postActivityLog(
       .collection(`${replType}-activity-log`);
 
     const documentId =
-      data.articleId || data.storyId || id || data.contentId || collectionRef.doc().id;
+      data.articleId ||
+      data.storyId ||
+      id ||
+      data.contentId ||
+      collectionRef.doc().id;
 
     const getActivity = await db
       .collection("user-activity-log")
@@ -119,18 +123,19 @@ export async function postActivityLog(
           .doc(id)
           .collection("article-records")
           .doc(commonData.articleId)
-          .update({ rated: commonData.details.Rating});
+          .update({ rated: commonData.details.Rating });
       }
 
-      if (commonData.activityType === "chapter_rating" && 
+      if (
+        commonData.activityType === "chapter_rating" &&
         commonData.details.Rating
       ) {
-         const storiesRecords = await db
+        const storiesRecords = await db
           .collection("users")
           .doc(id)
           .collection("stories-records")
           .doc(commonData.storyId)
-          .get()
+          .get();
 
         if (storiesRecords.exists) {
           await db
@@ -138,8 +143,11 @@ export async function postActivityLog(
             .doc(id)
             .collection("stories-records")
             .doc(commonData.storyId)
-            .update({ rated: commonData.details.Rating, chapterNumber: commonData.chapterNumber });
-        }else{
+            .update({
+              rated: commonData.details.Rating,
+              chapterNumber: commonData.chapterNumber,
+            });
+        } else {
           await db
             .collection("users")
             .doc(id)
@@ -158,7 +166,6 @@ export async function postActivityLog(
               updated_at: commonData.timestamp,
             });
         }
-        
       }
 
       return NextResponse.json({
@@ -175,6 +182,158 @@ export async function postActivityLog(
     console.log("postActivity => ", error);
     return NextResponse.json({
       message: "Error",
+      status: 500,
+    });
+  }
+}
+
+export async function putActivityLog(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    // Data from frontend
+    const data = await req.json();
+
+    // Replace underscores with hyphens for collection name
+    const replType = data.activityType.replace(/_/g, "-");
+
+    const collectionRef = db
+      .collection("user-activity-log")
+      .doc(id)
+      .collection(`${replType}-activity-log`);
+
+    const articleId = data.articleId;
+
+    if (!articleId) {
+      return NextResponse.json({
+        message: "Article ID is required for update",
+        status: 400,
+      });
+    }
+
+    // Find document by articleId in the collection
+    const querySnapshot = await collectionRef
+      .where("articleId", "==", articleId)
+      .limit(1)
+      .get();
+
+    let documentId: string;
+
+    if (querySnapshot.empty) {
+      // If no document exists, create a new one
+      const newDocRef = collectionRef.doc();
+      documentId = newDocRef.id;
+
+      const newData = {
+        userId: id,
+        chapterNumber: data.chapterNumber || 0,
+        activityType: data.activityType,
+        activityStatus: data.activityStatus || "in_progress",
+        timestamp: new Date(),
+        timeTaken: data.timeTaken || 0,
+        xpEarned: data.xpEarned || 0,
+        initialXp: req.session?.user.xp as number,
+        finalXp: (req.session?.user.xp as number) + (data.xpEarned || 0),
+        initialLevel: req.session?.user.level as number,
+        finalLevel: levelCalculation(
+          (req.session?.user.xp as number) + (data.xpEarned || 0)
+        ).raLevel,
+        ...data,
+        created_at: new Date(), // Add creation timestamp
+      };
+
+      await newDocRef.set(newData);
+    } else {
+      // Get the first (and should be only) document
+      const activityDoc = querySnapshot.docs[0];
+      documentId = activityDoc.id;
+
+      // Prepare update data
+      const updateData = {
+        userId: id,
+        chapterNumber: data.chapterNumber || 0,
+        activityType: data.activityType,
+        activityStatus: data.activityStatus || "in_progress",
+        timestamp: new Date(),
+        timeTaken: data.timeTaken || 0,
+        xpEarned: data.xpEarned || 0,
+        initialXp: req.session?.user.xp as number,
+        finalXp: (req.session?.user.xp as number) + (data.xpEarned || 0),
+        initialLevel: req.session?.user.level as number,
+        finalLevel: levelCalculation(
+          (req.session?.user.xp as number) + (data.xpEarned || 0)
+        ).raLevel,
+        ...data,
+        updated_at: new Date(), // Add update timestamp
+      };
+
+      // Update the existing activity log using the found documentId
+      await collectionRef.doc(documentId).update(updateData);
+    }
+
+    // Update XP and Level if XP is earned
+    if (data.xpEarned !== 0) {
+      await db
+        .collection("users")
+        .doc(id)
+        .update({
+          xp: (req.session?.user.xp as number) + (data.xpEarned || 0),
+          level: levelCalculation(
+            (req.session?.user.xp as number) + (data.xpEarned || 0)
+          ).raLevel,
+          cefr_level: levelCalculation(
+            (req.session?.user.xp as number) + (data.xpEarned || 0)
+          ).cefrLevel,
+          last_activity: new Date(),
+        });
+    }
+
+    // Update Rating to article-records collection
+    if (data.activityType === "article_rating" && data.details?.Rating) {
+      const articleRecordRef = db
+        .collection("users")
+        .doc(id)
+        .collection("article-records")
+        .doc(data.articleId);
+
+      const articleRecord = await articleRecordRef.get();
+
+      if (articleRecord.exists) {
+        await articleRecordRef.update({
+          rated: data.details.Rating,
+          updated_at: new Date(),
+        });
+      }
+    }
+
+    // Update Rating to stories-records collection
+    if (data.activityType === "chapter_rating" && data.details?.Rating) {
+      const storiesRecordRef = db
+        .collection("users")
+        .doc(id)
+        .collection("stories-records")
+        .doc(data.storyId);
+
+      const storiesRecord = await storiesRecordRef.get();
+
+      if (storiesRecord.exists) {
+        await storiesRecordRef.update({
+          rated: data.details.Rating,
+          chapterNumber: data.chapterNumber,
+          updated_at: new Date(),
+        });
+      }
+    }
+
+    return NextResponse.json({
+      message: "Activity log processed successfully",
+      status: 200,
+    });
+  } catch (error) {
+    console.log("putActivityLog => ", error);
+    return NextResponse.json({
+      message: "Error processing activity log",
       status: 500,
     });
   }
