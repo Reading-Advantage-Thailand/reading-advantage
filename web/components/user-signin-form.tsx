@@ -17,6 +17,7 @@ import {
   signInWithPopup,
   GithubAuthProvider,
   GoogleAuthProvider,
+  signInWithRedirect,
 } from "firebase/auth";
 import type { AuthProvider } from "firebase/auth";
 
@@ -30,39 +31,55 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
   const [password, setPassword] = React.useState<string>("");
 
   const handleOAuthSignIn = (provider: AuthProvider) => {
-    signInWithPopup(firebaseAuth, provider)
-      .then((credential) => {
-        if (
-          credential.user &&
-          typeof credential.user.getIdToken === "function"
-        ) {
-          return credential.user.getIdToken(true);
-        } else {
-          throw new Error("Invalid user object or getIdToken method not found");
-        }
-      })
-      .then((idToken) => {
-        signIn("credentials", {
-          idToken,
-          //callbackUrl: "/student/read",
-        });
-      })
-      .catch((err) => {
-        let customMessage;
-        switch (err.code) {
-          case "auth/invalid-credential":
-            customMessage =
-              "The provided credential is invalid. This can happen if it is malformed, expired, or the user account does not exist.";
-            break;
-          case "auth/too-many-requests":
-            customMessage =
-              "Too many unsuccessful login attempts. Please try again later.";
-            break;
-          default:
-            customMessage = "Something went wrong.";
-        }
-        setError(customMessage);
-      });
+    setIsLoading(true);
+    setError("");
+    try {
+      sessionStorage.setItem("firebase:check", "1");
+      sessionStorage.removeItem("firebase:check");
+      signInWithPopup(firebaseAuth, provider)
+        .then((credential) => {
+          if (
+            credential.user &&
+            typeof credential.user.getIdToken === "function"
+          ) {
+            return credential.user.getIdToken(true);
+          } else {
+            throw new Error(
+              "Invalid user object or getIdToken method not found"
+            );
+          }
+        })
+        .then((idToken) => {
+          signIn("credentials", {
+            idToken,
+          });
+        })
+        .catch((err) => {
+          let customMessage;
+          switch (err.code) {
+            case "auth/invalid-credential":
+              customMessage =
+                "The provided credential is invalid. This can happen if it is malformed, expired, or the user account does not exist.";
+              break;
+            case "auth/too-many-requests":
+              customMessage =
+                "Too many unsuccessful login attempts. Please try again later.";
+              break;
+            default:
+              customMessage = "Something went wrong.";
+          }
+          setError(customMessage);
+        })
+        .finally(() => setIsLoading(false));
+    } catch (e) {
+      signInWithRedirect(firebaseAuth, provider)
+        .catch(() => {
+          setError(
+            "Unable to sign in with Google on this device/browser. Please try a different browser or disable Private Mode."
+          );
+        })
+        .finally(() => setIsLoading(false));
+    }
   };
 
   async function onSubmit(event: React.SyntheticEvent) {
