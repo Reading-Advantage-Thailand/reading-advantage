@@ -30,7 +30,10 @@ import LessonLanguageQuestion from "./lesson-language-question";
 import LessonSummary from "./lesson-summary";
 import LessonIntroduction from "./lesson-introduction";
 import { useTimer } from "@/contexts/timer-context";
-import { Skeleton } from "@mui/material";
+import {
+  ActivityType,
+  ActivityStatus,
+} from "../models/user-activity-log-model";
 
 interface LessonProgressBar {
   phases: string[];
@@ -114,6 +117,33 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
     }
   }, [currentPhase]);
 
+  useEffect(() => {
+    const logActivity = async () => {
+      if (currentPhase === 14) {
+        await fetch(`/api/v1/users/${userId}/activitylog`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            articleId: article.id,
+            activityType: ActivityType.LessonRead,
+            activityStatus: ActivityStatus.Completed,
+            timeTaken: elapsedTime,
+            details: {
+              title: article.title,
+              level: article.ra_level,
+              cefr_level: article.cefr_level,
+              type: article.type,
+              genre: article.genre,
+              subgenre: article.subgenre,
+            },
+          }),
+        });
+      }
+    };
+
+    logActivity();
+  }, [currentPhase]);
+
   const startLesson = async () => {
     setCurrentPhase(currentPhase + 1);
     await fetch(`/api/v1/lesson/${userId}?articleId=${articleId}`, {
@@ -122,12 +152,31 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
   };
 
   const nextPhase = async (Phase: number, elapsedTime: number) => {
+    if (Phase === 13) {
+      await fetch(`/api/v1/users/${userId}/activitylog`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          articleId: article.id,
+          activityType: ActivityType.LessonRead,
+          activityStatus: ActivityStatus.Completed,
+          timeTaken: elapsedTime,
+          details: {
+            title: article.title,
+            level: article.ra_level,
+            cefr_level: article.cefr_level,
+            type: article.type,
+            genre: article.genre,
+            subgenre: article.subgenre,
+          },
+        }),
+      });
+    }
     if (!phaseCompletion[Phase - 1]) {
       setShakeButton(true);
       setTimeout(() => setShakeButton(false), 500);
       return;
     }
-
     setCurrentPhase(Phase + 1);
     await fetch(`/api/v1/lesson/${userId}?articleId=${articleId}`, {
       method: "PUT",
@@ -140,6 +189,26 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
   };
 
   const skipPhase = async (Phase: number) => {
+    if (Phase === 13) {
+      await fetch(`/api/v1/users/${userId}/activitylog`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          articleId: article.id,
+          activityType: ActivityType.LessonRead,
+          activityStatus: ActivityStatus.Completed,
+          timeTaken: elapsedTime,
+          details: {
+            title: article.title,
+            level: article.ra_level,
+            cefr_level: article.cefr_level,
+            type: article.type,
+            genre: article.genre,
+            subgenre: article.subgenre,
+          },
+        }),
+      });
+    }
     setCurrentPhase(Phase + 1);
     await fetch(`/api/v1/lesson/${userId}?articleId=${articleId}`, {
       method: "PUT",

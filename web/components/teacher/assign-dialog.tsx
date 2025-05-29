@@ -75,7 +75,7 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
                 <SelectContent>
                   {courses.map((course) => (
                     <SelectItem key={course.id} value={course.id!}>
-                      {course.name}
+                      {course.classroomName}
                     </SelectItem>
                   ))}
                 </SelectContent>
