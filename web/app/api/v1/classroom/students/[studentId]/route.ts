@@ -2,7 +2,10 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextRequest, NextResponse } from "next/server";
 import { protect } from "@/server/controllers/auth-controller";
-import { updateStudentClassroom } from "@/server/controllers/classroom-controller";
+import {
+  updateStudentClassroom,
+  getStudentClassroom,
+} from "@/server/controllers/classroom-controller";
 
 interface RequestContext {
   params: {
@@ -17,6 +20,7 @@ router.use(logRequest);
 router.use(protect);
 // router.use(restrictAccess);
 
+router.get(getStudentClassroom);
 router.patch(updateStudentClassroom);
 
 export async function GET(request: NextRequest, ctx: RequestContext) {

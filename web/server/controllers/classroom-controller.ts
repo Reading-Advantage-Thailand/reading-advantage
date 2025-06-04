@@ -130,6 +130,49 @@ export async function getClassroom(req: ExtendedNextRequest) {
     );
   }
 }
+
+export async function getStudentClassroom(req: ExtendedNextRequest) {
+  try {
+    const user = await getCurrentUser();
+
+    const docRef = await db
+      .collection("classroom")
+      .where("license_id", "==", user?.license_id)
+      .get();
+
+    const docData = docRef.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Filter classrooms where the current user is a student
+    const studentClassrooms = docData.filter((classroom: any) => {
+      return classroom.student?.some((student: Student) => 
+        student.studentId === user?.id || student.email === user?.email
+      );
+    });
+
+    // Return only the classroom IDs
+    const classroomId = studentClassrooms.length > 0 ? studentClassrooms[0].id : null;
+
+    return NextResponse.json(
+      {
+        message: "success",
+        data: classroomId,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json(
+      {
+        message: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
+
 // get all classrooms students
 export async function getClassroomStudent(req: ExtendedNextRequest) {
   try {

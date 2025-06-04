@@ -204,44 +204,51 @@ const AssignmentDashboard = () => {
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
   const t = useScopedI18n("pages.teacher.AssignmentPage");
 
+  const fetchAssignment = async () => {
+    try {
+      const classroomId = params.classroomId as string;
+      const articleId = params.articleId as string;
+
+      if (!classroomId || !articleId) {
+        console.error("Missing required parameters");
+        return;
+      }
+
+      const response = await fetch(
+        `/api/v1/assignments?classroomId=${classroomId}&articleId=${articleId}`
+      );
+      const data = await response.json();
+      setAssignment(data);
+    } catch (error) {
+      console.error("Error fetching assignment:", error);
+    }
+  };
+
+  const fetchArticle = async () => {
+    try {
+      const articleId = params.articleId as string;
+
+      if (!articleId) {
+        console.error("Missing article ID");
+        return;
+      }
+
+      const response = await fetch(`/api/v1/articles/${articleId}`);
+      const data = await response.json();
+      setArticle(data.article);
+    } catch (error) {
+      console.error("Error fetching article:", error);
+    }
+  };
+
+  // Function to refresh data after assignment update
+  const handleAssignmentUpdate = async () => {
+    setIsLoading(true);
+    await Promise.all([fetchAssignment(), fetchArticle()]);
+    setIsLoading(false);
+  };
+
   React.useEffect(() => {
-    const fetchAssignment = async () => {
-      try {
-        const classroomId = params.classroomId as string;
-        const articleId = params.articleId as string;
-
-        if (!classroomId || !articleId) {
-          console.error("Missing required parameters");
-          return;
-        }
-
-        const response = await fetch(
-          `/api/v1/assignments?classroomId=${classroomId}&articleId=${articleId}`
-        );
-        const data = await response.json();
-        setAssignment(data);
-      } catch (error) {
-        console.error("Error fetching assignment:", error);
-      }
-    };
-
-    const fetchArticle = async () => {
-      try {
-        const articleId = params.articleId as string;
-
-        if (!articleId) {
-          console.error("Missing article ID");
-          return;
-        }
-
-        const response = await fetch(`/api/v1/articles/${articleId}`);
-        const data = await response.json();
-        setArticle(data.article);
-      } catch (error) {
-        console.error("Error fetching article:", error);
-      }
-    };
-
     const fetchData = async () => {
       setIsLoading(true);
       await Promise.all([fetchAssignment(), fetchArticle()]);
@@ -391,6 +398,7 @@ const AssignmentDashboard = () => {
                 userId={assignment.meta.userId}
                 pageType="assignment"
                 classroomId={assignment.meta.classroomId}
+                onUpdate={handleAssignmentUpdate}
               />
             </div>
           </div>

@@ -74,7 +74,8 @@ export async function postLessonStatus(
 
     if (existingLessonData.exists) {
       return NextResponse.json(
-        "Lesson status already exists, no action taken."
+        { message: "Lesson status already exists, no action taken." },
+        { status: 200 }
       );
     }
 
@@ -95,18 +96,55 @@ export async function postLessonStatus(
       phase14: { status: 0, elapsedTime: 0 },
     };
 
-    await db
+    const batch = db.batch();
+
+    // Create lesson status
+    const lessonRef = db
       .collection("users")
       .doc(userId)
       .collection("lesson-records")
-      .doc(articleId)
-      .set(lessonStatus);
+      .doc(articleId);
 
-    return NextResponse.json("Create lesson phase status success!");
+    batch.set(lessonRef, lessonStatus);
+
+    // Update assignment status if classroomId is provided
+    const classroomId = req.nextUrl.searchParams.get("classroomId");
+    console.log("ClassroomId received:", classroomId);
+    if (classroomId) {
+      // Update teacher perspective (assignments collection)
+      const assignmentRef = db
+        .collection("assignments")
+        .doc(classroomId)
+        .collection(articleId)
+        .doc(userId);
+
+      // Check if assignment exists before updating
+      const assignmentDoc = await assignmentRef.get();
+      if (assignmentDoc.exists) {
+        batch.update(assignmentRef, { status: 1 });
+
+        // Update student perspective (student-assignments collection)
+        const assignmentId = `${classroomId}_${articleId}`;
+        const studentAssignmentRef = db
+          .collection("student-assignments")
+          .doc(userId)
+          .collection("assignments")
+          .doc(assignmentId);
+
+        batch.update(studentAssignmentRef, { status: 1 });
+      }
+    }
+
+    await batch.commit();
+
+    return NextResponse.json(
+      { message: "Create lesson phase status success!" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error creating lesson status", error);
     return NextResponse.json(
-      { message: "Internal server error", results: [] },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
@@ -128,32 +166,51 @@ export async function putLessonPhaseStatus(
         { status: 400 }
       );
     }
+
+    const batch = db.batch();
+
+    const lessonRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("lesson-records")
+      .doc(articleId);
+
     const phaseKey = `phase${phase}`;
     const updateData: Record<string, any> = {};
     updateData[`${phaseKey}.status`] = status;
     updateData[`${phaseKey}.elapsedTime`] = elapsedTime;
 
-    await db
-      .collection("users")
-      .doc(userId)
-      .collection("lesson-records")
-      .doc(articleId)
-      .update(updateData);
+    batch.update(lessonRef, updateData);
 
     if (phase < 14) {
       const nextPhaseKey = `phase${phase + 1}`;
       const nextPhaseData: Record<string, any> = {};
       nextPhaseData[`${nextPhaseKey}.status`] = 1;
-
-      await db
-        .collection("users")
-        .doc(userId)
-        .collection("lesson-records")
-        .doc(articleId)
-        .update(nextPhaseData);
+      batch.update(lessonRef, nextPhaseData);
     }
 
-    return NextResponse.json({ message: "Update successful" });
+    const classroomId = req.nextUrl.searchParams.get("classroomId");
+    console.log("ClassroomId received:", classroomId);
+    if (classroomId && phase === 13 && status === 2) {
+      const assignmentRef = db
+        .collection("assignments")
+        .doc(classroomId)
+        .collection(articleId)
+        .doc(userId);
+
+      const studentAssignmentRef = db
+        .collection("student-assignments")
+        .doc(userId)
+        .collection("assignments")
+        .doc(`${classroomId}_${articleId}`);
+
+      batch.update(assignmentRef, { status: 2 });
+      batch.update(studentAssignmentRef, { status: 2 });
+    }
+
+    await batch.commit();
+
+    return NextResponse.json({ message: "Update successful" }, { status: 200 });
   } catch (error) {
     console.error("Error updating document:", error);
     return NextResponse.json(
@@ -174,44 +231,31 @@ export async function getUserQuizPerformance(
     const articleId = req.nextUrl.searchParams.get("articleId");
 
     if (!articleId) {
-      throw new Error("articleId is required");
+      return NextResponse.json(
+        { message: "articleId is required" },
+        { status: 400 }
+      );
     }
 
-    // Decode the articleId to handle any URL encoding
     const decodedArticleId = decodeURIComponent(articleId);
-
-    // Remove any trailing "/quize-performance" if present
     const cleanArticleId = decodedArticleId.split("/")[0];
 
-    const mcqData = await db
+    const articleData = await db
       .collection("users")
       .doc(userId)
       .collection("article-records")
       .doc(cleanArticleId)
       .get();
 
-    const mcqQuizData = mcqData.data();
-    const mcqScore = mcqQuizData?.scores;
-
-    if (!mcqData) {
+    if (!articleData.exists) {
       return NextResponse.json({ message: "No Data Exists" }, { status: 404 });
     }
 
-    const saqData = await db
-      .collection("users")
-      .doc(userId)
-      .collection("article-records")
-      .doc(cleanArticleId)
-      .get();
+    const quizData = articleData.data();
+    const mcqScore = quizData?.scores;
+    const saqScore = quizData?.scores;
 
-    const saqQuizData = saqData.data();
-    const saqScore = saqQuizData?.scores;
-
-    if (!saqData) {
-      return NextResponse.json({ message: "No Data Exists" }, { status: 404 });
-    }
-
-    return NextResponse.json({ mcqScore, saqScore });
+    return NextResponse.json({ mcqScore, saqScore }, { status: 200 });
   } catch (error) {
     console.error("Error getting documents", error);
     return NextResponse.json(

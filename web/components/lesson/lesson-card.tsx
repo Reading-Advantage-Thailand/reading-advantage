@@ -11,12 +11,14 @@ type Props = {
   article: Article;
   articleId: string;
   userId: string;
+  classroomId?: string;
 };
 
 export default async function LessonCard({
   article,
   articleId,
   userId,
+  classroomId
 }: Props) {
   const tb = await getScopedI18n("pages.student.lessonPage");
   const phaseKeys = [
@@ -46,6 +48,7 @@ export default async function LessonCard({
         <div className="flex flex-col gap-4">
           <TimerProvider>
             <LessonProgressBar
+              classroomId={classroomId}
               phases={phases}
               article={article}
               articleId={articleId}

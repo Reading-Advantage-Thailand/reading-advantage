@@ -28,6 +28,7 @@ import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { useScopedI18n } from "@/locales/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   article: Article;
@@ -35,6 +36,7 @@ type Props = {
   userId: string;
   pageType?: "assignment" | "article";
   classroomId?: string;
+  onUpdate?: () => void;
 };
 
 // Student interface
@@ -82,6 +84,7 @@ export default function AssignDialog({
   userId,
   pageType,
   classroomId,
+  onUpdate,
 }: Props) {
   const [classrooms, setClassrooms] = useState<Classes[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -93,6 +96,7 @@ export default function AssignDialog({
   const [loadingStudents, setLoadingStudents] = useState<boolean>(false);
   const t = useScopedI18n("pages.teacher.AssignmentPage");
   const [assignedStudentIds, setAssignedStudentIds] = useState<string[]>([]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [form, setForm] = useState({
     classroomId: "",
     title: "",
@@ -132,6 +136,7 @@ export default function AssignDialog({
       return;
     }
 
+    // เฉพาะเมื่อ classroomId หรือ articleId เปลี่ยน หรือเป็นการโหลดครั้งแรก
     async function checkExistingAssignment() {
       setLoadingStudents(true);
       try {
@@ -146,17 +151,19 @@ export default function AssignDialog({
             ...prev,
             title: assignments.meta.title,
             description: assignments.meta.description,
-            classroomId: assignments.meta.classroomId,
             dueDate: assignments.meta.dueDate,
           }));
 
-          setDate(new Date(assignments.meta.dueDate));
+          const dueDate = new Date(assignments.meta.dueDate);
+          if (!isNaN(dueDate.getTime())) {
+            setDate(dueDate);
+          }
           const studentIdsFromServer = assignments.students.map(
             (student: any) => student.studentId
           );
           setSelectedStudents(studentIdsFromServer);
           setAssignedStudentIds(studentIdsFromServer);
-        } else {
+        } else if (isInitialLoad) {
           setForm((prev) => ({
             ...prev,
             title: "",
@@ -166,15 +173,19 @@ export default function AssignDialog({
           setAssignedStudentIds([]);
         }
         setLoadingStudents(false);
+        setIsInitialLoad(false);
       } catch (error) {
         console.error("Error fetching assignments:", error);
-        setSelectedStudents([]);
-        setAssignedStudentIds([]);
-        setForm((prev) => ({
-          ...prev,
-          title: "",
-          description: "",
-        }));
+        if (isInitialLoad) {
+          setSelectedStudents([]);
+          setAssignedStudentIds([]);
+          setForm((prev) => ({
+            ...prev,
+            title: "",
+            description: "",
+          }));
+        }
+        setIsInitialLoad(false);
       }
     }
 
@@ -185,7 +196,6 @@ export default function AssignDialog({
     async function fetchStudents() {
       if (!form.classroomId) {
         setStudents([]);
-        setSelectedStudents([]);
         return;
       }
 
@@ -199,14 +209,6 @@ export default function AssignDialog({
         const studentsData =
           data.studentInClass || data.data?.studentInClass || [];
         setStudents(studentsData);
-        setSelectedStudents(
-          studentsData
-            .map((s: { id: string }) => s.id)
-            .filter((id: string) => assignedStudentIds.includes(id))
-        );
-        if (errors.selectedStudents) {
-          setErrors((prev) => ({ ...prev, selectedStudents: "" }));
-        }
       } catch (error) {
         console.error("Error fetching students:", error);
         toast({
@@ -215,14 +217,19 @@ export default function AssignDialog({
           variant: "destructive",
         });
         setStudents([]);
-        setSelectedStudents([]);
       } finally {
         setLoadingStudents(false);
       }
     }
 
     fetchStudents();
-  }, [form.classroomId, assignedStudentIds, errors.selectedStudents]);
+  }, [form.classroomId]);
+
+  useEffect(() => {
+    if (errors.selectedStudents && selectedStudents.length > 0) {
+      setErrors((prev) => ({ ...prev, selectedStudents: "" }));
+    }
+  }, [selectedStudents.length, errors.selectedStudents]);
 
   // Handle form input changes
   const handleChange = (key: string, value: any) => {
@@ -254,11 +261,11 @@ export default function AssignDialog({
       newErrors.classroomId = `${t("error.pleaseSelectClass")}`;
     }
 
-    if (!form.title.trim()) {
+    if (!form.title || !form.title.trim()) {
       newErrors.title = `${t("error.titleRequired")}`;
     }
 
-    if (!form.description.trim()) {
+    if (!form.description || !form.description.trim()) {
       newErrors.description = `${t("error.descriptionRequired")}`;
     }
 
@@ -369,6 +376,7 @@ export default function AssignDialog({
         description: `${t("toast.assignmentCreated", { title: form.title })}`,
       });
 
+      onUpdate?.();
       handleReset();
       setIsOpen(false);
     } catch (error) {
@@ -384,16 +392,20 @@ export default function AssignDialog({
   };
 
   const handleReset = () => {
-    setForm({
-      classroomId: "",
+    setForm((prev) => ({
+      classroomId:
+        pageType === "assignment" && classroomId
+          ? classroomId
+          : prev.classroomId || "",
       title: "",
       description: "",
       dueDate: "",
-    });
+    }));
     setDate(new Date());
     setSelectedStudents([]);
     setStudents([]);
     setErrors({});
+    setIsInitialLoad(true);
   };
 
   return (
@@ -428,26 +440,30 @@ export default function AssignDialog({
           {pageType !== "assignment" && (
             <div>
               <Label className="text-sm font-medium">{t("classroom")} *</Label>
-              <Select
-                onValueChange={(value) => handleChange("classroomId", value)}
-                value={form.classroomId}
-              >
-                <SelectTrigger
-                  className={cn(
-                    "w-full mt-1",
-                    errors.classroomId && "border-red-500"
-                  )}
+              {classrooms.length === 0 ? (
+                <Skeleton className="h-10 w-full mt-1" />
+              ) : (
+                <Select
+                  onValueChange={(value) => handleChange("classroomId", value)}
+                  value={form.classroomId}
                 >
-                  <SelectValue placeholder={`${t("selectClass")}`} />
-                </SelectTrigger>
-                <SelectContent>
-                  {classrooms.map((classroom) => (
-                    <SelectItem key={classroom.id} value={classroom.id!}>
-                      {classroom.classroomName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger
+                    className={cn(
+                      "w-full mt-1",
+                      errors.classroomId && "border-red-500"
+                    )}
+                  >
+                    <SelectValue placeholder={`${t("selectClass")}`} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classrooms.map((classroom) => (
+                      <SelectItem key={classroom.id} value={classroom.id!}>
+                        {classroom.classroomName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {errors.classroomId && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.classroomId}
@@ -460,10 +476,14 @@ export default function AssignDialog({
             <div>
               <Label className="text-sm font-medium">{t("classroom")}</Label>
               <div className="mt-1 p-2 rounded-md border">
-                <span className="text-sm">
-                  {classrooms.find((c) => c.id === form.classroomId)
-                    ?.classroomName || "Loading..."}
-                </span>
+                {classrooms.length === 0 ? (
+                  <Skeleton className="h-4 w-24" />
+                ) : (
+                  <span className="text-sm">
+                    {classrooms.find((c) => c.id === form.classroomId)
+                      ?.classroomName || "Loading..."}
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -508,32 +528,55 @@ export default function AssignDialog({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-sm font-medium">{t("students")} *</Label>
-                {students.length > 0 && assignedStudentIds.length === 0 && (
-                  <button
-                    type="button"
-                    className={`${
-                      selectedStudents.length === students.length
-                        ? `text-red-600`
-                        : `text-blue-600`
-                    } text-sm underline hover:no-underline`}
-                    onClick={() => {
-                      if (selectedStudents.length === students.length) {
-                        setSelectedStudents([]);
-                      } else {
-                        setSelectedStudents(students.map((s) => s.id));
-                        setErrors((prev) => ({
-                          ...prev,
-                          selectedStudents: "",
-                        }));
-                      }
-                    }}
-                    disabled={loadingStudents}
-                  >
-                    {selectedStudents.length === students.length
-                      ? `${t("deselectAllStudents")}`
-                      : `${t("selectAllStudents")}`}
-                  </button>
-                )}
+                {students.length > 0 &&
+                  students.some((s) => !assignedStudentIds.includes(s.id)) &&
+                  !loadingStudents && (
+                    <button
+                      type="button"
+                      className={`${
+                        selectedStudents.length === students.length
+                          ? `text-red-600`
+                          : `text-blue-600`
+                      } text-sm underline hover:no-underline`}
+                      onClick={() => {
+                        const availableStudents = students.filter(
+                          (s) => !assignedStudentIds.includes(s.id)
+                        );
+                        const availableStudentIds = availableStudents.map(
+                          (s) => s.id
+                        );
+                        if (
+                          availableStudentIds.every((id) =>
+                            selectedStudents.includes(id)
+                          )
+                        ) {
+                          setSelectedStudents(
+                            selectedStudents.filter((id) =>
+                              assignedStudentIds.includes(id)
+                            )
+                          );
+                        } else {
+                          setSelectedStudents([
+                            ...new Set([
+                              ...selectedStudents,
+                              ...availableStudentIds,
+                            ]),
+                          ]);
+                          setErrors((prev) => ({
+                            ...prev,
+                            selectedStudents: "",
+                          }));
+                        }
+                      }}
+                      disabled={loadingStudents}
+                    >
+                      {students
+                        .filter((s) => !assignedStudentIds.includes(s.id))
+                        .every((s) => selectedStudents.includes(s.id))
+                        ? `${t("deselectAllStudents")}`
+                        : `${t("selectAllStudents")}`}
+                    </button>
+                  )}
               </div>
 
               <div
@@ -543,10 +586,14 @@ export default function AssignDialog({
                 )}
               >
                 {loadingStudents ? (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-gray-500">
-                      {t("loadingStudents")}
-                    </p>
+                  <div className="space-y-2">
+                    {/* Skeleton Loading for Students */}
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <Skeleton className="h-4 w-4 rounded" />
+                        <Skeleton className="h-4 w-32" />
+                      </div>
+                    ))}
                   </div>
                 ) : students.length === 0 ? (
                   <div className="text-center py-4">
@@ -597,7 +644,7 @@ export default function AssignDialog({
             {/* Due Date */}
             <div>
               <Label className="text-sm font-medium">{t("dueDate")} *</Label>
-              {date && (
+              {date && !isNaN(date.getTime()) && (
                 <p className="text-sm text-gray-600 mb-2">
                   {t("selectedDueDate")}:{" "}
                   <span className="font-medium text-green-600">

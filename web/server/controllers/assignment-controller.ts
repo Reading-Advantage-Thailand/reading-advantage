@@ -2,6 +2,19 @@ import { NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
 import { ExtendedNextRequest } from "./auth-controller";
 
+interface StudentAssignment {
+  id: string;
+  classroomId: string;
+  articleId: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  status: number;
+  createdAt: string;
+  teacherId: string;
+  displayName: string | null;
+}
+
 export async function getAssignments(req: ExtendedNextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -89,6 +102,7 @@ export async function postAssignment(req: ExtendedNextRequest) {
     const batch = db.batch();
     const studentsToSave: string[] = [];
 
+    // Teacher perspective - existing structure
     const metaRef = db
       .collection("assignments")
       .doc(classroomId)
@@ -126,16 +140,36 @@ export async function postAssignment(req: ExtendedNextRequest) {
           displayName = null;
         }
 
+        // Teacher perspective
         batch.set(assignmentRef, {
           studentId,
           status: 0,
+          displayName,
+        });
+
+        // Student perspective - new structure
+        const assignmentId = `${classroomId}_${articleId}`;
+        const studentAssignmentRef = db
+          .collection("student-assignments")
+          .doc(studentId)
+          .collection("assignments")
+          .doc(assignmentId);
+
+        batch.set(studentAssignmentRef, {
+          classroomId,
+          articleId,
+          title,
+          description,
+          dueDate,
+          status: 0,
+          createdAt,
+          teacherId: userId,
           displayName,
         });
       }
     });
 
     await Promise.all(checkPromises);
-
     await batch.commit();
 
     return NextResponse.json(
@@ -158,7 +192,6 @@ export async function postAssignment(req: ExtendedNextRequest) {
 export async function updateAssignment(req: ExtendedNextRequest) {
   try {
     const data = await req.json();
-
     const { classroomId, articleId, studentId, updates } = data;
 
     if (!classroomId || !articleId || !studentId || !updates) {
@@ -171,6 +204,9 @@ export async function updateAssignment(req: ExtendedNextRequest) {
       );
     }
 
+    const batch = db.batch();
+
+    // Update teacher perspective
     const assignmentRef = db
       .collection("assignments")
       .doc(classroomId)
@@ -208,7 +244,39 @@ export async function updateAssignment(req: ExtendedNextRequest) {
           { status: 400 }
         );
       }
-      await assignmentRef.update(filteredUpdates);
+      batch.update(assignmentRef, filteredUpdates);
+
+      // Update student-assignments for all students in this assignment
+      const studentsSnapshot = await db
+        .collection("assignments")
+        .doc(classroomId)
+        .collection(articleId)
+        .get();
+
+      const assignmentId = `${classroomId}_${articleId}`;
+
+      studentsSnapshot.docs
+        .filter((doc) => doc.id !== "meta")
+        .forEach((doc) => {
+          const studentAssignmentRef = db
+            .collection("student-assignments")
+            .doc(doc.id)
+            .collection("assignments")
+            .doc(assignmentId);
+
+          // Only update relevant fields for student view (exclude userId, createdAt)
+          const studentUpdates: Record<string, any> = {};
+          if (filteredUpdates.title)
+            studentUpdates.title = filteredUpdates.title;
+          if (filteredUpdates.description)
+            studentUpdates.description = filteredUpdates.description;
+          if (filteredUpdates.dueDate)
+            studentUpdates.dueDate = filteredUpdates.dueDate;
+
+          if (Object.keys(studentUpdates).length > 0) {
+            batch.update(studentAssignmentRef, studentUpdates);
+          }
+        });
     } else {
       const allowedFields = ["status", "displayName"];
       const filteredUpdates: Record<string, any> = {};
@@ -223,8 +291,21 @@ export async function updateAssignment(req: ExtendedNextRequest) {
           { status: 400 }
         );
       }
-      await assignmentRef.update(filteredUpdates);
+
+      batch.update(assignmentRef, filteredUpdates);
+
+      // Update student perspective
+      const assignmentId = `${classroomId}_${articleId}`;
+      const studentAssignmentRef = db
+        .collection("student-assignments")
+        .doc(studentId)
+        .collection("assignments")
+        .doc(assignmentId);
+
+      batch.update(studentAssignmentRef, filteredUpdates);
     }
+
+    await batch.commit();
 
     return NextResponse.json(
       { message: "Assignment updated successfully" },
@@ -232,6 +313,50 @@ export async function updateAssignment(req: ExtendedNextRequest) {
     );
   } catch (error) {
     console.error("Error updating assignment:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getStudentAssignments(req: ExtendedNextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const studentId = searchParams.get("studentId");
+    const status = searchParams.get("status");
+
+    if (!studentId) {
+      return NextResponse.json(
+        { message: "Missing studentId in query parameters" },
+        { status: 400 }
+      );
+    }
+
+    let query: any = db
+      .collection("student-assignments")
+      .doc(studentId)
+      .collection("assignments");
+
+    if (status) {
+      query = query.where("status", "==", parseInt(status));
+    }
+
+    // Add ordering by due date
+    query = query.orderBy("dueDate", "asc");
+
+    const snapshot = await query.get();
+    const assignments: StudentAssignment[] = snapshot.docs.map(
+      (doc: any) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        } as StudentAssignment)
+    );
+
+    return NextResponse.json(assignments, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching student assignments:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

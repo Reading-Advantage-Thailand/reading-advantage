@@ -40,6 +40,7 @@ interface LessonProgressBar {
   article: Article;
   articleId: string;
   userId: string;
+  classroomId?: string;
 }
 
 const LessonProgressBar: React.FC<LessonProgressBar> = ({
@@ -47,6 +48,7 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
   article,
   articleId,
   userId,
+  classroomId,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [maxHeight, setMaxHeight] = useState("0px");
@@ -146,7 +148,11 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
 
   const startLesson = async () => {
     setCurrentPhase(currentPhase + 1);
-    await fetch(`/api/v1/lesson/${userId}?articleId=${articleId}`, {
+    const url = classroomId
+      ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
+      : `/api/v1/lesson/${userId}?articleId=${articleId}`;
+
+    await fetch(url, {
       method: "POST",
     });
   };
@@ -178,7 +184,12 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
       return;
     }
     setCurrentPhase(Phase + 1);
-    await fetch(`/api/v1/lesson/${userId}?articleId=${articleId}`, {
+
+    const url = classroomId
+      ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
+      : `/api/v1/lesson/${userId}?articleId=${articleId}`;
+
+    await fetch(url, {
       method: "PUT",
       body: JSON.stringify({
         phase: Phase,
@@ -210,7 +221,12 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
       });
     }
     setCurrentPhase(Phase + 1);
-    await fetch(`/api/v1/lesson/${userId}?articleId=${articleId}`, {
+
+    const url = classroomId
+      ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
+      : `/api/v1/lesson/${userId}?articleId=${articleId}`;
+
+    await fetch(url, {
       method: "PUT",
       body: JSON.stringify({
         phase: Phase,

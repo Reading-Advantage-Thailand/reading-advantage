@@ -1,4 +1,5 @@
 import AssignmentPage from "@/app/[locale]/(teacher)/teacher/assignments/page";
+import { assign } from "lodash";
 import next from "next";
 
 export default {
@@ -340,6 +341,29 @@ export default {
         SAQ3points: "Decent answer. Try to elaborate more",
         SAQ4points: "Strong answer. Just a little refinement needed",
         SAQ5points: "Excellent! Clear, complete, and well-reasoned answer",
+      },
+      assignmentPage: {
+        overdue: "Overdue",
+        dueToday: "Due Today",
+        upcomming: "Upcoming",
+        daysLeft: "{daysDiff} days left",
+        assignmentTitle: "Assignment Title",
+        assignmentDescription: "Assignment Description",
+        dueDate: "Due Date",
+        status: "Status",
+        notFinished: "Not finished",
+        inProgress: "In progress",
+        done: "Done",
+        assignedBy: "Assigned By",
+        linkToAssignment: "Link to Assignment",
+        goToLesson: "Go to Lesson",
+        assignments: "Assignments",
+        searchAssignments: "Search assignments...",
+        allStatus: "All Status",
+        allDueDates: "All Due Dates",
+        previous: "Previous",
+        next: "Next",
+        createAt: "Created At",
       },
     },
     teacher: {
