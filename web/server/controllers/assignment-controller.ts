@@ -8,43 +8,60 @@ export async function getAssignments(req: ExtendedNextRequest) {
     const classroomId = searchParams.get("classroomId");
     const articleId = searchParams.get("articleId");
 
-    if (!classroomId || !articleId) {
+    if (!classroomId) {
       return NextResponse.json(
-        { message: "Missing classroomId or articleId in query parameters" },
+        { message: "Missing classroomId in query parameters" },
         { status: 400 }
       );
     }
 
-    const assignmentsRef = db
-      .collection("assignments")
-      .doc(classroomId)
-      .collection(articleId);
+    if (articleId) {
+      const assignmentsRef = db
+        .collection("assignments")
+        .doc(classroomId)
+        .collection(articleId);
 
-    const snapshot = await assignmentsRef.get();
+      const snapshot = await assignmentsRef.get();
+      const metaDoc = await assignmentsRef.doc("meta").get();
+      const metaData = metaDoc.exists ? metaDoc.data() : {};
 
-    const assignments = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as { studentId: string }),
-    }));
+      const students = snapshot.docs
+        .filter((doc) => doc.id !== "meta")
+        .map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as { studentId: string }),
+        }));
 
-    // ดึง display_name จาก users collection
-    const assignmentsWithNames = await Promise.all(
-      assignments.map(async (assignment) => {
-        const userRef = db.collection("users").doc(assignment.studentId);
-        const userSnap = await userRef.get();
+      return NextResponse.json({ meta: metaData, students }, { status: 200 });
+    } else {
+      const articlesSnap = await db
+        .collection("assignments")
+        .doc(classroomId)
+        .listCollections();
 
-        const displayName = userSnap.exists
-          ? userSnap.data()?.display_name || null
-          : null;
+      const result: any[] = [];
 
-        return {
-          ...assignment,
-          displayName,
-        };
-      })
-    );
+      for (const articleCol of articlesSnap) {
+        const metaDoc = await articleCol.doc("meta").get();
+        const metaData = metaDoc.exists ? metaDoc.data() : {};
 
-    return NextResponse.json(assignmentsWithNames, { status: 200 });
+        const snapshot = await articleCol.get();
+        const students = snapshot.docs
+          .filter((doc) => doc.id !== "meta")
+          .map((doc) => ({
+            id: doc.id,
+            ...(doc.data() as { studentId: string }),
+          }));
+
+        result.push({
+          articleId: articleCol.id,
+          meta: metaData,
+          students,
+        });
+      }
+
+      return NextResponse.json(result, { status: 200 });
+    }
   } catch (error) {
     console.error("Error fetching assignments:", error);
     return NextResponse.json(
@@ -72,6 +89,22 @@ export async function postAssignment(req: ExtendedNextRequest) {
     const batch = db.batch();
     const studentsToSave: string[] = [];
 
+    const metaRef = db
+      .collection("assignments")
+      .doc(classroomId)
+      .collection(articleId)
+      .doc("meta");
+
+    batch.set(metaRef, {
+      title,
+      description,
+      dueDate,
+      classroomId,
+      articleId,
+      userId,
+      createdAt,
+    });
+
     const checkPromises = selectedStudents.map(async (studentId: string) => {
       const assignmentRef = db
         .collection("assignments")
@@ -83,16 +116,20 @@ export async function postAssignment(req: ExtendedNextRequest) {
       if (!docSnap.exists) {
         studentsToSave.push(studentId);
 
+        let displayName = null;
+        try {
+          const userSnap = await db.collection("users").doc(studentId).get();
+          displayName = userSnap.exists
+            ? userSnap.data()?.display_name || null
+            : null;
+        } catch {
+          displayName = null;
+        }
+
         batch.set(assignmentRef, {
-          title,
-          description,
-          dueDate,
-          classroomId,
-          articleId,
-          userId,
           studentId,
-          createdAt,
-          status: 0, // 0: not started, 1: in progress, 2: completed
+          status: 0,
+          displayName,
         });
       }
     });
@@ -119,44 +156,85 @@ export async function postAssignment(req: ExtendedNextRequest) {
 }
 
 export async function updateAssignment(req: ExtendedNextRequest) {
-    try {
-        const data = await req.json();
+  try {
+    const data = await req.json();
 
-        const { classroomId, articleId, studentId, updates } = data;
+    const { classroomId, articleId, studentId, updates } = data;
 
-        if (!classroomId || !articleId || !studentId || !updates) {
-            return NextResponse.json(
-                { message: "Missing required fields: classroomId, articleId, studentId, or updates" },
-                { status: 400 }
-            );
-        }
-
-        const assignmentRef = db
-            .collection("assignments")
-            .doc(classroomId)
-            .collection(articleId)
-            .doc(studentId);
-
-        const docSnap = await assignmentRef.get();
-
-        if (!docSnap.exists) {
-            return NextResponse.json(
-                { message: "Assignment not found" },
-                { status: 404 }
-            );
-        }
-
-        await assignmentRef.update(updates);
-
-        return NextResponse.json(
-            { message: "Assignment updated successfully" },
-            { status: 200 }
-        );
-    } catch (error) {
-        console.error("Error updating assignment:", error);
-        return NextResponse.json(
-            { message: "Internal server error" },
-            { status: 500 }
-        );
+    if (!classroomId || !articleId || !studentId || !updates) {
+      return NextResponse.json(
+        {
+          message:
+            "Missing required fields: classroomId, articleId, studentId, or updates",
+        },
+        { status: 400 }
+      );
     }
+
+    const assignmentRef = db
+      .collection("assignments")
+      .doc(classroomId)
+      .collection(articleId)
+      .doc(studentId);
+
+    const docSnap = await assignmentRef.get();
+
+    if (!docSnap.exists) {
+      return NextResponse.json(
+        { message: "Assignment not found" },
+        { status: 404 }
+      );
+    }
+
+    if (studentId === "meta") {
+      const allowedMetaFields = [
+        "title",
+        "description",
+        "dueDate",
+        "classroomId",
+        "articleId",
+        "userId",
+        "createdAt",
+      ];
+      const filteredUpdates: Record<string, any> = {};
+      for (const key of allowedMetaFields) {
+        if (updates.hasOwnProperty(key)) {
+          filteredUpdates[key] = updates[key];
+        }
+      }
+      if (Object.keys(filteredUpdates).length === 0) {
+        return NextResponse.json(
+          { message: "No valid metadata fields to update" },
+          { status: 400 }
+        );
+      }
+      await assignmentRef.update(filteredUpdates);
+    } else {
+      const allowedFields = ["status", "displayName"];
+      const filteredUpdates: Record<string, any> = {};
+      for (const key of allowedFields) {
+        if (updates.hasOwnProperty(key)) {
+          filteredUpdates[key] = updates[key];
+        }
+      }
+      if (Object.keys(filteredUpdates).length === 0) {
+        return NextResponse.json(
+          { message: "No valid fields to update" },
+          { status: 400 }
+        );
+      }
+      await assignmentRef.update(filteredUpdates);
+    }
+
+    return NextResponse.json(
+      { message: "Assignment updated successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating assignment:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

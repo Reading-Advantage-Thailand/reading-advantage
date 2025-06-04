@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { useCourseStore } from "@/store/classroom-store";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
@@ -34,6 +33,8 @@ type Props = {
   article: Article;
   articleId: string;
   userId: string;
+  pageType?: "assignment" | "article";
+  classroomId?: string;
 };
 
 // Student interface
@@ -52,8 +53,37 @@ interface AssignmentFormData {
   userId: string;
 }
 
-export default function AssignDialog({ article, articleId, userId }: Props) {
-  const { courses, setCourses } = useCourseStore();
+interface Classes {
+  classroomName: string;
+  classCode: string;
+  noOfStudents: number;
+  grade: string;
+  coTeacher: {
+    coTeacherId: string;
+    name: string;
+  };
+  id: string;
+  archived: boolean;
+  title: string;
+  student: [
+    {
+      studentId: string;
+      lastActivity: Date;
+    }
+  ];
+  importedFromGoogle: boolean;
+  alternateLink: string;
+  googleClassroomId: string;
+}
+
+export default function AssignDialog({
+  article,
+  articleId,
+  userId,
+  pageType,
+  classroomId,
+}: Props) {
+  const [classrooms, setClassrooms] = useState<Classes[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
@@ -63,7 +93,6 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
   const [loadingStudents, setLoadingStudents] = useState<boolean>(false);
   const t = useScopedI18n("pages.teacher.AssignmentPage");
   const [assignedStudentIds, setAssignedStudentIds] = useState<string[]>([]);
-
   const [form, setForm] = useState({
     classroomId: "",
     title: "",
@@ -72,11 +101,20 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
   });
 
   useEffect(() => {
+    if (pageType === "assignment" && classroomId) {
+      setForm((prev) => ({
+        ...prev,
+        classroomId: classroomId,
+      }));
+    }
+  }, [pageType, classroomId]);
+
+  useEffect(() => {
     async function fetchCourses() {
       try {
         const res = await fetch("/api/v1/classroom");
         const data = await res.json();
-        setCourses(data.data);
+        setClassrooms(data.data);
       } catch (error) {
         console.error("Error fetching courses:", error);
         toast({
@@ -87,7 +125,7 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
       }
     }
     fetchCourses();
-  }, [setCourses]);
+  }, [setClassrooms]);
 
   useEffect(() => {
     if (!form.classroomId || !articleId) {
@@ -103,19 +141,19 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const assignments = await res.json();
 
-        if (assignments.length > 0) {
-          const assignment = assignments[0];
-
+        if (assignments.meta) {
           setForm((prev) => ({
             ...prev,
-            title: assignment.title,
-            description: assignment.description,
-            classroomId: assignment.classroomId,
-            dueDate: assignment.dueDate,
+            title: assignments.meta.title,
+            description: assignments.meta.description,
+            classroomId: assignments.meta.classroomId,
+            dueDate: assignments.meta.dueDate,
           }));
 
-          setDate(new Date(assignment.dueDate));
-          const studentIdsFromServer = assignments.map((a: any) => a.studentId);
+          setDate(new Date(assignments.meta.dueDate));
+          const studentIdsFromServer = assignments.students.map(
+            (student: any) => student.studentId
+          );
           setSelectedStudents(studentIdsFromServer);
           setAssignedStudentIds(studentIdsFromServer);
         } else {
@@ -282,11 +320,28 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
           throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      console.log("assignedStudentIds", assignedStudentIds);
-      console.log("selectedStudents", selectedStudents);
-      console.log("existingStudents", existingStudents);
-
       // PUT สำหรับ student ที่มี assignment อยู่แล้ว
+      const metaResponse = await fetch("/api/v1/assignments", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          classroomId: form.classroomId,
+          articleId,
+          studentId: "meta",
+          updates: {
+            title: form.title,
+            description: form.description,
+            dueDate: date!.toISOString(),
+          },
+        }),
+      });
+
+      if (!metaResponse.ok) {
+        throw new Error(`HTTP error! status: ${metaResponse.status}`);
+      }
+
       for (const studentId of existingStudents) {
         const response = await fetch("/api/v1/assignments", {
           method: "PUT",
@@ -298,14 +353,15 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
             articleId,
             studentId,
             updates: {
-              title: form.title,
-              description: form.description,
-              dueDate: date!.toISOString(),
+              displayName: students.find((s) => s.id === studentId)
+                ?.display_name,
             },
           }),
         });
-        if (!response.ok)
+
+        if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
+        }
       }
 
       toast({
@@ -344,7 +400,11 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
     <div>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button>{t("assignment")}</Button>
+          <Button>
+            {pageType === "assignment"
+              ? `${t("editAssignment")}`
+              : `${t("assignment")}`}
+          </Button>
         </DialogTrigger>
         <DialogContent className="z-50 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -365,32 +425,48 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
           </div>
 
           {/* Class Selection */}
-          <div>
-            <Label className="text-sm font-medium">{t("classroom")} *</Label>
-            <Select
-              onValueChange={(value) => handleChange("classroomId", value)}
-              value={form.classroomId}
-            >
-              <SelectTrigger
-                className={cn(
-                  "w-full mt-1",
-                  errors.classroomId && "border-red-500"
-                )}
+          {pageType !== "assignment" && (
+            <div>
+              <Label className="text-sm font-medium">{t("classroom")} *</Label>
+              <Select
+                onValueChange={(value) => handleChange("classroomId", value)}
+                value={form.classroomId}
               >
-                <SelectValue placeholder={`${t("selectClass")}`} />
-              </SelectTrigger>
-              <SelectContent>
-                {courses.map((classroom) => (
-                  <SelectItem key={classroom.id} value={classroom.id!}>
-                    {classroom.classroomName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.classroomId && (
-              <p className="text-red-500 text-sm mt-1">{errors.classroomId}</p>
-            )}
-          </div>
+                <SelectTrigger
+                  className={cn(
+                    "w-full mt-1",
+                    errors.classroomId && "border-red-500"
+                  )}
+                >
+                  <SelectValue placeholder={`${t("selectClass")}`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {classrooms.map((classroom) => (
+                    <SelectItem key={classroom.id} value={classroom.id!}>
+                      {classroom.classroomName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.classroomId && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.classroomId}
+                </p>
+              )}
+            </div>
+          )}
+
+          {pageType === "assignment" && (
+            <div>
+              <Label className="text-sm font-medium">{t("classroom")}</Label>
+              <div className="mt-1 p-2 rounded-md border">
+                <span className="text-sm">
+                  {classrooms.find((c) => c.id === form.classroomId)
+                    ?.classroomName || "Loading..."}
+                </span>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-4">
             {/* Assignment Title */}
@@ -432,7 +508,7 @@ export default function AssignDialog({ article, articleId, userId }: Props) {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-sm font-medium">{t("students")} *</Label>
-                {students.length > 0 && (
+                {students.length > 0 && assignedStudentIds.length === 0 && (
                   <button
                     type="button"
                     className={`${

@@ -354,6 +354,23 @@ export default {
         enterAssignmentDescription:
           "กรอกรายละเอียดและคำแนะนำสำหรับงานที่มอบหมาย",
         selectClass: "เลือกชั้นเรียน",
+        // New translations
+        notStarted: "ยังไม่เริ่ม",
+        inProgress: "กำลังทำ",
+        completed: "เสร็จสิ้น",
+        unknownStatus: "ไม่ทราบสถานะ",
+        createdOn: "สร้างเมื่อ",
+        overdue: "เกินกำหนด",
+        dueToday: "ครบกำหนดวันนี้",
+        daysRemaining: "อีก {daysRemaining} วัน",
+        allStudents: "นักเรียนทั้งหมด",
+        overallProgress: "ความคืบหน้าโดยรวม",
+        studentList: "รายชื่อนักเรียน",
+        all: "ทั้งหมด",
+        noStudentsInSelectedStatus: "ไม่มีนักเรียนในสถานะที่เลือก",
+        details: "รายละเอียด",
+        actions: "การดำเนินการ",
+        editAssignment: "แก้ไขงานที่มอบหมาย",
         error: {
           pleaseSelectClass: "กรุณาเลือกชั้นเรียน",
           titleRequired: "กรุณากรอกชื่อหัวข้องานที่มอบหมาย",
@@ -422,7 +439,7 @@ export default {
       myStudents: "นักเรียนของฉัน",
       classRoster: "บัญชีรายชื่อนักเรียน",
       passages: "บทความ",
-      assignments: "การบ้าน",
+      assignments: "งานที่มอบหมาย",
     },
     sidebarTeacherNav: {
       myClasses: "ชั้นเรียนของฉัน",
@@ -430,7 +447,7 @@ export default {
       classRoster: "บัญชีรายชื่อนักเรียน",
       reports: "รายงาน",
       passages: "บทความ",
-      assignments: "การบ้าน",
+      assignments: "งานที่มอบหมาย",
     },
     articleRecordsTable: {
       title: "ชื่อบทความ",
