@@ -21,6 +21,9 @@ export async function getAssignments(req: ExtendedNextRequest) {
     const { searchParams } = new URL(req.url);
     const classroomId = searchParams.get("classroomId");
     const articleId = searchParams.get("articleId");
+    const search = searchParams.get("search");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
 
     if (!classroomId) {
       return NextResponse.json(
@@ -53,7 +56,7 @@ export async function getAssignments(req: ExtendedNextRequest) {
         .doc(classroomId)
         .listCollections();
 
-      const result: any[] = [];
+      let result: any[] = [];
 
       for (const articleCol of articlesSnap) {
         const metaDoc = await articleCol.doc("meta").get();
@@ -74,7 +77,39 @@ export async function getAssignments(req: ExtendedNextRequest) {
         });
       }
 
-      return NextResponse.json(result, { status: 200 });
+      // Apply search filter if provided
+      if (search && search.trim() !== "") {
+        const searchLower = search.toLowerCase().trim();
+        result = result.filter(
+          (assignment) =>
+            assignment.meta.title?.toLowerCase().includes(searchLower) ||
+            assignment.meta.description?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      // Apply pagination
+      const totalCount = result.length;
+      const offset = (page - 1) * limit;
+      const paginatedResult = result.slice(offset, offset + limit);
+
+      const totalPages = Math.ceil(totalCount / limit);
+      const hasNextPage = page < totalPages;
+      const hasPrevPage = page > 1;
+
+      return NextResponse.json(
+        {
+          assignments: paginatedResult,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            totalCount,
+            hasNextPage,
+            hasPrevPage,
+            limit,
+          },
+        },
+        { status: 200 }
+      );
     }
   } catch (error) {
     console.error("Error fetching assignments:", error);

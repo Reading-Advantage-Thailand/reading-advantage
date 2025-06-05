@@ -62,6 +62,15 @@ type Assignment = {
   }[];
 };
 
+type PaginationInfo = {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  limit: number;
+};
+
 export default function Assignments() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -69,17 +78,45 @@ export default function Assignments() {
   const [selectedClassroom, setSelectedClassroom] = useState<string>("");
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+    limit: 10,
+  });
+
   const pathname = usePathname();
   const router = useRouter();
   const t = useScopedI18n("components.articleRecordsTable");
   const ta = useScopedI18n("pages.teacher.AssignmentPage");
   const { classrooms, fetchClassrooms } = useClassroomStore();
-  const [searchTerm, setSearchTerm] = useState("");
+
+  const useDebounce = (value: string, delay: number) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value, delay]);
+
+    return debouncedValue;
+  };
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 1000);
 
   const columns: ColumnDef<Assignment>[] = [
     {
-      id: "title", // เพิ่ม id เพื่อให้อ้างอิงได้
-      accessorFn: (row) => row.meta.title, // ใช้ accessorFn แทน accessorKey
+      id: "title",
+      accessorFn: (row) => row.meta.title,
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -154,6 +191,8 @@ export default function Assignments() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    manualPagination: true,
+    manualFiltering: true,
     state: {
       sorting,
       columnFilters,
@@ -161,25 +200,56 @@ export default function Assignments() {
     },
   });
 
-  const fetchAssignments = async (classroomId: string) => {
+  const fetchAssignments = async (
+    classroomId: string,
+    page: number = 1,
+    search?: string
+  ) => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/assignments?classroomId=${classroomId}`,
-        { method: "GET" }
-      );
+      let url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/assignments?classroomId=${classroomId}&page=${page}&limit=10`;
+
+      if (search && search.trim() !== "") {
+        url += `&search=${encodeURIComponent(search.trim())}`;
+      }
+
+      console.log("Fetching URL:", url);
+      const response = await fetch(url, { method: "GET" });
 
       if (!response.ok) {
         throw new Error("Failed to fetch assignments");
       }
 
       const data = await response.json();
-      setAssignments(data);
+
+      if (data.assignments) {
+        setAssignments(data.assignments);
+        setPagination(data.pagination);
+      } else if (Array.isArray(data)) {
+        setAssignments(data);
+        setPagination({
+          currentPage: 1,
+          totalPages: 1,
+          totalCount: data.length,
+          hasNextPage: false,
+          hasPrevPage: false,
+          limit: 10,
+        });
+      }
     } catch (error) {
       console.error(error);
       toast({
         title: "Error",
         description: "Failed to fetch assignments",
+      });
+      setAssignments([]);
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalCount: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        limit: 10,
       });
     } finally {
       setIsLoading(false);
@@ -188,29 +258,46 @@ export default function Assignments() {
 
   const handleClassChange = async (value: string) => {
     try {
-      setIsLoading(true);
       setSelectedClassroom(value);
-      await fetchAssignments(value);
+      setCurrentPage(1);
+      setSearchQuery("");
+      await fetchAssignments(value, 1);
     } catch (error) {
       console.error("Error fetching assignments:", error);
       toast({
         title: "Error",
         description: "Failed to fetch assignments",
       });
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleNextPage = () => {
+    if (pagination.hasNextPage) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchAssignments(selectedClassroom, nextPage, debouncedSearchQuery);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (pagination.hasPrevPage) {
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+      fetchAssignments(selectedClassroom, prevPage, debouncedSearchQuery);
     }
   };
 
   useEffect(() => {
-    const column = table.getColumn("title");
-    if (column) {
-      column.setFilterValue(searchTerm);
+    if (selectedClassroom && debouncedSearchQuery !== undefined) {
+      setCurrentPage(1);
+      fetchAssignments(selectedClassroom, 1, debouncedSearchQuery);
     }
-  }, [searchTerm, table]);
-  useEffect(() => {
-    setSearchTerm("");
-  }, [selectedClassroom]);
+  }, [selectedClassroom, debouncedSearchQuery]);
 
   useEffect(() => {
     const init = async () => {
@@ -226,7 +313,7 @@ export default function Assignments() {
         classrooms.some((c) => c.id === currentClassroomId)
       ) {
         setSelectedClassroom(currentClassroomId);
-        await fetchAssignments(currentClassroomId);
+        await fetchAssignments(currentClassroomId, 1);
       }
     };
 
@@ -254,13 +341,15 @@ export default function Assignments() {
       <div className="flex justify-between items-center">
         <Input
           placeholder="Search assignments..."
-          value={searchTerm}
-          onChange={(event) => {
-            setSearchTerm(event.target.value);
-          }}
+          value={searchQuery}
+          onChange={(event) => handleSearchChange(event.target.value)}
           className="max-w-sm"
           disabled={!selectedClassroom || isLoading}
         />
+
+        {searchQuery !== debouncedSearchQuery && (
+          <div className="text-sm text-muted-foreground">Searching...</div>
+        )}
       </div>
 
       <div className="rounded-md border">
@@ -303,20 +392,48 @@ export default function Assignments() {
                     </TableCell>
                   </TableRow>
                 ))
-              ) : table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+              ) : assignments?.length ? (
+                assignments.map((row, index) => (
+                  <TableRow key={`${row.articleId}-${index}`}>
+                    <TableCell>
+                      <div className="ml-4">{row.meta.title}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-center">
+                        {new Date(row.meta.createdAt).toLocaleString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-center">
+                        {new Date(row.meta.dueDate).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-center">{row.students.length}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="default" className="ml-auto">
+                              {ta("actions")}{" "}
+                              <ChevronDownIcon className="ml-2 h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                router.push(
+                                  `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/assignments/${row.meta.classroomId}/${row.meta.articleId}`
+                                );
+                              }}
+                            >
+                              {ta("details")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
@@ -343,21 +460,40 @@ export default function Assignments() {
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2">
-        <div className="space-x-2">
+      {/* Custom pagination */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing{" "}
+          {Math.min(
+            (pagination.currentPage - 1) * pagination.limit + 1,
+            pagination.totalCount
+          )}{" "}
+          to{" "}
+          {Math.min(
+            pagination.currentPage * pagination.limit,
+            pagination.totalCount
+          )}{" "}
+          of {pagination.totalCount} assignments
+        </div>
+        <div className="flex items-center space-x-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage() || isLoading}
+            onClick={handlePrevPage}
+            disabled={!pagination.hasPrevPage || isLoading}
           >
             {t("previous")}
           </Button>
+          <div className="flex items-center gap-1">
+            <span className="text-sm">
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </span>
+          </div>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage() || isLoading}
+            onClick={handleNextPage}
+            disabled={!pagination.hasNextPage || isLoading}
           >
             {t("next")}
           </Button>
