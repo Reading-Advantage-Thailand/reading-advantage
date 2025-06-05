@@ -13,6 +13,7 @@ interface StudentAssignment {
   createdAt: string;
   teacherId: string;
   displayName: string | null;
+  teacherDisplayName?: string;
 }
 
 export async function getAssignments(req: ExtendedNextRequest) {
@@ -325,6 +326,10 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
     const { searchParams } = new URL(req.url);
     const studentId = searchParams.get("studentId");
     const status = searchParams.get("status");
+    const dueDateFilter = searchParams.get("dueDateFilter");
+    const search = searchParams.get("search");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
 
     if (!studentId) {
       return NextResponse.json(
@@ -333,20 +338,14 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
       );
     }
 
-    let query: any = db
+    const snapshot = await db
       .collection("student-assignments")
       .doc(studentId)
-      .collection("assignments");
+      .collection("assignments")
+      .orderBy("dueDate", "asc")
+      .get();
 
-    if (status) {
-      query = query.where("status", "==", parseInt(status));
-    }
-
-    // Add ordering by due date
-    query = query.orderBy("dueDate", "asc");
-
-    const snapshot = await query.get();
-    const assignments: StudentAssignment[] = snapshot.docs.map(
+    let assignments: StudentAssignment[] = snapshot.docs.map(
       (doc: any) =>
         ({
           id: doc.id,
@@ -354,11 +353,125 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
         } as StudentAssignment)
     );
 
-    return NextResponse.json(assignments, { status: 200 });
+    // Get unique teacher IDs
+    const teacherIds = [
+      ...new Set(
+        assignments.map((assignment) => assignment.teacherId).filter(Boolean)
+      ),
+    ];
+
+    // Fetch teacher display names
+    const teacherDisplayNames: { [key: string]: string } = {};
+
+    if (teacherIds.length > 0) {
+      const teacherPromises = teacherIds.map(async (teacherId) => {
+        try {
+          const teacherDoc = await db.collection("users").doc(teacherId).get();
+          if (teacherDoc.exists) {
+            const teacherData = teacherDoc.data();
+            teacherDisplayNames[teacherId] =
+              teacherData?.display_name ||
+              teacherData?.email ||
+              "Unknown Teacher";
+          } else {
+            teacherDisplayNames[teacherId] = "Unknown Teacher";
+          }
+        } catch (error) {
+          console.error(`Error fetching teacher ${teacherId}:`, error);
+          teacherDisplayNames[teacherId] = "Unknown Teacher";
+        }
+      });
+
+      await Promise.all(teacherPromises);
+    }
+
+    // Update assignments with teacher display names
+    assignments = assignments.map((assignment) => ({
+      ...assignment,
+      teacherDisplayName:
+        teacherDisplayNames[assignment.teacherId] || "Unknown Teacher",
+    }));
+
+    // Apply search filter
+    if (search && search.trim() !== "") {
+      const searchLower = search.toLowerCase().trim();
+
+      assignments = assignments.filter((assignment) => {
+        const titleMatch = assignment.title
+          ?.toLowerCase()
+          .includes(searchLower);
+        const descMatch = assignment.description
+          ?.toLowerCase()
+          .includes(searchLower);
+        const nameMatch = assignment.displayName
+          ?.toLowerCase()
+          .includes(searchLower);
+        const teacherMatch = teacherDisplayNames[assignment.teacherId]
+          ?.toLowerCase()
+          .includes(searchLower);
+
+        return titleMatch || descMatch || nameMatch || teacherMatch;
+      });
+    }
+
+    // Apply status filter
+    if (status && status !== "all") {
+      assignments = assignments.filter(
+        (assignment) => assignment.status === parseInt(status)
+      );
+    }
+
+    // Apply due date filter
+    if (dueDateFilter && dueDateFilter !== "all") {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
+      assignments = assignments.filter((assignment) => {
+        const dueDate = new Date(assignment.dueDate);
+        switch (dueDateFilter) {
+          case "overdue":
+            return dueDate < today;
+          case "today":
+            return dueDate >= today && dueDate < tomorrow;
+          case "upcoming":
+            return dueDate >= tomorrow;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Apply pagination in memory
+    const totalCount = assignments.length;
+    const offset = (page - 1) * limit;
+    const paginatedAssignments = assignments.slice(offset, offset + limit);
+
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return NextResponse.json(
+      {
+        assignments: paginatedAssignments,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalCount,
+          hasNextPage,
+          hasPrevPage,
+          limit,
+        },
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error fetching student assignments:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }

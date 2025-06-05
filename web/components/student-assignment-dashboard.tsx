@@ -45,7 +45,17 @@ type Assignment = {
   createdAt: string;
   teacherId: string;
   displayName: string;
+  teacherDisplayName?: string;
   completed?: boolean;
+};
+
+type PaginationInfo = {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  limit: number;
 };
 
 export default function StudentAssignmentTable({ userId }: AssignmentProps) {
@@ -67,6 +77,16 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [dueDateFilter, setDueDateFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+    limit: 10,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
 
   const getDateLocale = () => {
     switch (locale) {
@@ -82,6 +102,24 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
         return enUS;
     }
   };
+
+  const useDebounce = (value: string, delay: number) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value, delay]);
+
+    return debouncedValue;
+  };
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 1000);
 
   const getDueDateStatus = (dueDate: string) => {
     const now = new Date();
@@ -271,12 +309,16 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
       },
     },
     {
-      accessorKey: "displayName",
+      accessorKey: "teacherDisplayName",
       header: () => {
         return <div className="text-center">{t("assignedBy")}</div>;
       },
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("displayName")}</div>
+        <div className="text-center">
+          {row.getValue("teacherDisplayName") ||
+            row.getValue("displayName") ||
+            "Unknown Teacher"}
+        </div>
       ),
     },
     {
@@ -327,32 +369,111 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
     };
   }
 
-  const fetchAssignment = async () => {
+  const fetchAssignment = async (
+    page: number = 1,
+    status?: string,
+    dueDateStatus?: string,
+    search?: string // เพิ่ม search parameter
+  ) => {
     try {
       if (!userId) {
         console.error("Missing required studentId");
         return;
       }
 
-      const response = await fetch(
-        `/api/v1/users/assignments?studentId=${userId}`
-      );
+      let url = `/api/v1/users/assignments?studentId=${userId}&page=${page}&limit=10`;
+
+      if (status && status !== "all") {
+        url += `&status=${status}`;
+      }
+
+      if (dueDateStatus && dueDateStatus !== "all") {
+        url += `&dueDateFilter=${dueDateStatus}`;
+      }
+
+      if (search && search.trim() !== "") {
+        url += `&search=${encodeURIComponent(search.trim())}`;
+      }
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("API Error:", errorData);
+        throw new Error(
+          `HTTP ${response.status}: ${errorData.message || "Unknown error"}`
+        );
+      }
+
       const data = await response.json();
-      setAssignments(data);
+
+      setAssignments(data.assignments || []);
+      setPagination(
+        data.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalCount: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+          limit: 10,
+        }
+      );
     } catch (error) {
       console.error("Error fetching assignment:", error);
+      // Reset to empty state on error
+      setAssignments([]);
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalCount: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        limit: 10,
+      });
     }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchAssignment()]);
+      await fetchAssignment(
+        currentPage,
+        statusFilter,
+        dueDateFilter,
+        debouncedSearchQuery
+      );
       setLoading(false);
     };
 
     fetchData();
-  }, [userId]);
+  }, [userId, currentPage, statusFilter, dueDateFilter, debouncedSearchQuery]); // เพิ่ม debouncedSearchQuery
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleDueDateFilterChange = (value: string) => {
+    setDueDateFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1); // รีเซ็ตไปหน้า 1 เมื่อ search
+  };
+
+  const handleNextPage = () => {
+    if (pagination.hasNextPage) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (pagination.hasPrevPage) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
 
   const table = useReactTable({
     data: assignments,
@@ -360,11 +481,12 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    manualPagination: true,
+    manualFiltering: true, // เพิ่มเพื่อบอก table ว่าเราจัดการ filtering เอง
     state: {
       sorting,
       columnFilters,
@@ -379,10 +501,8 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
       <div className="flex justify-between items-end">
         <Input
           placeholder={t("searchAssignments")}
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
+          value={searchQuery}
+          onChange={(event) => handleSearchChange(event.target.value)}
           className="max-w-sm"
         />
         <div className="flex items-center gap-2">
@@ -390,11 +510,7 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
             className="px-3 py-1 border rounded-md text-sm"
             value={statusFilter}
             onChange={(event) => {
-              const value = event.target.value;
-              setStatusFilter(value);
-              table
-                .getColumn("status")
-                ?.setFilterValue(value === "all" ? undefined : parseInt(value));
+              handleStatusFilterChange(event.target.value);
             }}
           >
             <option value="all">{t("allStatus")}</option>
@@ -406,11 +522,7 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
             className="px-3 py-1 border rounded-md text-sm"
             value={dueDateFilter}
             onChange={(event) => {
-              const value = event.target.value;
-              setDueDateFilter(value);
-              table
-                .getColumn("dueDate")
-                ?.setFilterValue(value === "all" ? undefined : value);
+              handleDueDateFilterChange(event.target.value);
             }}
           >
             <option value="all">{t("allDueDates")}</option>
@@ -420,6 +532,9 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
           </select>
         </div>
       </div>
+      {searchQuery !== debouncedSearchQuery && (
+        <div className="text-sm text-muted-foreground">Searching...</div>
+      )}
       <div className="rounded-md border">
         <Table style={{ tableLayout: "fixed", width: "100%" }}>
           <TableHeader className="font-bold">
@@ -470,21 +585,40 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2">
-        <div className="space-x-2">
+
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing{" "}
+          {Math.min(
+            (pagination.currentPage - 1) * pagination.limit + 1,
+            pagination.totalCount
+          )}{" "}
+          to{" "}
+          {Math.min(
+            pagination.currentPage * pagination.limit,
+            pagination.totalCount
+          )}{" "}
+          of {pagination.totalCount} assignments
+        </div>
+        <div className="flex items-center space-x-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={handlePrevPage}
+            disabled={!pagination.hasPrevPage || loading}
           >
             {t("previous")}
           </Button>
+          <div className="flex items-center gap-1">
+            <span className="text-sm">
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </span>
+          </div>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={handleNextPage}
+            disabled={!pagination.hasNextPage || loading}
           >
             {t("next")}
           </Button>
