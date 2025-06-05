@@ -511,3 +511,68 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
     );
   }
 }
+
+export async function deleteAssignment(req: ExtendedNextRequest) {
+  try {
+    const data = await req.json();
+    const { classroomId, articleId, studentIds } = data;
+
+    if (!classroomId || !articleId || !studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
+      return NextResponse.json(
+        {
+          message: "Missing required fields: classroomId, articleId, or studentIds array",
+        },
+        { status: 400 }
+      );
+    }
+
+    const batch = db.batch();
+    let deletedCount = 0;
+
+    for (const studentId of studentIds) {
+      const assignmentRef = db
+        .collection("assignments")
+        .doc(classroomId)
+        .collection(articleId)
+        .doc(studentId);
+
+      const docSnap = await assignmentRef.get();
+      if (docSnap.exists) {
+        batch.delete(assignmentRef);
+        deletedCount++;
+
+        const assignmentId = `${classroomId}_${articleId}`;
+        const studentAssignmentRef = db
+          .collection("student-assignments")
+          .doc(studentId)
+          .collection("assignments")
+          .doc(assignmentId);
+
+        batch.delete(studentAssignmentRef);
+      }
+    }
+
+    if (deletedCount === 0) {
+      return NextResponse.json(
+        { message: "No assignments found to delete" },
+        { status: 404 }
+      );
+    }
+
+    await batch.commit();
+
+    return NextResponse.json(
+      {
+        message: `${deletedCount} assignment(s) deleted successfully`,
+        deletedCount,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting assignments:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

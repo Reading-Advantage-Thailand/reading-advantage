@@ -11,6 +11,10 @@ import {
   User,
   BookOpen,
   Award,
+  Edit3,
+  Trash2,
+  X,
+  Check,
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Timepoint } from "../models/article-model";
@@ -18,7 +22,6 @@ import AssignDialog from "./assign-dialog";
 import { useCurrentLocale } from "@/locales/client";
 import { useScopedI18n } from "@/locales/client";
 
-//nterfaces
 interface Student {
   id: string;
   studentId: string;
@@ -79,7 +82,6 @@ interface Article {
   read_count: number;
 }
 
-// Skeleton Components
 const SkeletonCard = () => (
   <div className="bg-card text-card-foreground rounded-xl shadow-sm border border-border p-6 animate-pulse">
     <div className="flex items-center justify-between">
@@ -200,6 +202,10 @@ const AssignmentDashboard = () => {
   });
   const [filterStatus, setFilterStatus] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const params = useParams();
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
   const t = useScopedI18n("pages.teacher.AssignmentPage");
@@ -241,11 +247,54 @@ const AssignmentDashboard = () => {
     }
   };
 
-  // Function to refresh data after assignment update
   const handleAssignmentUpdate = async () => {
     setIsLoading(true);
     await Promise.all([fetchAssignment(), fetchArticle()]);
     setIsLoading(false);
+  };
+
+  const handleEditToggle = () => {
+    setIsEditMode(!isEditMode);
+    setSelectedStudents([]);
+  };
+
+  const handleStudentSelect = (studentId: string) => {
+    setSelectedStudents((prev) =>
+      prev.includes(studentId)
+        ? prev.filter((id) => id !== studentId)
+        : [...prev, studentId]
+    );
+  };
+
+  const handleDeleteStudents = async () => {
+    if (selectedStudents.length === 0) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch("/api/v1/assignments", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          classroomId: assignment.meta.classroomId,
+          articleId: assignment.meta.articleId,
+          studentIds: selectedStudents,
+        }),
+      });
+
+      if (response.ok) {
+        await handleAssignmentUpdate();
+        setSelectedStudents([]);
+        setIsEditMode(false);
+      } else {
+        console.error("Failed to delete students");
+      }
+    } catch (error) {
+      console.error("Error deleting students:", error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   React.useEffect(() => {
@@ -548,7 +597,7 @@ const AssignmentDashboard = () => {
               <div className="text-2xl font-bold text-primary mb-1">
                 {stats.notStarted}
               </div>
-              <div className="text-sm text-primary/80">ยังไม่เริ่ม</div>
+              <div className="text-sm text-primary/80">{t("notStarted")}</div>
               <div className="text-xs text-primary/60 mt-1">
                 {stats.total > 0
                   ? Math.round((stats.notStarted / stats.total) * 100)
@@ -560,7 +609,7 @@ const AssignmentDashboard = () => {
               <div className="text-2xl font-bold text-primary mb-1">
                 {stats.inProgress}
               </div>
-              <div className="text-sm text-primary/80">กำลังทำ</div>
+              <div className="text-sm text-primary/80">{t("inProgress")}</div>
               <div className="text-xs text-primary/60 mt-1">
                 {stats.total > 0
                   ? Math.round((stats.inProgress / stats.total) * 100)
@@ -598,58 +647,103 @@ const AssignmentDashboard = () => {
             <h2 className="text-xl font-semibold text-foreground">
               {t("studentList")}
             </h2>
-            <div className="flex space-x-2 mt-2">
-              <button
-                onClick={() => setFilterStatus("all")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filterStatus === "all"
-                    ? "bg-primary/10 text-primary border border-primary/20"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {t("all")} ({stats.total})
-              </button>
-              <button
-                onClick={() => setFilterStatus("0")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filterStatus === "0"
-                    ? "bg-muted/50 text-muted-foreground border border-border"
-                    : "bg-muted/20 text-muted-foreground hover:bg-muted/30"
-                }`}
-              >
-                {t("noStudentsInSelectedStatus")} ({stats.notStarted})
-              </button>
-              <button
-                onClick={() => setFilterStatus("1")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filterStatus === "1"
-                    ? "bg-primary/10 text-primary border border-primary/20"
-                    : "bg-muted/20 text-muted-foreground hover:bg-muted/30"
-                }`}
-              >
-                {t("inProgress")} ({stats.inProgress})
-              </button>
-              <button
-                onClick={() => setFilterStatus("2")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filterStatus === "2"
-                    ? "bg-secondary/10 text-secondary border border-secondary/20"
-                    : "bg-muted/20 text-muted-foreground hover:bg-muted/30"
-                }`}
-              >
-                {t("completed")} ({stats.completed})
-              </button>
-              <button
-                onClick={() => setFilterStatus("overdue")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filterStatus === "overdue"
-                    ? "bg-destructive/10 text-destructive border border-destructive/20"
-                    : "bg-muted/20 text-muted-foreground hover:bg-muted/30"
-                }`}
-              >
-                {t("overdue")} ({stats.overdue})
-              </button>
+            <div className="flex items-center space-x-2 mt-2">
+              {/* Filter Buttons */}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setFilterStatus("all")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    filterStatus === "all"
+                      ? "bg-primary/10 text-primary border border-primary/20"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {t("all")} ({stats.total})
+                </button>
+                <button
+                  onClick={() => setFilterStatus("0")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    filterStatus === "0"
+                      ? "bg-muted/50 text-muted-foreground border border-border"
+                      : "bg-muted/20 text-muted-foreground hover:bg-muted/30"
+                  }`}
+                >
+                  {t("notStarted")} ({stats.notStarted})
+                </button>
+                <button
+                  onClick={() => setFilterStatus("1")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    filterStatus === "1"
+                      ? "bg-primary/10 text-primary border border-primary/20"
+                      : "bg-muted/20 text-muted-foreground hover:bg-muted/30"
+                  }`}
+                >
+                  {t("inProgress")} ({stats.inProgress})
+                </button>
+                <button
+                  onClick={() => setFilterStatus("2")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    filterStatus === "2"
+                      ? "bg-secondary/10 text-secondary border border-secondary/20"
+                      : "bg-muted/20 text-muted-foreground hover:bg-muted/30"
+                  }`}
+                >
+                  {t("completed")} ({stats.completed})
+                </button>
+                <button
+                  onClick={() => setFilterStatus("overdue")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    filterStatus === "overdue"
+                      ? "bg-destructive/10 text-destructive border border-destructive/20"
+                      : "bg-muted/20 text-muted-foreground hover:bg-muted/30"
+                  }`}
+                >
+                  {t("overdue")} ({stats.overdue})
+                </button>
+              </div>
             </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 mb-4">
+            {/* Edit Mode Controls */}
+            {isEditMode && (
+              <>
+                <button
+                  onClick={handleDeleteStudents}
+                  disabled={selectedStudents.length === 0 || isDeleting}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
+                    selectedStudents.length === 0 || isDeleting
+                      ? "bg-muted text-muted-foreground cursor-not-allowed"
+                      : "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                  }`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>
+                    {isDeleting
+                      ? "Deleting..."
+                      : `Delete (${selectedStudents.length})`}
+                  </span>
+                </button>
+                <button
+                  onClick={handleEditToggle}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-muted text-muted-foreground hover:bg-muted/80 flex items-center space-x-2"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Cancel</span>
+                </button>
+              </>
+            )}
+
+            {/* Edit Button */}
+            {!isEditMode && (
+              <button
+                onClick={handleEditToggle}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-primary/10 text-primary hover:bg-primary/20 flex items-center space-x-2"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Edit</span>
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -659,16 +753,33 @@ const AssignmentDashboard = () => {
               const isOverdue =
                 student.status !== 2 &&
                 getDaysRemaining(assignment.meta.dueDate) < 0;
+              const isSelected = selectedStudents.includes(student.id);
 
               return (
                 <div
                   key={student.id}
-                  className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
+                  className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md relative ${
                     isOverdue
                       ? "bg-destructive/5 border-destructive/20"
                       : `${statusInfo.bgColor} border-border`
-                  }`}
+                  } ${isSelected ? "ring-2 ring-primary ring-offset-2" : ""}`}
                 >
+                  {/* Checkbox for edit mode */}
+                  {isEditMode && (
+                    <div className="absolute top-2 right-2">
+                      <button
+                        onClick={() => handleStudentSelect(student.id)}
+                        className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                          isSelected
+                            ? "bg-primary border-primary text-primary-foreground"
+                            : "border-muted-foreground hover:border-primary"
+                        }`}
+                      >
+                        {isSelected && <Check className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  )}
+
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center">
                       <User className="w-5 h-5 text-primary-foreground" />

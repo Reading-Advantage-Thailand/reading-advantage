@@ -3,6 +3,7 @@ import {
   getAssignments,
   postAssignment,
   updateAssignment,
+  deleteAssignment,
 } from "@/server/controllers/assignment-controller";
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
@@ -17,6 +18,7 @@ router.get(getAssignments);
 // POST /api/v1/assignments {request body with classroomId, articleId, title, description, dueDate, selectedStudents, userId}
 router.post(postAssignment);
 router.put(updateAssignment);
+router.delete(deleteAssignment);
 
 export async function GET(request: NextRequest) {
   const ctx = NextResponse.next();
@@ -37,6 +39,15 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const ctx = NextResponse.next();
+  const result = await router.run(request, ctx);
+  if (result instanceof NextResponse) {
+    return result;
+  }
+  throw new Error("Expected a NextResponse from router.run");
+}
+
+export async function DELETE(request: NextRequest) {
   const ctx = NextResponse.next();
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
