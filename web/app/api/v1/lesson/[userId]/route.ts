@@ -13,8 +13,8 @@ export interface RequestContext {
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 // Middleware
-//router.use(logRequest);
-//router.use(protect);
+router.use(logRequest);
+router.use(protect);
 
 // API: GET /api/v1/userId/lesson?articleId=...
 router.get(getLessonStatus);

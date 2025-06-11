@@ -25,6 +25,10 @@ async function getArticle(articleId: string) {
   return fetchData(`/api/v1/articles/${articleId}`);
 }
 
+async function getClassroom() {
+  return fetchData(`/api/v1/classrooms`);
+}
+
 export default async function ArticleQuizPage({
   params,
 }: {
@@ -72,6 +76,14 @@ export default async function ArticleQuizPage({
               <ArticleActions
                 article={articleResponse.article}
                 articleId={params.articleId}
+              />
+            )}
+
+            {isAtLeastTeacher("teacher") && (
+              <AssignDialog
+                article={articleResponse.article}
+                articleId={params.articleId}
+                userId={user.id}
               />
             )}
 

@@ -31,6 +31,11 @@ export const studentPageConfig: StudentPageConfig = {
       icon: "storyBook",
     },
     {
+      title: "assignments",
+      href: "/student/assignments",
+      icon: "assignments",
+    },
+    {
       id: "onborda-sentences",
       title: "sentences",
       href: "/student/sentences",
