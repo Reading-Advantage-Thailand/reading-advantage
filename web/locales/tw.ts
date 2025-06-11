@@ -620,20 +620,20 @@ export default {
     menu: "菜單",
     loginButton: "登錄",
 
-    passage: {
-      heading: "段落",
+    passages: {
+      heading: "文章",
       type: "類型",
       fiction: "小說",
-      nonfiction: "非小說類",
+      nonfiction: "非小說",
       topic: "主題",
-      selectGenre: "選擇類型",
-      selectSubGenre: "選擇子流派",
-      level: "級別",
-      sortBy: "排序依據",
-      rating: "評級",
+      selectGenre: "選擇類別",
+      selectSubGenre: "選擇子類別",
+      level: "等級",
+      sortBy: "排序方式",
+      rating: "評分",
       date: "日期",
-      resetGenre: "重置類型",
-      resetSubGenre: "重置子類型",
+      resetGenre: "重置類別",
+      resetSubGenre: "重置子類別",
     },
 
     myClasses: {
