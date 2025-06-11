@@ -1,10 +1,10 @@
 import React from "react";
-import TeacherAssignmentPage from "@/components/teacher/assignment-page";
+import AssignmentDashboard from "@/components/teacher/assignment-dashboard";
 
 export default function AssignmentPage() {
   return (
     <div>
-      <TeacherAssignmentPage />
+      <AssignmentDashboard />
     </div>
   );
 }

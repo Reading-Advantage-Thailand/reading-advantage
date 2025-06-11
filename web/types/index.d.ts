@@ -43,7 +43,14 @@ export type SystemPageConfig = {
 
 export type SidebarNavItem = {
   id?: string;
-  title: "read" | "stories" | "sentences" | "vocabulary" | "reports" | "history";
+  title:
+    | "read"
+    | "stories"
+    | "sentences"
+    | "vocabulary"
+    | "reports"
+    | "history"
+    | "assignments";
   disabled?: boolean;
   external?: boolean;
   icon?: keyof typeof Icons;

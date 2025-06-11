@@ -7,6 +7,7 @@ import { fetchData } from "@/utils/fetch-data";
 import CustomError from "./custom-error";
 import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
 import { Article } from "@/components/models/article-model";
+import { headers } from "next/headers";
 
 export const metadata = {
   title: "Article",
@@ -34,6 +35,16 @@ export default async function LessonQuizPage({
       <CustomError message={articleResponse.message} resp={articleResponse} />
     );
 
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/students/${user.id}`,
+    {
+      method: "GET",
+      headers: headers(),
+    }
+  );
+  const data = await response.json();
+  const classroomId = data.data;
+
   return (
     <>
       <div className="md:flex md:flex-row md:gap-3 md:mb-5">
@@ -41,6 +52,7 @@ export default async function LessonQuizPage({
           article={articleResponse.article}
           articleId={params.articleId}
           userId={user.id}
+          classroomId={classroomId}
         />
       </div>
       <ChatBotFloatingChatButton

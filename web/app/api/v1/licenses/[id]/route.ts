@@ -21,7 +21,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 
 // Middleware
 router.use(logRequest);
-//router.use(restrictTo(Role.SYSTEM));
+router.use(restrictTo(Role.SYSTEM));
 
 // /api/license/[id]
 router.get(getLicense);

@@ -36,6 +36,11 @@ export const teacherPageConfig: TeacherPageConfig = {
       icon: "roster",
     },
     {
+      title: "assignments",
+      href: "/teacher/assignments",
+      icon: "assignments",
+    },
+    {
       title: "reports",
       href: "/teacher/reports",
       icon: "report",
@@ -49,11 +54,6 @@ export const teacherPageConfig: TeacherPageConfig = {
     //   title: "google classroom",
     //   href: "/teacher/classroom",
     //   icon: "class",
-    // },
-    // {
-    //   title: "assignments",
-    //   href: "/teacher/assignments",
-    //   icon: "assignments",
     // },
   ],
 };
