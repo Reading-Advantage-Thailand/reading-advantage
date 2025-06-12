@@ -388,14 +388,12 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
         } as StudentAssignment)
     );
 
-    // Get unique teacher IDs
     const teacherIds = [
       ...new Set(
         assignments.map((assignment) => assignment.teacherId).filter(Boolean)
       ),
     ];
 
-    // Fetch teacher display names
     const teacherDisplayNames: { [key: string]: string } = {};
 
     if (teacherIds.length > 0) {
@@ -420,43 +418,30 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
       await Promise.all(teacherPromises);
     }
 
-    // Update assignments with teacher display names
     assignments = assignments.map((assignment) => ({
       ...assignment,
       teacherDisplayName:
         teacherDisplayNames[assignment.teacherId] || "Unknown Teacher",
     }));
 
-    // Apply search filter
     if (search && search.trim() !== "") {
       const searchLower = search.toLowerCase().trim();
 
       assignments = assignments.filter((assignment) => {
         const titleMatch = assignment.title
-          ?.toLowerCase()
-          .includes(searchLower);
-        const descMatch = assignment.description
-          ?.toLowerCase()
-          .includes(searchLower);
-        const nameMatch = assignment.displayName
-          ?.toLowerCase()
-          .includes(searchLower);
-        const teacherMatch = teacherDisplayNames[assignment.teacherId]
-          ?.toLowerCase()
-          .includes(searchLower);
+          ? assignment.title.toLowerCase().includes(searchLower)
+          : false;
 
-        return titleMatch || descMatch || nameMatch || teacherMatch;
+        return titleMatch;
       });
     }
 
-    // Apply status filter
     if (status && status !== "all") {
       assignments = assignments.filter(
         (assignment) => assignment.status === parseInt(status)
       );
     }
 
-    // Apply due date filter
     if (dueDateFilter && dueDateFilter !== "all") {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -477,7 +462,6 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
       });
     }
 
-    // Apply pagination in memory
     const totalCount = assignments.length;
     const offset = (page - 1) * limit;
     const paginatedAssignments = assignments.slice(offset, offset + limit);
@@ -517,10 +501,17 @@ export async function deleteAssignment(req: ExtendedNextRequest) {
     const data = await req.json();
     const { classroomId, articleId, studentIds } = data;
 
-    if (!classroomId || !articleId || !studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
+    if (
+      !classroomId ||
+      !articleId ||
+      !studentIds ||
+      !Array.isArray(studentIds) ||
+      studentIds.length === 0
+    ) {
       return NextResponse.json(
         {
-          message: "Missing required fields: classroomId, articleId, or studentIds array",
+          message:
+            "Missing required fields: classroomId, articleId, or studentIds array",
         },
         { status: 400 }
       );
