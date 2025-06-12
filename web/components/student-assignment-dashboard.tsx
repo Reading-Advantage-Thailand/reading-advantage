@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { act, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -29,6 +29,14 @@ import { format } from "date-fns";
 import { enUS, th, zhCN, zhTW, vi } from "date-fns/locale";
 import { useCurrentLocale } from "@/locales/client";
 import { useScopedI18n } from "@/locales/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { X } from "lucide-react";
 
 interface AssignmentProps {
   userId: string;
@@ -71,7 +79,12 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
   const locale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
   const t = useScopedI18n("pages.student.assignmentPage");
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+    React.useState<VisibilityState>({
+      description: false,
+      createdAt: false,
+      teacherDisplayName: false,
+      actions: false,
+    });
   const [rowSelection, setRowSelection] = React.useState({});
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -87,6 +100,26 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
     limit: 10,
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<Assignment | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setColumnVisibility({
+        description: !mobile,
+        createdAt: !mobile,
+        teacherDisplayName: !mobile,
+        actions: !mobile,
+      });
+    };
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
 
   const getDateLocale = () => {
     switch (locale) {
@@ -299,7 +332,9 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
         return (
           <div className="flex justify-center items-center gap-2">
             <span className="text-lg">{getStatusIcon(completionStatus)}</span>
-            <span className="text-sm">{getStatusText(completionStatus)}</span>
+            <span className="text-sm w-8">
+              {getStatusText(completionStatus)}
+            </span>
           </div>
         );
       },
@@ -329,7 +364,7 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
       cell: ({ row }) => {
         const assignment = row.original;
         return (
-          <div className="flex justify-center">
+          <div className="flex justify-center w-24">
             <Button
               variant="outline"
               size="sm"
@@ -446,7 +481,7 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
     };
 
     fetchData();
-  }, [userId, currentPage, statusFilter, dueDateFilter, debouncedSearchQuery]); // เพิ่ม debouncedSearchQuery
+  }, [userId, currentPage, statusFilter, dueDateFilter, debouncedSearchQuery]);
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
@@ -486,7 +521,7 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     manualPagination: true,
-    manualFiltering: true, // เพิ่มเพื่อบอก table ว่าเราจัดการ filtering เอง
+    manualFiltering: true,
     state: {
       sorting,
       columnFilters,
@@ -495,19 +530,157 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
     },
   });
 
+  const handleRowClick = (assignment: Assignment) => {
+    if (isMobile) {
+      setSelectedAssignment(assignment);
+      setIsDialogOpen(true);
+    }
+  };
+
+  const AssignmentDetailDialog = () => {
+    if (!selectedAssignment) return null;
+
+    const dueDateStatus = getDueDateStatus(selectedAssignment.dueDate);
+
+    const getStatusIcon = (status: number) => {
+      switch (status) {
+        case 0:
+          return "⏳";
+        case 1:
+          return "🔄";
+        case 2:
+          return "✅";
+        default:
+          return "⏳";
+      }
+    };
+
+    const getStatusText = (status: number) => {
+      switch (status) {
+        case 0:
+          return `${t("notFinished")}`;
+        case 1:
+          return `${t("inProgress")}`;
+        case 2:
+          return `${t("done")}`;
+        default:
+          return `${t("notFinished")}`;
+      }
+    };
+
+    return (
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent
+          className="sm:max-w-[425px] max-w-[90vw] max-h-[90vh] overflow-y-auto"
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
+          <div className="space-y-4">
+            {/* Description */}
+            <div>
+              <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                {t("assignmentDescription")}
+              </h4>
+              <p className="text-sm">
+                {selectedAssignment.description || "No description provided"}
+              </p>
+            </div>
+
+            {/* Created Date */}
+            <div>
+              <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                {t("createAt")}
+              </h4>
+              <p className="text-sm">
+                {format(
+                  new Date(selectedAssignment.createdAt),
+                  "MMM dd, yyyy",
+                  {
+                    locale: getDateLocale(),
+                  }
+                )}
+              </p>
+            </div>
+
+            {/* Due Date */}
+            <div>
+              <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                {t("dueDate")}
+              </h4>
+              <div className="flex items-center gap-2">
+                <p className="text-sm">
+                  {format(
+                    new Date(selectedAssignment.dueDate),
+                    "MMM dd, yyyy",
+                    {
+                      locale: getDateLocale(),
+                    }
+                  )}
+                </p>
+                {selectedAssignment.status !== 2 && (
+                  <Badge variant={dueDateStatus.variant} className="text-xs">
+                    {dueDateStatus.text}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Status */}
+            <div>
+              <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                {t("status")}
+              </h4>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">
+                  {getStatusIcon(selectedAssignment.status)}
+                </span>
+                <span className="text-sm">
+                  {getStatusText(selectedAssignment.status)}
+                </span>
+              </div>
+            </div>
+
+            {/* Assigned By */}
+            <div>
+              <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                {t("assignedBy")}
+              </h4>
+              <p className="text-sm">
+                {selectedAssignment.teacherDisplayName ||
+                  selectedAssignment.displayName ||
+                  "Unknown Teacher"}
+              </p>
+            </div>
+
+            {/* Action Button */}
+            <div className="pt-4">
+              <Button
+                onClick={() => {
+                  window.location.href = `/student/lesson/${selectedAssignment.articleId}`;
+                }}
+                className="w-full"
+              >
+                {t("goToLesson")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 py-4">
       <Header heading={t("assignments")} />
-      <div className="flex justify-between items-end">
+      <div className="flex sm:justify-between sm:items-end items-center flex-col sm:flex-row gap-4">
         <Input
           placeholder={t("searchAssignments")}
           value={searchQuery}
           onChange={(event) => handleSearchChange(event.target.value)}
           className="max-w-sm"
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <select
-            className="px-3 py-1 border rounded-md text-sm"
+            className="px-3 py-1 border rounded-md text-sm min-w-[120px]"
             value={statusFilter}
             onChange={(event) => {
               handleStatusFilterChange(event.target.value);
@@ -519,7 +692,7 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
             <option value="2">{t("done")}</option>
           </select>
           <select
-            className="px-3 py-1 border rounded-md text-sm"
+            className="px-3 py-1 border rounded-md text-sm min-w-[120px]"
             value={dueDateFilter}
             onChange={(event) => {
               handleDueDateFilterChange(event.target.value);
@@ -535,14 +708,17 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
       {searchQuery !== debouncedSearchQuery && (
         <div className="text-sm text-muted-foreground">Searching...</div>
       )}
-      <div className="rounded-md border">
-        <Table style={{ tableLayout: "fixed", width: "100%" }}>
+      <div className="rounded-md border overflow-x-auto">
+        <Table className="min-w-full">
           <TableHeader className="font-bold">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className="px-2 py-3 text-xs sm:text-sm"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -561,9 +737,14 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onClick={() => handleRowClick(row.original)}
+                  className={isMobile ? "cursor-pointer hover:bg-muted/50" : ""}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      className="px-2 py-3 text-xs sm:text-sm"
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -576,7 +757,7 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-xs sm:text-sm"
                 >
                   {loading ? "Loading assignments..." : "No assignments found"}
                 </TableCell>
@@ -586,8 +767,8 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+      <div className="flex items-center justify-between flex-col sm:flex-row gap-4">
+        <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
           Showing{" "}
           {Math.min(
             (pagination.currentPage - 1) * pagination.limit + 1,
@@ -606,11 +787,12 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
             size="sm"
             onClick={handlePrevPage}
             disabled={!pagination.hasPrevPage || loading}
+            className="text-xs sm:text-sm"
           >
             {t("previous")}
           </Button>
           <div className="flex items-center gap-1">
-            <span className="text-sm">
+            <span className="text-xs sm:text-sm whitespace-nowrap">
               Page {pagination.currentPage} of {pagination.totalPages}
             </span>
           </div>
@@ -619,11 +801,14 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
             size="sm"
             onClick={handleNextPage}
             disabled={!pagination.hasNextPage || loading}
+            className="text-xs sm:text-sm"
           >
             {t("next")}
           </Button>
         </div>
       </div>
+
+      <AssignmentDetailDialog />
     </div>
   );
 }
