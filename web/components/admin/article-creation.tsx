@@ -30,7 +30,18 @@ import {
   Edit3,
   Eye,
   Sparkles,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/ui/use-toast";
 
 interface StatusConfig {
   color: string;
@@ -46,6 +57,23 @@ interface StatusConfigMap {
 
 type ArticleStatus = keyof StatusConfigMap;
 
+interface UserArticle {
+  id: string;
+  title: string;
+  type: string;
+  genre: string;
+  subgenre?: string;
+  cefrLevel: string;
+  status: string;
+  createdAt: string;
+  wordCount: number;
+  rating: number;
+  passage: string;
+  summary: string;
+  imageDesc: string;
+  topic: string;
+}
+
 const AdminArticleCreation = () => {
   const [articleType, setArticleType] = useState("");
   const [genre, setGenre] = useState("");
@@ -54,7 +82,6 @@ const AdminArticleCreation = () => {
   const [cefrLevel, setCefrLevel] = useState("");
   const [wordCount, setWordCount] = useState(500);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedContent, setGeneratedContent] = useState("");
   const [currentTab, setCurrentTab] = useState("create");
   const [genres, setGenres] = useState<{
     fiction: Array<{
@@ -72,8 +99,42 @@ const AdminArticleCreation = () => {
     nonfiction: [],
   });
   const [isLoadingGenres, setIsLoadingGenres] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [generatedData, setGeneratedData] = useState<{
+    title: string;
+    passage: string;
+    summary: string;
+    imageDesc: string;
+  } | null>(null);
+  const [userArticles, setUserArticles] = useState<UserArticle[]>([]);
+  const [isLoadingArticles, setIsLoadingArticles] = useState(false);
+  const [isApproving, setIsApproving] = useState<string | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [currentMessage, setCurrentMessage] = useState("");
+  const [showLoadingDialog, setShowLoadingDialog] = useState(false);
+  const { toast } = useToast();
+  const [selectedArticleForEdit, setSelectedArticleForEdit] =
+    useState<UserArticle | null>(null);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
-  // Sample data - would come from backend
+  const loadingMessages = [
+    "🤖 AI is thinking really hard...",
+    "📚 Crafting the perfect story...",
+    "✨ Sprinkling some magic dust...",
+    "🎨 Painting with words...",
+    "🔮 Consulting the digital oracle...",
+    "📝 Writing like Shakespeare...",
+    "🌟 Creating literary magic...",
+    "🚀 Launching creativity rockets...",
+    "🎭 Directing the plot...",
+    "🔥 Igniting imagination...",
+    "💭 Downloading inspiration...",
+    "🎪 Putting on a word show...",
+    "🏗️ Building narrative architecture...",
+    "🎵 Composing textual symphony...",
+    "🌈 Mixing creative colors...",
+  ];
+
   useEffect(() => {
     const fetchGenres = async () => {
       try {
@@ -86,7 +147,6 @@ const AdminArticleCreation = () => {
         setGenres(data);
       } catch (error) {
         console.error("Error fetching genres:", error);
-        // Fallback to empty data or show error message
         setGenres({ fiction: [], nonfiction: [] });
       } finally {
         setIsLoadingGenres(false);
@@ -96,49 +156,242 @@ const AdminArticleCreation = () => {
     fetchGenres();
   }, []);
 
-  const sampleArticles = [
-    {
-      id: 1,
-      title: "The Mystery of the Digital Library",
-      type: "Fiction",
-      genre: "Mystery",
-      cefrLevel: "B1",
-      status: "pending",
-      createdAt: "2024-01-15",
-      wordCount: 450,
-    },
-    {
-      id: 2,
-      title: "How Solar Panels Work",
-      type: "Non-Fiction",
-      genre: "Science",
-      cefrLevel: "A2",
-      status: "approved",
-      createdAt: "2024-01-14",
-      wordCount: 380,
-    },
-    {
-      id: 3,
-      title: "The Adventures of Captain Space",
-      type: "Fiction",
-      genre: "Science Fiction",
-      cefrLevel: "B2",
-      status: "draft",
-      createdAt: "2024-01-13",
-      wordCount: 620,
-    },
-  ];
+  useEffect(() => {
+    let progressInterval: NodeJS.Timeout;
+    let messageInterval: NodeJS.Timeout;
+
+    if (isGenerating) {
+      setShowLoadingDialog(true);
+      setLoadingProgress(0);
+      setCurrentMessage(loadingMessages[0]);
+
+      progressInterval = setInterval(() => {
+        setLoadingProgress((prev) => {
+          if (prev >= 80) {
+            return prev + Math.random() * 0.5 + 0.1;
+          } else if (prev >= 95) {
+            return prev;
+          } else {
+            return prev + Math.random() * 1 + 0.5;
+          }
+        });
+      }, 1000);
+
+      messageInterval = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * loadingMessages.length);
+        setCurrentMessage(loadingMessages[randomIndex]);
+      }, 3000);
+    } else {
+      setShowLoadingDialog(false);
+      setLoadingProgress(0);
+    }
+
+    return () => {
+      if (progressInterval) clearInterval(progressInterval);
+      if (messageInterval) clearInterval(messageInterval);
+    };
+  }, [isGenerating]);
+
+  useEffect(() => {
+    if (currentTab === "manage") {
+      fetchUserArticles();
+    }
+  }, [currentTab]);
+
+  const fetchUserArticles = async () => {
+    try {
+      setIsLoadingArticles(true);
+      const response = await fetch(
+        "/api/v1/articles/generate/custom-generate/user-generated"
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch articles");
+      }
+      const data = await response.json();
+      setUserArticles(data.articles || []);
+    } catch (error) {
+      console.error("Error fetching user articles:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch articles",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingArticles(false);
+    }
+  };
+
+  const handleApprove = async (articleId: string) => {
+    try {
+      setIsApproving(articleId);
+      const response = await fetch(
+        "/api/v1/articles/generate/custom-generate/user-generated",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ articleId }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || "Failed to approve article");
+      }
+
+      // Update the article status in the local state
+      setUserArticles((prev) =>
+        prev.map((article) =>
+          article.id === articleId
+            ? { ...article, status: "approved" }
+            : article
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: "Article approved and published successfully!",
+      });
+    } catch (error) {
+      console.error("Error approving article:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to approve article",
+        variant: "destructive",
+      });
+    } finally {
+      setIsApproving(null);
+    }
+  };
 
   const handleGenerate = async () => {
+    if (!articleType || !genre || !topic || !cefrLevel) {
+      return;
+    }
+
     setIsGenerating(true);
-    // Simulate AI generation
-    setTimeout(() => {
-      setGeneratedContent(
-        `# ${topic}\n\nThis is a sample generated article about ${topic}. The AI would create content appropriate for ${cefrLevel} level learners, incorporating elements of ${genre} ${articleType.toLowerCase()}.\n\nThe article would be approximately ${wordCount} words and follow CEFR guidelines for vocabulary complexity and sentence structure.\n\n## Sample Content\n\nThe generated content would appear here with proper structure, engaging narrative or informative text depending on the type selected, and appropriate complexity for the target audience.`
+    setError(null);
+
+    try {
+      const response = await fetch(
+        "/api/v1/articles/generate/custom-generate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            type: articleType,
+            genre,
+            subgenre: subgenre || undefined,
+            topic,
+            cefrLevel,
+            wordCount,
+          }),
+        }
       );
-      setIsGenerating(false);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || "Failed to generate article");
+      }
+
+      const data = await response.json();
+
+      // Complete the progress
+      setLoadingProgress(100);
+      setCurrentMessage("🎉 Article generated successfully!");
+
+      // Small delay to show completion
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      setGeneratedData({
+        title: data.title,
+        passage: data.passage,
+        summary: data.summary,
+        imageDesc: data.imageDesc,
+      });
       setCurrentTab("preview");
-    }, 3000);
+
+      toast({
+        title: "Success",
+        description: "Article generated successfully!",
+      });
+    } catch (error) {
+      console.error("Error generating article:", error);
+      setError(
+        error instanceof Error ? error.message : "Unknown error occurred"
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handlePreviewArticle = (article: UserArticle) => {
+    setSelectedArticleForEdit(article);
+    setIsPreviewMode(true);
+    setGeneratedData({
+      title: article.title,
+      passage: article.passage,
+      summary: article.summary,
+      imageDesc: article.imageDesc,
+    });
+    setCurrentTab("preview");
+  };
+
+  const handleEditArticle = (article: UserArticle) => {
+    setSelectedArticleForEdit(article);
+    setIsPreviewMode(false);
+    setGeneratedData({
+      title: article.title,
+      passage: article.passage,
+      summary: article.summary,
+      imageDesc: article.imageDesc,
+    });
+    setCurrentTab("preview");
+  };
+
+  const handleSaveArticle = async () => {
+    if (!selectedArticleForEdit || !generatedData) return;
+
+    try {
+      const response = await fetch(
+        `/api/v1/articles/generate/custom-generate/user-generated/${selectedArticleForEdit.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: generatedData.title,
+            passage: generatedData.passage,
+            summary: generatedData.summary,
+            imageDesc: generatedData.imageDesc,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to save article");
+      }
+
+      toast({
+        title: "Success",
+        description: "Article saved successfully!",
+      });
+
+      // Refresh the articles list
+      fetchUserArticles();
+    } catch (error) {
+      console.error("Error saving article:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save article",
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusBadge = (status: ArticleStatus) => {
@@ -169,6 +422,78 @@ const AdminArticleCreation = () => {
 
   return (
     <div className="w-full mx-auto px-6 space-y-6">
+      {/* Loading Dialog */}
+      <Dialog open={showLoadingDialog} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md [&>button]:hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-center justify-center">
+              <Sparkles className="h-5 w-5 text-blue-500 animate-pulse" />
+              Generating Your Article
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Please wait while AI creates your amazing content...
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Animated AI Icon */}
+            <div className="flex justify-center">
+              <div className="relative">
+                <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />
+                <div className="absolute inset-0 rounded-full bg-blue-100 animate-pulse opacity-30"></div>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Progress</span>
+                <span className="font-medium text-blue-600">
+                  {Math.round(loadingProgress)}%
+                </span>
+              </div>
+              <Progress value={loadingProgress} className="h-2" />
+            </div>
+
+            {/* Current Message */}
+            <div className="text-center">
+              <p className="text-sm text-gray-700 animate-pulse min-h-[20px]">
+                {currentMessage}
+              </p>
+            </div>
+
+            {/* Animated Dots */}
+            <div className="flex justify-center space-x-1">
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+              <div
+                className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                style={{ animationDelay: "0.1s" }}
+              ></div>
+              <div
+                className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                style={{ animationDelay: "0.2s" }}
+              ></div>
+            </div>
+
+            {/* Fun Stats */}
+            <div className="grid grid-cols-3 gap-4 text-center text-xs text-gray-500 pt-2 border-t">
+              <div>
+                <div className="font-medium text-gray-700">Type</div>
+                <div className="capitalize">{articleType}</div>
+              </div>
+              <div>
+                <div className="font-medium text-gray-700">Level</div>
+                <div>{cefrLevel}</div>
+              </div>
+              <div>
+                <div className="font-medium text-gray-700">Words</div>
+                <div>~{wordCount}</div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="text-start space-y-2">
         <h1 className="text-4xl font-bold">Article Creation & Management</h1>
         <p className="text-gray-600">
@@ -183,6 +508,7 @@ const AdminArticleCreation = () => {
           <TabsTrigger value="manage">Manage Articles</TabsTrigger>
         </TabsList>
 
+        {/* Create Article Tab */}
         <TabsContent value="create" className="space-y-6">
           <Card>
             <CardHeader>
@@ -315,6 +641,12 @@ const AdminArticleCreation = () => {
                 />
               </div>
 
+              {error && (
+                <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 rounded-md">
+                  Error: {error}
+                </div>
+              )}
+
               <Button
                 onClick={handleGenerate}
                 disabled={
@@ -323,58 +655,198 @@ const AdminArticleCreation = () => {
                 className="w-full"
                 size="lg"
               >
-                {isGenerating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Generating Article...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Generate Article with AI
-                  </>
-                )}
+                <Sparkles className="h-4 w-4 mr-2" />
+                Generate Article with AI
               </Button>
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* Preview & Edit Tab - Updated */}
         <TabsContent value="preview" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5 text-green-500" />
-                Article Preview & Editor
+                {isPreviewMode ? "Article Preview" : "Article Editor"}
               </CardTitle>
               <CardDescription>
-                Review and edit the generated content before approval
+                {isPreviewMode
+                  ? "Review the article content (read-only)"
+                  : "Review and edit the generated content before approval"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {generatedContent ? (
-                <div className="space-y-4">
+              {generatedData ? (
+                <div className="space-y-6">
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="outline">Type: {articleType}</Badge>
-                    <Badge variant="outline">Genre: {genre}</Badge>
-                    <Badge variant="outline">Level: {cefrLevel}</Badge>
-                    <Badge variant="outline">Words: {wordCount}</Badge>
+                    <Badge variant="outline">
+                      Type: {selectedArticleForEdit?.type || articleType}
+                    </Badge>
+                    <Badge variant="outline">
+                      Genre: {selectedArticleForEdit?.genre || genre}
+                    </Badge>
+                    <Badge variant="outline">
+                      Level: {selectedArticleForEdit?.cefrLevel || cefrLevel}
+                    </Badge>
+                    <Badge variant="outline">
+                      Words: {selectedArticleForEdit?.wordCount || wordCount}
+                    </Badge>
+                    {isPreviewMode && (
+                      <Badge variant="secondary">Preview Mode</Badge>
+                    )}
                   </div>
-                  <Textarea
-                    value={generatedContent}
-                    onChange={(e) => setGeneratedContent(e.target.value)}
-                    rows={15}
-                    className="font-mono text-sm"
-                  />
+
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="article-title"
+                        className="text-base font-medium"
+                      >
+                        Article Title
+                      </Label>
+                      <Input
+                        id="article-title"
+                        value={generatedData?.title || ""}
+                        onChange={(e) =>
+                          !isPreviewMode &&
+                          setGeneratedData((prev) =>
+                            prev ? { ...prev, title: e.target.value } : null
+                          )
+                        }
+                        placeholder="Enter article title..."
+                        className={`text-lg font-semibold ${
+                          isPreviewMode ? "text-gray-400" : ""
+                        }`}
+                        readOnly={isPreviewMode}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="article-content"
+                        className="text-base font-medium"
+                      >
+                        Article Content
+                      </Label>
+                      <Textarea
+                        id="article-content"
+                        value={generatedData?.passage || ""}
+                        onChange={(e) =>
+                          !isPreviewMode &&
+                          setGeneratedData((prev) =>
+                            prev ? { ...prev, passage: e.target.value } : null
+                          )
+                        }
+                        placeholder="Enter the main article content..."
+                        rows={12}
+                        className={`text-sm leading-relaxed ${
+                          isPreviewMode ? "text-gray-400" : ""
+                        }`}
+                        readOnly={isPreviewMode}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="article-summary"
+                        className="text-base font-medium"
+                      >
+                        Summary
+                      </Label>
+                      <Textarea
+                        id="article-summary"
+                        value={generatedData?.summary || ""}
+                        onChange={(e) =>
+                          !isPreviewMode &&
+                          setGeneratedData((prev) =>
+                            prev ? { ...prev, summary: e.target.value } : null
+                          )
+                        }
+                        placeholder="Enter article summary..."
+                        rows={4}
+                        className={`text-sm ${
+                          isPreviewMode ? "text-gray-400" : ""
+                        }`}
+                        readOnly={isPreviewMode}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="image-description"
+                        className="text-base font-medium"
+                      >
+                        Image Description
+                      </Label>
+                      <Textarea
+                        id="image-description"
+                        value={generatedData?.imageDesc || ""}
+                        onChange={(e) =>
+                          !isPreviewMode &&
+                          setGeneratedData((prev) =>
+                            prev ? { ...prev, imageDesc: e.target.value } : null
+                          )
+                        }
+                        placeholder="Describe the image for this article..."
+                        rows={3}
+                        className={`text-sm ${
+                          isPreviewMode ? "text-gray-400" : ""
+                        }`}
+                        readOnly={isPreviewMode}
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
                   <div className="flex gap-3">
-                    <Button variant="outline">
-                      <Edit3 className="h-4 w-4 mr-2" />
-                      Continue Editing
-                    </Button>
-                    <Button>
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                      Approve & Publish
-                    </Button>
-                    <Button variant="outline">Save as Draft</Button>
+                    {isPreviewMode ? (
+                      <>
+                        <Button
+                          variant="outline"
+                          onClick={() => setCurrentTab("manage")}
+                        >
+                          Back to Manage
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setIsPreviewMode(false);
+                          }}
+                        >
+                          <Edit3 className="h-4 w-4 mr-2" />
+                          Switch to Edit Mode
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            if (selectedArticleForEdit) {
+                              setCurrentTab("manage");
+                            } else {
+                              setIsPreviewMode(true);
+                            }
+                          }}
+                        >
+                          {selectedArticleForEdit
+                            ? "Back to Manage"
+                            : "Preview Mode"}
+                        </Button>
+                        {selectedArticleForEdit ? (
+                          <Button onClick={() => handleApprove(selectedArticleForEdit.id)}>
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            Approve & Publish
+                          </Button>
+                        ) : (
+                          <Button>
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            Approve & Publish
+                          </Button>
+                        )}
+                        <Button onClick={handleSaveArticle} variant="outline">
+                          Save as Draft
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -389,54 +861,108 @@ const AdminArticleCreation = () => {
           </Card>
         </TabsContent>
 
+        {/* Manage Articles Tab - Updated */}
         <TabsContent value="manage" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Article Management</CardTitle>
-              <CardDescription>
-                View and manage all articles in the system
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Article Management</CardTitle>
+                  <CardDescription>
+                    View and manage all your generated articles
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={fetchUserArticles}
+                  disabled={isLoadingArticles}
+                  variant="outline"
+                  size="sm"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 mr-2 ${
+                      isLoadingArticles ? "animate-spin" : ""
+                    }`}
+                  />
+                  Refresh
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {sampleArticles.map((article) => (
-                  <div
-                    key={article.id}
-                    className="border rounded-lg p-4 space-y-3"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold">{article.title}</h3>
-                        <p className="text-sm text-gray-600">
-                          {article.type} • {article.genre} • {article.wordCount}{" "}
-                          words
-                        </p>
+              {isLoadingArticles ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  Loading articles...
+                </div>
+              ) : userArticles.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">
+                    No articles found. Create your first article to get started!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {userArticles.map((article) => (
+                    <div
+                      key={article.id}
+                      className="border rounded-lg p-4 space-y-3"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold">{article.title}</h3>
+                          <p className="text-sm text-gray-600">
+                            {article.type} • {article.genre} •{" "}
+                            {article.wordCount} words
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Topic: {article.topic}
+                          </p>
+                        </div>
+                        {getStatusBadge(article.status as ArticleStatus)}
                       </div>
-                      {getStatusBadge(article.status as ArticleStatus)}
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>CEFR: {article.cefrLevel}</span>
-                      <span>Created: {article.createdAt}</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <Eye className="h-3 w-3 mr-1" />
-                        Preview
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Edit3 className="h-3 w-3 mr-1" />
-                        Edit
-                      </Button>
-                      {article.status === "pending" && (
-                        <Button size="sm">
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          Approve
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span>CEFR: {article.cefrLevel}</span>
+                        <span>Rating: {article.rating}/5</span>
+                        <span>
+                          Created:{" "}
+                          {new Date(article.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handlePreviewArticle(article)}
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Preview
                         </Button>
-                      )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditArticle(article)}
+                        >
+                          <Edit3 className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        {article.status === "draft" && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleApprove(article.id)}
+                            disabled={isApproving === article.id}
+                          >
+                            {isApproving === article.id ? (
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                            )}
+                            Approve
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
