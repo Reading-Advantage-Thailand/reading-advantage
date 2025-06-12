@@ -367,7 +367,7 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
 
           {/* Phase 7 Multiple-Choice Questions*/}
           {currentPhase === 7 && (
-            <Card className="pb-7 xl:h-[550px] w-full md:w-[725px] xl:w-[750px]">
+            <Card className="pb-12 xl:h-[550px] w-full md:w-[725px] xl:w-[750px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Book />
