@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -56,54 +56,45 @@ const AdminArticleCreation = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState("");
   const [currentTab, setCurrentTab] = useState("create");
+  const [genres, setGenres] = useState<{
+    fiction: Array<{
+      value: string;
+      label: string;
+      subgenres: string[];
+    }>;
+    nonfiction: Array<{
+      value: string;
+      label: string;
+      subgenres: string[];
+    }>;
+  }>({
+    fiction: [],
+    nonfiction: [],
+  });
+  const [isLoadingGenres, setIsLoadingGenres] = useState(true);
 
   // Sample data - would come from backend
-  const genres = {
-    fiction: [
-      {
-        value: "adventure",
-        label: "Adventure",
-        subgenres: ["Action Adventure", "Survival", "Quest"],
-      },
-      {
-        value: "mystery",
-        label: "Mystery",
-        subgenres: ["Detective", "Cozy Mystery", "Thriller"],
-      },
-      {
-        value: "science-fiction",
-        label: "Science Fiction",
-        subgenres: ["Space Opera", "Dystopian", "Time Travel"],
-      },
-      {
-        value: "fantasy",
-        label: "Fantasy",
-        subgenres: ["High Fantasy", "Urban Fantasy", "Fairy Tale"],
-      },
-    ],
-    nonfiction: [
-      {
-        value: "science",
-        label: "Science",
-        subgenres: ["Biology", "Physics", "Environmental Science"],
-      },
-      {
-        value: "history",
-        label: "History",
-        subgenres: ["Ancient History", "Modern History", "Cultural History"],
-      },
-      {
-        value: "biography",
-        label: "Biography",
-        subgenres: ["Historical Figures", "Modern Leaders", "Scientists"],
-      },
-      {
-        value: "technology",
-        label: "Technology",
-        subgenres: ["Innovation", "Digital Life", "Future Tech"],
-      },
-    ],
-  };
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        setIsLoadingGenres(true);
+        const response = await fetch("/api/v1/articles/genres");
+        if (!response.ok) {
+          throw new Error("Failed to fetch genres");
+        }
+        const data = await response.json();
+        setGenres(data);
+      } catch (error) {
+        console.error("Error fetching genres:", error);
+        // Fallback to empty data or show error message
+        setGenres({ fiction: [], nonfiction: [] });
+      } finally {
+        setIsLoadingGenres(false);
+      }
+    };
+
+    fetchGenres();
+  }, []);
 
   const sampleArticles = [
     {
@@ -230,10 +221,16 @@ const AdminArticleCreation = () => {
                     <Select
                       value={genre}
                       onValueChange={setGenre}
-                      disabled={!articleType}
+                      disabled={!articleType || isLoadingGenres}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a genre" />
+                        <SelectValue
+                          placeholder={
+                            isLoadingGenres
+                              ? "Loading genres..."
+                              : "Select a genre"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {currentGenres.map((g) => (

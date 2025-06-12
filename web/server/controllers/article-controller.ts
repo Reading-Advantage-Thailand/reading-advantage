@@ -21,6 +21,30 @@ interface GenreCount {
   nonFiction?: number;
 }
 
+interface GenreDocument {
+  name: string;
+  subgenres: string[];
+}
+
+interface GenreResponse {
+  value: string;
+  label: string;
+  subgenres: string[];
+}
+
+interface GenresResponse {
+  fiction: GenreResponse[];
+  nonfiction: GenreResponse[];
+}
+
+const nameToValue = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "") // remove special characters
+    .replace(/\s+/g, "-") // replace spaces with hyphens
+    .trim();
+};
+
 // GET search articles
 // GET /api/articles?level=10&type=fiction&genre=Fantasy
 // GET /api/v1/articles?type=nonfiction&genre=Career+Guides&subgenre=Career+Change&page=1&limit=10 <--when scroll down
@@ -801,3 +825,50 @@ export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
     );
   }
 }
+
+export const getGenres = async (req: Request): Promise<Response> => {
+  try {
+    // Fetch fiction genres
+    const fictionSnapshot = await db.collection("genres-fiction").get();
+    const fictionGenres: GenreResponse[] = [];
+
+    fictionSnapshot.forEach((doc) => {
+      const data = doc.data() as GenreDocument;
+      fictionGenres.push({
+        value: nameToValue(data.name),
+        label: data.name,
+        subgenres: data.subgenres || [],
+      });
+    });
+
+    // Fetch nonfiction genres
+    const nonfictionSnapshot = await db.collection("genres-nonfiction").get();
+    const nonfictionGenres: GenreResponse[] = [];
+
+    nonfictionSnapshot.forEach((doc) => {
+      const data = doc.data() as GenreDocument;
+      nonfictionGenres.push({
+        value: nameToValue(data.name),
+        label: data.name,
+        subgenres: data.subgenres || [],
+      });
+    });
+
+    // Sort genres alphabetically by label
+    fictionGenres.sort((a, b) => a.label.localeCompare(b.label));
+    nonfictionGenres.sort((a, b) => a.label.localeCompare(b.label));
+
+    const response: GenresResponse = {
+      fiction: fictionGenres,
+      nonfiction: nonfictionGenres,
+    };
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching genres:", error);
+    return NextResponse.json({
+      error: "Failed to fetch genres",
+      message: error instanceof Error ? error.message : "Unknown error",
+    }, { status: 500 });
+  }
+};
