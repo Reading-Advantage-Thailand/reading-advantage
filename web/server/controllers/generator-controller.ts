@@ -608,38 +608,59 @@ export async function generateUserArticle(req: NextRequest) {
   let userId: string = "";
 
   try {
-    console.log("Starting user article generation...");
+    //console.log("Starting user article generation...");
 
     // Get user session
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      console.log("Unauthorized access attempt");
+      //console.log("Unauthorized access attempt");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     userId = session.user.id;
-    console.log(`User ID: ${userId}`);
+    //console.log(`User ID: ${userId}`);
+
+    // Get user data to fetch license_id
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const userData = userDoc.data();
+    let author = "Unknown Author";
+
+    // Fetch school name from licenses collection if user has license_id
+    if (userData?.license_id) {
+      const licenseDoc = await db
+        .collection("licenses")
+        .doc(userData.license_id)
+        .get();
+      if (licenseDoc.exists) {
+        const licenseData = licenseDoc.data();
+        author = licenseData?.school_name || "Unknown School";
+      }
+    }
 
     // Parse request body
     const body: GenerateArticleRequest = await req.json();
     const { type, genre, subgenre, topic, cefrLevel, wordCount } = body;
-    console.log("Request parameters:", {
-      type,
-      genre,
-      subgenre,
-      topic,
-      cefrLevel,
-      wordCount,
-    });
+    //console.log("Request parameters:", {
+    //  type,
+    //  genre,
+    //  subgenre,
+    //  topic,
+    //  cefrLevel,
+    //  wordCount,
+    //});
 
     // Validate required fields
     if (!type || !genre || !topic || !cefrLevel) {
-      console.log("Missing required fields:", {
-        type,
-        genre,
-        topic,
-        cefrLevel,
-      });
+      //console.log("Missing required fields:", {
+      //  type,
+      //  genre,
+      //  topic,
+      //  cefrLevel,
+      //});
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -653,10 +674,10 @@ export async function generateUserArticle(req: NextRequest) {
         : ArticleType.NONFICTION;
 
     const cefrLevelEnum = cefrLevel as ArticleBaseCefrLevel;
-    console.log(`Article type: ${articleType}, CEFR level: ${cefrLevelEnum}`);
+    //console.log(`Article type: ${articleType}, CEFR level: ${cefrLevelEnum}`);
 
     // Generate article
-    console.log("Generating article...");
+    //console.log("Generating article...");
     const generatedArticle = await generateArticle({
       type: articleType,
       genre,
@@ -664,10 +685,10 @@ export async function generateUserArticle(req: NextRequest) {
       topic,
       cefrLevel: cefrLevelEnum,
     });
-    console.log("Article generated successfully");
+    //console.log("Article generated successfully");
 
     // Evaluate rating
-    console.log("Evaluating article rating...");
+    //console.log("Evaluating article rating...");
     const evaluatedRating = await evaluateRating({
       title: generatedArticle.title,
       summary: generatedArticle.summary,
@@ -676,17 +697,17 @@ export async function generateUserArticle(req: NextRequest) {
       passage: generatedArticle.passage,
       cefrLevel: cefrLevelEnum,
     });
-    console.log(`Article rating: ${evaluatedRating.rating}`);
+    //console.log(`Article rating: ${evaluatedRating.rating}`);
 
     // Calculate levels
-    console.log("Calculating levels...");
+    //console.log("Calculating levels...");
     const { raLevel, cefrLevel: calculatedCefrLevel } = calculateLevel(
       generatedArticle.passage,
       cefrLevelEnum
     );
-    console.log(
-      `Calculated CEFR level: ${calculatedCefrLevel}, RA level: ${raLevel}`
-    );
+    //console.log(
+    //  `Calculated CEFR level: ${calculatedCefrLevel}, RA level: ${raLevel}`
+    //);
 
     // Create article document
     articleRef = db
@@ -711,30 +732,32 @@ export async function generateUserArticle(req: NextRequest) {
       targetWordCount: wordCount,
       rating: evaluatedRating.rating,
       status: "draft",
+      author, // Add author field
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    console.log(`Saving article to Firestore with ID: ${articleRef.id}`);
-    console.log(`Word count: ${articleData.wordCount}, Target: ${wordCount}`);
+    //console.log(`Saving article to Firestore with ID: ${articleRef.id}`);
+    //console.log(`Word count: ${articleData.wordCount}, Target: ${wordCount}`);
+    //console.log(`Author: ${author}`);
 
     // Save to Firestore
     await articleRef.set(articleData);
-    console.log("Article saved successfully to Firestore");
+    //console.log("Article saved successfully to Firestore");
 
     // Generate additional content
-    console.log("Generating additional content...");
+    //console.log("Generating additional content...");
 
     // Generate Image
-    console.log("Generating image...");
+    //console.log("Generating image...");
     await generateImage({
       imageDesc: generatedArticle.imageDesc,
       articleId: articleRef.id,
     });
-    console.log("Image generated successfully");
+    //console.log("Image generated successfully");
 
     // Generate Questions
-    console.log("Generating questions...");
+    //console.log("Generating questions...");
     const [mcq, saq, laq] = await Promise.all([
       generateMCQuestion({
         type: articleType,
@@ -761,17 +784,17 @@ export async function generateUserArticle(req: NextRequest) {
         imageDesc: generatedArticle.imageDesc,
       }),
     ]);
-    console.log("Questions generated successfully");
+    //console.log("Questions generated successfully");
 
     // Generate Word List
-    console.log("Generating word list...");
+    //console.log("Generating word list...");
     const wordList = await generateWordList({
       passage: generatedArticle.passage,
     });
-    console.log("Word list generated successfully");
+    //console.log("Word list generated successfully");
 
     // Save questions and word list to user's article subcollections
-    console.log("Saving questions and word list...");
+    //console.log("Saving questions and word list...");
     await Promise.all([
       addUserQuestionsToCollection(
         userId,
@@ -795,10 +818,10 @@ export async function generateUserArticle(req: NextRequest) {
         articleData.createdAt
       ),
     ]);
-    console.log("Questions and word list saved successfully");
+    //console.log("Questions and word list saved successfully");
 
     // Generate Audio
-    console.log("Generating audio...");
+    //console.log("Generating audio...");
     await Promise.all([
       generateAudio({
         passage: generatedArticle.passage,
@@ -813,10 +836,10 @@ export async function generateUserArticle(req: NextRequest) {
         userId: userId,
       }),
     ]);
-    console.log("Audio generated successfully");
+    //console.log("Audio generated successfully");
 
     // Return the generated article
-    console.log("Returning generated article response");
+    //console.log("Returning generated article response");
     return NextResponse.json({
       id: articleRef.id,
       title: generatedArticle.title,
@@ -827,6 +850,7 @@ export async function generateUserArticle(req: NextRequest) {
       cefrLevel: calculatedCefrLevel,
       raLevel,
       wordCount: articleData.wordCount,
+      author, // Include author in response
     });
   } catch (error) {
     console.error("Error generating user article:", error);
@@ -837,7 +861,7 @@ export async function generateUserArticle(req: NextRequest) {
 
     // Cleanup on error
     if (articleRef && userId) {
-      console.log("Starting cleanup process...");
+      //console.log("Starting cleanup process...");
       await cleanupFailedGeneration(userId, articleRef.id);
     }
 
@@ -853,17 +877,17 @@ export async function generateUserArticle(req: NextRequest) {
 
 export async function approveUserArticle(req: NextRequest) {
   try {
-    console.log("Starting article approval process...");
+    //console.log("Starting article approval process...");
 
     // Get user session
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      console.log("Unauthorized access attempt");
+      //console.log("Unauthorized access attempt");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = session.user.id;
-    console.log(`User ID: ${userId}`);
+    //console.log(`User ID: ${userId}`);
 
     // Parse request body
     const { articleId } = await req.json();
@@ -874,7 +898,7 @@ export async function approveUserArticle(req: NextRequest) {
       );
     }
 
-    console.log(`Approving article: ${articleId}`);
+    //console.log(`Approving article: ${articleId}`);
 
     // Get the user's generated article
     const userArticleRef = db
@@ -896,9 +920,9 @@ export async function approveUserArticle(req: NextRequest) {
       );
     }
 
-    console.log("Article found, starting approval process...");
+    //console.log("Article found, starting approval process...");
 
-    // 1. Copy article to new-articles collection (excluding wordList)
+    // 1. Copy article to new-articles collection (including author)
     const newArticleRef = db.collection("new-articles").doc(articleId);
     const newArticleData = {
       id: articleId,
@@ -914,13 +938,14 @@ export async function approveUserArticle(req: NextRequest) {
       ra_level: articleData.raLevel,
       average_rating: articleData.rating,
       read_count: 0,
+      author: articleData.author, // Include author field
       created_at: articleData.createdAt,
       updated_at: new Date().toISOString(),
       ...(articleData.timepoints && { timepoints: articleData.timepoints }),
     };
 
     await newArticleRef.set(newArticleData);
-    console.log("Article copied to new-articles collection");
+    //console.log("Article copied to new-articles collection");
 
     // 2. Copy questions subcollections
     const questionTypes = ["mc-questions", "sa-questions", "la-questions"];
@@ -939,7 +964,7 @@ export async function approveUserArticle(req: NextRequest) {
         });
 
         await batch.commit();
-        console.log(`Copied ${questionType} to new-articles`);
+        //console.log(`Copied ${questionType} to new-articles`);
       }
     }
 
@@ -954,7 +979,7 @@ export async function approveUserArticle(req: NextRequest) {
       if (wordListData) {
         const mainWordListRef = db.collection("word-list").doc(articleId);
         await mainWordListRef.set(wordListData);
-        console.log("Word list moved to main collection");
+        //console.log("Word list moved to main collection");
       }
     }
 
@@ -965,7 +990,7 @@ export async function approveUserArticle(req: NextRequest) {
       updatedAt: new Date().toISOString(),
     });
 
-    console.log("Article approval process completed successfully");
+    //console.log("Article approval process completed successfully");
 
     return NextResponse.json({
       message: "Article approved successfully",
@@ -1034,17 +1059,17 @@ export async function updateUserArticle(
         { status: 400 }
       );
     }
-    console.log(`Starting article update for ID: ${articleId}`);
+    //console.log(`Starting article update for ID: ${articleId}`);
 
     // Get user session
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      console.log("Unauthorized access attempt");
+      //console.log("Unauthorized access attempt");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = session.user.id;
-    console.log(`User ID: ${userId}`);
+    //console.log(`User ID: ${userId}`);
 
     // Parse request body
     const { title, passage, summary, imageDesc } = await req.json();
@@ -1075,23 +1100,23 @@ export async function updateUserArticle(
       );
     }
 
-    console.log(
-      "Existing article found, starting update process...",
-      existingData
-    );
+    //console.log(
+    //  "Existing article found, starting update process...",
+    //  existingData
+    //);
 
     // 1. Clean up existing bucket files
-    console.log("Cleaning up existing bucket files...");
+    //console.log("Cleaning up existing bucket files...");
     await cleanupStorageFiles(articleId, userId);
 
     // 2. Recalculate levels based on new passage
-    console.log("Recalculating levels...");
+    //console.log("Recalculating levels...");
     const normalizedCefrLevel = existingData.cefrLevel
       .replace("+", "")
       .toLowerCase();
-    console.log(
-      `Normalized CEFR level: ${normalizedCefrLevel} (from ${existingData.cefrLevel})`
-    );
+    //console.log(
+    //  `Normalized CEFR level: ${normalizedCefrLevel} (from ${existingData.cefrLevel})`
+    //);
 
     const { raLevel, cefrLevel: calculatedCefrLevel } = calculateLevel(
       passage,
@@ -1099,7 +1124,7 @@ export async function updateUserArticle(
     );
 
     // 3. Re-evaluate rating
-    console.log("Re-evaluating rating...");
+    //console.log("Re-evaluating rating...");
     const evaluatedRating = await evaluateRating({
       title: title,
       summary: summary,
@@ -1109,7 +1134,7 @@ export async function updateUserArticle(
       cefrLevel: existingData.cefrLevel,
     });
 
-    // 4. Update article data
+    // 4. Update article data (preserve author field)
     const updatedData = {
       title,
       passage,
@@ -1119,14 +1144,16 @@ export async function updateUserArticle(
       raLevel,
       wordCount: passage.split(" ").length,
       rating: evaluatedRating.rating,
+      // Keep the existing author field
+      author: existingData.author,
       updatedAt: new Date().toISOString(),
     };
 
     await articleRef.update(updatedData);
-    console.log("Article data updated in Firestore");
+    //console.log("Article data updated in Firestore");
 
     // 5. Regenerate all content
-    console.log("Regenerating content...");
+    //console.log("Regenerating content...");
 
     // Delete existing subcollections
     const subcollections = [
@@ -1141,18 +1168,18 @@ export async function updateUserArticle(
 
       const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
       await Promise.all(deletePromises);
-      console.log(`Deleted existing ${subcollectionName}`);
+      //console.log(`Deleted existing ${subcollectionName}`);
     }
 
     // Generate new image
-    console.log("Generating new image...");
+    //console.log("Generating new image...");
     await generateImage({
       imageDesc: imageDesc,
       articleId: articleId,
     });
 
     // Generate new questions
-    console.log("Generating new questions...");
+    //console.log("Generating new questions...");
     const [mcq, saq, laq] = await Promise.all([
       generateMCQuestion({
         type: existingData.type,
@@ -1181,13 +1208,13 @@ export async function updateUserArticle(
     ]);
 
     // Generate new word list
-    console.log("Generating new word list...");
+    //console.log("Generating new word list...");
     const wordList = await generateWordList({
       passage: passage,
     });
 
     // Save new questions and word list
-    console.log("Saving new questions and word list...");
+    //console.log("Saving new questions and word list...");
     await Promise.all([
       addUserQuestionsToCollection(
         userId,
@@ -1211,7 +1238,7 @@ export async function updateUserArticle(
     ]);
 
     // Generate new audio
-    console.log("Generating new audio...");
+    //console.log("Generating new audio...");
     await Promise.all([
       generateAudio({
         passage: passage,
@@ -1227,7 +1254,7 @@ export async function updateUserArticle(
       }),
     ]);
 
-    console.log("Article update completed successfully");
+    //console.log("Article update completed successfully");
 
     return NextResponse.json({
       message: "Article updated successfully",
@@ -1284,11 +1311,11 @@ async function cleanupStorageFiles(articleId: string, userId?: string) {
           const [exists] = await file.exists();
           if (exists) {
             await file.delete();
-            console.log(`Deleted file: ${filePath}`);
+            //console.log(`Deleted file: ${filePath}`);
           }
         } catch (fileError) {
           // File might not exist, continue
-          console.log(`Could not delete file: ${basePath}${ext}`);
+          //console.log(`Could not delete file: ${basePath}${ext}`);
         }
       }
 
@@ -1298,12 +1325,12 @@ async function cleanupStorageFiles(articleId: string, userId?: string) {
         if (files.length > 0) {
           const deletePromises = files.map((file) => file.delete());
           await Promise.all(deletePromises);
-          console.log(
-            `Deleted ${files.length} files in directory: ${basePath}/`
-          );
+          //console.log(
+          //  `Deleted ${files.length} files in directory: ${basePath}/`
+          //);
         }
       } catch (dirError) {
-        console.log(`Could not delete directory: ${basePath}/`);
+        //console.log(`Could not delete directory: ${basePath}/`);
       }
     }
   } catch (storageError) {
@@ -1313,7 +1340,7 @@ async function cleanupStorageFiles(articleId: string, userId?: string) {
 
 async function cleanupFailedGeneration(userId: string, articleId: string) {
   try {
-    console.log(`Cleaning up failed generation for article: ${articleId}`);
+    //console.log(`Cleaning up failed generation for article: ${articleId}`);
 
     // 1. Delete article document and all subcollections from Firestore
     const articleRef = db
@@ -1337,17 +1364,17 @@ async function cleanupFailedGeneration(userId: string, articleId: string) {
       const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
       await Promise.all(deletePromises);
 
-      console.log(`Deleted ${subcollectionName} subcollection`);
+      //console.log(`Deleted ${subcollectionName} subcollection`);
     }
 
     // Delete the main article document
     await articleRef.delete();
-    console.log("Deleted article document");
+    //console.log("Deleted article document");
 
     // 2. Delete files from Cloud Storage bucket
     await cleanupStorageFiles(articleId);
 
-    console.log("Cleanup completed successfully");
+    //console.log("Cleanup completed successfully");
   } catch (cleanupError) {
     console.error("Error during cleanup:", cleanupError);
     // Log cleanup error but don't throw to avoid masking original error

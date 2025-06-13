@@ -1360,7 +1360,7 @@ const AdminArticleCreation = () => {
           </Card>
         </TabsContent>
 
-        {/* Manage Articles Tab - Updated */}
+        {/* Manage Articles Tab */}
         <TabsContent value="manage" className="space-y-6">
           <Card>
             <CardHeader>
@@ -1406,70 +1406,77 @@ const AdminArticleCreation = () => {
                   {userArticles.map((article) => (
                     <div
                       key={article.id}
-                      className="border rounded-lg p-4 space-y-3"
+                      className="relative border rounded-lg p-4 space-y-3 overflow-hidden"
+                      style={{
+                        backgroundImage: `linear-gradient(to right, rgba(192, 192, 192, 0.95) 0%, rgba(192, 192, 192, 0.85) 50%, rgba(192, 192, 192, 0.3) 100%), url('https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${article.id}.png')`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center right",
+                        backgroundRepeat: "no-repeat",
+                      }}
                     >
-                      <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-sm sm:text-base">
-                            {article.title}
-                          </h3>
-                          <p className="text-xs sm:text-sm text-gray-600">
-                            {article.type} • {article.genre} •{" "}
-                            {article.wordCount} words
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Topic: {article.topic}
-                          </p>
+                      {/* Content */}
+                      <div className="relative z-10">
+                        <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-sm sm:text-base text-gray-900">
+                              {article.title}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-gray-700 font-medium">
+                              {article.type} • {article.genre} •{" "}
+                              {article.wordCount} words
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1 font-medium">
+                              Topic: {article.topic}
+                            </p>
+                          </div>
+                          <div className="flex-shrink-0">
+                            {getStatusBadge(article.status as ArticleStatus)}
+                          </div>
                         </div>
-                        <div className="flex-shrink-0">
-                          {getStatusBadge(article.status as ArticleStatus)}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 font-medium">
+                          <span>CEFR: {article.cefr_level}</span>
+                          <span>Rating: {article.rating}/5</span>
+                          <span>
+                            Created:{" "}
+                            {new Date(article.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
-                        <span>CEFR: {article.cefr_level}</span>
-                        <span>Rating: {article.rating}/5</span>
-                        <span>
-                          Created:{" "}
-                          {new Date(article.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handlePreviewArticle(article)}
-                          className="w-full sm:w-auto text-xs sm:text-sm"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          Preview
-                        </Button>
-                        {/* Only show Edit button if article is not published */}
-                        {!isArticlePublished(article.status) && (
+                        <div className="flex flex-col sm:flex-row gap-2 mt-2">
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => handleEditArticle(article)}
+                            onClick={() => handlePreviewArticle(article)}
                             className="w-full sm:w-auto text-xs sm:text-sm"
                           >
-                            <Edit3 className="h-3 w-3 mr-1" />
-                            Edit
+                            <Eye className="h-3 w-3 mr-1" />
+                            Preview
                           </Button>
-                        )}
-                        {article.status === "draft" && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleApprove(article.id)}
-                            disabled={isApproving === article.id}
-                            className="w-full sm:w-auto text-xs sm:text-sm"
-                          >
-                            {isApproving === article.id ? (
-                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                            ) : (
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                            )}
-                            Approve
-                          </Button>
-                        )}
+                          {/* Only show Edit button if article is not published */}
+                          {!isArticlePublished(article.status) && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleEditArticle(article)}
+                              className="w-full sm:w-auto text-xs sm:text-sm"
+                            >
+                              <Edit3 className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                          )}
+                          {article.status === "draft" && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleApprove(article.id)}
+                              disabled={isApproving === article.id}
+                              className="w-full sm:w-auto text-xs sm:text-sm bg-green-600"
+                            >
+                              {isApproving === article.id ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                              )}
+                              Approve
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
