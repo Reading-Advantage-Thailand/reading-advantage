@@ -274,17 +274,51 @@ const AdminArticleCreation = () => {
       setLoadingProgress(0);
       setCurrentMessage(loadingMessages[loadingType][0]);
 
+      const getProgressConfig = () => {
+        switch (loadingType) {
+          case "generate":
+            return {
+              interval: 1000,
+              increment: () => {
+                return Math.random() * 1.5 + 0.2;
+              },
+            };
+          case "save":
+            return {
+              interval: 500,
+              increment: () => {
+                return Math.random() * 2.85 + 0.5;
+              },
+            };
+          case "approve":
+            return {
+              interval: 800,
+              increment: () => {
+                return Math.random() * 1.2 + 0.8;
+              },
+            };
+          default:
+            return {
+              interval: 1000,
+              increment: () => Math.random() * 1 + 0.5,
+            };
+        }
+      };
+
+      const config = getProgressConfig();
+
       progressInterval = setInterval(() => {
         setLoadingProgress((prev) => {
-          if (prev >= 80) {
-            return prev + Math.random() * 0.5 + 0.1;
-          } else if (prev >= 95) {
-            return prev;
-          } else {
-            return prev + Math.random() * 1 + 0.5;
+          const increment = config.increment();
+          const newProgress = prev + increment;
+
+          if (newProgress >= 98) {
+            return Math.min(98, prev + increment * 0.1);
           }
+
+          return newProgress;
         });
-      }, 1000);
+      }, config.interval);
 
       messageInterval = setInterval(() => {
         const messages = loadingMessages[loadingType];
@@ -307,6 +341,16 @@ const AdminArticleCreation = () => {
       fetchUserArticles();
     }
   }, [currentTab]);
+
+  useEffect(() => {
+    if (
+      !showLoadingDialog &&
+      !showApprovalDialog &&
+      !showApprovePublishDialog
+    ) {
+      document.body.style.pointerEvents = "auto";
+    }
+  }, [showLoadingDialog, showApprovalDialog, showApprovePublishDialog]);
 
   const fetchUserArticles = async () => {
     try {
@@ -390,9 +434,14 @@ const AdminArticleCreation = () => {
         variant: "destructive",
       });
     } finally {
+      // Force reset all states immediately
       setIsGenerating(false);
       setIsApproving(null);
       setPendingApprovalId(null);
+      setLoadingProgress(0);
+      setCurrentMessage("");
+      setShowLoadingDialog(false);
+      document.body.style.pointerEvents = "auto";
     }
   };
 
@@ -465,7 +514,12 @@ const AdminArticleCreation = () => {
         error instanceof Error ? error.message : "Unknown error occurred"
       );
     } finally {
+      // Force reset loading states immediately
       setIsGenerating(false);
+      setLoadingProgress(0);
+      setCurrentMessage("");
+      setShowLoadingDialog(false);
+      document.body.style.pointerEvents = "auto";
     }
   };
 
@@ -558,7 +612,12 @@ const AdminArticleCreation = () => {
         variant: "destructive",
       });
     } finally {
+      // Force reset loading states immediately
       setIsGenerating(false);
+      setLoadingProgress(0);
+      setCurrentMessage("");
+      setShowLoadingDialog(false);
+      document.body.style.pointerEvents = "auto";
     }
   };
 
@@ -592,7 +651,7 @@ const AdminArticleCreation = () => {
       // ถ้ามีการแก้ไข ใช้ handleApproveAndPublish
       await handleApproveAndPublish();
     } else {
-      // ถ้าไม่มีการแก้ไข ใช้ handleApprove
+      // ถ้าไม่มีการแก้ไข ใช้ confirmApproval โดยตรง
       if (selectedArticleForEdit) {
         setPendingApprovalId(selectedArticleForEdit.id);
         await confirmApproval();
@@ -685,7 +744,16 @@ const AdminArticleCreation = () => {
         variant: "destructive",
       });
     } finally {
+      // Force reset all states immediately
       setIsGenerating(false);
+      setLoadingProgress(0);
+      setCurrentMessage("");
+      setShowLoadingDialog(false);
+      setSelectedArticleForEdit(null);
+      setGeneratedData(null);
+      setOriginalContent(null);
+      setHasContentChanged(false);
+      document.body.style.pointerEvents = "auto";
     }
   };
 

@@ -920,7 +920,7 @@ export async function approveUserArticle(req: NextRequest) {
       );
     }
 
-    //console.log("Article found, starting approval process...");
+    //console.log("Article found, starting approval process...",articleData);
 
     // 1. Copy article to new-articles collection (including author)
     const newArticleRef = db.collection("new-articles").doc(articleId);
@@ -1105,15 +1105,24 @@ export async function updateUserArticle(
     //  existingData
     //);
 
-    // 1. Clean up existing bucket files
-    //console.log("Cleaning up existing bucket files...");
-    await cleanupStorageFiles(articleId, userId);
+    // 1. Clean up existing audio files only (not images)
+    //console.log("Cleaning up existing audio files...");
+    await cleanupAudioFiles(articleId, userId);
 
     // 2. Recalculate levels based on new passage
     //console.log("Recalculating levels...");
-    const normalizedCefrLevel = existingData.cefrLevel
-      .replace("+", "")
-      .toLowerCase();
+    const normalizedCefrLevel = (
+      existingData.cefr_level || existingData.cefrLevel
+    )
+      ?.replace("+", "")
+      ?.toLowerCase();
+
+    if (!normalizedCefrLevel) {
+      return NextResponse.json(
+        { error: "CEFR level not found in article data" },
+        { status: 400 }
+      );
+    }
     //console.log(
     //  `Normalized CEFR level: ${normalizedCefrLevel} (from ${existingData.cefrLevel})`
     //);
@@ -1123,18 +1132,7 @@ export async function updateUserArticle(
       normalizedCefrLevel
     );
 
-    // 3. Re-evaluate rating
-    //console.log("Re-evaluating rating...");
-    const evaluatedRating = await evaluateRating({
-      title: title,
-      summary: summary,
-      type: existingData.type,
-      image_description: imageDesc,
-      passage: passage,
-      cefrLevel: existingData.cefrLevel,
-    });
-
-    // 4. Update article data (preserve author field)
+    // 3. Update article data (preserve author field and existing rating)
     const updatedData = {
       title,
       passage,
@@ -1143,8 +1141,7 @@ export async function updateUserArticle(
       cefr_level: calculatedCefrLevel,
       raLevel,
       wordCount: passage.split(" ").length,
-      rating: evaluatedRating.rating,
-      // Keep the existing author field
+      rating: existingData.rating,
       author: existingData.author,
       updatedAt: new Date().toISOString(),
     };
@@ -1152,10 +1149,10 @@ export async function updateUserArticle(
     await articleRef.update(updatedData);
     //console.log("Article data updated in Firestore");
 
-    // 5. Regenerate all content
-    //console.log("Regenerating content...");
+    // 4. Regenerate questions and word list only
+    //console.log("Regenerating questions and word list...");
 
-    // Delete existing subcollections
+    // Delete existing subcollections (except images)
     const subcollections = [
       "mc-questions",
       "sa-questions",
@@ -1170,13 +1167,6 @@ export async function updateUserArticle(
       await Promise.all(deletePromises);
       //console.log(`Deleted existing ${subcollectionName}`);
     }
-
-    // Generate new image
-    //console.log("Generating new image...");
-    await generateImage({
-      imageDesc: imageDesc,
-      articleId: articleId,
-    });
 
     // Generate new questions
     //console.log("Generating new questions...");
@@ -1237,7 +1227,7 @@ export async function updateUserArticle(
       ),
     ]);
 
-    // Generate new audio
+    // Generate new audio only (not images)
     //console.log("Generating new audio...");
     await Promise.all([
       generateAudio({
@@ -1275,6 +1265,68 @@ export async function updateUserArticle(
       },
       { status: 500 }
     );
+  }
+}
+
+async function cleanupAudioFiles(articleId: string, userId?: string) {
+  try {
+    // Import Firebase Admin Storage
+    const { getStorage } = await import("firebase-admin/storage");
+    // ระบุ bucket name โดยตรง
+    const bucket = getStorage().bucket(
+      "artifacts.reading-advantage.appspot.com"
+    );
+
+    // Audio file paths only (not images)
+    const basePaths = [
+      // Regular audio paths
+      `tts/${articleId}`,
+      // User-generated audio paths (if userId provided)
+      ...(userId
+        ? [
+            `users/${userId}/tts/${articleId}`,
+          ]
+        : []),
+    ];
+
+    const audioExtensions = [".mp3"];
+
+    for (const basePath of basePaths) {
+      for (const ext of audioExtensions) {
+        try {
+          const filePath = basePath + ext;
+          const file = bucket.file(filePath);
+          const [exists] = await file.exists();
+          if (exists) {
+            await file.delete();
+            //console.log(`Deleted audio file: ${filePath}`);
+          }
+        } catch (fileError) {
+          // File might not exist, continue
+          //console.log(`Could not delete audio file: ${basePath}${ext}`);
+        }
+      }
+
+      // Also try to delete audio directories
+      try {
+        const [files] = await bucket.getFiles({ prefix: `${basePath}/` });
+        if (files.length > 0) {
+          // Filter to only delete audio files
+          const audioFiles = files.filter(file => file.name.endsWith('.mp3'));
+          if (audioFiles.length > 0) {
+            const deletePromises = audioFiles.map((file) => file.delete());
+            await Promise.all(deletePromises);
+            //console.log(
+            //  `Deleted ${audioFiles.length} audio files in directory: ${basePath}/`
+            //);
+          }
+        }
+      } catch (dirError) {
+        //console.log(`Could not delete audio directory: ${basePath}/`);
+      }
+    }
+  } catch (storageError) {
+    console.error("Error cleaning up audio files:", storageError);
   }
 }
 
