@@ -1,4 +1,5 @@
 import { StoryBible } from "@/app/[locale]/(student)/student/stories/[storyId]/page";
+import { string } from "zod";
 
 export interface ArticleShowcase {
   average_rating: number;
@@ -14,6 +15,7 @@ export interface ArticleShowcase {
   subgenre?: string;
   genre?: string;
   storyBible?: StoryBible;
+  author?: string;
 }
 
 export interface StoryChapter {
@@ -21,9 +23,9 @@ export interface StoryChapter {
   chapterNumber: string;
   ra_Level: number;
   cefr_level: string;
-  type:string
+  type: string;
   genre: string;
-  subgenre : string;
+  subgenre: string;
   totalChapters: number;
   storyBible: StoryBible;
   chapter: {
