@@ -910,7 +910,7 @@ export async function approveUserArticle(req: NextRequest) {
       genre: articleData.genre,
       subgenre: articleData.subgenre,
       topic: articleData.topic,
-      cefr_level: articleData.cefrLevel,
+      cefr_level: articleData.cefr_level,
       ra_level: articleData.raLevel,
       average_rating: articleData.rating,
       read_count: 0,

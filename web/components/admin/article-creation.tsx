@@ -701,19 +701,19 @@ const AdminArticleCreation = () => {
   };
 
   return (
-    <div className="w-full mx-auto px-6 space-y-6">
+    <div className="w-full mx-auto px-4 sm:px-6 space-y-6">
       {/* Approval Confirmation Dialog */}
       <AlertDialog
         open={showApprovalDialog}
         onOpenChange={setShowApprovalDialog}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-sm sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
+            <AlertDialogTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
               Confirm Article Approval
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
+            <AlertDialogDescription className="space-y-2 text-sm">
               <p>Are you sure you want to approve and publish this article?</p>
               <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
                 <p className="text-sm text-orange-800 font-medium">
@@ -727,13 +727,16 @@ const AdminArticleCreation = () => {
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelApproval}>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel
+              onClick={cancelApproval}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmApproval}
-              className="bg-orange-600 hover:bg-orange-700"
+              className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto"
             >
               Yes, Approve & Publish
             </AlertDialogAction>
@@ -746,13 +749,13 @@ const AdminArticleCreation = () => {
         open={showApprovePublishDialog}
         onOpenChange={setShowApprovePublishDialog}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-sm sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <AlertDialogTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
               Approve & Publish Article
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
+            <AlertDialogDescription className="space-y-3 text-sm">
               <p>Are you sure you want to approve and publish this article?</p>
 
               {hasContentChanged && (
@@ -779,13 +782,16 @@ const AdminArticleCreation = () => {
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelApprovePublish}>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel
+              onClick={cancelApprovePublish}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmApprovePublish}
-              className="bg-orange-600 hover:bg-orange-700"
+              className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto"
             >
               {hasContentChanged ? "Save & Publish" : "Approve & Publish"}
             </AlertDialogAction>
@@ -797,11 +803,11 @@ const AdminArticleCreation = () => {
       <Dialog open={showLoadingDialog} onOpenChange={() => {}}>
         <DialogContent className="sm:max-w-md [&>button]:hidden">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-center justify-center">
+            <DialogTitle className="flex items-center gap-2 text-center justify-center text-sm sm:text-base">
               {getLoadingIcon()}
               {getLoadingTitle()}
             </DialogTitle>
-            <DialogDescription className="text-center">
+            <DialogDescription className="text-center text-sm">
               {getLoadingDescription()}
             </DialogDescription>
           </DialogHeader>
@@ -811,7 +817,7 @@ const AdminArticleCreation = () => {
             <div className="flex justify-center">
               <div className="relative">
                 <Loader2
-                  className={`h-16 w-16 animate-spin ${
+                  className={`h-12 w-12 sm:h-16 sm:w-16 animate-spin ${
                     loadingType === "generate"
                       ? "text-blue-500"
                       : loadingType === "save"
@@ -833,7 +839,7 @@ const AdminArticleCreation = () => {
 
             {/* Progress Bar */}
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-xs sm:text-sm">
                 <span className="text-gray-600">Progress</span>
                 <span
                   className={`font-medium ${
@@ -852,7 +858,7 @@ const AdminArticleCreation = () => {
 
             {/* Current Message */}
             <div className="text-center">
-              <p className="text-sm text-gray-700 animate-pulse min-h-[20px]">
+              <p className="text-xs sm:text-sm text-gray-700 animate-pulse min-h-[20px]">
                 {currentMessage}
               </p>
             </div>
@@ -891,7 +897,7 @@ const AdminArticleCreation = () => {
             </div>
 
             {/* Fun Stats */}
-            <div className="grid grid-cols-3 gap-4 text-center text-xs text-gray-500 pt-2 border-t">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center text-xs text-gray-500 pt-2 border-t">
               <div>
                 <div className="font-medium text-gray-700">Type</div>
                 <div className="capitalize">
@@ -913,15 +919,17 @@ const AdminArticleCreation = () => {
 
       {/* Header */}
       <div className="text-start space-y-2">
-        <h1 className="text-4xl font-bold">Article Creation & Management</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl sm:text-4xl font-bold">
+          Article Creation & Management
+        </h1>
+        <p className="text-sm sm:text-base text-gray-600">
           Create, generate, and approve articles for Reading Advantage
         </p>
       </div>
 
       {/* Main Content */}
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 text-xs sm:text-sm">
           <TabsTrigger value="create">Create Article</TabsTrigger>
           <TabsTrigger value="preview">Preview & Edit</TabsTrigger>
           <TabsTrigger value="manage">Manage Articles</TabsTrigger>
@@ -931,11 +939,11 @@ const AdminArticleCreation = () => {
         <TabsContent value="create" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-blue-500" />
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
                 AI Article Generator
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Configure the parameters for your new article and let AI
                 generate the content
               </CardDescription>
@@ -944,31 +952,45 @@ const AdminArticleCreation = () => {
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="type">Article Type</Label>
+                    <Label htmlFor="type" className="text-sm sm:text-base">
+                      Article Type
+                    </Label>
                     <RadioGroup
                       value={articleType}
                       onValueChange={setArticleType}
-                      className="flex mt-2"
+                      className="flex flex-col sm:flex-row mt-2 gap-4 sm:gap-8"
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="fiction" id="fiction" />
-                        <Label htmlFor="fiction">Fiction</Label>
+                        <Label
+                          htmlFor="fiction"
+                          className="text-sm sm:text-base"
+                        >
+                          Fiction
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="nonfiction" id="nonfiction" />
-                        <Label htmlFor="nonfiction">Non-Fiction</Label>
+                        <Label
+                          htmlFor="nonfiction"
+                          className="text-sm sm:text-base"
+                        >
+                          Non-Fiction
+                        </Label>
                       </div>
                     </RadioGroup>
                   </div>
 
                   <div>
-                    <Label htmlFor="genre">Genre</Label>
+                    <Label htmlFor="genre" className="text-sm sm:text-base">
+                      Genre
+                    </Label>
                     <Select
                       value={genre}
                       onValueChange={setGenre}
                       disabled={!articleType || isLoadingGenres}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm">
                         <SelectValue
                           placeholder={
                             isLoadingGenres
@@ -979,7 +1001,11 @@ const AdminArticleCreation = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {currentGenres.map((g) => (
-                          <SelectItem key={g.value} value={g.value}>
+                          <SelectItem
+                            key={g.value}
+                            value={g.value}
+                            className="text-sm"
+                          >
                             {g.label}
                           </SelectItem>
                         ))}
@@ -988,18 +1014,20 @@ const AdminArticleCreation = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="subgenre">Subgenre</Label>
+                    <Label htmlFor="subgenre" className="text-sm sm:text-base">
+                      Subgenre
+                    </Label>
                     <Select
                       value={subgenre}
                       onValueChange={setSubgenre}
                       disabled={!genre}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm">
                         <SelectValue placeholder="Select a subgenre" />
                       </SelectTrigger>
                       <SelectContent>
                         {currentSubgenres.map((sg) => (
-                          <SelectItem key={sg} value={sg}>
+                          <SelectItem key={sg} value={sg} className="text-sm">
                             {sg}
                           </SelectItem>
                         ))}
@@ -1010,26 +1038,38 @@ const AdminArticleCreation = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="cefr">CEFR Level</Label>
+                    <Label htmlFor="cefr" className="text-sm sm:text-base">
+                      CEFR Level
+                    </Label>
                     <Select value={cefrLevel} onValueChange={setCefrLevel}>
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm">
                         <SelectValue placeholder="Select CEFR level" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="A1">A1 - Beginner</SelectItem>
-                        <SelectItem value="A2">A2 - Elementary</SelectItem>
-                        <SelectItem value="B1">B1 - Intermediate</SelectItem>
-                        <SelectItem value="B2">
+                        <SelectItem value="A1" className="text-sm">
+                          A1 - Beginner
+                        </SelectItem>
+                        <SelectItem value="A2" className="text-sm">
+                          A2 - Elementary
+                        </SelectItem>
+                        <SelectItem value="B1" className="text-sm">
+                          B1 - Intermediate
+                        </SelectItem>
+                        <SelectItem value="B2" className="text-sm">
                           B2 - Upper Intermediate
                         </SelectItem>
-                        <SelectItem value="C1">C1 - Advanced</SelectItem>
-                        <SelectItem value="C2">C2 - Proficient</SelectItem>
+                        <SelectItem value="C1" className="text-sm">
+                          C1 - Advanced
+                        </SelectItem>
+                        <SelectItem value="C2" className="text-sm">
+                          C2 - Proficient
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="wordcount">
+                    <Label htmlFor="wordcount" className="text-sm sm:text-base">
                       Target Word Count: {wordCount}
                     </Label>
                     <input
@@ -1050,13 +1090,15 @@ const AdminArticleCreation = () => {
               </div>
 
               <div>
-                <Label htmlFor="topic">Article Topic</Label>
+                <Label htmlFor="topic" className="text-sm sm:text-base">
+                  Article Topic
+                </Label>
                 <Textarea
                   placeholder="Describe the specific topic or theme you want the article to cover..."
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   rows={3}
-                  className="mt-2"
+                  className="mt-2 text-sm"
                 />
               </div>
 
@@ -1071,7 +1113,7 @@ const AdminArticleCreation = () => {
                 disabled={
                   !articleType || !genre || !topic || !cefrLevel || isGenerating
                 }
-                className="w-full"
+                className="w-full text-sm sm:text-base"
                 size="lg"
               >
                 <Sparkles className="h-4 w-4 mr-2" />
@@ -1085,18 +1127,18 @@ const AdminArticleCreation = () => {
         <TabsContent value="preview" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="h-5 w-5 text-green-500" />
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                 {isPreviewMode ? "Article Preview" : "Article Editor"}
                 {/* เพิ่ม indicator สำหรับการเปลี่ยนแปลง */}
                 {hasContentChanged && !isPreviewMode && (
-                  <Badge variant="secondary" className="ml-2">
+                  <Badge variant="secondary" className="ml-2 text-xs">
                     <Edit3 className="h-3 w-3 mr-1" />
                     Modified
                   </Badge>
                 )}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 {isPreviewMode
                   ? "Review the article content (read-only)"
                   : "Review and edit the generated content before approval"}
@@ -1106,20 +1148,22 @@ const AdminArticleCreation = () => {
               {generatedData ? (
                 <div className="space-y-6">
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="text-xs">
                       Type: {selectedArticleForEdit?.type || articleType}
                     </Badge>
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="text-xs">
                       Genre: {selectedArticleForEdit?.genre || genre}
                     </Badge>
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="text-xs">
                       Level: {selectedArticleForEdit?.cefr_level || cefrLevel}
                     </Badge>
-                    <Badge variant="outline">
+                    <Badge variant="outline" className="text-xs">
                       Words: {selectedArticleForEdit?.wordCount || wordCount}
                     </Badge>
                     {isPreviewMode && (
-                      <Badge variant="secondary">Preview Mode</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        Preview Mode
+                      </Badge>
                     )}
                   </div>
 
@@ -1127,7 +1171,7 @@ const AdminArticleCreation = () => {
                     <div className="space-y-2">
                       <Label
                         htmlFor="article-title"
-                        className="text-base font-medium"
+                        className="text-sm sm:text-base font-medium"
                       >
                         Article Title
                       </Label>
@@ -1141,7 +1185,7 @@ const AdminArticleCreation = () => {
                           )
                         }
                         placeholder="Enter article title..."
-                        className={`text-lg font-semibold ${
+                        className={`text-sm sm:text-lg font-semibold ${
                           isPreviewMode ? "text-gray-400" : ""
                         }`}
                         readOnly={isPreviewMode}
@@ -1150,7 +1194,7 @@ const AdminArticleCreation = () => {
                     <div className="space-y-2">
                       <Label
                         htmlFor="article-content"
-                        className="text-base font-medium"
+                        className="text-sm sm:text-base font-medium"
                       >
                         Article Content
                       </Label>
@@ -1174,7 +1218,7 @@ const AdminArticleCreation = () => {
                     <div className="space-y-2">
                       <Label
                         htmlFor="article-summary"
-                        className="text-base font-medium"
+                        className="text-sm sm:text-base font-medium"
                       >
                         Summary
                       </Label>
@@ -1198,7 +1242,7 @@ const AdminArticleCreation = () => {
                     <div className="space-y-2">
                       <Label
                         htmlFor="image-description"
-                        className="text-base font-medium"
+                        className="text-sm sm:text-base font-medium"
                       >
                         Image Description
                       </Label>
@@ -1222,12 +1266,13 @@ const AdminArticleCreation = () => {
                   </div>
 
                   <Separator />
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     {isPreviewMode ? (
                       <>
                         <Button
                           variant="outline"
                           onClick={() => setCurrentTab("manage")}
+                          className="w-full sm:w-auto text-sm"
                         >
                           Back to Manage
                         </Button>
@@ -1240,6 +1285,7 @@ const AdminArticleCreation = () => {
                               onClick={() => {
                                 setIsPreviewMode(false);
                               }}
+                              className="w-full sm:w-auto text-sm"
                             >
                               <Edit3 className="h-4 w-4 mr-2" />
                               Switch to Edit Mode
@@ -1257,6 +1303,7 @@ const AdminArticleCreation = () => {
                               setIsPreviewMode(true);
                             }
                           }}
+                          className="w-full sm:w-auto text-sm"
                         >
                           {selectedArticleForEdit
                             ? "Back to Manage"
@@ -1266,6 +1313,7 @@ const AdminArticleCreation = () => {
                           <Button
                             onClick={handleApprovePublishClick}
                             disabled={isGenerating}
+                            className="w-full sm:w-auto text-sm"
                           >
                             {isGenerating && loadingType === "approve" ? (
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1275,7 +1323,10 @@ const AdminArticleCreation = () => {
                             Approve & Publish
                           </Button>
                         ) : (
-                          <Button onClick={handleApprovePublishClick}>
+                          <Button
+                            onClick={handleApprovePublishClick}
+                            className="w-full sm:w-auto text-sm"
+                          >
                             <CheckCircle2 className="h-4 w-4 mr-2" />
                             Approve & Publish
                           </Button>
@@ -1284,6 +1335,7 @@ const AdminArticleCreation = () => {
                           onClick={handleSaveArticle}
                           variant="outline"
                           disabled={isGenerating}
+                          className="w-full sm:w-auto text-sm"
                         >
                           {isGenerating && loadingType === "save" ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1298,7 +1350,7 @@ const AdminArticleCreation = () => {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-gray-500">
+                  <p className="text-gray-500 text-sm">
                     No content generated yet. Go to the Create tab to generate
                     an article.
                   </p>
@@ -1312,10 +1364,12 @@ const AdminArticleCreation = () => {
         <TabsContent value="manage" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <CardTitle>Article Management</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">
+                    Article Management
+                  </CardTitle>
+                  <CardDescription className="text-sm">
                     View and manage all your generated articles
                   </CardDescription>
                 </div>
@@ -1324,6 +1378,7 @@ const AdminArticleCreation = () => {
                   disabled={isLoadingArticles}
                   variant="outline"
                   size="sm"
+                  className="w-full sm:w-auto text-sm"
                 >
                   <RefreshCw
                     className={`h-4 w-4 mr-2 ${
@@ -1338,11 +1393,11 @@ const AdminArticleCreation = () => {
               {isLoadingArticles ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                  Loading articles...
+                  <span className="text-sm">Loading articles...</span>
                 </div>
               ) : userArticles.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-gray-500">
+                  <p className="text-gray-500 text-sm">
                     No articles found. Create your first article to get started!
                   </p>
                 </div>
@@ -1353,10 +1408,12 @@ const AdminArticleCreation = () => {
                       key={article.id}
                       className="border rounded-lg p-4 space-y-3"
                     >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold">{article.title}</h3>
-                          <p className="text-sm text-gray-600">
+                      <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-sm sm:text-base">
+                            {article.title}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-gray-600">
                             {article.type} • {article.genre} •{" "}
                             {article.wordCount} words
                           </p>
@@ -1364,9 +1421,11 @@ const AdminArticleCreation = () => {
                             Topic: {article.topic}
                           </p>
                         </div>
-                        {getStatusBadge(article.status as ArticleStatus)}
+                        <div className="flex-shrink-0">
+                          {getStatusBadge(article.status as ArticleStatus)}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
                         <span>CEFR: {article.cefr_level}</span>
                         <span>Rating: {article.rating}/5</span>
                         <span>
@@ -1374,11 +1433,12 @@ const AdminArticleCreation = () => {
                           {new Date(article.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handlePreviewArticle(article)}
+                          className="w-full sm:w-auto text-xs sm:text-sm"
                         >
                           <Eye className="h-3 w-3 mr-1" />
                           Preview
@@ -1389,6 +1449,7 @@ const AdminArticleCreation = () => {
                             size="sm"
                             variant="outline"
                             onClick={() => handleEditArticle(article)}
+                            className="w-full sm:w-auto text-xs sm:text-sm"
                           >
                             <Edit3 className="h-3 w-3 mr-1" />
                             Edit
@@ -1399,6 +1460,7 @@ const AdminArticleCreation = () => {
                             size="sm"
                             onClick={() => handleApprove(article.id)}
                             disabled={isApproving === article.id}
+                            className="w-full sm:w-auto text-xs sm:text-sm"
                           >
                             {isApproving === article.id ? (
                               <Loader2 className="h-3 w-3 mr-1 animate-spin" />
