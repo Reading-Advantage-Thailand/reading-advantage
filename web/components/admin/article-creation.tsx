@@ -55,6 +55,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
+import { useScopedI18n } from "@/locales/client";
 
 interface StatusConfig {
   color: string;
@@ -145,46 +146,47 @@ const AdminArticleCreation = () => {
   const [showApprovePublishDialog, setShowApprovePublishDialog] =
     useState(false);
   const [hasContentChanged, setHasContentChanged] = useState(false);
+  const t = useScopedI18n("pages.admin");
 
   const loadingMessages = {
     generate: [
-      "🤖 AI is thinking really hard...",
-      "📚 Crafting the perfect story...",
-      "✨ Sprinkling some magic dust...",
-      "🎨 Painting with words...",
-      "🔮 Consulting the digital oracle...",
-      "📝 Writing like Shakespeare...",
-      "🌟 Creating literary magic...",
-      "🚀 Launching creativity rockets...",
-      "🎭 Directing the plot...",
-      "🔥 Igniting imagination...",
-      "💭 Downloading inspiration...",
-      "🎪 Putting on a word show...",
-      "🏗️ Building narrative architecture...",
-      "🎵 Composing textual symphony...",
-      "🌈 Mixing creative colors...",
+      t("generate.0"),
+      t("generate.1"),
+      t("generate.2"),
+      t("generate.3"),
+      t("generate.4"),
+      t("generate.5"),
+      t("generate.6"),
+      t("generate.7"),
+      t("generate.8"),
+      t("generate.9"),
+      t("generate.10"),
+      t("generate.11"),
+      t("generate.12"),
+      t("generate.13"),
+      t("generate.14"),
     ],
     save: [
-      "💾 Saving your masterpiece...",
-      "📝 Updating article content...",
-      "✏️ Polishing the draft...",
-      "🔄 Syncing changes...",
-      "📋 Organizing content...",
-      "💫 Preserving your edits...",
-      "🎯 Finalizing updates...",
-      "📚 Storing your work...",
-      "✨ Almost there...",
-      "🎉 Wrapping things up...",
+      t("save.0"),
+      t("save.1"),
+      t("save.2"),
+      t("save.3"),
+      t("save.4"),
+      t("save.5"),
+      t("save.6"),
+      t("save.7"),
+      t("save.8"),
+      t("save.9"),
     ],
     approve: [
-      "✅ Processing approval...",
-      "🚀 Publishing to platform...",
-      "📢 Making it live...",
-      "🌟 Final quality check...",
-      "📋 Updating status...",
-      "🎯 Almost published...",
-      "✨ Going live...",
-      "🎉 Publishing complete...",
+      t("approve.0"),
+      t("approve.1"),
+      t("approve.2"),
+      t("approve.3"),
+      t("approve.4"),
+      t("approve.5"),
+      t("approve.6"),
+      t("approve.7"),
     ],
   };
 
@@ -280,21 +282,21 @@ const AdminArticleCreation = () => {
             return {
               interval: 1000,
               increment: () => {
-                return Math.random() * 1.5 + 0.2;
+                return Math.random() * 2 + 0.2;
               },
             };
           case "save":
             return {
               interval: 500,
               increment: () => {
-                return Math.random() * 2.85 + 0.5;
+                return Math.random() * 3.85 + 0.5;
               },
             };
           case "approve":
             return {
               interval: 800,
               increment: () => {
-                return Math.random() * 1.2 + 0.8;
+                return Math.random() * 10 + 8.2;
               },
             };
           default:
@@ -779,18 +781,13 @@ const AdminArticleCreation = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-sm sm:text-base">
               <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-              Confirm Article Approval
+              {t("confirmApprovalTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2 text-sm">
-              <p>Are you sure you want to approve and publish this article?</p>
+              <p>{t("confirmApprovalMessage")}</p>
               <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
                 <p className="text-sm text-orange-800 font-medium">
-                  ⚠️ Warning: Once published, this article cannot be edited or
-                  modified.
-                </p>
-                <p className="text-sm text-orange-700 mt-1">
-                  Please make sure all content is accurate and properly reviewed
-                  before proceeding.
+                  {t("confirmApprovalMessage")}
                 </p>
               </div>
             </AlertDialogDescription>
@@ -800,13 +797,13 @@ const AdminArticleCreation = () => {
               onClick={cancelApproval}
               className="w-full sm:w-auto"
             >
-              Cancel
+              {t("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmApproval}
               className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto"
             >
-              Yes, Approve & Publish
+              {t("confirmPublish")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -821,31 +818,25 @@ const AdminArticleCreation = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-sm sm:text-base">
               <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
-              Approve & Publish Article
+              {t("modalTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3 text-sm">
-              <p>Are you sure you want to approve and publish this article?</p>
+              <p>{t("confirmApprovalMessage")}</p>
 
               {hasContentChanged && (
                 <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
                   <p className="text-sm text-blue-800 font-medium">
-                    📝 Content Changes Detected
+                    {t("modalContentChanged")}
                   </p>
                   <p className="text-sm text-blue-700 mt-1">
-                    Your changes will be saved and then the article will be
-                    published.
+                    {t("modalContentNote")}
                   </p>
                 </div>
               )}
 
               <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
                 <p className="text-sm text-orange-800 font-medium">
-                  ⚠️ Warning: Once published, this article cannot be edited or
-                  modified.
-                </p>
-                <p className="text-sm text-orange-700 mt-1">
-                  Please make sure all content is accurate and properly reviewed
-                  before proceeding.
+                  {t("modalFinalWarning")}
                 </p>
               </div>
             </AlertDialogDescription>
@@ -855,13 +846,15 @@ const AdminArticleCreation = () => {
               onClick={cancelApprovePublish}
               className="w-full sm:w-auto"
             >
-              Cancel
+              {t("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmApprovePublish}
               className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto"
             >
-              {hasContentChanged ? "Save & Publish" : "Approve & Publish"}
+              {hasContentChanged
+                ? `${t("approveAndPublish")}`
+                : `${t("approveAndPublish")}`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -908,7 +901,7 @@ const AdminArticleCreation = () => {
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-xs sm:text-sm">
-                <span className="text-gray-600">Progress</span>
+                <span className="text-gray-600">{t("progress")}</span>
                 <span
                   className={`font-medium ${
                     loadingType === "generate"
@@ -967,17 +960,17 @@ const AdminArticleCreation = () => {
             {/* Fun Stats */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center text-xs text-gray-500 pt-2 border-t">
               <div>
-                <div className="font-medium text-gray-700">Type</div>
+                <div className="font-medium text-gray-700">{t("type")}</div>
                 <div className="capitalize">
                   {selectedArticleForEdit?.type || articleType}
                 </div>
               </div>
               <div>
-                <div className="font-medium text-gray-700">Level</div>
+                <div className="font-medium text-gray-700">{t("level")}</div>
                 <div>{selectedArticleForEdit?.cefr_level || cefrLevel}</div>
               </div>
               <div>
-                <div className="font-medium text-gray-700">Words</div>
+                <div className="font-medium text-gray-700">{t("words")}</div>
                 <div>~{selectedArticleForEdit?.wordCount || wordCount}</div>
               </div>
             </div>
@@ -988,19 +981,19 @@ const AdminArticleCreation = () => {
       {/* Header */}
       <div className="text-start space-y-2">
         <h1 className="text-2xl sm:text-4xl font-bold">
-          Article Creation & Management
+          {t("articlePageTitle")}
         </h1>
         <p className="text-sm sm:text-base text-gray-600">
-          Create, generate, and approve articles for Reading Advantage
+          {t("articlePageDesc")}
         </p>
       </div>
 
       {/* Main Content */}
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 text-xs sm:text-sm">
-          <TabsTrigger value="create">Create Article</TabsTrigger>
-          <TabsTrigger value="preview">Preview & Edit</TabsTrigger>
-          <TabsTrigger value="manage">Manage Articles</TabsTrigger>
+          <TabsTrigger value="create">{t("createArticle")}</TabsTrigger>
+          <TabsTrigger value="preview">{t("previewEdit")}</TabsTrigger>
+          <TabsTrigger value="manage">{t("manageArticles")}</TabsTrigger>
         </TabsList>
 
         {/* Create Article Tab */}
@@ -1009,11 +1002,10 @@ const AdminArticleCreation = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
-                AI Article Generator
+                {t("aiArticleGenerator")}
               </CardTitle>
               <CardDescription className="text-sm">
-                Configure the parameters for your new article and let AI
-                generate the content
+                {t("aiArticleGeneratorDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -1021,7 +1013,7 @@ const AdminArticleCreation = () => {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="type" className="text-sm sm:text-base">
-                      Article Type
+                      {t("articleType")}
                     </Label>
                     <RadioGroup
                       value={articleType}
@@ -1034,7 +1026,7 @@ const AdminArticleCreation = () => {
                           htmlFor="fiction"
                           className="text-sm sm:text-base"
                         >
-                          Fiction
+                          {t("fiction")}
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -1043,7 +1035,7 @@ const AdminArticleCreation = () => {
                           htmlFor="nonfiction"
                           className="text-sm sm:text-base"
                         >
-                          Non-Fiction
+                          {t("nonFiction")}
                         </Label>
                       </div>
                     </RadioGroup>
@@ -1051,7 +1043,7 @@ const AdminArticleCreation = () => {
 
                   <div>
                     <Label htmlFor="genre" className="text-sm sm:text-base">
-                      Genre
+                      {t("genre")}
                     </Label>
                     <Select
                       value={genre}
@@ -1083,7 +1075,7 @@ const AdminArticleCreation = () => {
 
                   <div>
                     <Label htmlFor="subgenre" className="text-sm sm:text-base">
-                      Subgenre
+                      {t("subgenre")}
                     </Label>
                     <Select
                       value={subgenre}
@@ -1107,7 +1099,7 @@ const AdminArticleCreation = () => {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="cefr" className="text-sm sm:text-base">
-                      CEFR Level
+                      {t("cefrLevel")}
                     </Label>
                     <Select value={cefrLevel} onValueChange={setCefrLevel}>
                       <SelectTrigger className="text-sm">
@@ -1115,22 +1107,22 @@ const AdminArticleCreation = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="A1" className="text-sm">
-                          A1 - Beginner
+                          {t("cefrLevels.0")}
                         </SelectItem>
                         <SelectItem value="A2" className="text-sm">
-                          A2 - Elementary
+                          {t("cefrLevels.1")}
                         </SelectItem>
                         <SelectItem value="B1" className="text-sm">
-                          B1 - Intermediate
+                          {t("cefrLevels.2")}
                         </SelectItem>
                         <SelectItem value="B2" className="text-sm">
-                          B2 - Upper Intermediate
+                          {t("cefrLevels.3")}
                         </SelectItem>
                         <SelectItem value="C1" className="text-sm">
-                          C1 - Advanced
+                          {t("cefrLevels.4")}
                         </SelectItem>
                         <SelectItem value="C2" className="text-sm">
-                          C2 - Proficient
+                          {t("cefrLevels.5")}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -1138,7 +1130,7 @@ const AdminArticleCreation = () => {
 
                   <div>
                     <Label htmlFor="wordcount" className="text-sm sm:text-base">
-                      Target Word Count: {wordCount}
+                      {t("targetWordCount")}: {wordCount}
                     </Label>
                     <input
                       type="range"
@@ -1159,7 +1151,7 @@ const AdminArticleCreation = () => {
 
               <div>
                 <Label htmlFor="topic" className="text-sm sm:text-base">
-                  Article Topic
+                  {t("articleTopic")}
                 </Label>
                 <Textarea
                   placeholder="Describe the specific topic or theme you want the article to cover..."
@@ -1185,7 +1177,7 @@ const AdminArticleCreation = () => {
                 size="lg"
               >
                 <Sparkles className="h-4 w-4 mr-2" />
-                Generate Article with AI
+                {t("generateWithAI")}
               </Button>
             </CardContent>
           </Card>
@@ -1202,7 +1194,7 @@ const AdminArticleCreation = () => {
                 {hasContentChanged && !isPreviewMode && (
                   <Badge variant="secondary" className="ml-2 text-xs">
                     <Edit3 className="h-3 w-3 mr-1" />
-                    Modified
+                    {t("modified")}
                   </Badge>
                 )}
               </CardTitle>
@@ -1217,20 +1209,22 @@ const AdminArticleCreation = () => {
                 <div className="space-y-6">
                   <div className="flex flex-wrap gap-2 mb-4">
                     <Badge variant="outline" className="text-xs">
-                      Type: {selectedArticleForEdit?.type || articleType}
+                      {t("type")}: {selectedArticleForEdit?.type || articleType}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      Genre: {selectedArticleForEdit?.genre || genre}
+                      {t("genre")}: {selectedArticleForEdit?.genre || genre}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      Level: {selectedArticleForEdit?.cefr_level || cefrLevel}
+                      {t("level")}:{" "}
+                      {selectedArticleForEdit?.cefr_level || cefrLevel}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      Words: {selectedArticleForEdit?.wordCount || wordCount}
+                      {t("words")}:{" "}
+                      {selectedArticleForEdit?.wordCount || wordCount}
                     </Badge>
                     {isPreviewMode && (
                       <Badge variant="secondary" className="text-xs">
-                        Preview Mode
+                        {t("previewMode")}
                       </Badge>
                     )}
                   </div>
@@ -1241,7 +1235,7 @@ const AdminArticleCreation = () => {
                         htmlFor="article-title"
                         className="text-sm sm:text-base font-medium"
                       >
-                        Article Title
+                        {t("articleTitle")}
                       </Label>
                       <Input
                         id="article-title"
@@ -1264,7 +1258,7 @@ const AdminArticleCreation = () => {
                         htmlFor="article-content"
                         className="text-sm sm:text-base font-medium"
                       >
-                        Article Content
+                        {t("articleContent")}
                       </Label>
                       <Textarea
                         id="article-content"
@@ -1288,7 +1282,7 @@ const AdminArticleCreation = () => {
                         htmlFor="article-summary"
                         className="text-sm sm:text-base font-medium"
                       >
-                        Summary
+                        {t("summary")}
                       </Label>
                       <Textarea
                         id="article-summary"
@@ -1312,7 +1306,7 @@ const AdminArticleCreation = () => {
                         htmlFor="image-description"
                         className="text-sm sm:text-base font-medium"
                       >
-                        Image Description
+                        {t("imageDescription")}
                       </Label>
                       <Textarea
                         id="image-description"
@@ -1342,7 +1336,7 @@ const AdminArticleCreation = () => {
                           onClick={() => setCurrentTab("manage")}
                           className="w-full sm:w-auto text-sm"
                         >
-                          Back to Manage
+                          {t("backToManage")}
                         </Button>
                         {/* Only show Edit button if article is not published */}
                         {selectedArticleForEdit &&
@@ -1356,7 +1350,7 @@ const AdminArticleCreation = () => {
                               className="w-full sm:w-auto text-sm"
                             >
                               <Edit3 className="h-4 w-4 mr-2" />
-                              Switch to Edit Mode
+                              {t("switchToEdit")}
                             </Button>
                           )}
                       </>
@@ -1388,7 +1382,7 @@ const AdminArticleCreation = () => {
                             ) : (
                               <CheckCircle2 className="h-4 w-4 mr-2" />
                             )}
-                            Approve & Publish
+                            {t("approveAndPublish")}
                           </Button>
                         ) : (
                           <Button
@@ -1396,7 +1390,7 @@ const AdminArticleCreation = () => {
                             className="w-full sm:w-auto text-sm"
                           >
                             <CheckCircle2 className="h-4 w-4 mr-2" />
-                            Approve & Publish
+                            {t("approveAndPublish")}
                           </Button>
                         )}
                         <Button
@@ -1410,7 +1404,7 @@ const AdminArticleCreation = () => {
                           ) : (
                             <Save className="h-4 w-4 mr-2" />
                           )}
-                          Save as Draft
+                          {t("saveAsDraft")}
                         </Button>
                       </>
                     )}
@@ -1418,10 +1412,7 @@ const AdminArticleCreation = () => {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 text-sm">
-                    No content generated yet. Go to the Create tab to generate
-                    an article.
-                  </p>
+                  <p className="text-gray-500 text-sm">{t("noContentYet")}</p>
                 </div>
               )}
             </CardContent>
@@ -1435,10 +1426,10 @@ const AdminArticleCreation = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <CardTitle className="text-lg sm:text-xl">
-                    Article Management
+                    {t("articleManagement")}
                   </CardTitle>
                   <CardDescription className="text-sm">
-                    View and manage all your generated articles
+                    {t("manageDesc")}
                   </CardDescription>
                 </div>
                 <Button
@@ -1453,7 +1444,7 @@ const AdminArticleCreation = () => {
                       isLoadingArticles ? "animate-spin" : ""
                     }`}
                   />
-                  Refresh
+                  {t("refresh")}
                 </Button>
               </div>
             </CardHeader>
@@ -1461,12 +1452,12 @@ const AdminArticleCreation = () => {
               {isLoadingArticles ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                  <span className="text-sm">Loading articles...</span>
+                  <span className="text-sm">{t("loadingArticles")}</span>
                 </div>
               ) : userArticles.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500 text-sm">
-                    No articles found. Create your first article to get started!
+                    {t("noArticlesFound")}
                   </p>
                 </div>
               ) : (
@@ -1491,10 +1482,10 @@ const AdminArticleCreation = () => {
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-700 font-medium">
                               {article.type} • {article.genre} •{" "}
-                              {article.wordCount} words
+                              {article.wordCount} Words
                             </p>
                             <p className="text-xs text-gray-600 mt-1 font-medium">
-                              Topic: {article.topic}
+                              {t("topic")}: {article.topic}
                             </p>
                           </div>
                           <div className="flex-shrink-0">
@@ -1503,9 +1494,11 @@ const AdminArticleCreation = () => {
                         </div>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 font-medium">
                           <span>CEFR: {article.cefr_level}</span>
-                          <span>Rating: {article.rating}/5</span>
                           <span>
-                            Created:{" "}
+                            {t("rating")}: {article.rating}/5
+                          </span>
+                          <span>
+                            {t("created")}:{" "}
                             {new Date(article.createdAt).toLocaleDateString()}
                           </span>
                         </div>
@@ -1516,7 +1509,7 @@ const AdminArticleCreation = () => {
                             className="w-full sm:w-auto text-xs sm:text-sm"
                           >
                             <Eye className="h-3 w-3 mr-1" />
-                            Preview
+                            {t("preview")}
                           </Button>
                           {/* Only show Edit button if article is not published */}
                           {!isArticlePublished(article.status) && (
@@ -1526,7 +1519,7 @@ const AdminArticleCreation = () => {
                               className="w-full sm:w-auto text-xs sm:text-sm"
                             >
                               <Edit3 className="h-3 w-3 mr-1" />
-                              Edit
+                              {t("edit")}
                             </Button>
                           )}
                           {article.status === "draft" && (
@@ -1541,7 +1534,7 @@ const AdminArticleCreation = () => {
                               ) : (
                                 <CheckCircle2 className="h-3 w-3 mr-1" />
                               )}
-                              Approve
+                              {t("approveText")}
                             </Button>
                           )}
                         </div>
