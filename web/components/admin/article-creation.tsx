@@ -32,6 +32,8 @@ import {
   Sparkles,
   Loader2,
   RefreshCw,
+  Save,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Dialog,
@@ -39,7 +41,18 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -63,7 +76,7 @@ interface UserArticle {
   type: string;
   genre: string;
   subgenre?: string;
-  cefrLevel: string;
+  cefr_level: string;
   status: string;
   createdAt: string;
   wordCount: number;
@@ -112,28 +125,124 @@ const AdminArticleCreation = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [currentMessage, setCurrentMessage] = useState("");
   const [showLoadingDialog, setShowLoadingDialog] = useState(false);
+  const [loadingType, setLoadingType] = useState<
+    "generate" | "save" | "approve"
+  >("generate");
   const { toast } = useToast();
   const [selectedArticleForEdit, setSelectedArticleForEdit] =
     useState<UserArticle | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [showApprovalDialog, setShowApprovalDialog] = useState(false);
+  const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(
+    null
+  );
+  const [originalContent, setOriginalContent] = useState<{
+    title: string;
+    passage: string;
+    summary: string;
+    imageDesc: string;
+  } | null>(null);
+  const [showApprovePublishDialog, setShowApprovePublishDialog] =
+    useState(false);
+  const [hasContentChanged, setHasContentChanged] = useState(false);
 
-  const loadingMessages = [
-    "🤖 AI is thinking really hard...",
-    "📚 Crafting the perfect story...",
-    "✨ Sprinkling some magic dust...",
-    "🎨 Painting with words...",
-    "🔮 Consulting the digital oracle...",
-    "📝 Writing like Shakespeare...",
-    "🌟 Creating literary magic...",
-    "🚀 Launching creativity rockets...",
-    "🎭 Directing the plot...",
-    "🔥 Igniting imagination...",
-    "💭 Downloading inspiration...",
-    "🎪 Putting on a word show...",
-    "🏗️ Building narrative architecture...",
-    "🎵 Composing textual symphony...",
-    "🌈 Mixing creative colors...",
-  ];
+  const loadingMessages = {
+    generate: [
+      "🤖 AI is thinking really hard...",
+      "📚 Crafting the perfect story...",
+      "✨ Sprinkling some magic dust...",
+      "🎨 Painting with words...",
+      "🔮 Consulting the digital oracle...",
+      "📝 Writing like Shakespeare...",
+      "🌟 Creating literary magic...",
+      "🚀 Launching creativity rockets...",
+      "🎭 Directing the plot...",
+      "🔥 Igniting imagination...",
+      "💭 Downloading inspiration...",
+      "🎪 Putting on a word show...",
+      "🏗️ Building narrative architecture...",
+      "🎵 Composing textual symphony...",
+      "🌈 Mixing creative colors...",
+    ],
+    save: [
+      "💾 Saving your masterpiece...",
+      "📝 Updating article content...",
+      "✏️ Polishing the draft...",
+      "🔄 Syncing changes...",
+      "📋 Organizing content...",
+      "💫 Preserving your edits...",
+      "🎯 Finalizing updates...",
+      "📚 Storing your work...",
+      "✨ Almost there...",
+      "🎉 Wrapping things up...",
+    ],
+    approve: [
+      "✅ Processing approval...",
+      "🚀 Publishing to platform...",
+      "📢 Making it live...",
+      "🌟 Final quality check...",
+      "📋 Updating status...",
+      "🎯 Almost published...",
+      "✨ Going live...",
+      "🎉 Publishing complete...",
+    ],
+  };
+
+  const getLoadingTitle = () => {
+    switch (loadingType) {
+      case "generate":
+        return "Generating Your Article";
+      case "save":
+        return "Saving Article Draft";
+      case "approve":
+        return "Approving & Publishing Article";
+      default:
+        return "Processing...";
+    }
+  };
+
+  const getLoadingDescription = () => {
+    switch (loadingType) {
+      case "generate":
+        return "Please wait while AI creates your amazing content...";
+      case "save":
+        return "Saving your changes as a draft...";
+      case "approve":
+        return "Publishing your article to the platform...";
+      default:
+        return "Please wait...";
+    }
+  };
+
+  const getLoadingIcon = () => {
+    switch (loadingType) {
+      case "generate":
+        return <Sparkles className="h-5 w-5 text-blue-500 animate-pulse" />;
+      case "save":
+        return <Save className="h-5 w-5 text-green-500 animate-pulse" />;
+      case "approve":
+        return (
+          <CheckCircle2 className="h-5 w-5 text-purple-500 animate-pulse" />
+        );
+      default:
+        return <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />;
+    }
+  };
+
+  const checkContentChanged = () => {
+    if (!originalContent || !generatedData) return false;
+
+    return (
+      originalContent.title !== generatedData.title ||
+      originalContent.passage !== generatedData.passage ||
+      originalContent.summary !== generatedData.summary ||
+      originalContent.imageDesc !== generatedData.imageDesc
+    );
+  };
+
+  useEffect(() => {
+    setHasContentChanged(checkContentChanged());
+  }, [generatedData, originalContent]);
 
   useEffect(() => {
     const fetchGenres = async () => {
@@ -163,7 +272,7 @@ const AdminArticleCreation = () => {
     if (isGenerating) {
       setShowLoadingDialog(true);
       setLoadingProgress(0);
-      setCurrentMessage(loadingMessages[0]);
+      setCurrentMessage(loadingMessages[loadingType][0]);
 
       progressInterval = setInterval(() => {
         setLoadingProgress((prev) => {
@@ -178,8 +287,9 @@ const AdminArticleCreation = () => {
       }, 1000);
 
       messageInterval = setInterval(() => {
-        const randomIndex = Math.floor(Math.random() * loadingMessages.length);
-        setCurrentMessage(loadingMessages[randomIndex]);
+        const messages = loadingMessages[loadingType];
+        const randomIndex = Math.floor(Math.random() * messages.length);
+        setCurrentMessage(messages[randomIndex]);
       }, 3000);
     } else {
       setShowLoadingDialog(false);
@@ -190,7 +300,7 @@ const AdminArticleCreation = () => {
       if (progressInterval) clearInterval(progressInterval);
       if (messageInterval) clearInterval(messageInterval);
     };
-  }, [isGenerating]);
+  }, [isGenerating, loadingType]);
 
   useEffect(() => {
     if (currentTab === "manage") {
@@ -221,9 +331,20 @@ const AdminArticleCreation = () => {
     }
   };
 
-  const handleApprove = async (articleId: string) => {
+  const handleApprove = (articleId: string) => {
+    setPendingApprovalId(articleId);
+    setShowApprovalDialog(true);
+  };
+
+  const confirmApproval = async () => {
+    if (!pendingApprovalId) return;
+
     try {
-      setIsApproving(articleId);
+      setLoadingType("approve");
+      setIsGenerating(true);
+      setIsApproving(pendingApprovalId);
+      setShowApprovalDialog(false);
+
       const response = await fetch(
         "/api/v1/articles/generate/custom-generate/user-generated",
         {
@@ -231,7 +352,7 @@ const AdminArticleCreation = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ articleId }),
+          body: JSON.stringify({ articleId: pendingApprovalId }),
         }
       );
 
@@ -240,10 +361,17 @@ const AdminArticleCreation = () => {
         throw new Error(errorData.details || "Failed to approve article");
       }
 
+      // Complete the progress
+      setLoadingProgress(100);
+      setCurrentMessage("🎉 Article approved and published successfully!");
+
+      // Small delay to show completion
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Update the article status in the local state
       setUserArticles((prev) =>
         prev.map((article) =>
-          article.id === articleId
+          article.id === pendingApprovalId
             ? { ...article, status: "approved" }
             : article
         )
@@ -262,8 +390,15 @@ const AdminArticleCreation = () => {
         variant: "destructive",
       });
     } finally {
+      setIsGenerating(false);
       setIsApproving(null);
+      setPendingApprovalId(null);
     }
+  };
+
+  const cancelApproval = () => {
+    setShowApprovalDialog(false);
+    setPendingApprovalId(null);
   };
 
   const handleGenerate = async () => {
@@ -271,6 +406,7 @@ const AdminArticleCreation = () => {
       return;
     }
 
+    setLoadingType("generate");
     setIsGenerating(true);
     setError(null);
 
@@ -307,12 +443,16 @@ const AdminArticleCreation = () => {
       // Small delay to show completion
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      setGeneratedData({
+      const newGeneratedData = {
         title: data.title,
         passage: data.passage,
         summary: data.summary,
         imageDesc: data.imageDesc,
-      });
+      };
+
+      setGeneratedData(newGeneratedData);
+      // เซ็ต original content เป็นเนื้อหาที่เพิ่งสร้าง
+      setOriginalContent(newGeneratedData);
       setCurrentTab("preview");
 
       toast({
@@ -332,24 +472,30 @@ const AdminArticleCreation = () => {
   const handlePreviewArticle = (article: UserArticle) => {
     setSelectedArticleForEdit(article);
     setIsPreviewMode(true);
-    setGeneratedData({
+    const articleData = {
       title: article.title,
       passage: article.passage,
       summary: article.summary,
       imageDesc: article.imageDesc,
-    });
+    };
+    setGeneratedData(articleData);
+    // เซ็ต original content
+    setOriginalContent(articleData);
     setCurrentTab("preview");
   };
 
   const handleEditArticle = (article: UserArticle) => {
     setSelectedArticleForEdit(article);
     setIsPreviewMode(false);
-    setGeneratedData({
+    const articleData = {
       title: article.title,
       passage: article.passage,
       summary: article.summary,
       imageDesc: article.imageDesc,
-    });
+    };
+    setGeneratedData(articleData);
+    // เซ็ต original content
+    setOriginalContent(articleData);
     setCurrentTab("preview");
   };
 
@@ -357,6 +503,9 @@ const AdminArticleCreation = () => {
     if (!selectedArticleForEdit || !generatedData) return;
 
     try {
+      setLoadingType("save");
+      setIsGenerating(true);
+
       const response = await fetch(
         `/api/v1/articles/generate/custom-generate/user-generated/${selectedArticleForEdit.id}`,
         {
@@ -374,23 +523,42 @@ const AdminArticleCreation = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to save article");
+        const errorData = await response.json();
+        throw new Error(errorData.details || "Failed to save article");
       }
+
+      // Complete the progress
+      setLoadingProgress(100);
+      setCurrentMessage("💾 Article saved successfully!");
+
+      // Small delay to show completion
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         title: "Success",
-        description: "Article saved successfully!",
+        description: "Article saved as draft successfully!",
       });
 
       // Refresh the articles list
-      fetchUserArticles();
+      await fetchUserArticles();
+
+      // Update local state และ original content
+      setSelectedArticleForEdit((prev) =>
+        prev
+          ? { ...prev, ...generatedData, updatedAt: new Date().toISOString() }
+          : null
+      );
+      setOriginalContent(generatedData);
     } catch (error) {
       console.error("Error saving article:", error);
       toast({
         title: "Error",
-        description: "Failed to save article",
+        description:
+          error instanceof Error ? error.message : "Failed to save article",
         variant: "destructive",
       });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -413,6 +581,114 @@ const AdminArticleCreation = () => {
     );
   };
 
+  const handleApprovePublishClick = () => {
+    setShowApprovePublishDialog(true);
+  };
+
+  const confirmApprovePublish = async () => {
+    setShowApprovePublishDialog(false);
+
+    if (hasContentChanged) {
+      // ถ้ามีการแก้ไข ใช้ handleApproveAndPublish
+      await handleApproveAndPublish();
+    } else {
+      // ถ้าไม่มีการแก้ไข ใช้ handleApprove
+      if (selectedArticleForEdit) {
+        setPendingApprovalId(selectedArticleForEdit.id);
+        await confirmApproval();
+      }
+    }
+  };
+
+  const cancelApprovePublish = () => {
+    setShowApprovePublishDialog(false);
+  };
+
+  const handleApproveAndPublish = async () => {
+    if (!selectedArticleForEdit || !generatedData) return;
+
+    try {
+      setLoadingType("approve");
+      setIsGenerating(true);
+
+      // First update the article with new data
+      const updateResponse = await fetch(
+        `/api/v1/articles/generate/custom-generate/user-generated/${selectedArticleForEdit.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: generatedData.title,
+            passage: generatedData.passage,
+            summary: generatedData.summary,
+            imageDesc: generatedData.imageDesc,
+          }),
+        }
+      );
+
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json();
+        throw new Error(errorData.details || "Failed to update article");
+      }
+
+      // Then approve the article
+      const approveResponse = await fetch(
+        "/api/v1/articles/generate/custom-generate/user-generated",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ articleId: selectedArticleForEdit.id }),
+        }
+      );
+
+      if (!approveResponse.ok) {
+        const errorData = await approveResponse.json();
+        throw new Error(errorData.details || "Failed to approve article");
+      }
+
+      // Complete the progress
+      setLoadingProgress(100);
+      setCurrentMessage("🎉 Article approved and published successfully!");
+
+      // Small delay to show completion
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      toast({
+        title: "Success",
+        description: "Article approved and published successfully!",
+      });
+
+      // Refresh the articles list
+      await fetchUserArticles();
+
+      // Update local state
+      setUserArticles((prev) =>
+        prev.map((article) =>
+          article.id === selectedArticleForEdit.id
+            ? { ...article, status: "approved", ...generatedData }
+            : article
+        )
+      );
+
+      // Go back to manage tab
+      setCurrentTab("manage");
+    } catch (error) {
+      console.error("Error approving article:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to approve article",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const currentGenres = articleType
     ? genres[articleType as keyof typeof genres] || []
     : [];
@@ -420,18 +696,113 @@ const AdminArticleCreation = () => {
     ? currentGenres.find((g) => g.value === genre)?.subgenres || []
     : [];
 
+  const isArticlePublished = (status: string) => {
+    return status === "approved" || status === "published";
+  };
+
   return (
     <div className="w-full mx-auto px-6 space-y-6">
+      {/* Approval Confirmation Dialog */}
+      <AlertDialog
+        open={showApprovalDialog}
+        onOpenChange={setShowApprovalDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Confirm Article Approval
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Are you sure you want to approve and publish this article?</p>
+              <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
+                <p className="text-sm text-orange-800 font-medium">
+                  ⚠️ Warning: Once published, this article cannot be edited or
+                  modified.
+                </p>
+                <p className="text-sm text-orange-700 mt-1">
+                  Please make sure all content is accurate and properly reviewed
+                  before proceeding.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelApproval}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmApproval}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              Yes, Approve & Publish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Approve & Publish Confirmation Dialog */}
+      <AlertDialog
+        open={showApprovePublishDialog}
+        onOpenChange={setShowApprovePublishDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              Approve & Publish Article
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>Are you sure you want to approve and publish this article?</p>
+
+              {hasContentChanged && (
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                  <p className="text-sm text-blue-800 font-medium">
+                    📝 Content Changes Detected
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Your changes will be saved and then the article will be
+                    published.
+                  </p>
+                </div>
+              )}
+
+              <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
+                <p className="text-sm text-orange-800 font-medium">
+                  ⚠️ Warning: Once published, this article cannot be edited or
+                  modified.
+                </p>
+                <p className="text-sm text-orange-700 mt-1">
+                  Please make sure all content is accurate and properly reviewed
+                  before proceeding.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelApprovePublish}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmApprovePublish}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {hasContentChanged ? "Save & Publish" : "Approve & Publish"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Loading Dialog */}
       <Dialog open={showLoadingDialog} onOpenChange={() => {}}>
         <DialogContent className="sm:max-w-md [&>button]:hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-center justify-center">
-              <Sparkles className="h-5 w-5 text-blue-500 animate-pulse" />
-              Generating Your Article
+              {getLoadingIcon()}
+              {getLoadingTitle()}
             </DialogTitle>
             <DialogDescription className="text-center">
-              Please wait while AI creates your amazing content...
+              {getLoadingDescription()}
             </DialogDescription>
           </DialogHeader>
 
@@ -439,8 +810,24 @@ const AdminArticleCreation = () => {
             {/* Animated AI Icon */}
             <div className="flex justify-center">
               <div className="relative">
-                <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />
-                <div className="absolute inset-0 rounded-full bg-blue-100 animate-pulse opacity-30"></div>
+                <Loader2
+                  className={`h-16 w-16 animate-spin ${
+                    loadingType === "generate"
+                      ? "text-blue-500"
+                      : loadingType === "save"
+                      ? "text-green-500"
+                      : "text-purple-500"
+                  }`}
+                />
+                <div
+                  className={`absolute inset-0 rounded-full animate-pulse opacity-30 ${
+                    loadingType === "generate"
+                      ? "bg-blue-100"
+                      : loadingType === "save"
+                      ? "bg-green-100"
+                      : "bg-purple-100"
+                  }`}
+                ></div>
               </div>
             </div>
 
@@ -448,7 +835,15 @@ const AdminArticleCreation = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Progress</span>
-                <span className="font-medium text-blue-600">
+                <span
+                  className={`font-medium ${
+                    loadingType === "generate"
+                      ? "text-blue-600"
+                      : loadingType === "save"
+                      ? "text-green-600"
+                      : "text-purple-600"
+                  }`}
+                >
                   {Math.round(loadingProgress)}%
                 </span>
               </div>
@@ -464,13 +859,33 @@ const AdminArticleCreation = () => {
 
             {/* Animated Dots */}
             <div className="flex justify-center space-x-1">
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
               <div
-                className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                className={`w-2 h-2 rounded-full animate-bounce ${
+                  loadingType === "generate"
+                    ? "bg-blue-400"
+                    : loadingType === "save"
+                    ? "bg-green-400"
+                    : "bg-purple-400"
+                }`}
+              ></div>
+              <div
+                className={`w-2 h-2 rounded-full animate-bounce ${
+                  loadingType === "generate"
+                    ? "bg-blue-400"
+                    : loadingType === "save"
+                    ? "bg-green-400"
+                    : "bg-purple-400"
+                }`}
                 style={{ animationDelay: "0.1s" }}
               ></div>
               <div
-                className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                className={`w-2 h-2 rounded-full animate-bounce ${
+                  loadingType === "generate"
+                    ? "bg-blue-400"
+                    : loadingType === "save"
+                    ? "bg-green-400"
+                    : "bg-purple-400"
+                }`}
                 style={{ animationDelay: "0.2s" }}
               ></div>
             </div>
@@ -479,21 +894,24 @@ const AdminArticleCreation = () => {
             <div className="grid grid-cols-3 gap-4 text-center text-xs text-gray-500 pt-2 border-t">
               <div>
                 <div className="font-medium text-gray-700">Type</div>
-                <div className="capitalize">{articleType}</div>
+                <div className="capitalize">
+                  {selectedArticleForEdit?.type || articleType}
+                </div>
               </div>
               <div>
                 <div className="font-medium text-gray-700">Level</div>
-                <div>{cefrLevel}</div>
+                <div>{selectedArticleForEdit?.cefr_level || cefrLevel}</div>
               </div>
               <div>
                 <div className="font-medium text-gray-700">Words</div>
-                <div>~{wordCount}</div>
+                <div>~{selectedArticleForEdit?.wordCount || wordCount}</div>
               </div>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Header */}
       <div className="text-start space-y-2">
         <h1 className="text-4xl font-bold">Article Creation & Management</h1>
         <p className="text-gray-600">
@@ -501,6 +919,7 @@ const AdminArticleCreation = () => {
         </p>
       </div>
 
+      {/* Main Content */}
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="create">Create Article</TabsTrigger>
@@ -662,13 +1081,20 @@ const AdminArticleCreation = () => {
           </Card>
         </TabsContent>
 
-        {/* Preview & Edit Tab - Updated */}
+        {/* Preview & Edit Tab */}
         <TabsContent value="preview" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5 text-green-500" />
                 {isPreviewMode ? "Article Preview" : "Article Editor"}
+                {/* เพิ่ม indicator สำหรับการเปลี่ยนแปลง */}
+                {hasContentChanged && !isPreviewMode && (
+                  <Badge variant="secondary" className="ml-2">
+                    <Edit3 className="h-3 w-3 mr-1" />
+                    Modified
+                  </Badge>
+                )}
               </CardTitle>
               <CardDescription>
                 {isPreviewMode
@@ -687,7 +1113,7 @@ const AdminArticleCreation = () => {
                       Genre: {selectedArticleForEdit?.genre || genre}
                     </Badge>
                     <Badge variant="outline">
-                      Level: {selectedArticleForEdit?.cefrLevel || cefrLevel}
+                      Level: {selectedArticleForEdit?.cefr_level || cefrLevel}
                     </Badge>
                     <Badge variant="outline">
                       Words: {selectedArticleForEdit?.wordCount || wordCount}
@@ -796,7 +1222,6 @@ const AdminArticleCreation = () => {
                   </div>
 
                   <Separator />
-
                   <div className="flex gap-3">
                     {isPreviewMode ? (
                       <>
@@ -806,14 +1231,20 @@ const AdminArticleCreation = () => {
                         >
                           Back to Manage
                         </Button>
-                        <Button
-                          onClick={() => {
-                            setIsPreviewMode(false);
-                          }}
-                        >
-                          <Edit3 className="h-4 w-4 mr-2" />
-                          Switch to Edit Mode
-                        </Button>
+                        {/* Only show Edit button if article is not published */}
+                        {selectedArticleForEdit &&
+                          !isArticlePublished(
+                            selectedArticleForEdit.status
+                          ) && (
+                            <Button
+                              onClick={() => {
+                                setIsPreviewMode(false);
+                              }}
+                            >
+                              <Edit3 className="h-4 w-4 mr-2" />
+                              Switch to Edit Mode
+                            </Button>
+                          )}
                       </>
                     ) : (
                       <>
@@ -832,17 +1263,33 @@ const AdminArticleCreation = () => {
                             : "Preview Mode"}
                         </Button>
                         {selectedArticleForEdit ? (
-                          <Button onClick={() => handleApprove(selectedArticleForEdit.id)}>
-                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                          <Button
+                            onClick={handleApprovePublishClick}
+                            disabled={isGenerating}
+                          >
+                            {isGenerating && loadingType === "approve" ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="h-4 w-4 mr-2" />
+                            )}
                             Approve & Publish
                           </Button>
                         ) : (
-                          <Button>
+                          <Button onClick={handleApprovePublishClick}>
                             <CheckCircle2 className="h-4 w-4 mr-2" />
                             Approve & Publish
                           </Button>
                         )}
-                        <Button onClick={handleSaveArticle} variant="outline">
+                        <Button
+                          onClick={handleSaveArticle}
+                          variant="outline"
+                          disabled={isGenerating}
+                        >
+                          {isGenerating && loadingType === "save" ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Save className="h-4 w-4 mr-2" />
+                          )}
                           Save as Draft
                         </Button>
                       </>
@@ -920,7 +1367,7 @@ const AdminArticleCreation = () => {
                         {getStatusBadge(article.status as ArticleStatus)}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span>CEFR: {article.cefrLevel}</span>
+                        <span>CEFR: {article.cefr_level}</span>
                         <span>Rating: {article.rating}/5</span>
                         <span>
                           Created:{" "}
@@ -936,14 +1383,17 @@ const AdminArticleCreation = () => {
                           <Eye className="h-3 w-3 mr-1" />
                           Preview
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditArticle(article)}
-                        >
-                          <Edit3 className="h-3 w-3 mr-1" />
-                          Edit
-                        </Button>
+                        {/* Only show Edit button if article is not published */}
+                        {!isArticlePublished(article.status) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditArticle(article)}
+                          >
+                            <Edit3 className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                        )}
                         {article.status === "draft" && (
                           <Button
                             size="sm"

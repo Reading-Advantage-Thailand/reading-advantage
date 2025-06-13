@@ -20,11 +20,7 @@ const router = createEdgeRouter<NextRequest, Context>();
 router.use(logRequest);
 router.use(protect);
 
-router.get(getUserGeneratedArticles);
-router.post(approveUserArticle);
+router.put(updateUserArticle);
 
-export const GET = (request: NextRequest, ctx: Context) =>
-  handleRequest(router, request, ctx);
-
-export const POST = (request: NextRequest, ctx: Context) =>
+export const PUT = (request: NextRequest, ctx: Context) =>
   handleRequest(router, request, ctx);

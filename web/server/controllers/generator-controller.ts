@@ -30,6 +30,12 @@ interface GenerateArticleRequest {
   wordCount: number;
 }
 
+interface Context {
+  params?: {
+    articleId?: string;
+  };
+}
+
 // Function to generate queue
 export async function generateQueue(req: ExtendedNextRequest) {
   try {
@@ -699,7 +705,7 @@ export async function generateUserArticle(req: NextRequest) {
       genre,
       subgenre: subgenre || "",
       topic,
-      cefrLevel: calculatedCefrLevel,
+      cefr_level: calculatedCefrLevel,
       raLevel,
       wordCount: generatedArticle.passage.split(" ").length,
       targetWordCount: wordCount,
@@ -910,6 +916,7 @@ export async function approveUserArticle(req: NextRequest) {
       read_count: 0,
       created_at: articleData.createdAt,
       updated_at: new Date().toISOString(),
+      ...(articleData.timepoints && { timepoints: articleData.timepoints }),
     };
 
     await newArticleRef.set(newArticleData);
@@ -1014,6 +1021,296 @@ export async function getUserGeneratedArticles(req: NextRequest) {
   }
 }
 
+export async function updateUserArticle(
+  req: NextRequest,
+  { params }: Context
+): Promise<NextResponse> {
+  try {
+    const articleId = params?.articleId;
+
+    if (!articleId) {
+      return NextResponse.json(
+        { error: "articleId is required" },
+        { status: 400 }
+      );
+    }
+    console.log(`Starting article update for ID: ${articleId}`);
+
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      console.log("Unauthorized access attempt");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    console.log(`User ID: ${userId}`);
+
+    // Parse request body
+    const { title, passage, summary, imageDesc } = await req.json();
+    if (!title || !passage || !summary || !imageDesc) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Get the existing article
+    const articleRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("generated-articles")
+      .doc(articleId);
+
+    const articleDoc = await articleRef.get();
+    if (!articleDoc.exists) {
+      return NextResponse.json({ error: "Article not found" }, { status: 404 });
+    }
+
+    const existingData = articleDoc.data();
+    if (!existingData) {
+      return NextResponse.json(
+        { error: "Article data is invalid" },
+        { status: 400 }
+      );
+    }
+
+    console.log(
+      "Existing article found, starting update process...",
+      existingData
+    );
+
+    // 1. Clean up existing bucket files
+    console.log("Cleaning up existing bucket files...");
+    await cleanupStorageFiles(articleId, userId);
+
+    // 2. Recalculate levels based on new passage
+    console.log("Recalculating levels...");
+    const normalizedCefrLevel = existingData.cefrLevel
+      .replace("+", "")
+      .toLowerCase();
+    console.log(
+      `Normalized CEFR level: ${normalizedCefrLevel} (from ${existingData.cefrLevel})`
+    );
+
+    const { raLevel, cefrLevel: calculatedCefrLevel } = calculateLevel(
+      passage,
+      normalizedCefrLevel
+    );
+
+    // 3. Re-evaluate rating
+    console.log("Re-evaluating rating...");
+    const evaluatedRating = await evaluateRating({
+      title: title,
+      summary: summary,
+      type: existingData.type,
+      image_description: imageDesc,
+      passage: passage,
+      cefrLevel: existingData.cefrLevel,
+    });
+
+    // 4. Update article data
+    const updatedData = {
+      title,
+      passage,
+      summary,
+      imageDesc,
+      cefr_level: calculatedCefrLevel,
+      raLevel,
+      wordCount: passage.split(" ").length,
+      rating: evaluatedRating.rating,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await articleRef.update(updatedData);
+    console.log("Article data updated in Firestore");
+
+    // 5. Regenerate all content
+    console.log("Regenerating content...");
+
+    // Delete existing subcollections
+    const subcollections = [
+      "mc-questions",
+      "sa-questions",
+      "la-questions",
+      "word-list",
+    ];
+    for (const subcollectionName of subcollections) {
+      const subcollectionRef = articleRef.collection(subcollectionName);
+      const snapshot = await subcollectionRef.get();
+
+      const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
+      await Promise.all(deletePromises);
+      console.log(`Deleted existing ${subcollectionName}`);
+    }
+
+    // Generate new image
+    console.log("Generating new image...");
+    await generateImage({
+      imageDesc: imageDesc,
+      articleId: articleId,
+    });
+
+    // Generate new questions
+    console.log("Generating new questions...");
+    const [mcq, saq, laq] = await Promise.all([
+      generateMCQuestion({
+        type: existingData.type,
+        cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
+        passage: passage,
+        title: title,
+        summary: summary,
+        imageDesc: imageDesc,
+      }),
+      generateSAQuestion({
+        type: existingData.type,
+        cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
+        passage: passage,
+        title: title,
+        summary: summary,
+        imageDesc: imageDesc,
+      }),
+      generateLAQuestion({
+        type: existingData.type,
+        cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
+        passage: passage,
+        title: title,
+        summary: summary,
+        imageDesc: imageDesc,
+      }),
+    ]);
+
+    // Generate new word list
+    console.log("Generating new word list...");
+    const wordList = await generateWordList({
+      passage: passage,
+    });
+
+    // Save new questions and word list
+    console.log("Saving new questions and word list...");
+    await Promise.all([
+      addUserQuestionsToCollection(
+        userId,
+        articleId,
+        "mc-questions",
+        mcq.questions
+      ),
+      addUserQuestionsToCollection(
+        userId,
+        articleId,
+        "sa-questions",
+        saq.questions
+      ),
+      addUserQuestionsToCollection(userId, articleId, "la-questions", [laq]),
+      addUserWordList(
+        userId,
+        articleId,
+        wordList.word_list,
+        updatedData.updatedAt
+      ),
+    ]);
+
+    // Generate new audio
+    console.log("Generating new audio...");
+    await Promise.all([
+      generateAudio({
+        passage: passage,
+        articleId: articleId,
+        isUserGenerated: true,
+        userId: userId,
+      }),
+      generateAudioForWord({
+        wordList: wordList.word_list,
+        articleId: articleId,
+        isUserGenerated: true,
+        userId: userId,
+      }),
+    ]);
+
+    console.log("Article update completed successfully");
+
+    return NextResponse.json({
+      message: "Article updated successfully",
+      articleId: articleId,
+      ...updatedData,
+    });
+  } catch (error) {
+    console.error("Error updating article:", error);
+    console.error(
+      "Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+
+    return NextResponse.json(
+      {
+        error: "Failed to update article",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+async function cleanupStorageFiles(articleId: string, userId?: string) {
+  try {
+    // Import Firebase Admin Storage
+    const { getStorage } = await import("firebase-admin/storage");
+    // ระบุ bucket name โดยตรง
+    const bucket = getStorage().bucket(
+      "artifacts.reading-advantage.appspot.com"
+    );
+
+    // File paths for user-generated content and regular content
+    const basePaths = [
+      // Regular paths
+      `images/${articleId}`,
+      `tts/${articleId}`,
+      // User-generated paths (if userId provided)
+      ...(userId
+        ? [
+            `users/${userId}/images/${articleId}`,
+            `users/${userId}/tts/${articleId}`,
+          ]
+        : []),
+    ];
+
+    const fileExtensions = [".png", ".mp3"];
+
+    for (const basePath of basePaths) {
+      for (const ext of fileExtensions) {
+        try {
+          const filePath = basePath + ext;
+          const file = bucket.file(filePath);
+          const [exists] = await file.exists();
+          if (exists) {
+            await file.delete();
+            console.log(`Deleted file: ${filePath}`);
+          }
+        } catch (fileError) {
+          // File might not exist, continue
+          console.log(`Could not delete file: ${basePath}${ext}`);
+        }
+      }
+
+      // Also try to delete directories
+      try {
+        const [files] = await bucket.getFiles({ prefix: `${basePath}/` });
+        if (files.length > 0) {
+          const deletePromises = files.map((file) => file.delete());
+          await Promise.all(deletePromises);
+          console.log(
+            `Deleted ${files.length} files in directory: ${basePath}/`
+          );
+        }
+      } catch (dirError) {
+        console.log(`Could not delete directory: ${basePath}/`);
+      }
+    }
+  } catch (storageError) {
+    console.error("Error cleaning up storage files:", storageError);
+  }
+}
+
 async function cleanupFailedGeneration(userId: string, articleId: string) {
   try {
     console.log(`Cleaning up failed generation for article: ${articleId}`);
@@ -1054,60 +1351,6 @@ async function cleanupFailedGeneration(userId: string, articleId: string) {
   } catch (cleanupError) {
     console.error("Error during cleanup:", cleanupError);
     // Log cleanup error but don't throw to avoid masking original error
-  }
-}
-
-async function cleanupStorageFiles(articleId: string) {
-  try {
-    // Import Firebase Admin Storage
-    const { getStorage } = await import("firebase-admin/storage");
-    const bucket = getStorage().bucket();
-
-    // File paths based on your folder structure: tts and images with articleId as filename
-    const filePaths = [
-      // Images folder
-      `images/${articleId}`,
-      `images/${articleId}.jpg`,
-      `images/${articleId}.png`,
-      `images/${articleId}.webp`,
-      `images/${articleId}.jpeg`,
-      // TTS folder
-      `tts/${articleId}`,
-      `tts/${articleId}.mp3`,
-      `tts/${articleId}.wav`,
-      `tts/${articleId}.m4a`,
-      // Word audio files might be in subdirectories
-      `tts/${articleId}/`,
-    ];
-
-    for (const filePath of filePaths) {
-      try {
-        if (filePath.endsWith("/")) {
-          // Delete directory and all files inside
-          const [files] = await bucket.getFiles({ prefix: filePath });
-          if (files.length > 0) {
-            const deletePromises = files.map((file) => file.delete());
-            await Promise.all(deletePromises);
-            console.log(
-              `Deleted ${files.length} files in directory: ${filePath}`
-            );
-          }
-        } else {
-          // Delete individual file
-          const file = bucket.file(filePath);
-          const [exists] = await file.exists();
-          if (exists) {
-            await file.delete();
-            console.log(`Deleted file: ${filePath}`);
-          }
-        }
-      } catch (fileError) {
-        // File might not exist, continue with other files
-        console.log(`Could not delete ${filePath}: File may not exist`);
-      }
-    }
-  } catch (storageError) {
-    console.error("Error cleaning up storage files:", storageError);
   }
 }
 
