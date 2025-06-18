@@ -282,7 +282,7 @@ const AdminArticleCreation = () => {
             return {
               interval: 1000,
               increment: () => {
-                return Math.random() * 2 + 0.2;
+                return Math.random() * 1.5 + 0.4;
               },
             };
           case "save":
@@ -487,11 +487,9 @@ const AdminArticleCreation = () => {
 
       const data = await response.json();
 
-      // Complete the progress
       setLoadingProgress(100);
       setCurrentMessage("🎉 Article generated successfully!");
 
-      // Small delay to show completion
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const newGeneratedData = {
@@ -502,7 +500,6 @@ const AdminArticleCreation = () => {
       };
 
       setGeneratedData(newGeneratedData);
-      // เซ็ต original content เป็นเนื้อหาที่เพิ่งสร้าง
       setOriginalContent(newGeneratedData);
       setCurrentTab("preview");
 
@@ -1301,30 +1298,6 @@ const AdminArticleCreation = () => {
                         readOnly={isPreviewMode}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="image-description"
-                        className="text-sm sm:text-base font-medium"
-                      >
-                        {t("imageDescription")}
-                      </Label>
-                      <Textarea
-                        id="image-description"
-                        value={generatedData?.imageDesc || ""}
-                        onChange={(e) =>
-                          !isPreviewMode &&
-                          setGeneratedData((prev) =>
-                            prev ? { ...prev, imageDesc: e.target.value } : null
-                          )
-                        }
-                        placeholder="Describe the image for this article..."
-                        rows={3}
-                        className={`text-sm ${
-                          isPreviewMode ? "text-gray-400" : ""
-                        }`}
-                        readOnly={isPreviewMode}
-                      />
-                    </div>
                   </div>
 
                   <Separator />
@@ -1338,7 +1311,6 @@ const AdminArticleCreation = () => {
                         >
                           {t("backToManage")}
                         </Button>
-                        {/* Only show Edit button if article is not published */}
                         {selectedArticleForEdit &&
                           !isArticlePublished(
                             selectedArticleForEdit.status
@@ -1511,7 +1483,6 @@ const AdminArticleCreation = () => {
                             <Eye className="h-3 w-3 mr-1" />
                             {t("preview")}
                           </Button>
-                          {/* Only show Edit button if article is not published */}
                           {!isArticlePublished(article.status) && (
                             <Button
                               size="sm"
