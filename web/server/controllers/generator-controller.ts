@@ -1,5 +1,5 @@
 import db from "@/configs/firestore-config";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { ExtendedNextRequest } from "./auth-controller";
 import { sendDiscordWebhook } from "../utils/send-discord-webhook";
 import { randomSelectGenre } from "../utils/generators/random-select-genre";
@@ -18,6 +18,23 @@ import { generateImage } from "../utils/generators/image-generator";
 import { calculateLevel } from "@/lib/calculateLevel";
 import { generateWordList } from "../utils/generators/word-list-generator";
 import { generateAudioForWord } from "../utils/generators/audio-words-generator";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+interface GenerateArticleRequest {
+  type: string;
+  genre: string;
+  subgenre?: string;
+  topic: string;
+  cefrLevel: string;
+  wordCount: number;
+}
+
+interface Context {
+  params?: {
+    articleId?: string;
+  };
+}
 
 // Function to generate queue
 export async function generateQueue(req: ExtendedNextRequest) {
@@ -584,4 +601,873 @@ async function evaluateArticle(
   throw new Error(
     `Failed to generate a suitable article after ${maxAttempts} attempts.`
   );
+}
+
+export async function generateUserArticle(req: NextRequest) {
+  let articleRef: any = null;
+  let userId: string = "";
+
+  try {
+    //console.log("Starting user article generation...");
+
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      //console.log("Unauthorized access attempt");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    userId = session.user.id;
+    //console.log(`User ID: ${userId}`);
+
+    // Get user data to fetch license_id
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const userData = userDoc.data();
+    let author = "Unknown Author";
+
+    // Fetch school name from licenses collection if user has license_id
+    if (userData?.license_id) {
+      const licenseDoc = await db
+        .collection("licenses")
+        .doc(userData.license_id)
+        .get();
+      if (licenseDoc.exists) {
+        const licenseData = licenseDoc.data();
+        author = licenseData?.school_name || "Unknown School";
+      }
+    }
+
+    // Parse request body
+    const body: GenerateArticleRequest = await req.json();
+    const { type, genre, subgenre, topic, cefrLevel, wordCount } = body;
+    //console.log("Request parameters:", {
+    //  type,
+    //  genre,
+    //  subgenre,
+    //  topic,
+    //  cefrLevel,
+    //  wordCount,
+    //});
+
+    // Validate required fields
+    if (!type || !genre || !topic || !cefrLevel) {
+      //console.log("Missing required fields:", {
+      //  type,
+      //  genre,
+      //  topic,
+      //  cefrLevel,
+      //});
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Convert string values to enums
+    const articleType =
+      type.toLowerCase() === "fiction"
+        ? ArticleType.FICTION
+        : ArticleType.NONFICTION;
+
+    const cefrLevelEnum = cefrLevel as ArticleBaseCefrLevel;
+    //console.log(`Article type: ${articleType}, CEFR level: ${cefrLevelEnum}`);
+
+    // Generate article
+    //console.log("Generating article...");
+    const generatedArticle = await generateArticle({
+      type: articleType,
+      genre,
+      subgenre: subgenre || "",
+      topic,
+      cefrLevel: cefrLevelEnum,
+    });
+    //console.log("Article generated successfully");
+
+    // Evaluate rating
+    //console.log("Evaluating article rating...");
+    const evaluatedRating = await evaluateRating({
+      title: generatedArticle.title,
+      summary: generatedArticle.summary,
+      type: articleType,
+      image_description: generatedArticle.imageDesc,
+      passage: generatedArticle.passage,
+      cefrLevel: cefrLevelEnum,
+    });
+    //console.log(`Article rating: ${evaluatedRating.rating}`);
+
+    // Calculate levels
+    //console.log("Calculating levels...");
+    const { raLevel, cefrLevel: calculatedCefrLevel } = calculateLevel(
+      generatedArticle.passage,
+      cefrLevelEnum
+    );
+    //console.log(
+    //  `Calculated CEFR level: ${calculatedCefrLevel}, RA level: ${raLevel}`
+    //);
+
+    // Create article document
+    articleRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("generated-articles")
+      .doc();
+
+    const articleData = {
+      id: articleRef.id,
+      title: generatedArticle.title,
+      passage: generatedArticle.passage,
+      summary: generatedArticle.summary,
+      imageDesc: generatedArticle.imageDesc,
+      type: articleType,
+      genre,
+      subgenre: subgenre || "",
+      topic,
+      cefr_level: calculatedCefrLevel,
+      raLevel,
+      wordCount: generatedArticle.passage.split(" ").length,
+      targetWordCount: wordCount,
+      rating: evaluatedRating.rating,
+      status: "draft",
+      author, // Add author field
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    //console.log(`Saving article to Firestore with ID: ${articleRef.id}`);
+    //console.log(`Word count: ${articleData.wordCount}, Target: ${wordCount}`);
+    //console.log(`Author: ${author}`);
+
+    // Save to Firestore
+    await articleRef.set(articleData);
+    //console.log("Article saved successfully to Firestore");
+
+    // Generate additional content
+    //console.log("Generating additional content...");
+
+    // Generate Image
+    //console.log("Generating image...");
+    await generateImage({
+      imageDesc: generatedArticle.imageDesc,
+      articleId: articleRef.id,
+    });
+    //console.log("Image generated successfully");
+
+    // Generate Questions
+    //console.log("Generating questions...");
+    const [mcq, saq, laq] = await Promise.all([
+      generateMCQuestion({
+        type: articleType,
+        cefrlevel: cefrLevelEnum,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      }),
+      generateSAQuestion({
+        type: articleType,
+        cefrlevel: cefrLevelEnum,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      }),
+      generateLAQuestion({
+        type: articleType,
+        cefrlevel: cefrLevelEnum,
+        passage: generatedArticle.passage,
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        imageDesc: generatedArticle.imageDesc,
+      }),
+    ]);
+    //console.log("Questions generated successfully");
+
+    // Generate Word List
+    //console.log("Generating word list...");
+    const wordList = await generateWordList({
+      passage: generatedArticle.passage,
+    });
+    //console.log("Word list generated successfully");
+
+    // Save questions and word list to user's article subcollections
+    //console.log("Saving questions and word list...");
+    await Promise.all([
+      addUserQuestionsToCollection(
+        userId,
+        articleRef.id,
+        "mc-questions",
+        mcq.questions
+      ),
+      addUserQuestionsToCollection(
+        userId,
+        articleRef.id,
+        "sa-questions",
+        saq.questions
+      ),
+      addUserQuestionsToCollection(userId, articleRef.id, "la-questions", [
+        laq,
+      ]),
+      addUserWordList(
+        userId,
+        articleRef.id,
+        wordList.word_list,
+        articleData.createdAt
+      ),
+    ]);
+    //console.log("Questions and word list saved successfully");
+
+    // Generate Audio
+    //console.log("Generating audio...");
+    await Promise.all([
+      generateAudio({
+        passage: generatedArticle.passage,
+        articleId: articleRef.id,
+        isUserGenerated: true,
+        userId: userId,
+      }),
+      generateAudioForWord({
+        wordList: wordList.word_list,
+        articleId: articleRef.id,
+        isUserGenerated: true,
+        userId: userId,
+      }),
+    ]);
+    //console.log("Audio generated successfully");
+
+    // Return the generated article
+    //console.log("Returning generated article response");
+    return NextResponse.json({
+      id: articleRef.id,
+      title: generatedArticle.title,
+      passage: generatedArticle.passage,
+      summary: generatedArticle.summary,
+      imageDesc: generatedArticle.imageDesc,
+      rating: evaluatedRating.rating,
+      cefrLevel: calculatedCefrLevel,
+      raLevel,
+      wordCount: articleData.wordCount,
+      author, // Include author in response
+    });
+  } catch (error) {
+    console.error("Error generating user article:", error);
+    console.error(
+      "Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+
+    // Cleanup on error
+    if (articleRef && userId) {
+      //console.log("Starting cleanup process...");
+      await cleanupFailedGeneration(userId, articleRef.id);
+    }
+
+    return NextResponse.json(
+      {
+        error: "Failed to generate article",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function approveUserArticle(req: NextRequest) {
+  try {
+    //console.log("Starting article approval process...");
+
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      //console.log("Unauthorized access attempt");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    //console.log(`User ID: ${userId}`);
+
+    // Parse request body
+    const { articleId } = await req.json();
+    if (!articleId) {
+      return NextResponse.json(
+        { error: "Article ID is required" },
+        { status: 400 }
+      );
+    }
+
+    //console.log(`Approving article: ${articleId}`);
+
+    // Get the user's generated article
+    const userArticleRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("generated-articles")
+      .doc(articleId);
+
+    const userArticleDoc = await userArticleRef.get();
+    if (!userArticleDoc.exists) {
+      return NextResponse.json({ error: "Article not found" }, { status: 404 });
+    }
+
+    const articleData = userArticleDoc.data();
+    if (!articleData) {
+      return NextResponse.json(
+        { error: "Article data is invalid" },
+        { status: 400 }
+      );
+    }
+
+    //console.log("Article found, starting approval process...",articleData);
+
+    // 1. Copy article to new-articles collection (including author)
+    const newArticleRef = db.collection("new-articles").doc(articleId);
+    const newArticleData = {
+      id: articleId,
+      title: articleData.title,
+      passage: articleData.passage,
+      summary: articleData.summary,
+      image_description: articleData.imageDesc,
+      type: articleData.type,
+      genre: articleData.genre,
+      subgenre: articleData.subgenre,
+      topic: articleData.topic,
+      cefr_level: articleData.cefr_level,
+      ra_level: articleData.raLevel,
+      average_rating: articleData.rating,
+      read_count: 0,
+      author: articleData.author, // Include author field
+      created_at: articleData.createdAt,
+      updated_at: new Date().toISOString(),
+      ...(articleData.timepoints && { timepoints: articleData.timepoints }),
+    };
+
+    await newArticleRef.set(newArticleData);
+    //console.log("Article copied to new-articles collection");
+
+    // 2. Copy questions subcollections
+    const questionTypes = ["mc-questions", "sa-questions", "la-questions"];
+
+    for (const questionType of questionTypes) {
+      const userQuestionsRef = userArticleRef.collection(questionType);
+      const userQuestionsSnapshot = await userQuestionsRef.get();
+
+      if (!userQuestionsSnapshot.empty) {
+        const newQuestionsRef = newArticleRef.collection(questionType);
+        const batch = db.batch();
+
+        userQuestionsSnapshot.docs.forEach((doc) => {
+          const newQuestionRef = newQuestionsRef.doc(doc.id);
+          batch.set(newQuestionRef, doc.data());
+        });
+
+        await batch.commit();
+        //console.log(`Copied ${questionType} to new-articles`);
+      }
+    }
+
+    // 3. Move word list to main word-list collection
+    const userWordListRef = userArticleRef
+      .collection("word-list")
+      .doc(articleId);
+    const userWordListDoc = await userWordListRef.get();
+
+    if (userWordListDoc.exists) {
+      const wordListData = userWordListDoc.data();
+      if (wordListData) {
+        const mainWordListRef = db.collection("word-list").doc(articleId);
+        await mainWordListRef.set(wordListData);
+        //console.log("Word list moved to main collection");
+      }
+    }
+
+    // 4. Update user's article status to approved
+    await userArticleRef.update({
+      status: "approved",
+      approvedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    //console.log("Article approval process completed successfully");
+
+    return NextResponse.json({
+      message: "Article approved successfully",
+      articleId: articleId,
+    });
+  } catch (error) {
+    console.error("Error approving article:", error);
+    console.error(
+      "Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+
+    return NextResponse.json(
+      {
+        error: "Failed to approve article",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getUserGeneratedArticles(req: NextRequest) {
+  try {
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
+    // Get user's generated articles
+    const articlesRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("generated-articles");
+
+    const snapshot = await articlesRef.orderBy("createdAt", "desc").get();
+
+    const articles = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json({ articles });
+  } catch (error) {
+    console.error("Error fetching user articles:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch articles" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function updateUserArticle(
+  req: NextRequest,
+  { params }: Context
+): Promise<NextResponse> {
+  try {
+    const articleId = params?.articleId;
+
+    if (!articleId) {
+      return NextResponse.json(
+        { error: "articleId is required" },
+        { status: 400 }
+      );
+    }
+    //console.log(`Starting article update for ID: ${articleId}`);
+
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      //console.log("Unauthorized access attempt");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    //console.log(`User ID: ${userId}`);
+
+    // Parse request body
+    const { title, passage, summary, imageDesc } = await req.json();
+    if (!title || !passage || !summary || !imageDesc) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Get the existing article
+    const articleRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("generated-articles")
+      .doc(articleId);
+
+    const articleDoc = await articleRef.get();
+    if (!articleDoc.exists) {
+      return NextResponse.json({ error: "Article not found" }, { status: 404 });
+    }
+
+    const existingData = articleDoc.data();
+    if (!existingData) {
+      return NextResponse.json(
+        { error: "Article data is invalid" },
+        { status: 400 }
+      );
+    }
+
+    //console.log(
+    //  "Existing article found, starting update process...",
+    //  existingData
+    //);
+
+    // 1. Clean up existing audio files only (not images)
+    //console.log("Cleaning up existing audio files...");
+    await cleanupAudioFiles(articleId, userId);
+
+    // 2. Recalculate levels based on new passage
+    //console.log("Recalculating levels...");
+    const normalizedCefrLevel = (
+      existingData.cefr_level || existingData.cefrLevel
+    )
+      ?.replace("+", "")
+      ?.toLowerCase();
+
+    if (!normalizedCefrLevel) {
+      return NextResponse.json(
+        { error: "CEFR level not found in article data" },
+        { status: 400 }
+      );
+    }
+    //console.log(
+    //  `Normalized CEFR level: ${normalizedCefrLevel} (from ${existingData.cefrLevel})`
+    //);
+
+    const { raLevel, cefrLevel: calculatedCefrLevel } = calculateLevel(
+      passage,
+      normalizedCefrLevel
+    );
+
+    // 3. Update article data (preserve author field and existing rating)
+    const updatedData = {
+      title,
+      passage,
+      summary,
+      imageDesc,
+      cefr_level: calculatedCefrLevel,
+      raLevel,
+      wordCount: passage.split(" ").length,
+      rating: existingData.rating,
+      author: existingData.author,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await articleRef.update(updatedData);
+    //console.log("Article data updated in Firestore");
+
+    // 4. Regenerate questions and word list only
+    //console.log("Regenerating questions and word list...");
+
+    // Delete existing subcollections (except images)
+    const subcollections = [
+      "mc-questions",
+      "sa-questions",
+      "la-questions",
+      "word-list",
+    ];
+    for (const subcollectionName of subcollections) {
+      const subcollectionRef = articleRef.collection(subcollectionName);
+      const snapshot = await subcollectionRef.get();
+
+      const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
+      await Promise.all(deletePromises);
+      //console.log(`Deleted existing ${subcollectionName}`);
+    }
+
+    // Generate new questions
+    //console.log("Generating new questions...");
+    const [mcq, saq, laq] = await Promise.all([
+      generateMCQuestion({
+        type: existingData.type,
+        cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
+        passage: passage,
+        title: title,
+        summary: summary,
+        imageDesc: imageDesc,
+      }),
+      generateSAQuestion({
+        type: existingData.type,
+        cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
+        passage: passage,
+        title: title,
+        summary: summary,
+        imageDesc: imageDesc,
+      }),
+      generateLAQuestion({
+        type: existingData.type,
+        cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
+        passage: passage,
+        title: title,
+        summary: summary,
+        imageDesc: imageDesc,
+      }),
+    ]);
+
+    // Generate new word list
+    //console.log("Generating new word list...");
+    const wordList = await generateWordList({
+      passage: passage,
+    });
+
+    // Save new questions and word list
+    //console.log("Saving new questions and word list...");
+    await Promise.all([
+      addUserQuestionsToCollection(
+        userId,
+        articleId,
+        "mc-questions",
+        mcq.questions
+      ),
+      addUserQuestionsToCollection(
+        userId,
+        articleId,
+        "sa-questions",
+        saq.questions
+      ),
+      addUserQuestionsToCollection(userId, articleId, "la-questions", [laq]),
+      addUserWordList(
+        userId,
+        articleId,
+        wordList.word_list,
+        updatedData.updatedAt
+      ),
+    ]);
+
+    // Generate new audio only (not images)
+    //console.log("Generating new audio...");
+    await Promise.all([
+      generateAudio({
+        passage: passage,
+        articleId: articleId,
+        isUserGenerated: true,
+        userId: userId,
+      }),
+      generateAudioForWord({
+        wordList: wordList.word_list,
+        articleId: articleId,
+        isUserGenerated: true,
+        userId: userId,
+      }),
+    ]);
+
+    //console.log("Article update completed successfully");
+
+    return NextResponse.json({
+      message: "Article updated successfully",
+      articleId: articleId,
+      ...updatedData,
+    });
+  } catch (error) {
+    console.error("Error updating article:", error);
+    console.error(
+      "Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+
+    return NextResponse.json(
+      {
+        error: "Failed to update article",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+async function cleanupAudioFiles(articleId: string, userId?: string) {
+  try {
+    // Import Firebase Admin Storage
+    const { getStorage } = await import("firebase-admin/storage");
+    // ระบุ bucket name โดยตรง
+    const bucket = getStorage().bucket(
+      "artifacts.reading-advantage.appspot.com"
+    );
+
+    // Audio file paths only (not images)
+    const basePaths = [
+      // Regular audio paths
+      `tts/${articleId}`,
+      // User-generated audio paths (if userId provided)
+      ...(userId
+        ? [
+            `users/${userId}/tts/${articleId}`,
+          ]
+        : []),
+    ];
+
+    const audioExtensions = [".mp3"];
+
+    for (const basePath of basePaths) {
+      for (const ext of audioExtensions) {
+        try {
+          const filePath = basePath + ext;
+          const file = bucket.file(filePath);
+          const [exists] = await file.exists();
+          if (exists) {
+            await file.delete();
+            //console.log(`Deleted audio file: ${filePath}`);
+          }
+        } catch (fileError) {
+          // File might not exist, continue
+          //console.log(`Could not delete audio file: ${basePath}${ext}`);
+        }
+      }
+
+      // Also try to delete audio directories
+      try {
+        const [files] = await bucket.getFiles({ prefix: `${basePath}/` });
+        if (files.length > 0) {
+          // Filter to only delete audio files
+          const audioFiles = files.filter(file => file.name.endsWith('.mp3'));
+          if (audioFiles.length > 0) {
+            const deletePromises = audioFiles.map((file) => file.delete());
+            await Promise.all(deletePromises);
+            //console.log(
+            //  `Deleted ${audioFiles.length} audio files in directory: ${basePath}/`
+            //);
+          }
+        }
+      } catch (dirError) {
+        //console.log(`Could not delete audio directory: ${basePath}/`);
+      }
+    }
+  } catch (storageError) {
+    console.error("Error cleaning up audio files:", storageError);
+  }
+}
+
+async function cleanupStorageFiles(articleId: string, userId?: string) {
+  try {
+    // Import Firebase Admin Storage
+    const { getStorage } = await import("firebase-admin/storage");
+    // ระบุ bucket name โดยตรง
+    const bucket = getStorage().bucket(
+      "artifacts.reading-advantage.appspot.com"
+    );
+
+    // File paths for user-generated content and regular content
+    const basePaths = [
+      // Regular paths
+      `images/${articleId}`,
+      `tts/${articleId}`,
+      // User-generated paths (if userId provided)
+      ...(userId
+        ? [
+            `users/${userId}/images/${articleId}`,
+            `users/${userId}/tts/${articleId}`,
+          ]
+        : []),
+    ];
+
+    const fileExtensions = [".png", ".mp3"];
+
+    for (const basePath of basePaths) {
+      for (const ext of fileExtensions) {
+        try {
+          const filePath = basePath + ext;
+          const file = bucket.file(filePath);
+          const [exists] = await file.exists();
+          if (exists) {
+            await file.delete();
+            //console.log(`Deleted file: ${filePath}`);
+          }
+        } catch (fileError) {
+          // File might not exist, continue
+          //console.log(`Could not delete file: ${basePath}${ext}`);
+        }
+      }
+
+      // Also try to delete directories
+      try {
+        const [files] = await bucket.getFiles({ prefix: `${basePath}/` });
+        if (files.length > 0) {
+          const deletePromises = files.map((file) => file.delete());
+          await Promise.all(deletePromises);
+          //console.log(
+          //  `Deleted ${files.length} files in directory: ${basePath}/`
+          //);
+        }
+      } catch (dirError) {
+        //console.log(`Could not delete directory: ${basePath}/`);
+      }
+    }
+  } catch (storageError) {
+    console.error("Error cleaning up storage files:", storageError);
+  }
+}
+
+async function cleanupFailedGeneration(userId: string, articleId: string) {
+  try {
+    //console.log(`Cleaning up failed generation for article: ${articleId}`);
+
+    // 1. Delete article document and all subcollections from Firestore
+    const articleRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("generated-articles")
+      .doc(articleId);
+
+    // Delete subcollections
+    const subcollections = [
+      "mc-questions",
+      "sa-questions",
+      "la-questions",
+      "word-list",
+    ];
+
+    for (const subcollectionName of subcollections) {
+      const subcollectionRef = articleRef.collection(subcollectionName);
+      const snapshot = await subcollectionRef.get();
+
+      const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
+      await Promise.all(deletePromises);
+
+      //console.log(`Deleted ${subcollectionName} subcollection`);
+    }
+
+    // Delete the main article document
+    await articleRef.delete();
+    //console.log("Deleted article document");
+
+    // 2. Delete files from Cloud Storage bucket
+    await cleanupStorageFiles(articleId);
+
+    //console.log("Cleanup completed successfully");
+  } catch (cleanupError) {
+    console.error("Error during cleanup:", cleanupError);
+    // Log cleanup error but don't throw to avoid masking original error
+  }
+}
+
+async function addUserQuestionsToCollection(
+  userId: string,
+  articleId: string,
+  collectionName: string,
+  questions: any[]
+) {
+  const collectionRef = db
+    .collection("users")
+    .doc(userId)
+    .collection("generated-articles")
+    .doc(articleId)
+    .collection(collectionName);
+
+  const promises = questions.map((question) => collectionRef.add(question));
+  await Promise.all(promises);
+}
+
+async function addUserWordList(
+  userId: string,
+  articleId: string,
+  wordList: any[],
+  createdAt: string
+) {
+  const wordListRef = db
+    .collection("users")
+    .doc(userId)
+    .collection("generated-articles")
+    .doc(articleId)
+    .collection("word-list")
+    .doc(articleId);
+
+  await wordListRef.set({
+    word_list: wordList,
+    articleId,
+    id: articleId,
+    created_at: createdAt,
+  });
 }

@@ -47,7 +47,7 @@ export async function getAdminDashboard() {
 
       const licenseData = [licenseRef.data()];
 
-      console.log(licenseData);
+      //console.log(licenseData);
       const userRef = await db.collection("users").get();
       const userData = userRef.docs.map((data) => data.data());
 
