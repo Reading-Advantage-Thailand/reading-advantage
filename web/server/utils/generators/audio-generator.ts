@@ -138,7 +138,12 @@ function mergeAudioFiles(files: string[], outputPath: string): Promise<void> {
 export async function generateAudio({
   passage,
   articleId,
-}: GenerateAudioParams): Promise<void> {
+  isUserGenerated = false,
+  userId = "",
+}: GenerateAudioParams & {
+  isUserGenerated?: boolean;
+  userId?: string;
+}): Promise<void> {
   try {
     const voice =
       AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
@@ -223,11 +228,24 @@ export async function generateAudio({
     await uploadToBucket(combinedAudioPath, `${AUDIO_URL}/${articleId}.mp3`);
 
     // Update the database with all timepoints
-
-    await db.collection("new-articles").doc(articleId).update({
-      timepoints: result,
-      id: articleId,
-    });
+    if (isUserGenerated && userId) {
+      // For user-generated articles
+      await db
+        .collection("users")
+        .doc(userId)
+        .collection("generated-articles")
+        .doc(articleId)
+        .update({
+          timepoints: result,
+          id: articleId,
+        });
+    } else {
+      // For regular articles
+      await db.collection("new-articles").doc(articleId).update({
+        timepoints: result,
+        id: articleId,
+      });
+    }
   } catch (error: any) {
     console.log(error);
     throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
@@ -346,4 +364,3 @@ export async function generateChapterAudio({
     // )}`;
   }
 }
-

@@ -175,6 +175,11 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
                 readOnly
               />
             </Badge>
+            {article.author && (
+              <Badge className="shadow-lg max-w-max" variant="destructive">
+                Author: {article.author}
+              </Badge>
+            )}
             <div className="mt-auto">
               <div className=" bg-black bg-opacity-40">
                 <p className="text-xl drop-shadow-lg font-bold text-white">
