@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String             @id @default(cuid())
+  licenseId           String?            @unique @map("license_id")
+  name                String?
+  email               String             @unique
+  password            String?
+  emailVerified       DateTime?          @map("email_verified")
+  image               String?
+  role                Role               @default(USER)
+  xp                  Int                @default(0)
+  level               Int                @default(1)
+  cefrLevel           String             @default("A1-") @map("cefr_level")
+  expiredDate         DateTime?          @map("expired_date")
+  onborda             Boolean?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  userActivities      UserActivity[]
+  xpLogs              XPLog[]
+  accounts            Account[]
+  assignments         Assignment[]
+  studentClassrooms   ClassroomStudent[]
+  classroomsAsTeacher Classroom[]        @relation("TeacherClassrooms")
+  licenses            License[]          @relation("LicenseUser")
+  sessions            Session[]
+  license             License?           @relation(fields: [licenseId], references: [id])
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @map("refresh_token")
+  access_token      String? @map("access_token")
+  expires_at        Int?    @map("expires_at")
+  token_type        String? @map("token_type")
+  scope             String?
+  id_token          String? @map("id_token")
+  session_state     String? @map("session_state")
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model XPLog {
+  id           String       @id @default(cuid())
+  userId       String       @map("user_id")
+  xpEarned     Int          @map("xp_earned")
+  activityId   String       @map("activity_id")
+  activityType ActivityType @map("activity_type")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("XPLogs")
+}
+
+model UserActivity {
+  id                String             @id @default(cuid())
+  userId            String             @map("user_id")
+  activityType      ActivityType       @map("activity_type")
+  targetId          String             @map("target_id")
+  timer             Int?
+  details           Json?
+  completed         Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classroomStudents ClassroomStudent[]
+
+  @@unique([userId, activityType, targetId])
+  @@map("UserActivity")
+}
+
+model Article {
+  id                      String                   @id @default(cuid())
+  type                    String?
+  genre                   String?
+  subGenre                String?                  @map("sub_genre")
+  title                   String?
+  summary                 String?
+  passage                 String?
+  translatedSummary       Json?                    @map("translated_summary")
+  translatedPassage       Json?                    @map("translated_passage")
+  imageDescription        String?                  @map("image_description")
+  cefrLevel               String?                  @map("cefr_level")
+  raLevel                 Int?                     @map("ra_level")
+  rating                  Float?
+  audioUrl                String?                  @map("audio_url")
+  audioWordUrl            String?                  @map("audio_word_url")
+  sentences               Json?
+  words                   Json?
+  authorId                String?                  @map("author_id")
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  longAnswerQuestions     LongAnswerQuestion[]
+  multipleChoiceQuestions MultipleChoiceQuestion[]
+  shortAnswerQuestions    ShortAnswerQuestion[]
+  assignments             Assignment[]
+
+  @@map("article")
+}
+
+model MultipleChoiceQuestion {
+  id              String   @id @default(cuid())
+  question        String
+  options         String[]
+  answer          String
+  textualEvidence String   @map("textual_evidence")
+  articleId       String   @map("article_id")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("MultipleChoiceQuestion")
+}
+
+model ShortAnswerQuestion {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  articleId String   @map("article_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("ShortAnswerQuestion")
+}
+
+model LongAnswerQuestion {
+  id        String   @id @default(cuid())
+  question  String
+  articleId String   @map("article_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("LongAnswerQuestion")
+}
+
+model Classroom {
+  id            String             @id @default(cuid())
+  licenseId     String?            @map("license_id")
+  name          String
+  teacherId     String             @map("teacher_id")
+  classCode     String?            @unique @map("class_code") @db.VarChar
+  codeExpiresAt DateTime?          @map("code_expires_at")
+  archived      Boolean?
+  classcode     String?            @db.VarChar
+  classroomName String?            @map("classroom_name") @db.VarChar
+  grade         Int?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  assignments   Assignment[]
+  students      ClassroomStudent[]
+  license       License?           @relation(fields: [licenseId], references: [id])
+  teacher       User               @relation("TeacherClassrooms", fields: [teacherId], references: [id])
+
+  @@map("classrooms")
+}
+
+model ClassroomStudent {
+  id             String        @id @default(cuid())
+  studentId      String        @map("student_id")
+  classroomId    String        @map("classroom_id")
+  userActivityId String?       @map("UserActivity_id")
+  createdAt      DateTime
+  userActivity   UserActivity? @relation(fields: [userActivityId], references: [id])
+  classroom      Classroom     @relation(fields: [classroomId], references: [id])
+  student        User          @relation(fields: [studentId], references: [id])
+
+  @@unique([classroomId, studentId])
+  @@map("classrooStudents")
+}
+
+model License {
+  id                String      @id @default(cuid())
+  userId            String?     @map("user_id")
+  key               String
+  schoolName        String?     @map("school_name") @db.VarChar(255)
+  subscriptionLevel String?     @map("subscription_level") @db.VarChar(50)
+  totalLicenses     Int?        @map("total_licenses")
+  usedLicenses      Int?        @map("used_licenses")
+  expirationDate    DateTime?   @map("expiration_date")
+  updatedAt         DateTime?   @updatedAt
+  createdAt         DateTime
+  classrooms        Classroom[]
+  user              User?       @relation("LicenseUser", fields: [userId], references: [id])
+  users             User?
+
+  @@map("licenses")
+}
+
+model Assignment {
+  classroomId String    @map("classroom_id")
+  id          String    @id @default(cuid())
+  userId      String?   @map("user_id")
+  articleId   String    @map("article_id")
+  status      Int?
+  title       String?   @db.VarChar
+  description String?
+  dueDate     DateTime? @map("due_date")
+  createdAt   DateTime
+  article     Article   @relation(fields: [articleId], references: [id])
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@map("assignments")
+}
+
+enum Role {
+  USER
+  STUDENT
+  TEACHER
+  ADMIN
+  SYSTEM
+}
+
+enum ActivityType {
+  ARTICLE_RATING
+  ARTICLE_READ
+  STORIES_RATING
+  STORIES_READ
+  CHAPTER_RATING
+  CHAPTER_READ
+  LEVEL_TEST
+  MC_QUESTION
+  SA_QUESTION
+  LA_QUESTION
+  SENTENCE_FLASHCARDS
+  SENTENCE_MATCHING
+  SENTENCE_ORDERING
+  SENTENCE_WORD_ORDERING
+  SENTENCE_CLOZE_TEST
+  VOCABULARY_FLASHCARDS
+  VOCABULARY_MATCHING
+}

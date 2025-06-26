@@ -1,13 +1,13 @@
 import { User as NextAuthUser } from "next-auth";
 import { JWT as NextAuthJWT } from "next-auth/jwt";
-import { Role } from "@/server/models/enum";
+import { Role } from "@prisma/client";
 
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     email: string;
     display_name: string;
-    role: Role.USER;
+    role: Role;
     level: number;
     email_verified: boolean;
     picture: string;
