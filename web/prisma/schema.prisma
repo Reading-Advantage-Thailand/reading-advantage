@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id                  String             @id @default(cuid())
-  licenseId           String?            @unique @map("license_id")
+  licenseId           String?            @unique @map("license_id") // ใช้สำหรับ active license
   name                String?
   email               String             @unique
   password            String?
@@ -29,9 +29,9 @@ model User {
   assignments         Assignment[]
   studentClassrooms   ClassroomStudent[]
   classroomsAsTeacher Classroom[]        @relation("TeacherClassrooms")
-  licenses            License[]          @relation("LicenseUser")
   sessions            Session[]
-  license             License?           @relation(fields: [licenseId], references: [id])
+  ownedLicenses       License[]          @relation("OwnedLicenses")
+  licenseOnUsers      LicenseOnUser[]
 
   @@map("users")
 }
@@ -88,17 +88,16 @@ model XPLog {
 }
 
 model UserActivity {
-  id                String             @id @default(cuid())
-  userId            String             @map("user_id")
-  activityType      ActivityType       @map("activity_type")
-  targetId          String             @map("target_id")
-  timer             Int?
-  details           Json?
-  completed         Boolean            @default(false)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  classroomStudents ClassroomStudent[]
+  id           String       @id @default(cuid())
+  userId       String       @map("user_id")
+  activityType ActivityType @map("activity_type")
+  targetId     String       @map("target_id")
+  timer        Int?
+  details      Json?
+  completed    Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, activityType, targetId])
   @@map("UserActivity")
@@ -172,55 +171,60 @@ model LongAnswerQuestion {
 
 model Classroom {
   id            String             @id @default(cuid())
-  licenseId     String?            @map("license_id")
-  name          String
+  classroomName String?            @map("classroom_name") @db.VarChar
   teacherId     String             @map("teacher_id")
   classCode     String?            @unique @map("class_code") @db.VarChar
   codeExpiresAt DateTime?          @map("code_expires_at")
   archived      Boolean?
-  classcode     String?            @db.VarChar
-  classroomName String?            @map("classroom_name") @db.VarChar
   grade         Int?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   assignments   Assignment[]
   students      ClassroomStudent[]
-  license       License?           @relation(fields: [licenseId], references: [id])
   teacher       User               @relation("TeacherClassrooms", fields: [teacherId], references: [id])
 
   @@map("classrooms")
 }
 
 model ClassroomStudent {
-  id             String        @id @default(cuid())
-  studentId      String        @map("student_id")
-  classroomId    String        @map("classroom_id")
-  userActivityId String?       @map("UserActivity_id")
-  createdAt      DateTime
-  userActivity   UserActivity? @relation(fields: [userActivityId], references: [id])
-  classroom      Classroom     @relation(fields: [classroomId], references: [id])
-  student        User          @relation(fields: [studentId], references: [id])
+  id          String    @id @default(cuid())
+  studentId   String    @map("student_id")
+  classroomId String    @map("classroom_id")
+  createdAt   DateTime  @default(now())
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  student     User      @relation(fields: [studentId], references: [id])
 
   @@unique([classroomId, studentId])
-  @@map("classrooStudents")
+  @@map("classroomStudents")
 }
 
+
 model License {
-  id                String      @id @default(cuid())
-  userId            String?     @map("user_id")
-  key               String
-  schoolName        String?     @map("school_name") @db.VarChar(255)
-  subscriptionLevel String?     @map("subscription_level") @db.VarChar(50)
-  totalLicenses     Int?        @map("total_licenses")
-  usedLicenses      Int?        @map("used_licenses")
-  expirationDate    DateTime?   @map("expiration_date")
-  updatedAt         DateTime?   @updatedAt
-  createdAt         DateTime
-  classrooms        Classroom[]
-  user              User?       @relation("LicenseUser", fields: [userId], references: [id])
-  users             User?
+  id          String         @id @default(cuid())
+  key         String         @unique
+  schoolName  String        
+  expiresAt   DateTime?     
+  maxUsers    Int            @default(1)
+  licenseType LicenseType    @default(BASIC)
+  ownerUserId String?        @map("owner_user_id")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  usedLicenses  Int?        @map("used_licenses")
+  licenseUsers  LicenseOnUser[]
+  owner       User?          @relation("OwnedLicenses", fields: [ownerUserId], references: [id])
 
   @@map("licenses")
+}
+
+model LicenseOnUser {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  licenseId  String
+  license    License  @relation(fields: [licenseId], references: [id])
+  activateAt DateTime @default(now())
+
+  @@id([userId, licenseId])
+  @@map("license_on_users")
 }
 
 model Assignment {
@@ -228,11 +232,11 @@ model Assignment {
   id          String    @id @default(cuid())
   userId      String?   @map("user_id")
   articleId   String    @map("article_id")
-  status      Int?
+  status      Status?   @default(NOT_STARTED)
   title       String?   @db.VarChar
   description String?
   dueDate     DateTime? @map("due_date")
-  createdAt   DateTime
+  createdAt   DateTime  @default(now())
   article     Article   @relation(fields: [articleId], references: [id])
   classroom   Classroom @relation(fields: [classroomId], references: [id])
   user        User?     @relation(fields: [userId], references: [id])
@@ -266,4 +270,16 @@ enum ActivityType {
   SENTENCE_CLOZE_TEST
   VOCABULARY_FLASHCARDS
   VOCABULARY_MATCHING
+}
+
+enum Status {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum LicenseType {
+  BASIC
+  PREMIUM
+  ENTERPRISE
 }
