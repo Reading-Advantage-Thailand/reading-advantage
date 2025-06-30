@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession, User } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { Role } from "../models/enum";
+import { Role } from "@prisma/client";
 import { sendDiscordWebhook } from "../utils/send-discord-webhook";
 
 // Middleware to protect routes

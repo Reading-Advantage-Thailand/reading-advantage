@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
-import { Role } from "./server/models/enum";
+import { Role } from "@prisma/client";
 import { localeConfig } from "./configs/locale-config";
 import { createI18nMiddleware } from "next-international/middleware";
 

@@ -102,6 +102,8 @@ export type SystemSidebarNavItem = {
     }
 );
 
+import { Role } from "@prisma/client";
+
 export type User = {
   id: string;
   name: string;
@@ -110,7 +112,7 @@ export type User = {
   createAt: Date;
   lastLogin: Date;
   level: number;
-  role: UserRole;
+  role: Role;
 };
 
 // multiple choice question type
