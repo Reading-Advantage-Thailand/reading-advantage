@@ -42,7 +42,6 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          console.log("LOGIN SUCCESS for user:", user.email);
           const currentDate = new Date();
           const isExpired = user.expiredDate
             ? user.expiredDate < currentDate
