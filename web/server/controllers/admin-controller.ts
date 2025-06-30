@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
 import { ExtendedNextRequest } from "./auth-controller";
 import { getCurrentUser } from "@/lib/session";
+import { Role } from "@prisma/client";
 
 // Map CEFR levels to numerical values
 const cefrToNumber: Record<string, number> = {
@@ -56,7 +57,7 @@ export async function getAdminDashboard() {
       );
 
       const teacherCount = userRole.filter(
-        (users) => user.role === "teacher"
+        (users) => users.role === Role.TEACHER
       ).length;
 
       // Map numerical values back to CEFR levels

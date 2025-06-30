@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { Role } from "@/server/models/enum";
+import { Role } from "@prisma/client";
 import { UserCircle, GraduationCap, School, Ghost } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -24,7 +24,13 @@ type Props = {
 };
 
 export default function ChangeRole({ userId, userRole, className }: Props) {
-  const roles = [
+  const roles: Array<{
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    value: Role;
+    color: string;
+  }> = [
     {
       title: "Student",
       description:

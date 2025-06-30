@@ -24,6 +24,7 @@ import PieChartCustom from "@/components/pie-chart";
 import LicesneUsageList from "@/components/license-usage-list";
 import { UserActivityLog } from "../models/user-activity-log-model";
 import { CloudHail } from "lucide-react";
+import { Role } from "@prisma/client";
 
 // Map CEFR levels to numerical values
 const cefrToNumber = {
@@ -106,7 +107,7 @@ async function ShcoolsDashboard({
   const availableLicenses = totalLicenses - usedLicenses;
 
   const countTeachers = userRoleData.filter(
-    (users) => users.role === "teacher"
+    (users) => users.role === Role.TEACHER
   ).length;
 
   const countActiveUsers = userRoleData.filter(

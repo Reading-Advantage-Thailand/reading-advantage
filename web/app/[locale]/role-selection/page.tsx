@@ -1,6 +1,7 @@
 import ChangeRole from "@/components/shared/change-role";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
+import { Role } from "@prisma/client";
 import React from "react";
 
 export default async function FirstRoleSelectionPage() {
@@ -8,11 +9,11 @@ export default async function FirstRoleSelectionPage() {
 
   if (!user) {
     return redirect("/auth/signin");
-  } else if (user.role === "student") {
+  } else if (user.role === Role.STUDENT) {
     return redirect("/student/read");
-  } else if (user.role === "teacher") {
+  } else if (user.role === Role.TEACHER) {
     return redirect("/teacher/my-classes");
-  } else if (user.role !== "user") {
+  } else if (user.role !== Role.USER) {
     return redirect("/");
   }
 
