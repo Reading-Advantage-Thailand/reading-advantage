@@ -62,22 +62,145 @@ export default function MCQuestionCard({
     state: QuestionState.LOADING,
   });
 
+  const [hasStarted, setHasStarted] = useState(false);
+
   useEffect(() => {
-    fetch(`/api/v1/articles/${articleId}/questions/mcq`)
+    const checkAndClearCorruptedData = async () => {
+      try {
+        const savedProgress = sessionStorage.getItem(
+          `quiz_progress_${articleId}`
+        );
+        const savedStarted = sessionStorage.getItem(
+          `quiz_started_${articleId}`
+        );
+
+        if (savedProgress) {
+          const parsedProgress = JSON.parse(savedProgress);
+          if (
+            Array.isArray(parsedProgress) &&
+            parsedProgress.length === 5 &&
+            parsedProgress.every(
+              (status: number) => status === AnswerStatus.CORRECT
+            )
+          ) {
+            sessionStorage.removeItem(`quiz_progress_${articleId}`);
+            sessionStorage.removeItem(`quiz_started_${articleId}`);
+            setHasStarted(false);
+          }
+        }
+
+        if (savedStarted === "true" && !savedProgress) {
+          sessionStorage.removeItem(`quiz_started_${articleId}`);
+          setHasStarted(false);
+        }
+      } catch (e) {
+        console.error("Error checking cached data:", e);
+        try {
+          sessionStorage.removeItem(`quiz_progress_${articleId}`);
+          sessionStorage.removeItem(`quiz_started_${articleId}`);
+          setHasStarted(false);
+        } catch (clearError) {
+          console.error("Error clearing corrupted data:", clearError);
+        }
+      }
+    };
+
+    checkAndClearCorruptedData();
+  }, [articleId]);
+
+  useEffect(() => {
+    try {
+      const quizStarted = sessionStorage.getItem(`quiz_started_${articleId}`);
+      if (quizStarted === "true") {
+        setHasStarted(true);
+      } else {
+        setHasStarted(false);
+      }
+    } catch (e) {
+      console.error("Failed to read from sessionStorage:", e);
+      setHasStarted(false);
+    }
+  }, [articleId]);
+
+  useEffect(() => {
+    const timestamp = new Date().getTime();
+    fetch(`/api/v1/articles/${articleId}/questions/mcq?_t=${timestamp}`)
       .then((res) => res.json())
       .then((data) => {
+        try {
+          const savedProgress = sessionStorage.getItem(
+            `quiz_progress_${articleId}`
+          );
+          if (savedProgress) {
+            const parsedProgress = JSON.parse(savedProgress);
+            if (
+              Array.isArray(parsedProgress) &&
+              parsedProgress.length === 5 &&
+              parsedProgress.every(
+                (status) =>
+                  status === AnswerStatus.CORRECT ||
+                  status === AnswerStatus.INCORRECT ||
+                  status === AnswerStatus.UNANSWERED
+              )
+            ) {
+              data.progress = parsedProgress;
+            }
+          }
+        } catch (e) {
+          try {
+            sessionStorage.removeItem(`quiz_progress_${articleId}`);
+          } catch (clearError) {}
+        }
+
+        if (
+          data.progress &&
+          Array.isArray(data.progress) &&
+          data.progress.length === 5 &&
+          data.progress.every(
+            (status: number) => status === AnswerStatus.CORRECT
+          ) &&
+          data.state === QuestionState.INCOMPLETE
+        ) {
+          data.progress = [
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+          ];
+          setHasStarted(false);
+          try {
+            sessionStorage.removeItem(`quiz_progress_${articleId}`);
+            sessionStorage.removeItem(`quiz_started_${articleId}`);
+          } catch (clearError) {}
+        }
+
         setData(data);
         setState(data.state);
         useQuestionStore.setState({ mcQuestion: data });
+      })
+      .catch((error) => {
+        setState(QuestionState.LOADING);
       });
-  }, [state, articleId]);
+  }, [articleId]);
 
   const handleCompleted = () => {
     setState(QuestionState.LOADING);
+
+    setHasStarted(true);
+    try {
+      sessionStorage.setItem(`quiz_started_${articleId}`, "true");
+    } catch (e) {}
   };
 
   const onRetake = () => {
     setState(QuestionState.LOADING);
+
+    try {
+      sessionStorage.removeItem(`quiz_progress_${articleId}`);
+      sessionStorage.removeItem(`quiz_started_${articleId}`);
+    } catch (e) {}
+
     fetch(`/api/v1/articles/${articleId}/questions/mcq`, {
       method: "DELETE",
     })
@@ -85,11 +208,20 @@ export default function MCQuestionCard({
       .then((data) => {
         setState(data.state);
         setData({
-          progress: [2, 2, 2, 2, 2],
+          progress: [
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+          ],
           results: [],
           total: 0,
           state: data.state,
         });
+      })
+      .catch((error) => {
+        setState(QuestionState.LOADING);
       });
   };
 
@@ -112,6 +244,7 @@ export default function MCQuestionCard({
           articleTitle={articleTitle}
           articleLevel={articleLevel}
           page={page}
+          hasStarted={hasStarted}
         />
       );
     case QuestionState.COMPLETED:
@@ -145,7 +278,7 @@ function QuestionCardComplete({
               {t("descriptionSuccess")}{" "}
               <p className="text-green-500 dark:text-green-400 inline font-bold">
                 {t("descriptionSuccess2", {
-                  score: resp.progress.filter(
+                  score: (resp.progress || []).filter(
                     (status) => status === AnswerStatus.CORRECT
                   ).length,
                   total: resp.total,
@@ -165,7 +298,7 @@ function QuestionCardComplete({
             {t("descriptionSuccess")}
             <p className="text-green-500 dark:text-green-400 inline font-bold">
               {t("descriptionSuccess2", {
-                score: resp.progress.filter(
+                score: (resp.progress || []).filter(
                   (status) => status === AnswerStatus.CORRECT
                 ).length,
                 total: resp.total,
@@ -229,6 +362,7 @@ function QuestionCardIncomplete({
   articleTitle,
   articleLevel,
   page,
+  hasStarted = false,
 }: {
   userId: string;
   resp: QuestionResponse;
@@ -237,11 +371,50 @@ function QuestionCardIncomplete({
   articleTitle: string;
   articleLevel: number;
   page?: "lesson" | "article";
+  hasStarted?: boolean;
 }) {
   const t = useScopedI18n("components.mcq");
+
+  const getCurrentQuizStartedStatus = () => {
+    try {
+      const sessionStarted = sessionStorage.getItem(
+        `quiz_started_${articleId}`
+      );
+      return sessionStarted === "true";
+    } catch (e) {
+      console.error("Error reading quiz_started from sessionStorage:", e);
+      return false;
+    }
+  };
+
+  const hasStartedQuiz = (() => {
+    const sessionStarted = getCurrentQuizStartedStatus();
+
+    if (resp.progress && resp.progress.length === 5) {
+      if (
+        resp.state === QuestionState.INCOMPLETE &&
+        resp.progress.every((status) => status === AnswerStatus.CORRECT)
+      ) {
+        try {
+          sessionStorage.removeItem(`quiz_started_${articleId}`);
+          sessionStorage.removeItem(`quiz_progress_${articleId}`);
+        } catch (e) {
+          console.error("Error clearing suspicious data:", e);
+        }
+        return false;
+      }
+      const hasAnswered = resp.progress.some(
+        (status) =>
+          status === AnswerStatus.CORRECT || status === AnswerStatus.INCORRECT
+      );
+      return hasAnswered;
+    }
+    return false;
+  })();
+
   return (
     <>
-      {page === "article" && (
+      {page === "article" && !hasStartedQuiz && (
         <Card id="onborda-mcq">
           <QuestionHeader
             heading={t("title")}
@@ -263,6 +436,26 @@ function QuestionCardIncomplete({
               />
             </QuizContextProvider>
           </QuestionHeader>
+        </Card>
+      )}
+
+      {page === "article" && hasStartedQuiz && (
+        <Card id="onborda-mcq">
+          <CardHeader>
+            <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
+              {t("title")}
+            </CardTitle>
+          </CardHeader>
+          <QuizContextProvider>
+            <MCQeustion
+              articleId={articleId}
+              resp={resp}
+              handleCompleted={handleCompleted}
+              userId={userId}
+              articleTitle={articleTitle}
+              articleLevel={articleLevel}
+            />
+          </QuizContextProvider>
         </Card>
       )}
       {page === "lesson" && (
@@ -299,32 +492,156 @@ function MCQeustion({
   articleLevel: number;
   page?: "lesson" | "article";
 }) {
-  const [progress, setProgress] = useState(resp.progress);
+  const [progress, setProgress] = useState(resp.progress || []);
   const [isLoadingAnswer, setLoadingAnswer] = useState(false);
-  const [index, setIndex] = useState(0);
-  const [correctAnswer, setCorrectAnswer] = useState("");
   const [selectedOption, setSelectedOption] = useState(-1);
+  const [correctAnswer, setCorrectAnswer] = useState("");
   const { timer, setPaused } = useContext(QuizContext);
   const t = useScopedI18n("components.mcq");
   const router = useRouter();
   const [textualEvidence, setTextualEvidence] = useState("");
 
+  React.useEffect(() => {
+    if (resp.results && resp.results[0]) {
+      const options = resp.results[0].options || [];
+      if (
+        options.some(
+          (opt) => !opt || typeof opt !== "string" || opt.trim() === ""
+        )
+      ) {
+        console.warn("Warning: Some options may be empty or invalid:", options);
+      }
+    }
+
+    let initialProgress = resp.progress || [];
+    if (
+      resp.state === QuestionState.INCOMPLETE &&
+      initialProgress.length === 5 &&
+      initialProgress.every((status) => status === AnswerStatus.CORRECT)
+    ) {
+      console.warn(
+        "🚨 MCQeustion: Detected suspicious server progress, resetting to unanswered"
+      );
+      initialProgress = [
+        AnswerStatus.UNANSWERED,
+        AnswerStatus.UNANSWERED,
+        AnswerStatus.UNANSWERED,
+        AnswerStatus.UNANSWERED,
+        AnswerStatus.UNANSWERED,
+      ];
+    }
+
+    try {
+      const savedProgress = sessionStorage.getItem(
+        `quiz_progress_${articleId}`
+      );
+      if (savedProgress) {
+        const parsedProgress = JSON.parse(savedProgress);
+        if (
+          Array.isArray(parsedProgress) &&
+          parsedProgress.length === 5 &&
+          parsedProgress.every(
+            (status) =>
+              status === AnswerStatus.CORRECT ||
+              status === AnswerStatus.INCORRECT ||
+              status === AnswerStatus.UNANSWERED
+          )
+        ) {
+          setProgress(parsedProgress);
+        } else {
+          console.warn("Invalid saved progress data, using server data");
+          setProgress(initialProgress);
+          sessionStorage.removeItem(`quiz_progress_${articleId}`);
+        }
+      } else {
+        setProgress(initialProgress);
+      }
+    } catch (e) {
+      console.error("Failed to load progress from sessionStorage:", e);
+      setProgress(initialProgress);
+      try {
+        sessionStorage.removeItem(`quiz_progress_${articleId}`);
+      } catch (clearError) {
+        console.error("Error clearing corrupted progress:", clearError);
+      }
+    }
+
+    setSelectedOption(-1);
+    setCorrectAnswer("");
+    setTextualEvidence("");
+
+    if (resp.results && resp.results[0]) {
+      try {
+        if (resp.results[0].question) {
+          sessionStorage.setItem(`quiz_started_${articleId}`, "true");
+        }
+      } catch (e) {
+        console.error("Failed to save to sessionStorage:", e);
+      }
+    }
+  }, [resp, articleId]);
+
+  const currentQuestionIndex = progress.findIndex(
+    (p) => p === AnswerStatus.UNANSWERED
+  );
+
   const onSubmitted = async (questionId: string, option: string, i: number) => {
     setPaused(true);
     setLoadingAnswer(true);
+
+    if (!option) {
+      console.error("Attempted to submit an empty option");
+      option = `Option ${i + 1}`;
+    }
+
+    const cleanOption = option.replace(/^\d+\.\s*/, "");
+
+    const originalOptions = resp.results[0]?.options || [];
+
+    const validOptions = originalOptions.filter(
+      (opt) => opt && typeof opt === "string" && opt.trim() !== ""
+    );
+
+    setSelectedOption(i);
+
     fetch(`/api/v1/articles/${articleId}/questions/mcq/${questionId}`, {
       method: "POST",
       body: JSON.stringify({
-        answer: option,
+        selectedAnswer: cleanOption,
         timeRecorded: timer,
       }),
     })
       .then((res) => res.json())
       .then((data) => {
-        setCorrectAnswer(data.correct_answer);
+        if (data) {
+          const isCorrect = cleanOption === data.correctAnswer;
+
+          setCorrectAnswer(data.correctAnswer || "");
+          setSelectedOption(i);
+
+          setTextualEvidence(data.textualEvidence || "");
+          const newProgress = [...progress];
+          if (currentQuestionIndex !== -1) {
+            const actuallyCorrect = isCorrect;
+            newProgress[currentQuestionIndex] = actuallyCorrect
+              ? AnswerStatus.CORRECT
+              : AnswerStatus.INCORRECT;
+            setProgress(newProgress);
+
+            try {
+              sessionStorage.setItem(
+                `quiz_progress_${articleId}`,
+                JSON.stringify(newProgress)
+              );
+            } catch (e) {
+              console.error("Failed to save progress to sessionStorage:", e);
+            }
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error submitting answer:", error);
         setSelectedOption(i);
-        setProgress(data.progress);
-        setTextualEvidence(resp.results[index].textual_evidence);
       })
       .finally(() => {
         setLoadingAnswer(false);
@@ -335,42 +652,84 @@ function MCQeustion({
     if (page === "lesson") {
       setPaused(false);
     }
-    let count = 0;
-    let countTest = 0;
-    progress.forEach(async (status) => {
-      if (status == AnswerStatus.CORRECT) {
-        count += UserXpEarned.MC_Question;
-        countTest++;
-      } else if (status == AnswerStatus.INCORRECT) {
-        countTest++;
+
+    let completedCount = 0;
+    let correctCount = 0;
+    (progress || []).forEach((status) => {
+      if (
+        status === AnswerStatus.CORRECT ||
+        status === AnswerStatus.INCORRECT
+      ) {
+        completedCount++;
       }
-      if (countTest == 5) {
-        await fetch(`/api/v1/users/${userId}/activitylog`, {
-          method: "POST",
-          body: JSON.stringify({
-            articleId: articleId,
-            activityType: ActivityType.MC_Question,
-            activityStatus: ActivityStatus.Completed,
-            timeTaken: timer,
-            xpEarned: count,
-            details: {
-              ceft_level: levelCalculation(count).cefrLevel,
-              correctAnswer,
-              progress,
-              title: articleTitle,
-              level: articleLevel,
-            },
-          }),
-        });
-        toast({
-          title: "Success",
-          imgSrc: true,
-          description: `Congratulations!, You received ${count} XP for completing this activity.`,
-        });
-        router.refresh();
+      if (status === AnswerStatus.CORRECT) {
+        correctCount++;
       }
     });
+
+    if (completedCount === 5) {
+      const totalXpEarned = correctCount * 2;
+      toast({
+        title: "Quiz Completed!",
+        imgSrc: true,
+        description: `Congratulations! You got ${correctCount} out of 5 questions correct and earned ${totalXpEarned} XP.`,
+      });
+
+      router.refresh();
+    }
   }, [progress, QuestionState]);
+
+  const handleNext = () => {
+    setSelectedOption(-1);
+    setCorrectAnswer("");
+    setPaused(false);
+    setTextualEvidence("");
+
+    const answeredCount = progress.filter(
+      (p) => p !== AnswerStatus.UNANSWERED
+    ).length;
+    if (answeredCount < resp.total) {
+      setLoadingAnswer(true);
+
+      const timestamp = new Date().getTime();
+      fetch(`/api/v1/articles/${articleId}/questions/mcq?_t=${timestamp}`)
+        .then((res) => res.json())
+        .then((data) => {
+          try {
+            const savedProgress = sessionStorage.getItem(
+              `quiz_progress_${articleId}`
+            );
+            if (savedProgress) {
+              const parsedProgress = JSON.parse(savedProgress);
+              setProgress(parsedProgress);
+            } else {
+              setProgress(data.progress || []);
+            }
+          } catch (e) {
+            console.error("Error handling progress for next question:", e);
+            setProgress(data.progress || []);
+          }
+
+          try {
+            sessionStorage.setItem(`quiz_started_${articleId}`, "true");
+          } catch (e) {
+            console.error("Failed to save to sessionStorage:", e);
+          }
+
+          useQuestionStore.setState({ mcQuestion: data });
+
+          handleCompleted();
+        })
+        .catch((error) => {
+          console.error("Error fetching next question:", error);
+        })
+        .finally(() => {
+          setLoadingAnswer(false);
+        });
+    } else {
+      handleCompleted();
+    }
+  };
 
   return (
     <CardContent>
@@ -380,11 +739,11 @@ function MCQeustion({
             time: timer,
           })}
         </Badge>
-        {progress.map((status, index) => {
+        {(progress || []).map((status, idx) => {
           if (status === AnswerStatus.CORRECT) {
             return (
               <Icons.correctChecked
-                key={index}
+                key={idx}
                 className="text-green-500"
                 size={22}
               />
@@ -392,25 +751,26 @@ function MCQeustion({
           } else if (status === AnswerStatus.INCORRECT) {
             return (
               <Icons.incorrectChecked
-                key={index}
+                key={idx}
                 className="text-red-500"
                 size={22}
               />
             );
           }
           return (
-            <Icons.unChecked key={index} className="text-gray-500" size={22} />
+            <Icons.unChecked key={idx} className="text-gray-500" size={22} />
           );
         })}
       </div>
       <CardTitle className="font-bold text-3xl md:text-3xl mt-3">
         {t("questionHeading", {
-          number: 5 - resp.results.length + 1 + index,
+          number: currentQuestionIndex + 1,
           total: resp.total,
         })}
       </CardTitle>
       <CardDescription className="text-2xl md:text-2xl mt-3">
-        {resp.results[index]?.question}
+        {resp.results[0]?.question || "Question not available"}
+        <span className="hidden">Question ID: {resp.results[0]?.id}</span>
       </CardDescription>
 
       {textualEvidence && (
@@ -422,83 +782,99 @@ function MCQeustion({
         </div>
       )}
 
-      {resp.results[index]?.options.map((option, i) => (
-        <Button
-          key={i}
-          className={cn(
-            "mt-2 h-auto w-full",
-            selectedOption === i && "bg-red-500 hover:bg-red-600",
-            correctAnswer === option && "bg-green-500 hover:bg-green-600"
+      {(resp.results[0]?.options || [])
+        .filter(
+          (option) =>
+            option && typeof option === "string" && option.trim() !== ""
+        )
+        .map((option, i) => {
+          const optionText = option || "";
+          return (
+            <Button
+              key={`${resp.results[0]?.id}-${i}`}
+              className={cn(
+                "mt-2 h-auto w-full",
+                selectedOption === i && "bg-red-500 hover:bg-red-600",
+                correctAnswer === optionText &&
+                  "bg-green-500 hover:bg-green-600"
+              )}
+              disabled={isLoadingAnswer || selectedOption !== -1}
+              onClick={() => {
+                if (selectedOption === -1) {
+                  onSubmitted(resp.results[0].id, optionText, i);
+                }
+              }}
+            >
+              <p className="w-full text-left">
+                {i + 1}. {optionText}
+              </p>
+            </Button>
+          );
+        })}
+
+      {selectedOption >= 0 && (
+        <>
+          {page === "article" && (
+            <Button
+              variant={"outline"}
+              size={"sm"}
+              className="mt-2"
+              onClick={handleNext}
+              disabled={isLoadingAnswer}
+            >
+              {isLoadingAnswer ? (
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              ) : progress.filter((p) => p !== AnswerStatus.UNANSWERED).length <
+                resp.total ? (
+                <>{t("nextQuestionButton")}</>
+              ) : (
+                <>{t("submitButton")}</>
+              )}
+            </Button>
           )}
-          disabled={isLoadingAnswer}
-          onClick={() => {
-            if (selectedOption === -1) {
-              onSubmitted(resp.results[index].id, option, i);
-            }
-          }}
-        >
-          <p className="w-full text-left">
-            {i + 1}. {option}
-          </p>
-        </Button>
-      ))}
-      {page === "article" && (
+          {page === "lesson" && (
+            <div className="flex items-center justify-end">
+              <Button
+                variant={"outline"}
+                size={"sm"}
+                className="mt-4 w-full lg:w-1/4"
+                onClick={handleNext}
+                disabled={isLoadingAnswer}
+              >
+                {isLoadingAnswer ? (
+                  <div className="flex items-center">
+                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </div>
+                ) : progress.filter((p) => p !== AnswerStatus.UNANSWERED)
+                    .length < resp.total ? (
+                  <>{t("nextQuestionButton")}</>
+                ) : (
+                  <>{t("submitButton")}</>
+                )}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+
+      {textualEvidence && !page && (
         <Button
           variant={"outline"}
           size={"sm"}
           className="mt-2"
-          disabled={isLoadingAnswer || selectedOption === -1}
-          onClick={() => {
-            if (index < resp.results.length - 1) {
-              setIndex((prevIndex) => prevIndex + 1);
-              setSelectedOption(-1);
-              setCorrectAnswer("");
-              setPaused(false);
-              setTextualEvidence("");
-            } else {
-              handleCompleted();
-            }
-          }}
+          onClick={handleNext}
+          disabled={isLoadingAnswer}
         >
-          {isLoadingAnswer && (
+          {isLoadingAnswer ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-          )}
-          {index < resp.results.length - 1 ? (
+          ) : progress.filter((p) => p !== AnswerStatus.UNANSWERED).length <
+            resp.total ? (
             <>{t("nextQuestionButton")}</>
           ) : (
             <>{t("submitButton")}</>
           )}
         </Button>
-      )}
-      {page === "lesson" && (
-        <div className="flex items-center justify-end">
-          <Button
-            variant={"outline"}
-            size={"sm"}
-            className="mt-4 w-full lg:w-1/4"
-            disabled={isLoadingAnswer || selectedOption === -1}
-            onClick={() => {
-              if (index < resp.results.length - 1) {
-                setIndex((prevIndex) => prevIndex + 1);
-                setSelectedOption(-1);
-                setCorrectAnswer("");
-                setPaused(false);
-                setTextualEvidence("");
-              } else {
-                handleCompleted();
-              }
-            }}
-          >
-            {isLoadingAnswer && (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            {index < resp.results.length - 1 ? (
-              <>{t("nextQuestionButton")}</>
-            ) : (
-              <>{t("submitButton")}</>
-            )}
-          </Button>
-        </div>
       )}
     </CardContent>
   );
