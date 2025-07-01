@@ -4,6 +4,10 @@ import { Article } from "@/components/models/article-model";
 import { QuizStatus } from "@/components/models/questions-model";
 import { ExtendedNextRequest } from "./auth-controller";
 import { z } from "zod";
+import { splitTextIntoSentences } from "@/lib/utils";
+import { Translate } from "@google-cloud/translate/build/src/v2";
+import { generateObject } from "ai";
+import { openai, openaiModel } from "@/utils/openai";
 
 // Import genre data
 const genresFiction = require("../../../data/genres-fiction.json");
@@ -721,5 +725,185 @@ export const getGenres = async (req: Request): Promise<Response> => {
       error: "Failed to fetch genres",
       message: error instanceof Error ? error.message : "Unknown error",
     }, { status: 500 });
+  }
+};
+
+export enum LanguageType {
+  TH = "th",
+  EN = "en",
+  CN = "cn", 
+  TW = "tw",
+  VI = "vi",
+}
+
+async function translatePassageWithGoogle(
+  sentences: string[],
+  targetLanguage: string
+): Promise<string[]> {
+  const translate = new Translate({
+    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  });
+
+  const translatedSentences: string[] = [];
+  
+  for (const sentence of sentences) {
+    if (sentence.trim()) {
+      const [translation] = await translate.translate(sentence, {
+        to: getGoogleTranslateCode(targetLanguage),
+      });
+      translatedSentences.push(translation);
+    } else {
+      translatedSentences.push(sentence);
+    }
+  }
+  
+  return translatedSentences;
+}
+
+async function translatePassageWithGPT(sentences: string[]): Promise<string[]> {
+  const translatedSentences: string[] = [];
+  
+  for (const sentence of sentences) {
+    if (sentence.trim()) {
+      const { object } = await generateObject({
+        model: openai(openaiModel),
+        schema: z.object({
+          translated_text: z.string(),
+        }),
+        prompt: `Translate the following text to English: "${sentence}"`,
+      });
+      translatedSentences.push(object.translated_text);
+    } else {
+      translatedSentences.push(sentence);
+    }
+  }
+  
+  return translatedSentences;
+}
+
+function getGoogleTranslateCode(languageType: string): string {
+  switch (languageType) {
+    case "cn":
+      return "zh-CN";
+    case "tw":
+      return "zh-TW";
+    case "th":
+      return "th";
+    case "vi":
+      return "vi";
+    default:
+      return languageType;
+  }
+}
+
+// POST translate article summary
+// POST /api/v1/articles/[article_id]/translate
+interface TranslateRequestContext {
+  params: {
+    article_id: string;
+  };
+}
+
+export const translateArticleSummary = async (
+  request: NextRequest,
+  { params: { article_id } }: TranslateRequestContext
+) => {
+  try {
+    const { targetLanguage } = await request.json();
+
+    if (!Object.values(LanguageType).includes(targetLanguage)) {
+      return NextResponse.json(
+        {
+          message: "Invalid target language",
+        },
+        { status: 400 }
+      );
+    }
+
+    const article = await prisma.article.findUnique({
+      where: { id: article_id },
+      select: {
+        id: true,
+        summary: true,
+        translatedSummary: true,
+      },
+    });
+
+    if (!article) {
+      return NextResponse.json(
+        {
+          message: "Article not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (!article.summary) {
+      return NextResponse.json(
+        {
+          message: "Article summary not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    const existingTranslations = article.translatedSummary as Record<string, string[]> | null;
+    
+    if (existingTranslations && existingTranslations[targetLanguage]) {
+      return NextResponse.json({
+        message: "article already translated",
+        translated_sentences: existingTranslations[targetLanguage],
+      });
+    }
+
+    const sentences = splitTextIntoSentences(article.summary);
+    let translatedSentences: string[] = [];
+
+    try {
+      if (targetLanguage === LanguageType.EN) {
+        translatedSentences = await translatePassageWithGPT(sentences);
+      } else {
+        translatedSentences = await translatePassageWithGoogle(
+          sentences,
+          targetLanguage
+        );
+      }
+      
+      const updatedTranslations = {
+        ...(existingTranslations || {}),
+        [targetLanguage]: translatedSentences,
+      };
+
+      await prisma.article.update({
+        where: { id: article_id },
+        data: {
+          translatedSummary: updatedTranslations,
+        },
+      });
+      
+      return NextResponse.json({
+        message: "translation successful",
+        translated_sentences: translatedSentences,
+      });
+    } catch (translationError) {
+      console.error("Translation error:", translationError);
+      return NextResponse.json(
+        {
+          message: "Translation failed",
+          error: translationError instanceof Error ? translationError.message : "Unknown error"
+        },
+        { status: 500 }
+      );
+    }
+
+  } catch (error) {
+    console.error("API error:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+      },
+      { status: 500 }
+    );
   }
 };
