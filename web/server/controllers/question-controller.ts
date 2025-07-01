@@ -1,18 +1,15 @@
 import {
   AnswerStatus,
-  MCQRecord,
   QuestionState,
-  QuizStatus,
-  SARecord,
-  LARecord,
 } from "@/components/models/questions-model";
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getFeedbackWritter } from "./assistant-controller";
 import { generateLAQuestion } from "../utils/generators/la-question-generator";
 import { generateMCQuestion } from "../utils/generators/mc-question-generator";
 import { ExtendedNextRequest } from "./auth-controller";
 import { generateSAQuestion } from "../utils/generators/sa-question-generator";
+import { UserXpEarned } from "@/components/models/user-activity-log-model";
 
 interface RequestContext {
   params: {
@@ -43,88 +40,137 @@ export async function getMCQuestions(
   { params: { article_id } }: RequestContext
 ) {
   try {
-    const questions = await db
-      .collection("new-articles")
-      .doc(article_id)
-      .collection("mc-questions")
-      .get();
+    const userId = req.session?.user.id as string;
 
-    if (questions.docs.length === 0) {
-      const getArticle = await db
-        .collection("new-articles")
-        .doc(article_id)
-        .get();
+    let questions = await prisma.multipleChoiceQuestion.findMany({
+      where: { articleId: article_id },
+    });
 
-      const getData = getArticle.data();
+    if (questions.length === 0) {
+      const article = await prisma.article.findUnique({
+        where: { id: article_id },
+      });
 
-      let cefrlevel = getData?.cefr_level.replace(/[+-]/g, "");
+      if (!article) {
+        return NextResponse.json(
+          { message: "Article not found" },
+          { status: 404 }
+        );
+      }
+
+      const cefrlevel = article.cefrLevel?.replace(/[+-]/g, "") as any;
 
       const generateMCQ = await generateMCQuestion({
         cefrlevel: cefrlevel,
-        type: getData?.type,
-        passage: getData?.passage,
-        title: getData?.title,
-        summary: getData?.summary,
-        imageDesc: getData?.image_description,
+        type: article.type as any,
+        passage: article.passage || "",
+        title: article.title || "",
+        summary: article.summary || "",
+        imageDesc: article.imageDescription || "",
       });
 
-      for (let i = 0; generateMCQ.questions.length; i++) {
-        await db
-          .collection("new-articles")
-          .doc(article_id)
-          .collection("mc-questions")
-          .add(generateMCQ.questions[i]);
+      const questionsToCreate = generateMCQ.questions.slice(0, 5);
+      for (const question of questionsToCreate) {
+        await prisma.multipleChoiceQuestion.create({
+          data: {
+            articleId: article_id,
+            question: question.question,
+            options: [
+              question.correct_answer,
+              question.distractor_1,
+              question.distractor_2,
+              question.distractor_3,
+            ],
+            answer: question.correct_answer || "",
+            textualEvidence: question.textual_evidence || "",
+          },
+        });
       }
+
+      questions = await prisma.multipleChoiceQuestion.findMany({
+        where: { articleId: article_id },
+      });
     }
 
-    // Get user record
-    const userRecord = await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
-      .doc(article_id)
-      .collection("mcq-records")
-      .orderBy("created_at", "asc")
-      .get();
-
-    const progress = [] as AnswerStatus[];
-    userRecord.docs.forEach((doc) => {
-      const data = doc.data();
-      progress.push(data.status);
+    const userActivities = await prisma.userActivity.findMany({
+      where: {
+        userId: userId,
+        activityType: "MC_QUESTION",
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
     });
 
-    for (let i = 0; i < 5 - userRecord.docs.length; i++) {
+    const articleActivities = userActivities.filter((activity) => {
+      const details = activity.details as any;
+      return details?.articleId === article_id;
+    });
+
+    const progress: AnswerStatus[] = [];
+    const answeredQuestionIds = new Set();
+
+    articleActivities.forEach((activity) => {
+      const details = activity.details as any;
+      if (details?.questionId) {
+        answeredQuestionIds.add(details.questionId);
+        progress.push(
+          details.isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT
+        );
+      }
+    });
+
+    while (progress.length < 5) {
       progress.push(AnswerStatus.UNANSWERED);
     }
 
-    const randomQuestions = questions.docs
-      .filter((doc) => {
-        return !userRecord.docs.some((userDoc) => userDoc.id === doc.id);
-      })
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 5 - userRecord.docs.length);
+    const currentQuestionIndex = progress.findIndex(
+      (p) => p === AnswerStatus.UNANSWERED
+    );
 
-    let mcq = randomQuestions.map((doc) => {
-      const data = doc.data() as MCQRecord;
-      const options = [];
-      options.push(data.distractor_1);
-      options.push(data.distractor_2);
-      options.push(data.distractor_3);
-      options.push(data.correct_answer);
+    if (currentQuestionIndex === -1) {
+      return NextResponse.json(
+        {
+          state: QuestionState.COMPLETED,
+          total: 5,
+          progress,
+          results: [],
+        },
+        { status: 200 }
+      );
+    }
 
-      const textualEvidence = data.textual_evidence;
-      return {
-        id: doc.id,
-        question: data.question,
+    const unansweredQuestions = questions.filter(
+      (question) => !answeredQuestionIds.has(question.id)
+    );
+
+    if (unansweredQuestions.length === 0) {
+      return NextResponse.json(
+        {
+          state: QuestionState.COMPLETED,
+          total: 5,
+          progress,
+          results: [],
+        },
+        { status: 200 }
+      );
+    }
+
+    const nextQuestion = unansweredQuestions[0];
+    const options = [...nextQuestion.options];
+
+    const mcq = [
+      {
+        id: nextQuestion.id,
+        question: nextQuestion.question,
         options: options.sort(() => 0.5 - Math.random()),
-        textual_evidence: textualEvidence,
-      };
-    });
-    // console.log(mcq);
+        textual_evidence: nextQuestion.textualEvidence,
+      },
+    ];
+
     return NextResponse.json(
       {
-        state:
-          mcq.length === 0 ? QuestionState.COMPLETED : QuestionState.INCOMPLETE,
+        state: QuestionState.INCOMPLETE,
         total: 5,
         progress,
         results: mcq,
@@ -145,81 +191,86 @@ export async function getSAQuestion(
   { params: { article_id } }: RequestContext
 ) {
   try {
-    // Check user already answered
-    const record = await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
-      .doc(article_id)
-      .collection("saq-records")
-      .get();
+    const userId = req.session?.user.id as string;
 
-    if (record.docs.length > 0) {
-      const data = record.docs[0].data();
+    const existingActivity = await prisma.userActivity.findFirst({
+      where: {
+        userId: userId,
+        activityType: "SA_QUESTION",
+        targetId: article_id,
+        completed: true,
+      },
+    });
+
+    if (existingActivity) {
+      const details = existingActivity.details as any;
       return NextResponse.json(
         {
           message: "User already answered",
           result: {
-            id: record.docs[0].id,
-            question: data.question,
+            id: details?.questionId,
+            question: details?.question,
           },
-          suggested_answer: data.suggested_answer,
+          suggested_answer: details?.suggested_answer,
           state: QuestionState.COMPLETED,
-          answer: data.answer,
+          answer: details?.answer,
         },
         { status: 400 }
       );
     }
 
-    const questions = await db
-      .collection("new-articles")
-      .doc(article_id)
-      .collection("sa-questions")
-      // Random select 1 question from 5
-      .where("question_number", "==", Math.floor(Math.random() * 5) + 1)
-      .get();
+    let questions = await prisma.shortAnswerQuestion.findMany({
+      where: { articleId: article_id },
+    });
 
-    let data: Data = { question: "" };
+    if (questions.length === 0) {
+      const article = await prisma.article.findUnique({
+        where: { id: article_id },
+      });
 
-    if (questions.docs.length === 0) {
-      const getArticle = await db
-        .collection("new-articles")
-        .doc(article_id)
-        .get();
+      if (!article) {
+        return NextResponse.json(
+          { message: "Article not found" },
+          { status: 404 }
+        );
+      }
 
-      const getData = getArticle.data();
-
-      let cefrlevel = getData?.cefr_level.replace(/[+-]/g, "");
+      const cefrlevel = article.cefrLevel?.replace(/[+-]/g, "") as any;
 
       const generateSAQ = await generateSAQuestion({
         cefrlevel: cefrlevel,
-        type: getData?.type,
-        passage: getData?.passage,
-        title: getData?.title,
-        summary: getData?.summary,
-        imageDesc: getData?.image_description,
+        type: article.type as any,
+        passage: article.passage || "",
+        title: article.title || "",
+        summary: article.summary || "",
+        imageDesc: article.imageDescription || "",
       });
 
-      for (let i = 0; i < generateSAQ.questions.length; i++) {
-        await db
-          .collection("new-articles")
-          .doc(article_id)
-          .collection("sa-questions")
-          .add(generateSAQ.questions[i]);
+      for (const question of generateSAQ.questions) {
+        await prisma.shortAnswerQuestion.create({
+          data: {
+            articleId: article_id,
+            question: question.question,
+            answer: question.suggested_answer || "",
+          },
+        });
       }
 
-      data = generateSAQ.questions[Math.floor(Math.random() * 5)];
-    } else {
-      data = questions.docs[0].data() as SARecord;
+      questions = await prisma.shortAnswerQuestion.findMany({
+        where: { articleId: article_id },
+      });
     }
+
+    const randomQuestion =
+      questions[Math.floor(Math.random() * questions.length)];
 
     return NextResponse.json(
       {
-        result: {
-          id: questions.docs[0].id,
-          question: data.question,
-        },
         state: QuestionState.INCOMPLETE,
+        result: {
+          id: randomQuestion.id,
+          question: randomQuestion.question,
+        },
       },
       { status: 200 }
     );
@@ -236,57 +287,171 @@ export async function answerSAQuestion(
   req: ExtendedNextRequest,
   { params: { article_id, question_id } }: SubRequestContext
 ) {
-  const { answer, timeRecorded } = await req.json();
+  try {
+    const { answer, timeRecorded } = await req.json();
+    const userId = req.session?.user.id as string;
 
-  const question = await db
-    .collection("new-articles")
-    .doc(article_id)
-    .collection("sa-questions")
-    .doc(question_id)
-    .get();
-
-  const data = question.data() as SARecord;
-  //console.log(data);
-
-  // Update user record
-  await db
-    .collection("users")
-    .doc(req.session?.user.id as string)
-    .collection("article-records")
-    .doc(article_id)
-    .collection("saq-records")
-    .doc(question_id)
-    .set({
-      id: question_id,
-      time_recorded: timeRecorded,
-      question: data.question,
-      answer,
-      suggested_answer: data.suggested_answer,
-      created_at: new Date().toISOString(),
+    const question = await prisma.shortAnswerQuestion.findUnique({
+      where: { id: question_id },
     });
 
-  // Update records
-  await db
-    .collection("users")
-    .doc(req.session?.user.id as string)
-    .collection("article-records")
-    .doc(article_id)
-    .set(
-      {
-        status: QuizStatus.COMPLETED_SAQ,
-        updated_at: new Date().toISOString(),
-      },
-      { merge: true }
-    );
+    if (!question) {
+      return NextResponse.json(
+        { message: "Question not found" },
+        { status: 404 }
+      );
+    }
 
-  return NextResponse.json(
-    {
-      state: QuestionState.COMPLETED,
-      answer,
-      suggested_answer: data.suggested_answer,
-    },
-    { status: 200 }
-  );
+    await prisma.userActivity.create({
+      data: {
+        userId: userId,
+        activityType: "SA_QUESTION",
+        targetId: article_id,
+        completed: true,
+        timer: timeRecorded,
+        details: {
+          questionId: question_id,
+          question: question.question,
+          answer: answer,
+          suggested_answer: question.answer,
+        },
+      },
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (user) {
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { xp: user.xp + 3 },
+      });
+
+      await prisma.xPLog.create({
+        data: {
+          userId: userId,
+          xpEarned: 3,
+          activityId: question_id,
+          activityType: "SA_QUESTION",
+        },
+      });
+
+      if (req.session?.user) {
+        req.session.user.xp = updatedUser.xp;
+      }
+    }
+
+    return NextResponse.json(
+      {
+        state: QuestionState.COMPLETED,
+        answer,
+        suggested_answer: question.answer,
+        xpEarned: 3,
+        userXp: req.session?.user.xp,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getLAQuestion(
+  req: ExtendedNextRequest,
+  { params: { article_id } }: RequestContext
+) {
+  try {
+    const userId = req.session?.user.id as string;
+
+    const existingActivity = await prisma.userActivity.findFirst({
+      where: {
+        userId: userId,
+        activityType: "LA_QUESTION",
+        targetId: article_id,
+        completed: true,
+      },
+    });
+
+    if (existingActivity) {
+      const details = existingActivity.details as any;
+      return NextResponse.json(
+        {
+          message: "User already answered",
+          result: {
+            id: details?.questionId,
+            question: details?.question,
+          },
+          state: QuestionState.COMPLETED,
+          answer: details?.answer,
+        },
+        { status: 400 }
+      );
+    }
+
+    let questions = await prisma.longAnswerQuestion.findMany({
+      where: { articleId: article_id },
+    });
+
+    if (questions.length === 0) {
+      const article = await prisma.article.findUnique({
+        where: { id: article_id },
+      });
+
+      if (!article) {
+        return NextResponse.json(
+          { message: "Article not found" },
+          { status: 404 }
+        );
+      }
+
+      const cefrlevel = article.cefrLevel?.replace(/[+-]/g, "") as any;
+
+      const generateLAQ = await generateLAQuestion({
+        cefrlevel: cefrlevel,
+        type: article.type as any,
+        passage: article.passage || "",
+        title: article.title || "",
+        summary: article.summary || "",
+        imageDesc: article.imageDescription || "",
+      });
+
+      await prisma.longAnswerQuestion.create({
+        data: {
+          articleId: article_id,
+          question: generateLAQ.question,
+        },
+      });
+
+      questions = await prisma.longAnswerQuestion.findMany({
+        where: { articleId: article_id },
+      });
+    }
+
+    const randomQuestion =
+      questions[Math.floor(Math.random() * questions.length)];
+
+    return NextResponse.json(
+      {
+        state: QuestionState.INCOMPLETE,
+        result: {
+          id: randomQuestion.id,
+          question: randomQuestion.question,
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function answerMCQuestion(
@@ -294,149 +459,285 @@ export async function answerMCQuestion(
   { params: { article_id, question_id } }: SubRequestContext
 ) {
   try {
-    const { answer, timeRecorded } = await req.json();
-    // Check user already answered
-    const record = await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
-      .doc(article_id)
-      .collection("mcq-records")
-      .doc(question_id)
-      .get();
-    if (record.exists) {
+    const { selectedAnswer, timeRecorded } = await req.json();
+    const userId = req.session?.user.id as string;
+
+    const question = await prisma.multipleChoiceQuestion.findUnique({
+      where: { id: question_id },
+    });
+
+    if (!question) {
       return NextResponse.json(
-        { message: "User already answered", results: [] },
-        { status: 400 }
+        { message: "Question not found" },
+        { status: 404 }
       );
     }
-    const question = await db
-      .collection("new-articles")
-      .doc(article_id)
-      .collection("mc-questions")
-      .doc(question_id)
-      .get();
 
-    const data = question.data() as MCQRecord;
-    const correctAnswer = data.correct_answer;
-    const isCorrect =
-      answer === correctAnswer ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT;
+    const isCorrect = selectedAnswer === question.answer;
 
-    // Update user record
-    const userRecord = await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
-      .doc(article_id)
-      .collection("mcq-records")
-      .doc(question_id)
-      .set({
-        id: question_id,
-        time_recorded: timeRecorded,
-        status: isCorrect,
-        created_at: new Date().toISOString(),
-      });
-
-    // Update user xp + 2 if correct
-    // if (isCorrect === AnswerStatus.CORRECT) {
-    //   const user = await db
-    //     .collection("users")
-    //     .doc(req.session?.user.id as string)
-    //     .get();
-    //   const userXP = user.data()?.xp;
-    //   await db
-    //     .collection("users")
-    //     .doc(req.session?.user.id as string)
-    //     .update({
-    //       xp: userXP + 2,
-    //     });
-    // }
-
-    const userRecordAll = await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
-      .doc(article_id)
-      .collection("mcq-records")
-      .orderBy("created_at", "asc")
-      .get();
-
-    const progress = [] as AnswerStatus[];
-    userRecordAll.docs.forEach((doc) => {
-      const data = doc.data();
-      progress.push(data.status);
+    const existingActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId: userId,
+          activityType: "MC_QUESTION",
+          targetId: question_id,
+        },
+      },
     });
-    for (let i = 0; i < 5 - userRecordAll.docs.length; i++) {
-      progress.push(AnswerStatus.UNANSWERED);
+
+    if (existingActivity) {
+      await prisma.userActivity.update({
+        where: { id: existingActivity.id },
+        data: {
+          completed: true,
+          timer: timeRecorded,
+          details: {
+            questionId: question_id,
+            articleId: article_id,
+            question: question.question,
+            selectedAnswer: selectedAnswer,
+            correctAnswer: question.answer,
+            textualEvidence: question.textualEvidence,
+            isCorrect: isCorrect,
+          },
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      await prisma.userActivity.create({
+        data: {
+          userId: userId,
+          activityType: "MC_QUESTION",
+          targetId: question_id,
+          completed: true,
+          timer: timeRecorded,
+          details: {
+            questionId: question_id,
+            articleId: article_id,
+            question: question.question,
+            selectedAnswer: selectedAnswer,
+            correctAnswer: question.answer,
+            textualEvidence: question.textualEvidence,
+            isCorrect: isCorrect,
+          },
+        },
+      });
     }
 
-    // ALl progress is not unanswered update the user activity
-    if (!progress.some((status) => status === AnswerStatus.UNANSWERED)) {
-      await db
-        .collection("users")
-        .doc(req.session?.user.id as string)
-        .collection("article-records")
-        .doc(article_id)
-        .set(
-          {
-            status: QuizStatus.COMPLETED_MCQ,
-            scores: progress.filter((status) => status === AnswerStatus.CORRECT)
-              .length,
-            rated: 0,
-            level: req.session?.user.level,
-            updated_at: new Date().toISOString(),
-          },
-          { merge: true }
-        );
-      // Update heatmap
-      const date = new Date();
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const day = date.getDate().toString().padStart(2, "0");
-      const year = date.getFullYear();
-      const dateString = `${month}-${day}-${year}`;
+    if (isCorrect) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
 
-      const userId = req.session?.user.id as string;
-      const userHeatmapRef = db
-        .collection("users")
-        .doc(userId)
-        .collection("heatmap")
-        .doc("activity");
-      const heatmapDoc = await userHeatmapRef.get();
-      if (heatmapDoc.exists) {
-        const data = heatmapDoc.data();
-        if (data && data[dateString]) {
-          await userHeatmapRef.update({
-            [dateString]: {
-              read: data[dateString].read + 1,
-              completed: data[dateString].completed + 1,
-            },
-          });
-        } else {
-          await userHeatmapRef.set(
-            {
-              [dateString]: {
-                read: 1,
-                completed: 1,
-              },
-            },
-            { merge: true }
-          );
-        }
-      } else {
-        await userHeatmapRef.set({
-          [dateString]: {
-            read: 1,
-            completed: 1,
+      if (user) {
+        const updatedUser = await prisma.user.update({
+          where: { id: userId },
+          data: { xp: user.xp + UserXpEarned.MC_Question },
+        });
+
+        await prisma.xPLog.create({
+          data: {
+            userId: userId,
+            xpEarned: UserXpEarned.MC_Question,
+            activityId: question_id,
+            activityType: "MC_QUESTION",
           },
         });
       }
     }
 
+    const responseData = {
+      correct: isCorrect,
+      correctAnswer: question.answer,
+      textualEvidence: question.textualEvidence,
+      xpEarned: isCorrect ? 1 : 0,
+      userXp: req.session?.user.xp,
+    };
+
+    return NextResponse.json(responseData, { status: 200 });
+  } catch (error) {
+    console.error("Error in answerMCQuestion:", error);
     return NextResponse.json(
       {
-        progress,
-        status: isCorrect,
-        correct_answer: correctAnswer,
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function retakeMCQuestion(
+  req: ExtendedNextRequest,
+  { params: { article_id } }: RequestContext
+) {
+  try {
+    const userId = req.session?.user.id as string;
+
+    const activitiesToDelete = await prisma.userActivity.findMany({
+      where: {
+        userId: userId,
+        activityType: "MC_QUESTION",
+      },
+    });
+
+    const articleActivityIds = activitiesToDelete
+      .filter((activity) => {
+        const details = activity.details as any;
+        return details?.articleId === article_id;
+      })
+      .map((activity) => activity.id);
+
+    if (articleActivityIds.length > 0) {
+      await prisma.userActivity.deleteMany({
+        where: {
+          id: {
+            in: articleActivityIds,
+          },
+        },
+      });
+    }
+
+    return NextResponse.json(
+      { message: "MCQ progress reset successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function answerLAQuestion(
+  req: ExtendedNextRequest,
+  { params: { article_id, question_id } }: SubRequestContext
+) {
+  try {
+    const { answer, feedback, timeRecorded } = await req.json();
+    const userId = req.session?.user.id as string;
+
+    const question = await prisma.longAnswerQuestion.findUnique({
+      where: { id: question_id },
+    });
+
+    if (!question) {
+      return NextResponse.json(
+        { message: "Question not found" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.userActivity.create({
+      data: {
+        userId: userId,
+        activityType: "LA_QUESTION",
+        targetId: article_id,
+        completed: true,
+        timer: timeRecorded,
+        details: {
+          questionId: question_id,
+          question: question.question,
+          answer: answer,
+          feedback: feedback,
+        },
+      },
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (user) {
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { xp: user.xp + 5 },
+      });
+
+      await prisma.xPLog.create({
+        data: {
+          userId: userId,
+          xpEarned: 5,
+          activityId: question_id,
+          activityType: "LA_QUESTION",
+        },
+      });
+
+      if (req.session?.user) {
+        req.session.user.xp = updatedUser.xp;
+      }
+    }
+
+    const scores: number[] = Object.values(feedback.scores);
+    const sumScores = scores.reduce<number>((a, b) => a + b, 0);
+
+    return NextResponse.json(
+      {
+        state: QuestionState.COMPLETED,
+        answer,
+        result: feedback,
+        sumScores,
+        xpEarned: 5,
+        userXp: req.session?.user.xp,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getFeedbackLAquestion(
+  req: ExtendedNextRequest,
+  { params: { article_id, question_id } }: SubRequestContext
+) {
+  try {
+    const { answer, preferredLanguage } = await req.json();
+
+    const question = await prisma.longAnswerQuestion.findUnique({
+      where: { id: question_id },
+    });
+
+    const article = await prisma.article.findUnique({
+      where: { id: article_id },
+    });
+
+    if (!question || !article) {
+      return NextResponse.json(
+        { message: "Question or article not found" },
+        { status: 404 }
+      );
+    }
+
+    const cefrLevelReformatted =
+      article.cefrLevel?.replace(/[+-]/g, "") || "A1";
+
+    const getFeedback = await getFeedbackWritter({
+      preferredLanguage,
+      targetCEFRLevel: cefrLevelReformatted,
+      readingPassage: article.passage || "",
+      writingPrompt: question.question,
+      studentResponse: answer,
+    });
+
+    const getData = await getFeedback.json();
+    const randomExamples =
+      getData.exampleRevisions[
+        Math.floor(Math.random() * getData.exampleRevisions.length)
+      ];
+
+    const result = { ...getData, exampleRevisions: randomExamples };
+
+    return NextResponse.json(
+      {
+        state: QuestionState.INCOMPLETE,
+        result,
       },
       { status: 200 }
     );
@@ -455,98 +756,22 @@ export async function rateArticle(
 ) {
   try {
     const { rating } = await req.json();
+    const userId = req.session?.user.id as string;
 
-    // const newXp = (req.session?.user.xp as number) + rating;
-
-    // await db
-    //   .collection("users")
-    //   .doc(req.session?.user.id as string)
-    //   .update({
-    //     xp: newXp,
-    //   });
-
-    // Update user record
-    await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
-      .doc(article_id)
-      .set(
-        {
-          rated: rating,
-          updated_at: new Date().toISOString(),
+    await prisma.userActivity.create({
+      data: {
+        userId: userId,
+        activityType: "ARTICLE_RATING",
+        targetId: article_id,
+        completed: true,
+        details: {
+          rating: rating,
         },
-        { merge: true }
-      );
-
-    return NextResponse.json({ message: "Rated" }, { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-// Review rated receive xp === rated star
-// export async function xpAwardRated(
-//     req: ExtendedNextRequest
-// ){
-//     try{
-//         const { rating } = await req.json();
-//         const newXp = req.session?.user.xp as number + rating
-
-//         await db
-//             .collection("users")
-//             .doc(req.session?.user.id as string)
-//             .update({
-//                 xp: newXp
-//             });
-//         return NextResponse.json(
-//             { message: "xpAward" },
-//             { status: 200 }
-//         );
-//     }catch(error){
-//         console.error(error);
-//         return NextResponse.json(
-//             { message: "Internal server error" },
-//             { status: 500 }
-//         );
-//     }
-// }
-
-//Retake quiz
-export async function retakeMCQuestion(
-  req: ExtendedNextRequest,
-  { params: { article_id } }: RequestContext
-) {
-  try {
-    // Delete user record
-    const userRecord = await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
-      .doc(article_id)
-      .collection("mcq-records")
-      .get();
-
-    userRecord.docs.forEach(async (doc) => {
-      await db
-        .collection("users")
-        .doc(req.session?.user.id as string)
-        .collection("article-records")
-        .doc(article_id)
-        .collection("mcq-records")
-        .doc(doc.id)
-        .delete();
+      },
     });
 
     return NextResponse.json(
-      {
-        message: "Retake quiz",
-        state: QuestionState.INCOMPLETE,
-      },
+      { message: "Article rated successfully" },
       { status: 200 }
     );
   } catch (error) {
@@ -556,206 +781,4 @@ export async function retakeMCQuestion(
       { status: 500 }
     );
   }
-}
-
-export async function getLAQuestion(
-  req: ExtendedNextRequest,
-  { params: { article_id } }: RequestContext
-) {
-  try {
-    // Check user already answered
-    const record = await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
-      .doc(article_id)
-      .collection("laq-records")
-      .get();
-
-    if (record.docs.length > 0) {
-      const data = record.docs[0].data();
-      return NextResponse.json(
-        {
-          message: "User already answered",
-          result: {
-            id: record.docs[0]?.id,
-            question: data.question,
-          },
-          suggested_answer: data.suggested_answer,
-          state: QuestionState.COMPLETED,
-          answer: data.answer,
-        },
-        { status: 400 }
-      );
-    }
-
-    let data: Data = { question: "" };
-
-    const questions = await db
-      .collection("new-articles")
-      .doc(article_id)
-      .collection("la-questions")
-      .get();
-
-    //check laq have no in db
-    if (questions.docs.length === 0) {
-      const getArticle = await db
-        .collection("new-articles")
-        .doc(article_id)
-        .get();
-
-      const getData = getArticle.data();
-
-      let cefrlevel = getData?.cefr_level.replace(/[+-]/g, "");
-
-      if (cefrlevel === "A0") {
-        cefrlevel = "A1";
-      }
-
-      const generateLAQ = await generateLAQuestion({
-        cefrlevel: cefrlevel,
-        type: getData?.type,
-        passage: getData?.passage,
-        title: getData?.title,
-        summary: getData?.summary,
-        imageDesc: getData?.image_description,
-      });
-
-      await db
-        .collection("new-articles")
-        .doc(article_id)
-        .collection("la-questions")
-        .add(generateLAQ);
-
-      data = generateLAQ;
-      //if laq have in db
-    } else {
-      data = questions.docs[0].data() as LARecord;
-    }
-
-    return NextResponse.json(
-      {
-        result: {
-          id: questions.docs[0]?.id,
-          question: data.question,
-        },
-        state: QuestionState.INCOMPLETE,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function getFeedbackLAquestion(
-  req: ExtendedNextRequest,
-  { params: { article_id, question_id } }: SubRequestContext
-) {
-  const { answer, preferredLanguage } = await req.json();
-
-  const getQuestion = await db
-    .collection("new-articles")
-    .doc(article_id)
-    .collection("la-questions")
-    .doc(question_id)
-    .get();
-
-  const getArticle = await db.collection("new-articles").doc(article_id).get();
-
-  const getLaq = getQuestion.data() as LARecord;
-
-  const article = getArticle.data();
-
-  let cefrLevelReformatted = article?.cefr_level.replace(/[+-]/g, "");
-
-  const getFeedback = await getFeedbackWritter({
-    preferredLanguage,
-    targetCEFRLevel: cefrLevelReformatted,
-    readingPassage: article?.passage,
-    writingPrompt: getLaq.question,
-    studentResponse: answer,
-  });
-
-  const getData = await getFeedback.json();
-
-  const randomExamples =
-    getData.exampleRevisions[
-      Math.floor(Math.random() * getData.exampleRevisions.length)
-    ];
-
-  const result = { ...getData, exampleRevisions: randomExamples };
-
-  return NextResponse.json(
-    {
-      state: QuestionState.INCOMPLETE,
-      result,
-    },
-    { status: 200 }
-  );
-}
-
-export async function answerLAQuestion(
-  req: ExtendedNextRequest,
-  { params: { article_id, question_id } }: SubRequestContext
-) {
-  const { answer, feedback, timeRecorded } = await req.json();
-
-  const question = await db
-    .collection("new-articles")
-    .doc(article_id)
-    .collection("la-questions")
-    .doc(question_id)
-    .get();
-
-  const data = question.data() as LARecord;
-
-  //Update user record
-  await db
-    .collection("users")
-    .doc(req.session?.user.id as string)
-    .collection("article-records")
-    .doc(article_id)
-    .collection("laq-records")
-    .doc(question_id)
-    .set({
-      id: question_id,
-      time_recorded: timeRecorded,
-      question: data.question,
-      answer,
-      feedback,
-      created_at: new Date().toISOString(),
-    });
-
-  // Update records
-  await db
-    .collection("users")
-    .doc(req.session?.user.id as string)
-    .collection("article-records")
-    .doc(article_id)
-    .set(
-      {
-        status: QuizStatus.COMPLETED_LAQ,
-        updated_at: new Date().toISOString(),
-      },
-      { merge: true }
-    );
-
-  const scores: number[] = Object.values(feedback.scores);
-
-  const sumScores = scores.reduce<number>((a, b) => a + b, 0);
-
-  return NextResponse.json(
-    {
-      state: QuestionState.COMPLETED,
-      answer,
-      result: feedback,
-      sumScores,
-    },
-    { status: 200 }
-  );
 }

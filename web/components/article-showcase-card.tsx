@@ -5,7 +5,6 @@ import { Rating } from "@mui/material";
 import { ArticleShowcase } from "./models/article-model";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import { usePathname } from "next/navigation";
-import { ActivityType, ActivityStatus } from "./models/user-activity-log-model";
 
 type Props = {
   article: ArticleShowcase;
@@ -24,11 +23,11 @@ async function getTranslateSentence(
       },
       body: JSON.stringify({ targetLanguage }),
     });
-    
+
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
-    
+
     const data = await res.json();
     return data;
   } catch (error) {
@@ -55,8 +54,6 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
       if (!locale || locale === "en") {
         return;
       }
-      
-      // The locale from useCurrentLocale() should already be in correct format (th, cn, tw, vi)
       const data = await getTranslateSentence(articleId, locale);
 
       setSummarySentence(data.translated_sentences);
