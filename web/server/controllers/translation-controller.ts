@@ -1,10 +1,11 @@
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Translate } from "@google-cloud/translate/build/src/v2";
 import { generateObject } from "ai";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { openai, openaiModel } from "@/utils/openai";
+import db from "@/configs/firestore-config";
 
 interface RequestContext {
   params: {
@@ -39,11 +40,16 @@ export async function translate(
     );
   }
 
-  const articleSnapshot = await db
-    .collection("new-articles")
-    .doc(article_id)
-    .get();
-  const article = articleSnapshot.data();
+  const article = await prisma.article.findUnique({
+    where: { id: article_id },
+    select: {
+      id: true,
+      summary: true,
+      translatedSummary: true,
+      passage: true,
+      translatedPassage: true,
+    },
+  });
 
   if (!article) {
     return NextResponse.json(
@@ -55,18 +61,22 @@ export async function translate(
   }
 
   if (type === "summary") {
-    const translationSnapshot = await db
-      .collection(`summary-translations`)
-      .doc(article_id)
-      .get();
-
-    const translation = translationSnapshot.data();
-
-    if (translation && translation.summary[targetLanguage]) {
+    const existingTranslations = article.translatedSummary as Record<string, string[]> | null;
+    
+    if (existingTranslations && existingTranslations[targetLanguage]) {
       return NextResponse.json({
         message: "article already translated",
-        translated_sentences: translation.summary[targetLanguage],
+        translated_sentences: existingTranslations[targetLanguage],
       });
+    }
+
+    if (!article.summary) {
+      return NextResponse.json(
+        {
+          message: "Article summary not found",
+        },
+        { status: 404 }
+      );
     }
 
     const sentences = splitTextIntoSentences(article.summary);
@@ -81,22 +91,19 @@ export async function translate(
           targetLanguage
         );
       }
+      
+      const updatedTranslations = {
+        ...(existingTranslations || {}),
+        [targetLanguage]: translatedSentences,
+      };
 
-      await db
-        .collection("summary-translations")
-        .doc(article_id)
-        .set(
-          {
-            articleId: article_id,
-            updated_at: new Date().toISOString(),
-            // [targetLanguage]: translatedSentences,
-            summary: {
-              [targetLanguage]: translatedSentences,
-            },
-          },
-          { merge: true }
-        );
-
+      await prisma.article.update({
+        where: { id: article_id },
+        data: {
+          translatedSummary: updatedTranslations,
+        },
+      });
+      
       return NextResponse.json({
         message: "translation successful",
         translated_sentences: translatedSentences,
@@ -111,53 +118,25 @@ export async function translate(
     }
   }
   if (type === "passage") {
-    const translationSnapshot = await db
-      .collection("content-translations")
-      .doc(article_id)
-      .get();
-    const translation = translationSnapshot.data();
-
-    if (translation && translation.translation[targetLanguage]) {
+    const existingTranslations = article.translatedPassage as Record<string, string[]> | null;
+    
+    if (existingTranslations && existingTranslations[targetLanguage]) {
       return NextResponse.json({
         message: "article already translated",
-        translated_sentences: translation.translation[targetLanguage],
+        translated_sentences: existingTranslations[targetLanguage],
       });
     }
 
-    let sentences: string[] = [];
-
-    if (Array.isArray(article.timepoints)) {
-      const passageSentences = splitTextIntoSentences(article.passage, true);
-
-      const sentenceList = article.timepoints.map(
-        (timepoint: any, index: number) => {
-          const sentence =
-            passageSentences.length <= article.timepoints.length
-              ? timepoint.sentences
-              : passageSentences[index];
-
-          return {
-            sentence: sentence ?? passageSentences[index],
-            index: timepoint.index || index,
-          };
-        }
-      );
-
-      sentences = sentenceList
-        .map((item) => item.sentence)
-        .filter((sentence) => sentence && sentence.trim().length > 0);
-    }
-
-    if (sentences.length === 0) {
-      sentences = splitTextIntoSentences(article.passage, true);
-    }
-
-    if (sentences.length === 0) {
+    if (!article.passage) {
       return NextResponse.json(
-        { message: "No sentences found to translate" },
-        { status: 400 }
+        {
+          message: "Article passage not found",
+        },
+        { status: 404 }
       );
     }
+
+    const sentences = splitTextIntoSentences(article.passage);
 
     let translatedSentences: string[] = [];
     try {
@@ -169,21 +148,19 @@ export async function translate(
           targetLanguage
         );
       }
+      
+      const updatedTranslations = {
+        ...(existingTranslations || {}),
+        [targetLanguage]: translatedSentences,
+      };
 
-      await db
-        .collection("content-translations")
-        .doc(article_id)
-        .set(
-          {
-            id: article_id,
-            updated_at: new Date().toISOString(),
-            translation: {
-              [targetLanguage]: translatedSentences,
-            },
-          },
-          { merge: true }
-        );
-
+      await prisma.article.update({
+        where: { id: article_id },
+        data: {
+          translatedPassage: updatedTranslations,
+        },
+      });
+      
       return NextResponse.json({
         message: "translation successful",
         translated_sentences: translatedSentences,
