@@ -8,8 +8,6 @@ export async function getCurrentUser() {
   if (!session?.user?.id) {
     return null;
   }
-
-  // Fetch fresh user data from database to ensure we have the latest information
   try {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -36,22 +34,6 @@ export async function getCurrentUser() {
     const currentDate = new Date();
     const isExpired = user.expiredDate ? user.expiredDate < currentDate : false;
 
-    console.log("Current user data fetched:", {
-      id: user.id,
-      email: user.email!,
-      display_name: user.name ?? "",
-      role: user.role,
-      level: user.level,
-      email_verified: !!user.emailVerified,
-      picture: user.image ?? "",
-      xp: user.xp,
-      cefr_level: user.cefrLevel ?? "",
-      expired_date: user.expiredDate?.toISOString() ?? "",
-      expired: isExpired,
-      license_id: user.licenseId ?? "",
-      onborda: user.onborda ?? false,
-    });
-
     return {
       id: user.id,
       email: user.email!,
@@ -69,7 +51,6 @@ export async function getCurrentUser() {
     };
   } catch (error) {
     console.error("Error fetching current user:", error);
-    // Fallback to session data if database query fails
     return session.user;
   }
 }
