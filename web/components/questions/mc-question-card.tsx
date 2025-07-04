@@ -21,13 +21,7 @@ import {
 } from "../models/questions-model";
 import { Icons } from "../icons";
 import { useQuestionStore } from "@/store/question-store";
-import { set } from "lodash";
 import { toast } from "../ui/use-toast";
-import {
-  UserXpEarned,
-  ActivityStatus,
-  ActivityType,
-} from "../models/user-activity-log-model";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -184,8 +178,27 @@ export default function MCQuestionCard({
       });
   }, [articleId]);
 
-  const handleCompleted = () => {
-    setState(QuestionState.LOADING);
+  const handleCompleted = (currentProgress?: AnswerStatus[], newResp?: QuestionResponse) => {
+    
+    const progressToCheck = currentProgress || data.progress || [];
+    const completedAnswers = progressToCheck.filter(
+      (p) => p === AnswerStatus.CORRECT || p === AnswerStatus.INCORRECT
+    ).length;
+
+    if (currentProgress) {
+      const updatedData = { ...data, progress: currentProgress };
+      if (newResp) {
+        updatedData.results = newResp.results;
+        updatedData.total = newResp.total;
+      }
+      setData(updatedData);
+    }
+
+    if (completedAnswers >= 5) {
+      setState(QuestionState.COMPLETED);
+    } else {
+      setState(QuestionState.LOADING);
+    }
 
     setHasStarted(true);
     try {
@@ -201,13 +214,21 @@ export default function MCQuestionCard({
       sessionStorage.removeItem(`quiz_started_${articleId}`);
     } catch (e) {}
 
+    setHasStarted(false);
+
     fetch(`/api/v1/articles/${articleId}/questions/mcq`, {
       method: "DELETE",
     })
       .then((res) => res.json())
+      .then((deleteResponse) => {
+        
+        const timestamp = new Date().getTime();
+        return fetch(`/api/v1/articles/${articleId}/questions/mcq?_t=${timestamp}`)
+          .then((res) => res.json());
+      })
       .then((data) => {
-        setState(data.state);
-        setData({
+        
+        const newData = {
           progress: [
             AnswerStatus.UNANSWERED,
             AnswerStatus.UNANSWERED,
@@ -215,13 +236,21 @@ export default function MCQuestionCard({
             AnswerStatus.UNANSWERED,
             AnswerStatus.UNANSWERED,
           ],
-          results: [],
-          total: 0,
-          state: data.state,
-        });
+          results: data.results || [],
+          total: data.total || 5,
+          state: QuestionState.INCOMPLETE,
+        };
+        
+        setData(newData);
+        useQuestionStore.setState({ mcQuestion: { ...data, state: QuestionState.INCOMPLETE } });
+        
+        setTimeout(() => {
+          setState(QuestionState.INCOMPLETE);
+        }, 10);
       })
       .catch((error) => {
-        setState(QuestionState.LOADING);
+        console.error("❌ Error during retake:", error);
+        setState(QuestionState.INCOMPLETE);
       });
   };
 
@@ -367,7 +396,7 @@ function QuestionCardIncomplete({
   userId: string;
   resp: QuestionResponse;
   articleId: string;
-  handleCompleted: () => void;
+  handleCompleted: (currentProgress?: AnswerStatus[], newResp?: QuestionResponse) => void;
   articleTitle: string;
   articleLevel: number;
   page?: "lesson" | "article";
@@ -486,7 +515,7 @@ function MCQeustion({
 }: {
   articleId: string;
   resp: QuestionResponse;
-  handleCompleted: () => void;
+  handleCompleted: (currentProgress?: AnswerStatus[], newResp?: QuestionResponse) => void;
   userId: string;
   articleTitle: string;
   articleLevel: number;
@@ -500,8 +529,11 @@ function MCQeustion({
   const t = useScopedI18n("components.mcq");
   const router = useRouter();
   const [textualEvidence, setTextualEvidence] = useState("");
+  const [currentResp, setCurrentResp] = useState(resp);
 
   React.useEffect(() => {
+    setCurrentResp(resp);
+
     if (resp.results && resp.results[0]) {
       const options = resp.results[0].options || [];
       if (
@@ -596,7 +628,7 @@ function MCQeustion({
 
     const cleanOption = option.replace(/^\d+\.\s*/, "");
 
-    const originalOptions = resp.results[0]?.options || [];
+    const originalOptions = currentResp.results[0]?.options || [];
 
     const validOptions = originalOptions.filter(
       (opt) => opt && typeof opt === "string" && opt.trim() !== ""
@@ -668,16 +700,22 @@ function MCQeustion({
     });
 
     if (completedCount === 5) {
+      setLoadingAnswer(false);
+      
+      const updatedResp = { ...currentResp, progress: progress };
+      handleCompleted(progress, updatedResp);
+
       const totalXpEarned = correctCount * 2;
       toast({
         title: "Quiz Completed!",
         imgSrc: true,
         description: `Congratulations! You got ${correctCount} out of 5 questions correct and earned ${totalXpEarned} XP.`,
       });
-
-      router.refresh();
+      setTimeout(() => {
+        router.refresh();
+      }, 100);
     }
-  }, [progress, QuestionState]);
+  }, [progress, router, toast, page, setPaused, handleCompleted]);
 
   const handleNext = () => {
     setSelectedOption(-1);
@@ -688,7 +726,8 @@ function MCQeustion({
     const answeredCount = progress.filter(
       (p) => p !== AnswerStatus.UNANSWERED
     ).length;
-    if (answeredCount < resp.total) {
+
+    if (answeredCount < currentResp.total) {
       setLoadingAnswer(true);
 
       const timestamp = new Date().getTime();
@@ -702,6 +741,7 @@ function MCQeustion({
             if (savedProgress) {
               const parsedProgress = JSON.parse(savedProgress);
               setProgress(parsedProgress);
+              data.progress = parsedProgress;
             } else {
               setProgress(data.progress || []);
             }
@@ -710,6 +750,8 @@ function MCQeustion({
             setProgress(data.progress || []);
           }
 
+          setCurrentResp(data);
+
           try {
             sessionStorage.setItem(`quiz_started_${articleId}`, "true");
           } catch (e) {
@@ -717,8 +759,6 @@ function MCQeustion({
           }
 
           useQuestionStore.setState({ mcQuestion: data });
-
-          handleCompleted();
         })
         .catch((error) => {
           console.error("Error fetching next question:", error);
@@ -727,7 +767,7 @@ function MCQeustion({
           setLoadingAnswer(false);
         });
     } else {
-      handleCompleted();
+      setLoadingAnswer(false);
     }
   };
 
@@ -765,12 +805,14 @@ function MCQeustion({
       <CardTitle className="font-bold text-3xl md:text-3xl mt-3">
         {t("questionHeading", {
           number: currentQuestionIndex + 1,
-          total: resp.total,
+          total: currentResp.total,
         })}
       </CardTitle>
       <CardDescription className="text-2xl md:text-2xl mt-3">
-        {resp.results[0]?.question || "Question not available"}
-        <span className="hidden">Question ID: {resp.results[0]?.id}</span>
+        {currentResp.results[0]?.question || "Question not available"}
+        <span className="hidden">
+          Question ID: {currentResp.results[0]?.id}
+        </span>
       </CardDescription>
 
       {textualEvidence && (
@@ -782,7 +824,7 @@ function MCQeustion({
         </div>
       )}
 
-      {(resp.results[0]?.options || [])
+      {(currentResp.results[0]?.options || [])
         .filter(
           (option) =>
             option && typeof option === "string" && option.trim() !== ""
@@ -791,7 +833,7 @@ function MCQeustion({
           const optionText = option || "";
           return (
             <Button
-              key={`${resp.results[0]?.id}-${i}`}
+              key={`${currentResp.results[0]?.id}-${i}`}
               className={cn(
                 "mt-2 h-auto w-full",
                 selectedOption === i && "bg-red-500 hover:bg-red-600",
@@ -801,7 +843,7 @@ function MCQeustion({
               disabled={isLoadingAnswer || selectedOption !== -1}
               onClick={() => {
                 if (selectedOption === -1) {
-                  onSubmitted(resp.results[0].id, optionText, i);
+                  onSubmitted(currentResp.results[0].id, optionText, i);
                 }
               }}
             >
@@ -825,7 +867,7 @@ function MCQeustion({
               {isLoadingAnswer ? (
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
               ) : progress.filter((p) => p !== AnswerStatus.UNANSWERED).length <
-                resp.total ? (
+                currentResp.total ? (
                 <>{t("nextQuestionButton")}</>
               ) : (
                 <>{t("submitButton")}</>
@@ -847,7 +889,7 @@ function MCQeustion({
                     Loading...
                   </div>
                 ) : progress.filter((p) => p !== AnswerStatus.UNANSWERED)
-                    .length < resp.total ? (
+                    .length < currentResp.total ? (
                   <>{t("nextQuestionButton")}</>
                 ) : (
                   <>{t("submitButton")}</>
@@ -869,7 +911,7 @@ function MCQeustion({
           {isLoadingAnswer ? (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
           ) : progress.filter((p) => p !== AnswerStatus.UNANSWERED).length <
-            resp.total ? (
+            currentResp.total ? (
             <>{t("nextQuestionButton")}</>
           ) : (
             <>{t("submitButton")}</>
