@@ -1,7 +1,6 @@
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import db from "@/configs/firestore-config";
 
 interface RequestContext {
   params: {
@@ -138,15 +137,16 @@ export async function getWordList(
 
 export async function deleteWordlist(req: ExtendedNextRequest) {
   try {
-    // Access request body
     const { id } = await req.json();
 
-    //Delete sentence
-    const wordRef = db.collection("user-word-records").doc(id);
-    await wordRef.delete();
+    await prisma.userWordRecord.delete({
+      where: {
+        id: id
+      }
+    });
 
     return NextResponse.json({
-      messeges: "Sentence deleted",
+      message: "Word deleted",
       status: 200,
     });
   } catch (error) {
@@ -183,7 +183,6 @@ export async function postSentendcesFlashcard(
       audioUrl,
     } = await req.json();
 
-    // Validate that one source is provided (either article or story+chapter)
     if (!articleId && (!storyId || chapterNumber === undefined)) {
       return NextResponse.json(
         { message: "Must provide articleId or storyId with chapterNumber" },
@@ -191,44 +190,42 @@ export async function postSentendcesFlashcard(
       );
     }
 
-    // Check if sentence is already saved
-    let query = db
-      .collection("user-sentence-records")
-      .where("userId", "==", id)
-      .where("sn", "==", sn);
+    let whereClause: any = {
+      userId: id,
+      sn: sn,
+    };
 
     if (articleId) {
-      query = query.where("articleId", "==", articleId);
+      whereClause.articleId = articleId;
     } else {
-      query = query
-        .where("storyId", "==", storyId)
-        .where("chapterNumber", "==", chapterNumber);
+      whereClause.storyId = storyId;
+      whereClause.chapterNumber = chapterNumber;
     }
 
-    const userSentenceRecord = await query.limit(1).get();
+    const existingSentence = await prisma.userSentenceRecord.findFirst({
+      where: whereClause
+    });
 
-    if (!userSentenceRecord.empty) {
+    if (existingSentence) {
       return NextResponse.json(
         { message: "Sentence already saved" },
         { status: 400 }
       );
     }
 
-    // Prepare data for saving
-    const recordData: Record<string, any> = {
+    const recordData: any = {
       userId: id,
       sentence,
       translation,
       sn,
       timepoint,
       endTimepoint,
-      createdAt: new Date(),
       difficulty,
-      due,
-      elapsed_days,
+      due: new Date(due),
+      elapsedDays: elapsed_days,
       lapses,
       reps,
-      scheduled_days,
+      scheduledDays: scheduled_days,
       stability,
       state,
       audioUrl,
@@ -241,7 +238,9 @@ export async function postSentendcesFlashcard(
       recordData.chapterNumber = chapterNumber;
     }
 
-    await db.collection("user-sentence-records").add(recordData);
+    await prisma.userSentenceRecord.create({
+      data: recordData
+    });
 
     return NextResponse.json({
       message: "Sentence saved",
@@ -262,24 +261,17 @@ export async function getSentencesFlashcard(
 ) {
   const articleId = req.nextUrl.searchParams.get("articleId");
   try {
-    // Get sentences
     console.log(articleId, "articleId");
 
-    const sentencesRef = articleId
-      ? db
-          .collection("user-sentence-records")
-          .where("userId", "==", id)
-          .where("articleId", "==", articleId)
-      : db
-          .collection("user-sentence-records")
-          .where("userId", "==", id)
-          .orderBy("createdAt", "desc");
-
-    const sentencesSnapshot = await sentencesRef.get();
-    const sentences = sentencesSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const sentences = await prisma.userSentenceRecord.findMany({
+      where: {
+        userId: id,
+        ...(articleId && { articleId }),
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
     return NextResponse.json({
       message: "User sentence retrieved",
@@ -298,15 +290,16 @@ export async function getSentencesFlashcard(
 
 export async function deleteSentencesFlashcard(req: ExtendedNextRequest) {
   try {
-    // Access request body
     const { id } = await req.json();
 
-    //Delete sentence
-    const sentenceRef = db.collection("user-sentence-records").doc(id);
-    await sentenceRef.delete();
+    await prisma.userSentenceRecord.delete({
+      where: {
+        id: id
+      }
+    });
 
     return NextResponse.json({
-      messeges: "Sentence deleted",
+      message: "Sentence deleted",
       status: 200,
     });
   } catch (error) {
@@ -323,16 +316,14 @@ export async function getVocabulariesFlashcard(
   { params: { id } }: RequestContext
 ) {
   try {
-    const vocabulariesRef = db
-      .collection("user-word-records")
-      .where("userId", "==", id)
-      .orderBy("createdAt", "desc");
-
-    const vocabulariesSnapshot = await vocabulariesRef.get();
-    const vocabularies = vocabulariesSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const vocabularies = await prisma.userWordRecord.findMany({
+      where: {
+        userId: id
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
     return NextResponse.json({
       message: "Vocabularies retrieved successfully",
@@ -368,35 +359,39 @@ export async function postVocabulariesFlashcard(
       saveToFlashcard = true,
     } = await req.json();
 
-    const existingVocab = await db
-      .collection("user-word-records")
-      .where("userId", "==", id)
-      .where("articleId", "==", articleId)
-      .where("word.vocabulary", "==", word.vocabulary)
-      .limit(1)
-      .get();
+    const existingVocab = await prisma.userWordRecord.findFirst({
+      where: {
+        userId: id,
+        articleId: articleId,
+        word: {
+          path: ['vocabulary'],
+          equals: word.vocabulary
+        }
+      }
+    });
 
-    if (!existingVocab.empty) {
+    if (existingVocab) {
       return NextResponse.json(
         { message: "Vocabulary already exists" },
         { status: 400 }
       );
     }
 
-    await db.collection("user-word-records").add({
-      userId: id,
-      articleId,
-      word,
-      createdAt: new Date(),
-      difficulty,
-      due,
-      elapsed_days,
-      lapses,
-      reps,
-      scheduled_days,
-      stability,
-      state,
-      saveToFlashcard,
+    await prisma.userWordRecord.create({
+      data: {
+        userId: id,
+        articleId,
+        word,
+        difficulty,
+        due: new Date(due),
+        elapsedDays: elapsed_days,
+        lapses,
+        reps,
+        scheduledDays: scheduled_days,
+        stability,
+        state,
+        saveToFlashcard,
+      }
     });
 
     return NextResponse.json({
@@ -416,8 +411,11 @@ export async function deleteVocabulariesFlashcard(req: ExtendedNextRequest) {
   try {
     const { id } = await req.json();
 
-    const vocabularyRef = db.collection("user-word-records").doc(id);
-    await vocabularyRef.delete();
+    await prisma.userWordRecord.delete({
+      where: {
+        id: id
+      }
+    });
 
     return NextResponse.json({
       message: "Vocabulary deleted successfully",
