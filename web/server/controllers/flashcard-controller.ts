@@ -1,5 +1,6 @@
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import db from "@/configs/firestore-config";
 
 interface RequestContext {
@@ -22,6 +23,7 @@ interface WordList {
   endTime: number;
   startTime: number;
   index: number;
+  [key: string]: any;
 }
 
 export async function postSaveWordList(
@@ -47,30 +49,35 @@ export async function postSaveWordList(
 
     await Promise.all(
       foundWordsList.map(async (word: WordList) => {
-        const userWordRecord = await db
-          .collection("user-word-records")
-          .where("userId", "==", id)
-          .where("articleId", "==", articleId)
-          .where("word.vocabulary", "==", word.vocabulary)
-          .get();
+        const existingRecord = await prisma.userWordRecord.findFirst({
+          where: {
+            userId: id,
+            articleId: articleId,
+            word: {
+              path: ['vocabulary'],
+              equals: word.vocabulary
+            }
+          }
+        });
 
-        if (!userWordRecord.empty) {
+        if (existingRecord) {
           wordAllReadySaved.push(word.vocabulary);
         } else {
-          await db.collection("user-word-records").add({
-            userId: id,
-            articleId,
-            saveToFlashcard,
-            word,
-            createdAt: new Date(),
-            difficulty,
-            due,
-            elapsed_days,
-            lapses,
-            reps,
-            scheduled_days,
-            stability,
-            state,
+          await prisma.userWordRecord.create({
+            data: {
+              userId: id,
+              articleId,
+              saveToFlashcard,
+              word: word,
+              difficulty,
+              due,
+              elapsedDays: elapsed_days,
+              lapses,
+              reps,
+              scheduledDays: scheduled_days,
+              stability,
+              state,
+            }
           });
         }
       })
@@ -105,21 +112,15 @@ export async function getWordList(
     const articleId = req.nextUrl.searchParams.get("articleId");
     console.log("articleId", articleId);
 
-    const wordSnapshot = articleId
-      ? await db
-          .collection("user-word-records")
-          .where("userId", "==", id)
-          .where("articleId", "==", articleId)
-          .get()
-      : await db
-          .collection("user-word-records")
-          .where("userId", "==", id)
-          .get();
-
-    const word = wordSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const word = await prisma.userWordRecord.findMany({
+      where: {
+        userId: id,
+        ...(articleId && { articleId }),
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
     return NextResponse.json({
       message: "User word retrieved",
@@ -233,7 +234,6 @@ export async function postSentendcesFlashcard(
       audioUrl,
     };
 
-    // Add source type
     if (articleId) {
       recordData.articleId = articleId;
     } else {

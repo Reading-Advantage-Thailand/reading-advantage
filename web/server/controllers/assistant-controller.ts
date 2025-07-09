@@ -3,7 +3,7 @@ import { generateObject, streamText } from "ai";
 import fs, { stat } from "fs";
 import path from "path";
 import { z } from "zod";
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 import storage from "@/utils/storage";
 import { AUDIO_WORDS_URL } from "@/server/constants";
 import { generateAudioForWord } from "@/server/utils/generators/audio-words-generator";
@@ -145,9 +145,10 @@ export async function getFeedbackWritter(res: object) {
 export async function getWordlist(req: ExtendedNextRequest) {
   const { articleId, article } = await req.json();
 
-  // First need to find the word list of the article in db
-  const wordListRef = db.collection(`word-list`).doc(articleId);
-  const wordListSnapshot = await wordListRef.get();
+  const articleData = await prisma.article.findUnique({
+    where: { id: articleId },
+    select: { words: true },
+  });
 
   const fileExtension = ".mp3";
 
@@ -156,23 +157,46 @@ export async function getWordlist(req: ExtendedNextRequest) {
     .file(`${AUDIO_WORDS_URL}/${articleId}${fileExtension}`)
     .exists();
 
-  if (wordListSnapshot?.exists && fileExists[0]) {
-    const dataList = wordListSnapshot.data();
-    return NextResponse.json(
-      {
-        messeges: "success",
-        word_list: dataList?.word_list,
-        timepoints: dataList?.timepoints,
-      },
-      { status: 200 }
-    );
+  if (articleData?.words && fileExists[0]) {
+    const wordlistData = articleData.words as any;
+
+    let wordList = [];
+
+    if (Array.isArray(wordlistData)) {
+      wordList = wordlistData;
+    } else if (wordlistData?.wordlist && Array.isArray(wordlistData.wordlist)) {
+      wordList = wordlistData.wordlist;
+    }
+
+    if (wordList.length > 0 && !wordList[0].markName) {
+      wordList = wordList.map((word: any, index: number) => ({
+        ...word,
+        markName: `word${index + 1}`,
+        timeSeconds: index * 2,
+      }));
+    }
+
+    return NextResponse.json(wordList, { status: 200 });
   } else {
     const wordList = await generateWordList({
       passage: article.passage,
     });
-    await wordListRef.set({
-      word_list: wordList.word_list,
-      articleId: articleId,
+
+    const enhancedWordList = wordList.word_list.map(
+      (word: any, index: number) => ({
+        ...word,
+        markName: `word${index + 1}`,
+        timeSeconds: index * 2,
+      })
+    );
+
+    await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        words: {
+          wordlist: enhancedWordList,
+        },
+      },
     });
 
     await generateAudioForWord({
@@ -180,13 +204,7 @@ export async function getWordlist(req: ExtendedNextRequest) {
       articleId: articleId,
     });
 
-    return NextResponse.json(
-      {
-        messeges: "success",
-        word_list: wordList.word_list,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json(enhancedWordList, { status: 200 });
   }
 }
 
@@ -198,19 +216,19 @@ export async function postFlashCard(
     const json = await req.json();
 
     if (json.page === "vocabulary") {
-      await db
-        .collection("user-word-records")
-        .doc(id)
-        .update({
+      await prisma.userWordRecord.update({
+        where: { id },
+        data: {
           ...json,
-        });
+        },
+      });
     } else {
-      await db
-        .collection("user-sentence-records")
-        .doc(id)
-        .update({
+      await prisma.userSentenceRecord.update({
+        where: { id },
+        data: {
           ...json,
-        });
+        },
+      });
     }
 
     return NextResponse.json(
