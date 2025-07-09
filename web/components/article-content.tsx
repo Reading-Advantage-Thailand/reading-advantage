@@ -253,6 +253,22 @@ export default function ArticleContent({
           endTimepoint = audioRef.current?.duration as number;
         }
 
+        // Get the correct target language based on current locale
+        type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
+        let targetLanguage: ExtendedLocale = locale as ExtendedLocale;
+        switch (locale) {
+          case "cn":
+            targetLanguage = "zh-CN";
+            break;
+          case "tw":
+            targetLanguage = "zh-TW";
+            break;
+        }
+
+        // Create translation object with the correct language
+        const translationObj: Record<string, string> = {};
+        translationObj[targetLanguage] = translate[selectedSentence as number];
+
         const resSaveSentences = await fetch(
           `/api/v1/users/sentences/${userId}`,
           {
@@ -263,9 +279,7 @@ export default function ArticleContent({
               ].sentence.replace("~~", ""),
               sn: selectedSentence,
               articleId: article.id,
-              translation: {
-                th: translate[selectedSentence as number],
-              },
+              translation: translationObj,
               audioUrl: sentenceList[selectedSentence as number].audioUrl,
               timepoint: sentenceList[selectedSentence as number].startTime,
               endTimepoint: endTimepoint,
