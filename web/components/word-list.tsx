@@ -32,6 +32,7 @@ interface Props {
 }
 
 interface WordList {
+  markName?: string;
   vocabulary: string;
   definition: {
     en: string;
@@ -40,6 +41,7 @@ interface WordList {
     tw: string;
     vi: string;
   };
+  timeSeconds: number;
   index: number;
   startTime: number;
   endTime: number;
@@ -51,7 +53,6 @@ export default function WordList({ article, articleId, userId }: Props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [wordList, setWordList] = useState<WordList[]>([]);
 
-  // Get the current locale
   const currentLocale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
 
   const FormSchema = z.object({
@@ -66,27 +67,72 @@ export default function WordList({ article, articleId, userId }: Props) {
 
   const handleWordList = useCallback(async () => {
     try {
-      setLoading(true); // Start loading
+      setLoading(true);
       const resWordlist = await fetch(`/api/v1/assistant/wordlist`, {
         method: "POST",
         body: JSON.stringify({ article, articleId }),
       });
 
+      if (!resWordlist.ok) {
+        throw new Error(
+          `API request failed with status: ${resWordlist.status}`
+        );
+      }
+
       const data = await resWordlist.json();
 
       let wordList = [];
 
-      if (data?.timepoints) {
-        wordList = data?.timepoints.map(
+      if (!data) {
+        throw new Error("No data received from server");
+      }
+
+      if (Array.isArray(data)) {
+        wordList = data
+          .filter((word) => word.vocabulary && word.definition)
+          .map((word: any, index: number) => {
+            const nextWord = data[index + 1];
+            return {
+              vocabulary: word.vocabulary,
+              definition: word.definition,
+              markName: word.markName,
+              index,
+              startTime: word.timeSeconds || 0,
+              endTime: nextWord
+                ? nextWord.timeSeconds
+                : (word.timeSeconds || 0) + 10,
+              audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`,
+            };
+          });
+      } else if (data?.word_list && Array.isArray(data.word_list)) {
+        wordList = data.word_list
+          .filter((word: any) => word.vocabulary && word.definition)
+          .map((word: any, index: number) => {
+            const nextWord = data.word_list[index + 1];
+            return {
+              vocabulary: word.vocabulary,
+              definition: word.definition,
+              markName: word.markName,
+              index,
+              startTime: word.timeSeconds || 0,
+              endTime: nextWord
+                ? nextWord.timeSeconds
+                : (word.timeSeconds || 0) + 10,
+              audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`,
+            };
+          });
+      } else if (data?.timepoints) {
+        wordList = data.timepoints.map(
           (timepoint: { timeSeconds: number }, index: number) => {
             const startTime = timepoint.timeSeconds;
             const endTime =
-              index === data?.timepoints.length - 1
+              index === data.timepoints.length - 1
                 ? timepoint.timeSeconds + 10
-                : data?.timepoints[index + 1].timeSeconds;
+                : data.timepoints[index + 1].timeSeconds;
             return {
               vocabulary: data?.word_list[index]?.vocabulary,
               definition: data?.word_list[index]?.definition,
+              markName: data?.word_list[index]?.markName,
               index,
               startTime,
               endTime,
@@ -94,9 +140,17 @@ export default function WordList({ article, articleId, userId }: Props) {
             };
           }
         );
-      } else {
-        wordList = data?.word_list;
       }
+
+      if (wordList.length === 0) {
+        console.warn("No valid word list data found");
+        toast({
+          title: "No words found",
+          description: "No vocabulary words were found for this article.",
+          variant: "default",
+        });
+      }
+
       setWordList(wordList);
       form.reset();
     } catch (error: any) {
@@ -107,7 +161,7 @@ export default function WordList({ article, articleId, userId }: Props) {
         variant: "destructive",
       });
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   }, [article, articleId, form]);
 
@@ -154,13 +208,12 @@ export default function WordList({ article, articleId, userId }: Props) {
     }
   };
 
-  // Calculate the height based on the number of items in the wordList
   const calculateHeight = () => {
-    const baseHeight = 300; // Base height for content without wordList
-    const itemHeight = 50; // Height of each word list item
-    const maxDialogHeight = 490; // Maximum height of the dialog
+    const baseHeight = 300;
+    const itemHeight = 50;
+    const maxDialogHeight = 490;
     const calculatedHeight = baseHeight + wordList.length * itemHeight;
-    return Math.min(calculatedHeight, maxDialogHeight); // Limit to max height
+    return Math.min(calculatedHeight, maxDialogHeight);
   };
 
   return (
@@ -188,7 +241,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                   </div>
                 </DialogTitle>
               </DialogHeader>
-              {loading && wordList ? (
+              {loading ? (
                 <div className="flex items-center space-x-4 mt-5">
                   <div className="space-y-5">
                     <Skeleton className="h-4 w-[300px]" />
@@ -255,7 +308,7 @@ export default function WordList({ article, articleId, userId }: Props) {
                                             </div>
 
                                             <span className="font-bold text-cyan-500 ml-2">
-                                              {word.vocabulary}:{" "}
+                                              {word.vocabulary}                                           
                                             </span>
 
                                             <div className="mr-1">
@@ -276,7 +329,11 @@ export default function WordList({ article, articleId, userId }: Props) {
                                             </div>
 
                                             <span>
-                                              {word.definition[currentLocale]}
+                                              {word.definition &&
+                                              word.definition[currentLocale]
+                                                ? word.definition[currentLocale]
+                                                : word.definition?.en ||
+                                                  "Definition not available"}
                                             </span>
                                           </div>
                                         </FormControl>
