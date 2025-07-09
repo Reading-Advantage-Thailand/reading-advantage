@@ -1,6 +1,7 @@
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 
 interface RequestContext {
   params: {
@@ -36,12 +37,86 @@ type RankingEntry = {
 
 export async function getAllRankingLeaderboard(req: NextRequest) {
   try {
-    const leaderboardData = await db.collection("leaderboard").get();
-    const leaderboard = leaderboardData.docs.map((doc) => doc.data());
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    const startOfMonth = new Date(currentYear, currentMonth, 1);
+    const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
 
-    return NextResponse.json({ results: leaderboard });
+    const licenses = await prisma.license.findMany({
+      select: {
+        id: true,
+        key: true,
+        schoolName: true,
+        licenseUsers: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                xpLogs: {
+                  where: {
+                    createdAt: {
+                      gte: startOfMonth,
+                      lte: endOfMonth,
+                    },
+                  },
+                  select: {
+                    xpEarned: true,
+                  },
+                },
+                studentClassrooms: {
+                  select: {
+                    classroom: {
+                      select: {
+                        classroomName: true,
+                      },
+                    },
+                  },
+                  take: 1,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const allLeaderboards = licenses.map((license) => {
+      const leaderboardData = license.licenseUsers
+        .map((licenseUser) => {
+          const user = licenseUser.user;
+          const monthlyXP = user.xpLogs.reduce((sum, log) => sum + log.xpEarned, 0);
+          const classroomName = user.studentClassrooms[0]?.classroom?.classroomName || "No Classroom";
+          
+          return {
+            rank: 0,
+            name: user.name || user.email || "Unknown User",
+            xp: monthlyXP,
+            classroom: classroomName,
+            userId: user.id,
+          };
+        })
+        .filter((user) => user.xp > 0)
+        .sort((a, b) => b.xp - a.xp)
+        .slice(0, 10)
+        .map((user, index) => ({
+          ...user,
+          rank: index + 1,
+        }));
+
+      return {
+        license_id: license.id,
+        schoolName: license.schoolName,
+        ranking: leaderboardData,
+      };
+    });
+
+    return NextResponse.json({ results: allLeaderboards });
   } catch (error) {
-    console.error("Error getting documents", error);
+    console.error("Error getting all leaderboards:", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
       { status: 500 }
@@ -54,16 +129,73 @@ export async function getRankingLeaderboardById(
   { params: { id } }: RequestContext
 ) {
   try {
-    const leaderboardData = await db
-      .collection("leaderboard")
-      .where("license_id", "==", id)
-      .get();
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    const startOfMonth = new Date(currentYear, currentMonth, 1);
+    const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
 
-    const leaderboard = leaderboardData.docs.map((doc) => doc.data());
+    const usersWithXP = await prisma.user.findMany({
+      where: {
+        licenseOnUsers: {
+          some: {
+            licenseId: id,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        xp: true,
+        xpLogs: {
+          where: {
+            createdAt: {
+              gte: startOfMonth,
+              lte: endOfMonth,
+            },
+          },
+          select: {
+            xpEarned: true,
+          },
+        },
+        studentClassrooms: {
+          select: {
+            classroom: {
+              select: {
+                classroomName: true,
+              },
+            },
+          },
+          take: 1,
+        },
+      },
+    });
+    const leaderboardData = usersWithXP
+      .map((user) => {
+        const monthlyXP = user.xpLogs.reduce((sum, log) => sum + log.xpEarned, 0);
+        const classroomName = user.studentClassrooms[0]?.classroom?.classroomName || "No Classroom";
+        
+        return {
+          rank: 0,
+          name: user.name || user.email || "Unknown User",
+          xp: monthlyXP,
+          classroom: classroomName,
+          userId: user.id,
+        };
+      })
+      .filter((user) => user.xp > 0)
+      .sort((a, b) => b.xp - a.xp)
+      .slice(0, 10)
+      .map((user, index) => ({
+        ...user,
+        rank: index + 1,
+      }));
 
-    return NextResponse.json({ results: leaderboard });
+    return NextResponse.json({ results: leaderboardData });
   } catch (error) {
-    console.error("Error getting documents", error);
+    console.error("Error getting leaderboard:", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
       { status: 500 }

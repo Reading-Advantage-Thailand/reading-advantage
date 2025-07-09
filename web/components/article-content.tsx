@@ -60,11 +60,20 @@ async function getTranslateSentence(
   try {
     const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ type: "passage", targetLanguage }),
     });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
     const data = await res.json();
     return data;
   } catch (error) {
+    console.error("Error translating sentences:", error);
     return { message: "error", translated_sentences: [] };
   }
 }
@@ -75,7 +84,12 @@ export default function ArticleContent({
   userId,
 }: Props) {
   const t = useScopedI18n("components.articleContent");
-  const sentences = splitTextIntoSentences(article.passage, true);
+
+  const sentences =
+    article.timepoints && article.timepoints.length > 0
+      ? article.timepoints.map((timepoint) => timepoint.sentences)
+      : splitTextIntoSentences(article.passage, true);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -91,28 +105,31 @@ export default function ArticleContent({
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const [speed, setSpeed] = useState<string>("1");
 
-  const sentenceList: Sentence[] = article.timepoints.map(
-    (timepoint, index) => {
-      const startTime = timepoint.timeSeconds;
-      const endTime =
-        index === article.timepoints.length - 1
-          ? timepoint.timeSeconds + 10
-          : article.timepoints[index + 1].timeSeconds - 0.3;
-      const sentence =
-        sentences.length <= article.timepoints.length
-          ? article.timepoints[index].sentences
-          : sentences[index];
-      return {
-        sentence: sentence ?? sentences[index],
-        index: timepoint.index,
-        startTime,
-        endTime,
-        audioUrl: timepoint.file
-          ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}`
-          : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3`,
-      };
-    }
-  );
+  const sentenceList: Sentence[] =
+    article.timepoints && article.timepoints.length > 0
+      ? article.timepoints.map((timepoint, index) => {
+          const endTime =
+            index < article.timepoints.length - 1
+              ? article.timepoints[index + 1].timeSeconds - 0.3
+              : timepoint.timeSeconds + 10;
+
+          return {
+            sentence: timepoint.sentences,
+            index: timepoint.index,
+            startTime: timepoint.timeSeconds,
+            endTime,
+            audioUrl: timepoint.file
+              ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}`
+              : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3`,
+          };
+        })
+      : sentences.map((sentence, index) => ({
+          sentence,
+          index,
+          startTime: index * 2,
+          endTime: (index + 1) * 2,
+          audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3`,
+        }));
 
   const handlePlayPause = async () => {
     if (audioRef.current) {
@@ -252,7 +269,7 @@ export default function ArticleContent({
               audioUrl: sentenceList[selectedSentence as number].audioUrl,
               timepoint: sentenceList[selectedSentence as number].startTime,
               endTimepoint: endTimepoint,
-              saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
+              saveToFlashcard: true,
               ...card,
             }),
           }
@@ -294,6 +311,19 @@ export default function ArticleContent({
       case "tw":
         targetLanguage = "zh-TW";
         break;
+    }
+
+    const translatedPassage = article.translatedPassage as Record<
+      string,
+      string[]
+    > | null;
+
+    if (translatedPassage && translatedPassage[targetLanguage]) {
+      setTranslate(translatedPassage[targetLanguage]);
+      setIsTranslateOpen(!isTranslateOpen);
+      setIsTranslate(true);
+      setLoading(false);
+      return;
     }
     const response = await getTranslateSentence(article.id, targetLanguage);
     if (response.message === "error") {
@@ -383,7 +413,6 @@ export default function ArticleContent({
   };
 
   const handleTranslate = async () => {
-    //if not translate, translate
     if (isTranslate === false) {
       await handleTranslateSentence();
       setIsTranslateClicked(!isTranslateClicked);
@@ -406,7 +435,6 @@ export default function ArticleContent({
 
         if (isPlaying) {
           audio.play().catch((error) => {
-            // Handle any errors (e.g., user interaction required)
             console.error("Playback error:", error);
           });
         }
