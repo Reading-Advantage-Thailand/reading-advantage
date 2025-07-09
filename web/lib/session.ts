@@ -24,6 +24,12 @@ export async function getCurrentUser() {
         expiredDate: true,
         licenseId: true,
         onborda: true,
+        licenseOnUsers: {
+          select: {
+            licenseId: true,
+          },
+          take: 1,
+        },
       },
     });
 
@@ -33,6 +39,8 @@ export async function getCurrentUser() {
 
     const currentDate = new Date();
     const isExpired = user.expiredDate ? user.expiredDate < currentDate : false;
+
+    const activeLicenseId = user.licenseOnUsers[0]?.licenseId || user.licenseId;
 
     return {
       id: user.id,
@@ -46,7 +54,7 @@ export async function getCurrentUser() {
       cefr_level: user.cefrLevel ?? "",
       expired_date: user.expiredDate?.toISOString() ?? "",
       expired: isExpired,
-      license_id: user.licenseId ?? "",
+      license_id: activeLicenseId ?? "",
       onborda: user.onborda ?? false,
     };
   } catch (error) {

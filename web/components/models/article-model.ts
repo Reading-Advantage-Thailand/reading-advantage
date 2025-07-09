@@ -72,6 +72,8 @@ export interface Article {
   genre: string;
   id: string;
   read_count: number;
+  translatedPassage?: Record<string, string[]> | null;
+  translatedSummary?: Record<string, string[]> | null;
 }
 
 export interface Timepoint {

@@ -384,6 +384,8 @@ export async function getArticleById(
       audio_url: article.audioUrl,
       created_at: article.createdAt,
       timepoints: article.sentences || {},
+      translatedPassage: article.translatedPassage,
+      translatedSummary: article.translatedSummary,
       read_count: 0, // This field might need to be calculated differently
     };
 
