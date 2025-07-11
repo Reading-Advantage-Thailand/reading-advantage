@@ -82,7 +82,7 @@ interface Classes {
   ];
   importedFromGoogle: boolean;
   alternateLink: string;
-  googleClassroomId: string;
+  googleClassroomId?: string;
 }
 
 export default function ClassRoster() {
@@ -366,7 +366,7 @@ export default function ClassRoster() {
           </SelectContent>
         </Select>
       </div>
-      {classes &&
+      {classes && Object.keys(classes).length > 0 &&
         (studentInClass.length ? (
           <Header heading={tr("title", { className: classes.classroomName })} />
         ) : (
@@ -383,9 +383,8 @@ export default function ClassRoster() {
           }
           className="max-w-sm"
         />
-        {selectedClassroom &&
-          classroomId &&
-          (!classes.importedFromGoogle ? (
+        {selectedClassroom && classroomId && (
+          classes && Object.keys(classes).length > 0 && !classes.importedFromGoogle ? (
             <Button
               variant="outline"
               onClick={() => {
@@ -404,10 +403,10 @@ export default function ClassRoster() {
               <Icons.add />
               {tr("addStudentButton")}
             </Button>
-          ) : (
+          ) : classes && Object.keys(classes).length > 0 && classes.importedFromGoogle ? (
             <Button
-              onClick={() => syncStudents(classes.googleClassroomId)}
-              disabled={loading}
+              onClick={() => classes.googleClassroomId && syncStudents(classes.googleClassroomId)}
+              disabled={loading || !classes.googleClassroomId}
             >
               {loading ? (
                 <>
@@ -427,7 +426,27 @@ export default function ClassRoster() {
                 </>
               )}
             </Button>
-          ))}
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (classroomId) {
+                  router.push(
+                    `/teacher/class-roster/${classroomId}/create-new-student`
+                  );
+                } else {
+                  toast({
+                    title: "Error",
+                    description: "Classroom ID is not available.",
+                  });
+                }
+              }}
+            >
+              <Icons.add />
+              {tr("addStudentButton")}
+            </Button>
+          )
+        )}
       </div>
       <div className="rounded-md border">
         <Table style={{ tableLayout: "fixed", width: "100%" }}>

@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id                  String             @id @default(cuid())
-  licenseId           String?            @unique @map("license_id") // ใช้สำหรับ active license
+  licenseId           String?            @map("license_id") // ใช้สำหรับ active license
   name                String?
   email               String             @unique
   password            String?
