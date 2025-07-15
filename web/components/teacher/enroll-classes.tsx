@@ -23,6 +23,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Checkbox } from "../ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import { useParams, useRouter } from "next/navigation";
@@ -59,22 +61,25 @@ export default function MyEnrollClasses() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [selectedClassroomId, setSelectedClassroomId] = useState<string>("");
+  const [isEnrolling, setIsEnrolling] = useState<boolean>(false);
   const t = useScopedI18n("components.articleRecordsTable");
   const te = useScopedI18n("components.myStudent.enrollPage");
   const router = useRouter();
   const params = useParams();
   const [data, setData] = useState<MyEnrollProps>();
 
-  const handleStudentEnrollment = async (classroomId: string[]) => {
-    // Find the selected classroom
-    if (classroomId.length === 0) {
+  const handleStudentEnrollment = async () => {
+    if (!selectedClassroomId) {
       toast({
         title: te("toast.errorEnrollment"),
-        description: te("toast.errorEnrollDescription"),
+        description: "Please select a classroom first.",
         variant: "destructive",
       });
       return;
     }
+
+    setIsEnrolling(true);
 
     const studentdata = [
       {
@@ -84,9 +89,11 @@ export default function MyEnrollClasses() {
           : "No Activity",
       },
     ];
-    for (const classId of classroomId) {
-      try {
-        const response = await fetch(`/api/v1/classroom/${classId}/enroll`, {
+
+    try {
+      const response = await fetch(
+        `/api/v1/classroom/${selectedClassroomId}/enroll`,
+        {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -94,43 +101,58 @@ export default function MyEnrollClasses() {
           body: JSON.stringify({
             student: studentdata,
           }),
-        });
-        if (!response.ok) {
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.error === "ALREADY_ENROLLED") {
+          toast({
+            title: "ไม่สามารถเพิ่มนักเรียนได้",
+            description: result.message,
+            variant: "destructive",
+          });
+        } else {
           toast({
             title: te("toast.errorEnrollment"),
             description: te("toast.errorEnrollDescription"),
             variant: "destructive",
           });
-        } else {
-          setData((prevData) => {
-            const safePrevData = prevData ?? {
-              classroom: [],
-              student: {} as Student,
-            };
-
-            return {
-              ...safePrevData,
-              classroom: safePrevData.classroom.filter(
-                (classroom: Classroom) => classroom.id !== classId
-              ),
-            };
-          });
         }
-      } catch (error) {
-        console.error("Error during enrollment:", error);
-        toast({
-          title: te("toast.errorEnrollment"),
-          description: te("toast.errorEnrollDescription"),
-          variant: "destructive",
+        setIsEnrolling(false);
+      } else {
+        setData((prevData) => {
+          const safePrevData = prevData ?? {
+            classroom: [],
+            student: {} as Student,
+          };
+
+          return {
+            ...safePrevData,
+            classroom: safePrevData.classroom.filter(
+              (classroom: Classroom) => classroom.id !== selectedClassroomId
+            ),
+          };
         });
-      } finally {
+
         toast({
           title: te("toast.successEnrollment"),
           description: te("toast.successEnrollDescription"),
         });
-        router.refresh();
-        setRowSelection({});
+
+        setTimeout(() => {
+          router.push("/teacher/my-students");
+        }, 1000);
       }
+    } catch (error) {
+      console.error("Error during enrollment:", error);
+      toast({
+        title: te("toast.errorEnrollment"),
+        description: te("toast.errorEnrollDescription"),
+        variant: "destructive",
+      });
+      setIsEnrolling(false);
     }
   };
 
@@ -164,10 +186,7 @@ export default function MyEnrollClasses() {
       },
       cell: ({ row }) => (
         <div className="ml-2">
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-          />
+          <RadioGroupItem value={row.original.id} />
         </div>
       ),
     },
@@ -232,66 +251,66 @@ export default function MyEnrollClasses() {
         <Button
           variant="default"
           className="max-w-sm"
-          onClick={() => {
-            const selectedRows = table.getSelectedRowModel().rowsById;
-            const fileIds = Object.values(selectedRows).map(
-              (row) => row.original.id
-            );
-            handleStudentEnrollment(fileIds);
-          }}
+          onClick={handleStudentEnrollment}
+          disabled={isEnrolling || !selectedClassroomId}
         >
-          {te("add")}
+          {isEnrolling ? "Adding..." : te("add")}
         </Button>
       </div>
       <div className="rounded-md border">
-        <Table style={{ tableLayout: "fixed", width: "100%" }}>
-          <TableHeader className="font-bold">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+        <RadioGroup
+          value={selectedClassroomId}
+          onValueChange={setSelectedClassroomId}
+        >
+          <Table style={{ tableLayout: "fixed", width: "100%" }}>
+            <TableHeader className="font-bold">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Empty
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Empty
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </RadioGroup>
       </div>
       <div className="flex items-center justify-end space-x-2">
         <div className="space-x-2">
