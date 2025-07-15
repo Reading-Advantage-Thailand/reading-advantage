@@ -283,11 +283,24 @@ export async function getClassroomStudent(req: ExtendedNextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const teacher = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { licenseId: true },
+    });
+
+    if (!teacher || !teacher.licenseId) {
+      return NextResponse.json(
+        { error: "Teacher license not found" },
+        { status: 404 }
+      );
+    }
+
     const students = await prisma.user.findMany({
       where: {
         role: {
           in: ["STUDENT", "USER"],
         },
+        licenseId: teacher.licenseId,
       },
       select: {
         id: true,
@@ -298,39 +311,11 @@ export async function getClassroomStudent(req: ExtendedNextRequest) {
         cefrLevel: true,
         createdAt: true,
         updatedAt: true,
+        licenseId: true,
       },
     });
 
-    const classrooms = await prisma.classroom.findMany({
-      where: {
-        teacherId: user.id,
-      },
-      include: {
-        students: {
-          include: {
-            student: true,
-          },
-        },
-      },
-    });
-
-    const studentIdentifiers = new Set<string>();
-    classrooms.forEach((classroom) => {
-      classroom.students.forEach((classroomStudent) => {
-        studentIdentifiers.add(classroomStudent.student.id);
-        if (classroomStudent.student.email) {
-          studentIdentifiers.add(classroomStudent.student.email);
-        }
-      });
-    });
-
-    const filteredStudents = students.filter(
-      (student) =>
-        studentIdentifiers.has(student.id) ||
-        (student.email && studentIdentifiers.has(student.email))
-    );
-
-    return NextResponse.json({ students: filteredStudents }, { status: 200 });
+    return NextResponse.json({ students }, { status: 200 });
   } catch (error) {
     console.error(error);
     console.error(error);
@@ -571,8 +556,8 @@ export async function getStudentInClassroom(
       grade: classroom.grade?.toString(),
       createdAt: classroom.createdAt,
       updatedAt: classroom.updatedAt,
-      importedFromGoogle: false, // Add this field to indicate it's not from Google Classroom
-      googleClassroomId: null, // Add this field for consistency
+      importedFromGoogle: false,
+      googleClassroomId: null,
     };
 
     return NextResponse.json(
@@ -843,6 +828,25 @@ export async function patchClassroomEnroll(
     }
 
     for (const student of newStudents) {
+      const existingEnrollment = await prisma.classroomStudent.findFirst({
+        where: {
+          studentId: student.studentId,
+        },
+        include: {
+          classroom: true,
+        },
+      });
+
+      if (existingEnrollment) {
+        return NextResponse.json(
+          {
+            message: `Student is already enrolled in classroom: ${existingEnrollment.classroom.classroomName}`,
+            error: "ALREADY_ENROLLED",
+          },
+          { status: 400 }
+        );
+      }
+
       await prisma.classroomStudent.upsert({
         where: {
           classroomId_studentId: {

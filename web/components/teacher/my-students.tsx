@@ -63,24 +63,32 @@ export default function MyStudents() {
   const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        await fetch(
+        setIsLoading(true);
+        const response = await fetch(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/students`,
           { method: "GET" }
-        )
-          .then((response) => {
-            if (!response.ok)
-              throw new Error("Failed to fetch StudentData list");
-            return response.json();
-          })
-          .then((studentsData) => {
-            setStudents(studentsData.students);
-          });
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch students list");
+        }
+
+        const studentsData = await response.json();
+        setStudents(studentsData.students || []);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching students:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load students. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchStudents();
@@ -92,6 +100,9 @@ export default function MyStudents() {
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${selectedStudentId}`,
         {
           method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             xp: 0,
             level: 0,
@@ -99,24 +110,25 @@ export default function MyStudents() {
           }),
         }
       );
-      if (response.status === 400) {
-        toast({
-          title: "Fail.",
-          description: `XP reset Fail.`,
-        });
-      }
 
-      if (response.status === 200) {
+      if (response.ok) {
         toast({
-          title: "Success.",
-          description: `XP reset successfully.`,
+          title: "Success",
+          description: "Student progress reset successfully.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to reset student progress.",
+          variant: "destructive",
         });
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error resetting progress:", error);
       toast({
-        title: "Fail.",
-        description: `XP reset Fail.`,
+        title: "Error",
+        description: "Failed to reset student progress.",
+        variant: "destructive",
       });
     } finally {
       router.refresh();
@@ -245,9 +257,7 @@ export default function MyStudents() {
         <Header heading={ts("title")} />
         <Input
           placeholder={ts("searchName")}
-          value={
-            (table.getColumn("name")?.getFilterValue() as string) ?? ""
-          }
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
@@ -274,7 +284,16 @@ export default function MyStudents() {
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows?.length ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Loading students...
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
@@ -296,7 +315,7 @@ export default function MyStudents() {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    Empty
+                    No students found with your license
                   </TableCell>
                 </TableRow>
               )}
