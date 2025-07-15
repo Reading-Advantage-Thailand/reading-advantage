@@ -49,10 +49,6 @@ type Student = {
   name: string;
 };
 
-type MyStudentProps = {
-  matchedStudents: Student[];
-};
-
 export default function MyStudents() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -130,7 +126,7 @@ export default function MyStudents() {
 
   const columns: ColumnDef<Student>[] = [
     {
-      accessorKey: "display_name",
+      accessorKey: "name",
       header: ({ column }) => {
         return (
           <Button
@@ -143,7 +139,7 @@ export default function MyStudents() {
         );
       },
       cell: ({ row }) => {
-        const studentName: string = row.getValue("display_name");
+        const studentName: string = row.getValue("name");
         return (
           <div className="captoliza ml-4">
             {studentName ? studentName : "Anonymous"}
@@ -250,10 +246,10 @@ export default function MyStudents() {
         <Input
           placeholder={ts("searchName")}
           value={
-            (table.getColumn("display_name")?.getFilterValue() as string) ?? ""
+            (table.getColumn("name")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("display_name")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm "
         />
