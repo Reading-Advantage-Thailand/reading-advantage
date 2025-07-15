@@ -3,11 +3,94 @@ import { DBCollection } from "../models/enum";
 import { levelCalculation } from "@/lib/utils";
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
+import { ActivityType } from "@prisma/client";
 import { create, update } from "lodash";
 
-export const getUser = getOne(DBCollection.USERS);
-export const updateUser = updateOne(DBCollection.USERS);
+export async function getUser(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        userActivities: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+        xpLogs: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        xp: user.xp,
+        level: user.level,
+        cefr_level: user.cefrLevel,
+        display_name: user.name,
+        expired_date: user.expiredDate,
+        license_id: user.licenseId,
+        created_at: user.createdAt,
+        updated_at: user.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting user", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function updateUser(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const data = await req.json();
+    
+    const user = await prisma.user.update({
+      where: { id },
+      data: {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        xp: data.xp,
+        level: data.level,
+        cefrLevel: data.cefr_level,
+        expiredDate: data.expired_date,
+        licenseId: data.license_id,
+      },
+    });
+
+    return NextResponse.json({
+      data: user,
+      message: "User updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating user", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
 
 interface RequestContext {
   params: {
@@ -20,164 +103,123 @@ export async function postActivityLog(
   { params: { id } }: RequestContext
 ) {
   try {
-    //Data from frontend
+    // Data from frontend
     const data = await req.json();
-    // getActivityLog
-    const replType = data.activityType.replace(/_/g, "-");
+    
+    // Convert activity type to enum format
+    const activityType = data.activityType.toUpperCase() as ActivityType;
+    
+    // Validate activity type
+    if (!Object.values(ActivityType).includes(activityType)) {
+      return NextResponse.json({
+        message: "Invalid activity type",
+        status: 400,
+      });
+    }
 
-    const validActivityTypes = [
-      "level_test",
-      "mc_question",
-      "sa_question",
-      "la_question",
-      "article_rating",
-      "article_read",
-      "stories_rating",
-      "stories_read",
-      "chapter_rating",
-      "chapter_read",
-    ];
-
-    const collectionRef = db
-      .collection("user-activity-log")
-      .doc(id)
-      .collection(`${replType}-activity-log`);
-
-    const documentId =
-      data.articleId ||
-      data.storyId ||
-      id ||
-      data.contentId ||
-      collectionRef.doc().id;
-
-    const getActivity = await db
-      .collection("user-activity-log")
-      .doc(id)
-      .collection(`${replType}-activity-log`)
-      .doc(documentId)
-      .get();
+    const targetId = data.articleId || data.storyId || data.contentId || '';
+    
+    // Get article metadata if this is an article-related activity
+    let articleMetadata = {};
+    if (data.articleId && (activityType === ActivityType.ARTICLE_READ || activityType === ActivityType.ARTICLE_RATING)) {
+      const article = await prisma.article.findUnique({
+        where: { id: data.articleId },
+        select: {
+          type: true,
+          genre: true,
+          subGenre: true,
+          title: true,
+          cefrLevel: true,
+          raLevel: true,
+        },
+      });
+      
+      if (article) {
+        articleMetadata = {
+          type: article.type,
+          genre: article.genre,
+          subgenre: article.subGenre,
+          title: article.title,
+          cefr_level: article.cefrLevel,
+          level: article.raLevel,
+        };
+      }
+    }
+    
+    // Check if activity already exists
+    const existingActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId: id,
+          activityType: activityType,
+          targetId: targetId,
+        },
+      },
+    });
 
     const commonData = {
       userId: id,
-      chapterNumber: data.chapterNumber || 0,
-      // articleId: data.articleId || "STSTEM",
-      activityType: data.activityType,
-      activityStatus: data.activityStatus || "in_progress",
-      timestamp: new Date(),
-      timeTaken: data.timeTaken || 0,
-      xpEarned: data.xpEarned || 0,
-      initialXp: req.session?.user.xp as number,
-      finalXp: (req.session?.user.xp as number) + data.xpEarned || 0,
-      initialLevel: req.session?.user.level as number,
-      finalLevel: Number(levelCalculation(
-        (req.session?.user.xp as number) + data.xpEarned || 0
-      ).raLevel),
-      // details: data.details || {},
-      ...data,
+      activityType: activityType,
+      targetId: targetId,
+      timer: data.timeTaken || 0,
+      details: {
+        ...articleMetadata,
+        ...data.details,
+      },
+      completed: data.activityStatus === "completed",
     };
 
-    if (id) {
-      // if not exists will create
-      if (!getActivity.exists) {
-        // createActivityLogTable
-        const userRef = await db.collection("user-activity-log").doc(id).get();
-
-        if (!userRef.exists) {
-          await db.collection("user-activity-log").doc(id).set({ id: id });
-        }
-        // createActivityLog
-        if (validActivityTypes.includes(data.activityType)) {
-          await collectionRef.doc(documentId).set(commonData);
-        } else {
-          const createRefdoc = collectionRef.doc();
-          await createRefdoc.set({
-            contentId: createRefdoc.id,
-            ...commonData,
-          });
-        }
-      } else if (commonData.activityStatus === "completed") {
-        //Update if have data
-        await collectionRef.doc(documentId).update(commonData);
-      }
-
-      //Update Xp and Level
-      if (commonData.xpEarned !== 0) {
-        await db
-          .collection("users")
-          .doc(id)
-          .update({
-            xp: commonData.finalXp,
-            level: Number(commonData.finalLevel), // Ensure it's stored as number
-            cefr_level: levelCalculation(commonData.finalXp).cefrLevel,
-            last_activity: commonData.timestamp,
-          });
-      }
-
-      //update Rating to article-records collection
-      if (
-        commonData.activityType === "article_rating" &&
-        commonData.details.Rating
-      ) {
-        await db
-          .collection("users")
-          .doc(id)
-          .collection("article-records")
-          .doc(commonData.articleId)
-          .update({ rated: commonData.details.Rating });
-      }
-
-      if (
-        commonData.activityType === "chapter_rating" &&
-        commonData.details.Rating
-      ) {
-        const storiesRecords = await db
-          .collection("users")
-          .doc(id)
-          .collection("stories-records")
-          .doc(commonData.storyId)
-          .get();
-
-        if (storiesRecords.exists) {
-          await db
-            .collection("users")
-            .doc(id)
-            .collection("stories-records")
-            .doc(commonData.storyId)
-            .update({
-              rated: commonData.details.Rating,
-              chapterNumber: commonData.chapterNumber,
-            });
-        } else {
-          await db
-            .collection("users")
-            .doc(id)
-            .collection("stories-records")
-            .doc(commonData.storyId)
-            .set({
-              created_at: commonData.timestamp,
-              rated: commonData.details.Rating,
-              score: 0,
-              status: 0,
-              chapterNumber: commonData.chapterNumber,
-              storyId: commonData.storyId,
-              title: commonData.details.title,
-              raLevel: commonData.details.raLevel,
-              cefr_level: commonData.details.cefr_level,
-              updated_at: commonData.timestamp,
-            });
-        }
-      }
-
-      return NextResponse.json({
-        message: "Success",
-        status: 200,
+    let activity;
+    
+    if (!existingActivity) {
+      // Create new activity
+      activity = await prisma.userActivity.create({
+        data: commonData,
+      });
+    } else if (data.activityStatus === "completed") {
+      // Update existing activity
+      activity = await prisma.userActivity.update({
+        where: { id: existingActivity.id },
+        data: {
+          ...commonData,
+          updatedAt: new Date(),
+        },
       });
     } else {
-      return NextResponse.json({
-        message: "invalid user",
-        status: 500,
+      activity = existingActivity;
+    }
+
+    // Create XP log if XP is earned
+    if (data.xpEarned && data.xpEarned > 0) {
+      await prisma.xPLog.create({
+        data: {
+          userId: id,
+          xpEarned: data.xpEarned,
+          activityId: activity.id,
+          activityType: activityType,
+        },
+      });
+
+      // Update user XP and level
+      const currentUser = req.session?.user;
+      const finalXp = (currentUser?.xp || 0) + data.xpEarned;
+      const levelData = levelCalculation(finalXp);
+
+      await prisma.user.update({
+        where: { id },
+        data: {
+          xp: finalXp,
+          level: typeof levelData.raLevel === 'number' ? levelData.raLevel : parseInt(levelData.raLevel.toString()),
+          cefrLevel: levelData.cefrLevel,
+          updatedAt: new Date(),
+        },
       });
     }
+
+    return NextResponse.json({
+      message: "Success",
+      status: 200,
+    });
   } catch (error) {
     console.log("postActivity => ", error);
     return NextResponse.json({
@@ -195,135 +237,119 @@ export async function putActivityLog(
     // Data from frontend
     const data = await req.json();
 
-    // Replace underscores with hyphens for collection name
-    const replType = data.activityType.replace(/_/g, "-");
-
-    const collectionRef = db
-      .collection("user-activity-log")
-      .doc(id)
-      .collection(`${replType}-activity-log`);
-
-    const articleId = data.articleId;
-
-    if (!articleId) {
+    // Convert activity type to enum format
+    const activityType = data.activityType.toUpperCase() as ActivityType;
+    
+    // Validate activity type
+    if (!Object.values(ActivityType).includes(activityType)) {
       return NextResponse.json({
-        message: "Article ID is required for update",
+        message: "Invalid activity type",
         status: 400,
       });
     }
 
-    // Find document by articleId in the collection
-    const querySnapshot = await collectionRef
-      .where("articleId", "==", articleId)
-      .limit(1)
-      .get();
+    const targetId = data.articleId || data.storyId || data.contentId || '';
 
-    let documentId: string;
+    if (!targetId) {
+      return NextResponse.json({
+        message: "Target ID is required for update",
+        status: 400,
+      });
+    }
 
-    if (querySnapshot.empty) {
-      // If no document exists, create a new one
-      const newDocRef = collectionRef.doc();
-      documentId = newDocRef.id;
+    // Get article metadata if this is an article-related activity
+    let articleMetadata = {};
+    if (data.articleId && (activityType === ActivityType.ARTICLE_READ || activityType === ActivityType.ARTICLE_RATING)) {
+      const article = await prisma.article.findUnique({
+        where: { id: data.articleId },
+        select: {
+          type: true,
+          genre: true,
+          subGenre: true,
+          title: true,
+          cefrLevel: true,
+          raLevel: true,
+        },
+      });
+      
+      if (article) {
+        articleMetadata = {
+          type: article.type,
+          genre: article.genre,
+          subgenre: article.subGenre,
+          title: article.title,
+          cefr_level: article.cefrLevel,
+          level: article.raLevel,
+        };
+      }
+    }
 
-      const newData = {
-        userId: id,
-        chapterNumber: data.chapterNumber || 0,
-        activityType: data.activityType,
-        activityStatus: data.activityStatus || "in_progress",
-        timestamp: new Date(),
-        timeTaken: data.timeTaken || 0,
-        xpEarned: data.xpEarned || 0,
-        initialXp: req.session?.user.xp as number,
-        finalXp: (req.session?.user.xp as number) + (data.xpEarned || 0),
-        initialLevel: req.session?.user.level as number,
-        finalLevel: levelCalculation(
-          (req.session?.user.xp as number) + (data.xpEarned || 0)
-        ).raLevel,
-        ...data,
-        created_at: new Date(), // Add creation timestamp
-      };
+    // Find existing activity
+    const existingActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId: id,
+          activityType: activityType,
+          targetId: targetId,
+        },
+      },
+    });
 
-      await newDocRef.set(newData);
+    const commonData = {
+      userId: id,
+      activityType: activityType,
+      targetId: targetId,
+      timer: data.timeTaken || 0,
+      details: {
+        ...articleMetadata,
+        ...data.details,
+      },
+      completed: data.activityStatus === "completed",
+    };
+
+    let activity;
+
+    if (!existingActivity) {
+      // Create new activity if it doesn't exist
+      activity = await prisma.userActivity.create({
+        data: commonData,
+      });
     } else {
-      // Get the first (and should be only) document
-      const activityDoc = querySnapshot.docs[0];
-      documentId = activityDoc.id;
-
-      // Prepare update data
-      const updateData = {
-        userId: id,
-        chapterNumber: data.chapterNumber || 0,
-        activityType: data.activityType,
-        activityStatus: data.activityStatus || "in_progress",
-        timestamp: new Date(),
-        timeTaken: data.timeTaken || 0,
-        xpEarned: data.xpEarned || 0,
-        initialXp: req.session?.user.xp as number,
-        finalXp: (req.session?.user.xp as number) + (data.xpEarned || 0),
-        initialLevel: req.session?.user.level as number,
-        finalLevel: Number(levelCalculation(
-          (req.session?.user.xp as number) + (data.xpEarned || 0)
-        ).raLevel),
-        ...data,
-        updated_at: new Date(), // Add update timestamp
-      };
-
-      // Update the existing activity log using the found documentId
-      await collectionRef.doc(documentId).update(updateData);
+      // Update existing activity
+      activity = await prisma.userActivity.update({
+        where: { id: existingActivity.id },
+        data: {
+          ...commonData,
+          updatedAt: new Date(),
+        },
+      });
     }
 
-    // Update XP and Level if XP is earned
-    if (data.xpEarned !== 0) {
-      await db
-        .collection("users")
-        .doc(id)
-        .update({
-          xp: (req.session?.user.xp as number) + (data.xpEarned || 0),
-          level: Number(levelCalculation(
-            (req.session?.user.xp as number) + (data.xpEarned || 0)
-          ).raLevel), // Ensure it's stored as number
-          cefr_level: levelCalculation(
-            (req.session?.user.xp as number) + (data.xpEarned || 0)
-          ).cefrLevel,
-          last_activity: new Date(),
-        });
-    }
+    // Create XP log if XP is earned
+    if (data.xpEarned && data.xpEarned > 0) {
+      await prisma.xPLog.create({
+        data: {
+          userId: id,
+          xpEarned: data.xpEarned,
+          activityId: activity.id,
+          activityType: activityType,
+        },
+      });
 
-    // Update Rating to article-records collection
-    if (data.activityType === "article_rating" && data.details?.Rating) {
-      const articleRecordRef = db
-        .collection("users")
-        .doc(id)
-        .collection("article-records")
-        .doc(data.articleId);
+      // Update user XP and level
+      const currentUser = req.session?.user;
+      const finalXp = (currentUser?.xp || 0) + data.xpEarned;
+      const levelData = levelCalculation(finalXp);
 
-      const articleRecord = await articleRecordRef.get();
-
-      if (articleRecord.exists) {
-        await articleRecordRef.update({
-          rated: data.details.Rating,
-          updated_at: new Date(),
-        });
-      }
-    }
-
-    // Update Rating to stories-records collection
-    if (data.activityType === "chapter_rating" && data.details?.Rating) {
-      const storiesRecordRef = db
-        .collection("users")
-        .doc(id)
-        .collection("stories-records")
-        .doc(data.storyId);
-
-      const storiesRecord = await storiesRecordRef.get();
-
-      if (storiesRecord.exists) {
-        await storiesRecordRef.update({
-          rated: data.details.Rating,
-          chapterNumber: data.chapterNumber,
-          updated_at: new Date(),
-        });
-      }
+      await prisma.user.update({
+        where: { id },
+        data: {
+          xp: finalXp,
+          level: typeof levelData.raLevel === 'number' ? levelData.raLevel : parseInt(levelData.raLevel.toString()),
+          cefrLevel: levelData.cefrLevel,
+          updatedAt: new Date(),
+        },
+      });
     }
 
     return NextResponse.json({
@@ -344,41 +370,51 @@ export async function getActivityLog(
   { params: { id } }: RequestContext
 ) {
   try {
-    const results: any[] = [];
+    // Get all user activities for the user
+    const results = await prisma.userActivity.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
 
-    // createActivityLogTable
-    const userRef = await db.collection("user-activity-log").doc(id).get();
+    // Get XP logs for the user
+    const xpLogs = await prisma.xPLog.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
 
-    if (!userRef.exists) {
-      await db.collection("user-activity-log").doc(id).set({ id });
-    }
-
-    const getActivity = await db
-      .collection("user-activity-log")
-      .doc(id)
-      .listCollections();
-
-    const promises = getActivity.map((subCollection) =>
-      subCollection.get().then((array) =>
-        array.docs.map((doc) =>
-          results.push({
-            ...doc.data(),
-            timestamp: doc.data().timestamp.toDate(),
-          })
-        )
-      )
-    );
-
-    await Promise.all(promises);
+    // Combine and format the data to match the expected structure
+    const formattedResults = results.map((activity) => ({
+      id: activity.id,
+      userId: activity.userId,
+      activityType: activity.activityType,
+      targetId: activity.targetId,
+      timer: activity.timer,
+      details: activity.details,
+      completed: activity.completed,
+      timestamp: activity.createdAt,
+      timeTaken: activity.timer || 0,
+      xpEarned: xpLogs.find(log => log.activityId === activity.id)?.xpEarned || 0,
+      createdAt: activity.createdAt,
+      updatedAt: activity.updatedAt,
+    }));
 
     return NextResponse.json({
-      results,
-      message: "succcess",
+      results: formattedResults,
+      message: "success",
     });
   } catch (error) {
     console.log("getActivity => ", error);
     return NextResponse.json({
       message: "Error",
+      status: 500,
     });
   }
 }
@@ -388,22 +424,33 @@ export async function getUserRecords(
   { params: { id } }: RequestContext
 ) {
   try {
-    const limit = req.nextUrl.searchParams.get("limit") || 10;
+    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10");
     const nextPage = req.nextUrl.searchParams.get("nextPage");
 
-    const records = await db
-      .collection("users")
-      .doc(id)
-      .collection("article-records")
-      .orderBy("created_at", "desc")
-      .get();
-
-    const results = records.docs.map((doc) => {
-      return {
-        id: doc.id,
-        ...doc.data(),
-      };
+    // Get user activities related to articles
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        userId: id,
+        activityType: {
+          in: [ActivityType.ARTICLE_READ, ActivityType.ARTICLE_RATING],
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: limit,
     });
+
+    const results = activities.map((activity) => ({
+      id: activity.id,
+      userId: activity.userId,
+      targetId: activity.targetId, // This would be the article ID
+      activityType: activity.activityType,
+      completed: activity.completed,
+      details: activity.details,
+      created_at: activity.createdAt,
+      updated_at: activity.updatedAt,
+    }));
 
     return NextResponse.json({
       results,
@@ -422,17 +469,26 @@ export async function getUserHeatmap(
   { params: { id } }: RequestContext
 ) {
   try {
-    const records = await db
-      .collection("users")
-      .doc(id)
-      .collection("heatmap")
-      .doc("activity")
-      .get();
+    // Get user activities and group by date for heatmap
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
 
-    const results = records.data();
+    // Process activities to create heatmap data
+    const heatmapData: { [key: string]: number } = {};
+    
+    activities.forEach((activity) => {
+      const date = activity.createdAt.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+      heatmapData[date] = (heatmapData[date] || 0) + 1;
+    });
 
     return NextResponse.json({
-      results,
+      results: heatmapData,
     });
   } catch (error) {
     console.log("Error getting documents", error);
@@ -445,13 +501,25 @@ export async function getUserHeatmap(
 
 export async function getAllUsers(req: NextRequest) {
   try {
-    const users = await db.collection("users").get();
-    const results = users.docs.map((doc) => {
-      return {
-        id: doc.id,
-        ...doc.data(),
-      };
+    const users = await prisma.user.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
+
+    const results = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      xp: user.xp,
+      level: user.level,
+      cefrLevel: user.cefrLevel,
+      expiredDate: user.expiredDate,
+      licenseId: user.licenseId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    }));
 
     return NextResponse.json({
       results,
@@ -468,10 +536,15 @@ export async function getAllUsers(req: NextRequest) {
 export async function updateUserData(req: ExtendedNextRequest) {
   try {
     const data = await req.json();
-    const userRef = db.collection("users").where("email", "==", data.email);
-    const user = await userRef.get();
+    
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: {
+        email: data.email,
+      },
+    });
 
-    if (user.empty) {
+    if (!user) {
       return NextResponse.json(
         {
           message: "User not found",
@@ -479,22 +552,29 @@ export async function updateUserData(req: ExtendedNextRequest) {
         { status: 404 }
       );
     }
-    console.log();
-    const license = await db
-      .collection(DBCollection.LICENSES)
-      .where("id", "==", data.license_id)
-      .get();
 
-    const licenseData = license.docs.map((license) => license.data());
+    // Find license
+    const license = await prisma.license.findUnique({
+      where: {
+        id: data.license_id,
+      },
+      include: {
+        licenseUsers: true,
+      },
+    });
 
-    if (license.empty) {
+    if (!license) {
       return NextResponse.json(
         {
           message: "License not found",
         },
         { status: 404 }
       );
-    } else if (licenseData[0].total_licenses <= licenseData[0].used_licenses) {
+    }
+
+    const usedLicenses = license.licenseUsers.length;
+    
+    if (license.maxUsers <= usedLicenses) {
       return NextResponse.json(
         {
           message: "License is already used",
@@ -502,30 +582,204 @@ export async function updateUserData(req: ExtendedNextRequest) {
         { status: 404 }
       );
     }
-    if (!license.empty && user) {
-      await db
-        .collection(DBCollection.LICENSES)
-        .doc(licenseData[0].id)
-        .update({
-          used_licenses: licenseData[0].used_licenses + 1,
-        });
 
-      await db.collection(DBCollection.USERS).doc(user.docs[0].id).update({
+    // Create license-user relationship
+    await prisma.licenseOnUser.create({
+      data: {
+        userId: user.id,
+        licenseId: license.id,
+      },
+    });
+
+    // Update user data
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
         role: data.role,
-        expired_date: licenseData[0].expiration_date,
-        license_id: licenseData[0].id,
-      });
+        expiredDate: license.expiresAt,
+        licenseId: license.id,
+      },
+    });
 
-      return NextResponse.json(
-        { message: "Update user successfully" },
-        { status: 200 }
-      );
-    }
+    return NextResponse.json(
+      { message: "Update user successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error updating documents", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
       { status: 500 }
     );
+  }
+}
+
+export async function getUserActivityData(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const xpLogs = await prisma.xPLog.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { xp: true, level: true },
+    });
+
+    // Get unique article IDs for activities that might need metadata
+    const articleIds = activities
+      .filter(activity => 
+        (activity.activityType === 'ARTICLE_READ' || activity.activityType === 'ARTICLE_RATING') &&
+        activity.targetId &&
+        (!activity.details || !((activity.details as any)?.type))
+      )
+      .map(activity => activity.targetId)
+      .filter((id, index, self) => self.indexOf(id) === index);
+
+    // Fetch article metadata for activities that need it
+    const articlesMetadata = await prisma.article.findMany({
+      where: {
+        id: { in: articleIds },
+      },
+      select: {
+        id: true,
+        type: true,
+        genre: true,
+        subGenre: true,
+        title: true,
+        cefrLevel: true,
+        raLevel: true,
+      },
+    });
+
+    // Create a map for quick lookup
+    const articleMetadataMap = new Map(
+      articlesMetadata.map(article => [
+        article.id,
+        {
+          type: article.type,
+          genre: article.genre,
+          subgenre: article.subGenre,
+          title: article.title,
+          cefr_level: article.cefrLevel,
+          level: article.raLevel,
+        }
+      ])
+    );
+
+    const formattedResults = activities.map((activity) => {
+      const xpLog = xpLogs.find(log => log.activityId === activity.id);
+      const xpEarned = xpLog?.xpEarned || 0;
+      
+      // Get article metadata from details or from fetched data
+      let articleMetadata = {};
+      if (activity.targetId && (activity.activityType === 'ARTICLE_READ' || activity.activityType === 'ARTICLE_RATING')) {
+        const detailsMetadata = activity.details as any;
+        const fetchedMetadata = articleMetadataMap.get(activity.targetId);
+        
+        articleMetadata = {
+          type: detailsMetadata?.type || fetchedMetadata?.type || "Unknown Type",
+          genre: detailsMetadata?.genre || fetchedMetadata?.genre || "Unknown Genre",
+          subgenre: detailsMetadata?.subgenre || fetchedMetadata?.subgenre || "Unknown Subgenre",
+          title: detailsMetadata?.title || fetchedMetadata?.title || "Unknown Title",
+          cefr_level: detailsMetadata?.cefr_level || fetchedMetadata?.cefr_level || "A1",
+          level: detailsMetadata?.level || fetchedMetadata?.level || user?.level || 1,
+        };
+      }
+      
+      return {
+        contentId: activity.id,
+        userId: activity.userId,
+        articleId: activity.targetId,
+        activityType: activity.activityType.toLowerCase().replace('_', '_'),
+        activityStatus: activity.completed ? "completed" : "in_progress",
+        timestamp: activity.createdAt.toISOString(),
+        timeTaken: activity.timer || 0,
+        xpEarned: xpEarned,
+        initialXp: (user?.xp || 0) - xpEarned,
+        finalXp: user?.xp || 0,
+        initialLevel: user?.level || 1,
+        finalLevel: user?.level || 1,
+        details: {
+          ...articleMetadata,
+          ...(activity.details as any),
+        },
+      };
+    });
+
+    return NextResponse.json({
+      results: formattedResults,
+      message: "success",
+    });
+  } catch (error) {
+    console.error("Error fetching user activity data:", error);
+    return NextResponse.json({
+      message: "Error fetching user activity data",
+      status: 500,
+    });
+  }
+}
+
+export async function getStudentData(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        xp: true,
+        level: true,
+        cefrLevel: true,
+        expiredDate: true,
+        licenseId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({
+        message: "Student not found",
+        status: 404,
+      });
+    }
+
+    const studentData = {
+      ...user,
+      display_name: user.name,
+      cefr_level: user.cefrLevel,
+    };
+
+    return NextResponse.json({
+      data: studentData,
+      message: "success",
+    });
+  } catch (error) {
+    console.error("Error fetching student data:", error);
+    return NextResponse.json({
+      message: "Error fetching student data",
+      status: 500,
+    });
   }
 }
