@@ -197,25 +197,40 @@ export async function getSAQuestion(
       where: {
         userId: userId,
         activityType: "SA_QUESTION",
-        targetId: article_id,
         completed: true,
+        details: {
+          path: ["articleId"],
+          equals: article_id,
+        },
       },
     });
 
-    if (existingActivity) {
-      const details = existingActivity.details as any;
+    let activityWithDetails = existingActivity;
+    if (!activityWithDetails) {
+      activityWithDetails = await prisma.userActivity.findFirst({
+        where: {
+          userId: userId,
+          activityType: "SA_QUESTION",
+          targetId: article_id,
+          completed: true,
+        },
+      });
+    }
+
+    if (activityWithDetails) {
+      const details = activityWithDetails.details as any;
       return NextResponse.json(
         {
           message: "User already answered",
           result: {
-            id: details?.questionId,
-            question: details?.question,
+            id: details?.questionId || "",
+            question: details?.question || "",
           },
-          suggested_answer: details?.suggested_answer,
+          suggested_answer: details?.suggested_answer || "",
           state: QuestionState.COMPLETED,
-          answer: details?.answer,
+          answer: details?.answer || "",
         },
-        { status: 400 }
+        { status: 200 }
       );
     }
 
@@ -302,21 +317,50 @@ export async function answerSAQuestion(
       );
     }
 
-    await prisma.userActivity.create({
-      data: {
-        userId: userId,
-        activityType: "SA_QUESTION",
-        targetId: article_id,
-        completed: true,
-        timer: timeRecorded,
-        details: {
-          questionId: question_id,
-          question: question.question,
-          answer: answer,
-          suggested_answer: question.answer,
+    const existingActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId: userId,
+          activityType: "SA_QUESTION",
+          targetId: question_id,
         },
       },
     });
+
+    if (existingActivity) {
+      await prisma.userActivity.update({
+        where: { id: existingActivity.id },
+        data: {
+          completed: true,
+          timer: timeRecorded,
+          details: {
+            questionId: question_id,
+            question: question.question,
+            answer: answer,
+            suggested_answer: question.answer,
+            articleId: article_id,
+          },
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      await prisma.userActivity.create({
+        data: {
+          userId: userId,
+          activityType: "SA_QUESTION",
+          targetId: question_id,
+          completed: true,
+          timer: timeRecorded,
+          details: {
+            questionId: question_id,
+            question: question.question,
+            answer: answer,
+            suggested_answer: question.answer,
+            articleId: article_id,
+          },
+        },
+      });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -499,6 +543,7 @@ export async function answerMCQuestion(
             correctAnswer: question.answer,
             textualEvidence: question.textualEvidence,
             isCorrect: isCorrect,
+            feedback: question.textualEvidence,
           },
           updatedAt: new Date(),
         },
@@ -519,6 +564,7 @@ export async function answerMCQuestion(
             correctAnswer: question.answer,
             textualEvidence: question.textualEvidence,
             isCorrect: isCorrect,
+            feedback: question.textualEvidence,
           },
         },
       });
@@ -630,8 +676,26 @@ export async function answerLAQuestion(
       );
     }
 
-    await prisma.userActivity.create({
-      data: {
+    await prisma.userActivity.upsert({
+      where: {
+        userId_activityType_targetId: {
+          userId: userId,
+          activityType: "LA_QUESTION",
+          targetId: article_id,
+        },
+      },
+      update: {
+        completed: true,
+        timer: timeRecorded,
+        details: {
+          questionId: question_id,
+          question: question.question,
+          answer: answer,
+          feedback: feedback,
+        },
+        updatedAt: new Date(),
+      },
+      create: {
         userId: userId,
         activityType: "LA_QUESTION",
         targetId: article_id,
@@ -650,24 +714,8 @@ export async function answerLAQuestion(
       where: { id: userId },
     });
 
-    if (user) {
-      const updatedUser = await prisma.user.update({
-        where: { id: userId },
-        data: { xp: user.xp + 5 },
-      });
-
-      await prisma.xPLog.create({
-        data: {
-          userId: userId,
-          xpEarned: 5,
-          activityId: question_id,
-          activityType: "LA_QUESTION",
-        },
-      });
-
-      if (req.session?.user) {
-        req.session.user.xp = updatedUser.xp;
-      }
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     const scores: number[] = Object.values(feedback.scores);
@@ -679,8 +727,7 @@ export async function answerLAQuestion(
         answer,
         result: feedback,
         sumScores,
-        xpEarned: 5,
-        userXp: req.session?.user.xp,
+        userXp: user.xp,
       },
       { status: 200 }
     );
@@ -776,6 +823,74 @@ export async function rateArticle(
     );
   } catch (error) {
     console.error(error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getLAQuestionXP(
+  req: ExtendedNextRequest,
+  { params: { article_id, question_id } }: SubRequestContext
+) {
+  try {
+    const { rating } = await req.json();
+    const userId = req.session?.user.id as string;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    const existingXPLog = await prisma.xPLog.findFirst({
+      where: {
+        userId: userId,
+        activityId: question_id,
+        activityType: "LA_QUESTION",
+      },
+    });
+
+    if (existingXPLog) {
+      return NextResponse.json(
+        { message: "XP already awarded for this question", xpEarned: 0 },
+        { status: 200 }
+      );
+    }
+
+    const xpEarned = Math.max(1, Math.floor(rating / 2));
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { xp: user.xp + xpEarned },
+    });
+
+    await prisma.xPLog.create({
+      data: {
+        userId: userId,
+        xpEarned: xpEarned,
+        activityId: question_id,
+        activityType: "LA_QUESTION",
+      },
+    });
+
+    if (req.session?.user) {
+      req.session.user.xp = updatedUser.xp;
+    }
+
+    return NextResponse.json(
+      {
+        message: "XP awarded successfully",
+        xpEarned: xpEarned,
+        userXp: updatedUser.xp,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error awarding LAQ XP:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

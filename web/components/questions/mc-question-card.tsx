@@ -178,8 +178,10 @@ export default function MCQuestionCard({
       });
   }, [articleId]);
 
-  const handleCompleted = (currentProgress?: AnswerStatus[], newResp?: QuestionResponse) => {
-    
+  const handleCompleted = (
+    currentProgress?: AnswerStatus[],
+    newResp?: QuestionResponse
+  ) => {
     const progressToCheck = currentProgress || data.progress || [];
     const completedAnswers = progressToCheck.filter(
       (p) => p === AnswerStatus.CORRECT || p === AnswerStatus.INCORRECT
@@ -221,13 +223,12 @@ export default function MCQuestionCard({
     })
       .then((res) => res.json())
       .then((deleteResponse) => {
-        
         const timestamp = new Date().getTime();
-        return fetch(`/api/v1/articles/${articleId}/questions/mcq?_t=${timestamp}`)
-          .then((res) => res.json());
+        return fetch(
+          `/api/v1/articles/${articleId}/questions/mcq?_t=${timestamp}`
+        ).then((res) => res.json());
       })
       .then((data) => {
-        
         const newData = {
           progress: [
             AnswerStatus.UNANSWERED,
@@ -240,10 +241,12 @@ export default function MCQuestionCard({
           total: data.total || 5,
           state: QuestionState.INCOMPLETE,
         };
-        
+
         setData(newData);
-        useQuestionStore.setState({ mcQuestion: { ...data, state: QuestionState.INCOMPLETE } });
-        
+        useQuestionStore.setState({
+          mcQuestion: { ...data, state: QuestionState.INCOMPLETE },
+        });
+
         setTimeout(() => {
           setState(QuestionState.INCOMPLETE);
         }, 10);
@@ -396,7 +399,10 @@ function QuestionCardIncomplete({
   userId: string;
   resp: QuestionResponse;
   articleId: string;
-  handleCompleted: (currentProgress?: AnswerStatus[], newResp?: QuestionResponse) => void;
+  handleCompleted: (
+    currentProgress?: AnswerStatus[],
+    newResp?: QuestionResponse
+  ) => void;
   articleTitle: string;
   articleLevel: number;
   page?: "lesson" | "article";
@@ -515,7 +521,10 @@ function MCQeustion({
 }: {
   articleId: string;
   resp: QuestionResponse;
-  handleCompleted: (currentProgress?: AnswerStatus[], newResp?: QuestionResponse) => void;
+  handleCompleted: (
+    currentProgress?: AnswerStatus[],
+    newResp?: QuestionResponse
+  ) => void;
   userId: string;
   articleTitle: string;
   articleLevel: number;
@@ -701,7 +710,7 @@ function MCQeustion({
 
     if (completedCount === 5) {
       setLoadingAnswer(false);
-      
+
       const updatedResp = { ...currentResp, progress: progress };
       handleCompleted(progress, updatedResp);
 
@@ -815,12 +824,26 @@ function MCQeustion({
         </span>
       </CardDescription>
 
-      {textualEvidence && (
-        <div className="mt-4 p-4 font-semibold bg-gray-100 text-gray-700 rounded">
-          <p>
-            <span className="font-bold text-lg text-gray-800">Feedback: </span>
-            {`"${textualEvidence}"`}
-          </p>
+      {selectedOption >= 0 && (
+        <div className="mt-4 space-y-3">
+          <div className="p-3 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg">
+            <p className="font-bold text-green-800 dark:text-green-200">
+              Correct Answer: {correctAnswer}
+            </p>
+          </div>
+          <div className="p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
+            <p className="font-bold text-blue-800 dark:text-blue-200">
+              Your Answer:{" "}
+              {(currentResp.results[0]?.options || [])[selectedOption]}
+            </p>
+          </div>
+          {textualEvidence && (
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <p className="font-bold text-gray-800 dark:text-gray-200">
+                Feedback: {textualEvidence}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

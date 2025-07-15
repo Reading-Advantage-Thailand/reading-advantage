@@ -104,8 +104,8 @@ export async function getFeedbackWritter(res: object) {
           suggestions: z.string(),
         }),
       }),
-      exampleRevisions: z.array(z.string()).min(2).max(3),
-      nextSteps: z.array(z.string()).min(2).max(3),
+      exampleRevisions: z.array(z.string()).min(2).max(3).optional(),
+      nextSteps: z.array(z.string()).min(2).max(3).optional(),
     }),
   });
 
