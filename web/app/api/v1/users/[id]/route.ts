@@ -6,7 +6,7 @@ import { handleRequest } from "@/server/utils/handle-request";
 import { protect } from "@/server/controllers/auth-controller";
 
 export interface Context {
-  params?: {
+  params: {
     id: string;
   };
 }
@@ -23,5 +23,6 @@ router.patch(updateUser);
 
 export const GET = (request: NextRequest, ctx: Context) =>
   handleRequest(router, request, ctx);
+
 export const PATCH = (request: NextRequest, ctx: Context) =>
   handleRequest(router, request, ctx);
