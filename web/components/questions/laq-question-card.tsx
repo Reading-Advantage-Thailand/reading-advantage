@@ -34,11 +34,6 @@ import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
 import { useRouter } from "next/navigation";
-import {
-  ActivityType,
-  ActivityStatus,
-} from "../models/user-activity-log-model";
-import { levelCalculation } from "@/lib/utils";
 
 interface Props {
   userId: string;
@@ -353,7 +348,11 @@ function LAQuestion({
         );
 
         const finalFeedback = await submitAnswer.json();
-        setData(finalFeedback);
+        setData({
+          state: finalFeedback.state,
+          answer: finalFeedback.answer,
+          result: finalFeedback.result,
+        });
         setRating(finalFeedback.sumScores);
       }
       setIsLoading(false);
@@ -370,46 +369,38 @@ function LAQuestion({
 
   async function onGetExp() {
     setIsLoading(true);
-    fetch(
-      `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/getxp`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          rating,
-        }),
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data) {
-          toast({
-            title: tf("toast.success"),
-            imgSrc: true,
-            description: `Congratulations!, You received ${rating} XP for completing this activity.`,
-          });
+    try {
+      const response = await fetch(
+        `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/getxp`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            rating,
+          }),
         }
-        handleCompleted();
-      })
-      .finally(() => {
-        setIsLoading(false);
+      );
+      const xpData = await response.json();
+
+      if (xpData && xpData.xpEarned) {
+        toast({
+          title: tf("toast.success"),
+          imgSrc: true,
+          description: `Congratulations!, You received ${xpData.xpEarned} XP for completing this activity.`,
+        });
+      }
+
+      handleCompleted();
+
+      router.refresh();
+    } catch (error) {
+      console.error("Error getting XP:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get XP. Please try again.",
       });
-    await fetch(`/api/v1/users/${userId}/activitylog`, {
-      method: "POST",
-      body: JSON.stringify({
-        articleId: articleId,
-        activityType: ActivityType.LA_Question,
-        activityStatus: ActivityStatus.Completed,
-        timeTaken: timer,
-        xpEarned: rating,
-        details: {
-          ...data,
-          title: articleTitle,
-          level: articleLevel,
-          cefr_level: levelCalculation(rating).cefrLevel,
-        },
-      }),
-    });
-    router.refresh();
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const handleCategoryChange = (category: string) => {
