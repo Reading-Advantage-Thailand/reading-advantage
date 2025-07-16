@@ -221,7 +221,7 @@ export async function postActivityLog(
       status: 200,
     });
   } catch (error) {
-    console.log("postActivity => ", error);
+    console.error("postActivity => ", error);
     return NextResponse.json({
       message: "Error",
       status: 500,
@@ -357,7 +357,7 @@ export async function putActivityLog(
       status: 200,
     });
   } catch (error) {
-    console.log("putActivityLog => ", error);
+    console.error("putActivityLog => ", error);
     return NextResponse.json({
       message: "Error processing activity log",
       status: 500,
@@ -411,7 +411,7 @@ export async function getActivityLog(
       message: "success",
     });
   } catch (error) {
-    console.log("getActivity => ", error);
+    console.error("getActivity => ", error);
     return NextResponse.json({
       message: "Error",
       status: 500,
@@ -491,7 +491,7 @@ export async function getUserHeatmap(
       results: heatmapData,
     });
   } catch (error) {
-    console.log("Error getting documents", error);
+    console.error("Error getting documents", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
       { status: 500 }
@@ -619,18 +619,25 @@ export async function getUserActivityData(
   { params: { id } }: RequestContext
 ) {
   try {
-    const activities = await prisma.userActivity.findMany({
+    // Get all user activities and their XP logs in one query with join
+    const activitiesWithXp = await prisma.userActivity.findMany({
       where: {
         userId: id,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    const xpLogs = await prisma.xPLog.findMany({
-      where: {
-        userId: id,
+      include: {
+        user: {
+          select: {
+            xpLogs: {
+              where: {
+                userId: id,
+              },
+              select: {
+                xpEarned: true,
+                activityId: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -642,8 +649,23 @@ export async function getUserActivityData(
       select: { xp: true, level: true },
     });
 
+    // Create a map for XP earned by activity ID
+    const xpLogs = await prisma.xPLog.findMany({
+      where: {
+        userId: id,
+      },
+      select: {
+        activityId: true,
+        xpEarned: true,
+      },
+    });
+
+    const xpEarnedByActivity = new Map(
+      xpLogs.map(log => [log.activityId, log.xpEarned])
+    );
+
     // Get unique article IDs for activities that might need metadata
-    const articleIds = activities
+    const articleIds = activitiesWithXp
       .filter(activity => 
         (activity.activityType === 'ARTICLE_READ' || activity.activityType === 'ARTICLE_RATING') &&
         activity.targetId &&
@@ -683,9 +705,18 @@ export async function getUserActivityData(
       ])
     );
 
-    const formattedResults = activities.map((activity) => {
-      const xpLog = xpLogs.find(log => log.activityId === activity.id);
-      const xpEarned = xpLog?.xpEarned || 0;
+    // Calculate cumulative XP values for proper initial/final XP tracking
+    let cumulativeXp = user?.xp || 0;
+
+    const formattedResults = activitiesWithXp.map((activity, index) => {
+      const xpEarned = xpEarnedByActivity.get(activity.id) || 0;
+      
+      // Calculate XP at the time of this activity
+      const finalXp = cumulativeXp;
+      const initialXp = finalXp - xpEarned;
+      
+      // Update cumulative XP for next iteration (going backwards in time)
+      cumulativeXp -= xpEarned;
       
       // Get article metadata from details or from fetched data
       let articleMetadata = {};
@@ -712,8 +743,8 @@ export async function getUserActivityData(
         timestamp: activity.createdAt.toISOString(),
         timeTaken: activity.timer || 0,
         xpEarned: xpEarned,
-        initialXp: (user?.xp || 0) - xpEarned,
-        finalXp: user?.xp || 0,
+        initialXp: initialXp,
+        finalXp: finalXp,
         initialLevel: user?.level || 1,
         finalLevel: user?.level || 1,
         details: {
