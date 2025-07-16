@@ -35,7 +35,6 @@ export default async function ProgressPage({
 
     const activityData = activityResponse.results;
     const studentData = studentResponse.data;
-    console.log("activityData:", activityData);
 
     return (
       <>
