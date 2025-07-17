@@ -639,157 +639,60 @@ export async function getUserActivityData(
   { params: { id } }: RequestContext
 ) {
   try {
-    // Get all user activities and their XP logs in one query with join
-    const activitiesWithXp = await prisma.userActivity.findMany({
-      where: {
-        userId: id,
-      },
-      include: {
-        user: {
-          select: {
-            xpLogs: {
-              where: {
-                userId: id,
-              },
-              select: {
-                xpEarned: true,
-                activityId: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
     const user = await prisma.user.findUnique({
       where: { id },
       select: { xp: true, level: true },
     });
 
-    // Create a map for XP earned by activity ID
+    // Get daily XP data directly from XPLog
     const xpLogs = await prisma.xPLog.findMany({
       where: {
         userId: id,
       },
       select: {
-        activityId: true,
         xpEarned: true,
+        activityId: true,
+        activityType: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "asc", // Order by ascending to calculate progression correctly
       },
     });
 
-    const xpEarnedByActivity = new Map(
-      xpLogs.map((log) => [log.activityId, log.xpEarned])
-    );
-
-    // Get unique article IDs for activities that might need metadata
-    const articleIds = activitiesWithXp
-      .filter(
-        (activity) =>
-          (activity.activityType === "ARTICLE_READ" ||
-            activity.activityType === "ARTICLE_RATING") &&
-          activity.targetId &&
-          (!activity.details || !(activity.details as any)?.type)
-      )
-      .map((activity) => activity.targetId)
-      .filter((id, index, self) => self.indexOf(id) === index);
-
-    // Fetch article metadata for activities that need it
-    const articlesMetadata = await prisma.article.findMany({
-      where: {
-        id: { in: articleIds },
-      },
-      select: {
-        id: true,
-        type: true,
-        genre: true,
-        subGenre: true,
-        title: true,
-        cefrLevel: true,
-        raLevel: true,
-      },
-    });
-
-    // Create a map for quick lookup
-    const articleMetadataMap = new Map(
-      articlesMetadata.map((article) => [
-        article.id,
-        {
-          type: article.type,
-          genre: article.genre,
-          subgenre: article.subGenre,
-          title: article.title,
-          cefr_level: article.cefrLevel,
-          level: article.raLevel,
-        },
-      ])
-    );
-
-    // Calculate cumulative XP values for proper initial/final XP tracking
-    let cumulativeXp = user?.xp || 0;
-
-    const formattedResults = activitiesWithXp.map((activity, index) => {
-      const xpEarned = xpEarnedByActivity.get(activity.id) || 0;
-
-      // Calculate XP at the time of this activity
-      const finalXp = cumulativeXp;
-      const initialXp = finalXp - xpEarned;
-
-      // Update cumulative XP for next iteration (going backwards in time)
-      cumulativeXp -= xpEarned;
-
-      // Get article metadata from details or from fetched data
-      let articleMetadata = {};
-      if (
-        activity.targetId &&
-        (activity.activityType === "ARTICLE_READ" ||
-          activity.activityType === "ARTICLE_RATING")
-      ) {
-        const detailsMetadata = activity.details as any;
-        const fetchedMetadata = articleMetadataMap.get(activity.targetId);
-
-        articleMetadata = {
-          type:
-            detailsMetadata?.type || fetchedMetadata?.type || "Unknown Type",
-          genre:
-            detailsMetadata?.genre || fetchedMetadata?.genre || "Unknown Genre",
-          subgenre:
-            detailsMetadata?.subgenre ||
-            fetchedMetadata?.subgenre ||
-            "Unknown Subgenre",
-          title:
-            detailsMetadata?.title || fetchedMetadata?.title || "Unknown Title",
-          cefr_level:
-            detailsMetadata?.cefr_level || fetchedMetadata?.cefr_level || "A1",
-          level:
-            detailsMetadata?.level ||
-            fetchedMetadata?.level ||
-            user?.level ||
-            1,
-        };
-      }
+    // Calculate cumulative XP progression
+    let runningXp = 0;
+    
+    const formattedResults = xpLogs.map((log) => {
+      const initialXp = runningXp;
+      const finalXp = runningXp + log.xpEarned;
+      
+      // Update running XP for next iteration
+      runningXp += log.xpEarned;
 
       return {
-        contentId: activity.id,
-        userId: activity.userId,
-        articleId: activity.targetId,
-        activityType: activity.activityType.toLowerCase().replace("_", "_"),
-        activityStatus: activity.completed ? "completed" : "in_progress",
-        timestamp: activity.createdAt.toISOString(),
-        timeTaken: activity.timer || 0,
-        xpEarned: xpEarned,
+        contentId: log.activityId,
+        userId: id,
+        articleId: log.activityId, // Using activityId as articleId for compatibility
+        activityType: log.activityType.toLowerCase().replace("_", "_"),
+        activityStatus: "completed",
+        timestamp: log.createdAt.toISOString(),
+        timeTaken: 0, // Not available in XPLog
+        xpEarned: log.xpEarned,
         initialXp: initialXp,
         finalXp: finalXp,
         initialLevel: user?.level || 1,
         finalLevel: user?.level || 1,
         details: {
-          ...articleMetadata,
-          ...(activity.details as any),
+          title: "Activity", // Generic title since we don't have article details
+          level: user?.level || 1,
+          cefr_level: "A1", // Default CEFR level
         },
       };
     });
+
+    // Reverse to show newest first (as expected by frontend)
+    formattedResults.reverse();
 
     return NextResponse.json({
       results: formattedResults,

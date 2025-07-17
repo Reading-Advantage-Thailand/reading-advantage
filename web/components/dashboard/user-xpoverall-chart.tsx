@@ -27,11 +27,6 @@ import { UserActivityLog } from "../models/user-activity-log-model";
 import { DateValueType } from "react-tailwindcss-datepicker/dist/types";
 import { useScopedI18n } from "@/locales/client";
 
-// Function to calculate the data for the chart
-// This function takes in the articles and the number of days to go back
-// It returns an array of objects with the day of the week and the total number of articles read on that day
-// Example: [{ day: "Sun 1", total: 5 }, { day: "Mon 2", total: 10 }, ...]
-
 function formatDataForDays(
   articles: UserActivityLog[],
   // calendarValue: DateValueType
@@ -58,7 +53,7 @@ function formatDataForDays(
     "December",
   ];
 
-  const totalXp: { [key: string]: number } = {};
+  const monthlyXpEarned: { [key: string]: number } = {};
 
   for (
     let i = new Date(startDate);
@@ -66,44 +61,34 @@ function formatDataForDays(
     i.setMonth(i.getMonth() + 1)
   ) {
     const month = `${monthNames[i.getMonth()]} ${i.getFullYear()}`;
-
-    totalXp[month] = 0;
+    monthlyXpEarned[month] = 0;
   }
 
-  for (let i = new Date(startDate); i <= endDate; i.setDate(i.getDate() + 1)) {
-    const month = `${monthNames[i.getMonth()]} ${i.getFullYear()}`;
-
-    const filteredArticles = articles.filter((article: UserActivityLog) => {
+  articles.forEach((article: UserActivityLog) => {
+    if (article.activityStatus === "completed") {
       const articleDate = new Date(article.timestamp);
-      articleDate.setHours(0, 0, 0, 0);
-      return articleDate.toDateString() === i.toDateString();
-    });
+      const month = `${monthNames[articleDate.getMonth()]} ${articleDate.getFullYear()}`;
 
-    // get the latest level of the user for that day is the status is completed
-    // if level is dosent change then the user didnt complete any article that day return the last user updatedLevel
-
-    for (let j = 0; j < filteredArticles.length; j++) {
-      if (filteredArticles[j].activityStatus === "completed") {
-        if (!totalXp[month] || filteredArticles[j].finalXp > totalXp[month]) {
-          totalXp[month] = filteredArticles[j].finalXp;
-        }
+      if (monthlyXpEarned.hasOwnProperty(month)) {
+        monthlyXpEarned[month] += article.xpEarned || 0;
       }
     }
-  }
-
-  // Handle the case where a month has 0 XP
-  let lastMonthXp = 0;
-  const data = Object.keys(totalXp).map((month) => {
-    if (totalXp[month] === 0) {
-      totalXp[month] = lastMonthXp;
-    } else {
-      lastMonthXp = totalXp[month];
-    }
-    return {
-      month: `${month}`,
-      xpoverall: totalXp[month],
-    };
   });
+
+  let cumulativeXp = 0;
+  const data = Object.keys(monthlyXpEarned)
+    .sort((a, b) => {
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      return dateA.getTime() - dateB.getTime();
+    })
+    .map((month) => {
+      cumulativeXp += monthlyXpEarned[month];
+      return {
+        month: `${month}`,
+        xpoverall: cumulativeXp,
+      };
+    });
 
   return data;
 }
@@ -139,7 +124,10 @@ export function UserXpOverAllChart({ data }: UserActiviryChartProps) {
   // });
   const formattedData = formatDataForDays(data, 5);
 
-  const cardDescriptionText = `${formattedData[0]?.month} - ${formattedData[5]?.month}`;
+  const cardDescriptionText =
+    formattedData.length > 0
+      ? `${formattedData[0]?.month} - ${formattedData[formattedData.length - 1]?.month}`
+      : "No data available";
   const t = useScopedI18n("pages.student.reportpage");
 
   // const handleValueChange = (newValue: DateValueType) => {
