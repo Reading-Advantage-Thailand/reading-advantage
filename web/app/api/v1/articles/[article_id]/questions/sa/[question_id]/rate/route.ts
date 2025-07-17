@@ -1,5 +1,5 @@
 import { protect } from "@/server/controllers/auth-controller";
-import { rateArticle, } from "@/server/controllers/question-controller";
+import { rateSAQuestion } from "@/server/controllers/question-controller";
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
@@ -15,7 +15,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.post(rateArticle);
+router.post(rateSAQuestion);
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
     const result = await router.run(request, ctx);

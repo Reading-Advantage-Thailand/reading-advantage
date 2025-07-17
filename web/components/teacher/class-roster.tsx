@@ -78,7 +78,7 @@ interface Classes {
     {
       studentId: string;
       lastActivity: Date;
-    }
+    },
   ];
   importedFromGoogle: boolean;
   alternateLink: string;
@@ -117,15 +117,16 @@ export default function ClassRoster() {
     setIsResetting(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${selectedStudentId}/reset-progress`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${selectedStudentId}/reset-all-progress`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          cache: "no-cache",
         }
       );
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         toast({
@@ -139,12 +140,42 @@ export default function ClassRoster() {
         title: "Success.",
         description: `Student progress reset successfully.`,
       });
-      
-      // Refresh the student list to show updated data
+
+      if (typeof window !== "undefined") {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (
+            key &&
+            (key.includes("mcq") ||
+              key.includes("question") ||
+              key.includes(selectedStudentId))
+          ) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+        const sessionKeysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (
+            key &&
+            (key.includes("mcq") ||
+              key.includes("question") ||
+              key.includes(selectedStudentId))
+          ) {
+            sessionKeysToRemove.push(key);
+          }
+        }
+        sessionKeysToRemove.forEach((key) => sessionStorage.removeItem(key));
+      }
+
       if (selectedClassroom) {
         await fetchStudentInClass(selectedClassroom);
       }
-      router.refresh();
+
+      window.location.reload();
     } catch (error) {
       console.error("Error resetting progress:", error);
       toast({
@@ -377,7 +408,8 @@ export default function ClassRoster() {
           </SelectContent>
         </Select>
       </div>
-      {classes && Object.keys(classes).length > 0 &&
+      {classes &&
+        Object.keys(classes).length > 0 &&
         (studentInClass.length ? (
           <Header heading={tr("title", { className: classes.classroomName })} />
         ) : (
@@ -394,8 +426,11 @@ export default function ClassRoster() {
           }
           className="max-w-sm"
         />
-        {selectedClassroom && classroomId && (
-          classes && Object.keys(classes).length > 0 && !classes.importedFromGoogle ? (
+        {selectedClassroom &&
+          classroomId &&
+          (classes &&
+          Object.keys(classes).length > 0 &&
+          !classes.importedFromGoogle ? (
             <Button
               variant="outline"
               onClick={() => {
@@ -414,9 +449,14 @@ export default function ClassRoster() {
               <Icons.add />
               {tr("addStudentButton")}
             </Button>
-          ) : classes && Object.keys(classes).length > 0 && classes.importedFromGoogle ? (
+          ) : classes &&
+            Object.keys(classes).length > 0 &&
+            classes.importedFromGoogle ? (
             <Button
-              onClick={() => classes.googleClassroomId && syncStudents(classes.googleClassroomId)}
+              onClick={() =>
+                classes.googleClassroomId &&
+                syncStudents(classes.googleClassroomId)
+              }
               disabled={loading || !classes.googleClassroomId}
             >
               {loading ? (
@@ -456,8 +496,7 @@ export default function ClassRoster() {
               <Icons.add />
               {tr("addStudentButton")}
             </Button>
-          )
-        )}
+          ))}
       </div>
       <div className="rounded-md border">
         <Table style={{ tableLayout: "fixed", width: "100%" }}>

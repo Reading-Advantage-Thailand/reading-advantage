@@ -5,7 +5,12 @@ import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ActivityType } from "@prisma/client";
-import { create, update } from "lodash";
+
+interface RequestContext {
+  params: {
+    id: string;
+  };
+}
 
 export async function getUser(
   req: ExtendedNextRequest,
@@ -87,12 +92,6 @@ export async function updateUser(
       { status: 500 }
     );
   }
-}
-
-interface RequestContext {
-  params: {
-    id: string;
-  };
 }
 
 export async function postActivityLog(
