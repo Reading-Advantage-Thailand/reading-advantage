@@ -537,7 +537,6 @@ function MCQeustion({
   const { timer, setPaused } = useContext(QuizContext);
   const t = useScopedI18n("components.mcq");
   const router = useRouter();
-  const [textualEvidence, setTextualEvidence] = useState("");
   const [currentResp, setCurrentResp] = useState(resp);
 
   React.useEffect(() => {
@@ -609,7 +608,6 @@ function MCQeustion({
 
     setSelectedOption(-1);
     setCorrectAnswer("");
-    setTextualEvidence("");
 
     if (resp.results && resp.results[0]) {
       try {
@@ -659,8 +657,6 @@ function MCQeustion({
 
           setCorrectAnswer(data.correctAnswer || "");
           setSelectedOption(i);
-
-          setTextualEvidence(data.textualEvidence || "");
           const newProgress = [...progress];
           if (currentQuestionIndex !== -1) {
             const actuallyCorrect = isCorrect;
@@ -730,7 +726,6 @@ function MCQeustion({
     setSelectedOption(-1);
     setCorrectAnswer("");
     setPaused(false);
-    setTextualEvidence("");
 
     const answeredCount = progress.filter(
       (p) => p !== AnswerStatus.UNANSWERED
@@ -837,13 +832,6 @@ function MCQeustion({
               {(currentResp.results[0]?.options || [])[selectedOption]}
             </p>
           </div>
-          {textualEvidence && (
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <p className="font-bold text-gray-800 dark:text-gray-200">
-                Feedback: {textualEvidence}
-              </p>
-            </div>
-          )}
         </div>
       )}
 
@@ -923,7 +911,7 @@ function MCQeustion({
         </>
       )}
 
-      {textualEvidence && !page && (
+      {!page && (
         <Button
           variant={"outline"}
           size={"sm"}

@@ -543,7 +543,6 @@ export async function answerMCQuestion(
             correctAnswer: question.answer,
             textualEvidence: question.textualEvidence,
             isCorrect: isCorrect,
-            feedback: question.textualEvidence,
           },
           updatedAt: new Date(),
         },
@@ -564,7 +563,6 @@ export async function answerMCQuestion(
             correctAnswer: question.answer,
             textualEvidence: question.textualEvidence,
             isCorrect: isCorrect,
-            feedback: question.textualEvidence,
           },
         },
       });
@@ -633,6 +631,53 @@ export async function retakeMCQuestion(
         return details?.articleId === article_id;
       })
       .map((activity) => activity.id);
+
+    const mcQuestions = await prisma.multipleChoiceQuestion.findMany({
+      where: {
+        articleId: article_id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const questionIds = mcQuestions.map((q) => q.id);
+
+    if (questionIds.length > 0) {
+      await prisma.xPLog.deleteMany({
+        where: {
+          userId: userId,
+          activityType: "MC_QUESTION",
+          activityId: {
+            in: questionIds,
+          },
+        },
+      });
+
+      const remainingXpLogs = await prisma.xPLog.findMany({
+        where: {
+          userId: userId,
+        },
+      });
+
+      const totalXp = remainingXpLogs.reduce(
+        (sum, log) => sum + log.xpEarned,
+        0
+      );
+
+      await prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          xp: totalXp,
+        },
+      });
+
+      if (req.session?.user) {
+        req.session.user.xp = totalXp;
+      }
+    }
 
     if (articleActivityIds.length > 0) {
       await prisma.userActivity.deleteMany({
