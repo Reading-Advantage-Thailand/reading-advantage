@@ -134,15 +134,6 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
   });
 
   const formattedData = formatDataForDays(data, date);
-  
-  // Debug logging
-  console.log('=== DEBUG CHART DATA ===');
-  console.log('Input data:', data.slice(0, 5).map(item => ({
-    activityStatus: item.activityStatus,
-    xpEarned: item.xpEarned,
-    timestamp: item.timestamp
-  })));
-  console.log('Formatted data for chart:', formattedData);
 
   const inProgressCount = data.filter(
     (item: UserActivityLog) => item.activityStatus === "in_progress"
