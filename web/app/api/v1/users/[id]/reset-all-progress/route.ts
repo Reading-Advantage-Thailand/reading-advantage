@@ -17,7 +17,7 @@ const router = createEdgeRouter<NextRequest, Context>();
 router.use(logRequest);
 router.use(protect);
 
-// /api/v1/users/[id]/reset-progress
+// /api/v1/users/[id]/reset-all-progress
 router.post(resetUserProgress);
 
 export const POST = (request: NextRequest, ctx: Context) =>

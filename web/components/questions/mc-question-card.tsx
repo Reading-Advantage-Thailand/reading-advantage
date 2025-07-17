@@ -122,30 +122,12 @@ export default function MCQuestionCard({
       .then((res) => res.json())
       .then((data) => {
         try {
-          const savedProgress = sessionStorage.getItem(
-            `quiz_progress_${articleId}`
-          );
-          if (savedProgress) {
-            const parsedProgress = JSON.parse(savedProgress);
-            if (
-              Array.isArray(parsedProgress) &&
-              parsedProgress.length === 5 &&
-              parsedProgress.every(
-                (status) =>
-                  status === AnswerStatus.CORRECT ||
-                  status === AnswerStatus.INCORRECT ||
-                  status === AnswerStatus.UNANSWERED
-              )
-            ) {
-              data.progress = parsedProgress;
-            }
-          }
+          sessionStorage.removeItem(`quiz_progress_${articleId}`);
+          sessionStorage.removeItem(`quiz_started_${articleId}`);
         } catch (e) {
-          try {
-            sessionStorage.removeItem(`quiz_progress_${articleId}`);
-          } catch (clearError) {}
+          console.error("Error clearing sessionStorage:", e);
         }
-
+        
         if (
           data.progress &&
           Array.isArray(data.progress) &&

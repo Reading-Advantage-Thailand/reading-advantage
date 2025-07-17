@@ -24,23 +24,31 @@ interface SubRequestContext {
   };
 }
 
-interface Heatmap {
-  [date: string]: {
-    read: number;
-    completed: number;
-  };
-}
-
-interface Data {
-  question: string;
-}
-
 export async function getMCQuestions(
   req: ExtendedNextRequest,
   { params: { article_id } }: RequestContext
 ) {
   try {
     const userId = req.session?.user.id as string;
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "User not authenticated",
+          state: QuestionState.LOADING,
+          total: 5,
+          progress: [
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+          ],
+          results: [],
+        },
+        { status: 401 }
+      );
+    }
 
     let questions = await prisma.multipleChoiceQuestion.findMany({
       where: { articleId: article_id },
@@ -110,13 +118,26 @@ export async function getMCQuestions(
     const progress: AnswerStatus[] = [];
     const answeredQuestionIds = new Set();
 
+    const questionAnswers = new Map();
+
     articleActivities.forEach((activity) => {
       const details = activity.details as any;
       if (details?.questionId) {
         answeredQuestionIds.add(details.questionId);
+        questionAnswers.set(details.questionId, details.isCorrect);
+      }
+    });
+
+    const questionsForThisArticle = questions.slice(0, 5);
+
+    questionsForThisArticle.forEach((question) => {
+      if (questionAnswers.has(question.id)) {
+        const isCorrect = questionAnswers.get(question.id);
         progress.push(
-          details.isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT
+          isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT
         );
+      } else {
+        progress.push(AnswerStatus.UNANSWERED);
       }
     });
 
@@ -129,31 +150,39 @@ export async function getMCQuestions(
     );
 
     if (currentQuestionIndex === -1) {
-      return NextResponse.json(
-        {
-          state: QuestionState.COMPLETED,
-          total: 5,
-          progress,
-          results: [],
+      const responseData = {
+        state: QuestionState.COMPLETED,
+        total: 5,
+        progress,
+        results: [],
+      };
+
+      return new NextResponse(JSON.stringify(responseData), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
         },
-        { status: 200 }
-      );
+      });
     }
 
-    const unansweredQuestions = questions.filter(
+    const unansweredQuestions = questionsForThisArticle.filter(
       (question) => !answeredQuestionIds.has(question.id)
     );
 
     if (unansweredQuestions.length === 0) {
-      return NextResponse.json(
-        {
-          state: QuestionState.COMPLETED,
-          total: 5,
-          progress,
-          results: [],
+      const responseData = {
+        state: QuestionState.INCOMPLETE,
+        total: 5,
+        progress,
+        results: [],
+      };
+
+      return new NextResponse(JSON.stringify(responseData), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
         },
-        { status: 200 }
-      );
+      });
     }
 
     const nextQuestion = unansweredQuestions[0];
@@ -168,15 +197,19 @@ export async function getMCQuestions(
       },
     ];
 
-    return NextResponse.json(
-      {
-        state: QuestionState.INCOMPLETE,
-        total: 5,
-        progress,
-        results: mcq,
+    const responseData = {
+      state: QuestionState.INCOMPLETE,
+      total: 5,
+      progress,
+      results: mcq,
+    };
+
+    return new NextResponse(JSON.stringify(responseData), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
       },
-      { status: 200 }
-    );
+    });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -362,37 +395,11 @@ export async function answerSAQuestion(
       });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (user) {
-      const updatedUser = await prisma.user.update({
-        where: { id: userId },
-        data: { xp: user.xp + 3 },
-      });
-
-      await prisma.xPLog.create({
-        data: {
-          userId: userId,
-          xpEarned: 3,
-          activityId: question_id,
-          activityType: "SA_QUESTION",
-        },
-      });
-
-      if (req.session?.user) {
-        req.session.user.xp = updatedUser.xp;
-      }
-    }
-
     return NextResponse.json(
       {
         state: QuestionState.COMPLETED,
         answer,
         suggested_answer: question.answer,
-        xpEarned: 3,
-        userXp: req.session?.user.xp,
       },
       { status: 200 }
     );
@@ -936,6 +943,90 @@ export async function getLAQuestionXP(
     );
   } catch (error) {
     console.error("Error awarding LAQ XP:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function rateSAQuestion(
+  req: ExtendedNextRequest,
+  { params: { article_id, question_id } }: SubRequestContext
+) {
+  try {
+    const { rating } = await req.json();
+    const userId = req.session?.user.id as string;
+
+    const existingRating = await prisma.userActivity.findFirst({
+      where: {
+        userId: userId,
+        activityType: "ARTICLE_RATING",
+        targetId: question_id,
+        completed: true,
+        details: {
+          path: ["questionId"],
+          equals: question_id,
+        },
+      },
+    });
+
+    if (existingRating) {
+      return NextResponse.json(
+        { message: "Rating already submitted", xpEarned: 0 },
+        { status: 200 }
+      );
+    }
+
+    await prisma.userActivity.create({
+      data: {
+        userId: userId,
+        activityType: "ARTICLE_RATING",
+        targetId: question_id,
+        completed: true,
+        details: {
+          questionId: question_id,
+          articleId: article_id,
+          rating: rating,
+          type: "SA_QUESTION_RATING",
+        },
+      },
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (user) {
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { xp: user.xp + rating },
+      });
+
+      await prisma.xPLog.create({
+        data: {
+          userId: userId,
+          xpEarned: rating,
+          activityId: question_id,
+          activityType: "ARTICLE_RATING",
+        },
+      });
+
+      if (req.session?.user) {
+        req.session.user.xp = updatedUser.xp;
+      }
+    }
+
+    return NextResponse.json(
+      {
+        message: "Rating submitted successfully",
+        xpEarned: rating,
+        userXp: req.session?.user.xp,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error submitting SAQ rating:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

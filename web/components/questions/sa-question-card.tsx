@@ -444,7 +444,7 @@ function SAQuestion({
     setIsLoading(true);
 
     try {
-      await fetch(
+      const response = await fetch(
         `/api/v1/articles/${articleId}/questions/sa/${resp.result.id}/rate`,
         {
           method: "POST",
@@ -454,22 +454,7 @@ function SAQuestion({
         }
       );
 
-      await fetch(`/api/v1/users/${userId}/activitylog`, {
-        method: "POST",
-        body: JSON.stringify({
-          articleId: articleId,
-          activityType: ActivityType.SA_Question,
-          activityStatus: ActivityStatus.Completed,
-          timeTaken: timer,
-          xpEarned: rating,
-          details: {
-            data,
-            title: articleTitle,
-            level: articleLevel,
-            cefr_level: levelCalculation(rating).cefrLevel,
-          },
-        }),
-      });
+      const result = await response.json();
 
       toast({
         title: tf("toast.success"),
