@@ -99,6 +99,7 @@ export default function ClassRoster() {
   const router = useRouter();
   const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [isResetting, setIsResetting] = useState<boolean>(false);
   const { classrooms, fetchClassrooms } = useClassroomStore();
   const [loading, setLoading] = useState<boolean>(false);
   const pathname = usePathname();
@@ -113,35 +114,45 @@ export default function ClassRoster() {
   } = useClassroomState();
 
   const handleResetProgress = async (selectedStudentId: string) => {
+    setIsResetting(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${selectedStudentId}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${selectedStudentId}/reset-progress`,
         {
-          method: "PATCH",
-          body: JSON.stringify({
-            xp: 0,
-            level: 0,
-            cefr_level: "",
-          }),
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
+      
       if (!response.ok) {
+        const errorData = await response.json();
         toast({
           title: "Fail.",
-          description: `XP reset Fail.`,
+          description: errorData.message || `XP reset failed.`,
         });
+        return;
       }
-    } catch (error) {
-      toast({
-        title: "Fail.",
-        description: `XP reset Fail.`,
-      });
-    } finally {
+
       toast({
         title: "Success.",
-        description: `XP reset successfully.`,
+        description: `Student progress reset successfully.`,
       });
+      
+      // Refresh the student list to show updated data
+      if (selectedClassroom) {
+        await fetchStudentInClass(selectedClassroom);
+      }
       router.refresh();
+    } catch (error) {
+      console.error("Error resetting progress:", error);
+      toast({
+        title: "Fail.",
+        description: `Failed to reset student progress.`,
+      });
+    } finally {
+      setIsResetting(false);
       setIsResetModalOpen(false);
     }
   };
@@ -520,7 +531,7 @@ export default function ClassRoster() {
       </div>
       <Dialog
         open={isResetModalOpen}
-        onOpenChange={() => setIsResetModalOpen(!isResetModalOpen)}
+        onOpenChange={(open) => !isResetting && setIsResetModalOpen(open)}
       >
         <DialogContent>
           <DialogHeader>
@@ -531,14 +542,23 @@ export default function ClassRoster() {
             <Button
               variant="outline"
               onClick={() => setIsResetModalOpen(false)}
+              disabled={isResetting}
             >
               {ts("cancelReset")}
             </Button>
             <Button
               variant="destructive"
               onClick={() => handleResetProgress(selectedStudentId)}
+              disabled={isResetting}
             >
-              {ts("reset")}
+              {isResetting ? (
+                <>
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                  Resetting...
+                </>
+              ) : (
+                ts("reset")
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
