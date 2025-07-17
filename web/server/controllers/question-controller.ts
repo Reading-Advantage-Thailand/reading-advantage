@@ -395,11 +395,37 @@ export async function answerSAQuestion(
       });
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (user) {
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { xp: user.xp + 3 },
+      });
+
+      await prisma.xPLog.create({
+        data: {
+          userId: userId,
+          xpEarned: 3,
+          activityId: question_id,
+          activityType: "SA_QUESTION",
+        },
+      });
+
+      if (req.session?.user) {
+        req.session.user.xp = updatedUser.xp;
+      }
+    }
+
     return NextResponse.json(
       {
         state: QuestionState.COMPLETED,
         answer,
         suggested_answer: question.answer,
+        xpEarned: 3,
+        userXp: req.session?.user.xp,
       },
       { status: 200 }
     );

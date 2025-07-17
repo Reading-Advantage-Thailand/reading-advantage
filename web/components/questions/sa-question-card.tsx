@@ -444,7 +444,7 @@ function SAQuestion({
     setIsLoading(true);
 
     try {
-      const response = await fetch(
+      await fetch(
         `/api/v1/articles/${articleId}/questions/sa/${resp.result.id}/rate`,
         {
           method: "POST",
@@ -453,8 +453,6 @@ function SAQuestion({
           }),
         }
       );
-
-      const result = await response.json();
 
       toast({
         title: tf("toast.success"),
