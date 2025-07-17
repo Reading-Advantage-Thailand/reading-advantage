@@ -16,21 +16,18 @@ export async function getUser(
       where: { id },
       include: {
         userActivities: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           take: 10,
         },
         xpLogs: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           take: 10,
         },
       },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -64,7 +61,7 @@ export async function updateUser(
 ) {
   try {
     const data = await req.json();
-    
+
     const user = await prisma.user.update({
       where: { id },
       data: {
@@ -105,10 +102,10 @@ export async function postActivityLog(
   try {
     // Data from frontend
     const data = await req.json();
-    
+
     // Convert activity type to enum format
     const activityType = data.activityType.toUpperCase() as ActivityType;
-    
+
     // Validate activity type
     if (!Object.values(ActivityType).includes(activityType)) {
       return NextResponse.json({
@@ -117,11 +114,15 @@ export async function postActivityLog(
       });
     }
 
-    const targetId = data.articleId || data.storyId || data.contentId || '';
-    
+    const targetId = data.articleId || data.storyId || data.contentId || "";
+
     // Get article metadata if this is an article-related activity
     let articleMetadata = {};
-    if (data.articleId && (activityType === ActivityType.ARTICLE_READ || activityType === ActivityType.ARTICLE_RATING)) {
+    if (
+      data.articleId &&
+      (activityType === ActivityType.ARTICLE_READ ||
+        activityType === ActivityType.ARTICLE_RATING)
+    ) {
       const article = await prisma.article.findUnique({
         where: { id: data.articleId },
         select: {
@@ -133,7 +134,7 @@ export async function postActivityLog(
           raLevel: true,
         },
       });
-      
+
       if (article) {
         articleMetadata = {
           type: article.type,
@@ -145,7 +146,7 @@ export async function postActivityLog(
         };
       }
     }
-    
+
     // Check if activity already exists
     const existingActivity = await prisma.userActivity.findUnique({
       where: {
@@ -170,7 +171,7 @@ export async function postActivityLog(
     };
 
     let activity;
-    
+
     if (!existingActivity) {
       // Create new activity
       activity = await prisma.userActivity.create({
@@ -202,14 +203,26 @@ export async function postActivityLog(
 
       // Update user XP and level
       const currentUser = req.session?.user;
-      const finalXp = (currentUser?.xp || 0) + data.xpEarned;
+
+      // For initial level test, set XP directly instead of adding to existing XP
+      const finalXp = data.isInitialLevelTest
+        ? data.xpEarned
+        : (currentUser?.xp || 0) + data.xpEarned;
+
+      console.log(
+        `XP Update - User: ${id}, IsInitialLevelTest: ${data.isInitialLevelTest}, CurrentXP: ${currentUser?.xp || 0}, XPEarned: ${data.xpEarned}, FinalXP: ${finalXp}`
+      );
+
       const levelData = levelCalculation(finalXp);
 
       await prisma.user.update({
         where: { id },
         data: {
           xp: finalXp,
-          level: typeof levelData.raLevel === 'number' ? levelData.raLevel : parseInt(levelData.raLevel.toString()),
+          level:
+            typeof levelData.raLevel === "number"
+              ? levelData.raLevel
+              : parseInt(levelData.raLevel.toString()),
           cefrLevel: levelData.cefrLevel,
           updatedAt: new Date(),
         },
@@ -239,7 +252,7 @@ export async function putActivityLog(
 
     // Convert activity type to enum format
     const activityType = data.activityType.toUpperCase() as ActivityType;
-    
+
     // Validate activity type
     if (!Object.values(ActivityType).includes(activityType)) {
       return NextResponse.json({
@@ -248,7 +261,7 @@ export async function putActivityLog(
       });
     }
 
-    const targetId = data.articleId || data.storyId || data.contentId || '';
+    const targetId = data.articleId || data.storyId || data.contentId || "";
 
     if (!targetId) {
       return NextResponse.json({
@@ -259,7 +272,11 @@ export async function putActivityLog(
 
     // Get article metadata if this is an article-related activity
     let articleMetadata = {};
-    if (data.articleId && (activityType === ActivityType.ARTICLE_READ || activityType === ActivityType.ARTICLE_RATING)) {
+    if (
+      data.articleId &&
+      (activityType === ActivityType.ARTICLE_READ ||
+        activityType === ActivityType.ARTICLE_RATING)
+    ) {
       const article = await prisma.article.findUnique({
         where: { id: data.articleId },
         select: {
@@ -271,7 +288,7 @@ export async function putActivityLog(
           raLevel: true,
         },
       });
-      
+
       if (article) {
         articleMetadata = {
           type: article.type,
@@ -345,7 +362,10 @@ export async function putActivityLog(
         where: { id },
         data: {
           xp: finalXp,
-          level: typeof levelData.raLevel === 'number' ? levelData.raLevel : parseInt(levelData.raLevel.toString()),
+          level:
+            typeof levelData.raLevel === "number"
+              ? levelData.raLevel
+              : parseInt(levelData.raLevel.toString()),
           cefrLevel: levelData.cefrLevel,
           updatedAt: new Date(),
         },
@@ -376,7 +396,7 @@ export async function getActivityLog(
         userId: id,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -386,7 +406,7 @@ export async function getActivityLog(
         userId: id,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -401,7 +421,8 @@ export async function getActivityLog(
       completed: activity.completed,
       timestamp: activity.createdAt,
       timeTaken: activity.timer || 0,
-      xpEarned: xpLogs.find(log => log.activityId === activity.id)?.xpEarned || 0,
+      xpEarned:
+        xpLogs.find((log) => log.activityId === activity.id)?.xpEarned || 0,
       createdAt: activity.createdAt,
       updatedAt: activity.updatedAt,
     }));
@@ -436,7 +457,7 @@ export async function getUserRecords(
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       take: limit,
     });
@@ -475,15 +496,15 @@ export async function getUserHeatmap(
         userId: id,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     // Process activities to create heatmap data
     const heatmapData: { [key: string]: number } = {};
-    
+
     activities.forEach((activity) => {
-      const date = activity.createdAt.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+      const date = activity.createdAt.toISOString().split("T")[0]; // Get YYYY-MM-DD format
       heatmapData[date] = (heatmapData[date] || 0) + 1;
     });
 
@@ -503,7 +524,7 @@ export async function getAllUsers(req: NextRequest) {
   try {
     const users = await prisma.user.findMany({
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -536,7 +557,7 @@ export async function getAllUsers(req: NextRequest) {
 export async function updateUserData(req: ExtendedNextRequest) {
   try {
     const data = await req.json();
-    
+
     // Find user by email
     const user = await prisma.user.findUnique({
       where: {
@@ -573,7 +594,7 @@ export async function updateUserData(req: ExtendedNextRequest) {
     }
 
     const usedLicenses = license.licenseUsers.length;
-    
+
     if (license.maxUsers <= usedLicenses) {
       return NextResponse.json(
         {
@@ -640,7 +661,7 @@ export async function getUserActivityData(
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -661,17 +682,19 @@ export async function getUserActivityData(
     });
 
     const xpEarnedByActivity = new Map(
-      xpLogs.map(log => [log.activityId, log.xpEarned])
+      xpLogs.map((log) => [log.activityId, log.xpEarned])
     );
 
     // Get unique article IDs for activities that might need metadata
     const articleIds = activitiesWithXp
-      .filter(activity => 
-        (activity.activityType === 'ARTICLE_READ' || activity.activityType === 'ARTICLE_RATING') &&
-        activity.targetId &&
-        (!activity.details || !((activity.details as any)?.type))
+      .filter(
+        (activity) =>
+          (activity.activityType === "ARTICLE_READ" ||
+            activity.activityType === "ARTICLE_RATING") &&
+          activity.targetId &&
+          (!activity.details || !(activity.details as any)?.type)
       )
-      .map(activity => activity.targetId)
+      .map((activity) => activity.targetId)
       .filter((id, index, self) => self.indexOf(id) === index);
 
     // Fetch article metadata for activities that need it
@@ -692,7 +715,7 @@ export async function getUserActivityData(
 
     // Create a map for quick lookup
     const articleMetadataMap = new Map(
-      articlesMetadata.map(article => [
+      articlesMetadata.map((article) => [
         article.id,
         {
           type: article.type,
@@ -701,7 +724,7 @@ export async function getUserActivityData(
           title: article.title,
           cefr_level: article.cefrLevel,
           level: article.raLevel,
-        }
+        },
       ])
     );
 
@@ -710,35 +733,50 @@ export async function getUserActivityData(
 
     const formattedResults = activitiesWithXp.map((activity, index) => {
       const xpEarned = xpEarnedByActivity.get(activity.id) || 0;
-      
+
       // Calculate XP at the time of this activity
       const finalXp = cumulativeXp;
       const initialXp = finalXp - xpEarned;
-      
+
       // Update cumulative XP for next iteration (going backwards in time)
       cumulativeXp -= xpEarned;
-      
+
       // Get article metadata from details or from fetched data
       let articleMetadata = {};
-      if (activity.targetId && (activity.activityType === 'ARTICLE_READ' || activity.activityType === 'ARTICLE_RATING')) {
+      if (
+        activity.targetId &&
+        (activity.activityType === "ARTICLE_READ" ||
+          activity.activityType === "ARTICLE_RATING")
+      ) {
         const detailsMetadata = activity.details as any;
         const fetchedMetadata = articleMetadataMap.get(activity.targetId);
-        
+
         articleMetadata = {
-          type: detailsMetadata?.type || fetchedMetadata?.type || "Unknown Type",
-          genre: detailsMetadata?.genre || fetchedMetadata?.genre || "Unknown Genre",
-          subgenre: detailsMetadata?.subgenre || fetchedMetadata?.subgenre || "Unknown Subgenre",
-          title: detailsMetadata?.title || fetchedMetadata?.title || "Unknown Title",
-          cefr_level: detailsMetadata?.cefr_level || fetchedMetadata?.cefr_level || "A1",
-          level: detailsMetadata?.level || fetchedMetadata?.level || user?.level || 1,
+          type:
+            detailsMetadata?.type || fetchedMetadata?.type || "Unknown Type",
+          genre:
+            detailsMetadata?.genre || fetchedMetadata?.genre || "Unknown Genre",
+          subgenre:
+            detailsMetadata?.subgenre ||
+            fetchedMetadata?.subgenre ||
+            "Unknown Subgenre",
+          title:
+            detailsMetadata?.title || fetchedMetadata?.title || "Unknown Title",
+          cefr_level:
+            detailsMetadata?.cefr_level || fetchedMetadata?.cefr_level || "A1",
+          level:
+            detailsMetadata?.level ||
+            fetchedMetadata?.level ||
+            user?.level ||
+            1,
         };
       }
-      
+
       return {
         contentId: activity.id,
         userId: activity.userId,
         articleId: activity.targetId,
-        activityType: activity.activityType.toLowerCase().replace('_', '_'),
+        activityType: activity.activityType.toLowerCase().replace("_", "_"),
         activityStatus: activity.completed ? "completed" : "in_progress",
         timestamp: activity.createdAt.toISOString(),
         timeTaken: activity.timer || 0,
@@ -825,10 +863,7 @@ export async function resetUserProgress(
     });
 
     if (!user) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     await prisma.userActivity.deleteMany({
