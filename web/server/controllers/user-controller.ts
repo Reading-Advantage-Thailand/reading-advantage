@@ -814,3 +814,50 @@ export async function getStudentData(
     });
   }
 }
+
+export async function resetUserProgress(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.userActivity.deleteMany({
+      where: { userId: id },
+    });
+
+    await prisma.xPLog.deleteMany({
+      where: { userId: id },
+    });
+
+    await prisma.user.update({
+      where: { id },
+      data: {
+        xp: 0,
+        level: 0,
+        cefrLevel: "",
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      message: "User progress reset successfully",
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error resetting user progress:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
