@@ -208,10 +208,6 @@ export async function postActivityLog(
         ? data.xpEarned
         : (currentUser?.xp || 0) + data.xpEarned;
 
-      console.log(
-        `XP Update - User: ${id}, IsInitialLevelTest: ${data.isInitialLevelTest}, CurrentXP: ${currentUser?.xp || 0}, XPEarned: ${data.xpEarned}, FinalXP: ${finalXp}`
-      );
-
       const levelData = levelCalculation(finalXp);
 
       await prisma.user.update({
@@ -446,8 +442,6 @@ export async function getUserRecords(
   try {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10");
     const nextPage = req.nextUrl.searchParams.get("nextPage");
-
-    // Get user activities related to articles
     const activities = await prisma.userActivity.findMany({
       where: {
         userId: id,
@@ -458,22 +452,77 @@ export async function getUserRecords(
       orderBy: {
         createdAt: "desc",
       },
-      take: limit,
     });
 
-    const results = activities.map((activity) => ({
-      id: activity.id,
-      userId: activity.userId,
-      targetId: activity.targetId, // This would be the article ID
-      activityType: activity.activityType,
-      completed: activity.completed,
-      details: activity.details,
-      created_at: activity.createdAt,
-      updated_at: activity.updatedAt,
-    }));
+    const articleMap = new Map();
+    
+    activities.forEach((activity) => {
+      const articleId = (activity.details as any)?.articleId || activity.targetId;
+      
+      if (!articleMap.has(articleId)) {
+        articleMap.set(articleId, {
+          readActivity: null,
+          ratingActivity: null
+        });
+      }
+      
+      const articleData = articleMap.get(articleId);
+      
+      if (activity.activityType === ActivityType.ARTICLE_READ) {
+        articleData.readActivity = activity;
+      } else if (activity.activityType === ActivityType.ARTICLE_RATING) {
+        articleData.ratingActivity = activity;
+      }
+    });
+
+    const results: any[] = [];
+    
+    articleMap.forEach((data, articleId) => {
+      if (data.readActivity) {
+        const readActivity = data.readActivity;
+        const ratingActivity = data.ratingActivity;
+        
+        let extractedRating = 0;
+        if (ratingActivity?.details) {
+          try {
+            const detailsObj = typeof ratingActivity.details === 'string' 
+              ? JSON.parse(ratingActivity.details) 
+              : ratingActivity.details;
+            extractedRating = detailsObj?.rating || 0;
+          } catch (e) {
+            extractedRating = 0;
+          }
+        }
+        
+        const resultItem = {
+          id: readActivity.id,
+          userId: readActivity.userId,
+          targetId: articleId,
+          activityType: "ARTICLE_READ_WITH_RATING",
+          completed: readActivity.completed,
+          details: {
+            level: (readActivity.details as any)?.level || 0,
+            articleTitle: (readActivity.details as any)?.articleTitle || '',
+            rating: extractedRating,
+            rated: extractedRating,
+            score: (readActivity.details as any)?.score || 0,
+            scores: (readActivity.details as any)?.score || 0,
+            timer: (readActivity.details as any)?.timer || 0,
+            ratingCompleted: ratingActivity?.completed || false
+          },
+          created_at: readActivity.createdAt,
+          updated_at: ratingActivity?.updatedAt || readActivity.updatedAt,
+        };
+        
+        results.push(resultItem);
+      }
+    });
+
+    results.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    const limitedResults = results.slice(0, limit);
 
     return NextResponse.json({
-      results,
+      results: limitedResults,
     });
   } catch (error) {
     console.error("Error getting documents", error);
@@ -688,24 +737,26 @@ export async function getUserActivityData(
       },
     });
 
-    const articleMap = new Map(articles.map((article) => [article.id, article]));
+    const articleMap = new Map(
+      articles.map((article) => [article.id, article])
+    );
 
     // Calculate cumulative XP progression
     let cumulativeXp = 0;
-    
+
     const formattedResults = activities.map((activity) => {
       const article = articleMap.get(activity.targetId);
       const xpLog = xpLogMap.get(activity.id);
-      
+
       const xpEarned = xpLog?.xpEarned || 0;
       const initialXp = cumulativeXp;
       const finalXp = cumulativeXp + xpEarned;
-      
+
       // Update cumulative XP for next iteration
       cumulativeXp += xpEarned;
 
       // Safely extract details
-      const details = activity.details as any || {};
+      const details = (activity.details as any) || {};
 
       return {
         contentId: activity.targetId,

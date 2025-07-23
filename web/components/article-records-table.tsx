@@ -40,19 +40,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArticleRecord } from "@/types";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import { useScopedI18n } from "@/locales/client";
-import { QuizStatus } from "./models/questions-model";
-import { divide } from "lodash";
+import { RecordStatus } from "@/types/constants";
 
 interface ArticleRecordsTableProps {
   className?: string;
   articles: ArticleRecord[];
+  isLoading?: boolean;
+  error?: string;
 }
 
-export function ArticleRecordsTable({ articles }: ArticleRecordsTableProps) {
+export function ArticleRecordsTable({ 
+  articles, 
+  isLoading = false, 
+  error,
+  className 
+}: ArticleRecordsTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -81,18 +86,17 @@ export function ArticleRecordsTable({ articles }: ArticleRecordsTableProps) {
       ),
     },
     {
-      accessorKey: "scores",
-      header: () => {
-        return <div>{td("scores")}</div>;
-      },
-      cell: ({ row }) => {
-        return <div>{row.getValue("scores")}</div>;
-      },
-    },
-    {
       accessorKey: "updated_at",
-      header: () => {
-        return <div>{td("updated_at")}</div>;
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            {td("updated_at")}
+            <CaretSortIcon className="ml-2 h-4 w-4" />
+          </Button>
+        );
       },
       cell: ({ row }) => {
         const updatedAt = row.getValue("updated_at") as string;
@@ -101,26 +105,37 @@ export function ArticleRecordsTable({ articles }: ArticleRecordsTableProps) {
       },
     },
     {
-      accessorKey: "rated",
-      header: () => <div className="text-center">{td("rated")}</div>,
+      accessorKey: "rating",
+      header: ({ column }) => {
+        return (
+          <div className="text-center">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            >
+              {td("rated")}
+              <CaretSortIcon className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
       cell: ({ row }) => {
-        const amount = parseInt(row.getValue("rated"));
-        return <div className="text-center font-medium">{amount}</div>;
+        const rating = row.getValue("rating") as number;
+        return <div className="text-center font-medium">{rating}/5</div>;
       },
     },
     {
       accessorKey: "status",
       header: () => <div className="text-center">{td("status")}</div>,
       cell: ({ row }) => {
-        const status = row.getValue("status") as QuizStatus;
-        const map = {
-          [QuizStatus.READ]: "Read",
-          [QuizStatus.COMPLETED_MCQ]: "Completed MCQ",
-          [QuizStatus.COMPLETED_SAQ]: "Completed SAQ",
-          [QuizStatus.COMPLETED_LAQ]: "Completed LAQ",
-          [QuizStatus.UNRATED]: "Unrated",
+        const status = row.getValue("status") as RecordStatus;
+        const statusMap = {
+          [RecordStatus.COMPLETED]: "Complete",
+          [RecordStatus.UNRATED]: "In Progress",
+          [RecordStatus.UNCOMPLETED_MCQ]: "In Progress",
+          [RecordStatus.UNCOMPLETED_SHORT_ANSWER]: "In Progress",
         };
-        return <div className="text-center font-medium">{map[status]}</div>;
+        return <div className="text-center font-medium">{statusMap[status] || "In Progress"}</div>;
       },
     },
   ];
@@ -149,9 +164,25 @@ export function ArticleRecordsTable({ articles }: ArticleRecordsTableProps) {
     router.push(`/student/read/${articleId}`);
   };
   const t = useScopedI18n("components.articleRecordsTable");
+
+  if (error) {
+    return (
+      <div className="w-full p-4 text-center text-red-500">
+        <p>Error loading articles: {error}</p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="w-full p-4 text-center">
+        <p>Loading articles...</p>
+      </div>
+    );
+  }
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 space-x-2">
         <Input
           placeholder={td("search")}
           value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
@@ -212,7 +243,7 @@ export function ArticleRecordsTable({ articles }: ArticleRecordsTableProps) {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   className="cursor-pointer"
-                  onClick={() => handleNavigateToArticle(row.original.id)}
+                  onClick={() => handleNavigateToArticle(row.original.articleId)}
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
@@ -230,9 +261,12 @@ export function ArticleRecordsTable({ articles }: ArticleRecordsTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-muted-foreground"
                 >
-                  Empty
+                  {articles.length === 0 
+                    ? "No articles found. Start reading to see your progress here!"
+                    : "No articles match your current filters."
+                  }
                 </TableCell>
               </TableRow>
             )}
