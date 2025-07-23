@@ -259,6 +259,7 @@ function QuestionCardIncomplete({
                 userId={userId}
                 articleTitle={articleTitle}
                 articleLevel={articleLevel}
+                page={page}
               />
             </QuizContextProvider>
           </QuestionHeader>
@@ -448,7 +449,7 @@ function MCQeustion({
           className="mt-2"
           disabled={isLoadingAnswer || selectedOption === -1}
           onClick={() => {
-            if (5 - resp.results.length + 1 + index < resp.total) {
+            if (index < resp.results.length - 1) {
               setIndex((prevIndex) => prevIndex + 1);
               setSelectedOption(-1);
               setCorrectAnswer("");
@@ -462,7 +463,7 @@ function MCQeustion({
           {isLoadingAnswer && (
             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
           )}
-          {5 - resp.results.length + 1 + index < resp.total ? (
+          {index < resp.results.length - 1 ? (
             <>{t("nextQuestionButton")}</>
           ) : (
             <>{t("submitButton")}</>
@@ -477,7 +478,7 @@ function MCQeustion({
             className="mt-4 w-full lg:w-1/4"
             disabled={isLoadingAnswer || selectedOption === -1}
             onClick={() => {
-              if (5 - resp.results.length + 1 + index < resp.total) {
+              if (index < resp.results.length - 1) {
                 setIndex((prevIndex) => prevIndex + 1);
                 setSelectedOption(-1);
                 setCorrectAnswer("");
@@ -491,7 +492,7 @@ function MCQeustion({
             {isLoadingAnswer && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
-            {5 - resp.results.length + 1 + index < resp.total ? (
+            {index < resp.results.length - 1 ? (
               <>{t("nextQuestionButton")}</>
             ) : (
               <>{t("submitButton")}</>
