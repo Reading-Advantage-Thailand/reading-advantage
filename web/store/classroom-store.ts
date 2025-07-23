@@ -31,6 +31,8 @@ interface Classes {
   googleClassroomId?: string;
 }
 
+export type { Classes };
+
 type StudentData = {
   id: string;
   display_name: string;

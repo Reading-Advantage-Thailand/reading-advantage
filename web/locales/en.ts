@@ -1024,7 +1024,7 @@ export default {
       target: "Target",
       timeRange: "Time Range",
       average: "Average",
-      footer: "Data updated on {yesterday} at 11:00 PM",
+      footer: "Data updated on {today} at {time} PM",
 
       editStudent: {
         title: "Edit Student Details",

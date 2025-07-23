@@ -999,7 +999,7 @@ export default {
       target: "เป้าหมาย",
       timeRange: "ช่วงเวลา",
       average: "ค่าเฉลี่ย",
-      footer: "ข้อมูลอัพเดท ณ วันที่ {yesterday} เวลา 23.00 น.",
+      footer: "ข้อมูลอัพเดท ณ วันที่ {today} เวลา {time} น.",
 
       editStudent: {
         title: "แก้ไขรายละเอียดนักเรียน",

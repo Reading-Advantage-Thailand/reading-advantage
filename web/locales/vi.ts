@@ -1009,7 +1009,7 @@ export default {
       target: "Mục tiêu",
       timeRange: "Khoảng thời gian",
       average: "Trung bình",
-      footer: "Dữ liệu được cập nhật vào {yesterday} lúc 23:00",
+      footer: "Dữ liệu được cập nhật vào {today} lúc {time} PM",
 
       editStudent: {
         title: "Chỉnh Sửa Chi Tiết Học Sinh",

@@ -35,7 +35,11 @@ const ClassroomXPBarChartPerStudents: React.FC<Props> = ({ data }) => {
   const { theme, resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const trp = useScopedI18n("components.reports");
-  const yesterday = new Date().getDate() - 1;
+  const today = new Date().getDate();
+  const time = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
   const chartData = Object.entries(data).map(([name, xp]) => ({
     name,
     xp: xp[period],
@@ -355,7 +359,7 @@ const ClassroomXPBarChartPerStudents: React.FC<Props> = ({ data }) => {
       {/* Footer */}
       <div className="text-center mt-4 sm:mt-6 pb-6">
         <p className={`${themeColors.textMuted} text-xs sm:text-sm px-2`}>
-          💡 {trp("footer", { yesterday: yesterday })}
+          💡 {trp("footer", { today: today, time: time })}
         </p>
       </div>
     </div>
