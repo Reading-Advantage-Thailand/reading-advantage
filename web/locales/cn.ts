@@ -958,7 +958,7 @@ export default {
       target: "目标",
       timeRange: "时间范围",
       average: "平均值",
-      footer: "数据更新于{yesterday}日晚上11点",
+      footer: "数据更新于{today}日晚上{time}点",
 
       editStudent: {
         title: "编辑学生详情",

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -36,7 +36,7 @@ import EditStudent from "./edit-student";
 import RemoveStudent from "./remove-student-inclass";
 import { Header } from "@/components/header";
 import { ScrollArea } from "../ui/scroll-area";
-import { useClassroomState, useClassroomStore } from "@/store/classroom-store";
+import { useClassroomState, useClassroomStore, type Classes } from "@/store/classroom-store";
 import {
   Select,
   SelectContent,
@@ -57,29 +57,6 @@ type StudentData = {
   level: number;
   xp: number;
 };
-
-interface Classes {
-  classroomName: string;
-  classCode: string;
-  noOfStudents: number;
-  grade: string;
-  coTeacher: {
-    coTeacherId: string;
-    name: string;
-  };
-  id: string;
-  archived: boolean;
-  title: string;
-  student: [
-    {
-      studentId: string;
-      lastActivity: Date;
-    }
-  ];
-  importedFromGoogle: boolean;
-  alternateLink: string;
-  googleClassroomId: string;
-}
 
 export default function Reports() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -248,29 +225,7 @@ export default function Reports() {
     },
   });
 
-  useEffect(() => {
-    const pathSegments = pathname.split("/");
-    const currentClassroomId = pathSegments[4];
-    if (classrooms.some((c) => c.id === currentClassroomId)) {
-      setSelectedClassroom(currentClassroomId);
-      fetchStudentInClass(currentClassroomId);
-      fetchXpPerStudents(currentClassroomId);
-    }
-    if (!currentClassroomId) {
-      setClasses({} as Classes);
-      setSelectedClassroom("");
-      setStudentInClass([]);
-      setXpData({});
-    }
-  }, [pathname, classrooms]);
-
-  useEffect(() => {
-    if (!classrooms.length) {
-      fetchClassrooms();
-    }
-  }, []);
-
-  const fetchStudentInClass = async (classId: string) => {
+  const fetchStudentInClass = useCallback(async (classId: string) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${classId}`,
@@ -286,9 +241,9 @@ export default function Reports() {
     } catch (error) {
       console.error("Error fetching Classroom list:", error);
     }
-  };
+  }, [setStudentInClass, setClasses]);
 
-  const fetchXpPerStudents = async (classId: string) => {
+  const fetchXpPerStudents = useCallback(async (classId: string) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/xp-per-students/${classId}`,
@@ -303,9 +258,31 @@ export default function Reports() {
     } catch (error) {
       console.error("Error fetching Classroom XP:", error);
     }
-  };
+  }, [setXpData]);
 
-  const handleClassChange = async (value: string) => {
+  useEffect(() => {
+    const pathSegments = pathname.split("/");
+    const currentClassroomId = pathSegments[4];
+    if (classrooms.some((c) => c.id === currentClassroomId)) {
+      setSelectedClassroom(currentClassroomId);
+      fetchStudentInClass(currentClassroomId);
+      fetchXpPerStudents(currentClassroomId);
+    }
+    if (!currentClassroomId) {
+      setClasses({} as Classes);
+      setSelectedClassroom("");
+      setStudentInClass([]);
+      setXpData({});
+    }
+  }, [pathname, classrooms, setSelectedClassroom, setClasses, setStudentInClass, setXpData, fetchStudentInClass, fetchXpPerStudents]);
+
+  useEffect(() => {
+    if (!classrooms.length) {
+      fetchClassrooms();
+    }
+  }, [classrooms.length, fetchClassrooms]);
+
+  const handleClassChange = useCallback(async (value: string) => {
     try {
       setSelectedClassroom(value);
 
@@ -314,7 +291,7 @@ export default function Reports() {
     } catch (error) {
       console.error("Error fetching Classroom list:", error);
     }
-  };
+  }, [setSelectedClassroom, fetchStudentInClass, router]);
 
   return (
     <div className="flex flex-col gap-4">

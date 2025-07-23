@@ -1030,16 +1030,6 @@ export async function getClassXpPerStudents(
   req: NextRequest,
   ctx: RequestContext
 ) {
-  // Temporarily disabled - needs Firebase initialization or migration to Prisma
-  return NextResponse.json(
-    {
-      message:
-        "XP functionality temporarily disabled - migration to Prisma in progress",
-    },
-    { status: 503 }
-  );
-
-  /* Original Firebase code - to be migrated to Prisma
   try {
     const classroomId = ctx.params?.classroomId;
     if (!classroomId) {
@@ -1049,61 +1039,67 @@ export async function getClassXpPerStudents(
       );
     }
 
-    const { searchParams } = new URL(req.url);
-    const filter = searchParams.get("filter"); // "today", "week", "month", "allTime"
+    // Get classroom with students using Prisma
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+      include: {
+        students: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                name: true,
+                xp: true,
+                xpLogs: {
+                  select: {
+                    xpEarned: true,
+                    createdAt: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
 
-    const classroomRef = await db
-      .collection("classroom")
-      .doc(classroomId)
-      .get();
-    const classroomDoc = classroomRef.data();
-
-    const license_id = classroomDoc?.license_id;
-    if (!license_id) {
+    if (!classroom) {
       return NextResponse.json(
-        { message: "Classroom not found or license_id is missing" },
+        { message: "Classroom not found" },
         { status: 404 }
       );
     }
 
-    const studentsXpSnapshot = await db
-      .collection("xp-summary")
-      .doc(license_id)
-      .get();
+    const result: Record<string, any> = {};
 
-    const studentsXpData = studentsXpSnapshot.data();
-    if (!studentsXpData) {
-      return NextResponse.json(
-        { message: "XP data not found" },
-        { status: 404 }
-      );
-    }
+    // Calculate XP for each student for all periods
+    for (const cs of classroom.students) {
+      const student = cs.student;
+      const displayName = student.name || student.id;
 
-    const classroomXpData = studentsXpData[classroomId];
-    if (!classroomXpData) {
-      return NextResponse.json(
-        { message: "XP data for classroom not found" },
-        { status: 404 }
-      );
-    }
+      const now = new Date();
+      
+      // Calculate date ranges
+      const todayStart = new Date(now);
+      todayStart.setHours(0, 0, 0, 0);
+      
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - 7);
+      
+      const monthStart = new Date(now);
+      monthStart.setMonth(now.getMonth() - 1);
 
-    const result: Record<string, number> = {};
+      // Filter and calculate XP for each period
+      const todayLogs = student.xpLogs.filter(log => log.createdAt >= todayStart);
+      const weekLogs = student.xpLogs.filter(log => log.createdAt >= weekStart);
+      const monthLogs = student.xpLogs.filter(log => log.createdAt >= monthStart);
 
-    // Loop เพื่อดึง display_name ทีละคน
-    for (const [studentId, xpData] of Object.entries(classroomXpData)) {
-      // ดึง display_name จาก users/{studentId}
-      const userSnapshot = await db.collection("users").doc(studentId).get();
-      const userData = userSnapshot.data();
-      const displayName = userData?.display_name || studentId;
-
-      // filter ค่า XP ที่ต้องการ
-      if (filter) {
-        const xpValue = (xpData as any)[filter] ?? 0;
-        result[displayName] = xpValue;
-      } else {
-        // ถ้าไม่ filter ก็เก็บทั้ง object
-        result[displayName] = xpData as number;
-      }
+      result[displayName] = {
+        today: todayLogs.reduce((sum, log) => sum + log.xpEarned, 0),
+        week: weekLogs.reduce((sum, log) => sum + log.xpEarned, 0),
+        month: monthLogs.reduce((sum, log) => sum + log.xpEarned, 0),
+        allTime: student.xp,
+      };
     }
 
     return NextResponse.json(result);
@@ -1114,5 +1110,4 @@ export async function getClassXpPerStudents(
       { status: 500 }
     );
   }
-  */
 }

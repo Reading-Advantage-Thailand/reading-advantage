@@ -962,7 +962,7 @@ export default {
       target: "目標",
       timeRange: "時間範圍",
       average: "平均值",
-      footer: "資料更新於{yesterday}日晚上11點",
+      footer: "資料更新於{today}日晚上{time}點",
 
       editStudent: {
         title: "編輯學生詳情",

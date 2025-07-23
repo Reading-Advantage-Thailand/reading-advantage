@@ -63,22 +63,11 @@ export function ReminderRereadTable({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.history.reminder");
+  const router = useRouter();
 
-  if (error) {
-    return (
-      <div className="w-full p-4 text-center text-red-500">
-        <p>Error loading reminder articles: {error}</p>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="w-full p-4 text-center">
-        <p>Loading reminder articles...</p>
-      </div>
-    );
-  }
+  const handleNavigateToArticle = (articleId: string) => {
+    router.push(`/student/read/${articleId}`);
+  };
 
   const columns: ColumnDef<ArticleRecord>[] = [
     {
@@ -167,11 +156,22 @@ export function ReminderRereadTable({
       rowSelection,
     },
   });
-  const router = useRouter();
 
-  const handleNavigateToArticle = (articleId: string) => {
-    router.push(`/student/read/${articleId}`);
-  };
+  if (error) {
+    return (
+      <div className="w-full p-4 text-center text-red-500">
+        <p>Error loading reminder articles: {error}</p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="w-full p-4 text-center">
+        <p>Loading reminder articles...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

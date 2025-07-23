@@ -14,21 +14,23 @@ import { toast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useScopedI18n } from "@/locales/client";
 
-interface RemoveStudentProps {
-  userData: Student;
-  classroomData: Classrooms;
-}
-
 type StudentInClass = {
   studentId: string;
-  lastActivity: Date;
+  email?: string;
+  lastActivity: Date | string;
 };
 
 type Classrooms = {
   id: string;
   classroomName: string;
   student: StudentInClass[];
+  importedFromGoogle?: boolean;
 };
+
+interface RemoveStudentProps {
+  userData: Student;
+  classroomData: Classrooms;
+}
 
 type Student = {
   id: string;
