@@ -796,8 +796,13 @@ export async function answerLAQuestion(
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const scores: number[] = Object.values(feedback.scores);
-    const sumScores = scores.reduce<number>((a, b) => a + b, 0);
+    let scores: number[] = [];
+    let sumScores = 0;
+    
+    if (feedback && feedback.scores && typeof feedback.scores === 'object') {
+      scores = Object.values(feedback.scores);
+      sumScores = scores.reduce<number>((a, b) => a + b, 0);
+    }
 
     return NextResponse.json(
       {
@@ -851,11 +856,31 @@ export async function getFeedbackLAquestion(
       studentResponse: answer,
     });
 
+    if (!getFeedback.ok) {
+      throw new Error(`Feedback generation failed with status: ${getFeedback.status}`);
+    }
+
     const getData = await getFeedback.json();
-    const randomExamples =
-      getData.exampleRevisions[
+    
+    if (!getData || typeof getData !== 'object') {
+      throw new Error("Invalid feedback data received");
+    }
+    
+    let randomExamples = "";
+    if (getData.exampleRevisions && Array.isArray(getData.exampleRevisions) && getData.exampleRevisions.length > 0) {
+      randomExamples = getData.exampleRevisions[
         Math.floor(Math.random() * getData.exampleRevisions.length)
       ];
+    } else {
+      const scores = getData.scores ? Object.values(getData.scores) as number[] : [];
+      const averageScore = scores.length > 0 ? scores.reduce((a: number, b: number) => a + b, 0) / scores.length : 0;
+      
+      if (averageScore >= 4) {
+        randomExamples = "Excellent work! Your writing meets the expectations for this level. Keep practicing to maintain this high standard.";
+      } else {
+        randomExamples = "No specific revisions needed at this time. Your writing is good for your level.";
+      }
+    }
 
     const result = { ...getData, exampleRevisions: randomExamples };
 

@@ -164,7 +164,7 @@ export async function getClassroom(req: ExtendedNextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const classrooms = await prisma.classroom.findMany({
+    const ownedClassrooms = await prisma.classroom.findMany({
       where: {
         teacherId: user.id,
         archived: {
@@ -195,7 +195,40 @@ export async function getClassroom(req: ExtendedNextRequest) {
       },
     });
 
-    const transformedData = classrooms.map((classroom) => ({
+    const coTeacherClassrooms = (await prisma.$queryRaw`
+      SELECT c.*, 
+             t.id as teacher_id, t.name as teacher_name,
+             ct.role as user_role, ct."createdAt" as joined_at
+      FROM "classrooms" c
+      JOIN "classroomTeachers" ct ON c.id = ct.classroom_id
+      LEFT JOIN "users" t ON c.teacher_id = t.id
+      WHERE ct.teacher_id = ${user.id}
+        AND c.archived != true
+      ORDER BY c."createdAt" DESC
+    `) as any[];
+
+    const coTeacherClassroomIds = coTeacherClassrooms.map((c: any) => c.id);
+    const coTeacherStudents =
+      coTeacherClassroomIds.length > 0
+        ? await prisma.classroomStudent.findMany({
+            where: {
+              classroomId: {
+                in: coTeacherClassroomIds,
+              },
+            },
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                },
+              },
+            },
+          })
+        : [];
+
+    const transformedOwnedData = ownedClassrooms.map((classroom) => ({
       id: classroom.id,
       classroomName: classroom.classroomName,
       classCode: classroom.classCode,
@@ -205,21 +238,74 @@ export async function getClassroom(req: ExtendedNextRequest) {
       importedFromGoogle: false,
       alternateLink: "",
       createdAt: classroom.createdAt,
+      createdBy: classroom.teacher,
+      isOwner: true,
+      teachers: [
+        {
+          teacherId: classroom.teacher?.id || "",
+          name: classroom.teacher?.name || "",
+          role: "OWNER" as const,
+          joinedAt: classroom.createdAt,
+        },
+      ],
       student: classroom.students.map((cs) => ({
         studentId: cs.student.id,
         email: cs.student.email,
         lastActivity: cs.createdAt,
       })),
-      coTeacher: {
-        coTeacherId: "",
-        name: "",
-      },
     }));
+
+    const transformedCoTeacherData = coTeacherClassrooms.map(
+      (classroom: any) => {
+        const studentsForClassroom = coTeacherStudents.filter(
+          (cs) => cs.classroomId === classroom.id
+        );
+
+        return {
+          id: classroom.id,
+          classroomName: classroom.classroom_name,
+          classCode: classroom.class_code,
+          grade: classroom.grade?.toString(),
+          archived: classroom.archived || false,
+          title: classroom.classroom_name,
+          importedFromGoogle: false,
+          alternateLink: "",
+          createdAt: classroom.createdAt,
+          createdBy: {
+            id: classroom.teacher_id,
+            name: classroom.teacher_name,
+          },
+          isOwner: false,
+          teachers: [
+            {
+              teacherId: classroom.teacher_id || "",
+              name: classroom.teacher_name || "",
+              role: "OWNER" as const,
+              joinedAt: classroom.createdAt,
+            },
+          ],
+          student: studentsForClassroom.map((cs) => ({
+            studentId: cs.student.id,
+            email: cs.student.email,
+            lastActivity: cs.createdAt,
+          })),
+        };
+      }
+    );
+
+    const allClassrooms = [
+      ...transformedOwnedData,
+      ...transformedCoTeacherData,
+    ];
+    const uniqueClassrooms = allClassrooms.filter(
+      (classroom, index, self) =>
+        index === self.findIndex((c) => c.id === classroom.id)
+    );
 
     return NextResponse.json(
       {
         message: "success",
-        data: transformedData,
+        data: uniqueClassrooms,
       },
       { status: 200 }
     );
@@ -629,18 +715,20 @@ export async function createdClassroom(req: ExtendedNextRequest) {
       const classCode =
         data.classCode || data.enrollmentCode || generateClassCode();
 
-      const classroom = await prisma.classroom.create({
-        data: {
-          classroomName: data.classroomName || data.name || "",
-          teacherId: user.id,
-          classCode: classCode,
-          archived: false,
-          grade: data.grade ? parseInt(data.grade) : null,
-          createdAt: data.creationTime
-            ? new Date(data.creationTime)
-            : new Date(),
-        },
-      });
+      // Use raw SQL to create classroom with new schema
+      const classroomResult = await prisma.$queryRaw`
+        INSERT INTO classrooms (id, classroom_name, created_by, class_code, archived, grade, "createdAt", "updatedAt")
+        VALUES (gen_random_uuid(), ${data.classroomName || data.name || ""}, ${user.id}, ${classCode}, false, ${data.grade ? parseInt(data.grade) : null}, ${data.creationTime ? new Date(data.creationTime) : new Date()}, NOW())
+        RETURNING *
+      `;
+
+      const classroom = (classroomResult as any[])[0];
+
+      // Add creator as OWNER in ClassroomTeacher table
+      await prisma.$queryRaw`
+        INSERT INTO "classroomTeachers" (id, teacher_id, classroom_id, role, "createdAt")
+        VALUES (gen_random_uuid(), ${user.id}, ${classroom.id}, 'OWNER'::"TeacherRole", NOW())
+      `;
 
       if (isImportedFromGoogle && data.studentCount) {
         for (const student of data.studentCount) {
@@ -1069,21 +1157,27 @@ export async function getClassXpPerStudents(
       const displayName = student.name || student.id;
 
       const now = new Date();
-      
+
       // Calculate date ranges
       const todayStart = new Date(now);
       todayStart.setHours(0, 0, 0, 0);
-      
+
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() - 7);
-      
+
       const monthStart = new Date(now);
       monthStart.setMonth(now.getMonth() - 1);
 
       // Filter and calculate XP for each period
-      const todayLogs = student.xpLogs.filter(log => log.createdAt >= todayStart);
-      const weekLogs = student.xpLogs.filter(log => log.createdAt >= weekStart);
-      const monthLogs = student.xpLogs.filter(log => log.createdAt >= monthStart);
+      const todayLogs = student.xpLogs.filter(
+        (log) => log.createdAt >= todayStart
+      );
+      const weekLogs = student.xpLogs.filter(
+        (log) => log.createdAt >= weekStart
+      );
+      const monthLogs = student.xpLogs.filter(
+        (log) => log.createdAt >= monthStart
+      );
 
       result[displayName] = {
         today: todayLogs.reduce((sum, log) => sum + log.xpEarned, 0),
@@ -1098,6 +1192,256 @@ export async function getClassXpPerStudents(
     console.error("Error fetching XP data:", error);
     return NextResponse.json(
       { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function addCoTeacher(
+  req: ExtendedNextRequest,
+  { params: { classroomId } }: RequestContext
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { teacherEmail, role = "CO_TEACHER" } = body;
+
+    if (!teacherEmail) {
+      return NextResponse.json(
+        { error: "Teacher email is required" },
+        { status: 400 }
+      );
+    }
+
+    const classroom = await prisma.$queryRaw`
+      SELECT * FROM classrooms 
+      WHERE id = ${classroomId} 
+      AND (teacher_id = ${user.id} OR created_by = ${user.id})
+    `;
+
+    if ((classroom as any[]).length === 0) {
+      return NextResponse.json(
+        { error: "Only classroom creator can add co-teachers" },
+        { status: 403 }
+      );
+    }
+
+    const teacher = await prisma.user.findUnique({
+      where: { email: teacherEmail },
+      select: { id: true, name: true, email: true, role: true },
+    });
+
+    if (!teacher) {
+      return NextResponse.json({ error: "Teacher not found" }, { status: 404 });
+    }
+
+    if (teacher.role !== "TEACHER") {
+      return NextResponse.json(
+        { error: "User must have TEACHER role" },
+        { status: 400 }
+      );
+    }
+
+    const existingTeacher = await prisma.$queryRaw`
+      SELECT * FROM "classroomTeachers" 
+      WHERE classroom_id = ${classroomId} AND teacher_id = ${teacher.id}
+    `;
+
+    if ((existingTeacher as any[]).length > 0) {
+      return NextResponse.json(
+        { error: "Teacher is already in this classroom" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.$queryRaw`
+      INSERT INTO "classroomTeachers" (id, teacher_id, classroom_id, role, "createdAt")
+      VALUES (gen_random_uuid(), ${teacher.id}, ${classroomId}, ${role}::"TeacherRole", NOW())
+    `;
+
+    return NextResponse.json(
+      {
+        message: "Co-teacher added successfully",
+        teacher: {
+          id: teacher.id,
+          name: teacher.name,
+          email: teacher.email,
+          role: role,
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error adding co-teacher:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function removeCoTeacher(
+  req: ExtendedNextRequest,
+  { params: { classroomId } }: RequestContext
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { teacherId } = body;
+
+    if (!teacherId) {
+      return NextResponse.json(
+        { error: "Teacher ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const classroom = await prisma.$queryRaw`
+      SELECT * FROM classrooms 
+      WHERE id = ${classroomId} 
+      AND (teacher_id = ${user.id} OR created_by = ${user.id})
+    `;
+
+    if ((classroom as any[]).length === 0) {
+      return NextResponse.json(
+        { error: "Only classroom creator can remove co-teachers" },
+        { status: 403 }
+      );
+    }
+
+    const teacherInClassroom = await prisma.$queryRaw`
+      SELECT ct.*, u.name 
+      FROM "classroomTeachers" ct
+      JOIN users u ON ct.teacher_id = u.id
+      WHERE ct.classroom_id = ${classroomId} AND ct.teacher_id = ${teacherId}
+    `;
+
+    if ((teacherInClassroom as any[]).length === 0) {
+      return NextResponse.json(
+        { error: "Teacher not found in this classroom" },
+        { status: 404 }
+      );
+    }
+
+    const teacher = (teacherInClassroom as any[])[0];
+    if (teacher.role === "OWNER") {
+      return NextResponse.json(
+        { error: "Cannot remove classroom owner" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.$queryRaw`
+      DELETE FROM "classroomTeachers" 
+      WHERE classroom_id = ${classroomId} AND teacher_id = ${teacherId}
+    `;
+
+    return NextResponse.json(
+      {
+        message: "Co-teacher removed successfully",
+        removedTeacher: {
+          id: teacherId,
+          name: teacher.name,
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error removing co-teacher:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// Get all teachers in a classroom
+export async function getClassroomTeachers(
+  req: ExtendedNextRequest,
+  { params: { classroomId } }: RequestContext
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const classroom = await prisma.$queryRaw`
+      SELECT c.*, 
+             t.id as teacher_id, t.name as teacher_name, t.email as teacher_email
+      FROM classrooms c
+      LEFT JOIN users t ON c.teacher_id = t.id
+      WHERE c.id = ${classroomId} 
+      AND (c.teacher_id = ${user.id} OR c.created_by = ${user.id})
+    `;
+
+    if ((classroom as any[]).length === 0) {
+      return NextResponse.json(
+        { error: "Classroom not found or access denied" },
+        { status: 404 }
+      );
+    }
+
+    const classroomData = (classroom as any[])[0];
+
+    const newTeachers = await prisma.$queryRaw`
+      SELECT 
+        ct.role,
+        ct."createdAt" as joined_at,
+        u.id,
+        u.name,
+        u.email,
+        true as is_from_new_table
+      FROM "classroomTeachers" ct
+      JOIN users u ON ct.teacher_id = u.id
+      WHERE ct.classroom_id = ${classroomId}
+      ORDER BY 
+        CASE WHEN ct.role = 'OWNER' THEN 0 ELSE 1 END,
+        ct."createdAt" ASC
+    `;
+
+    let teachers;
+    if ((newTeachers as any[]).length === 0) {
+      teachers = [
+        {
+          id: classroomData.teacher_id || "",
+          name: classroomData.teacher_name || "Unknown",
+          email: classroomData.teacher_email || "",
+          role: "OWNER",
+          joined_at: classroomData.createdAt,
+          is_creator: true,
+        },
+      ];
+    } else {
+      teachers = (newTeachers as any[]).map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        email: t.email,
+        role: t.role,
+        joined_at: t.joined_at,
+        is_creator: t.role === "OWNER",
+      }));
+    }
+
+    return NextResponse.json(
+      {
+        classroomId,
+        teachers: teachers,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error getting classroom teachers:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

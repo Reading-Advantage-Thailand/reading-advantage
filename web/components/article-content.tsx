@@ -84,7 +84,6 @@ export default function ArticleContent({
   userId,
 }: Props) {
   const t = useScopedI18n("components.articleContent");
-
   const sentences =
     article.timepoints && article.timepoints.length > 0
       ? article.timepoints.map((timepoint) => timepoint.sentences)
@@ -106,11 +105,11 @@ export default function ArticleContent({
   const [speed, setSpeed] = useState<string>("1");
 
   const sentenceList: Sentence[] =
-    article.timepoints && article.timepoints.length > 0
+    Array.isArray(article.timepoints) && article.timepoints.length > 0
       ? article.timepoints.map((timepoint, index) => {
           const endTime =
-            index < article.timepoints.length - 1
-              ? article.timepoints[index + 1].timeSeconds - 0.3
+            index < article.timepoints!.length - 1
+              ? article.timepoints![index + 1].timeSeconds - 0.3
               : timepoint.timeSeconds + 10;
 
           return {
@@ -557,7 +556,7 @@ export default function ArticleContent({
           {sentenceList.map((sentence, index) => (
             <span
               id="onborda-savesentences"
-              key={sentence.index}
+              key={`sentence-${index}`}
               className={cn(
                 selectedIndex === index && "bg-blue-200 dark:bg-blue-900",
                 `${getHighlightedClass(index)}`
