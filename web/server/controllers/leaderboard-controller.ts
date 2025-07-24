@@ -56,6 +56,7 @@ export async function getAllRankingLeaderboard(req: NextRequest) {
                 id: true,
                 name: true,
                 email: true,
+                role: true,
                 xpLogs: {
                   where: {
                     createdAt: {
@@ -89,6 +90,10 @@ export async function getAllRankingLeaderboard(req: NextRequest) {
 
     const allLeaderboards = licenses.map((license) => {
       const leaderboardData = license.licenseUsers
+        .filter((licenseUser) => {
+          const userRole = licenseUser.user.role;
+          return userRole !== "TEACHER" && userRole !== "ADMIN" && userRole !== "SYSTEM";
+        })
         .map((licenseUser) => {
           const user = licenseUser.user;
           const monthlyXP = user.xpLogs.reduce((sum, log) => sum + log.xpEarned, 0);
@@ -146,11 +151,15 @@ export async function getRankingLeaderboardById(
             licenseId: id,
           },
         },
+        role: {
+          notIn: ["TEACHER", "ADMIN", "SYSTEM"],
+        },
       },
       select: {
         id: true,
         name: true,
         email: true,
+        role: true,
         xp: true,
         xpLogs: {
           where: {

@@ -28,6 +28,8 @@ model User {
   accounts            Account[]
   assignments         Assignment[]
   studentClassrooms   ClassroomStudent[]
+  teacherClassrooms   ClassroomTeacher[] @relation("ClassroomTeachers")
+  createdClassrooms   Classroom[]        @relation("CreatedClassrooms")
   classroomsAsTeacher Classroom[]        @relation("TeacherClassrooms")
   sessions            Session[]
   ownedLicenses       License[]          @relation("OwnedLicenses")
@@ -176,7 +178,8 @@ model LongAnswerQuestion {
 model Classroom {
   id            String             @id @default(cuid())
   classroomName String?            @map("classroom_name") @db.VarChar
-  teacherId     String             @map("teacher_id")
+  teacherId     String?            @map("teacher_id") // Keep old field temporarily
+  createdBy     String?            @map("created_by") // Make optional first
   classCode     String?            @unique @map("class_code") @db.VarChar
   codeExpiresAt DateTime?          @map("code_expires_at")
   archived      Boolean?
@@ -185,7 +188,9 @@ model Classroom {
   updatedAt     DateTime           @updatedAt
   assignments   Assignment[]
   students      ClassroomStudent[]
-  teacher       User               @relation("TeacherClassrooms", fields: [teacherId], references: [id])
+  teachers      ClassroomTeacher[] // relation กับ teachers หลายคน
+  creator       User?              @relation("CreatedClassrooms", fields: [createdBy], references: [id])
+  teacher       User?              @relation("TeacherClassrooms", fields: [teacherId], references: [id])
 
   @@map("classrooms")
 }
@@ -200,6 +205,19 @@ model ClassroomStudent {
 
   @@unique([classroomId, studentId])
   @@map("classroomStudents")
+}
+
+model ClassroomTeacher {
+  id          String    @id @default(cuid())
+  teacherId   String    @map("teacher_id")
+  classroomId String    @map("classroom_id")
+  role        TeacherRole @default(CO_TEACHER) // OWNER หรือ CO_TEACHER
+  createdAt   DateTime  @default(now())
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  teacher     User      @relation("ClassroomTeachers", fields: [teacherId], references: [id])
+
+  @@unique([classroomId, teacherId])
+  @@map("classroomTeachers")
 }
 
 
@@ -339,4 +357,9 @@ enum LicenseType {
   BASIC
   PREMIUM
   ENTERPRISE
+}
+
+enum TeacherRole {
+  OWNER
+  CO_TEACHER
 }

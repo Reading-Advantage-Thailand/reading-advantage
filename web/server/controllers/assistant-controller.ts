@@ -104,7 +104,7 @@ export async function getFeedbackWritter(res: object) {
           suggestions: z.string(),
         }),
       }),
-      exampleRevisions: z.array(z.string()).min(2).max(3).optional(),
+      exampleRevisions: z.array(z.string()).optional(),
       nextSteps: z.array(z.string()).min(2).max(3).optional(),
     }),
   });
@@ -122,6 +122,8 @@ export async function getFeedbackWritter(res: object) {
     Student Response: ${validatedInput.studentResponse}
 
     Please provide detailed feedback based on the CEFR criteria and Preferred Language.
+    
+    Important: For exampleRevisions, if the writing is very good and needs minimal improvements, you may provide an empty array []. If revisions are needed, provide 1-3 specific examples.
     `;
 
     const { object } = await generateObject({
