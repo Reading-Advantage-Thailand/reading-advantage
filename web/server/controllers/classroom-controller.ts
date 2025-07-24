@@ -42,7 +42,7 @@ interface Student {
 }
 
 interface Course {
-  teacherId?: string;
+  teacherId?: string | string[];
   userId?: string;
   classCode?: string;
   enrollmentCode?: string;
@@ -60,7 +60,7 @@ interface Course {
 }
 
 interface Classroom {
-  teacherId: string;
+  teacherId: string | string[];
   archived: boolean;
   classCode: string;
   classroomName: string;
@@ -102,16 +102,32 @@ export async function getClassroom(req: ExtendedNextRequest) {
   try {
     const user = await getCurrentUser();
 
-    const docRef = db
-      .collection("classroom")
-      .where("teacherId", "==", user?.id)
-      .orderBy("createdAt", "desc")
-      .get();
+    const [stringQuery, arrayQuery] = await Promise.all([
+      db
+        .collection("classroom")
+        .where("teacherId", "==", user?.id)
+        .get(),
+      db
+        .collection("classroom")
+        .where("teacherId", "array-contains", user?.id)
+        .get()
+    ]);
 
-    const docData = (await docRef).docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const allDocs = [...stringQuery.docs, ...arrayQuery.docs];
+    const uniqueDocs = allDocs.filter((doc, index, self) => 
+      index === self.findIndex(d => d.id === doc.id)
+    );
+
+    const docData = uniqueDocs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .sort((a: any, b: any) => {
+        const dateA = a.createdAt?.toDate?.() || new Date(0);
+        const dateB = b.createdAt?.toDate?.() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
 
     return NextResponse.json(
       {
@@ -121,7 +137,7 @@ export async function getClassroom(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json(
       {
         message: error instanceof Error ? error.message : String(error),
@@ -147,13 +163,15 @@ export async function getStudentClassroom(req: ExtendedNextRequest) {
 
     // Filter classrooms where the current user is a student
     const studentClassrooms = docData.filter((classroom: any) => {
-      return classroom.student?.some((student: Student) => 
-        student.studentId === user?.id || student.email === user?.email
+      return classroom.student?.some(
+        (student: Student) =>
+          student.studentId === user?.id || student.email === user?.email
       );
     });
 
     // Return only the classroom IDs
-    const classroomId = studentClassrooms.length > 0 ? studentClassrooms[0].id : null;
+    const classroomId =
+      studentClassrooms.length > 0 ? studentClassrooms[0].id : null;
 
     return NextResponse.json(
       {
@@ -163,7 +181,7 @@ export async function getStudentClassroom(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json(
       {
         message: error instanceof Error ? error.message : String(error),
@@ -181,20 +199,36 @@ export async function getClassroomStudent(req: ExtendedNextRequest) {
     const studentRef = await db.collection("users").get();
     const studentData = studentRef.docs.map((doc) => doc.data());
 
-    const classroomRef = db
-      .collection("classroom")
-      .where("teacherId", "==", user?.id)
-      .get();
+    const [stringQuery, arrayQuery] = await Promise.all([
+      db
+        .collection("classroom")
+        .where("teacherId", "==", user?.id)
+        .get(),
+      db
+        .collection("classroom")
+        .where("teacherId", "array-contains", user?.id)
+        .get()
+    ]);
 
-    const classroomData = (await classroomRef).docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const allDocs = [...stringQuery.docs, ...arrayQuery.docs];
+    const uniqueDocs = allDocs.filter((doc, index, self) => 
+      index === self.findIndex(d => d.id === doc.id)
+    );
+
+    const classroomData = uniqueDocs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .sort((a: any, b: any) => {
+        const dateA = a.createdAt?.toDate?.() || new Date(0);
+        const dateB = b.createdAt?.toDate?.() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
 
     const filteredStudents = (users: any[], classroom: any[]) => {
       const studentIdentifiers = new Set<string>();
 
-      // Extract student IDs and emails from data1
       classroom.forEach((classroom) => {
         classroom.student.forEach((student: any) => {
           if (student.studentId) studentIdentifiers.add(student.studentId);
@@ -202,7 +236,6 @@ export async function getClassroomStudent(req: ExtendedNextRequest) {
         });
       });
 
-      // Filter data2 to return only matching students
       return users.filter(
         (student) =>
           studentIdentifiers.has(student.id) ||
@@ -214,7 +247,7 @@ export async function getClassroomStudent(req: ExtendedNextRequest) {
 
     return NextResponse.json({ students: filteredStudent }, { status: 200 });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json({ error }, { status: 500 });
   }
 }
@@ -241,15 +274,25 @@ export async function getEnrollClassroom(req: ExtendedNextRequest) {
       );
     }
 
-    let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
-      db.collection("classroom");
+    const [stringQuery, arrayQuery] = await Promise.all([
+      db
+        .collection("classroom")
+        .where("teacherId", "==", user?.id)
+        .get(),
+      db
+        .collection("classroom")
+        .where("teacherId", "array-contains", user?.id)
+        .get()
+    ]);
 
-    query = query.where("teacherId", "==", user?.id);
+    const allDocs = [...stringQuery.docs, ...arrayQuery.docs];
+    const uniqueDocs = allDocs.filter((doc, index, self) => 
+      index === self.findIndex(d => d.id === doc.id)
+    );
 
-    const classroomsSnapshot = await query.get();
     const classrooms: FirebaseFirestore.DocumentData[] = [];
 
-    classroomsSnapshot.forEach((doc) => {
+    uniqueDocs.forEach((doc) => {
       const classroom = doc.data();
       classroom.id = doc.id;
       classrooms.push(classroom);
@@ -294,15 +337,25 @@ export async function getUnenrollClassroom(req: ExtendedNextRequest) {
       );
     }
 
-    let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
-      db.collection("classroom");
+    const [stringQuery, arrayQuery] = await Promise.all([
+      db
+        .collection("classroom")
+        .where("teacherId", "==", user?.id)
+        .get(),
+      db
+        .collection("classroom")
+        .where("teacherId", "array-contains", user?.id)
+        .get()
+    ]);
 
-    query = query.where("teacherId", "==", user?.id);
+    const allDocs = [...stringQuery.docs, ...arrayQuery.docs];
+    const uniqueDocs = allDocs.filter((doc, index, self) => 
+      index === self.findIndex(d => d.id === doc.id)
+    );
 
-    const classroomsSnapshot = await query.get();
     const classrooms: FirebaseFirestore.DocumentData[] = [];
 
-    classroomsSnapshot.forEach((doc) => {
+    uniqueDocs.forEach((doc) => {
       const classroom = doc.data();
       classroom.id = doc.id;
       classrooms.push(classroom);
@@ -362,7 +415,7 @@ export async function getStudentInClassroom(
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json({ error }, { status: 500 });
   }
 }
@@ -454,7 +507,7 @@ export async function createdClassroom(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json({ message: error }, { status: 500 });
   }
 }
@@ -587,7 +640,7 @@ export async function patchClassroomEnroll(
 
     return NextResponse.json({ message: "success" }, { status: 200 });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json({ message: error }, { status: 500 });
   }
 
