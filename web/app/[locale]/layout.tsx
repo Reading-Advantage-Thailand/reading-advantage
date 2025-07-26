@@ -16,6 +16,7 @@ import { Onborda, OnbordaProvider } from "onborda";
 import { steps } from "@/lib/steps";
 import CustomCard from "@/components/tour/CustomCard";
 import { ThemeWrapper } from "@/components/theme-warpper";
+import AuthRedirectHandler from "@/components/auth-redirect-handler";
 
 import "@/styles/themes.css";
 
@@ -105,7 +106,9 @@ export default async function RootLayout({
                   cardComponent={CustomCard}
                   shadowOpacity="0.8"
                 >
-                  <ThemeWrapper>{children}</ThemeWrapper>
+                  <AuthRedirectHandler>
+                    <ThemeWrapper>{children}</ThemeWrapper>
+                  </AuthRedirectHandler>
                 </Onborda>
               </OnbordaProvider>
             </LocaleProvider>

@@ -1,9 +1,11 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { UserSignInForm } from "@/components/user-signin-form";
+import SignInErrorHandler from "@/components/signin-error-handler";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -31,6 +33,9 @@ export default function SignInPage() {
               Enter your email and password to sign in.
             </p>
           </div>
+          <Suspense fallback={null}>
+            <SignInErrorHandler />
+          </Suspense>
           <UserSignInForm />
         </div>
       </div>
