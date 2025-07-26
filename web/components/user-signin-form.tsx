@@ -21,12 +21,12 @@ import {
   getRedirectResult,
 } from "firebase/auth";
 import type { AuthProvider } from "firebase/auth";
-import { 
-  isIOS, 
-  hasSessionStorageIssues, 
+import {
+  isIOS,
+  hasSessionStorageIssues,
   getAuthErrorMessage,
   clearAuthState,
-  getIOSAuthConfig 
+  getIOSAuthConfig,
 } from "@/utils/ios-auth-handler";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -57,7 +57,7 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
         console.error("Redirect result error:", error);
         const errorMessage = getAuthErrorMessage(error.code, isIOSDevice);
         setError(errorMessage);
-        
+
         // Clear auth state if there's a persistent error
         if (error.code === "auth/missing-or-invalid-nonce") {
           await clearAuthState(firebaseAuth);
@@ -76,7 +76,7 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
   const handleOAuthSignIn = async (provider: AuthProvider) => {
     setIsLoading(true);
     setError("");
-    
+
     try {
       // For iOS devices or when sessionStorage is not available, use redirect flow
       if (authConfig.useRedirectFlow) {
@@ -97,14 +97,21 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
     } catch (error: any) {
       console.error("OAuth sign-in error:", error);
       const errorMessage = getAuthErrorMessage(error.code, isIOSDevice);
-      
+
       // If popup method fails on iOS, fallback to redirect
-      if (isIOSDevice && (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user")) {
+      if (
+        isIOSDevice &&
+        (error.code === "auth/popup-blocked" ||
+          error.code === "auth/popup-closed-by-user")
+      ) {
         try {
           await signInWithRedirect(firebaseAuth, provider);
           return; // The redirect will handle the rest
         } catch (redirectError: any) {
-          const redirectErrorMessage = getAuthErrorMessage(redirectError.code, isIOSDevice);
+          const redirectErrorMessage = getAuthErrorMessage(
+            redirectError.code,
+            isIOSDevice
+          );
           setError(redirectErrorMessage);
         }
       } else {
@@ -119,10 +126,14 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
     event.preventDefault();
     setIsLoading(true);
     setError("");
-    
+
     try {
-      const credential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-      
+      const credential = await signInWithEmailAndPassword(
+        firebaseAuth,
+        email,
+        password
+      );
+
       if (credential.user && typeof credential.user.getIdToken === "function") {
         const idToken = await credential.user.getIdToken(true);
         await signIn("credentials", {
@@ -180,11 +191,12 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
           {error && <div className="text-red-500 text-sm">{error}</div>}
           {isIOSDevice && hasSessionStorageIssues() && (
             <div className="text-amber-600 text-sm bg-amber-50 p-2 rounded border">
-              <strong>iOS Notice:</strong> If you're having trouble signing in, please try:
+              <h1>{"iOS Notice:"}</h1>
+              <p>{"If you're having trouble signing in, please try:"}</p>
               <ul className="list-disc list-inside mt-1 text-xs">
-                <li>Turn off Private Browsing mode</li>
-                <li>Use Safari instead of other browsers</li>
-                <li>Clear Safari cache and try again</li>
+                <li>{"Turn off Private Browsing mode"}</li>
+                <li>{"Use Safari instead of other browsers"}</li>
+                <li>{"Clear Safari cache and try again"}</li>
               </ul>
             </div>
           )}
