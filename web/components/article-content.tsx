@@ -122,7 +122,7 @@ export default function ArticleContent({
         try {
           await audioRef.current.play();
         } catch (error) {
-          console.log("Error playing audio: ", error);
+          console.error("Error playing audio: ", error);
         }
       }
       setIsPlaying(!isPlaying);
@@ -147,7 +147,7 @@ export default function ArticleContent({
       audioRef.current.currentTime = startTime;
       const playAudio = () => {
         audioRef.current!.play().catch((error) => {
-          console.log("Error playing audio: ", error);
+          console.error("Error playing audio: ", error);
         });
         audioRef.current!.removeEventListener("canplaythrough", playAudio);
       };
@@ -170,7 +170,7 @@ export default function ArticleContent({
           audioRef.current!.currentTime =
             sentenceList[nextAudioIndex].startTime;
           audioRef.current!.play().catch((error) => {
-            console.log("Error playing audio: ", error);
+            console.error("Error playing audio: ", error);
           });
           audioRef.current!.removeEventListener("canplaythrough", playAudio);
         };
@@ -330,7 +330,7 @@ export default function ArticleContent({
             audioRef.current!.currentTime =
               sentenceList[nextAudioIndex].startTime;
             audioRef.current!.play().catch((error) => {
-              console.log("Error playing audio: ", error);
+              console.error("Error playing audio: ", error);
             });
             audioRef.current!.removeEventListener("canplaythrough", playAudio);
           };
@@ -354,7 +354,7 @@ export default function ArticleContent({
             audioRef.current!.currentTime =
               sentenceList[prevAudioIndex].startTime;
             audioRef.current!.play().catch((error) => {
-              console.log("Error playing audio: ", error);
+              console.error("Error playing audio: ", error);
             });
             audioRef.current!.removeEventListener("canplaythrough", playAudio);
           };
@@ -371,7 +371,7 @@ export default function ArticleContent({
             audioRef.current!.currentTime =
               sentenceList[currentAudioIndex].startTime;
             audioRef.current!.play().catch((error) => {
-              console.log("Error playing audio: ", error);
+              console.error("Error playing audio: ", error);
             });
             audioRef.current!.removeEventListener("canplaythrough", playAudio);
           };
@@ -388,8 +388,6 @@ export default function ArticleContent({
       await handleTranslateSentence();
       setIsTranslateClicked(!isTranslateClicked);
     } else {
-      console.log("isTranslate", isTranslate);
-      //if translate, set isTranslate to false
       setIsTranslateClicked(!isTranslateClicked);
     }
   };
@@ -444,8 +442,8 @@ export default function ArticleContent({
             {loading
               ? "Loading"
               : isTranslate && isTranslateOpen
-              ? t("translateButton.close")
-              : t("translateButton.open")}
+                ? t("translateButton.close")
+                : t("translateButton.open")}
           </Button>
         </div>
       </div>
@@ -524,7 +522,6 @@ export default function ArticleContent({
               )}
               onClick={() => {
                 handleSentenceClick(sentence.startTime, index);
-                console.log(sentence);
               }}
             >
               {renderSentence(sentence.sentence, index)}
