@@ -19,72 +19,64 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   sendEmailVerification,
+  signInWithRedirect,
+  getRedirectResult,
 } from "firebase/auth";
 import type { AuthProvider } from "firebase/auth";
 import { LucideCheck } from "lucide-react";
+import { 
+  isIOS, 
+  hasSessionStorageIssues, 
+  getAuthErrorMessage,
+  clearAuthState,
+  getIOSAuthConfig 
+} from "@/utils/ios-auth-handler";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserSignUpForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>("");
+  const isIOSDevice = isIOS();
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
     setIsLoading(true);
     setError("");
+    
     const target = event.target as typeof event.target & {
       email: { value: string };
       password: { value: string };
       confirmPassword: { value: string };
     };
+    
     const email = target.email.value;
-    const password =
-      target.password.value === target.confirmPassword.value
-        ? target.password.value
-        : null;
+    const password = target.password.value === target.confirmPassword.value
+      ? target.password.value
+      : null;
+      
     if (!password) {
       setError("Password does not match");
+      setIsLoading(false);
       return;
     }
-    createUserWithEmailAndPassword(firebaseAuth, email, password)
-      .then((credential) => credential.user.getIdToken(true))
-      .catch((err) => {
-        let customMessage;
-        switch (err.code) {
-          case "auth/email-already-in-use":
-            customMessage =
-              "The email address is already in use by another account.";
-            break;
-          case "auth/weak-password":
-            customMessage = "The password must be 6 characters long or more.";
-            break;
-          case "auth/invalid-credential":
-            customMessage =
-              "The provided credential is invalid. This can happen if it is malformed, expired, or the user account does not exist.";
-            break;
-          case "auth/too-many-requests":
-            customMessage =
-              "Too many unsuccessful login attempts. Please try again later.";
-            break;
-          default:
-            customMessage = "Something went wrong.";
-        }
-        setError(customMessage);
-
-        return null;
-      })
-      .then((idToken) => {
-        if (idToken) {
-          signIn("credentials", {
-            idToken,
-            //callbackUrl: "/",
-          });
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    
+    try {
+      const credential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+      const idToken = await credential.user.getIdToken(true);
+      
+      if (idToken) {
+        await signIn("credentials", {
+          idToken,
+        });
+      }
+    } catch (err: any) {
+      console.error("Sign-up error:", err);
+      const errorMessage = getAuthErrorMessage(err.code, isIOSDevice);
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   }
   return (
     <div className={cn("grid gap-6", className)} {...props}>
