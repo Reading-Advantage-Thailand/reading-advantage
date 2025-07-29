@@ -13,7 +13,6 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 export function UserSignUpForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>("");
-  const isIOSDevice = isIOS();
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
