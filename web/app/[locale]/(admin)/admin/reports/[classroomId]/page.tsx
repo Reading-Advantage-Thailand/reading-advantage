@@ -40,7 +40,6 @@ export default async function AdminClassroomReportPage({
       }
 
       const fetchdata = await res.json();
-      log("Fetched classroom data:", fetchdata);
 
       return {
         classroom: fetchdata.classroom,
