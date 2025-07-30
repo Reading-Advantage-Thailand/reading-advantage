@@ -1,5 +1,4 @@
-import db from "@/configs/firestore-config";
-const admin = require("firebase-admin");
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET user activity logs
@@ -7,37 +6,82 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function getAllUserActivity() {
   try {
-    const toDay = new Date()
-      .toLocaleDateString("en-GB")
-      .split("/")
-      .reverse()
-      .join("-");
+    const today = new Date();
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
 
-    let userActivityLogRef = db.collection("activity-distribution").doc(toDay);
-    let userActivityLogSnapshot = await userActivityLogRef.get();
-    let userActivityData = userActivityLogSnapshot.data();
+    const activityCounts = await prisma.userActivity.groupBy({
+      by: ["activityType"],
+      where: {
+        createdAt: {
+          gte: startOfDay,
+        },
+      },
+      _count: {
+        id: true,
+      },
+    });
 
-    if (!userActivityData) {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const previousDay = yesterday
-        .toLocaleDateString("en-GB")
-        .split("/")
-        .reverse()
-        .join("-");
+    const totalUsers = await prisma.user.count();
 
-      userActivityLogRef = db
-        .collection("activity-distribution")
-        .doc(previousDay);
-      userActivityLogSnapshot = await userActivityLogRef.get();
-      userActivityData = userActivityLogSnapshot.data();
+    const userActivityData = {
+      totalUsers,
+      totalRatingCount: 0,
+      totalReadingCount: 0,
+      totalLaQuestionCount: 0,
+      totalLevelTestCount: 0,
+      totalMcQuestionCount: 0,
+      totalSaQuestionCount: 0,
+      totalSentenceFlashcardsCount: 0,
+      totalVocabularyFlashcardsCount: 0,
+      totalVocabularyActivityCount: 0,
+      totalSentenceActivityCount: 0,
+    };
 
-      if (!userActivityData) {
-        return NextResponse.json({ message: "No data found" }, { status: 404 });
+    activityCounts.forEach((activity) => {
+      switch (activity.activityType) {
+        case "ARTICLE_RATING":
+        case "STORIES_RATING":
+        case "CHAPTER_RATING":
+          userActivityData.totalRatingCount += activity._count.id;
+          break;
+        case "ARTICLE_READ":
+        case "STORIES_READ":
+        case "CHAPTER_READ":
+          userActivityData.totalReadingCount += activity._count.id;
+          break;
+        case "LA_QUESTION":
+          userActivityData.totalLaQuestionCount += activity._count.id;
+          break;
+        case "LEVEL_TEST":
+          userActivityData.totalLevelTestCount += activity._count.id;
+          break;
+        case "MC_QUESTION":
+          userActivityData.totalMcQuestionCount += activity._count.id;
+          break;
+        case "SA_QUESTION":
+          userActivityData.totalSaQuestionCount += activity._count.id;
+          break;
+        case "SENTENCE_FLASHCARDS":
+          userActivityData.totalSentenceFlashcardsCount += activity._count.id;
+          break;
+        case "VOCABULARY_FLASHCARDS":
+          userActivityData.totalVocabularyFlashcardsCount += activity._count.id;
+          break;
+        case "VOCABULARY_MATCHING":
+          userActivityData.totalVocabularyActivityCount += activity._count.id;
+          break;
+        case "SENTENCE_MATCHING":
+        case "SENTENCE_ORDERING":
+        case "SENTENCE_WORD_ORDERING":
+        case "SENTENCE_CLOZE_TEST":
+          userActivityData.totalSentenceActivityCount += activity._count.id;
+          break;
       }
-    }
-
-    //console.log(userActivityData);
+    });
 
     return NextResponse.json(
       {
@@ -56,36 +100,34 @@ export async function getAllUserActivity() {
 
 export async function getAllUsersActivity() {
   try {
-    const data: any[] = [];
-
-    const getActivity = await db.collection("user-activity-log").get();
-
-    // Iterate through each document to get subcollections
-    const promises = getActivity.docs.map(async (doc) => {
-      const subCollections = await doc.ref.listCollections();
-      const subCollectionPromises = subCollections.map((subCollection) =>
-        subCollection.get().then((array) =>
-          array.docs.map((doc) =>
-            data.push({
-              ...doc.data(),
-              timestamp: doc.data().timestamp.toDate(),
-            })
-          )
-        )
-      );
-      await Promise.all(subCollectionPromises);
+    const activities = await prisma.userActivity.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 1000,
     });
 
-    // Wait for all promises to resolve
-    await Promise.all(promises);
+    const data = activities.map((activity) => ({
+      id: activity.id,
+      userId: activity.userId,
+      activityType: activity.activityType,
+      targetId: activity.targetId,
+      completed: activity.completed,
+      timestamp: activity.createdAt,
+      details: activity.details,
+      user: activity.user,
+    }));
 
-    //console.log(userActivityStats);
-    return NextResponse.json(
-      {
-        data,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ data }, { status: 200 });
   } catch (err) {
     console.error("Error getting documents", err);
     return NextResponse.json(
@@ -97,60 +139,122 @@ export async function getAllUsersActivity() {
 
 export async function getActivitveUsers(licenseId?: string) {
   try {
-    const activeUsersSnapshot = await db.collection("active-users-log").get();
-
-    let totalData: { date: string; noOfUsers: number }[] = [];
-    let licensesData: Record<string, { date: string; noOfUsers: number }[]> =
-      {};
-
-    const promises = activeUsersSnapshot.docs.map(async (doc) => {
-      const data = doc.data();
-
-      if (Array.isArray(data.total)) {
-        data.total.forEach((entry: any) => {
-          if (entry.date && entry.noOfUsers !== undefined) {
-            totalData.push({ date: entry.date, noOfUsers: entry.noOfUsers });
-          }
-        });
-      }
-
-      if (data.licenses && typeof data.licenses === "object") {
-        Object.keys(data.licenses).forEach((licenseKey) => {
-          if (!licensesData[licenseKey]) {
-            licensesData[licenseKey] = [];
-          }
-
-          const licenseEntries = data.licenses[licenseKey];
-
-          if (Array.isArray(licenseEntries)) {
-            licenseEntries.forEach((entry: any) => {
-              if (entry.date && entry.noOfUsers !== undefined) {
-                licensesData[licenseKey].push({
-                  date: entry.date,
-                  noOfUsers: entry.noOfUsers,
-                });
-              }
-            });
-          }
-        });
-      }
-    });
-
-    await Promise.all(promises);
-
-    totalData.sort((a, b) => (a.date < b.date ? -1 : 1));
-    Object.keys(licensesData).forEach((license) => {
-      licensesData[license].sort((a, b) => (a.date < b.date ? -1 : 1));
-    });
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     if (licenseId) {
-      return {
-        total: totalData,
-        licenses: {
-          [licenseId]: licensesData[licenseId] || [],
+      const license = await prisma.license.findUnique({
+        where: { id: licenseId },
+        include: {
+          licenseUsers: {
+            select: {
+              userId: true,
+            },
+          },
         },
+      });
+
+      if (!license) {
+        return {
+          total: [],
+          licenses: { [licenseId]: [] },
+        };
+      }
+
+      const userIds = license.licenseUsers.map((lu) => lu.userId);
+
+      const activities = await prisma.userActivity.findMany({
+        where: {
+          userId: { in: userIds },
+          createdAt: { gte: thirtyDaysAgo },
+        },
+        select: {
+          userId: true,
+          createdAt: true,
+        },
+      });
+
+      const dateMap: { [date: string]: Set<string> } = {};
+
+      activities.forEach((activity) => {
+        const date = activity.createdAt.toISOString().split("T")[0];
+        if (!dateMap[date]) {
+          dateMap[date] = new Set();
+        }
+        dateMap[date].add(activity.userId);
+      });
+
+      const licenseData = Object.keys(dateMap)
+        .sort()
+        .map((date) => ({
+          date,
+          noOfUsers: dateMap[date].size,
+        }));
+
+      return {
+        total: licenseData,
+        licenses: { [licenseId]: licenseData },
       };
     }
+
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            licenseId: true,
+          },
+        },
+      },
+    });
+
+    const totalDateMap: { [date: string]: Set<string> } = {};
+    const licenseDateMap: {
+      [licenseId: string]: { [date: string]: Set<string> };
+    } = {};
+
+    activities.forEach((activity) => {
+      const date = activity.createdAt.toISOString().split("T")[0];
+      const userId = activity.userId;
+      const userLicenseId = activity.user.licenseId;
+
+      if (!totalDateMap[date]) {
+        totalDateMap[date] = new Set();
+      }
+      totalDateMap[date].add(userId);
+
+      if (userLicenseId) {
+        if (!licenseDateMap[userLicenseId]) {
+          licenseDateMap[userLicenseId] = {};
+        }
+        if (!licenseDateMap[userLicenseId][date]) {
+          licenseDateMap[userLicenseId][date] = new Set();
+        }
+        licenseDateMap[userLicenseId][date].add(userId);
+      }
+    });
+
+    const totalData = Object.keys(totalDateMap)
+      .sort()
+      .map((date) => ({
+        date,
+        noOfUsers: totalDateMap[date].size,
+      }));
+
+    const licensesData: Record<string, { date: string; noOfUsers: number }[]> =
+      {};
+
+    Object.keys(licenseDateMap).forEach((licenseId) => {
+      licensesData[licenseId] = Object.keys(licenseDateMap[licenseId])
+        .sort()
+        .map((date) => ({
+          date,
+          noOfUsers: licenseDateMap[licenseId][date].size,
+        }));
+    });
 
     return {
       total: totalData,
@@ -181,11 +285,32 @@ export async function getActiveUser(req: NextRequest) {
 
 export async function updateAllUserActivity() {
   try {
-    const userActivityLogRef = db.collection("user-activity-log");
-    const userActivityLogSnapshot = await userActivityLogRef.get();
+    // Get today's date for activity calculation
+    const today = new Date();
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
 
-    let totalUsers = 0;
-    const totalCounts: { [key: string]: number } = {
+    // Get total users count
+    const totalUsers = await prisma.user.count();
+
+    // Get activity counts by type for today
+    const activityCounts = await prisma.userActivity.groupBy({
+      by: ["activityType"],
+      where: {
+        createdAt: {
+          gte: startOfDay,
+        },
+      },
+      _count: {
+        id: true,
+      },
+    });
+
+    // Initialize total counts
+    const totalCounts = {
       totalRatingCount: 0,
       totalReadingCount: 0,
       totalLaQuestionCount: 0,
@@ -198,106 +323,63 @@ export async function updateAllUserActivity() {
       totalSentenceActivityCount: 0,
     };
 
-    const activityTypes = [
-      {
-        name: "ratingLogRef",
-        collection: "article-rating-activity-log",
-        countKey: "totalRatingCount",
-      },
-      {
-        name: "readingLogRef",
-        collection: "article-read-activity-log",
-        countKey: "totalReadingCount",
-      },
-      {
-        name: "laLogRef",
-        collection: "la-question-activity-log",
-        countKey: "totalLaQuestionCount",
-      },
-      {
-        name: "levelTestLogRef",
-        collection: "level-test-activity-log",
-        countKey: "totalLevelTestCount",
-      },
-      {
-        name: "mcQuestionLogRef",
-        collection: "mc-question-activity-log",
-        countKey: "totalMcQuestionCount",
-      },
-      {
-        name: "saQuestionLogRef",
-        collection: "sa-question-activity-log",
-        countKey: "totalSaQuestionCount",
-      },
-      {
-        name: "SentenceClozeTestLogRef",
-        collection: "sentence-cloze-test-activity-log",
-        countKey: "totalSentenceActivityCount",
-      },
-      {
-        name: "SentenceFlashcardsLogRef",
-        collection: "sentence-flashcards-activity-log",
-        countKey: "totalSentenceFlashcardsCount",
-      },
-      {
-        name: "SentenceMatchingLogRef",
-        collection: "sentence-matching-activity-log",
-        countKey: "totalSentenceActivityCount",
-      },
-      {
-        name: "SentenceOrderingLogRef",
-        collection: "sentence-ordering-activity-log",
-        countKey: "totalSentenceActivityCount",
-      },
-      {
-        name: "SentenceWordOrderingLogRef",
-        collection: "sentence-word-ordering-activity-log",
-        countKey: "totalSentenceActivityCount",
-      },
-      {
-        name: "VocabularyFlashcardsLogRef",
-        collection: "vocabulary-flashcards-activity-log",
-        countKey: "totalVocabularyFlashcardsCount",
-      },
-      {
-        name: "VocabularyMatchingLogRef",
-        collection: "vocabulary-matching-activity-log",
-        countKey: "totalVocabularyActivityCount",
-      },
-    ];
-
-    for (const doc of userActivityLogSnapshot.docs) {
-      totalUsers++;
-      const promises = activityTypes.map(async (activity) => {
-        const snapshot = await doc.ref.collection(activity.collection).get();
-        totalCounts[activity.countKey] += snapshot.size;
-      });
-
-      await Promise.all(promises);
-    }
+    // Map activity types to counts
+    activityCounts.forEach((activity) => {
+      switch (activity.activityType) {
+        case "ARTICLE_RATING":
+        case "STORIES_RATING":
+        case "CHAPTER_RATING":
+          totalCounts.totalRatingCount += activity._count.id;
+          break;
+        case "ARTICLE_READ":
+        case "STORIES_READ":
+        case "CHAPTER_READ":
+          totalCounts.totalReadingCount += activity._count.id;
+          break;
+        case "LA_QUESTION":
+          totalCounts.totalLaQuestionCount += activity._count.id;
+          break;
+        case "LEVEL_TEST":
+          totalCounts.totalLevelTestCount += activity._count.id;
+          break;
+        case "MC_QUESTION":
+          totalCounts.totalMcQuestionCount += activity._count.id;
+          break;
+        case "SA_QUESTION":
+          totalCounts.totalSaQuestionCount += activity._count.id;
+          break;
+        case "SENTENCE_FLASHCARDS":
+          totalCounts.totalSentenceFlashcardsCount += activity._count.id;
+          break;
+        case "VOCABULARY_FLASHCARDS":
+          totalCounts.totalVocabularyFlashcardsCount += activity._count.id;
+          break;
+        case "VOCABULARY_MATCHING":
+          totalCounts.totalVocabularyActivityCount += activity._count.id;
+          break;
+        case "SENTENCE_MATCHING":
+        case "SENTENCE_ORDERING":
+        case "SENTENCE_WORD_ORDERING":
+        case "SENTENCE_CLOZE_TEST":
+          totalCounts.totalSentenceActivityCount += activity._count.id;
+          break;
+      }
+    });
 
     const userActivityData = {
       totalUsers,
       ...totalCounts,
     };
 
-    //console.log(userActivityData);
-
-    const updateUserActivity = await db
-      .collection("activity-distribution")
-      .doc(
-        new Date().toLocaleDateString("en-GB").split("/").reverse().join("-")
-      )
-      .set(userActivityData);
-
     return NextResponse.json(
       {
-        updateUserActivity,
+        updateUserActivity: "success",
+        data: userActivityData,
       },
       { status: 200 }
     );
   } catch (err) {
-    console.error("Error getting documents", err);
+    console.error("Error calculating user activity", err);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

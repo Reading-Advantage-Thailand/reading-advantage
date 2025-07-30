@@ -998,23 +998,12 @@ export async function patchClassroomUnenroll(
   }
 }
 
-// get Class Xp - TODO: Migrate to Prisma
 export async function getClassXp(req: NextRequest) {
-  // Temporarily disabled - needs Firebase initialization or migration to Prisma
-  return NextResponse.json(
-    {
-      message:
-        "XP functionality temporarily disabled - migration to Prisma in progress",
-    },
-    { status: 503 }
-  );
-
-  /* Original Firebase code - to be migrated to Prisma
-  const firestore = admin.firestore();
   try {
     const { searchParams } = new URL(req.url);
     const year = searchParams.get("year");
     const licenseId = searchParams.get("licenseId");
+    const timeRange = searchParams.get("timeRange") || "year";
 
     if (!year) {
       return NextResponse.json(
@@ -1023,44 +1012,130 @@ export async function getClassXp(req: NextRequest) {
       );
     }
 
-    const yearRef = firestore.collection("class-xp-log").doc(year);
-    const licensesCollectionRef = yearRef.collection("licenses");
+    const yearNum = parseInt(year);
+    let startDate: Date;
+    let endDate: Date;
+
+    const now = new Date();
+    switch (timeRange) {
+      case "week":
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - 7);
+        endDate = now;
+        break;
+      case "month":
+        startDate = new Date(now);
+        startDate.setMonth(now.getMonth() - 1);
+        endDate = now;
+        break;
+      case "year":
+      default:
+        startDate = new Date(yearNum, 0, 1);
+        endDate = new Date(yearNum + 1, 0, 1);
+        break;
+    }
 
     if (licenseId) {
-      const licenseDoc = await licensesCollectionRef.doc(licenseId).get();
+      const license = await prisma.license.findUnique({
+        where: { id: licenseId },
+        include: {
+          licenseUsers: {
+            select: {
+              userId: true,
+            },
+          },
+        },
+      });
 
-      if (!licenseDoc.exists) {
+      if (!license) {
         return NextResponse.json(
-          { message: `No data found for license ${licenseId} in ${year}` },
+          { message: `License ${licenseId} not found` },
           { status: 404 }
         );
       }
 
+      const userIds = license.licenseUsers.map((lu) => lu.userId);
+
+      const classrooms = await prisma.classroom.findMany({
+        where: {
+          students: {
+            some: {
+              studentId: { in: userIds },
+            },
+          },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  xpLogs: {
+                    where: {
+                      createdAt: {
+                        gte: startDate,
+                        lt: endDate,
+                      },
+                    },
+                    select: {
+                      xpEarned: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const classroomXpMap: {
+        [classroomId: string]: { name: string; xp: number };
+      } = {};
+
+      classrooms.forEach((classroom) => {
+        let totalClassroomXp = 0;
+
+        classroom.students.forEach((classroomStudent) => {
+          if (userIds.includes(classroomStudent.studentId)) {
+            const studentXp = classroomStudent.student.xpLogs.reduce(
+              (sum, log) => sum + log.xpEarned,
+              0
+            );
+            totalClassroomXp += studentXp;
+          }
+        });
+
+        if (totalClassroomXp > 0) {
+          classroomXpMap[classroom.id] = {
+            name: classroom.classroomName || `Classroom ${classroom.id}`,
+            xp: totalClassroomXp,
+          };
+        }
+      });
+
+      const classroomData = Object.values(classroomXpMap);
+      const mostActive = classroomData.sort((a, b) => b.xp - a.xp).slice(0, 5);
+      const leastActive = classroomData.sort((a, b) => a.xp - b.xp).slice(0, 5);
+
+      const data = {
+        dataMostActive: {
+          [timeRange]: mostActive,
+        },
+        dataLeastActive: {
+          [timeRange]: leastActive,
+        },
+      };
+
       return NextResponse.json({
         year,
         licenseId,
-        data: licenseDoc.data(),
+        timeRange,
+        data,
       });
     }
-
-    const licensesSnapshot = await licensesCollectionRef.get();
-
-    if (licensesSnapshot.empty) {
-      return NextResponse.json(
-        { message: `No XP data found for year ${year}` },
-        { status: 404 }
-      );
-    }
-
-    const licensesData: Record<string, any> = {};
-    licensesSnapshot.forEach((doc: any) => {
-      licensesData[doc.id] = doc.data();
-    });
-
-    return NextResponse.json({
-      year,
-      licenses: licensesData,
-    });
+    return NextResponse.json(
+      { message: "Please specify a licenseId parameter" },
+      { status: 400 }
+    );
   } catch (error) {
     console.error("Error fetching XP data:", error);
     return NextResponse.json(
@@ -1068,31 +1143,51 @@ export async function getClassXp(req: NextRequest) {
       { status: 500 }
     );
   }
-  */
 }
 
 export async function getTopSchoolsXp(req: NextRequest): Promise<NextResponse> {
-  // Temporarily disabled - needs Firebase initialization or migration to Prisma
-  return NextResponse.json(
-    {
-      message:
-        "XP functionality temporarily disabled - migration to Prisma in progress",
-    },
-    { status: 503 }
-  );
-
-  /* Original Firebase code - to be migrated to Prisma
   try {
-    const summaryCollection = db.collection("license-xp-summary");
-    const summarySnapshot = await summaryCollection
-      .orderBy("xp", "desc")
-      .limit(10)
-      .get();
+    const licenses = await prisma.license.findMany({
+      include: {
+        licenseUsers: {
+          include: {
+            user: {
+              include: {
+                xpLogs: {
+                  select: {
+                    xpEarned: true,
+                    createdAt: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
 
-    const topSchools: SchoolXP[] = summarySnapshot.docs.map((doc: any) => ({
-      school: doc.data().school,
-      xp: doc.data().xp,
-    }));
+    const schoolXpData: { school: string; xp: number }[] = [];
+
+    licenses.forEach((license) => {
+      let totalXp = 0;
+
+      license.licenseUsers.forEach((licenseUser) => {
+        const userXp = licenseUser.user.xpLogs.reduce(
+          (sum, log) => sum + log.xpEarned,
+          0
+        );
+        totalXp += userXp;
+      });
+
+      if (totalXp > 0) {
+        schoolXpData.push({
+          school: license.schoolName,
+          xp: totalXp,
+        });
+      }
+    });
+
+    const topSchools = schoolXpData.sort((a, b) => b.xp - a.xp).slice(0, 10);
 
     return NextResponse.json({ data: topSchools }, { status: 200 });
   } catch (error) {
@@ -1102,7 +1197,6 @@ export async function getTopSchoolsXp(req: NextRequest): Promise<NextResponse> {
       { status: 500 }
     );
   }
-  */
 }
 
 export async function getClassXpPerStudents(
