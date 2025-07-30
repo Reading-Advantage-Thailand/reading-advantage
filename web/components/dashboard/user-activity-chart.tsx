@@ -87,7 +87,7 @@ function formatDataForDays(
     let xpEarnedForDay = 0;
 
     for (let j = 0; j < filteredArticles.length; j++) {
-      if (filteredArticles[j].activityStatus === "completed") {
+      if (filteredArticles[j].completed) {
         xpEarnedForDay += filteredArticles[j].xpEarned;
       }
     }
@@ -136,11 +136,11 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
   const formattedData = formatDataForDays(data, date);
 
   const inProgressCount = data.filter(
-    (item: UserActivityLog) => item.activityStatus === "in_progress"
+    (item: UserActivityLog) => !item.completed
   ).length;
 
   const completedCount = data.filter(
-    (item: UserActivityLog) => item.activityStatus === "completed"
+    (item: UserActivityLog) => item.completed
   ).length;
 
   return (

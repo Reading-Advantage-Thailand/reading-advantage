@@ -49,12 +49,20 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
   const t = useScopedI18n("pages.student.reportpage");
 
   const formatData = (value: UserActivityLog[], selected: string) => {
-    const filterArtcileRead = value.filter(
-      (item) =>
-        item.activityType === "article_read" ||
-        item.activityType === "lesson_read"
-    );
-    
+    const filterArtcileRead = value.filter((item) => {
+      const activityType = item.activityType?.toLowerCase();
+      return (
+        activityType === "article_read" ||
+        activityType === "lesson_read" ||
+        item.activityType === "ARTICLE_READ" ||
+        item.activityType === "LESSON_READ"
+      );
+    });
+
+    if (filterArtcileRead.length === 0) {
+      return [];
+    }
+
     const articleMap = new Map<string, UserActivityLog>();
 
     filterArtcileRead.forEach((item) => {
@@ -63,31 +71,35 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
         (item as any).contentId ||
         (item.details as any)?.articleId ||
         (item.details as any)?.contentId ||
-        item.contentId;
+        item.contentId ||
+        item.targetId;
       if (!articleId) return;
 
       const existing = articleMap.get(articleId);
-      if (
-        !existing ||
-        (existing.activityStatus !== "completed" &&
-          item.activityStatus === "completed")
-      ) {
+      if (!existing || (!existing.completed && item.completed)) {
         articleMap.set(articleId, item);
       }
     });
-    
+
+    if (articleMap.size === 0) {
+      return [];
+    }
+
     const result: Record<string, { inProgress: number; completed: number }> =
       {};
 
     Array.from(articleMap.values()).forEach((item) => {
       let key: string;
-      
+
       if (selected === "type") {
         key = (item.details as any)?.type || "Unknown Type";
       } else if (selected === "genre") {
         key = (item.details as any)?.genre || "Unknown Genre";
       } else if (selected === "subgenre") {
-        key = (item.details as any)?.subgenre || (item.details as any)?.subGenre || "Unknown Subgenre";
+        key =
+          (item.details as any)?.subgenre ||
+          (item.details as any)?.subGenre ||
+          "Unknown Subgenre";
       } else if (selected === "cefr_level") {
         key = (item.details as any)?.cefr_level || "Unknown CEFR Level";
       } else if (selected === "level") {
@@ -96,8 +108,7 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
         key = (item.details as any)?.[selected] || `Unknown ${selected}`;
       }
 
-      const status =
-        item.activityStatus === "completed" ? "completed" : "inProgress";
+      const status = item.completed ? "completed" : "inProgress";
 
       if (!result[key]) {
         result[key] = { inProgress: 0, completed: 0 };
@@ -145,7 +156,12 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
       <CardContent>
         {getData.length === 0 ? (
           <div className="flex h-[200px] items-center justify-center text-muted-foreground">
-            No reading activity data available
+            <div className="text-center">
+              <p className="text-lg font-medium">No reading data available</p>
+              <p className="text-sm">
+                Start reading articles to see your reading statistics
+              </p>
+            </div>
           </div>
         ) : (
           <ChartContainer config={chartConfig}>

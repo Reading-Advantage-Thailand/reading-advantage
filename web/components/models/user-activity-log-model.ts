@@ -21,6 +21,12 @@ export interface UserActivityLog {
     title?: string;
     level?: number;
     cefr_level?: string;
+    type?: string;
+    genre?: string;
+    subgenre?: string;
+    subGenre?: string;
+    articleId?: string;
+    contentId?: string;
     [key: string]: any;
   };
 }

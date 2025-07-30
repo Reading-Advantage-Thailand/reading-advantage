@@ -405,22 +405,49 @@ export async function getActivityLog(
       },
     });
 
+    // Create a map for XP lookup by activityType and timestamp
+    const xpMap = new Map();
+    xpLogs.forEach((log) => {
+      const key = `${log.activityType}_${log.createdAt.getTime()}`;
+      xpMap.set(key, log.xpEarned);
+    });
+
     // Combine and format the data to match the expected structure
-    const formattedResults = results.map((activity) => ({
-      id: activity.id,
-      userId: activity.userId,
-      activityType: activity.activityType,
-      targetId: activity.targetId,
-      timer: activity.timer,
-      details: activity.details,
-      completed: activity.completed,
-      timestamp: activity.createdAt,
-      timeTaken: activity.timer || 0,
-      xpEarned:
-        xpLogs.find((log) => log.activityId === activity.id)?.xpEarned || 0,
-      createdAt: activity.createdAt,
-      updatedAt: activity.updatedAt,
-    }));
+    const formattedResults = results.map((activity) => {
+      // Try to match XP by activityType and timestamp (within 1 minute)
+      let xpEarned = 0;
+      const activityTime = activity.createdAt.getTime();
+
+      // Look for XP log with same activityType within 1 minute
+      for (const log of xpLogs) {
+        if (log.activityType === activity.activityType) {
+          const timeDiff = Math.abs(log.createdAt.getTime() - activityTime);
+          if (timeDiff <= 60000) {
+            // 1 minute tolerance
+            xpEarned = log.xpEarned;
+            break;
+          }
+        }
+      }
+
+      return {
+        id: activity.id,
+        userId: activity.userId,
+        activityType: activity.activityType,
+        targetId: activity.targetId,
+        timer: activity.timer,
+        details: activity.details,
+        completed: activity.completed,
+        timestamp: activity.createdAt,
+        timeTaken: activity.timer || 0,
+        xpEarned,
+        createdAt: activity.createdAt,
+        updatedAt: activity.updatedAt,
+        // Add contentId and articleId for compatibility
+        contentId: activity.targetId,
+        articleId: activity.targetId,
+      };
+    });
 
     return NextResponse.json({
       results: formattedResults,
@@ -455,19 +482,20 @@ export async function getUserRecords(
     });
 
     const articleMap = new Map();
-    
+
     activities.forEach((activity) => {
-      const articleId = (activity.details as any)?.articleId || activity.targetId;
-      
+      const articleId =
+        (activity.details as any)?.articleId || activity.targetId;
+
       if (!articleMap.has(articleId)) {
         articleMap.set(articleId, {
           readActivity: null,
-          ratingActivity: null
+          ratingActivity: null,
         });
       }
-      
+
       const articleData = articleMap.get(articleId);
-      
+
       if (activity.activityType === ActivityType.ARTICLE_READ) {
         articleData.readActivity = activity;
       } else if (activity.activityType === ActivityType.ARTICLE_RATING) {
@@ -476,24 +504,25 @@ export async function getUserRecords(
     });
 
     const results: any[] = [];
-    
+
     articleMap.forEach((data, articleId) => {
       if (data.readActivity) {
         const readActivity = data.readActivity;
         const ratingActivity = data.ratingActivity;
-        
+
         let extractedRating = 0;
         if (ratingActivity?.details) {
           try {
-            const detailsObj = typeof ratingActivity.details === 'string' 
-              ? JSON.parse(ratingActivity.details) 
-              : ratingActivity.details;
+            const detailsObj =
+              typeof ratingActivity.details === "string"
+                ? JSON.parse(ratingActivity.details)
+                : ratingActivity.details;
             extractedRating = detailsObj?.rating || 0;
           } catch (e) {
             extractedRating = 0;
           }
         }
-        
+
         const resultItem = {
           id: readActivity.id,
           userId: readActivity.userId,
@@ -502,23 +531,26 @@ export async function getUserRecords(
           completed: readActivity.completed,
           details: {
             level: (readActivity.details as any)?.level || 0,
-            articleTitle: (readActivity.details as any)?.articleTitle || '',
+            articleTitle: (readActivity.details as any)?.articleTitle || "",
             rating: extractedRating,
             rated: extractedRating,
             score: (readActivity.details as any)?.score || 0,
             scores: (readActivity.details as any)?.score || 0,
             timer: (readActivity.details as any)?.timer || 0,
-            ratingCompleted: ratingActivity?.completed || false
+            ratingCompleted: ratingActivity?.completed || false,
           },
           created_at: readActivity.createdAt,
           updated_at: ratingActivity?.updatedAt || readActivity.updatedAt,
         };
-        
+
         results.push(resultItem);
       }
     });
 
-    results.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    results.sort(
+      (a, b) =>
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
     const limitedResults = results.slice(0, limit);
 
     return NextResponse.json({
@@ -881,6 +913,64 @@ export async function resetUserProgress(
     });
   } catch (error) {
     console.error("Error resetting user progress:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getUserXpLogs(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const xpLogs = await prisma.xPLog.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const activityIds = xpLogs.map((log) => log.activityId);
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        id: { in: activityIds },
+      },
+    });
+
+    const activityMap = new Map(
+      activities.map((activity) => [activity.id, activity])
+    );
+    const formattedResults = xpLogs.map((xpLog) => {
+      const activity = activityMap.get(xpLog.activityId);
+
+      return {
+        id: xpLog.activityId,
+        userId: xpLog.userId,
+        activityType: xpLog.activityType,
+        targetId: activity?.targetId || "",
+        timer: activity?.timer,
+        details: activity?.details || {},
+        completed: activity?.completed || true,
+        timestamp: xpLog.createdAt,
+        timeTaken: activity?.timer || 0,
+        xpEarned: xpLog.xpEarned,
+        createdAt: xpLog.createdAt,
+        updatedAt: xpLog.updatedAt,
+        contentId: activity?.targetId || "",
+        articleId: activity?.targetId || "",
+      };
+    });
+
+    return NextResponse.json({
+      results: formattedResults,
+      message: "success",
+    });
+  } catch (error) {
+    console.error("getUserXpLogs => ", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

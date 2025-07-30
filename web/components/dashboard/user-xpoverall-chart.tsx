@@ -65,7 +65,7 @@ function formatDataForDays(
   }
 
   articles.forEach((article: UserActivityLog) => {
-    if (article.activityStatus === "completed") {
+    if (article.completed) {
       const articleDate = new Date(article.timestamp);
       const month = `${monthNames[articleDate.getMonth()]} ${articleDate.getFullYear()}`;
 
