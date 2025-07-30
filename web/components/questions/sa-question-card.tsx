@@ -38,6 +38,7 @@ import {
 } from "../models/user-activity-log-model";
 import { levelCalculation } from "@/lib/utils";
 import { useCurrentLocale } from "@/locales/client";
+import { useArticleCompletion } from "@/lib/use-article-completion";
 
 type Props = {
   userId: string;
@@ -87,6 +88,8 @@ export default function SAQuestionCard({
     state: QuestionState.LOADING,
   });
 
+  const { checkAndNotifyCompletion } = useArticleCompletion();
+
   useEffect(() => {
     fetch(`/api/v1/articles/${articleId}/questions/sa`)
       .then((res) => res.json())
@@ -121,6 +124,20 @@ export default function SAQuestionCard({
       onCompleteChange?.(true);
     }
   }, [state, onCompleteChange, page]);
+
+  useEffect(() => {
+    if (state === QuestionState.COMPLETED && page === "article") {
+      const checkCompletion = async () => {
+        try {
+          await checkAndNotifyCompletion(userId, articleId);
+        } catch (error) {
+          console.error("Error checking article completion:", error);
+        }
+      };
+
+      checkCompletion();
+    }
+  }, [state, userId, articleId, page, checkAndNotifyCompletion]);
 
   switch (state) {
     case QuestionState.LOADING:

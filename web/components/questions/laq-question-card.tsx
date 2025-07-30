@@ -34,6 +34,7 @@ import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
 import { useRouter } from "next/navigation";
+import { useArticleCompletion } from "@/lib/use-article-completion";
 
 interface Props {
   userId: string;
@@ -98,6 +99,8 @@ export default function LAQuestionCard({
     state: QuestionState.LOADING,
   });
 
+  const { checkAndNotifyCompletion } = useArticleCompletion();
+
   useEffect(() => {
     fetch(`/api/v1/articles/${articleId}/questions/laq`)
       .then((res) => res.json())
@@ -118,6 +121,20 @@ export default function LAQuestionCard({
   const handleCancel = () => {
     setState(QuestionState.LOADING);
   };
+
+  useEffect(() => {
+    if (state === QuestionState.COMPLETED) {
+      const checkCompletion = async () => {
+        try {
+          await checkAndNotifyCompletion(userId, articleId);
+        } catch (error) {
+          console.error("Error checking article completion:", error);
+        }
+      };
+
+      checkCompletion();
+    }
+  }, [state, userId, articleId, checkAndNotifyCompletion]);
 
   switch (state) {
     case QuestionState.LOADING:
