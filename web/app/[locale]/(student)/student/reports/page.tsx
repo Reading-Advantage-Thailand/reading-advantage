@@ -13,7 +13,7 @@ import { getScopedI18n } from "@/locales/server";
 
 type Props = {};
 
-async function getUserArticleRecords(userId: string) {
+async function getUserActivityWithXp(userId: string) {
   return fetchData(`/api/v1/users/${userId}/activitylog`);
 }
 
@@ -21,7 +21,7 @@ export default async function ReportsPage({}: Props) {
   const t = await getScopedI18n("pages.student.reportpage");
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
-  const res = await getUserArticleRecords(user.id);
+  const res = await getUserActivityWithXp(user.id);
 
   return (
     <>
