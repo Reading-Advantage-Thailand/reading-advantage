@@ -11,6 +11,91 @@ import { ExtendedNextRequest } from "./auth-controller";
 import { generateSAQuestion } from "../utils/generators/sa-question-generator";
 import { UserXpEarned } from "@/components/models/user-activity-log-model";
 
+async function checkAndUpdateArticleCompletion(
+  userId: string,
+  articleId: string
+) {
+  try {
+    const mcqActivities = await prisma.userActivity.findMany({
+      where: {
+        userId: userId,
+        activityType: "MC_QUESTION",
+      },
+    });
+
+    const mcqForThisArticle = mcqActivities.filter((activity) => {
+      const details = activity.details as any;
+      return details?.articleId === articleId && activity.completed;
+    });
+
+    const saqActivities = await prisma.userActivity.findMany({
+      where: {
+        userId: userId,
+        activityType: "SA_QUESTION",
+      },
+    });
+
+    const saqForThisArticle = saqActivities.filter((activity) => {
+      const details = activity.details as any;
+      return details?.articleId === articleId && activity.completed;
+    });
+
+    const laqActivities = await prisma.userActivity.findMany({
+      where: {
+        userId: userId,
+        activityType: "LA_QUESTION",
+      },
+    });
+
+    const laqForThisArticle = laqActivities.filter((activity) => {
+      const details = activity.details as any;
+      return details?.articleId === articleId && activity.completed;
+    });
+
+    const allCompleted =
+      mcqForThisArticle.length >= 5 &&
+      saqForThisArticle.length >= 1 &&
+      laqForThisArticle.length >= 1;
+
+    if (allCompleted) {
+      const existingArticleRead = await prisma.userActivity.findUnique({
+        where: {
+          userId_activityType_targetId: {
+            userId: userId,
+            activityType: "ARTICLE_READ",
+            targetId: articleId,
+          },
+        },
+      });
+
+      if (existingArticleRead) {
+        await prisma.userActivity.update({
+          where: { id: existingArticleRead.id },
+          data: {
+            completed: true,
+            updatedAt: new Date(),
+          },
+        });
+      } else {
+        await prisma.userActivity.create({
+          data: {
+            userId: userId,
+            activityType: "ARTICLE_READ",
+            targetId: articleId,
+            completed: true,
+            details: {
+              articleId: articleId,
+              allQuestionsCompleted: true,
+            },
+          },
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error checking article completion:", error);
+  }
+}
+
 interface RequestContext {
   params: {
     article_id: string;
@@ -419,6 +504,8 @@ export async function answerSAQuestion(
       }
     }
 
+    await checkAndUpdateArticleCompletion(userId, article_id);
+
     return NextResponse.json(
       {
         state: QuestionState.COMPLETED,
@@ -623,6 +710,8 @@ export async function answerMCQuestion(
       }
     }
 
+    await checkAndUpdateArticleCompletion(userId, article_id);
+
     const responseData = {
       correct: isCorrect,
       correctAnswer: question.answer,
@@ -798,11 +887,13 @@ export async function answerLAQuestion(
 
     let scores: number[] = [];
     let sumScores = 0;
-    
-    if (feedback && feedback.scores && typeof feedback.scores === 'object') {
+
+    if (feedback && feedback.scores && typeof feedback.scores === "object") {
       scores = Object.values(feedback.scores);
       sumScores = scores.reduce<number>((a, b) => a + b, 0);
     }
+
+    await checkAndUpdateArticleCompletion(userId, article_id);
 
     return NextResponse.json(
       {
@@ -857,28 +948,42 @@ export async function getFeedbackLAquestion(
     });
 
     if (!getFeedback.ok) {
-      throw new Error(`Feedback generation failed with status: ${getFeedback.status}`);
+      throw new Error(
+        `Feedback generation failed with status: ${getFeedback.status}`
+      );
     }
 
     const getData = await getFeedback.json();
-    
-    if (!getData || typeof getData !== 'object') {
+
+    if (!getData || typeof getData !== "object") {
       throw new Error("Invalid feedback data received");
     }
-    
+
     let randomExamples = "";
-    if (getData.exampleRevisions && Array.isArray(getData.exampleRevisions) && getData.exampleRevisions.length > 0) {
-      randomExamples = getData.exampleRevisions[
-        Math.floor(Math.random() * getData.exampleRevisions.length)
-      ];
+    if (
+      getData.exampleRevisions &&
+      Array.isArray(getData.exampleRevisions) &&
+      getData.exampleRevisions.length > 0
+    ) {
+      randomExamples =
+        getData.exampleRevisions[
+          Math.floor(Math.random() * getData.exampleRevisions.length)
+        ];
     } else {
-      const scores = getData.scores ? Object.values(getData.scores) as number[] : [];
-      const averageScore = scores.length > 0 ? scores.reduce((a: number, b: number) => a + b, 0) / scores.length : 0;
-      
+      const scores = getData.scores
+        ? (Object.values(getData.scores) as number[])
+        : [];
+      const averageScore =
+        scores.length > 0
+          ? scores.reduce((a: number, b: number) => a + b, 0) / scores.length
+          : 0;
+
       if (averageScore >= 4) {
-        randomExamples = "Excellent work! Your writing meets the expectations for this level. Keep practicing to maintain this high standard.";
+        randomExamples =
+          "Excellent work! Your writing meets the expectations for this level. Keep practicing to maintain this high standard.";
       } else {
-        randomExamples = "No specific revisions needed at this time. Your writing is good for your level.";
+        randomExamples =
+          "No specific revisions needed at this time. Your writing is good for your level.";
       }
     }
 
