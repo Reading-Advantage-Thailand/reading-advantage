@@ -1,20 +1,27 @@
 export interface UserActivityLog {
-  contentId: string;
+  id: string;
+  contentId?: string;
   userId: string;
-  articleId: string;
+  articleId?: string;
   activityType: string;
-  activityStatus: string;
+  targetId: string;
+  timer?: number | null;
+  activityStatus?: string;
+  completed: boolean;
   timestamp: string;
   timeTaken: number;
   xpEarned: number;
-  initialXp: number;
-  finalXp: number;
-  initialLevel: number;
-  finalLevel: number;
+  initialXp?: number;
+  finalXp?: number;
+  initialLevel?: number;
+  finalLevel?: number;
+  createdAt: string;
+  updatedAt: string;
   details: {
-    title: string;
-    level: number;
+    title?: string;
+    level?: number;
     cefr_level?: string;
+    [key: string]: any;
   };
 }
 
