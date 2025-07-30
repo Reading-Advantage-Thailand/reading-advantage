@@ -12,6 +12,7 @@ type Passage = {
   genre: string;
   subgenre: string;
   is_read: boolean;
+  is_completed?: boolean;
   cefr_level: string;
   summary: string;
   average_rating: number;
