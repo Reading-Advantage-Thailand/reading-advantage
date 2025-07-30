@@ -59,15 +59,6 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-async function fetchActivity() {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/activity`
-  );
-
-  const data = await response.json();
-  return data;
-}
-
 export default function ActivityDistributionPieChart() {
   const [activityData, setActivityData] = useState<
     Array<{
@@ -77,6 +68,22 @@ export default function ActivityDistributionPieChart() {
       activityCount: number;
     }>
   >([]);
+
+  const fetchActivity = async () => {
+    try {
+      const response = await fetch(`/api/v1/activity`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch activity data');
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching activity data:', error);
+      return { userActivityData: {} };
+    }
+  };
 
   useEffect(() => {
     async function loadActivityData() {

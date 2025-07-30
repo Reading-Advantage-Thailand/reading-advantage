@@ -56,7 +56,7 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-center">
-              {dataDashboard?.license[0].total_licenses}
+              {dataDashboard?.license[0].used_licenses}
             </p>
           </CardContent>
         </Card>
@@ -81,7 +81,7 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-center">
-              {dataDashboard?.xpEarned.toLocaleString()} XP
+              {dataDashboard?.xpEarned?.toLocaleString() || 0} XP
             </p>
           </CardContent>
         </Card>
@@ -102,11 +102,18 @@ export default async function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl text-center">
-              Average CEFR Level
+              User Activity Trends (CEFR Level)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <LineChartCustom data={dataDashboard?.filteredActivityLog} />
+            {dataDashboard?.filteredActivityLog &&
+            dataDashboard.filteredActivityLog.length > 0 ? (
+              <LineChartCustom data={dataDashboard.filteredActivityLog} />
+            ) : (
+              <div className="text-center text-gray-500 py-8">
+                No activity data available
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
