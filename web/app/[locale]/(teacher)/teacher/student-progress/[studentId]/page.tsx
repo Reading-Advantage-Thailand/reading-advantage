@@ -11,7 +11,7 @@ import CEFRLevels from "@/components/dashboard/user-level-indicator";
 import { fetchData } from "@/utils/fetch-data";
 
 async function getUserActivityData(userId: string) {
-  return fetchData(`/api/v1/users/${userId}/activity-data`);
+  return fetchData(`/api/v1/users/${userId}/activitylog`);
 }
 
 async function getStudentData(studentId: string) {

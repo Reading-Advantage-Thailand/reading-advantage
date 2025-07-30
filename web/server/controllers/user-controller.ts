@@ -385,69 +385,113 @@ export async function getActivityLog(
   { params: { id } }: RequestContext
 ) {
   try {
-    // Get all user activities for the user
-    const results = await prisma.userActivity.findMany({
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { xp: true, level: true },
+    });
+
+    const activities = await prisma.userActivity.findMany({
       where: {
         userId: id,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "asc",
       },
     });
 
-    // Get XP logs for the user
-    const xpLogs = await prisma.xPLog.findMany({
+    const allXpLogs = await prisma.xPLog.findMany({
       where: {
         userId: id,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "asc",
       },
     });
 
-    // Create a map for XP lookup by activityType and timestamp
-    const xpMap = new Map();
-    xpLogs.forEach((log) => {
-      const key = `${log.activityType}_${log.createdAt.getTime()}`;
-      xpMap.set(key, log.xpEarned);
+    const xpLogMap = new Map(allXpLogs.map((log) => [log.activityId, log]));
+
+    const articleIds = activities
+      .map((activity) => activity.targetId)
+      .filter((id) => id);
+
+    const articles = await prisma.article.findMany({
+      where: {
+        id: { in: articleIds },
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        genre: true,
+        subGenre: true,
+        cefrLevel: true,
+        raLevel: true,
+      },
     });
 
-    // Combine and format the data to match the expected structure
-    const formattedResults = results.map((activity) => {
-      // Try to match XP by activityType and timestamp (within 1 minute)
-      let xpEarned = 0;
-      const activityTime = activity.createdAt.getTime();
+    const articleMap = new Map(
+      articles.map((article) => [article.id, article])
+    );
 
-      // Look for XP log with same activityType within 1 minute
-      for (const log of xpLogs) {
-        if (log.activityType === activity.activityType) {
-          const timeDiff = Math.abs(log.createdAt.getTime() - activityTime);
-          if (timeDiff <= 60000) {
-            // 1 minute tolerance
-            xpEarned = log.xpEarned;
-            break;
-          }
-        }
+    let cumulativeXp = 0;
+    const xpProgressionMap = new Map();
+
+    allXpLogs.forEach((xpLog) => {
+      cumulativeXp += xpLog.xpEarned || 0;
+      if (xpLog.activityId) {
+        xpProgressionMap.set(xpLog.activityId, {
+          xpEarned: xpLog.xpEarned || 0,
+          cumulativeXp: cumulativeXp,
+        });
       }
+    });
+
+    const formattedResults = activities.map((activity) => {
+      const article = articleMap.get(activity.targetId);
+      const xpLog = xpLogMap.get(activity.id);
+      const xpProgression = xpProgressionMap.get(activity.id);
+
+      const xpEarned = xpProgression?.xpEarned || 0;
+      const finalXp = xpProgression?.cumulativeXp || 0;
+      const initialXp = finalXp - xpEarned;
+
+      const details = (activity.details as any) || {};
 
       return {
         id: activity.id,
         userId: activity.userId,
-        activityType: activity.activityType,
+        activityType: activity.activityType.toLowerCase(),
         targetId: activity.targetId,
         timer: activity.timer,
-        details: activity.details,
+        details: {
+          title: article?.title || details.title || "Activity",
+          level: article?.raLevel || details.level || user?.level || 1,
+          cefr_level: article?.cefrLevel || details.cefr_level || "A1",
+          type: article?.type || details.type,
+          genre: article?.genre || details.genre,
+          subgenre: article?.subGenre || details.subgenre || details.subGenre,
+          subGenre: article?.subGenre || details.subgenre || details.subGenre,
+          articleId: activity.targetId,
+          contentId: activity.targetId,
+          ...details,
+        },
         completed: activity.completed,
-        timestamp: activity.createdAt,
+        timestamp: activity.createdAt.toISOString(),
         timeTaken: activity.timer || 0,
-        xpEarned,
-        createdAt: activity.createdAt,
-        updatedAt: activity.updatedAt,
-        // Add contentId and articleId for compatibility
+        xpEarned: xpEarned,
+        initialXp: initialXp,
+        finalXp: finalXp,
+        createdAt: activity.createdAt.toISOString(),
+        updatedAt: activity.updatedAt.toISOString(),
         contentId: activity.targetId,
         articleId: activity.targetId,
       };
     });
+
+    formattedResults.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
 
     return NextResponse.json({
       results: formattedResults,
@@ -731,23 +775,22 @@ export async function getUserActivityData(
         userId: id,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "asc", // Sort by ascending to calculate cumulative XP correctly
       },
     });
 
-    // Get XP logs for these activities
-    const xpLogs = await prisma.xPLog.findMany({
+    // Get ALL XP logs for this user to calculate cumulative progression
+    const allXpLogs = await prisma.xPLog.findMany({
       where: {
         userId: id,
-        activityId: { in: activities.map((a) => a.id) },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "asc",
       },
     });
 
     // Create a map of activity ID to XP log
-    const xpLogMap = new Map(xpLogs.map((log) => [log.activityId, log]));
+    const xpLogMap = new Map(allXpLogs.map((log) => [log.activityId, log]));
 
     // Get article details for activities that reference articles
     const articleIds = activities
@@ -773,29 +816,43 @@ export async function getUserActivityData(
       articles.map((article) => [article.id, article])
     );
 
-    // Calculate cumulative XP progression
+    // Calculate cumulative XP progression from all XP logs chronologically
     let cumulativeXp = 0;
+    const xpProgressionMap = new Map();
 
-    const formattedResults = activities.map((activity) => {
+    // Build XP progression map from all XP logs
+    allXpLogs.forEach((xpLog) => {
+      cumulativeXp += xpLog.xpEarned || 0;
+      if (xpLog.activityId) {
+        xpProgressionMap.set(xpLog.activityId, {
+          xpEarned: xpLog.xpEarned || 0,
+          cumulativeXp: cumulativeXp,
+        });
+      }
+    });
+
+    const formattedResults = activities.map((activity, index) => {
       const article = articleMap.get(activity.targetId);
       const xpLog = xpLogMap.get(activity.id);
+      const xpProgression = xpProgressionMap.get(activity.id);
 
-      const xpEarned = xpLog?.xpEarned || 0;
-      const initialXp = cumulativeXp;
-      const finalXp = cumulativeXp + xpEarned;
-
-      // Update cumulative XP for next iteration
-      cumulativeXp += xpEarned;
+      const xpEarned = xpProgression?.xpEarned || 0;
+      const finalXp = xpProgression?.cumulativeXp || 0;
+      const initialXp = finalXp - xpEarned;
 
       // Safely extract details
       const details = (activity.details as any) || {};
 
       return {
+        id: activity.id,
         contentId: activity.targetId,
         userId: id,
         articleId: activity.targetId,
         activityType: activity.activityType.toLowerCase(),
+        targetId: activity.targetId,
+        timer: activity.timer,
         activityStatus: activity.completed ? "completed" : "in_progress",
+        completed: activity.completed,
         timestamp: activity.createdAt.toISOString(),
         timeTaken: activity.timer || 0,
         xpEarned: xpEarned,
@@ -803,6 +860,8 @@ export async function getUserActivityData(
         finalXp: finalXp,
         initialLevel: user?.level || 1,
         finalLevel: user?.level || 1,
+        createdAt: activity.createdAt.toISOString(),
+        updatedAt: activity.updatedAt.toISOString(),
         details: {
           title: article?.title || details.title || "Activity",
           level: article?.raLevel || details.level || user?.level || 1,
@@ -810,10 +869,19 @@ export async function getUserActivityData(
           type: article?.type || details.type,
           genre: article?.genre || details.genre,
           subgenre: article?.subGenre || details.subgenre || details.subGenre,
+          subGenre: article?.subGenre || details.subgenre || details.subGenre,
+          articleId: activity.targetId,
+          contentId: activity.targetId,
           ...details,
         },
       };
     });
+
+    // Sort results by timestamp descending for display (newest first)
+    formattedResults.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
 
     return NextResponse.json({
       results: formattedResults,
@@ -858,9 +926,19 @@ export async function getStudentData(
     }
 
     const studentData = {
-      ...user,
-      display_name: user.name,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      xp: user.xp,
+      level: user.level,
+      cefrLevel: user.cefrLevel,
       cefr_level: user.cefrLevel,
+      expiredDate: user.expiredDate,
+      licenseId: user.licenseId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      display_name: user.name,
     };
 
     return NextResponse.json({
