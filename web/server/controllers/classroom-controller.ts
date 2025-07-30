@@ -164,58 +164,19 @@ export async function getClassroom(req: ExtendedNextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const ownedClassrooms = await prisma.classroom.findMany({
-      where: {
-        teacherId: user.id,
-        archived: {
-          not: true,
-        },
-      },
-      include: {
-        students: {
-          include: {
-            student: {
-              select: {
-                id: true,
-                email: true,
-                name: true,
-              },
-            },
+    let classrooms: any[] = [];
+
+    // Handle different user roles
+    if (user.role === "SYSTEM") {
+      // SYSTEM role: show all classrooms
+      const allClassrooms = await prisma.classroom.findMany({
+        where: {
+          archived: {
+            not: true,
           },
         },
-        teacher: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    const coTeacherClassrooms = (await prisma.$queryRaw`
-      SELECT c.*, 
-             t.id as teacher_id, t.name as teacher_name,
-             ct.role as user_role, ct."createdAt" as joined_at
-      FROM "classrooms" c
-      JOIN "classroomTeachers" ct ON c.id = ct.classroom_id
-      LEFT JOIN "users" t ON c.teacher_id = t.id
-      WHERE ct.teacher_id = ${user.id}
-        AND c.archived != true
-      ORDER BY c."createdAt" DESC
-    `) as any[];
-
-    const coTeacherClassroomIds = coTeacherClassrooms.map((c: any) => c.id);
-    const coTeacherStudents =
-      coTeacherClassroomIds.length > 0
-        ? await prisma.classroomStudent.findMany({
-            where: {
-              classroomId: {
-                in: coTeacherClassroomIds,
-              },
-            },
+        include: {
+          students: {
             include: {
               student: {
                 select: {
@@ -225,87 +186,283 @@ export async function getClassroom(req: ExtendedNextRequest) {
                 },
               },
             },
-          })
-        : [];
-
-    const transformedOwnedData = ownedClassrooms.map((classroom) => ({
-      id: classroom.id,
-      classroomName: classroom.classroomName,
-      classCode: classroom.classCode,
-      grade: classroom.grade?.toString(),
-      archived: classroom.archived || false,
-      title: classroom.classroomName,
-      importedFromGoogle: false,
-      alternateLink: "",
-      createdAt: classroom.createdAt,
-      createdBy: classroom.teacher,
-      isOwner: true,
-      teachers: [
-        {
-          teacherId: classroom.teacher?.id || "",
-          name: classroom.teacher?.name || "",
-          role: "OWNER" as const,
-          joinedAt: classroom.createdAt,
-        },
-      ],
-      student: classroom.students.map((cs) => ({
-        studentId: cs.student.id,
-        email: cs.student.email,
-        lastActivity: cs.createdAt,
-      })),
-    }));
-
-    const transformedCoTeacherData = coTeacherClassrooms.map(
-      (classroom: any) => {
-        const studentsForClassroom = coTeacherStudents.filter(
-          (cs) => cs.classroomId === classroom.id
-        );
-
-        return {
-          id: classroom.id,
-          classroomName: classroom.classroom_name,
-          classCode: classroom.class_code,
-          grade: classroom.grade?.toString(),
-          archived: classroom.archived || false,
-          title: classroom.classroom_name,
-          importedFromGoogle: false,
-          alternateLink: "",
-          createdAt: classroom.createdAt,
-          createdBy: {
-            id: classroom.teacher_id,
-            name: classroom.teacher_name,
           },
-          isOwner: false,
-          teachers: [
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      classrooms = allClassrooms.map((classroom) => ({
+        id: classroom.id,
+        classroomName: classroom.classroomName,
+        classCode: classroom.classCode,
+        grade: classroom.grade?.toString(),
+        archived: classroom.archived || false,
+        title: classroom.classroomName,
+        importedFromGoogle: false,
+        alternateLink: "",
+        createdAt: classroom.createdAt,
+        createdBy: classroom.teacher,
+        isOwner: false,
+        teachers: [
+          {
+            teacherId: classroom.teacher?.id || "",
+            name: classroom.teacher?.name || "",
+            role: "OWNER" as const,
+            joinedAt: classroom.createdAt,
+          },
+        ],
+        student: classroom.students.map((cs) => ({
+          studentId: cs.student.id,
+          email: cs.student.email,
+          lastActivity: cs.createdAt,
+        })),
+      }));
+    } else if (user.role === "ADMIN") {
+      // ADMIN role: show all classrooms of the same license
+      const adminUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { licenseId: true },
+      });
+
+      if (!adminUser?.licenseId) {
+        return NextResponse.json(
+          { error: "Admin license not found" },
+          { status: 404 }
+        );
+      }
+
+      // Get all users with the same license
+      const usersWithSameLicense = await prisma.user.findMany({
+        where: {
+          OR: [
+            { licenseId: adminUser.licenseId },
             {
-              teacherId: classroom.teacher_id || "",
-              name: classroom.teacher_name || "",
-              role: "OWNER" as const,
-              joinedAt: classroom.createdAt,
+              licenseOnUsers: {
+                some: {
+                  licenseId: adminUser.licenseId,
+                },
+              },
             },
           ],
-          student: studentsForClassroom.map((cs) => ({
-            studentId: cs.student.id,
-            email: cs.student.email,
-            lastActivity: cs.createdAt,
-          })),
-        };
-      }
-    );
+        },
+        select: { id: true },
+      });
 
-    const allClassrooms = [
-      ...transformedOwnedData,
-      ...transformedCoTeacherData,
-    ];
-    const uniqueClassrooms = allClassrooms.filter(
-      (classroom, index, self) =>
-        index === self.findIndex((c) => c.id === classroom.id)
-    );
+      const userIds = usersWithSameLicense.map((u) => u.id);
+
+      // Get classrooms where teacher is in the same license
+      const licenseClassrooms = await prisma.classroom.findMany({
+        where: {
+          teacherId: {
+            in: userIds,
+          },
+          archived: {
+            not: true,
+          },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      classrooms = licenseClassrooms.map((classroom) => ({
+        id: classroom.id,
+        classroomName: classroom.classroomName,
+        classCode: classroom.classCode,
+        grade: classroom.grade?.toString(),
+        archived: classroom.archived || false,
+        title: classroom.classroomName,
+        importedFromGoogle: false,
+        alternateLink: "",
+        createdAt: classroom.createdAt,
+        createdBy: classroom.teacher,
+        isOwner: classroom.teacherId === user.id,
+        teachers: [
+          {
+            teacherId: classroom.teacher?.id || "",
+            name: classroom.teacher?.name || "",
+            role: "OWNER" as const,
+            joinedAt: classroom.createdAt,
+          },
+        ],
+        student: classroom.students.map((cs) => ({
+          studentId: cs.student.id,
+          email: cs.student.email,
+          lastActivity: cs.createdAt,
+        })),
+      }));
+    } else {
+      // Default behavior for TEACHER role
+      const ownedClassrooms = await prisma.classroom.findMany({
+        where: {
+          teacherId: user.id,
+          archived: {
+            not: true,
+          },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      const coTeacherClassrooms = (await prisma.$queryRaw`
+        SELECT c.*, 
+               t.id as teacher_id, t.name as teacher_name,
+               ct.role as user_role, ct."createdAt" as joined_at
+        FROM "classrooms" c
+        JOIN "classroomTeachers" ct ON c.id = ct.classroom_id
+        LEFT JOIN "users" t ON c.teacher_id = t.id
+        WHERE ct.teacher_id = ${user.id}
+          AND c.archived != true
+        ORDER BY c."createdAt" DESC
+      `) as any[];
+
+      const coTeacherClassroomIds = coTeacherClassrooms.map((c: any) => c.id);
+      const coTeacherStudents =
+        coTeacherClassroomIds.length > 0
+          ? await prisma.classroomStudent.findMany({
+              where: {
+                classroomId: {
+                  in: coTeacherClassroomIds,
+                },
+              },
+              include: {
+                student: {
+                  select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                  },
+                },
+              },
+            })
+          : [];
+
+      const transformedOwnedData = ownedClassrooms.map((classroom) => ({
+        id: classroom.id,
+        classroomName: classroom.classroomName,
+        classCode: classroom.classCode,
+        grade: classroom.grade?.toString(),
+        archived: classroom.archived || false,
+        title: classroom.classroomName,
+        importedFromGoogle: false,
+        alternateLink: "",
+        createdAt: classroom.createdAt,
+        createdBy: classroom.teacher,
+        isOwner: true,
+        teachers: [
+          {
+            teacherId: classroom.teacher?.id || "",
+            name: classroom.teacher?.name || "",
+            role: "OWNER" as const,
+            joinedAt: classroom.createdAt,
+          },
+        ],
+        student: classroom.students.map((cs) => ({
+          studentId: cs.student.id,
+          email: cs.student.email,
+          lastActivity: cs.createdAt,
+        })),
+      }));
+
+      const transformedCoTeacherData = coTeacherClassrooms.map(
+        (classroom: any) => {
+          const studentsForClassroom = coTeacherStudents.filter(
+            (cs) => cs.classroomId === classroom.id
+          );
+
+          return {
+            id: classroom.id,
+            classroomName: classroom.classroom_name,
+            classCode: classroom.class_code,
+            grade: classroom.grade?.toString(),
+            archived: classroom.archived || false,
+            title: classroom.classroom_name,
+            importedFromGoogle: false,
+            alternateLink: "",
+            createdAt: classroom.createdAt,
+            createdBy: {
+              id: classroom.teacher_id,
+              name: classroom.teacher_name,
+            },
+            isOwner: false,
+            teachers: [
+              {
+                teacherId: classroom.teacher_id || "",
+                name: classroom.teacher_name || "",
+                role: "OWNER" as const,
+                joinedAt: classroom.createdAt,
+              },
+            ],
+            student: studentsForClassroom.map((cs) => ({
+              studentId: cs.student.id,
+              email: cs.student.email,
+              lastActivity: cs.createdAt,
+            })),
+          };
+        }
+      );
+
+      const allClassrooms = [
+        ...transformedOwnedData,
+        ...transformedCoTeacherData,
+      ];
+      classrooms = allClassrooms.filter(
+        (classroom, index, self) =>
+          index === self.findIndex((c) => c.id === classroom.id)
+      );
+    }
 
     return NextResponse.json(
       {
         message: "success",
-        data: uniqueClassrooms,
+        data: classrooms,
       },
       { status: 200 }
     );
