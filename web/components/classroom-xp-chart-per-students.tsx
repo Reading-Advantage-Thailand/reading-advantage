@@ -73,10 +73,10 @@ const ClassroomXPBarChartPerStudents: React.FC<Props> = ({ data }) => {
     chartData.reduce((sum, entry) => sum + entry.xp, 0) / chartData.length;
 
   const periodLabels = {
-    today: "วันนี้",
-    week: "สัปดาห์นี้",
-    month: "เดือนนี้",
-    allTime: "ทั้งหมด",
+    today: `${trp("timeRangeDropdown.today")}`,
+    week: `${trp("timeRangeDropdown.weekly")}`,
+    month: `${trp("timeRangeDropdown.Monthly")}`,
+    allTime: `${trp("timeRangeDropdown.allTime")}`,
   };
 
   useEffect(() => {
