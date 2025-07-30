@@ -146,6 +146,11 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     });
 
     const readArticleIds = new Set(userActivities.map(activity => activity.targetId));
+    const completedArticleIds = new Set(
+      userActivities
+        .filter(activity => activity.completed)
+        .map(activity => activity.targetId)
+    );
 
     // Format results to match the expected structure
     results = articles.map((article) => ({
@@ -160,7 +165,8 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       average_rating: article.rating || 0,
       created_at: article.createdAt,
       is_read: readArticleIds.has(article.id),
-      is_approved: true, // Assuming all articles in DB are approved
+      is_completed: completedArticleIds.has(article.id),
+      is_approved: true, 
     }));
 
     return NextResponse.json({
@@ -558,6 +564,11 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
     });
 
     const readArticleIds = new Set(userActivities.map(activity => activity.targetId));
+    const completedArticleIds = new Set(
+      userActivities
+        .filter(activity => activity.completed)
+        .map(activity => activity.targetId)
+    );
 
     const results = paginatedArticles.map((article) => ({
       id: article.id,
@@ -575,6 +586,7 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
       created_at: article.createdAt,
       updated_at: article.updatedAt,
       is_read: readArticleIds.has(article.id),
+      is_completed: completedArticleIds.has(article.id),
       is_approved: true,
     }));
 
