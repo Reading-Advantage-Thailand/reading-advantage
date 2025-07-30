@@ -17,6 +17,7 @@ import { levelCalculation } from "@/lib/utils";
 function ProgressBar({ progress, level }: { progress: number; level: number }) {
   const t = useScopedI18n("components.progressBarXp");
   const [isOpen, setIsOpen] = useState(false);
+  const [previousLevel, setPreviousLevel] = useState(level);
   const levelCalResult = levelCalculation(progress);
 
   const closeDialog = () => {
@@ -67,12 +68,16 @@ function ProgressBar({ progress, level }: { progress: number; level: number }) {
   }
 
   useEffect(() => {
-    const previousLevel = level - 1;
+    // Check if user has actually leveled up (current level is higher than the stored previous level)
     if (level > previousLevel && percentage > 0 && percentage <= 15) {
       // percentage <= 15, 15 is based on max userXpEarned in activity, will be changed later with variable
       setIsOpen(true);
+      setPreviousLevel(level); // Update the previous level to current level
+    } else if (level !== previousLevel) {
+      // Update previous level without showing dialog (for initial load or level down scenarios)
+      setPreviousLevel(level);
     }
-  }, [level, percentage]);
+  }, [level, percentage, previousLevel]);
 
   return (
     <>
