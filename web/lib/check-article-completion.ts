@@ -6,8 +6,24 @@ export async function checkArticleCompletion(
   saqCompleted: boolean;
   laqCompleted: boolean;
   allCompleted: boolean;
+  wasAlreadyCompleted?: boolean;
 }> {
   try {
+    // First check if ARTICLE_READ already exists and is completed
+    const articleReadResponse = await fetch(
+      `/api/v1/users/${userId}/activitylog`
+    );
+    
+    let wasAlreadyCompleted = false;
+    if (articleReadResponse.ok) {
+      const activities = await articleReadResponse.json();
+      wasAlreadyCompleted = activities.some((activity: any) => 
+        activity.activityType === 'ARTICLE_READ' && 
+        activity.targetId === articleId && 
+        activity.completed
+      );
+    }
+
     const mcqResponse = await fetch(
       `/api/v1/articles/${articleId}/questions/mcq`
     );
@@ -28,17 +44,12 @@ export async function checkArticleCompletion(
 
     const allCompleted = mcqCompleted && saqCompleted && laqCompleted;
 
-    if (allCompleted) {
-      console.log(
-        `🎉 All questions completed for article ${articleId}! ARTICLE_READ will be updated on server side.`
-      );
-    }
-
     return {
       mcqCompleted,
       saqCompleted,
       laqCompleted,
       allCompleted,
+      wasAlreadyCompleted,
     };
   } catch (error) {
     console.error("Error checking article completion:", error);
@@ -47,6 +58,7 @@ export async function checkArticleCompletion(
       saqCompleted: false,
       laqCompleted: false,
       allCompleted: false,
+      wasAlreadyCompleted: false,
     };
   }
 }

@@ -20,42 +20,40 @@ async function checkAndUpdateArticleCompletion(
       where: {
         userId: userId,
         activityType: "MC_QUESTION",
+        completed: true,
       },
     });
 
     const mcqForThisArticle = mcqActivities.filter((activity) => {
       const details = activity.details as any;
-      return details?.articleId === articleId && activity.completed;
+      return details?.articleId === articleId;
     });
 
-    const saqActivities = await prisma.userActivity.findMany({
+    const saqActivity = await prisma.userActivity.findFirst({
       where: {
         userId: userId,
         activityType: "SA_QUESTION",
+        completed: true,
+        details: {
+          path: ["articleId"],
+          equals: articleId,
+        },
       },
     });
 
-    const saqForThisArticle = saqActivities.filter((activity) => {
-      const details = activity.details as any;
-      return details?.articleId === articleId && activity.completed;
-    });
-
-    const laqActivities = await prisma.userActivity.findMany({
+    const laqActivity = await prisma.userActivity.findFirst({
       where: {
         userId: userId,
         activityType: "LA_QUESTION",
+        targetId: articleId,
+        completed: true,
       },
     });
 
-    const laqForThisArticle = laqActivities.filter((activity) => {
-      const details = activity.details as any;
-      return details?.articleId === articleId && activity.completed;
-    });
-
-    const allCompleted =
-      mcqForThisArticle.length >= 5 &&
-      saqForThisArticle.length >= 1 &&
-      laqForThisArticle.length >= 1;
+    const mcqCompleted = mcqForThisArticle.length >= 5;
+    const saqCompleted = !!saqActivity;
+    const laqCompleted = !!laqActivity;
+    const allCompleted = mcqCompleted && saqCompleted && laqCompleted;
 
     if (allCompleted) {
       const existingArticleRead = await prisma.userActivity.findUnique({
