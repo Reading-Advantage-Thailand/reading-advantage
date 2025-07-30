@@ -25,9 +25,10 @@ type XPData = {
 
 type Props = {
   data: XPData;
+  page?: "admin" | "teacher" | "student";
 };
 
-const ClassroomXPBarChartPerStudents: React.FC<Props> = ({ data }) => {
+const ClassroomXPBarChartPerStudents: React.FC<Props> = ({ data, page }) => {
   const [period, setPeriod] = useState<"today" | "week" | "month" | "allTime">(
     "today"
   );
@@ -117,19 +118,21 @@ const ClassroomXPBarChartPerStudents: React.FC<Props> = ({ data }) => {
 
   return (
     <div
-      className={`w-full max-w-7xl mx-auto bg-gradient-to-br rounded-2xl ${themeColors.shadow} mb-8 px-4 sm:px-6 lg:px-8`}
+      className={`w-full max-w-7xl mx-auto bg-gradient-to-br rounded-2xl ${themeColors.shadow} mb-8 ${page === "admin" ? "mt-6" : "px-4 sm:px-6 lg:px-8"}`}
     >
       {/* Header */}
-      <div className="text-left mb-6 sm:mb-8 pt-6">
-        <h2
-          className={`text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2`}
-        >
-          {trp("studentXpDashboard")}
-        </h2>
-        <p className={`${themeColors.textSecondary} text-base sm:text-lg`}>
-          {trp("studentXpDashboardDescription")}
-        </p>
-      </div>
+      {page !== "admin" && (
+        <div className="text-left mb-6 sm:mb-8 pt-6">
+          <h2
+            className={`text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2`}
+          >
+            {trp("studentXpDashboard")}
+          </h2>
+          <p className={`${themeColors.textSecondary} text-base sm:text-lg`}>
+            {trp("studentXpDashboardDescription")}
+          </p>
+        </div>
+      )}
 
       {/* Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-4 sm:gap-6 mb-6 sm:mb-8">
