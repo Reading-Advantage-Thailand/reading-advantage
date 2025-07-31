@@ -96,13 +96,9 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     }
 
     // Build Prisma query conditions
-    const whereConditions: any = {
-      raLevel: {
-        gte: Number(level) - 1,
-        lte: Number(level) + 1,
-      },
-    };
+    const whereConditions: any = {};
 
+    // Add type/genre/subgenre filters if specified
     if (type) {
       whereConditions.type = type;
     }
@@ -113,11 +109,17 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       whereConditions.subGenre = subgenre;
     }
 
-    // Fetch articles from Prisma
-    const articles = await prisma.article.findMany({
-      where: whereConditions,
+    // First try to find articles within user's level range (±1)
+    let articles = await prisma.article.findMany({
+      where: {
+        ...whereConditions,
+        raLevel: {
+          gte: Number(level) - 1,
+          lte: Number(level) + 1,
+        },
+      },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       skip: (page - 1) * limit,
       take: limit,
@@ -135,21 +137,50 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       },
     });
 
-    // Check user activities for each article
-    const articleIds = articles.map(article => article.id);
+    if (articles.length === 0) {
+      articles = await prisma.article.findMany({
+        where: whereConditions,
+        orderBy: [
+          {
+            raLevel: "asc",
+          },
+          {
+            createdAt: "desc",
+          },
+        ],
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          id: true,
+          type: true,
+          genre: true,
+          subGenre: true,
+          title: true,
+          summary: true,
+          cefrLevel: true,
+          raLevel: true,
+          rating: true,
+          createdAt: true,
+        },
+      });
+    }
+
+    const articleIds = articles.map((article) => article.id);
     const userActivities = await prisma.userActivity.findMany({
       where: {
         userId: userId,
         targetId: { in: articleIds },
-        activityType: 'ARTICLE_READ',
+        activityType: "ARTICLE_READ",
       },
     });
 
-    const readArticleIds = new Set(userActivities.map(activity => activity.targetId));
+    const readArticleIds = new Set(
+      userActivities.map((activity) => activity.targetId)
+    );
     const completedArticleIds = new Set(
       userActivities
-        .filter(activity => activity.completed)
-        .map(activity => activity.targetId)
+        .filter((activity) => activity.completed)
+        .map((activity) => activity.targetId)
     );
 
     // Format results to match the expected structure
@@ -166,7 +197,7 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       created_at: article.createdAt,
       is_read: readArticleIds.has(article.id),
       is_completed: completedArticleIds.has(article.id),
-      is_approved: true, 
+      is_approved: true,
     }));
 
     return NextResponse.json({
@@ -182,7 +213,7 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       selectionType,
     });
   } catch (err) {
-    console.log("Error getting documents", err);
+    console.error("Error getting documents", err);
     return NextResponse.json(
       {
         message: "[getSearchArticles] Internal server error",
@@ -246,7 +277,7 @@ export async function getArticles(req: ExtendedNextRequest) {
     if (title) {
       whereConditions.title = {
         contains: title,
-        mode: 'insensitive',
+        mode: "insensitive",
       };
     }
 
@@ -277,7 +308,7 @@ export async function getArticles(req: ExtendedNextRequest) {
 
     return NextResponse.json(articles, { status: 200 });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json(
       { message: "Internal server error", error: error },
       { status: 500 }
@@ -314,7 +345,7 @@ export async function getArticleById(
       where: {
         userId_activityType_targetId: {
           userId: userId,
-          activityType: 'ARTICLE_READ',
+          activityType: "ARTICLE_READ",
           targetId: article_id,
         },
       },
@@ -325,7 +356,7 @@ export async function getArticleById(
       await prisma.userActivity.create({
         data: {
           userId: userId,
-          activityType: 'ARTICLE_READ',
+          activityType: "ARTICLE_READ",
           targetId: article_id,
           completed: false,
           details: {
@@ -402,7 +433,7 @@ export async function getArticleById(
       { status: 200 }
     );
   } catch (err) {
-    console.log("Error getting documents", err);
+    console.error("Error getting documents", err);
     return NextResponse.json(
       { message: "[getArticle] Internal server error", error: err },
       { status: 500 }
@@ -432,13 +463,9 @@ export async function deleteArticle(
       where: { id: article_id },
     });
 
-    console.log("Article successfully deleted");
-    return NextResponse.json(
-      { message: "Article deleted" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Article deleted" }, { status: 200 });
   } catch (error) {
-    console.log("Error deleting article", error);
+    console.error("Error deleting article", error);
     return NextResponse.json(
       { message: "Internal server error", error: error },
       { status: 500 }
@@ -516,20 +543,20 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
     if (searchTermParam) {
       whereConditions.title = {
         contains: searchTermParam,
-        mode: 'insensitive',
+        mode: "insensitive",
       };
     }
 
     // Handle cursor-based pagination
     const cursorConditions = lastDocId ? { id: { gt: lastDocId } } : {};
-    
+
     const articles = await prisma.article.findMany({
       where: {
         ...whereConditions,
         ...cursorConditions,
       },
       orderBy: {
-        id: 'asc', // Use ID for consistent cursor pagination
+        id: "asc", // Use ID for consistent cursor pagination
       },
       take: pageSize + 1, // Take one more to check if there are more results
       select: {
@@ -554,20 +581,22 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
     const paginatedArticles = articles.slice(0, pageSize);
 
     // Check user activities for read status
-    const articleIds = paginatedArticles.map(article => article.id);
+    const articleIds = paginatedArticles.map((article) => article.id);
     const userActivities = await prisma.userActivity.findMany({
       where: {
         userId: userId,
         targetId: { in: articleIds },
-        activityType: 'ARTICLE_READ',
+        activityType: "ARTICLE_READ",
       },
     });
 
-    const readArticleIds = new Set(userActivities.map(activity => activity.targetId));
+    const readArticleIds = new Set(
+      userActivities.map((activity) => activity.targetId)
+    );
     const completedArticleIds = new Set(
       userActivities
-        .filter(activity => activity.completed)
-        .map(activity => activity.targetId)
+        .filter((activity) => activity.completed)
+        .map((activity) => activity.targetId)
     );
 
     const results = paginatedArticles.map((article) => ({
@@ -593,7 +622,10 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
     return {
       passages: results,
       hasMore,
-      lastDocId: paginatedArticles.length > 0 ? paginatedArticles[paginatedArticles.length - 1].id : null,
+      lastDocId:
+        paginatedArticles.length > 0
+          ? paginatedArticles[paginatedArticles.length - 1].id
+          : null,
     };
   }
 
@@ -639,10 +671,9 @@ export async function updateArticlesByTypeGenre(
   req: Request
 ): Promise<Response> {
   try {
-    // This function is kept for compatibility but with Prisma, 
+    // This function is kept for compatibility but with Prisma,
     // we can calculate genre counts on-demand instead of pre-computing them
-    console.log("Articles by type and genre updated (using Prisma on-demand calculation)");
-    
+
     return NextResponse.json(
       { message: "Updated successfully" },
       { status: 200 }
@@ -663,7 +694,7 @@ export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
   try {
     // Calculate genre counts on-demand using Prisma
     const genreCounts = await prisma.article.groupBy({
-      by: ['genre', 'type'],
+      by: ["genre", "type"],
       _count: {
         _all: true,
       },
@@ -710,18 +741,22 @@ export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
 export const getGenres = async (req: Request): Promise<Response> => {
   try {
     // Fetch fiction genres from JSON data
-    const fictionGenres: GenreResponse[] = genresFiction.Genres.map((genreData: any) => ({
-      value: nameToValue(genreData.Name),
-      label: genreData.Name,
-      subgenres: genreData.Subgenres || [],
-    }));
+    const fictionGenres: GenreResponse[] = genresFiction.Genres.map(
+      (genreData: any) => ({
+        value: nameToValue(genreData.Name),
+        label: genreData.Name,
+        subgenres: genreData.Subgenres || [],
+      })
+    );
 
     // Fetch nonfiction genres from JSON data
-    const nonfictionGenres: GenreResponse[] = genresNonfiction.Genres.map((genreData: any) => ({
-      value: nameToValue(genreData.Name),
-      label: genreData.Name,
-      subgenres: genreData.Subgenres || [],
-    }));
+    const nonfictionGenres: GenreResponse[] = genresNonfiction.Genres.map(
+      (genreData: any) => ({
+        value: nameToValue(genreData.Name),
+        label: genreData.Name,
+        subgenres: genreData.Subgenres || [],
+      })
+    );
 
     // Sort genres alphabetically by label
     fictionGenres.sort((a, b) => a.label.localeCompare(b.label));
@@ -735,17 +770,20 @@ export const getGenres = async (req: Request): Promise<Response> => {
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Error fetching genres:", error);
-    return NextResponse.json({
-      error: "Failed to fetch genres",
-      message: error instanceof Error ? error.message : "Unknown error",
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Failed to fetch genres",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 };
 
 export enum LanguageType {
   TH = "th",
   EN = "en",
-  CN = "cn", 
+  CN = "cn",
   TW = "tw",
   VI = "vi",
 }
@@ -760,7 +798,7 @@ async function translatePassageWithGoogle(
   });
 
   const translatedSentences: string[] = [];
-  
+
   for (const sentence of sentences) {
     if (sentence.trim()) {
       const [translation] = await translate.translate(sentence, {
@@ -771,13 +809,13 @@ async function translatePassageWithGoogle(
       translatedSentences.push(sentence);
     }
   }
-  
+
   return translatedSentences;
 }
 
 async function translatePassageWithGPT(sentences: string[]): Promise<string[]> {
   const translatedSentences: string[] = [];
-  
+
   for (const sentence of sentences) {
     if (sentence.trim()) {
       const { object } = await generateObject({
@@ -792,7 +830,7 @@ async function translatePassageWithGPT(sentences: string[]): Promise<string[]> {
       translatedSentences.push(sentence);
     }
   }
-  
+
   return translatedSentences;
 }
 
@@ -862,8 +900,11 @@ export const translateArticleSummary = async (
       );
     }
 
-    const existingTranslations = article.translatedSummary as Record<string, string[]> | null;
-    
+    const existingTranslations = article.translatedSummary as Record<
+      string,
+      string[]
+    > | null;
+
     if (existingTranslations && existingTranslations[targetLanguage]) {
       return NextResponse.json({
         message: "article already translated",
@@ -883,7 +924,7 @@ export const translateArticleSummary = async (
           targetLanguage
         );
       }
-      
+
       const updatedTranslations = {
         ...(existingTranslations || {}),
         [targetLanguage]: translatedSentences,
@@ -895,7 +936,7 @@ export const translateArticleSummary = async (
           translatedSummary: updatedTranslations,
         },
       });
-      
+
       return NextResponse.json({
         message: "translation successful",
         translated_sentences: translatedSentences,
@@ -905,12 +946,14 @@ export const translateArticleSummary = async (
       return NextResponse.json(
         {
           message: "Translation failed",
-          error: translationError instanceof Error ? translationError.message : "Unknown error"
+          error:
+            translationError instanceof Error
+              ? translationError.message
+              : "Unknown error",
         },
         { status: 500 }
       );
     }
-
   } catch (error) {
     console.error("API error:", error);
     return NextResponse.json(

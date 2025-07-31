@@ -16,6 +16,12 @@ async function checkAndUpdateArticleCompletion(
   articleId: string
 ) {
   try {
+    // Get user data to check license status
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { licenseId: true },
+    });
+
     const mcqActivities = await prisma.userActivity.findMany({
       where: {
         userId: userId,
@@ -53,7 +59,13 @@ async function checkAndUpdateArticleCompletion(
     const mcqCompleted = mcqForThisArticle.length >= 5;
     const saqCompleted = !!saqActivity;
     const laqCompleted = !!laqActivity;
-    const allCompleted = mcqCompleted && saqCompleted && laqCompleted;
+    
+    let allCompleted: boolean;
+    if (user?.licenseId) {
+      allCompleted = mcqCompleted && saqCompleted && laqCompleted;
+    } else {
+      allCompleted = mcqCompleted && saqCompleted;
+    }
 
     if (allCompleted) {
       const existingArticleRead = await prisma.userActivity.findUnique({

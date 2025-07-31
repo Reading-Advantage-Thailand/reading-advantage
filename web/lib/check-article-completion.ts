@@ -9,7 +9,6 @@ export async function checkArticleCompletion(
   wasAlreadyCompleted?: boolean;
 }> {
   try {
-    // First check if ARTICLE_READ already exists and is completed
     const articleReadResponse = await fetch(
       `/api/v1/users/${userId}/activitylog`
     );
@@ -23,6 +22,10 @@ export async function checkArticleCompletion(
         activity.completed
       );
     }
+
+    const userResponse = await fetch(`/api/v1/users/${userId}`);
+    const userData = await userResponse.json();
+    const hasLicense = userData.data?.licenseId;
 
     const mcqResponse = await fetch(
       `/api/v1/articles/${articleId}/questions/mcq`
@@ -41,8 +44,10 @@ export async function checkArticleCompletion(
     );
     const laqData = await laqResponse.json();
     const laqCompleted = laqData.state === 2;
-
-    const allCompleted = mcqCompleted && saqCompleted && laqCompleted;
+    
+    const allCompleted = hasLicense 
+      ? mcqCompleted && saqCompleted && laqCompleted
+      : mcqCompleted && saqCompleted;
 
     return {
       mcqCompleted,

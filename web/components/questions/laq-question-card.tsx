@@ -42,6 +42,7 @@ interface Props {
   articleId: string;
   articleTitle: string;
   articleLevel: number;
+  userLicenseId?: string;
 }
 
 interface FeedbackDetails {
@@ -89,6 +90,7 @@ export default function LAQuestionCard({
   articleId,
   articleTitle,
   articleLevel,
+  userLicenseId,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -150,6 +152,7 @@ export default function LAQuestionCard({
           handleCancel={handleCancel}
           articleTitle={articleTitle}
           articleLevel={articleLevel}
+          userLicenseId={userLicenseId}
         />
       );
     case QuestionState.COMPLETED:
@@ -222,6 +225,7 @@ function QuestionCardIncomplete({
   handleCancel,
   articleTitle,
   articleLevel,
+  userLicenseId,
 }: {
   userId: string;
   resp: QuestionResponse;
@@ -231,8 +235,11 @@ function QuestionCardIncomplete({
   handleCancel: () => void;
   articleTitle: string;
   articleLevel: number;
+  userLicenseId?: string;
 }) {
   const t = useScopedI18n("components.laq");
+  const isLocked = !userLicenseId;
+  
   return (
     <Card id="onborda-laq" className="mt-3">
       <QuestionHeader
@@ -242,6 +249,7 @@ function QuestionCardIncomplete({
         userId={userId}
         articleId={articleId}
         disabled={false}
+        isLocked={isLocked}
       >
         <QuizContextProvider>
           <LAQuestion
