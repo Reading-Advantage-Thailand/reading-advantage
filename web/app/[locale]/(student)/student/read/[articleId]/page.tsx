@@ -62,7 +62,7 @@ export default async function ArticleQuizPage({
           articleId={params.articleId}
           userId={user.id}
         />
-        <div className="flex flex-col gap-4 mb-40 mt-4">
+        <div className="flex flex-col gap-4 mb-40 mt-4 max-w-40] max-w-none">
           <div className="flex gap-2 justify-center items-center sm:flex-nowrap flex-wrap">
             {isAtLeastTeacher(user.role) && (
               <>
@@ -99,28 +99,34 @@ export default async function ArticleQuizPage({
             />
           </div>
 
-          <MCQuestionCard
-            userId={user.id}
-            articleId={params.articleId}
-            articleTitle={articleResponse.article.title}
-            articleLevel={articleResponse.article.ra_level}
-            page="article"
-          />
-          <SAQuestionCard
-            userId={user.id}
-            articleId={params.articleId}
-            articleTitle={articleResponse.article.title}
-            articleLevel={articleResponse.article.ra_level}
-            page="article"
-          />
-          <LAQuestionCard
-            userId={user.id}
-            articleId={params.articleId}
-            userLevel={user.level}
-            articleTitle={articleResponse.article.title}
-            articleLevel={articleResponse.article.ra_level}
-            userLicenseId={user.license_id}
-          />
+          <div className="max-w-[400px]">
+            <MCQuestionCard
+              userId={user.id}
+              articleId={params.articleId}
+              articleTitle={articleResponse.article.title}
+              articleLevel={articleResponse.article.ra_level}
+              page="article"
+            />
+          </div>
+          <div className="max-w-[400px]]">
+            <SAQuestionCard
+              userId={user.id}
+              articleId={params.articleId}
+              articleTitle={articleResponse.article.title}
+              articleLevel={articleResponse.article.ra_level}
+              page="article"
+            />
+          </div>
+          <div className="max-w-[400px]">
+            <LAQuestionCard
+              userId={user.id}
+              articleId={params.articleId}
+              userLevel={user.level}
+              articleTitle={articleResponse.article.title}
+              articleLevel={articleResponse.article.ra_level}
+              userLicenseId={user.license_id}
+            />
+          </div>
         </div>
       </div>
       <ChatBotFloatingChatButton
