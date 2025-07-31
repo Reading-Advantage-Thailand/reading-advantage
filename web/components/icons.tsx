@@ -49,6 +49,7 @@ import {
   CircleCheckBig,
   UserRound,
   BookPlus,
+  Lock,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -101,6 +102,7 @@ export const Icons = {
   CircleCheckBig: CircleCheckBig,
   UserRound: UserRound,
   BookPlus: BookPlus,
+  lock: Lock,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"

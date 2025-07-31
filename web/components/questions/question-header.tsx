@@ -8,6 +8,8 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Button } from "../ui/button";
+import { Icons } from "../icons";
+import { toast } from "../ui/use-toast";
 
 type Props = {
   children: React.ReactNode;
@@ -18,6 +20,7 @@ type Props = {
   disabled?: boolean;
   userId: string;
   articleId: string;
+  isLocked?: boolean;
 };
 
 type ActivityType = {
@@ -32,9 +35,21 @@ export default function QuestionHeader({
   userId,
   articleId,
   disabled = true,
+  isLocked = false,
 }: Props) {
   const [isButtonClicked, setIsButtonClicked] = React.useState<boolean>(false);
+
   async function onButtonClick() {
+    if (isLocked) {
+      toast({
+        title: "🔒 Premium Feature",
+        description:
+          "This is a premium feature! Please contact your school to unlock this exciting content.",
+        variant: "default",
+      });
+      return;
+    }
+
     setIsButtonClicked(true);
     const activityTypes: ActivityType = {
       "Practice Writing": "la_question",
@@ -65,7 +80,12 @@ export default function QuestionHeader({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Button onClick={onButtonClick} disabled={disabled}>
+        <Button
+          onClick={onButtonClick}
+          disabled={disabled}
+          className={isLocked ? "relative" : ""}
+        >
+          {isLocked && <Icons.lock className="mr-2 h-4 w-4" />}
           {buttonLabel}
         </Button>
       </CardContent>
