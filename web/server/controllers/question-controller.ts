@@ -10,17 +10,53 @@ import { generateMCQuestion } from "../utils/generators/mc-question-generator";
 import { ExtendedNextRequest } from "./auth-controller";
 import { generateSAQuestion } from "../utils/generators/sa-question-generator";
 import { UserXpEarned } from "@/components/models/user-activity-log-model";
+import { LicenseType } from "@prisma/client";
+
+async function getUserLicenseLevel(userId: string): Promise<LicenseType> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        licenseId: true,
+        expiredDate: true,
+      },
+    });
+
+    if (!user) {
+      return LicenseType.BASIC;
+    }
+
+    if (user.licenseId) {
+      const license = await prisma.license.findUnique({
+        where: { id: user.licenseId },
+        select: { licenseType: true },
+      });
+      return license?.licenseType || LicenseType.BASIC;
+    }
+
+    if (!user.expiredDate) {
+      return LicenseType.ENTERPRISE;
+    }
+
+    const now = new Date();
+    if (user.expiredDate > now) {
+      return LicenseType.ENTERPRISE;
+    } else {
+      return LicenseType.BASIC;
+    }
+  } catch (error) {
+    console.error("Error getting user license level:", error);
+    return LicenseType.BASIC;
+  }
+}
 
 async function checkAndUpdateArticleCompletion(
   userId: string,
   articleId: string
 ) {
   try {
-    // Get user data to check license status
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { licenseId: true },
-    });
+    // ตรวจสอบระดับ license ของ user
+    const licenseLevel = await getUserLicenseLevel(userId);
 
     const mcqActivities = await prisma.userActivity.findMany({
       where: {
@@ -59,11 +95,14 @@ async function checkAndUpdateArticleCompletion(
     const mcqCompleted = mcqForThisArticle.length >= 5;
     const saqCompleted = !!saqActivity;
     const laqCompleted = !!laqActivity;
-    
+
     let allCompleted: boolean;
-    if (user?.licenseId) {
+    // เช็คตามระดับ license
+    if (licenseLevel === LicenseType.ENTERPRISE) {
+      // สำหรับ ENTERPRISE ต้องทำครบทั้ง MCQ, SAQ และ LAQ
       allCompleted = mcqCompleted && saqCompleted && laqCompleted;
     } else {
+      // สำหรับ BASIC และ PREMIUM ต้องทำ MCQ และ SAQ เท่านั้น
       allCompleted = mcqCompleted && saqCompleted;
     }
 

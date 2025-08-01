@@ -4,7 +4,45 @@ import { levelCalculation } from "@/lib/utils";
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ActivityType } from "@prisma/client";
+import { ActivityType, LicenseType } from "@prisma/client";
+
+async function getUserLicenseLevel(userId: string): Promise<LicenseType> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        licenseId: true,
+        expiredDate: true,
+      },
+    });
+
+    if (!user) {
+      return LicenseType.BASIC;
+    }
+
+    if (user.licenseId) {
+      const license = await prisma.license.findUnique({
+        where: { id: user.licenseId },
+        select: { licenseType: true },
+      });
+      return license?.licenseType || LicenseType.BASIC;
+    }
+
+    if (!user.expiredDate) {
+      return LicenseType.ENTERPRISE;
+    }
+
+    const now = new Date();
+    if (user.expiredDate > now) {
+      return LicenseType.ENTERPRISE;
+    } else {
+      return LicenseType.BASIC;
+    }
+  } catch (error) {
+    console.error("Error getting user license level:", error);
+    return LicenseType.BASIC;
+  }
+}
 
 interface RequestContext {
   params: {
@@ -35,6 +73,8 @@ export async function getUser(
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
+    const licenseLevel = await getUserLicenseLevel(id);
+
     return NextResponse.json({
       data: {
         id: user.id,
@@ -47,6 +87,7 @@ export async function getUser(
         display_name: user.name,
         expired_date: user.expiredDate,
         license_id: user.licenseId,
+        license_level: licenseLevel,
         created_at: user.createdAt,
         updated_at: user.updatedAt,
       },

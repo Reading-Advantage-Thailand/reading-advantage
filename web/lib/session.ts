@@ -1,6 +1,37 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { LicenseType } from "@prisma/client";
+
+async function getUserLicenseLevel(
+  userId: string,
+  licenseId: string | null,
+  expiredDate: Date | null
+): Promise<LicenseType | "EXPIRED"> {
+  try {
+    if (licenseId) {
+      const license = await prisma.license.findUnique({
+        where: { id: licenseId },
+        select: { licenseType: true },
+      });
+      return license?.licenseType || LicenseType.BASIC;
+    }
+
+    if (!expiredDate) {
+      return LicenseType.ENTERPRISE;
+    }
+
+    const now = new Date();
+    if (expiredDate > now) {
+      return LicenseType.ENTERPRISE;
+    } else {
+      return "EXPIRED";
+    }
+  } catch (error) {
+    console.error("Error getting user license level:", error);
+    return LicenseType.BASIC;
+  }
+}
 
 export async function getCurrentUser() {
   const session = await getServerSession(authOptions);
@@ -42,6 +73,12 @@ export async function getCurrentUser() {
 
     const activeLicenseId = user.licenseOnUsers[0]?.licenseId || user.licenseId;
 
+    const licenseLevel = await getUserLicenseLevel(
+      session.user.id,
+      activeLicenseId,
+      user.expiredDate
+    );
+
     return {
       id: user.id,
       email: user.email!,
@@ -55,6 +92,7 @@ export async function getCurrentUser() {
       expired_date: user.expiredDate?.toISOString() ?? "",
       expired: isExpired,
       license_id: activeLicenseId ?? "",
+      license_level: licenseLevel,
       onborda: user.onborda ?? false,
     };
   } catch (error) {

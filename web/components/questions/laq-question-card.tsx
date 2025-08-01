@@ -35,6 +35,7 @@ import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
 import { useRouter } from "next/navigation";
 import { useArticleCompletion } from "@/lib/use-article-completion";
+import { LicenseType } from "@prisma/client";
 
 interface Props {
   userId: string;
@@ -42,7 +43,7 @@ interface Props {
   articleId: string;
   articleTitle: string;
   articleLevel: number;
-  userLicenseId?: string;
+  userLicenseLevel?: LicenseType;
 }
 
 interface FeedbackDetails {
@@ -90,7 +91,7 @@ export default function LAQuestionCard({
   articleId,
   articleTitle,
   articleLevel,
-  userLicenseId,
+  userLicenseLevel,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -152,7 +153,7 @@ export default function LAQuestionCard({
           handleCancel={handleCancel}
           articleTitle={articleTitle}
           articleLevel={articleLevel}
-          userLicenseId={userLicenseId}
+          userLicenseLevel={userLicenseLevel}
         />
       );
     case QuestionState.COMPLETED:
@@ -225,7 +226,7 @@ function QuestionCardIncomplete({
   handleCancel,
   articleTitle,
   articleLevel,
-  userLicenseId,
+  userLicenseLevel,
 }: {
   userId: string;
   resp: QuestionResponse;
@@ -235,10 +236,10 @@ function QuestionCardIncomplete({
   handleCancel: () => void;
   articleTitle: string;
   articleLevel: number;
-  userLicenseId?: string;
+  userLicenseLevel?: LicenseType;
 }) {
   const t = useScopedI18n("components.laq");
-  const isLocked = !userLicenseId;
+  const isLocked = userLicenseLevel !== LicenseType.ENTERPRISE;
   
   return (
     <Card id="onborda-laq" className="mt-3">

@@ -124,7 +124,11 @@ export default async function ArticleQuizPage({
               userLevel={user.level}
               articleTitle={articleResponse.article.title}
               articleLevel={articleResponse.article.ra_level}
-              userLicenseId={user.license_id}
+              userLicenseLevel={
+                user.license_level === "EXPIRED"
+                  ? undefined
+                  : user.license_level
+              }
             />
           </div>
         </div>
