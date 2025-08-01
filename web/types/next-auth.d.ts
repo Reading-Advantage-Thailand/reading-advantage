@@ -16,7 +16,7 @@ declare module "next-auth/jwt" {
     expired_date: string;
     expired?: boolean;
     license_id?: string;
-    license_level: LicenseType;
+    license_level: LicenseType | "EXPIRED";
     onborda: boolean;
   }
 }
@@ -36,7 +36,7 @@ declare module "next-auth" {
       expired_date: string;
       expired?: boolean;
       license_id?: string;
-      license_level: LicenseType;
+      license_level: LicenseType | "EXPIRED";
       onborda: boolean;
     };
   }
@@ -54,7 +54,7 @@ declare module "next-auth" {
     expired_date: string;
     expired?: boolean;
     license_id?: string;
-    license_level: LicenseType;
+    license_level: LicenseType | "EXPIRED";
     onborda: boolean;
   }
 }

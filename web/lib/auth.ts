@@ -29,10 +29,13 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
           let isValidPassword = false;
-          
+
           if (user.password) {
             if (PasswordUtils.isHashed(user.password)) {
-              isValidPassword = await PasswordUtils.comparePassword(credentials.password, user.password);
+              isValidPassword = await PasswordUtils.comparePassword(
+                credentials.password,
+                user.password
+              );
             } else {
               isValidPassword = user.password === credentials.password;
             }
@@ -46,6 +49,12 @@ export const authOptions: NextAuthOptions = {
           const isExpired = user.expiredDate
             ? user.expiredDate < currentDate
             : false;
+
+          const licenseLevel = isExpired 
+            ? "EXPIRED" as const
+            : user.licenseId 
+              ? "BASIC" as const
+              : "EXPIRED" as const;
 
           const returnUser = {
             id: user.id,
@@ -61,6 +70,7 @@ export const authOptions: NextAuthOptions = {
             expired: isExpired,
             license_id: user.licenseId ?? "",
             onborda: user.onborda ?? false,
+            license_level: licenseLevel,
           };
 
           return returnUser;
@@ -90,7 +100,7 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "credentials") {
         return true;
       }
-      
+
       return true;
     },
     async jwt({ token, user, account }) {
@@ -108,6 +118,7 @@ export const authOptions: NextAuthOptions = {
         token.expired = user.expired;
         token.license_id = user.license_id;
         token.onborda = user.onborda;
+        token.license_level = user.license_level;
       }
       return token;
     },
@@ -126,6 +137,7 @@ export const authOptions: NextAuthOptions = {
         session.user.expired = token.expired;
         session.user.license_id = token.license_id;
         session.user.onborda = token.onborda;
+        session.user.license_level = token.license_level;
       }
       return session;
     },
