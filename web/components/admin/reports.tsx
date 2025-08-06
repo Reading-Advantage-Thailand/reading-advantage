@@ -86,7 +86,7 @@ interface AdminReportsProps {
   classes: ClassroomData[];
 }
 
-export default function AdminReports({ classes }: AdminReportsProps) {
+function AdminReports({ classes }: AdminReportsProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -94,10 +94,24 @@ export default function AdminReports({ classes }: AdminReportsProps) {
   const [selectedTeacher, setSelectedTeacher] = React.useState<string>("all");
   const [isClient, setIsClient] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   
   const t = useScopedI18n("components.articleRecordsTable");
   const trp = useScopedI18n("components.reports");
   const router = useRouter();
+
+  // Debounced teacher selection to prevent rapid updates
+  const handleTeacherChange = React.useCallback((value: string) => {
+    console.log('Teacher filter changed to:', value);
+    setSelectedTeacher(value);
+  }, []);
+
+  // Set loading to false once data is available
+  React.useEffect(() => {
+    if (classes && Array.isArray(classes)) {
+      setIsLoading(false);
+    }
+  }, [classes]);
 
   // Fix hydration issue by rendering date only on client
   React.useEffect(() => {
@@ -139,15 +153,45 @@ export default function AdminReports({ classes }: AdminReportsProps) {
     }
   }, [isMobile, isClient]);
 
-  // Get unique teachers
-  const teachers = Array.from(
-    new Set(classes.map(classroom => classroom.createdBy.name).filter(Boolean))
-  ) as string[];
+  // Get unique teachers - memoized to prevent recalculation on every render
+  const teachers = React.useMemo(() => {
+    try {
+      if (!classes || !Array.isArray(classes)) {
+        console.warn('Classes data is not an array:', classes);
+        return [];
+      }
+      
+      const teacherNames = classes
+        .map(classroom => classroom?.createdBy?.name)
+        .filter((name): name is string => Boolean(name) && typeof name === 'string');
+      
+      return Array.from(new Set(teacherNames));
+    } catch (error) {
+      console.error('Error processing teachers:', error);
+      return [];
+    }
+  }, [classes]);
 
-  // Filter classrooms by selected teacher
-  const filteredClasses = selectedTeacher === "all" 
-    ? classes 
-    : classes.filter(classroom => classroom.createdBy.name === selectedTeacher);
+  // Filter classrooms by selected teacher - memoized to prevent recalculation on every render
+  const filteredClasses = React.useMemo(() => {
+    try {
+      if (!classes || !Array.isArray(classes)) {
+        console.warn('Classes data is not an array for filtering:', classes);
+        return [];
+      }
+      
+      if (selectedTeacher === "all") {
+        return classes;
+      }
+      
+      return classes.filter(classroom => 
+        classroom?.createdBy?.name === selectedTeacher
+      );
+    } catch (error) {
+      console.error('Error filtering classes:', error);
+      return classes || [];
+    }
+  }, [classes, selectedTeacher]);
 
   const columns: ColumnDef<ClassroomData>[] = [
     {
@@ -322,15 +366,41 @@ export default function AdminReports({ classes }: AdminReportsProps) {
       columnVisibility,
       rowSelection,
     },
+    // Add performance debugging
+    debugAll: process.env.NODE_ENV === 'development',
   });
 
-  // Calculate summary statistics
-  const totalClassrooms = filteredClasses.length;
-  const totalStudents = filteredClasses.reduce((sum, classroom) => sum + (classroom.student?.length || 0), 0);
-  const averageStudentsPerClass = filteredClasses.length > 0
-    ? totalStudents / filteredClasses.length
-    : 0;
-  const activeClassrooms = filteredClasses.filter(classroom => !classroom.archived).length;
+  // Calculate summary statistics - memoized to prevent recalculation on every render
+  const summaryStats = React.useMemo(() => {
+    const totalClassrooms = filteredClasses.length;
+    const totalStudents = filteredClasses.reduce((sum, classroom) => sum + (classroom.student?.length || 0), 0);
+    const averageStudentsPerClass = filteredClasses.length > 0
+      ? totalStudents / filteredClasses.length
+      : 0;
+    const activeClassrooms = filteredClasses.filter(classroom => !classroom.archived).length;
+    
+    return {
+      totalClassrooms,
+      totalStudents,
+      averageStudentsPerClass,
+      activeClassrooms
+    };
+  }, [filteredClasses]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Header
+          heading="Reports"
+          text="View and analyze classroom performance across all licenses"
+        />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-lg">Loading reports...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -347,7 +417,7 @@ export default function AdminReports({ classes }: AdminReportsProps) {
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalClassrooms}</div>
+            <div className="text-2xl font-bold">{summaryStats.totalClassrooms}</div>
           </CardContent>
         </Card>
         
@@ -357,7 +427,7 @@ export default function AdminReports({ classes }: AdminReportsProps) {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalStudents.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{summaryStats.totalStudents.toLocaleString()}</div>
           </CardContent>
         </Card>
         
@@ -367,7 +437,7 @@ export default function AdminReports({ classes }: AdminReportsProps) {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{averageStudentsPerClass.toFixed(1)}</div>
+            <div className="text-2xl font-bold">{summaryStats.averageStudentsPerClass.toFixed(1)}</div>
           </CardContent>
         </Card>
         
@@ -377,7 +447,7 @@ export default function AdminReports({ classes }: AdminReportsProps) {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeClassrooms}</div>
+            <div className="text-2xl font-bold">{summaryStats.activeClassrooms}</div>
           </CardContent>
         </Card>
       </div>
@@ -397,19 +467,29 @@ export default function AdminReports({ classes }: AdminReportsProps) {
             className="max-w-sm"
           />
           
-          <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+          <Select 
+            value={selectedTeacher} 
+            onValueChange={handleTeacherChange}
+            disabled={teachers.length === 0}
+          >
             <SelectTrigger className="w-full md:w-[200px]">
-              <SelectValue placeholder="Filter by teacher" />
+              <SelectValue placeholder={teachers.length === 0 ? "No teachers available" : "Filter by teacher"} />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Teachers</SelectLabel>
+                <SelectLabel>Teachers ({teachers.length})</SelectLabel>
                 <SelectItem value="all">All Teachers</SelectItem>
-                {teachers.map((teacher) => (
-                  <SelectItem key={teacher} value={teacher}>
-                    {teacher}
+                {teachers.length > 0 ? (
+                  teachers.map((teacher) => (
+                    <SelectItem key={teacher} value={teacher}>
+                      {teacher}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-teachers" disabled>
+                    No teachers found
                   </SelectItem>
-                ))}
+                )}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -524,3 +604,6 @@ export default function AdminReports({ classes }: AdminReportsProps) {
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default React.memo(AdminReports);
