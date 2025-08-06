@@ -459,10 +459,101 @@ export async function getClassroom(req: ExtendedNextRequest) {
       );
     }
 
+    // Calculate XP data for each classroom
+    const classroomsWithXp = await Promise.all(
+      classrooms.map(async (classroom) => {
+        try {
+          // Get all students in this classroom
+          const studentIds = classroom.student.map((s: any) => s.studentId).filter(Boolean);
+          
+          if (studentIds.length === 0) {
+            return {
+              ...classroom,
+              xpData: {
+                today: 0,
+                week: 0,
+                month: 0,
+                allTime: 0,
+              },
+            };
+          }
+
+          const now = new Date();
+          
+          // Calculate date ranges
+          const todayStart = new Date(now);
+          todayStart.setHours(0, 0, 0, 0);
+
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() - 7);
+
+          const monthStart = new Date(now);
+          monthStart.setMonth(now.getMonth() - 1);
+
+          // Get XP logs for all students in this classroom
+          const xpLogs = await prisma.xPLog.findMany({
+            where: {
+              userId: { in: studentIds },
+            },
+            select: {
+              xpEarned: true,
+              createdAt: true,
+            },
+          });
+
+          // Get total XP for all students in this classroom
+          const totalXp = await prisma.user.findMany({
+            where: {
+              id: { in: studentIds },
+            },
+            select: {
+              xp: true,
+            },
+          });
+
+          // Calculate XP for different time periods
+          const todayXp = xpLogs
+            .filter((log) => log.createdAt >= todayStart)
+            .reduce((sum, log) => sum + log.xpEarned, 0);
+
+          const weekXp = xpLogs
+            .filter((log) => log.createdAt >= weekStart)
+            .reduce((sum, log) => sum + log.xpEarned, 0);
+
+          const monthXp = xpLogs
+            .filter((log) => log.createdAt >= monthStart)
+            .reduce((sum, log) => sum + log.xpEarned, 0);
+
+          const allTimeXp = totalXp.reduce((sum, user) => sum + (user.xp || 0), 0);
+
+          return {
+            ...classroom,
+            xpData: {
+              today: todayXp,
+              week: weekXp,
+              month: monthXp,
+              allTime: allTimeXp,
+            },
+          };
+        } catch (error) {
+          console.error(`Error calculating XP for classroom ${classroom.id}:`, error);
+          return {
+            ...classroom,
+            xpData: {
+              today: 0,
+              week: 0,
+              month: 0,
+              allTime: 0,
+            },
+          };
+        }
+      })
+    );
+
     return NextResponse.json(
       {
         message: "success",
-        data: classrooms,
+        data: classroomsWithXp,
       },
       { status: 200 }
     );

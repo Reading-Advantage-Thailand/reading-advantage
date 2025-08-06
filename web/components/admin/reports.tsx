@@ -46,6 +46,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Eye, Users, BookOpen, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
+import ClassroomXpComparisonChart from "./classroom-xp-comparison-chart";
 
 type ClassroomData = {
   id: string;
@@ -73,6 +74,12 @@ type ClassroomData = {
     email: string;
     lastActivity: string;
   }>;
+  xpData?: {
+    today: number;
+    week: number;
+    month: number;
+    allTime: number;
+  };
 };
 
 interface AdminReportsProps {
@@ -374,6 +381,9 @@ export default function AdminReports({ classes }: AdminReportsProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* XP Comparison Chart */}
+      <ClassroomXpComparisonChart classes={filteredClasses} />
 
       {/* Filters and Controls */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
