@@ -100,26 +100,21 @@ function AdminReports({ classes }: AdminReportsProps) {
   const trp = useScopedI18n("components.reports");
   const router = useRouter();
 
-  // Debounced teacher selection to prevent rapid updates
   const handleTeacherChange = React.useCallback((value: string) => {
-    console.log('Teacher filter changed to:', value);
     setSelectedTeacher(value);
   }, []);
 
-  // Set loading to false once data is available
   React.useEffect(() => {
     if (classes && Array.isArray(classes)) {
       setIsLoading(false);
     }
   }, [classes]);
 
-  // Fix hydration issue by rendering date only on client
   React.useEffect(() => {
     setIsClient(true);
     
-    // Check if screen is mobile size
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768); // md breakpoint
+      setIsMobile(window.innerWidth < 768);
     };
     
     checkMobile();
@@ -128,21 +123,18 @@ function AdminReports({ classes }: AdminReportsProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Set column visibility based on screen size
   React.useEffect(() => {
     if (!isClient) return;
     
     if (isMobile) {
-      // On mobile, only show classroomName, createdBy, and grade
       setColumnVisibility({
         classCode: false,
         student: false,
         createdAt: false,
         archived: false,
-        actions: false, // Hide desktop actions since we show them in grade column
+        actions: false,
       });
     } else {
-      // On desktop, show all columns
       setColumnVisibility({
         classCode: true,
         student: true,
@@ -153,7 +145,6 @@ function AdminReports({ classes }: AdminReportsProps) {
     }
   }, [isMobile, isClient]);
 
-  // Get unique teachers - memoized to prevent recalculation on every render
   const teachers = React.useMemo(() => {
     try {
       if (!classes || !Array.isArray(classes)) {
@@ -172,7 +163,6 @@ function AdminReports({ classes }: AdminReportsProps) {
     }
   }, [classes]);
 
-  // Filter classrooms by selected teacher - memoized to prevent recalculation on every render
   const filteredClasses = React.useMemo(() => {
     try {
       if (!classes || !Array.isArray(classes)) {
@@ -192,6 +182,11 @@ function AdminReports({ classes }: AdminReportsProps) {
       return classes || [];
     }
   }, [classes, selectedTeacher]);
+
+  const chartProps = React.useMemo(() => ({
+    classes: filteredClasses,
+    licenseId: undefined as undefined
+  }), [filteredClasses]);
 
   const columns: ColumnDef<ClassroomData>[] = [
     {
@@ -453,7 +448,7 @@ function AdminReports({ classes }: AdminReportsProps) {
       </div>
 
       {/* XP Comparison Chart */}
-      <ClassroomXpComparisonChart classes={filteredClasses} />
+      <ClassroomXpComparisonChart {...chartProps} />
 
       {/* Filters and Controls */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
