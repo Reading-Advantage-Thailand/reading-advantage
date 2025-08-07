@@ -464,8 +464,10 @@ export async function getClassroom(req: ExtendedNextRequest) {
       classrooms.map(async (classroom) => {
         try {
           // Get all students in this classroom
-          const studentIds = classroom.student.map((s: any) => s.studentId).filter(Boolean);
-          
+          const studentIds = classroom.student
+            .map((s: any) => s.studentId)
+            .filter(Boolean);
+
           if (studentIds.length === 0) {
             return {
               ...classroom,
@@ -479,7 +481,7 @@ export async function getClassroom(req: ExtendedNextRequest) {
           }
 
           const now = new Date();
-          
+
           // Calculate date ranges
           const todayStart = new Date(now);
           todayStart.setHours(0, 0, 0, 0);
@@ -524,7 +526,10 @@ export async function getClassroom(req: ExtendedNextRequest) {
             .filter((log) => log.createdAt >= monthStart)
             .reduce((sum, log) => sum + log.xpEarned, 0);
 
-          const allTimeXp = totalXp.reduce((sum, user) => sum + (user.xp || 0), 0);
+          const allTimeXp = totalXp.reduce(
+            (sum, user) => sum + (user.xp || 0),
+            0
+          );
 
           return {
             ...classroom,
@@ -536,7 +541,10 @@ export async function getClassroom(req: ExtendedNextRequest) {
             },
           };
         } catch (error) {
-          console.error(`Error calculating XP for classroom ${classroom.id}:`, error);
+          console.error(
+            `Error calculating XP for classroom ${classroom.id}:`,
+            error
+          );
           return {
             ...classroom,
             xpData: {
@@ -1440,6 +1448,253 @@ export async function getTopSchoolsXp(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ data: topSchools }, { status: 200 });
   } catch (error) {
     console.error("Error fetching top schools XP data:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// Get classroom XP data for custom date range
+export async function getClassroomXpCustomRange(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const fromDate = searchParams.get("from");
+    const toDate = searchParams.get("to");
+    const licenseId = searchParams.get("licenseId");
+
+    if (!fromDate || !toDate) {
+      return NextResponse.json(
+        { message: "Both 'from' and 'to' date parameters are required" },
+        { status: 400 }
+      );
+    }
+
+    const startDate = new Date(fromDate);
+    const endDate = new Date(toDate);
+    // Add one day to end date to include the entire day
+    endDate.setDate(endDate.getDate() + 1);
+
+    // Validate dates
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return NextResponse.json(
+        { message: "Invalid date format. Use ISO 8601 format (YYYY-MM-DD)" },
+        { status: 400 }
+      );
+    }
+
+    if (startDate > endDate) {
+      return NextResponse.json(
+        { message: "Start date must be before end date" },
+        { status: 400 }
+      );
+    }
+
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    let classrooms: any[] = [];
+
+    // Get classrooms based on user role and license
+    if (user.role === "SYSTEM") {
+      // SYSTEM role: get all classrooms
+      classrooms = await prisma.classroom.findMany({
+        where: {
+          archived: { not: true },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  xpLogs: {
+                    where: {
+                      createdAt: {
+                        gte: startDate,
+                        lte: endDate,
+                      },
+                    },
+                    select: {
+                      xpEarned: true,
+                      createdAt: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+    } else if (user.role === "ADMIN") {
+      // ADMIN role: get classrooms from same license
+      const adminUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { licenseId: true },
+      });
+
+      if (!adminUser?.licenseId) {
+        return NextResponse.json(
+          { error: "Admin user must have a license" },
+          { status: 400 }
+        );
+      }
+
+      const usersWithSameLicense = await prisma.user.findMany({
+        where: {
+          OR: [
+            { licenseId: adminUser.licenseId },
+            {
+              licenseOnUsers: {
+                some: {
+                  licenseId: adminUser.licenseId,
+                },
+              },
+            },
+          ],
+        },
+        select: { id: true },
+      });
+
+      const userIds = usersWithSameLicense.map((u) => u.id);
+
+      classrooms = await prisma.classroom.findMany({
+        where: {
+          teacherId: { in: userIds },
+          archived: { not: true },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  xpLogs: {
+                    where: {
+                      createdAt: {
+                        gte: startDate,
+                        lte: endDate,
+                      },
+                    },
+                    select: {
+                      xpEarned: true,
+                      createdAt: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+    } else {
+      // TEACHER role: get only their classrooms
+      classrooms = await prisma.classroom.findMany({
+        where: {
+          teacherId: user.id,
+          archived: { not: true },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  xpLogs: {
+                    where: {
+                      createdAt: {
+                        gte: startDate,
+                        lte: endDate,
+                      },
+                    },
+                    select: {
+                      xpEarned: true,
+                      createdAt: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+    }
+
+    // Calculate XP data for each classroom in the custom date range
+    const classroomData = classrooms.map((classroom) => {
+      const customRangeXp = classroom.students.reduce(
+        (total: number, cs: any) => {
+          const studentXp = cs.student.xpLogs.reduce(
+            (sum: number, log: any) => sum + log.xpEarned,
+            0
+          );
+          return total + studentXp;
+        },
+        0
+      );
+
+      return {
+        id: classroom.id,
+        classroomName: classroom.classroomName,
+        classCode: classroom.classCode,
+        grade: classroom.grade?.toString(),
+        archived: classroom.archived || false,
+        title: classroom.classroomName,
+        importedFromGoogle: false,
+        alternateLink: "",
+        createdAt: classroom.createdAt,
+        createdBy: classroom.teacher,
+        isOwner: classroom.teacherId === user.id,
+        teachers: [
+          {
+            teacherId: classroom.teacher?.id || "",
+            name: classroom.teacher?.name || "",
+            role: "OWNER" as const,
+            joinedAt: classroom.createdAt,
+          },
+        ],
+        student: classroom.students.map((cs: any) => ({
+          studentId: cs.student.id,
+          email: cs.student.email,
+          lastActivity: cs.createdAt,
+        })),
+        xpData: {
+          customRange: customRangeXp,
+          today: 0, // These could be calculated if needed
+          week: 0,
+          month: 0,
+          allTime: 0,
+        },
+      };
+    });
+
+    return NextResponse.json({
+      message: "success",
+      data: classroomData,
+      dateRange: {
+        from: fromDate,
+        to: toDate,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching custom range XP data:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
