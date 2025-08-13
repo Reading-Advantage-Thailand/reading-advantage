@@ -36,6 +36,11 @@ export const systemPageConfig: SystemPageConfig = {
       icon: "book",
     },
     {
+      title: "Reports",
+      href: "/system/reports",
+      icon: "report",
+    },
+    {
       title: "License",
       href: "/system/license",
       icon: "scrollText",
