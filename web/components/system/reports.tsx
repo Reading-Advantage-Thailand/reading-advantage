@@ -10,6 +10,12 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
@@ -23,6 +29,7 @@ import {
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -33,7 +40,14 @@ import {
 import { Header } from "@/components/header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Users, BookOpen, TrendingUp, School, Eye } from "lucide-react";
+import {
+  Users,
+  BookOpen,
+  TrendingUp,
+  School,
+  Eye,
+  MoreHorizontal,
+} from "lucide-react";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import {
   BarChart,
@@ -288,102 +302,124 @@ function SystemReports({}: SystemReportsProps) {
     return dateObj.toLocaleDateString("th-TH");
   };
 
-  const SchoolDetailDialog = ({ school }: { school: LicenseData }) => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Eye className="h-4 w-4 mr-1" />
-          Detail
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">
-            School Details
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              School Name
-            </h4>
-            <p className="text-base font-medium">{school.schoolName}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              License Key
-            </h4>
-            <p className="text-sm font-mono bg-muted p-2 rounded">
-              {school.key}
-            </p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              Total XP
-            </h4>
-            <p className="text-lg font-semibold text-blue-600">
-              {formatXP(school.totalXp || 0)}
-            </p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              Current Users
-            </h4>
-            <p className="text-base">{school.currentUsers}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              Max Users
-            </h4>
-            <p className="text-base">{school.maxUsers}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              License Type
-            </h4>
-            <Badge variant="outline">{school.licenseType}</Badge>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              Created Date
-            </h4>
-            <p className="text-base">{formatDate(school.createdAt)}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              Expires At
-            </h4>
-            <p className="text-base">
-              {school.expiresAt ? (
-                <span
-                  className={
-                    new Date(school.expiresAt) < new Date()
-                      ? "text-red-600 font-semibold"
-                      : ""
-                  }
-                >
-                  {formatDate(school.expiresAt)}
-                </span>
-              ) : (
-                "Never"
-              )}
-            </p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              Status
-            </h4>
-            <Badge variant={school.isActive ? "default" : "secondary"}>
-              {school.isActive ? "Active" : "Inactive"}
-            </Badge>
-          </div>
-          <div className="mt-6 w-full">
-            <Button className="w-full">View School Report</Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+  const ActionsCell = ({ school }: { school: LicenseData }) => {
+    const [detailOpen, setDetailOpen] = React.useState(false);
+    const router = useRouter();
+
+    const handleViewReports = () => {
+      router.push(`/system/reports/${school.id}`);
+    };
+
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setDetailOpen(true)}>
+              <Eye className="mr-2 h-4 w-4" />
+              Detail
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleViewReports} className="cursor-pointer">
+              <BookOpen className="mr-2 h-4 w-4" />
+              Reports
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Detail Dialog */}
+        <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold">
+                School Details
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  School Name
+                </h4>
+                <p className="text-base font-medium">{school.schoolName}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  License Key
+                </h4>
+                <p className="text-sm font-mono bg-muted p-2 rounded">
+                  {school.key}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Total XP
+                </h4>
+                <p className="text-lg font-semibold text-blue-600">
+                  {formatXP(school.totalXp || 0)}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Current Users
+                </h4>
+                <p className="text-base">{school.currentUsers}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Max Users
+                </h4>
+                <p className="text-base">{school.maxUsers}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  License Type
+                </h4>
+                <Badge variant="outline">{school.licenseType}</Badge>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Created Date
+                </h4>
+                <p className="text-base">{formatDate(school.createdAt)}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Expires At
+                </h4>
+                <p className="text-base">
+                  {school.expiresAt ? (
+                    <span
+                      className={
+                        new Date(school.expiresAt) < new Date()
+                          ? "text-red-600 font-semibold"
+                          : ""
+                      }
+                    >
+                      {formatDate(school.expiresAt)}
+                    </span>
+                  ) : (
+                    "Never"
+                  )}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Status
+                </h4>
+                <Badge variant={school.isActive ? "default" : "secondary"}>
+                  {school.isActive ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  };
 
   const columns: ColumnDef<LicenseData>[] = [
     {
@@ -516,7 +552,7 @@ function SystemReports({}: SystemReportsProps) {
     {
       id: "actions",
       header: "Actions",
-      cell: ({ row }) => <SchoolDetailDialog school={row.original} />,
+      cell: ({ row }) => <ActionsCell school={row.original} />,
     },
   ];
 
