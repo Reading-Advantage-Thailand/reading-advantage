@@ -55,7 +55,6 @@ export async function translate(
   }
 
   if (type === "summary") {
-    // First need to find the translation of the article in db
     const translationSnapshot = await db
       .collection(`summary-translations`)
       .doc(article_id)
@@ -71,6 +70,7 @@ export async function translate(
     }
 
     const sentences = splitTextIntoSentences(article.summary);
+
     let translatedSentences: string[] = [];
     try {
       if (targetLanguage === LanguageType.EN) {
@@ -81,7 +81,7 @@ export async function translate(
           targetLanguage
         );
       }
-      // save translation to db
+
       await db
         .collection("summary-translations")
         .doc(article_id)
@@ -96,6 +96,7 @@ export async function translate(
           },
           { merge: true }
         );
+
       return NextResponse.json({
         message: "translation successful",
         translated_sentences: translatedSentences,
@@ -123,9 +124,40 @@ export async function translate(
       });
     }
 
-    const sentences: string[] = Array.isArray(article.timepoints)
-      ? article.timepoints.map((tp: any) => tp.sentences)
-      : [];
+    let sentences: string[] = [];
+
+    if (Array.isArray(article.timepoints)) {
+      const passageSentences = splitTextIntoSentences(article.passage, true);
+
+      const sentenceList = article.timepoints.map(
+        (timepoint: any, index: number) => {
+          const sentence =
+            passageSentences.length <= article.timepoints.length
+              ? timepoint.sentences
+              : passageSentences[index];
+
+          return {
+            sentence: sentence ?? passageSentences[index],
+            index: timepoint.index || index,
+          };
+        }
+      );
+
+      sentences = sentenceList
+        .map((item) => item.sentence)
+        .filter((sentence) => sentence && sentence.trim().length > 0);
+    }
+
+    if (sentences.length === 0) {
+      sentences = splitTextIntoSentences(article.passage, true);
+    }
+
+    if (sentences.length === 0) {
+      return NextResponse.json(
+        { message: "No sentences found to translate" },
+        { status: 400 }
+      );
+    }
 
     let translatedSentences: string[] = [];
     try {
@@ -137,7 +169,7 @@ export async function translate(
           targetLanguage
         );
       }
-      // save translation to db
+
       await db
         .collection("content-translations")
         .doc(article_id)
@@ -145,13 +177,13 @@ export async function translate(
           {
             id: article_id,
             updated_at: new Date().toISOString(),
-            // [targetLanguage]: translatedSentences,
             translation: {
               [targetLanguage]: translatedSentences,
             },
           },
           { merge: true }
         );
+
       return NextResponse.json({
         message: "translation successful",
         translated_sentences: translatedSentences,
@@ -165,6 +197,11 @@ export async function translate(
       );
     }
   }
+
+  return NextResponse.json(
+    { message: "Invalid type parameter" },
+    { status: 400 }
+  );
 }
 
 export async function translateForPrint(request: NextRequest) {
