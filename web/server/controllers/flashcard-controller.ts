@@ -1,6 +1,7 @@
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fsrs, generatorParameters, Rating, State } from "ts-fsrs";
 
 interface RequestContext {
   params: {
@@ -23,6 +24,202 @@ interface WordList {
   startTime: number;
   index: number;
   [key: string]: any;
+}
+
+export async function getFlashcardStats(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const type = req.nextUrl.searchParams.get("type"); // "vocabulary" or "sentences"
+
+    if (type === "vocabulary") {
+      const vocabularies = await prisma.userWordRecord.findMany({
+        where: { userId: id },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const stats = calculateFlashcardStats(vocabularies);
+      return NextResponse.json({
+        message: "Vocabulary stats retrieved",
+        stats,
+        vocabularies,
+        status: 200,
+      });
+    } else if (type === "sentences") {
+      const sentences = await prisma.userSentenceRecord.findMany({
+        where: { userId: id },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const stats = calculateFlashcardStats(sentences);
+      return NextResponse.json({
+        message: "Sentences stats retrieved",
+        stats,
+        sentences,
+        status: 200,
+      });
+    } else {
+      // Return both
+      const [vocabularies, sentences] = await Promise.all([
+        prisma.userWordRecord.findMany({
+          where: { userId: id },
+          orderBy: { createdAt: "desc" },
+        }),
+        prisma.userSentenceRecord.findMany({
+          where: { userId: id },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
+
+      return NextResponse.json({
+        message: "Flashcard stats retrieved",
+        vocabularyStats: calculateFlashcardStats(vocabularies),
+        sentenceStats: calculateFlashcardStats(sentences),
+        vocabularies,
+        sentences,
+        status: 200,
+      });
+    }
+  } catch (error) {
+    console.error("Error getting flashcard stats:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      error,
+      status: 500,
+    });
+  }
+}
+
+function calculateFlashcardStats(cards: any[]) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  return cards.reduce(
+    (stats, card) => {
+      stats.total++;
+
+      const dueDate = new Date(card.due);
+      const cardDate = new Date(
+        dueDate.getFullYear(),
+        dueDate.getMonth(),
+        dueDate.getDate()
+      );
+
+      if (cardDate <= today) {
+        stats.due++;
+      }
+
+      switch (card.state) {
+        case 0: // New
+          stats.new++;
+          break;
+        case 1: // Learning
+        case 3: // Relearning
+          stats.learning++;
+          break;
+        case 2: // Review
+          stats.review++;
+          break;
+      }
+
+      return stats;
+    },
+    { total: 0, new: 0, learning: 0, review: 0, due: 0 }
+  );
+}
+
+export async function updateFlashcardProgress(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const { cardId, rating, type } = await req.json();
+
+    if (!cardId || !rating || !type) {
+      return NextResponse.json({
+        message: "Missing required fields: cardId, rating, type",
+        status: 400,
+      });
+    }
+
+    const isVocabulary = type === "vocabulary";
+
+    // Get current card with proper typing
+    let currentCard;
+    if (isVocabulary) {
+      currentCard = await prisma.userWordRecord.findUnique({
+        where: { id: cardId },
+      });
+    } else {
+      currentCard = await prisma.userSentenceRecord.findUnique({
+        where: { id: cardId },
+      });
+    }
+
+    if (!currentCard || currentCard.userId !== id) {
+      return NextResponse.json({
+        message: "Card not found or unauthorized",
+        status: 404,
+      });
+    }
+
+    // Calculate next review using FSRS
+    const f = fsrs(generatorParameters());
+    const now = new Date();
+
+    const cardObj = {
+      due: new Date(currentCard.due),
+      stability: currentCard.stability,
+      difficulty: currentCard.difficulty,
+      elapsed_days: currentCard.elapsedDays,
+      scheduled_days: currentCard.scheduledDays,
+      reps: currentCard.reps,
+      lapses: currentCard.lapses,
+      state: currentCard.state as State,
+      last_review: new Date(),
+    };
+
+    const schedulingInfo = f.repeat(cardObj, now);
+    // FSRS returns object with rating properties, access directly
+    const selectedSchedule = schedulingInfo[Rating.Good]; // Default to Good rating for now
+
+    // Update card data structure to match Prisma schema
+    const updateData = {
+      difficulty: selectedSchedule.card.difficulty,
+      due: selectedSchedule.card.due,
+      elapsedDays: selectedSchedule.card.elapsed_days,
+      lapses: selectedSchedule.card.lapses,
+      reps: selectedSchedule.card.reps,
+      scheduledDays: selectedSchedule.card.scheduled_days,
+      stability: selectedSchedule.card.stability,
+      state: selectedSchedule.card.state,
+    };
+
+    // Update with proper typing
+    if (isVocabulary) {
+      await prisma.userWordRecord.update({
+        where: { id: cardId },
+        data: updateData,
+      });
+    } else {
+      await prisma.userSentenceRecord.update({
+        where: { id: cardId },
+        data: updateData,
+      });
+    }
+
+    return NextResponse.json({
+      message: "Card progress updated",
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error updating flashcard progress:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      status: 500,
+    });
+  }
 }
 
 export async function postSaveWordList(
@@ -53,10 +250,10 @@ export async function postSaveWordList(
             userId: id,
             articleId: articleId,
             word: {
-              path: ['vocabulary'],
-              equals: word.vocabulary
-            }
-          }
+              path: ["vocabulary"],
+              equals: word.vocabulary,
+            },
+          },
         });
 
         if (existingRecord) {
@@ -76,7 +273,7 @@ export async function postSaveWordList(
               scheduledDays: scheduled_days,
               stability,
               state,
-            }
+            },
           });
         }
       })
@@ -109,7 +306,6 @@ export async function getWordList(
 ) {
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
-    console.log("articleId", articleId);
 
     const word = await prisma.userWordRecord.findMany({
       where: {
@@ -117,8 +313,8 @@ export async function getWordList(
         ...(articleId && { articleId }),
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     return NextResponse.json({
@@ -141,8 +337,8 @@ export async function deleteWordlist(req: ExtendedNextRequest) {
 
     await prisma.userWordRecord.delete({
       where: {
-        id: id
-      }
+        id: id,
+      },
     });
 
     return NextResponse.json({
@@ -203,7 +399,7 @@ export async function postSentendcesFlashcard(
     }
 
     const existingSentence = await prisma.userSentenceRecord.findFirst({
-      where: whereClause
+      where: whereClause,
     });
 
     if (existingSentence) {
@@ -239,7 +435,7 @@ export async function postSentendcesFlashcard(
     }
 
     await prisma.userSentenceRecord.create({
-      data: recordData
+      data: recordData,
     });
 
     return NextResponse.json({
@@ -261,16 +457,14 @@ export async function getSentencesFlashcard(
 ) {
   const articleId = req.nextUrl.searchParams.get("articleId");
   try {
-    console.log(articleId, "articleId");
-
     const sentences = await prisma.userSentenceRecord.findMany({
       where: {
         userId: id,
         ...(articleId && { articleId }),
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     return NextResponse.json({
@@ -294,8 +488,8 @@ export async function deleteSentencesFlashcard(req: ExtendedNextRequest) {
 
     await prisma.userSentenceRecord.delete({
       where: {
-        id: id
-      }
+        id: id,
+      },
     });
 
     return NextResponse.json({
@@ -318,11 +512,11 @@ export async function getVocabulariesFlashcard(
   try {
     const vocabularies = await prisma.userWordRecord.findMany({
       where: {
-        userId: id
+        userId: id,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     return NextResponse.json({
@@ -364,10 +558,10 @@ export async function postVocabulariesFlashcard(
         userId: id,
         articleId: articleId,
         word: {
-          path: ['vocabulary'],
-          equals: word.vocabulary
-        }
-      }
+          path: ["vocabulary"],
+          equals: word.vocabulary,
+        },
+      },
     });
 
     if (existingVocab) {
@@ -391,7 +585,7 @@ export async function postVocabulariesFlashcard(
         stability,
         state,
         saveToFlashcard,
-      }
+      },
     });
 
     return NextResponse.json({
@@ -413,8 +607,8 @@ export async function deleteVocabulariesFlashcard(req: ExtendedNextRequest) {
 
     await prisma.userWordRecord.delete({
       where: {
-        id: id
-      }
+        id: id,
+      },
     });
 
     return NextResponse.json({
