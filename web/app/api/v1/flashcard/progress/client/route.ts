@@ -6,34 +6,47 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export interface RequestContext {
   params: {
-    id: string;
+    id?: string;
     articleId?: string;
   };
+}
+
+// Custom handler for client-side progress updates
+async function updateFlashcardProgressClient(req: any, ctx: RequestContext) {
+  const body = await req.json();
+  const { cardId, rating, type } = body;
+  
+  if (!req.session?.user?.id) {
+    return NextResponse.json({
+      message: "Unauthorized",
+      status: 403,
+    });
+  }
+
+  // Create a modified request context with the user ID
+  const modifiedCtx = {
+    params: { id: req.session.user.id }
+  };
+  
+  // Create a modified request with the body data
+  const modifiedReq = {
+    ...req,
+    json: async () => ({ cardId, rating, type }),
+  };
+
+  return updateFlashcardProgress(modifiedReq, modifiedCtx);
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.put(updateFlashcardProgress);
-router.post(updateFlashcardProgress);
-
-export async function PUT(request: NextRequest, ctx: RequestContext) {
-  const result = await router.run(request, ctx);
-  if (result instanceof NextResponse) {
-    return result;
-  }
-  // Handle the case where result is not a NextResponse
-  // You might want to return a default NextResponse or throw an error
-  throw new Error("Expected a NextResponse from router.run");
-}
+router.post(updateFlashcardProgressClient);
 
 export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
   }
-  // Handle the case where result is not a NextResponse
-  // You might want to return a default NextResponse or throw an error
   throw new Error("Expected a NextResponse from router.run");
 }

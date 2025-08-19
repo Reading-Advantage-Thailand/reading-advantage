@@ -181,8 +181,24 @@ export async function updateFlashcardProgress(
     };
 
     const schedulingInfo = f.repeat(cardObj, now);
-    // FSRS returns object with rating properties, access directly
-    const selectedSchedule = schedulingInfo[Rating.Good]; // Default to Good rating for now
+    // Use the rating provided by user
+    let selectedSchedule;
+    switch(rating) {
+      case 1: // Again
+        selectedSchedule = schedulingInfo[Rating.Again];
+        break;
+      case 2: // Hard
+        selectedSchedule = schedulingInfo[Rating.Hard];
+        break;
+      case 3: // Good
+        selectedSchedule = schedulingInfo[Rating.Good];
+        break;
+      case 4: // Easy
+        selectedSchedule = schedulingInfo[Rating.Easy];
+        break;
+      default:
+        selectedSchedule = schedulingInfo[Rating.Good];
+    }
 
     // Update card data structure to match Prisma schema
     const updateData = {
@@ -409,10 +425,54 @@ export async function postSentendcesFlashcard(
       );
     }
 
+    // Prepare the translation object with all available translations from the article
+    let fullTranslation = translation;
+
+    if (articleId) {
+      // Get the article to fetch all available translations
+      const article = await prisma.article.findUnique({
+        where: { id: articleId },
+        select: {
+          translatedPassage: true,
+        },
+      });
+
+      if (article?.translatedPassage) {
+        const translatedPassage = article.translatedPassage as Record<string, string[]> | null;
+        
+        if (translatedPassage) {
+          // Create a comprehensive translation object with all available languages
+          fullTranslation = {};
+          
+          // Map language codes to match the database format
+          const languageMapping: Record<string, string> = {
+            "zh-CN": "cn",
+            "zh-TW": "tw",
+            "th": "th",
+            "vi": "vi",
+            "en": "en",
+          };
+
+          // Add translations for all available languages at the sentence index
+          Object.entries(translatedPassage).forEach(([langCode, sentences]) => {
+            const mappedLangCode = languageMapping[langCode] || langCode;
+            if (sentences && sentences[sn] !== undefined) {
+              fullTranslation[mappedLangCode] = sentences[sn];
+            }
+          });
+
+          // Keep any existing translation that was passed in (in case client has additional info)
+          if (translation && typeof translation === 'object') {
+            fullTranslation = { ...fullTranslation, ...translation };
+          }
+        }
+      }
+    }
+
     const recordData: any = {
       userId: id,
       sentence,
-      translation,
+      translation: fullTranslation,
       sn,
       timepoint,
       endTimepoint,

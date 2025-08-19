@@ -13,7 +13,12 @@ type Props = {
   userId: string;
 };
 
-const FlashCard = dynamic(() => import("@/components/flash-card"));
+const FlashCard = dynamic(
+  () => import("@/components/flashcards").then(mod => ({ default: mod.FlashcardDashboard })),
+  {
+    ssr: false,
+  },
+);
 const OrderSentences = dynamic(() => import("@/components/dnd/order-sentences"));
 const ClozeTest = dynamic(() => import("@/components/cloze-test"));
 const OrderWords = dynamic(() => import("@/components/order-words"));
@@ -48,8 +53,7 @@ export default function TabsPractice({ userId }: Props) {
         {activeTab === "tab1" && (
           <FlashCard
             userId={userId}
-            showButton={showButton}
-            setShowButton={setShowButton}
+            deckType="SENTENCE"
           />
         )}
       </TabsContent>
