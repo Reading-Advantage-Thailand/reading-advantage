@@ -48,12 +48,6 @@ export const studentPageConfig: StudentPageConfig = {
       icon: "book",
     },
     {
-      id: "onborda-flashcards",
-      title: "flashcards",
-      href: "/student/flashcards",
-      icon: "flashcard",
-    },
-    {
       id: "onborda-reports",
       title: "reports",
       href: "/student/reports",
