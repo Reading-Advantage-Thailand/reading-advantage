@@ -5,7 +5,7 @@ import TabsPractice from "@/components/tabs";
 
 type Props = {};
 
-export default async function PracticePage({}: Props) {
+export default async function SentencesPage({}: Props) {
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
