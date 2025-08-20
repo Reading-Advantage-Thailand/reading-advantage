@@ -2,6 +2,7 @@ import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fsrs, generatorParameters, Rating, State } from "ts-fsrs";
+import { splitTextIntoSentences } from "@/lib/utils";
 
 interface RequestContext {
   params: {
@@ -183,7 +184,7 @@ export async function updateFlashcardProgress(
     const schedulingInfo = f.repeat(cardObj, now);
     // Use the rating provided by user
     let selectedSchedule;
-    switch(rating) {
+    switch (rating) {
       case 1: // Again
         selectedSchedule = schedulingInfo[Rating.Again];
         break;
@@ -438,19 +439,22 @@ export async function postSentendcesFlashcard(
       });
 
       if (article?.translatedPassage) {
-        const translatedPassage = article.translatedPassage as Record<string, string[]> | null;
-        
+        const translatedPassage = article.translatedPassage as Record<
+          string,
+          string[]
+        > | null;
+
         if (translatedPassage) {
           // Create a comprehensive translation object with all available languages
           fullTranslation = {};
-          
+
           // Map language codes to match the database format
           const languageMapping: Record<string, string> = {
             "zh-CN": "cn",
             "zh-TW": "tw",
-            "th": "th",
-            "vi": "vi",
-            "en": "en",
+            th: "th",
+            vi: "vi",
+            en: "en",
           };
 
           // Add translations for all available languages at the sentence index
@@ -462,7 +466,7 @@ export async function postSentendcesFlashcard(
           });
 
           // Keep any existing translation that was passed in (in case client has additional info)
-          if (translation && typeof translation === 'object') {
+          if (translation && typeof translation === "object") {
             fullTranslation = { ...fullTranslation, ...translation };
           }
         }
@@ -690,12 +694,9 @@ export async function getClozeTestSentences(
 ) {
   try {
     const userId = req.session?.user?.id;
-    
+
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get sentence flashcards for the user (simplified approach without deck verification for now)
@@ -723,11 +724,11 @@ export async function getClozeTestSentences(
           try {
             const article = await prisma.article.findUnique({
               where: { id: sentence.articleId },
-              select: { 
+              select: {
                 title: true,
               },
             });
-            
+
             if (article && article.title) {
               articleTitle = article.title;
             }
@@ -744,8 +745,8 @@ export async function getClozeTestSentences(
         }
 
         // Split sentence into words with position information
-        const words = sentence.sentence.split(' ').map((word, index, array) => {
-          const previousWords = array.slice(0, index).join(' ');
+        const words = sentence.sentence.split(" ").map((word, index, array) => {
+          const previousWords = array.slice(0, index).join(" ");
           const start = previousWords.length + (index > 0 ? 1 : 0); // +1 for space
           return {
             word: word,
@@ -755,13 +756,15 @@ export async function getClozeTestSentences(
         });
 
         // Parse translation JSON safely
-        let translation: { th?: string; cn?: string; tw?: string; vi?: string; } | undefined;
-        
-        if (sentence.translation && typeof sentence.translation === 'object') {
+        let translation:
+          | { th?: string; cn?: string; tw?: string; vi?: string }
+          | undefined;
+
+        if (sentence.translation && typeof sentence.translation === "object") {
           const translationObj = sentence.translation as any;
           translation = {
             th: translationObj.th as string,
-            cn: translationObj.cn as string, 
+            cn: translationObj.cn as string,
             tw: translationObj.tw as string,
             vi: translationObj.vi as string,
           };
@@ -786,7 +789,6 @@ export async function getClozeTestSentences(
       clozeTests,
       totalCount: clozeTests.length,
     });
-
   } catch (error) {
     console.error("Error fetching sentences for cloze test:", error);
     return NextResponse.json(
@@ -796,22 +798,17 @@ export async function getClozeTestSentences(
   }
 }
 
-export async function saveClozeTestResults(
-  req: ExtendedNextRequest
-) {
+export async function saveClozeTestResults(req: ExtendedNextRequest) {
   try {
     const userId = req.session?.user?.id;
-    
+
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
     const { results, totalScore, totalQuestions, timeTaken, difficulty } = body;
-    
+
     // Update FSRS data for each sentence based on performance
     const updatePromises = results.map(async (result: any) => {
       try {
@@ -826,15 +823,19 @@ export async function saveClozeTestResults(
           // Calculate new FSRS values based on performance
           const rating = result.correct ? 3 : 1; // Good vs Again
           const now = new Date();
-          
+
           // Simple FSRS-like update (you can enhance this with the actual FSRS library)
-          const newStability = result.correct 
-            ? Math.min(sentence.stability * 1.3, 365) 
+          const newStability = result.correct
+            ? Math.min(sentence.stability * 1.3, 365)
             : Math.max(sentence.stability * 0.8, 1);
-          
-          const newDue = new Date(now.getTime() + newStability * 24 * 60 * 60 * 1000);
+
+          const newDue = new Date(
+            now.getTime() + newStability * 24 * 60 * 60 * 1000
+          );
           const newReps = sentence.reps + 1;
-          const newLapses = result.correct ? sentence.lapses : sentence.lapses + 1;
+          const newLapses = result.correct
+            ? sentence.lapses
+            : sentence.lapses + 1;
 
           await prisma.userSentenceRecord.update({
             where: { id: result.sentenceId },
@@ -859,7 +860,7 @@ export async function saveClozeTestResults(
     try {
       // Use timestamp to make targetId unique for each game session
       const uniqueTargetId = `cloze-test-${userId}-${Date.now()}`;
-      
+
       await prisma.userActivity.create({
         data: {
           userId: userId,
@@ -886,12 +887,387 @@ export async function saveClozeTestResults(
       xpEarned: Math.floor(totalScore * 5),
       updatedSentences: results.length,
     });
-
   } catch (error) {
     console.error("Error saving cloze test results:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );
+  }
+}
+
+export async function getSentencesForOrdering(
+  req: ExtendedNextRequest,
+  { params: { deckId } }: { params: { deckId: string } }
+) {
+  try {
+    const userId = req.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json({
+        message: "Unauthorized",
+        status: 401,
+      });
+    }
+
+    // Get user's saved sentences (flashcards)
+    const sentences = await prisma.userSentenceRecord.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: { due: "asc" },
+      take: 10, // Limit to 10 sentences for the game
+    });
+
+    if (sentences.length === 0) {
+      return NextResponse.json({
+        message: "No sentences found",
+        sentenceGroups: [],
+        status: 200,
+      });
+    }
+
+    const sentenceGroups = [];
+
+    // Process each sentence
+    for (const sentence of sentences) {
+      let article = null;
+      let content = "";
+      let title = "";
+
+      // Get the article content
+      if (sentence.articleId) {
+        article = await prisma.article.findUnique({
+          where: { id: sentence.articleId },
+          select: {
+            title: true,
+            passage: true,
+            sentences: true,
+          },
+        });
+        if (article) {
+          content = article.passage || "";
+          title = article.title || "";
+        }
+      }
+      // Note: Story functionality removed as it doesn't exist in current schema
+
+      if (!content) continue;
+
+      // Split content into sentences
+      const textSentences = splitTextIntoSentences(content);
+      const sentenceIndex = sentence.sn;
+
+      if (sentenceIndex >= textSentences.length) continue;
+
+      // Calculate the range of sentences around the target sentence
+      const sentencesAbove = Math.min(sentenceIndex, 2);
+      const sentencesBelow = Math.min(
+        textSentences.length - sentenceIndex - 1,
+        2
+      );
+
+      // Ensure we have exactly 5 sentences
+      let from = Math.max(sentenceIndex - sentencesAbove, 0);
+      let to = Math.min(
+        sentenceIndex + sentencesBelow + 1,
+        textSentences.length
+      );
+
+      // Adjust to get exactly 5 sentences if possible
+      while (to - from < 5 && (from > 0 || to < textSentences.length)) {
+        if (from > 0) from--;
+        else if (to < textSentences.length) to++;
+      }
+
+      const surroundingSentences = textSentences.slice(from, to);
+      const correctOrder = [...surroundingSentences];
+
+      // Parse article sentences JSON for timepoints
+      let articleSentences: any[] = [];
+      if (article?.sentences) {
+        try {
+          articleSentences = Array.isArray(article.sentences)
+            ? article.sentences
+            : JSON.parse(article.sentences as string);
+        } catch (e) {
+          console.warn("Failed to parse article sentences:", e);
+        }
+      }
+
+      // Create sentence objects with metadata
+      const sentenceObjects = surroundingSentences.map((text, index) => {
+        const globalIndex = from + index;
+        const sentenceData = articleSentences[globalIndex] || {};
+
+        return {
+          id: `sentence-${sentence.id}-${globalIndex}`,
+          text: text,
+          translation: sentence.translation,
+          audioUrl: sentence.audioUrl || null,
+          startTime:
+            globalIndex === sentenceIndex
+              ? sentence.timepoint
+              : sentenceData.timepoint || 0,
+          endTime:
+            globalIndex === sentenceIndex
+              ? sentence.endTimepoint
+              : sentenceData.endTimepoint || 0,
+          isFromFlashcard: globalIndex === sentenceIndex,
+        };
+      });
+
+      // Create the sentence group
+      const sentenceGroup = {
+        id: sentence.id,
+        articleId: sentence.articleId || "",
+        articleTitle: title,
+        flashcardSentence: textSentences[sentenceIndex],
+        correctOrder: correctOrder,
+        sentences: sentenceObjects,
+        difficulty: "medium" as const,
+        startIndex: from,
+        flashcardIndex: sentenceIndex - from,
+      };
+
+      sentenceGroups.push(sentenceGroup);
+    }
+
+    return NextResponse.json({
+      message: "Sentences for ordering retrieved successfully",
+      sentenceGroups,
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error getting sentences for ordering:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : "Unknown error",
+      status: 500,
+    });
+  }
+}
+
+export async function saveSentenceOrderingResults(req: ExtendedNextRequest) {
+  try {
+    const userId = req.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json({
+        message: "Unauthorized",
+        status: 401,
+      });
+    }
+
+    const {
+      totalQuestions,
+      correctAnswers,
+      timeTaken,
+      difficulty = "medium",
+      gameSession,
+      sentenceResults = [], // Array of {sentenceId, isCorrect}
+    } = await req.json();
+
+    if (!totalQuestions || correctAnswers === undefined || !timeTaken) {
+      return NextResponse.json({
+        message:
+          "Missing required fields: totalQuestions, correctAnswers, timeTaken",
+        status: 400,
+      });
+    }
+
+    const accuracy = (correctAnswers / totalQuestions) * 100;
+    const baseXp = 10; // Base XP per correct answer
+    const xpEarned = Math.floor(correctAnswers * baseXp);
+
+    // Update sentence records if results provided
+    if (sentenceResults.length > 0) {
+      const f = fsrs(generatorParameters());
+      const now = new Date();
+
+      const updatePromises = sentenceResults.map(async (result: any) => {
+        try {
+          const sentence = await prisma.userSentenceRecord.findUnique({
+            where: { id: result.sentenceId },
+          });
+
+          if (!sentence || sentence.userId !== userId) return;
+
+          // Calculate next review using FSRS
+          const cardObj = {
+            due: new Date(sentence.due),
+            stability: sentence.stability,
+            difficulty: sentence.difficulty,
+            elapsed_days: sentence.elapsedDays,
+            scheduled_days: sentence.scheduledDays,
+            reps: sentence.reps,
+            lapses: sentence.lapses,
+            state: sentence.state as State,
+            last_review: new Date(sentence.updatedAt),
+          };
+
+          const schedulingInfo = f.repeat(cardObj, now);
+          // Use Good rating if correct, Again if incorrect
+          const rating = result.isCorrect ? Rating.Good : Rating.Again;
+          const selectedSchedule = schedulingInfo[rating];
+
+          // Validate the values before updating
+          const newDue = selectedSchedule.card.due;
+          const newStability = selectedSchedule.card.stability;
+          const newDifficulty = selectedSchedule.card.difficulty;
+          const newElapsedDays = selectedSchedule.card.elapsed_days;
+          const newScheduledDays = selectedSchedule.card.scheduled_days;
+          const newReps = selectedSchedule.card.reps;
+          const newLapses = selectedSchedule.card.lapses;
+          const newState = selectedSchedule.card.state;
+
+          // Check for invalid values and provide fallbacks
+          const isValidDate =
+            newDue instanceof Date && !isNaN(newDue.getTime());
+          const isValidStability =
+            !isNaN(newStability) && isFinite(newStability);
+          const isValidDifficulty =
+            !isNaN(newDifficulty) && isFinite(newDifficulty);
+          const isValidElapsedDays =
+            !isNaN(newElapsedDays) && isFinite(newElapsedDays);
+          const isValidScheduledDays =
+            !isNaN(newScheduledDays) && isFinite(newScheduledDays);
+
+          if (
+            !isValidDate ||
+            !isValidStability ||
+            !isValidDifficulty ||
+            !isValidElapsedDays ||
+            !isValidScheduledDays
+          ) {
+            // Use simple fallback logic
+            const fallbackDue = new Date();
+            if (result.isCorrect) {
+              // If correct, review again in 3 days
+              fallbackDue.setDate(fallbackDue.getDate() + 3);
+            } else {
+              // If incorrect, review again in 1 day
+              fallbackDue.setDate(fallbackDue.getDate() + 1);
+            }
+
+            await prisma.userSentenceRecord.update({
+              where: { id: result.sentenceId },
+              data: {
+                due: fallbackDue,
+                stability: result.isCorrect
+                  ? Math.max(sentence.stability * 1.2, 1)
+                  : Math.max(sentence.stability * 0.8, 0.1),
+                difficulty: Math.max(
+                  0.1,
+                  Math.min(
+                    sentence.difficulty + (result.isCorrect ? -0.1 : 0.2),
+                    10
+                  )
+                ),
+                elapsedDays: Math.max(0, sentence.elapsedDays + 1),
+                scheduledDays: result.isCorrect ? 3 : 1,
+                reps: sentence.reps + 1,
+                lapses: result.isCorrect
+                  ? sentence.lapses
+                  : sentence.lapses + 1,
+                state: result.isCorrect ? 2 : 1, // Review or Learning
+              },
+            });
+          } else {
+            await prisma.userSentenceRecord.update({
+              where: { id: result.sentenceId },
+              data: {
+                due: newDue,
+                stability: newStability,
+                difficulty: newDifficulty,
+                elapsedDays: newElapsedDays,
+                scheduledDays: newScheduledDays,
+                reps: newReps,
+                lapses: newLapses,
+                state: newState,
+              },
+            });
+          }
+        } catch (error) {
+          console.error(`Error updating sentence ${result.sentenceId}:`, error);
+        }
+      });
+
+      await Promise.all(updatePromises);
+    }
+
+    // Log the activity for XP calculation
+    const uniqueTargetId =
+      gameSession || `sentence-ordering-${userId}-${Date.now()}`;
+
+    await prisma.userActivity.create({
+      data: {
+        userId: userId,
+        activityType: "SENTENCE_ORDERING",
+        targetId: uniqueTargetId,
+        completed: true,
+        timer: timeTaken,
+        details: {
+          totalQuestions: totalQuestions,
+          correctAnswers: correctAnswers,
+          accuracy: accuracy,
+          difficulty: difficulty,
+          xpEarned: xpEarned,
+          gameSession: uniqueTargetId,
+        },
+      },
+    });
+
+    return NextResponse.json({
+      message: "Sentence ordering results saved successfully",
+      xpEarned: xpEarned,
+      accuracy: accuracy,
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error saving sentence ordering results:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : "Unknown error",
+      status: 500,
+    });
+  }
+}
+
+export async function getFlashcardDeckInfo(req: ExtendedNextRequest) {
+  try {
+    const userId = req.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json({
+        success: false,
+        error: "Unauthorized",
+      });
+    }
+
+    // Find user's sentence flashcard deck by checking for sentence records
+    const sentences = await prisma.userSentenceRecord.findFirst({
+      where: {
+        userId: userId,
+      },
+    });
+
+    if (!sentences) {
+      return NextResponse.json({
+        success: false,
+        error: "No sentence flashcard deck found",
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      deckId: userId, // Use user ID as deck ID
+    });
+  } catch (error) {
+    console.error("Error getting flashcard deck info:", error);
+    return NextResponse.json({
+      success: false,
+      error: "Failed to get flashcard deck",
+    });
   }
 }
