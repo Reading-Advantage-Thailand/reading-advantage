@@ -15,8 +15,8 @@ import { Header } from "../header";
 import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { Sentence } from "../dnd/types";
-import QuoteList from "../dnd/quote-list";
+import { Sentence } from "../practic/types";
+import QuoteList from "../practic/quote-list";
 import { Icons } from "../icons";
 import { levelCalculation, splitTextIntoSentences } from "@/lib/utils";
 import {

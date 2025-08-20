@@ -1,11 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScopedI18n } from "@/locales/client";
 import dynamic from "next/dynamic";
 
@@ -14,13 +9,20 @@ type Props = {
 };
 
 const FlashCard = dynamic(
-  () => import("@/components/flashcards").then(mod => ({ default: mod.FlashcardDashboard })),
+  () =>
+    import("@/components/flashcards").then((mod) => ({
+      default: mod.FlashcardDashboard,
+    })),
   {
     ssr: false,
-  },
+  }
 );
-const OrderSentences = dynamic(() => import("@/components/dnd/order-sentences"));
-const ClozeTestPage = dynamic(() => import("@/components/cloze-test-page"));
+const OrderSentences = dynamic(
+  () => import("@/components/practic/order-sentences")
+);
+const ClozeTestPage = dynamic(
+  () => import("@/components/practic/cloze-test-page")
+);
 const OrderWords = dynamic(() => import("@/components/order-words"));
 const Matching = dynamic(() => import("@/components/matching"));
 const ManageTab = dynamic(() => import("./manage-tab"));
@@ -51,10 +53,7 @@ export default function TabsPractice({ userId }: Props) {
 
       <TabsContent className="space-y-2" value="tab1">
         {activeTab === "tab1" && (
-          <FlashCard
-            userId={userId}
-            deckType="SENTENCE"
-          />
+          <FlashCard userId={userId} deckType="SENTENCE" />
         )}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab2">
