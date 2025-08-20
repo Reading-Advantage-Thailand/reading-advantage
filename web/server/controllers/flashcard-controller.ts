@@ -857,11 +857,14 @@ export async function saveClozeTestResults(
 
     // Log the activity for XP calculation
     try {
+      // Use timestamp to make targetId unique for each game session
+      const uniqueTargetId = `cloze-test-${userId}-${Date.now()}`;
+      
       await prisma.userActivity.create({
         data: {
           userId: userId,
           activityType: "SENTENCE_CLOZE_TEST",
-          targetId: userId, // Using userId as targetId for this activity
+          targetId: uniqueTargetId,
           completed: true,
           details: {
             score: totalScore,
@@ -870,6 +873,7 @@ export async function saveClozeTestResults(
             difficulty: difficulty,
             timeTaken: timeTaken,
             xpEarned: Math.floor(totalScore * 5),
+            gameSession: uniqueTargetId,
           },
         },
       });
