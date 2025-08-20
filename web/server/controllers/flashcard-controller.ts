@@ -1048,6 +1048,138 @@ export async function getSentencesForOrdering(
   }
 }
 
+export async function getWordsForOrdering(
+  req: ExtendedNextRequest,
+  { params: { deckId } }: { params: { deckId: string } }
+) {
+  try {
+    const userId = req.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json({
+        message: "Unauthorized",
+        status: 401,
+      });
+    }
+
+    // Get user's saved sentences (flashcards)
+    const sentences = await prisma.userSentenceRecord.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: { due: "asc" },
+      take: 10, // Limit to 10 sentences for the game
+    });
+
+    if (sentences.length === 0) {
+      return NextResponse.json({
+        message: "No sentences found",
+        sentences: [],
+        status: 200,
+      });
+    }
+
+    const processedSentences = [];
+
+    // Process each sentence
+    for (const sentence of sentences) {
+      let article = null;
+      let content = "";
+      let title = "";
+
+      // Get the article content
+      if (sentence.articleId) {
+        article = await prisma.article.findUnique({
+          where: { id: sentence.articleId },
+          select: {
+            title: true,
+            passage: true,
+            sentences: true,
+          },
+        });
+        if (article) {
+          content = article.passage || "";
+          title = article.title || "";
+        }
+      }
+
+      if (!content) continue;
+
+      // Use the actual sentence text from the database directly
+      const targetSentence = sentence.sentence;
+
+      if (!targetSentence || targetSentence.trim().length === 0) continue;
+      
+      // Split sentence into words and clean them, but preserve original form
+      const originalWords = targetSentence
+        .split(/\s+/)
+        .filter(word => word.trim().length > 0);
+      
+      // Create cleaned version for correctOrder (lowercase, no punctuation)
+      const cleanedWords = originalWords
+        .map(word => word.replace(/[^\w'-]/g, '').toLowerCase())
+        .filter(word => word.length > 0);
+
+      if (cleanedWords.length < 3) continue; // Skip very short sentences
+
+      // Create word objects with metadata - use original words for display
+      const wordObjects = originalWords.map((word, index) => {
+        // Clean the word for matching purposes but keep original for display
+        const cleanedWord = word.replace(/[^\w'-]/g, '').toLowerCase();
+        
+        return {
+          id: `word-${sentence.id}-${index}`,
+          text: cleanedWord, // Use cleaned version for game logic
+          originalText: word, // Keep original with punctuation for reference
+          translation: null, // We don't have individual word translations
+          audioUrl: sentence.audioUrl || null,
+          startTime: sentence.timepoint || 0,
+          endTime: sentence.endTimepoint || 0,
+          partOfSpeech: "unknown", // Could be enhanced with NLP
+        };
+      }).filter(word => word.text.length > 0); // Filter out empty words after cleaning
+
+      // Use cleaned words for correct order
+      const correctOrder = wordObjects.map(word => word.text);
+
+      // Determine difficulty based on sentence length
+      let difficulty: "easy" | "medium" | "hard" = "medium";
+      if (correctOrder.length <= 5) difficulty = "easy";
+      else if (correctOrder.length >= 10) difficulty = "hard";
+
+      const processedSentence = {
+        id: sentence.id,
+        articleId: sentence.articleId || "",
+        articleTitle: title,
+        sentence: targetSentence,
+        correctOrder: correctOrder,
+        words: wordObjects,
+        difficulty,
+        context: content.substring(
+          Math.max(0, content.indexOf(targetSentence) - 100),
+          content.indexOf(targetSentence) + targetSentence.length + 100
+        ),
+        sentenceTranslations: sentence.translation,
+      };
+
+      processedSentences.push(processedSentence);
+    }
+
+    return NextResponse.json({
+      message: "Words for ordering retrieved successfully",
+      sentences: processedSentences,
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error getting words for ordering:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : "Unknown error",
+      status: 500,
+    });
+  }
+}
+
 export async function saveSentenceOrderingResults(req: ExtendedNextRequest) {
   try {
     const userId = req.session?.user?.id;
@@ -1226,6 +1358,197 @@ export async function saveSentenceOrderingResults(req: ExtendedNextRequest) {
     });
   } catch (error) {
     console.error("Error saving sentence ordering results:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : "Unknown error",
+      status: 500,
+    });
+  }
+}
+
+export async function saveWordOrderingResults(req: ExtendedNextRequest) {
+  try {
+    const userId = req.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json({
+        message: "Unauthorized",
+        status: 401,
+      });
+    }
+
+    const {
+      totalQuestions,
+      correctAnswers,
+      timeTaken,
+      difficulty = "medium",
+      gameSession,
+      sentenceResults = [], // Array of {sentenceId, isCorrect}
+    } = await req.json();
+
+    if (!totalQuestions || correctAnswers === undefined || !timeTaken) {
+      return NextResponse.json({
+        message:
+          "Missing required fields: totalQuestions, correctAnswers, timeTaken",
+        status: 400,
+      });
+    }
+
+    const accuracy = (correctAnswers / totalQuestions) * 100;
+    const baseXp = 15; // Base XP per correct answer for word ordering
+    const xpEarned = Math.floor(correctAnswers * baseXp);
+
+    // Update sentence records if results provided
+    if (sentenceResults.length > 0) {
+      const f = fsrs(generatorParameters());
+      const now = new Date();
+
+      const updatePromises = sentenceResults.map(async (result: any) => {
+        try {
+          const sentence = await prisma.userSentenceRecord.findUnique({
+            where: { id: result.sentenceId },
+          });
+
+          if (!sentence || sentence.userId !== userId) return;
+
+          // Calculate next review using FSRS
+          const cardObj = {
+            due: new Date(sentence.due),
+            stability: sentence.stability,
+            difficulty: sentence.difficulty,
+            elapsedDays: sentence.elapsedDays,
+            scheduledDays: sentence.scheduledDays,
+            reps: sentence.reps,
+            lapses: sentence.lapses,
+            state: sentence.state as State,
+            last_review: sentence.updatedAt,
+          };
+
+          const card = {
+            due: cardObj.due,
+            stability: cardObj.stability,
+            difficulty: cardObj.difficulty,
+            elapsed_days: cardObj.elapsedDays,
+            scheduled_days: cardObj.scheduledDays,
+            reps: cardObj.reps,
+            lapses: cardObj.lapses,
+            state: cardObj.state,
+            last_review: cardObj.last_review,
+          };
+
+          const rating = result.isCorrect ? Rating.Good : Rating.Again;
+          const recordLog = f.repeat(card, now)[rating];
+
+          // Validate the calculated values
+          const newDue = recordLog.card.due;
+          const newStability = recordLog.card.stability;
+          const newDifficulty = recordLog.card.difficulty;
+          const newElapsedDays = recordLog.card.elapsed_days;
+          const newScheduledDays = recordLog.card.scheduled_days;
+          const newReps = recordLog.card.reps;
+          const newLapses = recordLog.card.lapses;
+          const newState = recordLog.card.state;
+
+          const isValidDate = newDue instanceof Date && !isNaN(newDue.getTime());
+          const isValidStability = !isNaN(newStability) && isFinite(newStability);
+          const isValidDifficulty = !isNaN(newDifficulty) && isFinite(newDifficulty);
+          const isValidElapsedDays = !isNaN(newElapsedDays) && isFinite(newElapsedDays);
+          const isValidScheduledDays = !isNaN(newScheduledDays) && isFinite(newScheduledDays);
+
+          if (
+            !isValidDate ||
+            !isValidStability ||
+            !isValidDifficulty ||
+            !isValidElapsedDays ||
+            !isValidScheduledDays
+          ) {
+            // Use simple fallback logic
+            const fallbackDue = new Date();
+            if (result.isCorrect) {
+              fallbackDue.setDate(fallbackDue.getDate() + 3);
+            } else {
+              fallbackDue.setDate(fallbackDue.getDate() + 1);
+            }
+
+            await prisma.userSentenceRecord.update({
+              where: { id: result.sentenceId },
+              data: {
+                due: fallbackDue,
+                stability: result.isCorrect
+                  ? Math.max(sentence.stability * 1.2, 1)
+                  : Math.max(sentence.stability * 0.8, 0.1),
+                difficulty: Math.max(
+                  0.1,
+                  Math.min(
+                    sentence.difficulty + (result.isCorrect ? -0.1 : 0.2),
+                    10
+                  )
+                ),
+                elapsedDays: Math.max(0, sentence.elapsedDays + 1),
+                scheduledDays: result.isCorrect ? 3 : 1,
+                reps: sentence.reps + 1,
+                lapses: result.isCorrect
+                  ? sentence.lapses
+                  : sentence.lapses + 1,
+                state: result.isCorrect ? 2 : 1, // Review or Learning
+              },
+            });
+          } else {
+            await prisma.userSentenceRecord.update({
+              where: { id: result.sentenceId },
+              data: {
+                due: newDue,
+                stability: newStability,
+                difficulty: newDifficulty,
+                elapsedDays: newElapsedDays,
+                scheduledDays: newScheduledDays,
+                reps: newReps,
+                lapses: newLapses,
+                state: newState,
+              },
+            });
+          }
+        } catch (updateError) {
+          console.error(
+            `Error updating sentence ${result.sentenceId}:`,
+            updateError
+          );
+        }
+      });
+
+      await Promise.all(updatePromises);
+    }
+
+    // Log the activity for XP calculation
+    const uniqueTargetId =
+      gameSession || `word-ordering-${userId}-${Date.now()}`;
+
+    await prisma.userActivity.create({
+      data: {
+        userId: userId,
+        activityType: "SENTENCE_WORD_ORDERING",
+        targetId: uniqueTargetId,
+        completed: true,
+        timer: timeTaken,
+        details: {
+          totalQuestions: totalQuestions,
+          correctAnswers: correctAnswers,
+          accuracy: accuracy,
+          difficulty: difficulty,
+          xpEarned: xpEarned,
+          gameSession: uniqueTargetId,
+        },
+      },
+    });
+
+    return NextResponse.json({
+      message: "Word ordering results saved successfully",
+      xpEarned: xpEarned,
+      accuracy: accuracy,
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error saving word ordering results:", error);
     return NextResponse.json({
       message: "Internal server error",
       error: error instanceof Error ? error.message : "Unknown error",

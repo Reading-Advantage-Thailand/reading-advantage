@@ -23,7 +23,7 @@ const OrderSentences = dynamic(
 const ClozeTestPage = dynamic(
   () => import("@/components/practic/cloze-test-page")
 );
-const OrderWords = dynamic(() => import("@/components/order-words"));
+const OrderWords = dynamic(() => import("@/components/practic/order-words-page"));
 const Matching = dynamic(() => import("@/components/matching"));
 const ManageTab = dynamic(() => import("./manage-tab"));
 
@@ -63,7 +63,7 @@ export default function TabsPractice({ userId }: Props) {
         {activeTab === "tab3" && <ClozeTestPage />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab4">
-        {activeTab === "tab4" && <OrderWords userId={userId} />}
+        {activeTab === "tab4" && <OrderWords />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab5">
         {activeTab === "tab5" && <Matching userId={userId} />}
