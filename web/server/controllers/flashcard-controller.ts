@@ -683,3 +683,211 @@ export async function deleteVocabulariesFlashcard(req: ExtendedNextRequest) {
     });
   }
 }
+
+export async function getClozeTestSentences(
+  req: ExtendedNextRequest,
+  { params: { deckId } }: { params: { deckId: string } }
+) {
+  try {
+    const userId = req.session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Get sentence flashcards for the user (simplified approach without deck verification for now)
+    const sentences = await prisma.userSentenceRecord.findMany({
+      where: {
+        userId: userId,
+        // Add filtering for due sentences if needed
+      },
+      orderBy: {
+        due: "asc",
+      },
+      take: 10, // Limit to 10 sentences for the game
+    });
+
+    // Transform sentences to ClozeTestData format
+    const clozeTests = await Promise.all(
+      sentences.map(async (sentence) => {
+        // Get article information
+        let articleTitle = "Practice Sentence";
+        let audioUrl: string | undefined;
+        let startTime: number | undefined;
+        let endTime: number | undefined;
+
+        if (sentence.articleId) {
+          try {
+            const article = await prisma.article.findUnique({
+              where: { id: sentence.articleId },
+              select: { 
+                title: true,
+              },
+            });
+            
+            if (article && article.title) {
+              articleTitle = article.title;
+            }
+          } catch (error) {
+            console.error("Error fetching article:", error);
+          }
+        }
+
+        // Use audio information from sentence record
+        if (sentence.audioUrl) {
+          audioUrl = sentence.audioUrl;
+          startTime = sentence.timepoint;
+          endTime = sentence.endTimepoint;
+        }
+
+        // Split sentence into words with position information
+        const words = sentence.sentence.split(' ').map((word, index, array) => {
+          const previousWords = array.slice(0, index).join(' ');
+          const start = previousWords.length + (index > 0 ? 1 : 0); // +1 for space
+          return {
+            word: word,
+            start: start / sentence.sentence.length, // Normalize to 0-1 range
+            end: (start + word.length) / sentence.sentence.length,
+          };
+        });
+
+        // Parse translation JSON safely
+        let translation: { th?: string; cn?: string; tw?: string; vi?: string; } | undefined;
+        
+        if (sentence.translation && typeof sentence.translation === 'object') {
+          const translationObj = sentence.translation as any;
+          translation = {
+            th: translationObj.th as string,
+            cn: translationObj.cn as string, 
+            tw: translationObj.tw as string,
+            vi: translationObj.vi as string,
+          };
+        }
+
+        return {
+          id: sentence.id,
+          articleId: sentence.articleId || "",
+          articleTitle,
+          sentence: sentence.sentence,
+          words,
+          translation,
+          audioUrl,
+          startTime,
+          endTime,
+          difficulty: "medium" as const,
+        };
+      })
+    );
+
+    return NextResponse.json({
+      clozeTests,
+      totalCount: clozeTests.length,
+    });
+
+  } catch (error) {
+    console.error("Error fetching sentences for cloze test:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function saveClozeTestResults(
+  req: ExtendedNextRequest
+) {
+  try {
+    const userId = req.session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+    const { results, totalScore, totalQuestions, timeTaken, difficulty } = body;
+    
+    // Update FSRS data for each sentence based on performance
+    const updatePromises = results.map(async (result: any) => {
+      try {
+        const sentence = await prisma.userSentenceRecord.findFirst({
+          where: {
+            id: result.sentenceId,
+            userId: userId,
+          },
+        });
+
+        if (sentence) {
+          // Calculate new FSRS values based on performance
+          const rating = result.correct ? 3 : 1; // Good vs Again
+          const now = new Date();
+          
+          // Simple FSRS-like update (you can enhance this with the actual FSRS library)
+          const newStability = result.correct 
+            ? Math.min(sentence.stability * 1.3, 365) 
+            : Math.max(sentence.stability * 0.8, 1);
+          
+          const newDue = new Date(now.getTime() + newStability * 24 * 60 * 60 * 1000);
+          const newReps = sentence.reps + 1;
+          const newLapses = result.correct ? sentence.lapses : sentence.lapses + 1;
+
+          await prisma.userSentenceRecord.update({
+            where: { id: result.sentenceId },
+            data: {
+              stability: newStability,
+              due: newDue,
+              reps: newReps,
+              lapses: newLapses,
+              state: result.correct ? 2 : 1, // Review : Learning
+              updatedAt: now,
+            },
+          });
+        }
+      } catch (error) {
+        console.error(`Error updating sentence ${result.sentenceId}:`, error);
+      }
+    });
+
+    await Promise.all(updatePromises);
+
+    // Log the activity for XP calculation
+    try {
+      await prisma.userActivity.create({
+        data: {
+          userId: userId,
+          activityType: "SENTENCE_CLOZE_TEST",
+          targetId: userId, // Using userId as targetId for this activity
+          completed: true,
+          details: {
+            score: totalScore,
+            totalQuestions: totalQuestions,
+            accuracy: (totalScore / totalQuestions) * 100,
+            difficulty: difficulty,
+            timeTaken: timeTaken,
+            xpEarned: Math.floor(totalScore * 5),
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Error logging activity:", error);
+    }
+
+    return NextResponse.json({
+      message: "Cloze test results saved successfully",
+      xpEarned: Math.floor(totalScore * 5),
+      updatedSentences: results.length,
+    });
+
+  } catch (error) {
+    console.error("Error saving cloze test results:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

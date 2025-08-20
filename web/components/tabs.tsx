@@ -20,7 +20,7 @@ const FlashCard = dynamic(
   },
 );
 const OrderSentences = dynamic(() => import("@/components/dnd/order-sentences"));
-const ClozeTest = dynamic(() => import("@/components/cloze-test"));
+const ClozeTestPage = dynamic(() => import("@/components/cloze-test-page"));
 const OrderWords = dynamic(() => import("@/components/order-words"));
 const Matching = dynamic(() => import("@/components/matching"));
 const ManageTab = dynamic(() => import("./manage-tab"));
@@ -61,7 +61,7 @@ export default function TabsPractice({ userId }: Props) {
         {activeTab === "tab2" && <OrderSentences userId={userId} />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab3">
-        {activeTab === "tab3" && <ClozeTest userId={userId} />}
+        {activeTab === "tab3" && <ClozeTestPage />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab4">
         {activeTab === "tab4" && <OrderWords userId={userId} />}
