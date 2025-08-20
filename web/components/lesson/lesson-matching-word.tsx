@@ -12,7 +12,7 @@ import Image from "next/image";
 import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { Sentence } from "../dnd/types";
+import { Sentence } from "../practic/types";
 import AudioButton from "../audio-button";
 import {
   UserXpEarned,

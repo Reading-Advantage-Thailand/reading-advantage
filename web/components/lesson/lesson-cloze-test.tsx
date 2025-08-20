@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { levelCalculation, splitTextIntoSentences } from "@/lib/utils";
-import { Sentence } from "../dnd/types";
+import { Sentence } from "../practic/types";
 import {
   UserXpEarned,
   ActivityStatus,
