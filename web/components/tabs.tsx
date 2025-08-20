@@ -18,7 +18,7 @@ const FlashCard = dynamic(
   }
 );
 const OrderSentences = dynamic(
-  () => import("@/components/practic/order-sentences")
+  () => import("@/components/practic/order-sentences-page")
 );
 const ClozeTestPage = dynamic(
   () => import("@/components/practic/cloze-test-page")
@@ -57,7 +57,7 @@ export default function TabsPractice({ userId }: Props) {
         )}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab2">
-        {activeTab === "tab2" && <OrderSentences userId={userId} />}
+        {activeTab === "tab2" && <OrderSentences />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab3">
         {activeTab === "tab3" && <ClozeTestPage />}
