@@ -27,7 +27,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 import { FlashcardGameInline } from "./flashcard-game";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Select,
   SelectContent,
@@ -124,6 +124,7 @@ export function SingleDeckViewInline({
   onDeckUpdate,
 }: SingleDeckViewInlineProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameCards, setGameCards] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -143,13 +144,24 @@ export function SingleDeckViewInline({
         setGameCards(result.cards);
         setIsPlaying(true);
       } else if (result.cards.length === 0) {
-        toast.info("No cards are due for review right now! ⏰");
+        toast({
+          title: "No Cards Available",
+          description: "No cards are due for review right now! ⏰",
+        });
       } else {
-        toast.error(result.error || "Failed to load cards");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error || "Failed to load cards",
+        });
       }
     } catch (error) {
       console.error("Error loading cards:", error);
-      toast.error("Failed to load cards");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load cards",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -352,9 +364,10 @@ export function SingleDeckViewInline({
                 setSelectedLanguage(value);
                 const language =
                   languageOptions[value as keyof typeof languageOptions];
-                toast.success(
-                  `Translation language changed to ${language.name}`
-                );
+                toast({
+                  title: "Language Changed",
+                  description: `Translation language changed to ${language.name}`,
+                });
               }}
             >
               <SelectTrigger className="h-12">
@@ -465,7 +478,10 @@ export function SingleDeckViewInline({
                 onClick={() => {
                   if (onDeckUpdate) {
                     onDeckUpdate();
-                    toast.success("Data refreshed!");
+                    toast({
+                      title: "Success",
+                      description: "Data refreshed!",
+                    });
                   } else {
                     window.location.reload();
                   }

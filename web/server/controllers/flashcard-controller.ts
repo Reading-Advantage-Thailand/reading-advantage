@@ -708,12 +708,23 @@ export async function getClozeTestSentences(
       orderBy: {
         due: "asc",
       },
-      take: 10, // Limit to 10 sentences for the game
     });
 
-    // Transform sentences to ClozeTestData format
+    if (sentences.length === 0) {
+      return NextResponse.json({
+        message: "No sentences found",
+        sentences: [],
+        status: 200,
+      });
+    }
+
+    // Randomly select 5 sentences from the available sentences
+    const shuffledSentences = [...sentences].sort(() => Math.random() - 0.5);
+    const selectedSentences = shuffledSentences.slice(0, Math.min(5, sentences.length));
+
+    // Transform selected sentences to ClozeTestData format
     const clozeTests = await Promise.all(
-      sentences.map(async (sentence) => {
+      selectedSentences.map(async (sentence) => {
         // Get article information
         let articleTitle = "Practice Sentence";
         let audioUrl: string | undefined;
@@ -809,6 +820,11 @@ export async function saveClozeTestResults(req: ExtendedNextRequest) {
     const body = await req.json();
     const { results, totalScore, totalQuestions, timeTaken, difficulty } = body;
 
+    // Calculate XP earned early in the function
+    const xpEarned = Math.floor(totalScore * 2); // 2 XP per correct answer as per UserXpEarned.Sentence_Cloze_Test
+    
+    console.log(`Cloze Test - User: ${userId}, Score: ${totalScore}, XP Earned: ${xpEarned}`); // Debug logging
+
     // Update FSRS data for each sentence based on performance
     const updatePromises = results.map(async (result: any) => {
       try {
@@ -857,34 +873,63 @@ export async function saveClozeTestResults(req: ExtendedNextRequest) {
     await Promise.all(updatePromises);
 
     // Log the activity for XP calculation
-    try {
-      // Use timestamp to make targetId unique for each game session
-      const uniqueTargetId = `cloze-test-${userId}-${Date.now()}`;
+    const uniqueTargetId = `cloze-test-${userId}-${Date.now()}`;
 
-      await prisma.userActivity.create({
+    try {
+      const activity = await prisma.userActivity.create({
         data: {
           userId: userId,
           activityType: "SENTENCE_CLOZE_TEST",
           targetId: uniqueTargetId,
           completed: true,
+          timer: timeTaken,
           details: {
             score: totalScore,
             totalQuestions: totalQuestions,
             accuracy: (totalScore / totalQuestions) * 100,
             difficulty: difficulty,
             timeTaken: timeTaken,
-            xpEarned: Math.floor(totalScore * 5),
+            xpEarned: xpEarned,
             gameSession: uniqueTargetId,
           },
         },
       });
+
+      // Create XP log entry
+      if (xpEarned > 0) {
+        await prisma.xPLog.create({
+          data: {
+            userId: userId,
+            xpEarned: xpEarned,
+            activityId: activity.id,
+            activityType: "SENTENCE_CLOZE_TEST",
+          },
+        });
+
+        // Update user's total XP
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+        });
+
+        if (user) {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { xp: user.xp + xpEarned },
+          });
+
+          // Update session if available
+          if (req.session?.user) {
+            req.session.user.xp = user.xp + xpEarned;
+          }
+        }
+      }
     } catch (error) {
       console.error("Error logging activity:", error);
     }
 
     return NextResponse.json({
       message: "Cloze test results saved successfully",
-      xpEarned: Math.floor(totalScore * 5),
+      xpEarned: xpEarned,
       updatedSentences: results.length,
     });
   } catch (error) {
@@ -916,7 +961,6 @@ export async function getSentencesForOrdering(
         userId: userId,
       },
       orderBy: { due: "asc" },
-      take: 10, // Limit to 10 sentences for the game
     });
 
     if (sentences.length === 0) {
@@ -927,10 +971,14 @@ export async function getSentencesForOrdering(
       });
     }
 
+    // Randomly select 5 sentences from the available sentences
+    const shuffledSentences = [...sentences].sort(() => Math.random() - 0.5);
+    const selectedSentences = shuffledSentences.slice(0, Math.min(5, sentences.length));
+
     const sentenceGroups = [];
 
-    // Process each sentence
-    for (const sentence of sentences) {
+    // Process each selected sentence
+    for (const sentence of selectedSentences) {
       let article = null;
       let content = "";
       let title = "";
@@ -1068,7 +1116,6 @@ export async function getWordsForOrdering(
         userId: userId,
       },
       orderBy: { due: "asc" },
-      take: 10, // Limit to 10 sentences for the game
     });
 
     if (sentences.length === 0) {
@@ -1079,10 +1126,14 @@ export async function getWordsForOrdering(
       });
     }
 
+    // Randomly select 5 sentences from the available sentences
+    const shuffledSentences = [...sentences].sort(() => Math.random() - 0.5);
+    const selectedSentences = shuffledSentences.slice(0, Math.min(5, sentences.length));
+
     const processedSentences = [];
 
-    // Process each sentence
-    for (const sentence of sentences) {
+    // Process each selected sentence
+    for (const sentence of selectedSentences) {
       let article = null;
       let content = "";
       let title = "";
@@ -1332,7 +1383,7 @@ export async function saveSentenceOrderingResults(req: ExtendedNextRequest) {
     const uniqueTargetId =
       gameSession || `sentence-ordering-${userId}-${Date.now()}`;
 
-    await prisma.userActivity.create({
+    const activity = await prisma.userActivity.create({
       data: {
         userId: userId,
         activityType: "SENTENCE_ORDERING",
@@ -1349,6 +1400,46 @@ export async function saveSentenceOrderingResults(req: ExtendedNextRequest) {
         },
       },
     });
+
+    // Create XP log entry
+    if (xpEarned > 0) {
+      await prisma.xPLog.create({
+        data: {
+          userId: userId,
+          xpEarned: xpEarned,
+          activityId: activity.id,
+          activityType: "SENTENCE_ORDERING",
+        },
+      });
+
+      // Get current user data to calculate new XP and level
+      const currentUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { xp: true, level: true, cefrLevel: true },
+      });
+
+      if (currentUser) {
+        // Import level calculation function
+        const { levelCalculation } = await import("@/lib/utils");
+        
+        const finalXp = (currentUser.xp || 0) + xpEarned;
+        const levelData = levelCalculation(finalXp);
+
+        // Update user XP and level
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            xp: finalXp,
+            level:
+              typeof levelData.raLevel === "number"
+                ? levelData.raLevel
+                : parseInt(levelData.raLevel.toString()),
+            cefrLevel: levelData.cefrLevel,
+            updatedAt: new Date(),
+          },
+        });
+      }
+    }
 
     return NextResponse.json({
       message: "Sentence ordering results saved successfully",
@@ -1395,8 +1486,9 @@ export async function saveWordOrderingResults(req: ExtendedNextRequest) {
     }
 
     const accuracy = (correctAnswers / totalQuestions) * 100;
-    const baseXp = 15; // Base XP per correct answer for word ordering
-    const xpEarned = Math.floor(correctAnswers * baseXp);
+    const xpEarned = Math.floor(correctAnswers * 5); // 5 XP per correct answer as per UserXpEarned.Sentence_Word_Ordering
+
+    console.log(`Word Ordering - User: ${userId}, Correct: ${correctAnswers}, XP Earned: ${xpEarned}`); // Debug logging
 
     // Update sentence records if results provided
     if (sentenceResults.length > 0) {
@@ -1523,7 +1615,7 @@ export async function saveWordOrderingResults(req: ExtendedNextRequest) {
     const uniqueTargetId =
       gameSession || `word-ordering-${userId}-${Date.now()}`;
 
-    await prisma.userActivity.create({
+    const activity = await prisma.userActivity.create({
       data: {
         userId: userId,
         activityType: "SENTENCE_WORD_ORDERING",
@@ -1540,6 +1632,35 @@ export async function saveWordOrderingResults(req: ExtendedNextRequest) {
         },
       },
     });
+
+    // Create XP log entry
+    if (xpEarned > 0) {
+      await prisma.xPLog.create({
+        data: {
+          userId: userId,
+          xpEarned: xpEarned,
+          activityId: activity.id,
+          activityType: "SENTENCE_WORD_ORDERING",
+        },
+      });
+
+      // Update user's total XP
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (user) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { xp: user.xp + xpEarned },
+        });
+
+        // Update session if available
+        if (req.session?.user) {
+          req.session.user.xp = user.xp + xpEarned;
+        }
+      }
+    }
 
     return NextResponse.json({
       message: "Word ordering results saved successfully",
