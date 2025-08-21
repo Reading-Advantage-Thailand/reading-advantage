@@ -33,7 +33,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 
 interface ClozeTestData {
@@ -105,6 +105,7 @@ const AVAILABLE_LANGUAGES = {
 
 export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
   const router = useRouter();
+  const { toast: showToast } = useToast(); // Renamed to avoid conflict
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -295,27 +296,39 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
   }, [activeSentencesWithBlanks]);
 
   useEffect(() => {
+    console.log("ClozeTestGame mounted with deckId:", deckId); // Debug
     if (deckId && sentences.length === 0 && rawSentenceData.length === 0) {
+      console.log("Loading sentences from deck..."); // Debug
       loadSentencesFromDeck();
     }
   }, [deckId]);
 
   const loadSentencesFromDeck = async () => {
+    console.log("loadSentencesFromDeck called for deckId:", deckId); // Debug
     setIsLoading(true);
     try {
       const response = await fetch(
         `/api/v1/flashcard/decks/${deckId}/sentences-for-cloze`,
       );
+      console.log("Sentences API response status:", response.status); // Debug
       if (response.ok) {
         const data = await response.json();
-
+        console.log("Loaded sentences data:", data); // Debug
         setRawSentenceData(data.clozeTests || []);
       } else {
-        toast.error("Failed to load sentences from flashcard deck");
+        showToast({
+          title: "Error",
+          description: "Failed to load sentences from flashcard deck",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error loading sentences:", error);
-      toast.error("Failed to load sentences");
+      showToast({
+        title: "Error",
+        description: "Failed to load sentences",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -368,11 +381,16 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
 
       if (isAllCorrect) {
         setScore((prev) => prev + 1);
-        toast.success("Perfect! All blanks filled correctly! 🎉");
+        showToast({
+          title: "Success!",
+          description: "Perfect! All blanks filled correctly! 🎉",
+        });
       } else {
-        toast.error(
-          `${correctCount}/${currentSentence.blanks.length} correct. Try again! 💪`,
-        );
+        showToast({
+          title: "Try Again",
+          description: `${correctCount}/${currentSentence.blanks.length} correct. Try again! 💪`,
+          variant: "destructive",
+        });
       }
     }
   }, [
@@ -415,22 +433,6 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
     setIsPlaying(true);
   }, []);
 
-  const handleNext = useCallback(async () => {
-    // Save current sentence results before moving to next
-    if (currentSentence && userAnswers.length > 0 && isCompleted) {
-      await saveSentenceResult();
-    }
-
-    if (currentIndex < activeSentences.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      // Save final game results
-      await saveGameResults();
-      setGameComplete(true);
-      setIsPlaying(false);
-    }
-  }, [currentIndex, activeSentences.length, currentSentence, userAnswers, isCompleted]);
-
   const saveSentenceResult = useCallback(async () => {
     if (!currentSentence || userAnswers.length === 0) return;
 
@@ -459,6 +461,7 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
   }, [currentSentence, userAnswers]);
 
   const saveGameResults = useCallback(async () => {
+    console.log("saveGameResults called with gameResults:", gameResults); // Debug
     try {
       // Calculate final results from accumulated game results
       const allResults = gameResults.flatMap((sentenceResult) => 
@@ -481,6 +484,7 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
         difficulty: selectedDifficulty,
       };
 
+      console.log("Sending cloze test results:", finalGameResults); // Debug
       const response = await fetch('/api/v1/flashcard/cloze-test/results', {
         method: 'POST',
         headers: {
@@ -489,17 +493,59 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
         body: JSON.stringify(finalGameResults),
       });
 
+      console.log("Response status:", response.status); // Debug
       if (response.ok) {
         const data = await response.json();
-        toast.success(`Game completed! Earned ${data.xpEarned} XP! 🎉`);
+        console.log("Cloze test API response:", data); // Debug logging
+        const xpEarned = data.xpEarned || 0;
+        
+        // Force show toast regardless
+        showToast({
+          title: "Game Completed!",
+          description: `Earned ${xpEarned} XP! 🎉`,
+        });
+        console.log("Toast should be shown with XP:", xpEarned); // Debug
       } else {
-        toast.error("Failed to save game results");
+        const errorText = await response.text();
+        console.error("Failed to save game results:", response.status, response.statusText, errorText);
+        showToast({
+          title: "Error",
+          description: "Failed to save game results",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error saving game results:", error);
-      toast.error("Failed to save game results");
+      showToast({
+        title: "Error",
+        description: "Failed to save game results",
+        variant: "destructive",
+      });
     }
   }, [gameResults, timer, selectedDifficulty]);
+
+  const handleNext = useCallback(async () => {
+    // Create stable references to avoid dependency issues
+    const currentSentenceRef = currentSentence;
+    const userAnswersRef = userAnswers;
+    const isCompletedRef = isCompleted;
+    const currentIndexRef = currentIndex;
+    const activeSentencesLengthRef = activeSentences.length;
+
+    // Save current sentence results before moving to next
+    if (currentSentenceRef && userAnswersRef.length > 0 && isCompletedRef) {
+      await saveSentenceResult();
+    }
+
+    if (currentIndexRef < activeSentencesLengthRef - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    } else {
+      // Save final game results
+      await saveGameResults();
+      setGameComplete(true);
+      setIsPlaying(false);
+    }
+  }, [saveSentenceResult, saveGameResults]);
 
   const handleRestart = useCallback(() => {
     setUserAnswers([]);
@@ -524,11 +570,16 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
 
     if (isAllCorrect) {
       setScore((prev) => prev + 1);
-      toast.success("Perfect! All blanks filled correctly! 🎉");
+      showToast({
+        title: "Success!",
+        description: "Perfect! All blanks filled correctly! 🎉",
+      });
     } else {
-      toast.error(
-        `${correctCount}/${currentSentence.blanks.length} correct. Try again! 💪`,
-      );
+      showToast({
+        title: "Try Again",
+        description: `${correctCount}/${currentSentence.blanks.length} correct. Try again! 💪`,
+        variant: "destructive",
+      });
     }
   }, [userAnswers, currentSentence]);
 
@@ -543,7 +594,10 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
 
   const handleShowAnswers = useCallback(() => {
     setShowCorrectAnswers(true);
-    toast.info("Correct answers revealed! 📖");
+    showToast({
+      title: "Answer Revealed",
+      description: "Correct answers revealed! 📖",
+    });
   }, []);
 
   const handleBack = useCallback(() => {
@@ -566,7 +620,10 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
     if (!currentSentence?.audioUrl || isPlayingAudio) return;
 
     setIsPlayingAudio(true);
-    toast.success("Playing sentence audio 🔊");
+    showToast({
+      title: "Playing Audio",
+      description: "Playing sentence audio 🔊",
+    });
 
     try {
       await new Promise((resolve, reject) => {
@@ -641,10 +698,17 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
         audio.load();
       });
 
-      toast.success("Audio completed! 🎵");
+      showToast({
+        title: "Success!",
+        description: "Audio completed! 🎵",
+      });
     } catch (error) {
       console.error("Error playing audio:", error);
-      toast.error("Failed to play audio");
+      showToast({
+        title: "Error",
+        description: "Failed to play audio",
+        variant: "destructive",
+      });
     } finally {
       setIsPlayingAudio(false);
     }
@@ -654,11 +718,15 @@ export function ClozeTestGame({ deckId, sentences = [] }: ClozeTestGameProps) {
     setHintsEnabled((prev) => {
       const newState = !prev;
       if (newState) {
-        toast.success(
-          "Hints enabled! 💡\n• Incorrect answers will be highlighted\n• Use audio button to hear pronunciation",
-        );
+        showToast({
+          title: "Hints Enabled",
+          description: "💡 Incorrect answers will be highlighted. Use audio button to hear pronunciation.",
+        });
       } else {
-        toast.info("Hints disabled");
+        showToast({
+          title: "Hints Disabled",
+          description: "Hints disabled",
+        });
       }
       return newState;
     });

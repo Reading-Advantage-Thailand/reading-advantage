@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -89,6 +89,7 @@ const SUPPORTED_LANGUAGES = {
 
 export function OrderWordGame({ deckId, sentences = [] }: OrderWordGameProps) {
   const router = useRouter();
+  const { toast } = useToast(); // Add useToast hook
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedWords, setSelectedWords] = useState<ClickableWord[]>([]);
   const [availableWords, setAvailableWords] = useState<ClickableWord[]>([]);
@@ -293,12 +294,26 @@ export function OrderWordGame({ deckId, sentences = [] }: OrderWordGameProps) {
 
         if (response.ok) {
           const result = await response.json();
-          toast({
-            title: "Results Saved!",
-            description: `You earned ${result.xpEarned} XP! 🎉`,
-          });
+          console.log("Order words API response:", result); // Debug logging
+          const xpEarned = result.xpEarned || 0;
+          if (xpEarned > 0) {
+            toast({
+              title: "Results Saved!",
+              description: `You earned ${xpEarned} XP! 🎉`,
+            });
+          } else {
+            toast({
+              title: "Results Saved!",
+              description: "Game completed!",
+            });
+          }
         } else {
-          console.error('Failed to save game results');
+          console.error('Failed to save game results:', response.status, response.statusText);
+          toast({
+            title: "Error",
+            description: "Failed to save game results",
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error('Error saving game results:', error);

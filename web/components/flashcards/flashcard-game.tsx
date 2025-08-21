@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/use-toast";
 import { useCurrentLocale } from "@/locales/client";
 import {
   ChevronLeft,
@@ -113,6 +113,7 @@ export function FlashcardGameInline({
   const [xpAwarded, setXpAwarded] = useState<number | null>(null);
   const router = useRouter();
   const locale = useCurrentLocale();
+  const { toast } = useToast();
 
   const currentCard = cards[currentCardIndex];
 
@@ -217,12 +218,20 @@ export function FlashcardGameInline({
         return xpAmount;
       } else {
         console.error("Failed to award XP:", responseData);
-        toast.error("Failed to save your progress. Please try again.");
+        toast({
+          title: "Error",
+          description: "Failed to save your progress. Please try again.",
+          variant: "destructive",
+        });
         return null;
       }
     } catch (error) {
       console.error("Error awarding XP:", error);
-      toast.error("Failed to save your progress. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to save your progress. Please try again.",
+        variant: "destructive",
+      });
       return null;
     }
   };
@@ -278,17 +287,27 @@ export function FlashcardGameInline({
 
         if (awardedXp) {
           setTimeout(() => {
-            toast.success(`🎉 Congratulations! You earned ${awardedXp} XP!`, {
-              duration: 5000,
+            toast({
+              title: "🎉 Congratulations!",
+              description: `You earned ${awardedXp} XP!`,
+              variant: "default",
             });
           }, 1000);
         }
 
-        toast.success("Study session completed!");
+        toast({
+          title: "Success",
+          description: "Study session completed!",
+          variant: "default",
+        });
       }
     } catch (error) {
       console.error("Error submitting rating:", error);
-      toast.error("Failed to save progress. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to save progress. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -320,8 +339,10 @@ export function FlashcardGameInline({
 
     // Optional: Show a final toast
     if (xpAwarded) {
-      toast.success(`Session completed! Total XP earned: ${xpAwarded}`, {
-        duration: 3000,
+      toast({
+        title: "Session Completed!",
+        description: `Total XP earned: ${xpAwarded}`,
+        variant: "default",
       });
     }
   };
