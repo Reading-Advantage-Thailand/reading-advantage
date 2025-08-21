@@ -53,6 +53,7 @@ interface SingleDeckViewInlineProps {
   showHeader?: boolean;
   showStats?: boolean;
   deckType?: "VOCABULARY" | "SENTENCE";
+  onDeckUpdate?: () => void; // Add callback for updating deck data
 }
 
 const VOCABULARY_LANGUAGES = {
@@ -120,6 +121,7 @@ export function SingleDeckViewInline({
   showHeader = true,
   showStats = true,
   deckType,
+  onDeckUpdate,
 }: SingleDeckViewInlineProps) {
   const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -153,10 +155,20 @@ export function SingleDeckViewInline({
     }
   };
 
-  const handleGameComplete = () => {
-    setIsPlaying(false);
-    setGameCards([]);
-    window.location.reload();
+  const handleGameComplete = async () => {
+    // Add a small delay to ensure XP toast is visible before updating data
+    setTimeout(() => {
+      setIsPlaying(false);
+      setGameCards([]);
+      
+      // Use the callback to refresh data instead of full page reload
+      if (onDeckUpdate) {
+        onDeckUpdate();
+      } else {
+        // Fallback to page reload if callback not provided
+        window.location.reload();
+      }
+    }, 1000); // Reduced to 1 second since toast now shows properly with better timing
   };
 
   const handleBackToDeck = () => {
@@ -450,7 +462,14 @@ export function SingleDeckViewInline({
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  if (onDeckUpdate) {
+                    onDeckUpdate();
+                    toast.success("Data refreshed!");
+                  } else {
+                    window.location.reload();
+                  }
+                }}
                 className="h-12"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
@@ -509,6 +528,7 @@ export function DeckView({ decks, deckType, onDeckUpdate }: DeckViewProps) {
             createdAt: deck.createdAt.toISOString(),
             updatedAt: deck.updatedAt.toISOString(),
           }}
+          onDeckUpdate={onDeckUpdate} // Pass the callback down
         />
       ))}
     </div>

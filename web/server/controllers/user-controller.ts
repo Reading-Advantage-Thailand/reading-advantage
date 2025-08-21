@@ -148,6 +148,7 @@ export async function postActivityLog(
 
     // Validate activity type
     if (!Object.values(ActivityType).includes(activityType)) {
+      console.error("Invalid activity type:", activityType);
       return NextResponse.json({
         message: "Invalid activity type",
         status: 400,
@@ -241,8 +242,11 @@ export async function postActivityLog(
         },
       });
 
-      // Update user XP and level
-      const currentUser = req.session?.user;
+      // Get current user data from database to ensure we have the latest XP
+      const currentUser = await prisma.user.findUnique({
+        where: { id },
+        select: { xp: true, level: true, cefrLevel: true },
+      });
 
       // For initial level test, set XP directly instead of adding to existing XP
       const finalXp = data.isInitialLevelTest

@@ -37,6 +37,12 @@ import {
   Brain,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+  UserXpEarned,
+  ActivityStatus,
+  ActivityType,
+} from "@/components/models/user-activity-log-model";
+import { levelCalculation } from "@/lib/utils";
 
 export enum Rating {
   AGAIN = 1,
@@ -104,6 +110,7 @@ export function FlashcardGameInline({
   const [studyComplete, setStudyComplete] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [xpAwarded, setXpAwarded] = useState<number | null>(null);
   const router = useRouter();
   const locale = useCurrentLocale();
 
@@ -112,13 +119,15 @@ export function FlashcardGameInline({
   // Get appropriate translation based on selected language
   const getTranslation = (translation: any) => {
     if (!translation) return "No translation";
-    
+
     // Use selectedLanguage or fallback to available translations
-    return translation[selectedLanguage] || 
-           translation["en"] || 
-           translation["th"] || 
-           Object.values(translation)[0] || 
-           "No translation";
+    return (
+      translation[selectedLanguage] ||
+      translation["en"] ||
+      translation["th"] ||
+      Object.values(translation)[0] ||
+      "No translation"
+    );
   };
 
   // Timer effect
@@ -145,6 +154,77 @@ export function FlashcardGameInline({
   const resetTimer = () => {
     setElapsedTime(0);
     setIsPlaying(true);
+  };
+
+  const awardXpForCompletion = async () => {
+    if (!currentCard?.userId) {
+      console.error("No userId found in currentCard");
+      return;
+    }
+
+    try {
+      const xpAmount =
+        deckType === "VOCABULARY"
+          ? UserXpEarned.Vocabulary_Flashcards
+          : UserXpEarned.Sentence_Flashcards;
+
+      const activityType =
+        deckType === "VOCABULARY"
+          ? ActivityType.VocabularyFlashcards
+          : ActivityType.SentenceFlashcards;
+
+      const payload = {
+        activityType: activityType,
+        activityStatus: ActivityStatus.Completed,
+        xpEarned: xpAmount,
+        timeTaken: elapsedTime,
+        targetId: `flashcard-${deckType.toLowerCase()}-${Date.now()}`, // Add unique targetId
+        details: {
+          deckId: deckId,
+          deckName: deckName,
+          deckType: deckType,
+          totalCards: cards.length,
+          correctAnswers: sessionStats.correct,
+          incorrectAnswers: sessionStats.incorrect,
+          accuracy:
+            sessionStats.correct + sessionStats.incorrect > 0
+              ? Math.round(
+                  (sessionStats.correct /
+                    (sessionStats.correct + sessionStats.incorrect)) *
+                    100
+                )
+              : 0,
+          timeTaken: elapsedTime,
+          cefr_level: levelCalculation(xpAmount).cefrLevel,
+        },
+      };
+
+      const response = await fetch(
+        `/api/v1/users/${currentCard.userId}/activitylog`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const responseData = await response.json();
+
+      if (response.ok) {
+        setXpAwarded(xpAmount);
+        return xpAmount;
+      } else {
+        console.error("Failed to award XP:", responseData);
+        toast.error("Failed to save your progress. Please try again.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error awarding XP:", error);
+      toast.error("Failed to save your progress. Please try again.");
+      return null;
+    }
   };
 
   const handleRating = async (rating: Rating) => {
@@ -191,8 +271,19 @@ export function FlashcardGameInline({
         setShowAnswer(false);
         resetTimer();
       } else {
+        const awardedXp = await awardXpForCompletion();
+
         setStudyComplete(true);
         setIsPlaying(false);
+
+        if (awardedXp) {
+          setTimeout(() => {
+            toast.success(`🎉 Congratulations! You earned ${awardedXp} XP!`, {
+              duration: 5000,
+            });
+          }, 1000);
+        }
+
         toast.success("Study session completed!");
       }
     } catch (error) {
@@ -223,6 +314,18 @@ export function FlashcardGameInline({
     }
   };
 
+  const handleCompleteSession = () => {
+    // Call onComplete to notify parent component
+    onComplete();
+
+    // Optional: Show a final toast
+    if (xpAwarded) {
+      toast.success(`Session completed! Total XP earned: ${xpAwarded}`, {
+        duration: 3000,
+      });
+    }
+  };
+
   if (studyComplete) {
     return (
       <Card className="mx-auto max-w-2xl">
@@ -230,6 +333,16 @@ export function FlashcardGameInline({
           <div className="space-y-4">
             <Trophy className="mx-auto h-16 w-16 text-yellow-500" />
             <h2 className="text-2xl font-bold">Study Session Complete!</h2>
+            {xpAwarded && (
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center justify-center gap-2">
+                  <Zap className="h-5 w-5 text-yellow-500" />
+                  <span className="text-lg font-semibold text-green-700 dark:text-green-300">
+                    +{xpAwarded} XP Earned!
+                  </span>
+                </div>
+              </div>
+            )}
             <p className="text-muted-foreground">
               Great job! You&apos;ve completed your flashcard session.
             </p>
@@ -262,7 +375,7 @@ export function FlashcardGameInline({
           <Separator />
 
           <div className="flex justify-center gap-3">
-            <Button onClick={onComplete} size="lg">
+            <Button onClick={handleCompleteSession} size="lg">
               <CheckCircle className="mr-2 h-4 w-4" />
               Complete Session
             </Button>
@@ -377,7 +490,11 @@ export function FlashcardGameInline({
                 ) : (
                   <Target className="mr-1 h-3 w-3" />
                 )}
-                {currentCard.state === 0 ? "NEW" : currentCard.state === 1 || currentCard.state === 3 ? "LEARNING" : "REVIEW"}
+                {currentCard.state === 0
+                  ? "NEW"
+                  : currentCard.state === 1 || currentCard.state === 3
+                    ? "LEARNING"
+                    : "REVIEW"}
               </Badge>
             </div>
 
@@ -396,7 +513,9 @@ export function FlashcardGameInline({
                     )}
                   </div>
                   <Button
-                    onClick={() => speakText(currentCard.word?.vocabulary || "")}
+                    onClick={() =>
+                      speakText(currentCard.word?.vocabulary || "")
+                    }
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground"
@@ -432,7 +551,8 @@ export function FlashcardGameInline({
                       <div className="space-y-2">
                         <h3 className="text-xl font-semibold">Definition</h3>
                         <p className="text-lg text-muted-foreground">
-                          {getTranslation(currentCard.word?.definition) || "No definition"}
+                          {getTranslation(currentCard.word?.definition) ||
+                            "No definition"}
                         </p>
                       </div>
                       {currentCard.word?.example && (
