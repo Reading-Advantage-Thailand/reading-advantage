@@ -42,7 +42,8 @@ type Props = {
 // Student interface
 interface Student {
   id: string;
-  display_name: string;
+  display_name?: string;
+  name?: string;
 }
 
 interface AssignmentFormData {
@@ -206,9 +207,13 @@ export default function AssignDialog({
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = await res.json();
-        const studentsData =
-          data.studentInClass || data.data?.studentInClass || [];
-        setStudents(studentsData);
+        const studentsData = data.studentInClass || data.data?.studentInClass || [];
+        // Map the student data to match the expected format
+        const mappedStudents = studentsData.map((student: any) => ({
+          id: student.id,
+          display_name: student.display_name || student.name || student.email,
+        }));
+        setStudents(mappedStudents);
       } catch (error) {
         console.error("Error fetching students:", error);
         toast({
@@ -307,8 +312,8 @@ export default function AssignDialog({
       const newStudents = selectedStudents.filter(
         (id) => !assignedStudentIds.includes(id)
       );
-      const existingStudents = selectedStudents.filter((id) =>
-        assignedStudentIds.includes(id)
+      const removedStudents = assignedStudentIds.filter(
+        (id) => !selectedStudents.includes(id)
       );
 
       // POST สำหรับ student ใหม่
@@ -323,34 +328,16 @@ export default function AssignDialog({
             selectedStudents: newStudents,
           }),
         });
-        if (!response.ok)
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("POST Error:", response.status, errorText);
           throw new Error(`HTTP error! status: ${response.status}`);
+        }
       }
 
-      // PUT สำหรับ student ที่มี assignment อยู่แล้ว
-      const metaResponse = await fetch("/api/v1/assignments", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          classroomId: form.classroomId,
-          articleId,
-          studentId: "meta",
-          updates: {
-            title: form.title,
-            description: form.description,
-            dueDate: date!.toISOString(),
-          },
-        }),
-      });
-
-      if (!metaResponse.ok) {
-        throw new Error(`HTTP error! status: ${metaResponse.status}`);
-      }
-
-      for (const studentId of existingStudents) {
-        const response = await fetch("/api/v1/assignments", {
+      // PUT สำหรับ meta (ข้อมูลหลักของ assignment)
+      if (assignedStudentIds.length > 0) {
+        const metaResponse = await fetch("/api/v1/assignments", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -358,22 +345,48 @@ export default function AssignDialog({
           body: JSON.stringify({
             classroomId: form.classroomId,
             articleId,
-            studentId,
+            studentId: "meta",
             updates: {
-              displayName: students.find((s) => s.id === studentId)
-                ?.display_name,
+              title: form.title,
+              description: form.description,
+              dueDate: date!.toISOString(),
             },
           }),
         });
 
+        if (!metaResponse.ok) {
+          const errorText = await metaResponse.text();
+          console.error("META PUT Error:", metaResponse.status, errorText);
+          throw new Error(`HTTP error! status: ${metaResponse.status}`);
+        }
+      }
+
+      // DELETE สำหรับ students ที่ถูกลบออกจาก assignment
+      for (const studentId of removedStudents) {
+        const response = await fetch("/api/v1/assignments", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            classroomId: form.classroomId,
+            articleId,
+            studentId,
+          }),
+        });
+
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorText = await response.text();
+          console.error(`DELETE Error for student ${studentId}:`, response.status, errorText);
+          // ไม่ throw error เพราะอาจจะไม่มี assignment อยู่แล้ว
         }
       }
 
       toast({
         title: `${t("toast.success")}`,
-        description: `${t("toast.assignmentCreated", { title: form.title })}`,
+        description: assignedStudentIds.length > 0 
+          ? `Assignment "${form.title}" updated successfully` 
+          : `${t("toast.assignmentCreated", { title: form.title })}`,
       });
 
       onUpdate?.();
@@ -383,7 +396,9 @@ export default function AssignDialog({
       console.error("Error creating/updating assignment:", error);
       toast({
         title: `${t("toast.error")}`,
-        description: `${t("toast.creationFailed")}`,
+        description: assignedStudentIds.length > 0 
+          ? "Failed to update assignment"
+          : `${t("toast.creationFailed")}`,
         variant: "destructive",
       });
     } finally {
@@ -623,7 +638,7 @@ export default function AssignDialog({
                         htmlFor={student.id}
                         className="text-sm font-normal cursor-pointer"
                       >
-                        {student.display_name}
+                        {student.display_name || student.name || student.id}
                       </Label>
                     </div>
                   ))
@@ -713,7 +728,11 @@ export default function AssignDialog({
               disabled={isSubmitting}
             >
               {isSubmitting
-                ? `${t("creating")}`
+                ? assignedStudentIds.length > 0 
+                  ? "Updating..." 
+                  : `${t("creating")}`
+                : assignedStudentIds.length > 0
+                ? `${t("editAssignment")}`
                 : `${t("createAssignmentButton")}`}
             </Button>
           </DialogFooter>

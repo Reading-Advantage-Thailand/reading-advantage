@@ -271,6 +271,22 @@ const AssignmentDashboard = () => {
 
     setIsDeleting(true);
     try {
+      // Convert assignment IDs to student IDs
+      const selectedStudentIds = selectedStudents
+        .map((assignmentId) => {
+          const student = assignment.students.find(
+            (s) => s.id === assignmentId
+          );
+          return student?.studentId;
+        })
+        .filter(Boolean) as string[];
+
+      if (selectedStudentIds.length === 0) {
+        console.error("No valid student IDs found");
+        setIsDeleting(false);
+        return;
+      }
+
       const response = await fetch("/api/v1/assignments", {
         method: "DELETE",
         headers: {
@@ -279,19 +295,23 @@ const AssignmentDashboard = () => {
         body: JSON.stringify({
           classroomId: assignment.meta.classroomId,
           articleId: assignment.meta.articleId,
-          studentIds: selectedStudents,
+          studentIds: selectedStudentIds,
         }),
       });
 
       if (response.ok) {
+        const result = await response.json();
         await handleAssignmentUpdate();
         setSelectedStudents([]);
         setIsEditMode(false);
       } else {
-        console.error("Failed to delete students");
+        const errorData = await response.json();
+        console.error("Failed to delete students:", errorData);
+        // You might want to show a user-friendly error message here
       }
     } catch (error) {
       console.error("Error deleting students:", error);
+      // You might want to show a user-friendly error message here
     } finally {
       setIsDeleting(false);
     }
@@ -470,17 +490,17 @@ const AssignmentDashboard = () => {
                 daysRemaining < 0
                   ? "bg-destructive/10 text-destructive"
                   : daysRemaining <= 3
-                  ? "bg-orange-600/10 text-orange-600"
-                  : "bg-secondary text-muted-foreground"
+                    ? "bg-orange-600/10 text-orange-600"
+                    : "bg-secondary text-muted-foreground"
               }`}
             >
               {daysRemaining < 0
                 ? `${t("overdue")}`
                 : daysRemaining === 0
-                ? `${t("dueToday")}`
-                : `${t("daysRemaining", {
-                    daysRemaining: daysRemaining,
-                  })}`}
+                  ? `${t("dueToday")}`
+                  : `${t("daysRemaining", {
+                      daysRemaining: daysRemaining,
+                    })}`}
             </div>
           </div>
         </div>
