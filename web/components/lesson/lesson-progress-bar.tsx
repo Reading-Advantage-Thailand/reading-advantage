@@ -3,37 +3,31 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
-import LessonWordList from "./lesson-vocabulary-preview";
+import { Card } from "@/components/ui/card";
 import { Article } from "../models/article-model";
-import { Book, Timer } from "lucide-react";
-import { useScopedI18n } from "@/locales/client";
-import LessonSentensePreview from "./lesson-sentence-preview";
-import { useCurrentLocale } from "@/locales/client";
-import LessonWordCollection from "./lesson-vocabulary-collection";
-import MCQuestionCard from "../questions/mc-question-card";
-import SAQuestionCard from "../questions/sa-question-card";
-import LessonVocabularyFlashCard from "./lesson-vocabulary-flash-card";
-import LessonMatchingWords from "./lesson-vocabulary-activity-choice";
-import LessonSentenseFlashCard from "./lesson-sentense-flash-card";
-import LessonOrderSentences from "./lesson-order-sentence";
-import LessonClozeTest from "./lesson-cloze-test";
-import LessonOrderWords from "./lesson-order-word";
-import LessonMatching from "./lesson-matching-word";
-import LessonLanguageQuestion from "./lesson-language-question";
-import LessonSummary from "./lesson-summary";
-import LessonIntroduction from "./lesson-introduction";
+import { Timer } from "lucide-react";
+import { useScopedI18n, useCurrentLocale } from "@/locales/client";
 import { useTimer } from "@/contexts/timer-context";
 import {
   ActivityType,
   ActivityStatus,
 } from "../models/user-activity-log-model";
+import {
+  Phase1Introduction,
+  Phase2VocabularyPreview,
+  Phase3FirstReading,
+  Phase4VocabularyCollection,
+  Phase5DeepReading,
+  Phase6SentenceCollection,
+  Phase7MultipleChoice,
+  Phase8ShortAnswer,
+  Phase9VocabularyFlashcards,
+  Phase10VocabularyMatching,
+  Phase11SentenceFlashcards,
+  Phase12SentenceActivities,
+  Phase13LanguageQuestions,
+  Phase14LessonSummary,
+} from "./phases";
 
 interface LessonProgressBar {
   phases: string[];
@@ -55,7 +49,6 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const [currentPhase, setCurrentPhase] = useState(1);
   const t = useScopedI18n("pages.student.lessonPage");
-  const tb = useScopedI18n("pages.student.practicePage");
   const locale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
   const [showVocabularyButton, setShowVocabularyButton] = useState(true);
   const [showSentenseButton, setShowSentenseButton] = useState(true);
@@ -250,11 +243,11 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
         <div className=" mt-6">
           {/*Phase 1 Introduction */}
           {currentPhase === 1 && (
-            <LessonIntroduction
+            <Phase1Introduction
               article={article}
               articleId={articleId}
               userId={userId}
-              onCompleteChange={(complete) =>
+              onCompleteChange={(complete: boolean) =>
                 updatePhaseCompletion(0, complete)
               }
             />
@@ -262,11 +255,11 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
 
           {/* Phase 2 Vocabulary Preview */}
           {currentPhase === 2 && (
-            <LessonWordList
+            <Phase2VocabularyPreview
               article={article}
               articleId={articleId}
               userId={userId}
-              onCompleteChange={(complete) =>
+              onCompleteChange={(complete: boolean) =>
                 updatePhaseCompletion(1, complete)
               }
             />
@@ -274,38 +267,24 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
 
           {/* Phase 3 First Reading with Audio */}
           {currentPhase === 3 && (
-            <Card className="pb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase3Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">{t("phase3Description")}</span>
-              </div>
-              <CardDescription className="px-6">
-                <LessonSentensePreview
-                  article={article}
-                  articleId={articleId}
-                  userId={userId}
-                  targetLanguage={locale}
-                  phase="phase3"
-                  onCompleteChange={(complete) =>
-                    updatePhaseCompletion(2, complete)
-                  }
-                />
-              </CardDescription>
-            </Card>
+            <Phase3FirstReading
+              article={article}
+              articleId={articleId}
+              userId={userId}
+              locale={locale}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(2, complete)
+              }
+            />
           )}
 
           {/* Phase 4 Vocabulary Collection */}
           {currentPhase === 4 && (
-            <LessonWordCollection
+            <Phase4VocabularyCollection
               article={article}
               articleId={articleId}
               userId={userId}
-              onCompleteChange={(complete) =>
+              onCompleteChange={(complete: boolean) =>
                 updatePhaseCompletion(3, complete)
               }
             />
@@ -313,423 +292,124 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
 
           {/* Phase 5 Deep Reading */}
           {currentPhase === 5 && (
-            <Card className="pb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase5Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">{t("phase5Description")}</span>
-              </div>
-              <CardDescription className="px-6">
-                <LessonSentensePreview
-                  article={article}
-                  articleId={articleId}
-                  userId={userId}
-                  targetLanguage={locale}
-                  phase="phase5"
-                  onCompleteChange={(complete) =>
-                    updatePhaseCompletion(4, complete)
-                  }
-                />
-              </CardDescription>
-            </Card>
+            <Phase5DeepReading
+              article={article}
+              articleId={articleId}
+              userId={userId}
+              locale={locale}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(4, complete)
+              }
+            />
           )}
 
           {/* Phase 6 Sentence Collection */}
           {currentPhase === 6 && (
-            <Card className="pb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase6Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">{t("phase6Description")}</span>
-              </div>
-              <CardDescription className="px-6">
-                <LessonSentensePreview
-                  article={article}
-                  articleId={articleId}
-                  userId={userId}
-                  targetLanguage={locale}
-                  phase="phase6"
-                  onCompleteChange={(complete) =>
-                    updatePhaseCompletion(5, complete)
-                  }
-                />
-              </CardDescription>
-            </Card>
+            <Phase6SentenceCollection
+              article={article}
+              articleId={articleId}
+              userId={userId}
+              locale={locale}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(5, complete)
+              }
+            />
           )}
 
           {/* Phase 7 Multiple-Choice Questions*/}
           {currentPhase === 7 && (
-            <Card className="pb-12 xl:h-[550px] w-full md:w-[725px] xl:w-[750px]">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase7Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">{t("phase7Description")}</span>
-              </div>
-              <CardDescription className="px-6">
-                <MCQuestionCard
-                  userId={userId}
-                  articleId={articleId}
-                  articleTitle={article.title}
-                  articleLevel={article.ra_level}
-                  page="lesson"
-                  onCompleteChange={(complete) =>
-                    updatePhaseCompletion(6, complete)
-                  }
-                />
-              </CardDescription>
-            </Card>
+            <Phase7MultipleChoice
+              article={article}
+              articleId={articleId}
+              userId={userId}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(6, complete)
+              }
+            />
           )}
 
           {/* Phase 8 Short-Answer Questions*/}
           {currentPhase === 8 && (
-            <Card className="pb-7 xl:h-[550px] w-full md:w-[725px] xl:w-[750px]">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase8Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">{t("phase8Description")}</span>
-              </div>
-              <CardDescription className="px-6">
-                <SAQuestionCard
-                  userId={userId}
-                  articleId={articleId}
-                  articleTitle={article.title}
-                  articleLevel={article.ra_level}
-                  page="lesson"
-                  onCompleteChange={(complete) =>
-                    updatePhaseCompletion(7, complete)
-                  }
-                />
-              </CardDescription>
-            </Card>
+            <Phase8ShortAnswer
+              article={article}
+              articleId={articleId}
+              userId={userId}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(7, complete)
+              }
+            />
           )}
 
           {/* Phase 9 Vocabulary Practice - Flashcards*/}
           {currentPhase === 9 && (
-            <Card className="pb-7 w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase10Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">{t("phase10Description")}</span>
-              </div>
-              <CardDescription className="px-6">
-                <LessonVocabularyFlashCard
-                  userId={userId}
-                  articleId={articleId}
-                  showButton={showVocabularyButton}
-                  setShowButton={setShowVocabularyButton}
-                  onCompleteChange={(complete) =>
-                    updatePhaseCompletion(8, complete)
-                  }
-                />
-              </CardDescription>
-            </Card>
+            <Phase9VocabularyFlashcards
+              userId={userId}
+              articleId={articleId}
+              showVocabularyButton={showVocabularyButton}
+              setShowVocabularyButton={setShowVocabularyButton}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(8, complete)
+              }
+            />
           )}
 
           {/* Phase 10 Vocabulary Practice - Activity Choice*/}
           {currentPhase === 10 && (
-            <Card className="pb-7 xl:h-[550px] w-full md:w-[725px] xl:w-[750px]">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase10Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">{t("phase10Description")}</span>
-              </div>
-              <CardDescription className="px-6">
-                <LessonMatchingWords
-                  userId={userId}
-                  articleId={articleId}
-                  onCompleteChange={(complete) =>
-                    updatePhaseCompletion(9, complete)
-                  }
-                />
-              </CardDescription>
-            </Card>
+            <Phase10VocabularyMatching
+              userId={userId}
+              articleId={articleId}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(9, complete)
+              }
+            />
           )}
 
           {/* Phase 11 Sentence Practice Flashcards*/}
           {currentPhase === 11 && (
-            <Card className="pb-7 w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase11Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">{t("phase11Description")}</span>
-              </div>
-              <CardDescription className="px-6">
-                <LessonSentenseFlashCard
-                  userId={userId}
-                  articleId={articleId}
-                  showButton={showSentenseButton}
-                  setShowButton={setShowSentenseButton}
-                  onCompleteChange={(complete) =>
-                    updatePhaseCompletion(10, complete)
-                  }
-                />
-              </CardDescription>
-            </Card>
+            <Phase11SentenceFlashcards
+              userId={userId}
+              articleId={articleId}
+              showSentenseButton={showSentenseButton}
+              setShowSentenseButton={setShowSentenseButton}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(10, complete)
+              }
+            />
           )}
 
-          {/* Phase 12 Sentence Practice - Activity Choice*/}
-          {currentPhase === 12 && sentenceActivity === "none" && (
-            <Card className="pb-7 w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase12Title")}</div>
-                </CardTitle>
-              </CardHeader>
-
-              <div className="px-6">
-                <span className="font-bold">{t("phase12Description")}</span>
-              </div>
-
-              <CardContent className="px-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  {/* Order Sentences */}
-                  <Card className="pb-4">
-                    <CardHeader>
-                      <CardTitle>{tb("orderSentences")}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="mb-4">
-                        {tb("orderSentencesPractice.orderSentencesDescription")}
-                      </p>
-                    </CardContent>
-                    <div className="flex justify-end items-end pr-4">
-                      <Button
-                        onClick={() => setSentenceActivity("order-sentences")}
-                      >
-                        {tb("orderSentencesPractice.orderSentences")}
-                      </Button>
-                    </div>
-                  </Card>
-
-                  {/* Cloze Test */}
-                  <Card className="pb-4">
-                    <CardHeader>
-                      <CardTitle>{tb("clozeTest")}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="mb-4">
-                        {tb("clozeTestPractice.clozeTestDescription")}
-                      </p>
-                    </CardContent>
-                    <div className="flex justify-end items-end pr-4">
-                      <Button onClick={() => setSentenceActivity("cloze-test")}>
-                        {tb("clozeTestPractice.clozeTest")}
-                      </Button>
-                    </div>
-                  </Card>
-
-                  {/* Order Words */}
-                  <Card className="pb-4">
-                    <CardHeader>
-                      <CardTitle>{tb("orderWords")}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="mb-4">
-                        {tb("orderWordsPractice.orderWordsDescription")}
-                      </p>
-                    </CardContent>
-                    <div className="flex justify-end items-end pr-4">
-                      <Button
-                        onClick={() => setSentenceActivity("order-words")}
-                      >
-                        {tb("orderWordsPractice.orderWords")}
-                      </Button>
-                    </div>
-                  </Card>
-
-                  {/* Matching */}
-                  <Card className="pb-4">
-                    <CardHeader>
-                      <CardTitle>{tb("matching")}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="mb-4">
-                        {tb("matchingPractice.matchingDescription")}
-                      </p>
-                    </CardContent>
-                    <div className="flex justify-end items-end pr-4">
-                      <Button onClick={() => setSentenceActivity("matching")}>
-                        {tb("matchingPractice.matching")}
-                      </Button>
-                    </div>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Phase 12 Sentence Practice - orderSentences*/}
-          {currentPhase === 12 && sentenceActivity === "order-sentences" && (
-            <Card className="pb-7 w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">
-                    {tb("orderSentencesPractice.orderSentences")}
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">
-                  {tb("orderSentencesPractice.orderSentencesDescription")}
-                </span>
-              </div>
-              <LessonOrderSentences
-                articleId={articleId}
-                userId={userId}
-                onCompleteChange={(complete) =>
-                  updatePhaseCompletion(11, complete)
-                }
-              />
-            </Card>
-          )}
-
-          {/* Phase 12 Sentence Practice - clozeTest*/}
-          {currentPhase === 12 && sentenceActivity === "cloze-test" && (
-            <Card className="pb-7 w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{tb("clozeTest")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">
-                  {tb("clozeTestPractice.clozeTestDescription")}
-                </span>
-              </div>
-
-              <LessonClozeTest
-                articleId={articleId}
-                userId={userId}
-                onCompleteChange={(complete) =>
-                  updatePhaseCompletion(11, complete)
-                }
-              />
-            </Card>
-          )}
-
-          {/* Phase 12 Sentence Practice - orderWords*/}
-          {currentPhase === 12 && sentenceActivity === "order-words" && (
-            <Card className="pb-7 w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{tb("orderWords")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">
-                  {tb("orderWordsPractice.orderWordsDescription")}
-                </span>
-              </div>
-
-              <LessonOrderWords
-                articleId={articleId}
-                userId={userId}
-                onCompleteChange={(complete) =>
-                  updatePhaseCompletion(11, complete)
-                }
-              />
-            </Card>
-          )}
-
-          {/* Phase 12 Sentence Practice - matching*/}
-          {currentPhase === 12 && sentenceActivity === "matching" && (
-            <Card className="pb-7 w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{tb("matching")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">
-                  {tb("matchingPractice.matchingDescription")}
-                </span>
-              </div>
-              <LessonMatching
-                articleId={articleId}
-                userId={userId}
-                onCompleteChange={(complete) =>
-                  updatePhaseCompletion(11, complete)
-                }
-              />
-            </Card>
+          {/* Phase 12 Sentence Practice Activities*/}
+          {currentPhase === 12 && (
+            <Phase12SentenceActivities
+              userId={userId}
+              articleId={articleId}
+              sentenceActivity={sentenceActivity}
+              setSentenceActivity={setSentenceActivity}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(11, complete)
+              }
+            />
           )}
 
           {/* Phase 13 Language Questions (Optional)*/}
           {currentPhase === 13 && (
-            <Card className="pb-7 w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase13Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <div className="px-6">
-                <span className="font-bold">{t("phase13Description")}</span>
-              </div>
-              <CardDescription className="px-6">
-                <LessonLanguageQuestion
-                  article={article}
-                  onCompleteChange={(complete) =>
-                    updatePhaseCompletion(12, complete)
-                  }
-                  skipPhase={() => skipPhase(currentPhase)}
-                />
-              </CardDescription>
-            </Card>
+            <Phase13LanguageQuestions
+              article={article}
+              onCompleteChange={(complete: boolean) =>
+                updatePhaseCompletion(12, complete)
+              }
+              skipPhase={() => skipPhase(currentPhase)}
+            />
           )}
 
           {/* Phase 14 Lesson Summary */}
           {currentPhase === 14 && (
-            <Card className="pb-7 w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Book />
-                  <div className="ml-2">{t("phase14Title")}</div>
-                </CardTitle>
-              </CardHeader>
-              <CardDescription className="px-6">
-                <LessonSummary
-                  articleId={articleId}
-                  userId={userId}
-                  elapsedTime={` ${Math.floor(elapsedTime / 60)}m ${
-                    elapsedTime % 60
-                  }s`}
-                />
-              </CardDescription>
-            </Card>
+            <Phase14LessonSummary
+              articleId={articleId}
+              userId={userId}
+              elapsedTime={` ${Math.floor(elapsedTime / 60)}m ${
+                elapsedTime % 60
+              }s`}
+            />
           )}
         </div>
       )}
