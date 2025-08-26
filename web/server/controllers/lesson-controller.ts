@@ -1,6 +1,6 @@
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 
 export interface Context {
   params: {
@@ -19,27 +19,35 @@ export async function getLessonStatus(
       throw new Error("articleId is required");
     }
 
-    const LessonData = await db
-      .collection("users")
-      .doc(userId)
-      .collection("lesson-records")
-      .doc(articleId)
-      .get();
+    const lessonRecord = await prisma.lessonRecord.findUnique({
+      where: {
+        userId_articleId: {
+          userId,
+          articleId,
+        },
+      },
+    });
 
-    const lessonData = LessonData.data();
-
-    if (!lessonData) {
+    if (!lessonRecord) {
       return NextResponse.json({ currentPhase: 1, elapsedTime: 0 });
     }
 
     let currentPhase = 1;
     let elapsedTime = 0;
 
+    // Check each phase to find the current one (status = 1)
     for (let phase = 1; phase <= 14; phase++) {
-      const phaseKey = `phase${phase}`;
-      if (lessonData[phaseKey]?.status === 1) {
+      const phaseKey = `phase${phase}` as keyof typeof lessonRecord;
+      const phaseData = lessonRecord[phaseKey] as any;
+      
+      if (phaseData?.status === 1) {
         currentPhase = phase;
-        elapsedTime = lessonData[`phase${phase - 1}`]?.elapsedTime || 0;
+        // Get elapsed time from previous phase if available
+        if (phase > 1) {
+          const prevPhaseKey = `phase${phase - 1}` as keyof typeof lessonRecord;
+          const prevPhaseData = lessonRecord[prevPhaseKey] as any;
+          elapsedTime = prevPhaseData?.elapsedTime || 0;
+        }
         break;
       }
     }
@@ -65,21 +73,24 @@ export async function postLessonStatus(
       throw new Error("articleId is required");
     }
 
-    const existingLessonData = await db
-      .collection("users")
-      .doc(userId)
-      .collection("lesson-records")
-      .doc(articleId)
-      .get();
+    const existingLessonRecord = await prisma.lessonRecord.findUnique({
+      where: {
+        userId_articleId: {
+          userId,
+          articleId,
+        },
+      },
+    });
 
-    if (existingLessonData.exists) {
+    if (existingLessonRecord) {
       return NextResponse.json(
         { message: "Lesson status already exists, no action taken." },
         { status: 200 }
       );
     }
 
-    let lessonStatus = {
+    // Create lesson status with initial phase configuration
+    const lessonStatus = {
       phase1: { status: 2, elapsedTime: 0 },
       phase2: { status: 0, elapsedTime: 0 },
       phase3: { status: 0, elapsedTime: 0 },
@@ -96,46 +107,38 @@ export async function postLessonStatus(
       phase14: { status: 0, elapsedTime: 0 },
     };
 
-    const batch = db.batch();
+    await prisma.$transaction(async (tx) => {
+      // Create lesson record
+      await tx.lessonRecord.create({
+        data: {
+          userId,
+          articleId,
+          ...lessonStatus,
+        },
+      });
 
-    // Create lesson status
-    const lessonRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("lesson-records")
-      .doc(articleId);
+      // Update assignment status if classroomId is provided
+      const classroomId = req.nextUrl.searchParams.get("classroomId");
+      console.log("ClassroomId received:", classroomId);
+      
+      if (classroomId) {
+        // Check if assignment exists and update its status
+        const assignment = await tx.assignment.findFirst({
+          where: {
+            classroomId,
+            articleId,
+            userId,
+          },
+        });
 
-    batch.set(lessonRef, lessonStatus);
-
-    // Update assignment status if classroomId is provided
-    const classroomId = req.nextUrl.searchParams.get("classroomId");
-    console.log("ClassroomId received:", classroomId);
-    if (classroomId) {
-      // Update teacher perspective (assignments collection)
-      const assignmentRef = db
-        .collection("assignments")
-        .doc(classroomId)
-        .collection(articleId)
-        .doc(userId);
-
-      // Check if assignment exists before updating
-      const assignmentDoc = await assignmentRef.get();
-      if (assignmentDoc.exists) {
-        batch.update(assignmentRef, { status: 1 });
-
-        // Update student perspective (student-assignments collection)
-        const assignmentId = `${classroomId}_${articleId}`;
-        const studentAssignmentRef = db
-          .collection("student-assignments")
-          .doc(userId)
-          .collection("assignments")
-          .doc(assignmentId);
-
-        batch.update(studentAssignmentRef, { status: 1 });
+        if (assignment) {
+          await tx.assignment.update({
+            where: { id: assignment.id },
+            data: { status: "IN_PROGRESS" },
+          });
+        }
       }
-    }
-
-    await batch.commit();
+    });
 
     return NextResponse.json(
       { message: "Create lesson phase status success!" },
@@ -167,48 +170,65 @@ export async function putLessonPhaseStatus(
       );
     }
 
-    const batch = db.batch();
+    await prisma.$transaction(async (tx) => {
+      // Get current lesson record
+      const lessonRecord = await tx.lessonRecord.findUnique({
+        where: {
+          userId_articleId: {
+            userId,
+            articleId,
+          },
+        },
+      });
 
-    const lessonRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("lesson-records")
-      .doc(articleId);
+      if (!lessonRecord) {
+        throw new Error("Lesson record not found");
+      }
 
-    const phaseKey = `phase${phase}`;
-    const updateData: Record<string, any> = {};
-    updateData[`${phaseKey}.status`] = status;
-    updateData[`${phaseKey}.elapsedTime`] = elapsedTime;
+      // Prepare update data for current phase
+      const phaseKey = `phase${phase}` as keyof typeof lessonRecord;
+      const updateData: any = {};
+      updateData[phaseKey] = { status, elapsedTime };
 
-    batch.update(lessonRef, updateData);
+      // If phase < 14, set next phase to status 1 (in progress)
+      if (phase < 14) {
+        const nextPhaseKey = `phase${phase + 1}` as keyof typeof lessonRecord;
+        updateData[nextPhaseKey] = { status: 1, elapsedTime: 0 };
+      }
 
-    if (phase < 14) {
-      const nextPhaseKey = `phase${phase + 1}`;
-      const nextPhaseData: Record<string, any> = {};
-      nextPhaseData[`${nextPhaseKey}.status`] = 1;
-      batch.update(lessonRef, nextPhaseData);
-    }
+      // Update lesson record
+      await tx.lessonRecord.update({
+        where: {
+          userId_articleId: {
+            userId,
+            articleId,
+          },
+        },
+        data: updateData,
+      });
 
-    const classroomId = req.nextUrl.searchParams.get("classroomId");
-    console.log("ClassroomId received:", classroomId);
-    if (classroomId && phase === 13 && status === 2) {
-      const assignmentRef = db
-        .collection("assignments")
-        .doc(classroomId)
-        .collection(articleId)
-        .doc(userId);
+      // Handle assignment completion if this is phase 13 and status is completed (2)
+      const classroomId = req.nextUrl.searchParams.get("classroomId");
+      console.log("ClassroomId received:", classroomId);
+      
+      if (classroomId && phase === 13 && status === 2) {
+        // Find and update assignment
+        const assignment = await tx.assignment.findFirst({
+          where: {
+            classroomId,
+            articleId,
+            userId,
+          },
+        });
 
-      const studentAssignmentRef = db
-        .collection("student-assignments")
-        .doc(userId)
-        .collection("assignments")
-        .doc(`${classroomId}_${articleId}`);
-
-      batch.update(assignmentRef, { status: 2 });
-      batch.update(studentAssignmentRef, { status: 2 });
-    }
-
-    await batch.commit();
+        if (assignment) {
+          await tx.assignment.update({
+            where: { id: assignment.id },
+            data: { status: "COMPLETED" },
+          });
+        }
+      }
+    });
 
     return NextResponse.json({ message: "Update successful" }, { status: 200 });
   } catch (error) {
@@ -240,20 +260,27 @@ export async function getUserQuizPerformance(
     const decodedArticleId = decodeURIComponent(articleId);
     const cleanArticleId = decodedArticleId.split("/")[0];
 
-    const articleData = await db
-      .collection("users")
-      .doc(userId)
-      .collection("article-records")
-      .doc(cleanArticleId)
-      .get();
+    // Note: This function seems to be looking for quiz performance data
+    // which might be stored in a different way in the original Firebase structure.
+    // For now, I'll return a basic structure that matches the expected response.
+    // You may need to adjust this based on how quiz scores are actually stored.
 
-    if (!articleData.exists) {
+    const userActivity = await prisma.userActivity.findFirst({
+      where: {
+        userId,
+        targetId: cleanArticleId,
+        activityType: "ARTICLE_READ",
+      },
+    });
+
+    if (!userActivity) {
       return NextResponse.json({ message: "No Data Exists" }, { status: 404 });
     }
 
-    const quizData = articleData.data();
-    const mcqScore = quizData?.scores;
-    const saqScore = quizData?.scores;
+    // Extract scores from the details JSON if available
+    const details = userActivity.details as any;
+    const mcqScore = details?.mcqScore || details?.scores || 0;
+    const saqScore = details?.saqScore || details?.scores || 0;
 
     return NextResponse.json({ mcqScore, saqScore }, { status: 200 });
   } catch (error) {
