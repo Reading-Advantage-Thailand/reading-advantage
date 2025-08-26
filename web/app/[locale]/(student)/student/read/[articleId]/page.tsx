@@ -62,7 +62,7 @@ export default async function ArticleQuizPage({
           articleId={params.articleId}
           userId={user.id}
         />
-        <div className="flex flex-col gap-4 mb-40 mt-4 max-w-40] max-w-none">
+        <div className="flex flex-col gap-4 mb-40 mt-4 max-w-[400px]">
           <div className="flex gap-2 justify-center items-center sm:flex-nowrap flex-wrap">
             {isAtLeastTeacher(user.role) && (
               <>
