@@ -344,6 +344,7 @@ export default function LessonVocabularyFlashCard({
                         words={words}
                         showButton={showButton}
                         setShowButton={setShowButton}
+                        articleId={articleId}
                       />
                     )}
                     <div>

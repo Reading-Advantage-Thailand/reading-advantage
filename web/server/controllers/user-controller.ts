@@ -157,6 +157,27 @@ export async function postActivityLog(
 
     const targetId = data.articleId || data.storyId || data.contentId || "";
 
+    // Special handling for vocabulary and article rating activities
+    // If targetId is empty but we have articleId in details, use that
+    let finalTargetId = targetId;
+    if (!finalTargetId && data.details?.articleId) {
+      finalTargetId = data.details.articleId;
+    }
+    
+    // For article rating, if targetId is a userId (starts with 'cmesn' or similar), 
+    // try to get articleId from details
+    if (activityType === ActivityType.ARTICLE_RATING && 
+        finalTargetId && 
+        (finalTargetId.startsWith('cmesn') || finalTargetId.startsWith('cmeu'))) {
+      if (data.details?.articleId) {
+        finalTargetId = data.details.articleId;
+      } else if (data.articleId) {
+        finalTargetId = data.articleId;
+      }
+    }
+
+    console.log(`Activity logging: ${activityType}, originalTargetId: ${targetId}, finalTargetId: ${finalTargetId}`);
+
     // Get article metadata if this is an article-related activity
     let articleMetadata = {};
     if (
@@ -194,7 +215,7 @@ export async function postActivityLog(
         userId_activityType_targetId: {
           userId: id,
           activityType: activityType,
-          targetId: targetId,
+          targetId: finalTargetId,
         },
       },
     });
@@ -202,7 +223,7 @@ export async function postActivityLog(
     const commonData = {
       userId: id,
       activityType: activityType,
-      targetId: targetId,
+      targetId: finalTargetId,
       timer: data.timeTaken || 0,
       details: {
         ...articleMetadata,
@@ -303,7 +324,24 @@ export async function putActivityLog(
 
     const targetId = data.articleId || data.storyId || data.contentId || "";
 
-    if (!targetId) {
+    // Special handling for vocabulary and article rating activities (same as postActivityLog)
+    let finalTargetId = targetId;
+    if (!finalTargetId && data.details?.articleId) {
+      finalTargetId = data.details.articleId;
+    }
+    
+    // For article rating, if targetId is a userId, try to get articleId from details
+    if (activityType === ActivityType.ARTICLE_RATING && 
+        finalTargetId && 
+        (finalTargetId.startsWith('cmesn') || finalTargetId.startsWith('cmeu'))) {
+      if (data.details?.articleId) {
+        finalTargetId = data.details.articleId;
+      } else if (data.articleId) {
+        finalTargetId = data.articleId;
+      }
+    }
+
+    if (!finalTargetId) {
       return NextResponse.json({
         message: "Target ID is required for update",
         status: 400,
@@ -347,7 +385,7 @@ export async function putActivityLog(
         userId_activityType_targetId: {
           userId: id,
           activityType: activityType,
-          targetId: targetId,
+          targetId: finalTargetId,
         },
       },
     });
@@ -355,7 +393,7 @@ export async function putActivityLog(
     const commonData = {
       userId: id,
       activityType: activityType,
-      targetId: targetId,
+      targetId: finalTargetId,
       timer: data.timeTaken || 0,
       details: {
         ...articleMetadata,
@@ -1012,26 +1050,67 @@ export async function resetUserProgress(
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    await prisma.userActivity.deleteMany({
-      where: { userId: id },
-    });
+    // Delete all related records using transaction for data consistency
+    await prisma.$transaction(async (tx) => {
+      // Delete lesson records
+      await tx.lessonRecord.deleteMany({
+        where: { userId: id },
+      });
 
-    await prisma.xPLog.deleteMany({
-      where: { userId: id },
-    });
+      // Delete user activities
+      await tx.userActivity.deleteMany({
+        where: { userId: id },
+      });
 
-    await prisma.user.update({
-      where: { id },
-      data: {
-        xp: 0,
-        level: 0,
-        cefrLevel: "",
-        updatedAt: new Date(),
-      },
+      // Delete XP logs
+      await tx.xPLog.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete MCQ records
+      await tx.mCQRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete SAQ records
+      await tx.sAQRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete LAQ records
+      await tx.lAQRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete story records
+      await tx.storyRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete user word records (flashcard-related)
+      await tx.userWordRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete user sentence records (flashcard-related)
+      await tx.userSentenceRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Reset user progress
+      await tx.user.update({
+        where: { id },
+        data: {
+          xp: 0,
+          level: 0,
+          cefrLevel: "", // Reset to default CEFR level
+          updatedAt: new Date(),
+        },
+      });
     });
 
     return NextResponse.json({
-      message: "User progress reset successfully",
+      message: "User progress reset successfully - all data cleared",
       status: 200,
     });
   } catch (error) {

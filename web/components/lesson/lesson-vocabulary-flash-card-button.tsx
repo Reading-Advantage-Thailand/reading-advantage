@@ -19,6 +19,7 @@ interface Props {
   words: Word[];
   showButton: boolean;
   setShowButton: (value: boolean) => void;
+  articleId: string; // Add articleId prop
 }
 
 type Logs = {
@@ -36,6 +37,7 @@ export default function LessonFlashCardVocabularyPracticeButton({
   words,
   showButton,
   setShowButton,
+  articleId,
 }: Props) {
   const t = useScopedI18n("pages.student.practicePage");
   const tUpdateScore = useScopedI18n(
@@ -82,7 +84,9 @@ export default function LessonFlashCardVocabularyPracticeButton({
           activityType: ActivityType.VocabularyFlashcards,
           activityStatus: ActivityStatus.Completed,
           xpEarned: UserXpEarned.Vocabulary_Flashcards,
+          articleId: articleId, // Add articleId to activity log
           details: {
+            articleId: articleId, // Also add to details
             cefr_level: levelCalculation(UserXpEarned.Vocabulary_Flashcards)
               .cefrLevel,
           },

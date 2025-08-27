@@ -60,6 +60,19 @@ export default function MCQuestionCard({
   const [hasStarted, setHasStarted] = useState(false);
   const { checkAndNotifyCompletion } = useArticleCompletion();
 
+  // Listen to global store changes to sync between lesson and article
+  useEffect(() => {
+    const unsubscribe = useQuestionStore.subscribe((state) => {
+      const { mcQuestion } = state;
+      if (mcQuestion.state === QuestionState.COMPLETED) {
+        setState(QuestionState.COMPLETED);
+        setData(mcQuestion);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
   useEffect(() => {
     const checkAndClearCorruptedData = async () => {
       try {
@@ -156,6 +169,11 @@ export default function MCQuestionCard({
         setData(data);
         setState(data.state);
         useQuestionStore.setState({ mcQuestion: data });
+
+        // If the quiz is completed server-side, make sure to update local state
+        if (data.state === QuestionState.COMPLETED) {
+          setHasStarted(true);
+        }
       })
       .catch((error) => {
         setState(QuestionState.LOADING);
@@ -176,12 +194,23 @@ export default function MCQuestionCard({
       if (newResp) {
         updatedData.results = newResp.results;
         updatedData.total = newResp.total;
+        updatedData.state = newResp.state || (completedAnswers >= 5 ? QuestionState.COMPLETED : QuestionState.INCOMPLETE);
       }
       setData(updatedData);
+      
+      // Update global store with the updated data
+      useQuestionStore.setState({ mcQuestion: updatedData });
     }
 
     if (completedAnswers >= 5) {
       setState(QuestionState.COMPLETED);
+      // Clear session storage when completed
+      try {
+        sessionStorage.removeItem(`quiz_progress_${articleId}`);
+        sessionStorage.removeItem(`quiz_started_${articleId}`);
+      } catch (e) {
+        console.error("Error clearing session storage:", e);
+      }
     } else {
       setState(QuestionState.LOADING);
     }
@@ -705,8 +734,21 @@ function MCQeustion({
     if (completedCount === 5) {
       setLoadingAnswer(false);
 
-      const updatedResp = { ...currentResp, progress: progress };
+      const updatedResp = { ...currentResp, progress: progress, state: QuestionState.COMPLETED };
       handleCompleted(progress, updatedResp);
+
+      // Update global state to mark MCQ as completed
+      useQuestionStore.setState({ 
+        mcQuestion: { ...updatedResp, state: QuestionState.COMPLETED } 
+      });
+
+      // Clear session storage since quiz is completed
+      try {
+        sessionStorage.removeItem(`quiz_started_${articleId}`);
+        sessionStorage.removeItem(`quiz_progress_${articleId}`);
+      } catch (e) {
+        console.error("Error clearing session storage:", e);
+      }
 
       const totalXpEarned = correctCount * 2;
       toast({
@@ -718,7 +760,7 @@ function MCQeustion({
         router.refresh();
       }, 100);
     }
-  }, [progress, router, toast, page, setPaused, handleCompleted]);
+  }, [progress, router, toast, page, setPaused, handleCompleted, currentResp, articleId]);
 
   const handleNext = () => {
     setSelectedOption(-1);

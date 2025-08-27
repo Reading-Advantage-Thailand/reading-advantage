@@ -489,13 +489,14 @@ export async function answerSAQuestion(
         userId_activityType_targetId: {
           userId: userId,
           activityType: "SA_QUESTION",
-          targetId: question_id,
+          targetId: article_id,
         },
       },
     });
 
+    let activity;
     if (existingActivity) {
-      await prisma.userActivity.update({
+      activity = await prisma.userActivity.update({
         where: { id: existingActivity.id },
         data: {
           completed: true,
@@ -511,11 +512,11 @@ export async function answerSAQuestion(
         },
       });
     } else {
-      await prisma.userActivity.create({
+      activity = await prisma.userActivity.create({
         data: {
           userId: userId,
           activityType: "SA_QUESTION",
-          targetId: question_id,
+          targetId: article_id,
           completed: true,
           timer: timeRecorded,
           details: {
@@ -543,7 +544,7 @@ export async function answerSAQuestion(
         data: {
           userId: userId,
           xpEarned: 3,
-          activityId: question_id,
+          activityId: activity.id,
           activityType: "SA_QUESTION",
         },
       });
@@ -698,8 +699,9 @@ export async function answerMCQuestion(
       },
     });
 
+    let activity;
     if (existingActivity) {
-      await prisma.userActivity.update({
+      activity = await prisma.userActivity.update({
         where: { id: existingActivity.id },
         data: {
           completed: true,
@@ -717,7 +719,7 @@ export async function answerMCQuestion(
         },
       });
     } else {
-      await prisma.userActivity.create({
+      activity = await prisma.userActivity.create({
         data: {
           userId: userId,
           activityType: "MC_QUESTION",
@@ -752,7 +754,7 @@ export async function answerMCQuestion(
           data: {
             userId: userId,
             xpEarned: UserXpEarned.MC_Question,
-            activityId: question_id,
+            activityId: activity.id,
             activityType: "MC_QUESTION",
           },
         });
@@ -803,24 +805,13 @@ export async function retakeMCQuestion(
       })
       .map((activity) => activity.id);
 
-    const mcQuestions = await prisma.multipleChoiceQuestion.findMany({
-      where: {
-        articleId: article_id,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    const questionIds = mcQuestions.map((q) => q.id);
-
-    if (questionIds.length > 0) {
+    if (articleActivityIds.length > 0) {
       await prisma.xPLog.deleteMany({
         where: {
           userId: userId,
           activityType: "MC_QUESTION",
           activityId: {
-            in: questionIds,
+            in: articleActivityIds,
           },
         },
       });
@@ -1062,7 +1053,7 @@ export async function rateArticle(
     const { rating } = await req.json();
     const userId = req.session?.user.id as string;
 
-    await prisma.userActivity.create({
+    const activity = await prisma.userActivity.create({
       data: {
         userId: userId,
         activityType: "ARTICLE_RATING",
@@ -1103,10 +1094,25 @@ export async function getLAQuestionXP(
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
+    // Find the UserActivity for this LA_QUESTION
+    const userActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId: userId,
+          activityType: "LA_QUESTION",
+          targetId: article_id,
+        },
+      },
+    });
+
+    if (!userActivity) {
+      return NextResponse.json({ message: "User activity not found" }, { status: 404 });
+    }
+
     const existingXPLog = await prisma.xPLog.findFirst({
       where: {
         userId: userId,
-        activityId: question_id,
+        activityId: userActivity.id,
         activityType: "LA_QUESTION",
       },
     });
@@ -1129,7 +1135,7 @@ export async function getLAQuestionXP(
       data: {
         userId: userId,
         xpEarned: xpEarned,
-        activityId: question_id,
+        activityId: userActivity.id,
         activityType: "LA_QUESTION",
       },
     });
@@ -1183,7 +1189,7 @@ export async function rateSAQuestion(
       );
     }
 
-    await prisma.userActivity.create({
+    const activity = await prisma.userActivity.create({
       data: {
         userId: userId,
         activityType: "ARTICLE_RATING",
@@ -1212,7 +1218,7 @@ export async function rateSAQuestion(
         data: {
           userId: userId,
           xpEarned: rating,
-          activityId: question_id,
+          activityId: activity.id,
           activityType: "ARTICLE_RATING",
         },
       });
