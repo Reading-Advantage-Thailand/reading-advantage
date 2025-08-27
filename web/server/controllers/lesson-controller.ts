@@ -260,31 +260,76 @@ export async function getUserQuizPerformance(
     const decodedArticleId = decodeURIComponent(articleId);
     const cleanArticleId = decodedArticleId.split("/")[0];
 
-    // Note: This function seems to be looking for quiz performance data
-    // which might be stored in a different way in the original Firebase structure.
-    // For now, I'll return a basic structure that matches the expected response.
-    // You may need to adjust this based on how quiz scores are actually stored.
+    // Debug logging
+    console.log("Debug getUserQuizPerformance:");
+    console.log("- userId:", userId);
+    console.log("- articleId (raw):", articleId);
+    console.log("- cleanArticleId:", cleanArticleId);
 
-    const userActivity = await prisma.userActivity.findFirst({
+    // Find all UserActivities for MC and SA questions
+    const allUserActivities = await prisma.userActivity.findMany({
       where: {
         userId,
-        targetId: cleanArticleId,
-        activityType: "ARTICLE_READ",
+        activityType: {
+          in: ["MC_QUESTION", "SA_QUESTION"]
+        },
+        completed: true
       },
+      select: {
+        id: true,
+        activityType: true,
+        details: true,
+      }
     });
 
-    if (!userActivity) {
+    // Filter activities based on articleId in details
+    const userActivities = allUserActivities.filter(activity => {
+      const details = activity.details as any;
+      return details?.articleId === cleanArticleId;
+    });
+
+    console.log("- User activities found:", userActivities.length);
+
+    if (userActivities.length === 0) {
       return NextResponse.json({ message: "No Data Exists" }, { status: 404 });
     }
 
-    // Extract scores from the details JSON if available
-    const details = userActivity.details as any;
-    const mcqScore = details?.mcqScore || details?.scores || 0;
-    const saqScore = details?.saqScore || details?.scores || 0;
+    // Get XP logs for these activities
+    const activityIds = userActivities.map(a => a.id);
+    const allXPLogs = await prisma.xPLog.findMany({
+      where: {
+        userId,
+        activityId: { in: activityIds },
+        activityType: { in: ["MC_QUESTION", "SA_QUESTION"] }
+      }
+    });
 
-    return NextResponse.json({ mcqScore, saqScore }, { status: 200 });
+    console.log("- XP logs found:", allXPLogs.length);
+
+    const mcqLogs = allXPLogs.filter(log => log.activityType === "MC_QUESTION");
+    const saqLogs = allXPLogs.filter(log => log.activityType === "SA_QUESTION");
+
+    // MCQ: Count correct answers based on XP earned (1 XP = 1 correct answer)
+    const mcqCorrectCount = mcqLogs.reduce((total, log) => total + (log.xpEarned > 0 ? 1 : 0), 0);
+    
+    // SAQ: Use total XP score as before
+    const saqScore = saqLogs.reduce((total, log) => total + log.xpEarned, 0);
+
+    console.log("- Final results:");
+    console.log("- mcqCorrectCount:", mcqCorrectCount);
+    console.log("- saqScore:", saqScore);
+    console.log("- mcqCount:", mcqLogs.length);
+    console.log("- saqCount:", saqLogs.length);
+
+    return NextResponse.json({ 
+      mcqScore: mcqCorrectCount, // Count of correct MCQ answers
+      saqScore: saqScore,        // Sum of SAQ XP scores
+      mcqCount: mcqLogs.length,
+      saqCount: saqLogs.length
+    }, { status: 200 });
+
   } catch (error) {
-    console.error("Error getting documents", error);
+    console.error("Error getting quiz performance", error);
     return NextResponse.json(
       {
         message: "Internal server error",

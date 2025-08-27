@@ -149,7 +149,9 @@ export default function LessonMatchingWords({
                 activityType: ActivityType.VocabularyMatching,
                 activityStatus: ActivityStatus.Completed,
                 xpEarned: UserXpEarned.Vocabulary_Matching,
+                articleId: articleId, // Add articleId
                 details: {
+                  articleId: articleId, // Also add to details
                   cefr_level: levelCalculation(UserXpEarned.Vocabulary_Matching)
                     .cefrLevel,
                 },

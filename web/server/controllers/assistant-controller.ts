@@ -206,6 +206,8 @@ export async function getWordlist(req: ExtendedNextRequest) {
       articleId: articleId,
     });
 
+    console.log("result:", enhancedWordList);
+
     return NextResponse.json(enhancedWordList, { status: 200 });
   }
 }

@@ -7,6 +7,7 @@ import { DBCollection } from "../models/enum";
 import { getAlls, deleteOne } from "../handlers/handler-factory";
 import db from "@/configs/firestore-config";
 import { DocumentData } from "firebase-admin/firestore";
+import { prisma } from "@/lib/prisma";
 
 interface RequestContext {
   params: {
@@ -384,40 +385,166 @@ export const getLessonXp = async (
   req: NextRequest,
   { params: { userId } }: Context
 ) => {
-  const articleId = req.nextUrl.searchParams.get("articleId");
-
   try {
-    const subcollections = [
-      "mc-question-activity-log",
-      "sa-question-activity-log",
-      "sentence-cloze-test-activity-log",
-      "sentence-flashcards-activity-log",
-      "sentence-matching-activity-log",
-      "sentence-ordering-activity-log",
-      "sentence-word-ordering-activity-log",
-      "vocabulary-flashcards-activity-log",
-      "vocabulary-matching-activity-log",
-    ];
+    const articleId = req.nextUrl.searchParams.get("articleId");
 
-    let totalXp = 0;
+    if (!articleId) {
+      return NextResponse.json(
+        { success: false, error: "articleId is required" },
+        { status: 400 }
+      );
+    }
 
-    for (const sub of subcollections) {
-      const snapshot = await db
-        .collection("user-activity-log")
-        .doc(userId)
-        .collection(sub)
-        .where("articleId", "==", articleId)
-        .get();
+    const decodedArticleId = decodeURIComponent(articleId);
+    const cleanArticleId = decodedArticleId.split("/")[0];
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        totalXp += data?.xpEarned ?? 0;
+    console.log("Debug getLessonXp:");
+    console.log("- userId:", userId);
+    console.log("- articleId (raw):", articleId);
+    console.log("- cleanArticleId:", cleanArticleId);
+
+    // Get ALL UserActivities for this user
+    const allUserActivities = await prisma.userActivity.findMany({
+      where: {
+        userId: userId,
+      },
+      select: {
+        id: true,
+        activityType: true,
+        targetId: true,
+        details: true,
+        createdAt: true,
+      }
+    });
+
+    // Filter activities based on articleId:
+    // 1. For activities with targetId = articleId (SA_QUESTION, LA_QUESTION, ARTICLE_READ, etc.)
+    // 2. For MCQ activities, check articleId in details
+    const articleRelatedActivities = allUserActivities.filter(activity => {
+      // Direct match with targetId (for SA, LA, ARTICLE_READ, etc.)
+      if (activity.targetId === cleanArticleId) {
+        return true;
+      }
+      
+      // For MCQ activities, check articleId in details
+      if (activity.activityType === 'MC_QUESTION') {
+        const details = activity.details as any;
+        return details?.articleId === cleanArticleId;
+      }
+      
+      return false;
+    });
+
+    console.log("- User activities found for article:", articleRelatedActivities.length);
+    console.log("- Activities found:", articleRelatedActivities.map(a => ({ 
+      id: a.id, 
+      type: a.activityType, 
+      targetId: a.targetId 
+    })));
+
+    // Also get vocabulary activities and article rating that might be related
+    // Get activities from the same time period (within 1 hour of article activities)
+    let allRelatedActivities = [...articleRelatedActivities];
+    
+    if (articleRelatedActivities.length > 0) {
+      const earliestTime = new Date(Math.min(...articleRelatedActivities.map(a => a.createdAt.getTime())));
+      const latestTime = new Date(Math.max(...articleRelatedActivities.map(a => a.createdAt.getTime())));
+      
+      // Extend time range by 1 hour before and after
+      earliestTime.setHours(earliestTime.getHours() - 1);
+      latestTime.setHours(latestTime.getHours() + 1);
+
+      const vocabularyActivities = await prisma.userActivity.findMany({
+        where: {
+          userId: userId,
+          activityType: {
+            in: ['VOCABULARY_FLASHCARDS', 'VOCABULARY_MATCHING', 'ARTICLE_RATING']
+          },
+          createdAt: {
+            gte: earliestTime,
+            lte: latestTime
+          }
+        },
+        select: {
+          id: true,
+          activityType: true,
+          targetId: true,
+          details: true,
+          createdAt: true,
+        }
+      });
+
+      console.log("- Vocabulary/Rating activities in time range:", vocabularyActivities.length);
+      allRelatedActivities = [...articleRelatedActivities, ...vocabularyActivities];
+    }
+
+    if (articleRelatedActivities.length === 0) {
+      return NextResponse.json({
+        success: true,
+        total_xp: 0,
+        breakdown: {},
+        activities_count: 0,
       });
     }
+
+    // Get ALL XP logs for these activities (including related vocabulary/rating activities)
+    const activityIds = allRelatedActivities.map(activity => activity.id);
+    const allXpLogs = await prisma.xPLog.findMany({
+      where: {
+        userId: userId,
+        activityId: { in: activityIds },
+      },
+      select: {
+        xpEarned: true,
+        activityType: true,
+        activityId: true,
+      }
+    });
+
+    console.log("- Total related activities:", allRelatedActivities.length);
+    console.log("- All related activity IDs:", activityIds);
+    console.log("- XP logs found for all related activities:", allXpLogs.length);
+    console.log("- XP logs details:", allXpLogs.map(log => ({
+      activityId: log.activityId,
+      type: log.activityType,
+      xp: log.xpEarned
+    })));
+
+    if (allXpLogs.length === 0) {
+      return NextResponse.json({
+        success: true,
+        total_xp: 0,
+        breakdown: {},
+        activities_count: 0,
+      });
+    }
+
+    // Calculate total XP from all article-related activities
+    const totalXp = allXpLogs.reduce((total: number, log) => total + (log.xpEarned || 0), 0);
+
+    // Break down XP by activity type
+    const xpByActivityType = allXpLogs.reduce((acc, log) => {
+      const activityType = log.activityType;
+      if (!acc[activityType]) {
+        acc[activityType] = {
+          totalXp: 0,
+          count: 0
+        };
+      }
+      acc[activityType].totalXp += log.xpEarned || 0;
+      acc[activityType].count += 1;
+      return acc;
+    }, {} as Record<string, { totalXp: number; count: number }>);
+
+    console.log("- XP breakdown by activity type:", xpByActivityType);
+    console.log("- Total XP from article:", totalXp);
 
     return NextResponse.json({
       success: true,
       total_xp: totalXp,
+      breakdown: xpByActivityType,
+      activities_count: allXpLogs.length,
+      article_id: cleanArticleId,
     });
   } catch (error) {
     console.error("Error fetching lesson XP:", error);
