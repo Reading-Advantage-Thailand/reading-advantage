@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { ChevronDown, ChevronUp, Timer } from "lucide-react";
 import { Article } from "../models/article-model";
-import { Timer } from "lucide-react";
 import { useScopedI18n, useCurrentLocale } from "@/locales/client";
 import { useTimer } from "@/contexts/timer-context";
 import {
@@ -29,7 +27,7 @@ import {
   Phase14LessonSummary,
 } from "./phases";
 
-interface LessonProgressBar {
+interface LessonProgressBarProps {
   phases: string[];
   article: Article;
   articleId: string;
@@ -37,7 +35,7 @@ interface LessonProgressBar {
   classroomId?: string;
 }
 
-const LessonProgressBar: React.FC<LessonProgressBar> = ({
+const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
   phases,
   article,
   articleId,
@@ -48,6 +46,23 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
   const [maxHeight, setMaxHeight] = useState("0px");
   const contentRef = useRef<HTMLDivElement>(null);
   const [currentPhase, setCurrentPhase] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [fadeOut, setFadeOut] = useState(false);
+  const [nextPhaseContent, setNextPhaseContent] = useState<number | null>(null);
+
+  // Use refs to access current values in useEffect without causing re-runs
+  const currentPhaseRef = useRef(currentPhase);
+  const isTransitioningRef = useRef(isTransitioning);
+
+  // Update refs when state changes
+  useEffect(() => {
+    currentPhaseRef.current = currentPhase;
+  }, [currentPhase]);
+
+  useEffect(() => {
+    isTransitioningRef.current = isTransitioning;
+  }, [isTransitioning]);
+
   const t = useScopedI18n("pages.student.lessonPage");
   const locale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
   const [showVocabularyButton, setShowVocabularyButton] = useState(true);
@@ -59,50 +74,92 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
   const [shakeButton, setShakeButton] = useState(false);
   const { elapsedTime, startTimer, stopTimer, setTimer } = useTimer();
   const [phaseLoading, setPhaseLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
-  {
-    /* Track Lesson Progress */
-  }
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    let isMounted = true;
+
     const fetchCurrentPhase = async () => {
       try {
+        if (!isMounted) return;
+
         setPhaseLoading(true);
         const response = await fetch(
           `/api/v1/lesson/${userId}?articleId=${articleId}`
         );
-        const phase = await response.json();
-        setCurrentPhase(phase.currentPhase);
-        setTimer(phase.elapsedTime);
+
+        if (!isMounted) return;
+
+        if (response.ok) {
+          const phase = await response.json();
+          // Ensure we get a valid phase number
+          const phaseNumber = parseInt(phase.currentPhase) || 1;
+          const validPhase = Math.max(1, Math.min(phaseNumber, phases.length));
+
+          // Update phase on initial load
+          if (isMounted) {
+            setCurrentPhase(validPhase);
+          }
+          setTimer(phase.elapsedTime || 0);
+          setInitialLoadComplete(true);
+        } else {
+          console.error("Failed to fetch current phase on initial load");
+          if (isMounted) {
+            setCurrentPhase(1);
+            setInitialLoadComplete(true);
+          }
+        }
       } catch (error) {
-        console.error("Error fetching current phase:", error);
+        console.error("Error fetching current phase on initial load:", error);
+        if (isMounted) {
+          setCurrentPhase(1);
+          setInitialLoadComplete(true);
+        }
       } finally {
-        setPhaseLoading(false);
+        if (isMounted) {
+          setPhaseLoading(false);
+        }
       }
     };
 
-    fetchCurrentPhase();
-  }, [userId, articleId]);
+    // Only fetch on initial load - don't refetch after transitions
+    if (!initialLoadComplete) {
+      timeoutId = setTimeout(() => {
+        fetchCurrentPhase();
+      }, 100); // Quick initial load
+    }
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, [userId, articleId, setTimer, phases.length, initialLoadComplete]); // Add initialLoadComplete to dependencies
 
   const LessonTimer = React.memo(() => {
     const { elapsedTime } = useTimer();
 
     return (
-      <div className="mr-5">
-        <span className="text-sm">
-          {`${Math.floor(elapsedTime / 60)}m ${elapsedTime % 60}s`}
-        </span>
+      <div className="text-sm font-medium">
+        {`${Math.floor(elapsedTime / 60)}m ${elapsedTime % 60}s`}
       </div>
     );
   });
   LessonTimer.displayName = "LessonTimer";
 
-  const updatePhaseCompletion = (phaseIndex: number, isComplete: boolean) => {
-    setPhaseCompletion((prev) => {
-      const updated = [...prev];
-      updated[phaseIndex] = isComplete;
-      return updated;
-    });
-  };
+  const updatePhaseCompletion = useCallback(
+    (phaseIndex: number, isComplete: boolean) => {
+      setPhaseCompletion((prev) => {
+        const updated = [...prev];
+        if (updated[phaseIndex] !== isComplete) {
+          updated[phaseIndex] = isComplete;
+          return updated;
+        }
+        return prev; // Return previous state if no change to prevent unnecessary re-renders
+      });
+    },
+    []
+  );
 
   useEffect(() => {
     if (currentPhase >= 2 && currentPhase < 14) {
@@ -110,7 +167,7 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
     } else {
       stopTimer();
     }
-  }, [currentPhase]);
+  }, [currentPhase, startTimer, stopTimer]);
 
   useEffect(() => {
     const logActivity = async () => {
@@ -137,59 +194,334 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
     };
 
     logActivity();
-  }, [currentPhase]);
+  }, [currentPhase, userId, article, elapsedTime]);
 
   const startLesson = async () => {
-    setCurrentPhase(currentPhase + 1);
-    const url = classroomId
-      ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
-      : `/api/v1/lesson/${userId}?articleId=${articleId}`;
+    try {
+      // Prevent multiple clicks and transitions
+      if (phaseLoading || isTransitioning) return;
 
-    await fetch(url, {
-      method: "POST",
-    });
+      setIsTransitioning(true);
+
+      // Start fade out animation
+      setFadeOut(true);
+      setNextPhaseContent(2);
+
+      // Wait for fade out animation
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      setPhaseLoading(true);
+      const newPhase = 2; // Always go to phase 2 from phase 1
+
+      // Call API to update server state
+      const url = classroomId
+        ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
+        : `/api/v1/lesson/${userId}?articleId=${articleId}`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phase: 1, // Starting from phase 1
+          status: 2, // Completed status
+          elapsedTime: 0,
+        }),
+      });
+
+      // Only update local state if API call succeeds
+      if (response.ok) {
+        const responseData = await response.json();
+
+        // Update to new phase
+        setCurrentPhase(newPhase);
+
+        // Start fade in animation
+        setPhaseLoading(false);
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        setFadeOut(false);
+        setNextPhaseContent(null);
+      } else {
+        console.error(
+          "Failed to start lesson, response not ok:",
+          response.status,
+          response.statusText
+        );
+        // Reset fade state on error
+        setFadeOut(false);
+        setNextPhaseContent(null);
+        setPhaseLoading(false);
+      }
+    } catch (error) {
+      console.error("Error starting lesson:", error);
+      // Reset fade state on error
+      setFadeOut(false);
+      setNextPhaseContent(null);
+      setPhaseLoading(false);
+    } finally {
+      // Keep transition state for a bit longer to prevent rapid changes and fetching
+      setTimeout(() => setIsTransitioning(false), 500);
+    }
   };
 
   const nextPhase = async (Phase: number, elapsedTime: number) => {
-    if (Phase === 13) {
-      await fetch(`/api/v1/users/${userId}/activitylog`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          articleId: article.id,
-          activityType: ActivityType.LessonRead,
-          activityStatus: ActivityStatus.Completed,
-          timeTaken: elapsedTime,
-          details: {
-            title: article.title,
-            level: article.ra_level,
-            cefr_level: article.cefr_level,
-            type: article.type,
-            genre: article.genre,
-            subgenre: article.subgenre,
-          },
-        }),
-      });
-    }
+    // Check if current phase is completed before proceeding
     if (!phaseCompletion[Phase - 1]) {
       setShakeButton(true);
       setTimeout(() => setShakeButton(false), 500);
       return;
     }
-    setCurrentPhase(Phase + 1);
 
-    const url = classroomId
-      ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
-      : `/api/v1/lesson/${userId}?articleId=${articleId}`;
+    // Prevent multiple clicks and transitions
+    if (phaseLoading || isTransitioning) {
+      return;
+    }
 
-    await fetch(url, {
-      method: "PUT",
-      body: JSON.stringify({
-        phase: Phase,
-        status: 2,
-        elapsedTime: elapsedTime,
-      }),
-    });
+    try {
+      setIsTransitioning(true);
+      const newPhase = Phase + 1;
+
+      // Start fade out animation
+      setFadeOut(true);
+      setNextPhaseContent(newPhase);
+
+      // Wait for fade out animation
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      setPhaseLoading(true);
+
+      // Handle final phase logging
+      if (Phase === 13) {
+        await fetch(`/api/v1/users/${userId}/activitylog`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            articleId: article.id,
+            activityType: ActivityType.LessonRead,
+            activityStatus: ActivityStatus.Completed,
+            timeTaken: elapsedTime,
+            details: {
+              title: article.title,
+              level: article.ra_level,
+              cefr_level: article.cefr_level,
+              type: article.type,
+              genre: article.genre,
+              subgenre: article.subgenre,
+            },
+          }),
+        });
+      }
+
+      // Update server state
+      const url = classroomId
+        ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
+        : `/api/v1/lesson/${userId}?articleId=${articleId}`;
+
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phase: Phase,
+          status: 2,
+          elapsedTime: elapsedTime,
+        }),
+      });
+
+      // Only update local state if API call succeeds
+      if (response.ok) {
+        const responseData = await response.json();
+
+        // Update to new phase
+        setCurrentPhase(newPhase);
+
+        // Start fade in animation
+        setPhaseLoading(false);
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        setFadeOut(false);
+        setNextPhaseContent(null);
+      } else {
+        console.error(
+          "Failed to update phase, API response not ok:",
+          response.status,
+          response.statusText
+        );
+        // Reset fade state on error
+        setFadeOut(false);
+        setNextPhaseContent(null);
+        setPhaseLoading(false);
+      }
+    } catch (error) {
+      console.error("Error updating phase:", error);
+      // Reset fade state on error
+      setFadeOut(false);
+      setNextPhaseContent(null);
+      setPhaseLoading(false);
+    } finally {
+      // Keep transition state for a bit longer to prevent rapid changes and fetching
+      setTimeout(() => setIsTransitioning(false), 500);
+    }
+  };
+
+  // Helper function for smooth phase transitions
+  const getPhaseComponent = (phaseNum: number) => {
+    switch (phaseNum) {
+      case 1:
+        return (
+          <Phase1Introduction
+            article={article}
+            articleId={articleId}
+            userId={userId}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(0, complete)
+            }
+          />
+        );
+      case 2:
+        return (
+          <Phase2VocabularyPreview
+            article={article}
+            articleId={articleId}
+            userId={userId}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(1, complete)
+            }
+          />
+        );
+      case 3:
+        return (
+          <Phase3FirstReading
+            article={article}
+            articleId={articleId}
+            userId={userId}
+            locale={locale}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(2, complete)
+            }
+          />
+        );
+      case 4:
+        return (
+          <Phase4VocabularyCollection
+            article={article}
+            articleId={articleId}
+            userId={userId}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(3, complete)
+            }
+          />
+        );
+      case 5:
+        return (
+          <Phase5DeepReading
+            article={article}
+            articleId={articleId}
+            userId={userId}
+            locale={locale}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(4, complete)
+            }
+          />
+        );
+      case 6:
+        return (
+          <Phase6SentenceCollection
+            article={article}
+            articleId={articleId}
+            userId={userId}
+            locale={locale}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(5, complete)
+            }
+          />
+        );
+      case 7:
+        return (
+          <Phase7MultipleChoice
+            article={article}
+            articleId={articleId}
+            userId={userId}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(6, complete)
+            }
+          />
+        );
+      case 8:
+        return (
+          <Phase8ShortAnswer
+            article={article}
+            articleId={articleId}
+            userId={userId}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(7, complete)
+            }
+          />
+        );
+      case 9:
+        return showVocabularyButton ? (
+          <Phase9VocabularyFlashcards
+            articleId={articleId}
+            userId={userId}
+            showVocabularyButton={showVocabularyButton}
+            setShowVocabularyButton={setShowVocabularyButton}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(8, complete)
+            }
+          />
+        ) : null;
+      case 10:
+        return (
+          <Phase10VocabularyMatching
+            articleId={articleId}
+            userId={userId}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(9, complete)
+            }
+          />
+        );
+      case 11:
+        return showSentenseButton ? (
+          <Phase11SentenceFlashcards
+            articleId={articleId}
+            userId={userId}
+            showSentenseButton={showSentenseButton}
+            setShowSentenseButton={setShowSentenseButton}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(10, complete)
+            }
+          />
+        ) : null;
+      case 12:
+        return (
+          <Phase12SentenceActivities
+            articleId={articleId}
+            userId={userId}
+            sentenceActivity={sentenceActivity}
+            setSentenceActivity={setSentenceActivity}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(11, complete)
+            }
+          />
+        );
+      case 13:
+        return (
+          <Phase13LanguageQuestions
+            article={article}
+            onCompleteChange={(complete: boolean) =>
+              updatePhaseCompletion(12, complete)
+            }
+            skipPhase={() => skipPhase(currentPhase)}
+          />
+        );
+      case 14:
+        return (
+          <Phase14LessonSummary
+            articleId={articleId}
+            userId={userId}
+            elapsedTime={`${Math.floor(elapsedTime / 60)}m ${elapsedTime % 60}s`}
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   const skipPhase = async (Phase: number) => {
@@ -236,309 +568,211 @@ const LessonProgressBar: React.FC<LessonProgressBar> = ({
   }, [isExpanded]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-      {phaseLoading ? (
-        <div className="flex items-start xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5"></div>
-      ) : (
-        <div className=" mt-6">
-          {/*Phase 1 Introduction */}
-          {currentPhase === 1 && (
-            <Phase1Introduction
-              article={article}
-              articleId={articleId}
-              userId={userId}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(0, complete)
-              }
-            />
-          )}
-
-          {/* Phase 2 Vocabulary Preview */}
-          {currentPhase === 2 && (
-            <Phase2VocabularyPreview
-              article={article}
-              articleId={articleId}
-              userId={userId}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(1, complete)
-              }
-            />
-          )}
-
-          {/* Phase 3 First Reading with Audio */}
-          {currentPhase === 3 && (
-            <Phase3FirstReading
-              article={article}
-              articleId={articleId}
-              userId={userId}
-              locale={locale}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(2, complete)
-              }
-            />
-          )}
-
-          {/* Phase 4 Vocabulary Collection */}
-          {currentPhase === 4 && (
-            <Phase4VocabularyCollection
-              article={article}
-              articleId={articleId}
-              userId={userId}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(3, complete)
-              }
-            />
-          )}
-
-          {/* Phase 5 Deep Reading */}
-          {currentPhase === 5 && (
-            <Phase5DeepReading
-              article={article}
-              articleId={articleId}
-              userId={userId}
-              locale={locale}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(4, complete)
-              }
-            />
-          )}
-
-          {/* Phase 6 Sentence Collection */}
-          {currentPhase === 6 && (
-            <Phase6SentenceCollection
-              article={article}
-              articleId={articleId}
-              userId={userId}
-              locale={locale}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(5, complete)
-              }
-            />
-          )}
-
-          {/* Phase 7 Multiple-Choice Questions*/}
-          {currentPhase === 7 && (
-            <Phase7MultipleChoice
-              article={article}
-              articleId={articleId}
-              userId={userId}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(6, complete)
-              }
-            />
-          )}
-
-          {/* Phase 8 Short-Answer Questions*/}
-          {currentPhase === 8 && (
-            <Phase8ShortAnswer
-              article={article}
-              articleId={articleId}
-              userId={userId}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(7, complete)
-              }
-            />
-          )}
-
-          {/* Phase 9 Vocabulary Practice - Flashcards*/}
-          {currentPhase === 9 && (
-            <Phase9VocabularyFlashcards
-              userId={userId}
-              articleId={articleId}
-              showVocabularyButton={showVocabularyButton}
-              setShowVocabularyButton={setShowVocabularyButton}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(8, complete)
-              }
-            />
-          )}
-
-          {/* Phase 10 Vocabulary Practice - Activity Choice*/}
-          {currentPhase === 10 && (
-            <Phase10VocabularyMatching
-              userId={userId}
-              articleId={articleId}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(9, complete)
-              }
-            />
-          )}
-
-          {/* Phase 11 Sentence Practice Flashcards*/}
-          {currentPhase === 11 && (
-            <Phase11SentenceFlashcards
-              userId={userId}
-              articleId={articleId}
-              showSentenseButton={showSentenseButton}
-              setShowSentenseButton={setShowSentenseButton}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(10, complete)
-              }
-            />
-          )}
-
-          {/* Phase 12 Sentence Practice Activities*/}
-          {currentPhase === 12 && (
-            <Phase12SentenceActivities
-              userId={userId}
-              articleId={articleId}
-              sentenceActivity={sentenceActivity}
-              setSentenceActivity={setSentenceActivity}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(11, complete)
-              }
-            />
-          )}
-
-          {/* Phase 13 Language Questions (Optional)*/}
-          {currentPhase === 13 && (
-            <Phase13LanguageQuestions
-              article={article}
-              onCompleteChange={(complete: boolean) =>
-                updatePhaseCompletion(12, complete)
-              }
-              skipPhase={() => skipPhase(currentPhase)}
-            />
-          )}
-
-          {/* Phase 14 Lesson Summary */}
-          {currentPhase === 14 && (
-            <Phase14LessonSummary
-              articleId={articleId}
-              userId={userId}
-              elapsedTime={` ${Math.floor(elapsedTime / 60)}m ${
-                elapsedTime % 60
-              }s`}
-            />
-          )}
-        </div>
-      )}
-
-      {/* Progress Bar */}
-      <div className="lg:mt-6">
-        <Card className="p-4">
-          {/* Mobile view */}
-          <div className="lg:hidden">
-            <div className="flex justify-between items-center mb-2">
-              <LessonTimer />
-              <span className="font-semibold text-blue-700">
-                Phase {currentPhase}: {phases[currentPhase - 1]}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                {isExpanded ? (
-                  <>
-                    Hide <ChevronUp className="ml-1 h-4 w-4" />
-                  </>
-                ) : (
-                  <>
-                    Show All <ChevronDown className="ml-1 h-4 w-4" />
-                  </>
-                )}
-              </Button>
-            </div>
-            {/* Smooth Dropdown */}
-            <div
-              ref={contentRef}
-              style={{ maxHeight }}
-              className="transition-all duration-500 ease-in-out overflow-hidden space-y-3"
-            >
-              {phases.map((phase, index) => {
-                const isActive = index + 1 === currentPhase;
-                const isCompleted = index + 1 < currentPhase;
-
-                return (
-                  <div key={index} className="flex items-center space-x-2">
-                    <div
-                      className={`w-4 h-4 rounded-full border-2 
-                      ${isActive ? "bg-blue-500 border-blue-500" : ""}
-                      ${isCompleted ? "bg-green-500 border-green-500" : ""}
-                      ${
-                        !isActive && !isCompleted
-                          ? "bg-white border-gray-300"
-                          : ""
-                      }
-                    `}
-                    />
-                    <span
-                      className={`text-sm ${
-                        isCompleted
-                          ? "text-gray-400 line-through"
-                          : isActive
-                          ? "text-blue-700 font-semibold"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      {index + 1}. {phase}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Desktop view */}
-          <div className="hidden lg:flex flex-col space-y-4 font-bold items-start max-w-[300px] min-w-[300px] relative">
-            {currentPhase >= 2 && currentPhase < 14 && (
-              <div className="absolute top-0 right-0 text-center font-bold text-blue-700">
-                <span className="flex flex-row gap-3">
-                  <Timer />
-                  <LessonTimer />
-                </span>
+    <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+      {/* Main Content Area */}
+      <div className="xl:col-span-3">
+        {phaseLoading && !fadeOut ? (
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+            <div className="animate-pulse space-y-6">
+              <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded-lg w-1/2"></div>
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/2"></div>
               </div>
-            )}
-            {phases.map((phase, index) => {
-              const isActive = index + 1 === currentPhase;
-              const isCompleted = index + 1 < currentPhase;
-
-              return (
-                <div key={index} className="flex items-center space-x-2">
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 
-                ${isActive ? "bg-blue-500 border-blue-500" : ""}
-                ${isCompleted ? "bg-green-500 border-green-500" : ""}
-                ${!isActive && !isCompleted ? "bg-white border-gray-300" : ""}
-                `}
-                  />
-                  <span
-                    className={`text-sm ${
-                      isCompleted
-                        ? "text-gray-400 line-through"
-                        : isActive
-                        ? "text-blue-700 font-semibold"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {index + 1}. {phase}
-                  </span>
-                </div>
-              );
-            })}
+            </div>
           </div>
-        </Card>
-        {currentPhase === 1 && (
-          <div className="mt-4">
-            <Button className="w-full" onClick={startLesson}>
-              {t("startLesson")}
-            </Button>
-          </div>
-        )}
-
-        {currentPhase < phases.length && currentPhase > 1 && (
-          <div className="mt-4">
-            <Button
-              className={`w-full transition duration-300 ${
-                shakeButton ? "animate-shake" : ""
+        ) : (
+          <div className="space-y-6">
+            {/* Phase Content */}
+            <div
+              className={`transition-all duration-300 ease-in-out transform ${
+                fadeOut
+                  ? "opacity-0 translate-y-4 scale-95"
+                  : "opacity-100 translate-y-0 scale-100"
               }`}
-              onClick={() => nextPhase(currentPhase, elapsedTime)}
             >
-              {t("nextPhase")}
-            </Button>
+              {getPhaseComponent(currentPhase)}
+            </div>
+
+            {/* Navigation Buttons */}
+            <div
+              className={`mt-6 transition-all duration-300 ease-in-out ${
+                fadeOut ? "opacity-50 pointer-events-none" : "opacity-100"
+              }`}
+            >
+              {currentPhase === 1 && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    onClick={startLesson}
+                    disabled={phaseLoading || isTransitioning}
+                  >
+                    {phaseLoading || isTransitioning ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Starting...
+                      </div>
+                    ) : (
+                      t("startLesson")
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {currentPhase < phases.length && currentPhase > 1 && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                  <Button
+                    className={`w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 text-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      shakeButton ? "animate-shake" : ""
+                    }`}
+                    onClick={() => nextPhase(currentPhase, elapsedTime)}
+                    disabled={phaseLoading || isTransitioning}
+                  >
+                    {phaseLoading || isTransitioning ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Processing...
+                      </div>
+                    ) : (
+                      t("nextPhase")
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         )}
+      </div>
+
+      {/* Sidebar - Progress Tracker */}
+      <div className="xl:col-span-1">
+        <div className="sticky top-6">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {/* Progress Header */}
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6">
+              <div className="flex items-center justify-between text-white">
+                <div>
+                  <h3 className="font-semibold">Progress</h3>
+                  <p className="text-sm opacity-90">
+                    Phase {currentPhase} of {phases.length}
+                  </p>
+                </div>
+                {currentPhase >= 2 && currentPhase < 14 && (
+                  <div className="flex items-center gap-2 bg-white/20 rounded-lg px-3 py-1">
+                    <Timer className="h-4 w-4" />
+                    <LessonTimer />
+                  </div>
+                )}
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mt-4 bg-white/20 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-white h-2 rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${(currentPhase / phases.length) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Phase List */}
+            <div className="p-6">
+              {/* Mobile Accordion */}
+              <div className="xl:hidden">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    Current: {phases[currentPhase - 1]}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                  >
+                    {isExpanded ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+
+                <div
+                  ref={contentRef}
+                  style={{ maxHeight }}
+                  className="transition-all duration-500 ease-in-out overflow-hidden"
+                >
+                  <div className="space-y-3">
+                    {phases.map((phase, index) => {
+                      const isActive = index + 1 === currentPhase;
+                      const isCompleted = index + 1 < currentPhase;
+
+                      return (
+                        <div
+                          key={index}
+                          className="flex items-center space-x-3"
+                        >
+                          <div
+                            className={`w-3 h-3 rounded-full flex-shrink-0 transition-all duration-300 ${
+                              isActive
+                                ? "bg-blue-500 ring-4 ring-blue-100 dark:ring-blue-900 scale-110"
+                                : isCompleted
+                                  ? "bg-green-500 scale-100"
+                                  : "bg-gray-300 dark:bg-gray-600 scale-90"
+                            }`}
+                          />
+                          <span
+                            className={`text-sm transition-all duration-200 ${
+                              isCompleted
+                                ? "text-gray-400 line-through"
+                                : isActive
+                                  ? "text-blue-600 dark:text-blue-400 font-medium"
+                                  : "text-gray-600 dark:text-gray-400"
+                            }`}
+                          >
+                            {index + 1}. {phase}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop List */}
+              <div className="hidden xl:block space-y-3">
+                {phases.map((phase, index) => {
+                  const isActive = index + 1 === currentPhase;
+                  const isCompleted = index + 1 < currentPhase;
+
+                  return (
+                    <div key={index} className="flex items-center space-x-3">
+                      <div
+                        className={`w-3 h-3 rounded-full flex-shrink-0 transition-all duration-300 ${
+                          isActive
+                            ? "bg-blue-500 ring-4 ring-blue-100 dark:ring-blue-900 scale-110"
+                            : isCompleted
+                              ? "bg-green-500 scale-100"
+                              : "bg-gray-300 dark:bg-gray-600 scale-90"
+                        }`}
+                      />
+                      <span
+                        className={`text-sm leading-tight transition-all duration-200 ${
+                          isCompleted
+                            ? "text-gray-400 line-through"
+                            : isActive
+                              ? "text-blue-600 dark:text-blue-400 font-medium"
+                              : "text-gray-600 dark:text-gray-400"
+                        }`}
+                      >
+                        {index + 1}. {phase}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

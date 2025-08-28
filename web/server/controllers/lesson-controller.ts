@@ -39,7 +39,7 @@ export async function getLessonStatus(
     for (let phase = 1; phase <= 14; phase++) {
       const phaseKey = `phase${phase}` as keyof typeof lessonRecord;
       const phaseData = lessonRecord[phaseKey] as any;
-      
+
       if (phaseData?.status === 1) {
         currentPhase = phase;
         // Get elapsed time from previous phase if available
@@ -83,8 +83,25 @@ export async function postLessonStatus(
     });
 
     if (existingLessonRecord) {
+      // If lesson record exists, update phase 1 as completed and phase 2 as current
+      await prisma.lessonRecord.update({
+        where: {
+          userId_articleId: {
+            userId,
+            articleId,
+          },
+        },
+        data: {
+          phase1: { status: 2, elapsedTime: 0 }, // Phase 1 completed
+          phase2: { status: 1, elapsedTime: 0 }, // Phase 2 current
+        },
+      });
+
       return NextResponse.json(
-        { message: "Lesson status already exists, no action taken." },
+        {
+          message:
+            "Lesson started successfully! Phase 1 completed, moved to Phase 2.",
+        },
         { status: 200 }
       );
     }
@@ -119,8 +136,7 @@ export async function postLessonStatus(
 
       // Update assignment status if classroomId is provided
       const classroomId = req.nextUrl.searchParams.get("classroomId");
-      console.log("ClassroomId received:", classroomId);
-      
+
       if (classroomId) {
         // Check if assignment exists and update its status
         const assignment = await tx.assignment.findFirst({
@@ -158,8 +174,6 @@ export async function putLessonPhaseStatus(
   { params: { userId } }: Context
 ) {
   try {
-    console.log("Request received for userId:", userId);
-
     const articleId = req.nextUrl.searchParams.get("articleId");
     const { phase, status, elapsedTime } = await req.json();
 
@@ -209,8 +223,7 @@ export async function putLessonPhaseStatus(
 
       // Handle assignment completion if this is phase 13 and status is completed (2)
       const classroomId = req.nextUrl.searchParams.get("classroomId");
-      console.log("ClassroomId received:", classroomId);
-      
+
       if (classroomId && phase === 13 && status === 2) {
         // Find and update assignment
         const assignment = await tx.assignment.findFirst({
@@ -260,74 +273,67 @@ export async function getUserQuizPerformance(
     const decodedArticleId = decodeURIComponent(articleId);
     const cleanArticleId = decodedArticleId.split("/")[0];
 
-    // Debug logging
-    console.log("Debug getUserQuizPerformance:");
-    console.log("- userId:", userId);
-    console.log("- articleId (raw):", articleId);
-    console.log("- cleanArticleId:", cleanArticleId);
-
     // Find all UserActivities for MC and SA questions
     const allUserActivities = await prisma.userActivity.findMany({
       where: {
         userId,
         activityType: {
-          in: ["MC_QUESTION", "SA_QUESTION"]
+          in: ["MC_QUESTION", "SA_QUESTION"],
         },
-        completed: true
+        completed: true,
       },
       select: {
         id: true,
         activityType: true,
         details: true,
-      }
+      },
     });
 
     // Filter activities based on articleId in details
-    const userActivities = allUserActivities.filter(activity => {
+    const userActivities = allUserActivities.filter((activity) => {
       const details = activity.details as any;
       return details?.articleId === cleanArticleId;
     });
-
-    console.log("- User activities found:", userActivities.length);
 
     if (userActivities.length === 0) {
       return NextResponse.json({ message: "No Data Exists" }, { status: 404 });
     }
 
     // Get XP logs for these activities
-    const activityIds = userActivities.map(a => a.id);
+    const activityIds = userActivities.map((a) => a.id);
     const allXPLogs = await prisma.xPLog.findMany({
       where: {
         userId,
         activityId: { in: activityIds },
-        activityType: { in: ["MC_QUESTION", "SA_QUESTION"] }
-      }
+        activityType: { in: ["MC_QUESTION", "SA_QUESTION"] },
+      },
     });
 
-    console.log("- XP logs found:", allXPLogs.length);
-
-    const mcqLogs = allXPLogs.filter(log => log.activityType === "MC_QUESTION");
-    const saqLogs = allXPLogs.filter(log => log.activityType === "SA_QUESTION");
+    const mcqLogs = allXPLogs.filter(
+      (log) => log.activityType === "MC_QUESTION"
+    );
+    const saqLogs = allXPLogs.filter(
+      (log) => log.activityType === "SA_QUESTION"
+    );
 
     // MCQ: Count correct answers based on XP earned (1 XP = 1 correct answer)
-    const mcqCorrectCount = mcqLogs.reduce((total, log) => total + (log.xpEarned > 0 ? 1 : 0), 0);
-    
+    const mcqCorrectCount = mcqLogs.reduce(
+      (total, log) => total + (log.xpEarned > 0 ? 1 : 0),
+      0
+    );
+
     // SAQ: Use total XP score as before
     const saqScore = saqLogs.reduce((total, log) => total + log.xpEarned, 0);
 
-    console.log("- Final results:");
-    console.log("- mcqCorrectCount:", mcqCorrectCount);
-    console.log("- saqScore:", saqScore);
-    console.log("- mcqCount:", mcqLogs.length);
-    console.log("- saqCount:", saqLogs.length);
-
-    return NextResponse.json({ 
-      mcqScore: mcqCorrectCount, // Count of correct MCQ answers
-      saqScore: saqScore,        // Sum of SAQ XP scores
-      mcqCount: mcqLogs.length,
-      saqCount: saqLogs.length
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        mcqScore: mcqCorrectCount, // Count of correct MCQ answers
+        saqScore: saqScore, // Sum of SAQ XP scores
+        mcqCount: mcqLogs.length,
+        saqCount: saqLogs.length,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error getting quiz performance", error);
     return NextResponse.json(
