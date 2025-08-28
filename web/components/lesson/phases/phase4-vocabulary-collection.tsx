@@ -192,7 +192,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
           {t("phase4Title")}
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Select vocabulary words you'd like to add to your personal collection for future study
+          Select vocabulary words you&apos;d like to add to your personal collection for future study
         </p>
       </div>
 
