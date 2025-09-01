@@ -69,9 +69,9 @@ export async function postActivityLog(
       initialXp: req.session?.user.xp as number,
       finalXp: (req.session?.user.xp as number) + data.xpEarned || 0,
       initialLevel: req.session?.user.level as number,
-      finalLevel: levelCalculation(
+      finalLevel: Number(levelCalculation(
         (req.session?.user.xp as number) + data.xpEarned || 0
-      ).raLevel,
+      ).raLevel),
       // details: data.details || {},
       ...data,
     };
@@ -107,7 +107,7 @@ export async function postActivityLog(
           .doc(id)
           .update({
             xp: commonData.finalXp,
-            level: commonData.finalLevel,
+            level: Number(commonData.finalLevel), // Ensure it's stored as number
             cefr_level: levelCalculation(commonData.finalXp).cefrLevel,
             last_activity: commonData.timestamp,
           });
@@ -261,9 +261,9 @@ export async function putActivityLog(
         initialXp: req.session?.user.xp as number,
         finalXp: (req.session?.user.xp as number) + (data.xpEarned || 0),
         initialLevel: req.session?.user.level as number,
-        finalLevel: levelCalculation(
+        finalLevel: Number(levelCalculation(
           (req.session?.user.xp as number) + (data.xpEarned || 0)
-        ).raLevel,
+        ).raLevel),
         ...data,
         updated_at: new Date(), // Add update timestamp
       };
@@ -279,9 +279,9 @@ export async function putActivityLog(
         .doc(id)
         .update({
           xp: (req.session?.user.xp as number) + (data.xpEarned || 0),
-          level: levelCalculation(
+          level: Number(levelCalculation(
             (req.session?.user.xp as number) + (data.xpEarned || 0)
-          ).raLevel,
+          ).raLevel), // Ensure it's stored as number
           cefr_level: levelCalculation(
             (req.session?.user.xp as number) + (data.xpEarned || 0)
           ).cefrLevel,
