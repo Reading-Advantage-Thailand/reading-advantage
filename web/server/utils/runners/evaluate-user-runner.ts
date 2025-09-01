@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { userService } from "@/server/services/firestore-server-services";
 import { User } from "@/server/models/user";
 import { Role } from "@/server/models/enum";
+import { ensureLevelIsNumber } from "@/lib/migrate-user-levels";
 
 export async function evaluateUserRunner(
   req: NextRequest,
@@ -27,7 +28,7 @@ export async function evaluateUserRunner(
         created_at: createdAt,
         updated_at:
           user.updatedAt || user.updated_at || new Date().toISOString(),
-        level: user.level || 0,
+        level: ensureLevelIsNumber(user.level),
         email_verified: user.verified || user.email_verified || false,
         picture: user.picture || user.image || "",
         xp: user.xp || 0,

@@ -139,7 +139,7 @@ export function splitTextIntoSentences(
   }
 }
 
-export function levelCalculation(xp: number) {
+export function levelCalculation(xp: number): { cefrLevel: string; raLevel: number } {
   const levels = [
     { min: 0, max: 4999, cefrLevel: "A1-", raLevel: 1 },
     { min: 5000, max: 10999, cefrLevel: "A1", raLevel: 2 },
@@ -167,5 +167,5 @@ export function levelCalculation(xp: number) {
     }
   }
 
-  return { cefrLevel: "", raLevel: "" };
+  return { cefrLevel: "", raLevel: 0 };
 }
