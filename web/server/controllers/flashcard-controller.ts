@@ -1433,7 +1433,7 @@ export async function saveSentenceOrderingResults(req: ExtendedNextRequest) {
             level:
               typeof levelData.raLevel === "number"
                 ? levelData.raLevel
-                : parseInt(levelData.raLevel.toString()),
+                : parseInt(String(levelData.raLevel)),
             cefrLevel: levelData.cefrLevel,
             updatedAt: new Date(),
           },

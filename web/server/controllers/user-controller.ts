@@ -163,12 +163,14 @@ export async function postActivityLog(
     if (!finalTargetId && data.details?.articleId) {
       finalTargetId = data.details.articleId;
     }
-    
-    // For article rating, if targetId is a userId (starts with 'cmesn' or similar), 
+
+    // For article rating, if targetId is a userId (starts with 'cmesn' or similar),
     // try to get articleId from details
-    if (activityType === ActivityType.ARTICLE_RATING && 
-        finalTargetId && 
-        (finalTargetId.startsWith('cmesn') || finalTargetId.startsWith('cmeu'))) {
+    if (
+      activityType === ActivityType.ARTICLE_RATING &&
+      finalTargetId &&
+      (finalTargetId.startsWith("cmesn") || finalTargetId.startsWith("cmeu"))
+    ) {
       if (data.details?.articleId) {
         finalTargetId = data.details.articleId;
       } else if (data.articleId) {
@@ -176,7 +178,9 @@ export async function postActivityLog(
       }
     }
 
-    console.log(`Activity logging: ${activityType}, originalTargetId: ${targetId}, finalTargetId: ${finalTargetId}`);
+    console.log(
+      `Activity logging: ${activityType}, originalTargetId: ${targetId}, finalTargetId: ${finalTargetId}`
+    );
 
     // Get article metadata if this is an article-related activity
     let articleMetadata = {};
@@ -283,7 +287,7 @@ export async function postActivityLog(
           level:
             typeof levelData.raLevel === "number"
               ? levelData.raLevel
-              : parseInt(levelData.raLevel.toString()),
+              : parseInt(String(levelData.raLevel)),
           cefrLevel: levelData.cefrLevel,
           updatedAt: new Date(),
         },
@@ -329,11 +333,13 @@ export async function putActivityLog(
     if (!finalTargetId && data.details?.articleId) {
       finalTargetId = data.details.articleId;
     }
-    
+
     // For article rating, if targetId is a userId, try to get articleId from details
-    if (activityType === ActivityType.ARTICLE_RATING && 
-        finalTargetId && 
-        (finalTargetId.startsWith('cmesn') || finalTargetId.startsWith('cmeu'))) {
+    if (
+      activityType === ActivityType.ARTICLE_RATING &&
+      finalTargetId &&
+      (finalTargetId.startsWith("cmesn") || finalTargetId.startsWith("cmeu"))
+    ) {
       if (data.details?.articleId) {
         finalTargetId = data.details.articleId;
       } else if (data.articleId) {
@@ -443,7 +449,7 @@ export async function putActivityLog(
           level:
             typeof levelData.raLevel === "number"
               ? levelData.raLevel
-              : parseInt(levelData.raLevel.toString()),
+              : parseInt(String(levelData.raLevel)),
           cefrLevel: levelData.cefrLevel,
           updatedAt: new Date(),
         },
