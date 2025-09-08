@@ -271,10 +271,10 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
           <Book className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          {t("phase3Title")}
+          {t("phase5Title")}
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          {t("phase3Description")}
+          {t("phase5Description")}
         </p>
       </div>
 
