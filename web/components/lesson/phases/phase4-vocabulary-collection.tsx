@@ -426,7 +426,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                         <div className="flex items-center gap-2">
                           <CheckCircle2Icon className="h-5 w-5 text-green-600 dark:text-green-400" />
                           <p className="text-sm text-green-700 dark:text-green-300">
-                            You already have {savedWords.length} words saved. You can proceed to the next phase or select additional words if you'd like.
+                            You already have {savedWords.length} words saved. You can proceed to the next phase or select additional words if you&apos;d like.
                           </p>
                         </div>
                       </div>

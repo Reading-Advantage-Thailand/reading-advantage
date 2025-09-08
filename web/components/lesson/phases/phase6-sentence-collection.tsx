@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Article } from "../../models/article-model";
 import {
   FileTextIcon,
@@ -106,7 +106,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
   });
 
   // Fetch existing sentences from database
-  const fetchExistingSentences = async () => {
+  const fetchExistingSentences = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/v1/users/sentences/${userId}`, {
@@ -150,7 +150,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, articleId, sentences]);
 
   // Load existing sentences on component mount
   useEffect(() => {
@@ -416,7 +416,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
                   </>
                 ) : selectedCount >= 5 ? (
                   <>
-                    📝 {selectedCount} sentences selected - click "Add to Collection" to save them
+                    📝 {selectedCount} sentences selected - click &quot;Add to Collection&quot; to save them
                     <br />
                     <span className="text-amber-600 dark:text-amber-400 font-medium text-xs">
                       ⚠️ You must save at least 5 sentences to proceed to the next phase

@@ -1073,18 +1073,8 @@ export async function resetUserProgress(
         where: { userId: id },
       });
 
-      // Delete MCQ records
-      await tx.mCQRecord.deleteMany({
-        where: { userId: id },
-      });
-
-      // Delete SAQ records
-      await tx.sAQRecord.deleteMany({
-        where: { userId: id },
-      });
-
-      // Delete LAQ records
-      await tx.lAQRecord.deleteMany({
+      // Delete user activities (replaces MCQ, SAQ, LAQ records)
+      await tx.userActivity.deleteMany({
         where: { userId: id },
       });
 

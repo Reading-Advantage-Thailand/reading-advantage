@@ -98,29 +98,30 @@ export async function getAllStories(req: ExtendedNextRequest) {
           // Check completion status for each chapter
           const completedChapters = await Promise.all(
             story.chapters.map(async (chapter) => {
-              const mcqCount = await prisma.mCQRecord.count({
+              const mcqCount = await prisma.userActivity.count({
                 where: {
                   userId,
-                  storyId: story.id,
-                  chapterNumber: chapter.chapterNumber,
+                  activityType: 'MC_QUESTION',
+                  targetId: `${story.id}_${chapter.chapterNumber}`,
+                  completed: true,
                 },
               });
 
-              const saqCount = await prisma.sAQRecord.count({
+              const saqCount = await prisma.userActivity.count({
                 where: {
                   userId,
-                  storyId: story.id,
-                  chapterNumber: chapter.chapterNumber,
-                  questionNumber: 1,
+                  activityType: 'SA_QUESTION',
+                  targetId: `${story.id}_${chapter.chapterNumber}`,
+                  completed: true,
                 },
               });
 
-              const laqCount = await prisma.lAQRecord.count({
+              const laqCount = await prisma.userActivity.count({
                 where: {
                   userId,
-                  storyId: story.id,
-                  chapterNumber: chapter.chapterNumber,
-                  questionNumber: 1,
+                  activityType: 'LA_QUESTION',
+                  targetId: `${story.id}_${chapter.chapterNumber}`,
+                  completed: true,
                 },
               });
 
@@ -230,29 +231,30 @@ export async function getStoryById(
           (ct) => ct.chapterNumber === chapter.chapterNumber
         );
 
-        const mcqCount = await prisma.mCQRecord.count({
+        const mcqCount = await prisma.userActivity.count({
           where: {
             userId,
-            storyId,
-            chapterNumber: chapter.chapterNumber,
+            activityType: 'MC_QUESTION',
+            targetId: `${storyId}_${chapter.chapterNumber}`,
+            completed: true,
           },
         });
 
-        const saqExists = await prisma.sAQRecord.findFirst({
+        const saqExists = await prisma.userActivity.findFirst({
           where: {
             userId,
-            storyId,
-            chapterNumber: chapter.chapterNumber,
-            questionNumber: 1,
+            activityType: 'SA_QUESTION',
+            targetId: `${storyId}_${chapter.chapterNumber}`,
+            completed: true,
           },
         });
 
-        const laqExists = await prisma.lAQRecord.findFirst({
+        const laqExists = await prisma.userActivity.findFirst({
           where: {
             userId,
-            storyId,
-            chapterNumber: chapter.chapterNumber,
-            questionNumber: 1,
+            activityType: 'LA_QUESTION',
+            targetId: `${storyId}_${chapter.chapterNumber}`,
+            completed: true,
           },
         });
 
