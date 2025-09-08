@@ -39,9 +39,6 @@ model User {
   lessonRecords       LessonRecord[]
   storyRecords        StoryRecord[]
   chapterTrackings    ChapterTracking[]
-  mcqRecords          MCQRecord[]
-  saqRecords          SAQRecord[]
-  laqRecords          LAQRecord[]
   storyAssignments    StoryAssignment[]
 
   @@map("users")
@@ -472,64 +469,6 @@ model ChapterTracking {
 
   @@unique([userId, storyId, chapterNumber])
   @@map("chapter_trackings")
-}
-
-model MCQRecord {
-  id            String   @id @default(cuid())
-  userId        String   @map("user_id")
-  storyId       String   @map("story_id")
-  chapterNumber Int      @map("chapter_number")
-  questionNumber Int     @map("question_number")
-  question      String
-  options       Json     // Array of options
-  correctAnswer String   @map("correct_answer")
-  userAnswer    String?  @map("user_answer")
-  isCorrect     Boolean? @map("is_correct")
-  timeSpent     Int?     @map("time_spent")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, storyId, chapterNumber, questionNumber])
-  @@map("mcq_records")
-}
-
-model SAQRecord {
-  id            String   @id @default(cuid())
-  userId        String   @map("user_id")
-  storyId       String   @map("story_id")
-  chapterNumber Int      @map("chapter_number")
-  questionNumber Int     @map("question_number")
-  question      String
-  correctAnswer String   @map("correct_answer")
-  userAnswer    String?  @map("user_answer")
-  score         Float?
-  timeSpent     Int?     @map("time_spent")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, storyId, chapterNumber, questionNumber])
-  @@map("saq_records")
-}
-
-model LAQRecord {
-  id            String   @id @default(cuid())
-  userId        String   @map("user_id")
-  storyId       String   @map("story_id")
-  chapterNumber Int      @map("chapter_number")
-  questionNumber Int     @map("question_number")
-  question      String
-  userAnswer    String?  @map("user_answer")
-  score         Float?
-  feedback      String?
-  timeSpent     Int?     @map("time_spent")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, storyId, chapterNumber, questionNumber])
-  @@map("laq_records")
 }
 
 model StoryAssignment {
