@@ -249,32 +249,51 @@ export async function getMCQuestions(
       return details?.articleId === article_id;
     });
 
+    // Get XP logs for these activities
+    const activityIds = articleActivities.map(activity => activity.id);
+    const xpLogs = await prisma.xPLog.findMany({
+      where: {
+        activityId: { in: activityIds },
+        activityType: "MC_QUESTION",
+      },
+    });
+
+    const xpLogMap = new Map(xpLogs.map(log => [log.activityId, log]));
+
     const progress: AnswerStatus[] = [];
     const answeredQuestionIds = new Set();
-
     const questionAnswers = new Map();
+    const questionData = new Map(); // เก็บข้อมูลเพิ่มเติมของแต่ละคำถาม
 
-    articleActivities.forEach((activity) => {
+    // สร้าง progress array ตามลำดับการตอบ (createdAt) แทนการใช้ question order
+    const sortedActivities = articleActivities.sort((a, b) => 
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+
+    sortedActivities.forEach((activity) => {
       const details = activity.details as any;
       if (details?.questionId) {
         answeredQuestionIds.add(details.questionId);
         questionAnswers.set(details.questionId, details.isCorrect);
-      }
-    });
+        
+        const xpLog = xpLogMap.get(activity.id);
+        questionData.set(details.questionId, {
+          timer: activity.timer,
+          xpEarned: xpLog?.xpEarned || 0,
+          selectedAnswer: details.selectedAnswer,
+          correctAnswer: details.correctAnswer,
+          textualEvidence: details.textualEvidence,
+          createdAt: activity.createdAt,
+        });
 
-    const questionsForThisArticle = questions.slice(0, 5);
-
-    questionsForThisArticle.forEach((question) => {
-      if (questionAnswers.has(question.id)) {
-        const isCorrect = questionAnswers.get(question.id);
+        // เพิ่ม progress ตามลำดับการตอบ
         progress.push(
-          isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT
+          details.isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT
         );
-      } else {
-        progress.push(AnswerStatus.UNANSWERED);
       }
     });
 
+    // เติม UNANSWERED สำหรับคำถามที่ยังไม่ได้ตอบ
     while (progress.length < 5) {
       progress.push(AnswerStatus.UNANSWERED);
     }
@@ -284,11 +303,25 @@ export async function getMCQuestions(
     );
 
     if (currentQuestionIndex === -1) {
+      // คำนวณ total XP ที่ได้รับทั้งหมด
+      const totalXpEarned = Array.from(questionData.values())
+        .reduce((total, data) => total + (data.xpEarned || 0), 0);
+
+      // คำนวณ total timer ที่ใช้ทั้งหมด
+      const totalTimer = Array.from(questionData.values())
+        .reduce((total, data) => total + (data.timer || 0), 0);
+
       const responseData = {
         state: QuestionState.COMPLETED,
         total: 5,
         progress,
-        results: [],
+        results: [], // ไม่ส่ง results เมื่อ complete แล้ว
+        summary: {
+          totalXpEarned,
+          totalTimer,
+          correctAnswers: progress.filter(p => p === AnswerStatus.CORRECT).length,
+          incorrectAnswers: progress.filter(p => p === AnswerStatus.INCORRECT).length,
+        },
       };
 
       return new NextResponse(JSON.stringify(responseData), {
@@ -298,6 +331,8 @@ export async function getMCQuestions(
         },
       });
     }
+
+    const questionsForThisArticle = questions.slice(0, 5);
 
     const unansweredQuestions = questionsForThisArticle.filter(
       (question) => !answeredQuestionIds.has(question.id)
@@ -321,6 +356,7 @@ export async function getMCQuestions(
 
     const nextQuestion = unansweredQuestions[0];
     const options = [...nextQuestion.options];
+    const currentQuestionData = questionData.get(nextQuestion.id) || {};
 
     const mcq = [
       {
@@ -328,14 +364,32 @@ export async function getMCQuestions(
         question: nextQuestion.question,
         options: options.sort(() => 0.5 - Math.random()),
         textual_evidence: nextQuestion.textualEvidence,
+        timer: currentQuestionData.timer || null,
+        xpEarned: currentQuestionData.xpEarned || 0,
+        selectedAnswer: currentQuestionData.selectedAnswer || null,
+        correctAnswer: currentQuestionData.correctAnswer || null,
       },
     ];
+
+    // คำนวณ summary สำหรับคำถามที่ตอบไปแล้ว
+    const answeredQuestionData = Array.from(questionData.values());
+    const totalXpEarned = answeredQuestionData
+      .reduce((total, data) => total + (data.xpEarned || 0), 0);
+    const totalTimer = answeredQuestionData
+      .reduce((total, data) => total + (data.timer || 0), 0);
 
     const responseData = {
       state: QuestionState.INCOMPLETE,
       total: 5,
       progress,
       results: mcq,
+      summary: {
+        totalXpEarned,
+        totalTimer,
+        correctAnswers: progress.filter(p => p === AnswerStatus.CORRECT).length,
+        incorrectAnswers: progress.filter(p => p === AnswerStatus.INCORRECT).length,
+        currentQuestion: progress.filter(p => p !== AnswerStatus.UNANSWERED).length + 1,
+      },
     };
 
     return new NextResponse(JSON.stringify(responseData), {
