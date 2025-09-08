@@ -46,11 +46,8 @@ export default async function LessonPage({
   const classroomId = data.data;
 
   return (
-    // ...existing code...
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-[hsl(222.2_90%_4.9%)] to-20% rounded-xl">
-      {/* Main Content Container */}
       <div className="container mx-auto px-4 py-6 max-w-7xl">
-        {/* Lesson Content */}
         <div className="relative">
           <LessonCard
             article={articleResponse.article}
@@ -58,8 +55,6 @@ export default async function LessonPage({
             userId={user.id}
             classroomId={classroomId}
           />
-
-          {/* Floating Chatbot */}
           <ChatBotFloatingChatButton
             article={articleResponse?.article as Article}
           />

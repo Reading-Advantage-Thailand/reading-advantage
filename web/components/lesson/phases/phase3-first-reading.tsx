@@ -30,14 +30,6 @@ interface TimePoint {
   timeSeconds: number;
 }
 
-interface TranslatedPassage {
-  cn?: string[];
-  en?: string[];
-  th?: string[];
-  tw?: string[];
-  vi?: string[];
-}
-
 const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   article,
   articleId,
@@ -50,8 +42,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   const [currentSentence, setCurrentSentence] = useState(0);
   const [readingSpeed, setReadingSpeed] = useState("1");
   const [highlightMode, setHighlightMode] = useState(true);
-  const [showTranslation, setShowTranslation] = useState(true);
-  const [selectedSentence, setSelectedSentence] = useState<number | null>(null);
+  const [hasCompletedReading, setHasCompletedReading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isAudioLoaded, setIsAudioLoaded] = useState(false);
   const sentenceRefs = useRef<{ [key: number]: HTMLElement | null }>({});
@@ -61,19 +52,11 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     ((article as any).timepoints as TimePoint[]) || [], 
     [article]
   );
-  const translatedPassage =
-    ((article as any).translatedPassage as TranslatedPassage) || {};
   const audioUrl = (article as any).audio_url || "";
 
   // Extract sentences from timepoints
   const sentences = timepoints.map((tp: TimePoint) => tp.sentences);
   const paragraphs = article.passage.split("\n").filter((p) => p.trim());
-
-  // Get translation for specific sentence
-  const getTranslation = (sentenceIndex: number): string => {
-    const translations = translatedPassage[locale] || [];
-    return translations[sentenceIndex] || "Translation not available";
-  };
 
   useEffect(() => {
     // Initialize audio
@@ -106,8 +89,13 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   }, [audioUrl]);
 
   useEffect(() => {
-    onCompleteChange(true);
-  }, [onCompleteChange]);
+    // Only mark as complete when audio has finished reading the last sentence
+    // If there are no sentences/timepoints, mark as complete immediately
+    if (sentences.length === 0) {
+      setHasCompletedReading(true);
+    }
+    onCompleteChange(hasCompletedReading);
+  }, [onCompleteChange, hasCompletedReading, sentences.length]);
 
   useEffect(() => {
     // Update playback rate when speed changes
@@ -197,6 +185,12 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
         );
         setCurrentSentence(newSentenceIndex);
 
+        // Check if we've reached the last sentence
+        if (newSentenceIndex >= sentences.length - 1) {
+          console.log("Reached last sentence, marking as complete");
+          setHasCompletedReading(true);
+        }
+
         // Scroll to current sentence
         const sentenceElement = sentenceRefs.current[newSentenceIndex];
         if (sentenceElement && highlightMode) {
@@ -217,6 +211,11 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     audioRef.current.onended = () => {
       console.log("Audio ended");
       setIsPlaying(false);
+      // Check if we've reached the last sentence when audio ends
+      if (currentSentence >= sentences.length - 1) {
+        console.log("Reading completed - reached last sentence");
+        setHasCompletedReading(true);
+      }
       // Don't reset sentence to 0, keep it at the last sentence
     };
 
@@ -249,16 +248,6 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       console.log(`Jumping to time: ${targetTime}s`);
       audioRef.current.currentTime = targetTime;
       setCurrentSentence(sentenceIndex);
-    }
-
-    // Show/hide translation if enabled
-    if (showTranslation) {
-      const newSelected =
-        selectedSentence === sentenceIndex ? null : sentenceIndex;
-      console.log(
-        `Translation ${newSelected !== null ? "shown" : "hidden"} for sentence ${sentenceIndex}`
-      );
-      setSelectedSentence(newSelected);
     }
   };
 
@@ -331,80 +320,11 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
             {highlightMode ? "🔆" : "🔅"} Highlight{" "}
             {highlightMode ? "ON" : "OFF"}
           </Button>
-
-          {/* Translation Toggle */}
-          <Button
-            variant={showTranslation ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setShowTranslation(!showTranslation);
-              if (!showTranslation) {
-                setSelectedSentence(null);
-              }
-            }}
-            className={showTranslation ? "bg-blue-500 hover:bg-blue-600" : ""}
-          >
-            {showTranslation ? "🌐" : "🌍"} Translation{" "}
-            {showTranslation ? "ON" : "OFF"}
-          </Button>
         </div>
       </div>
 
       {/* Reading Content */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative">
-        {/* Translation overlay inside content */}
-        {showTranslation &&
-          selectedSentence !== null &&
-          sentenceRefs.current[selectedSentence] && (
-            <div className="absolute inset-0 z-[100] pointer-events-none">
-              <div
-                className="absolute bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-sm px-4 py-3 rounded-lg shadow-2xl border border-gray-600 dark:border-gray-300 pointer-events-auto"
-                style={(() => {
-                  const sentenceElement =
-                    sentenceRefs.current[selectedSentence];
-                  if (!sentenceElement) return { display: "none" };
-
-                  const rect = sentenceElement.getBoundingClientRect();
-                  const containerElement = sentenceElement.closest(
-                    ".bg-white, .dark\\:bg-gray-900"
-                  );
-                  const containerRect =
-                    containerElement?.getBoundingClientRect();
-
-                  if (!containerRect) return { display: "none" };
-
-                  // คำนวณตำแหน่งสัมพันธ์กับ container
-                  const relativeTop = rect.top - containerRect.top;
-                  const relativeLeft =
-                    rect.left - containerRect.left + rect.width / 2;
-
-                  return {
-                    top: `${Math.max(10, relativeTop - 120)}px`, // ลอยบนประโยค 120px
-                    left: `${relativeLeft}px`,
-                    transform: "translateX(-50%)",
-                    width: "min(calc(100% - 40px), 350px)",
-                    maxHeight: "calc(100% - 40px)",
-                    overflow: "auto",
-                  };
-                })()}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="font-medium text-yellow-300 dark:text-blue-600">
-                    Translation:
-                  </div>
-                  <button
-                    className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold flex items-center justify-center transition-colors ml-2"
-                    onClick={() => setSelectedSentence(null)}
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="text-wrap leading-relaxed">
-                  {getTranslation(selectedSentence)}
-                </div>
-              </div>
-            </div>
-          )}
         <div className="p-4 sm:p-8 lg:p-12 max-w-none">
           {/* Article Title - Book style with responsive sizing */}
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6 sm:mb-8 lg:mb-12 text-center leading-tight font-serif tracking-normal sm:tracking-wide">
@@ -469,9 +389,6 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                               isPlaying &&
                               highlightMode &&
                               sentenceIndex === currentSentence;
-                            const isSelectedSentence =
-                              showTranslation &&
-                              selectedSentence === sentenceIndex;
 
                             return (
                               <span key={`sentence-${sentenceIndex}`}>
@@ -479,9 +396,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                                   className={`transition-all duration-300 cursor-pointer relative inline ${
                                     isCurrentSentence
                                       ? "bg-yellow-200 dark:bg-yellow-600 text-yellow-900 dark:text-yellow-100 shadow-md rounded-md px-1.5 py-0.5 font-medium"
-                                      : isSelectedSentence
-                                        ? "bg-blue-100 dark:bg-blue-800 rounded-md px-1.5 py-0.5"
-                                        : "hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm px-1 py-0.5"
+                                      : "hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm px-1 py-0.5"
                                   }`}
                                   ref={(el) => {
                                     sentenceRefs.current[sentenceIndex] = el;
@@ -529,7 +444,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
             <div
               className="bg-gradient-to-r from-emerald-500 to-teal-600 h-3 rounded-full transition-all duration-500"
               style={{
-                width: `${sentences.length > 0 ? Math.max(((currentSentence + 1) / sentences.length) * 100, isPlaying ? ((currentSentence + 1) / sentences.length) * 100 : 100) : 0}%`,
+                width: `${sentences.length > 0 ? ((currentSentence + 1) / sentences.length) * 100 : 0}%`,
               }}
             />
           </div>
@@ -540,14 +455,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
             </span>
             <span className="font-medium">
               {sentences.length > 0
-                ? isPlaying
-                  ? Math.round(((currentSentence + 1) / sentences.length) * 100)
-                  : Math.min(
-                      Math.round(
-                        ((currentSentence + 1) / sentences.length) * 100
-                      ),
-                      100
-                    )
+                ? Math.round(((currentSentence + 1) / sentences.length) * 100)
                 : 0}
               % complete
             </span>
@@ -571,14 +479,42 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Click on any sentence to see its translation
+            Click on any sentence to jump to that part of the audio
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
             Use highlight mode to follow along with the audio
           </li>
+          <li className="flex items-center">
+            <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+            Listen to the complete audio to proceed to the next phase
+          </li>
         </ul>
       </div>
+
+      {/* Completion Status */}
+      {sentences.length > 0 && (
+        <div className={`p-4 rounded-xl border transition-all duration-500 ${
+          hasCompletedReading 
+            ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800"
+            : "bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950 dark:to-yellow-950 border-orange-200 dark:border-orange-800"
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className={`w-3 h-3 rounded-full ${
+              hasCompletedReading ? "bg-green-500 animate-pulse" : "bg-orange-500"
+            }`}></div>
+            <span className={`font-medium ${
+              hasCompletedReading 
+                ? "text-green-800 dark:text-green-200" 
+                : "text-orange-800 dark:text-orange-200"
+            }`}>
+              {hasCompletedReading 
+                ? "✅ Reading completed! You can now proceed to the next phase."
+                : "🎧 Listen to the complete audio to unlock the next phase."}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
