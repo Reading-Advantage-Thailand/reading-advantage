@@ -29,26 +29,33 @@ const Phase11SentenceFlashcards: React.FC<Phase11SentenceFlashcardsProps> = ({
   const t = useScopedI18n("pages.student.lessonPage");
 
   return (
-    <Card className="pb-7 w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Book />
-          <div className="ml-2">{t("phase11Title")}</div>
-        </CardTitle>
-      </CardHeader>
-      <div className="px-6">
-        <span className="font-bold">{t("phase11Description")}</span>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header Section */}
+      <div className="text-center space-y-4 bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 dark:from-teal-950 dark:via-cyan-950 dark:to-blue-950 p-8 rounded-2xl border border-teal-200 dark:border-teal-800">
+        <div className="inline-flex items-center justify-center p-3 bg-teal-100 dark:bg-teal-900 rounded-full mb-4">
+          <Book className="h-8 w-8 text-teal-600 dark:text-teal-400" />
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          {t("phase11Title")}
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          {t("phase11Description")}
+        </p>
       </div>
-      <CardDescription className="px-6">
-        <LessonSentenseFlashCard
-          userId={userId}
-          articleId={articleId}
-          showButton={showSentenseButton}
-          setShowButton={setShowSentenseButton}
-          onCompleteChange={onCompleteChange}
-        />
-      </CardDescription>
-    </Card>
+
+      {/* Sentence Flashcard Component */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-6">
+          <LessonSentenseFlashCard
+            userId={userId}
+            articleId={articleId}
+            showButton={showSentenseButton}
+            setShowButton={setShowSentenseButton}
+            onCompleteChange={onCompleteChange}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -201,9 +201,6 @@ function LessonSAQComplete({ resp }: { resp: QuestionResponse }) {
           <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {t("title")}
-          </h2>
           <p className="text-green-600 dark:text-green-400 font-medium">
             {t("descriptionSuccess")}
           </p>

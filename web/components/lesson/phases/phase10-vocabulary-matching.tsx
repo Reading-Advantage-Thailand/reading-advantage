@@ -25,24 +25,31 @@ const Phase10VocabularyMatching: React.FC<Phase10VocabularyMatchingProps> = ({
   const t = useScopedI18n("pages.student.lessonPage");
 
   return (
-    <Card className="pb-7 xl:h-[550px] w-full md:w-[725px] xl:w-[750px]">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Book />
-          <div className="ml-2">{t("phase10Title")}</div>
-        </CardTitle>
-      </CardHeader>
-      <div className="px-6">
-        <span className="font-bold">{t("phase10Description")}</span>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header Section */}
+      <div className="text-center space-y-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950 p-8 rounded-2xl border border-indigo-200 dark:border-indigo-800">
+        <div className="inline-flex items-center justify-center p-3 bg-indigo-100 dark:bg-indigo-900 rounded-full mb-4">
+          <Book className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          {t("phase10Title")}
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          {t("phase10Description")}
+        </p>
       </div>
-      <CardDescription className="px-6">
-        <LessonMatchingWords
-          userId={userId}
-          articleId={articleId}
-          onCompleteChange={onCompleteChange}
-        />
-      </CardDescription>
-    </Card>
+
+      {/* Matching Component */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-6">
+          <LessonMatchingWords
+            userId={userId}
+            articleId={articleId}
+            onCompleteChange={onCompleteChange}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 

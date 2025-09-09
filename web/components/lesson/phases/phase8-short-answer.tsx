@@ -28,30 +28,32 @@ const Phase8ShortAnswer: React.FC<Phase8ShortAnswerProps> = ({
   const t = useScopedI18n("pages.student.lessonPage");
 
   return (
-    <div className="pb-7 w-full">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-            <Book className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {t("phase8Title")}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 font-medium">
-              {t("phase8Description")}
-            </p>
-          </div>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header Section */}
+      <div className="text-center space-y-4 bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-950 dark:via-cyan-950 dark:to-teal-950 p-8 rounded-2xl border border-blue-200 dark:border-blue-800">
+        <div className="inline-flex items-center justify-center p-3 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
+          <Book className="h-8 w-8 text-blue-600 dark:text-blue-400" />
         </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          {t("phase8Title")}
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          {t("phase8Description")}
+        </p>
       </div>
       
-      <LessonSAQ
-        userId={userId}
-        articleId={articleId}
-        articleTitle={article.title}
-        articleLevel={article.ra_level}
-        onCompleteChange={onCompleteChange}
-      />
+      {/* SAQ Component */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-6">
+          <LessonSAQ
+            userId={userId}
+            articleId={articleId}
+            articleTitle={article.title}
+            articleLevel={article.ra_level}
+            onCompleteChange={onCompleteChange}
+          />
+        </div>
+      </div>
     </div>
   );
 };

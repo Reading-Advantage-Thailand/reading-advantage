@@ -23,28 +23,30 @@ const Phase9VocabularyFlashcards: React.FC<Phase9VocabularyFlashcardsProps> = ({
   const t = useScopedI18n("pages.student.lessonPage");
 
   return (
-    <div className="pb-7 w-full">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
-            <Book className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {t("phase10Title")}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 font-medium">
-              {t("phase10Description")}
-            </p>
-          </div>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header Section */}
+      <div className="text-center space-y-4 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-950 dark:via-green-950 dark:to-teal-950 p-8 rounded-2xl border border-emerald-200 dark:border-emerald-800">
+        <div className="inline-flex items-center justify-center p-3 bg-emerald-100 dark:bg-emerald-900 rounded-full mb-4">
+          <Book className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
         </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          {t("phase10Title")}
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          {t("phase10Description")}
+        </p>
       </div>
       
-      <LessonVocabularyFlashcardGame
-        userId={userId}
-        articleId={articleId}
-        onCompleteChange={onCompleteChange}
-      />
+      {/* Vocabulary Flashcard Component */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-6">
+          <LessonVocabularyFlashcardGame
+            userId={userId}
+            articleId={articleId}
+            onCompleteChange={onCompleteChange}
+          />
+        </div>
+      </div>
     </div>
   );
 };

@@ -28,30 +28,32 @@ const Phase7MultipleChoice: React.FC<Phase7MultipleChoiceProps> = ({
   const t = useScopedI18n("pages.student.lessonPage");
 
   return (
-    <div className="w-full h-full">
-      {/* Header Card */}
-      <Card className="mb-6 border-0 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/50 dark:to-blue-950/50">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center text-lg font-bold text-purple-800 dark:text-purple-200">
-            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mr-3">
-              <Book className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>{t("phase7Title")}</div>
-          </CardTitle>
-          <CardDescription className="text-purple-700 dark:text-purple-300 ml-11">
-            <span className="font-medium">{t("phase7Description")}</span>
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header Section */}
+      <div className="text-center space-y-4 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-950 dark:via-blue-950 dark:to-indigo-950 p-8 rounded-2xl border border-purple-200 dark:border-purple-800">
+        <div className="inline-flex items-center justify-center p-3 bg-purple-100 dark:bg-purple-900 rounded-full mb-4">
+          <Book className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          {t("phase7Title")}
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          {t("phase7Description")}
+        </p>
+      </div>
 
       {/* MCQ Component */}
-      <LessonMCQ
-        userId={userId}
-        articleId={articleId}
-        articleTitle={article.title}
-        articleLevel={article.ra_level}
-        onCompleteChange={onCompleteChange}
-      />
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-6">
+          <LessonMCQ
+            userId={userId}
+            articleId={articleId}
+            articleTitle={article.title}
+            articleLevel={article.ra_level}
+            onCompleteChange={onCompleteChange}
+          />
+        </div>
+      </div>
     </div>
   );
 };

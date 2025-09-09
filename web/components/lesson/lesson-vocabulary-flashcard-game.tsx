@@ -499,7 +499,7 @@ export default function LessonVocabularyFlashcardGame({
 
     return (
       <div className="space-y-6">
-        <Card className="overflow-hidden bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:via-emerald-950/20 dark:to-emerald-950/30 border-emerald-200 dark:border-emerald-800">
+        <Card className="overflow-hidden bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:via-emerald-950/20 dark:to-emerald-950/30 border-emerald-200 dark:border-emerald-800 pb-14">
           <CardContent className="p-8 text-center">
             <div className="space-y-6">
               {/* Trophy and celebration */}
@@ -563,18 +563,6 @@ export default function LessonVocabularyFlashcardGame({
               </div>
 
               <Separator className="bg-emerald-200 dark:bg-emerald-800" />
-
-              {/* Complete button */}
-              <div className="flex justify-center">
-                <Button
-                  onClick={handleCompleteSession}
-                  size="lg"
-                  className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg"
-                >
-                  <CheckCircle className="mr-2 h-5 w-5" />
-                  Continue to Next Phase
-                </Button>
-              </div>
             </div>
           </CardContent>
         </Card>
