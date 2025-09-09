@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import LessonMCQ from "../lesson-mcq";
+import LessonMCQ from "../practics/lesson-mcq";
 import { Article } from "../../models/article-model";
 import { Book } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
