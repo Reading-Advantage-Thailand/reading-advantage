@@ -45,6 +45,7 @@ export enum UserXpEarned {
   Sentence_Ordering = 5,
   Sentence_Word_Ordering = 5,
   Lesson_Flashcard = 20,
+  Lesson_Sentence_Flashcards = 15,
 }
 
 export enum ActivityType {
@@ -68,6 +69,7 @@ export enum ActivityType {
   VocabularyFlashcards = "vocabulary_flashcards",
   VocabularyMatching = "vocabulary_matching",
   LessonFlashcard = "lesson_flashcard",
+  LessonSentenceFlashcards = "lesson_sentence_flashcards",
 }
 
 export enum ActivityStatus {

@@ -478,7 +478,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
           />
         );
       case 11:
-        return showSentenseButton ? (
+        return (
           <Phase11SentenceFlashcards
             articleId={articleId}
             userId={userId}
@@ -488,7 +488,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
               updatePhaseCompletion(10, complete)
             }
           />
-        ) : null;
+        );
       case 12:
         return (
           <Phase12SentenceActivities

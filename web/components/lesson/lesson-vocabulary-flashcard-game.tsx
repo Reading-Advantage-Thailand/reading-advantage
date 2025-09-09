@@ -40,9 +40,7 @@ import {
 } from "ts-fsrs";
 import { toast } from "sonner";
 import AudioButton from "@/components/audio-button";
-
-const AUDIO_WORDS_URL =
-  process.env.NEXT_PUBLIC_AUDIO_WORDS_URL || "words_from_articles";
+import { AUDIO_WORDS_URL } from "@/server/constants";
 
 // FSRS Configuration
 const f = fsrs(generatorParameters({ enable_fuzz: true }));

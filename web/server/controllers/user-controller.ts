@@ -475,10 +475,25 @@ export async function getActivityLog(
       select: { xp: true, level: true },
     });
 
+    // Get query parameters
+    const articleId = req.nextUrl.searchParams.get("articleId");
+    const activityType = req.nextUrl.searchParams.get("activityType");
+
+    // Build where condition
+    const whereCondition: any = {
+      userId: id,
+    };
+
+    if (articleId) {
+      whereCondition.targetId = articleId;
+    }
+
+    if (activityType) {
+      whereCondition.activityType = activityType.toUpperCase();
+    }
+
     const activities = await prisma.userActivity.findMany({
-      where: {
-        userId: id,
-      },
+      where: whereCondition,
       orderBy: {
         createdAt: "asc",
       },
@@ -579,7 +594,7 @@ export async function getActivityLog(
     );
 
     return NextResponse.json({
-      results: formattedResults,
+      activityLogs: formattedResults,
       message: "success",
     });
   } catch (error) {

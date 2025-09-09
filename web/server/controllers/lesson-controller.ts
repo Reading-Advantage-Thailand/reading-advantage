@@ -552,3 +552,256 @@ export async function deleteLessonWord(
     );
   }
 }
+
+interface LessonSentencesContext {
+  params: {
+    articleId: string;
+  };
+}
+
+export async function getLessonSentences(
+  req: NextRequest,
+  { params: { articleId } }: LessonSentencesContext
+) {
+  try {
+    const extReq = req as ExtendedNextRequest;
+    const userId = extReq.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!articleId) {
+      return NextResponse.json(
+        { message: "Article ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if user has already completed this lesson sentence flashcard activity
+    const existingActivity = await prisma.userActivity.findFirst({
+      where: {
+        userId: userId,
+        activityType: "LESSON_SENTENCE_FLASHCARDS",
+        targetId: articleId,
+        completed: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // If activity is already completed, get XP logs for this activity
+    if (existingActivity) {
+      const xpLogs = await prisma.xPLog.findMany({
+        where: {
+          userId: userId,
+          activityId: existingActivity.id,
+        },
+      });
+
+      const totalXpEarned = xpLogs.reduce((sum, log) => sum + (log.xpEarned || 0), 0);
+      
+      // Get timeTaken from timer field or from details if timer is null
+      const timeTaken = existingActivity.timer || 
+        (existingActivity.details && typeof existingActivity.details === 'object' && 
+         'timeTaken' in existingActivity.details ? 
+         (existingActivity.details as any).timeTaken : 0);
+
+      const completionData = {
+        isCompleted: true,
+        completionDate: existingActivity.createdAt,
+        xpEarned: totalXpEarned,
+        timeTaken: timeTaken,
+        details: existingActivity.details || {},
+      };
+
+      return NextResponse.json({
+        flashcards: [],
+        total: 0,
+        isCompleted: true,
+        completionData,
+        message: "Lesson sentence flashcards already completed",
+      });
+    }
+
+    // Get all UserSentenceRecords for this specific article and user
+    const userSentenceRecords = await prisma.userSentenceRecord.findMany({
+      where: {
+        userId: userId,
+        articleId: articleId,
+        saveToFlashcard: true, // Only sentences saved to flashcard
+      },
+      orderBy: {
+        createdAt: 'asc', // Order by when they were added
+      },
+    });
+
+    // Transform to flashcard format with FSRS data
+    const flashcards = userSentenceRecords.map((record) => {
+      return {
+        id: record.id,
+        sentence: record.sentence,
+        translation: record.translation,
+        sn: record.sn,
+        timepoint: record.timepoint,
+        endTimepoint: record.endTimepoint,
+        audioUrl: record.audioUrl,
+        articleId: articleId,
+        // FSRS card data
+        due: record.due,
+        stability: record.stability,
+        difficulty: record.difficulty,
+        elapsed_days: record.elapsedDays,
+        scheduled_days: record.scheduledDays,
+        reps: record.reps,
+        lapses: record.lapses,
+        state: record.state,
+        last_review: record.updatedAt,
+        updateScore: record.updateScore,
+      };
+    });
+
+    return NextResponse.json({
+      flashcards,
+      total: flashcards.length,
+      isCompleted: false,
+      message: "Lesson sentences retrieved successfully",
+    });
+
+  } catch (error) {
+    console.error("Error getting lesson sentences:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function updateLessonSentence(
+  req: NextRequest,
+  { params: { sentenceId } }: { params: { sentenceId: string } }
+) {
+  try {
+    const extReq = req as ExtendedNextRequest;
+    const userId = extReq.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!sentenceId) {
+      return NextResponse.json(
+        { message: "Sentence ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const body = await req.json();
+    const {
+      due,
+      stability,
+      difficulty,
+      elapsed_days,
+      scheduled_days,
+      reps,
+      lapses,
+      state,
+    } = body;
+
+    // Update the UserSentenceRecord with new FSRS data
+    const updatedRecord = await prisma.userSentenceRecord.update({
+      where: {
+        id: sentenceId,
+        userId: userId, // Ensure user can only update their own records
+      },
+      data: {
+        due: due ? new Date(due) : undefined,
+        stability: stability ?? undefined,
+        difficulty: difficulty ?? undefined,
+        elapsedDays: elapsed_days ?? undefined,
+        scheduledDays: scheduled_days ?? undefined,
+        reps: reps ?? undefined,
+        lapses: lapses ?? undefined,
+        state: state ?? undefined,
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      record: updatedRecord,
+      message: "Sentence record updated successfully",
+    });
+
+  } catch (error) {
+    console.error("Error updating lesson sentence:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function deleteLessonSentence(
+  req: NextRequest,
+  { params: { sentenceId } }: { params: { sentenceId: string } }
+) {
+  try {
+    const extReq = req as ExtendedNextRequest;
+    const userId = extReq.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!sentenceId) {
+      return NextResponse.json(
+        { message: "Sentence ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Delete or mark as not for flashcard
+    await prisma.userSentenceRecord.update({
+      where: {
+        id: sentenceId,
+        userId: userId, // Ensure user can only delete their own records
+      },
+      data: {
+        saveToFlashcard: false,
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Sentence removed from flashcards",
+    });
+
+  } catch (error) {
+    console.error("Error deleting lesson sentence:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}

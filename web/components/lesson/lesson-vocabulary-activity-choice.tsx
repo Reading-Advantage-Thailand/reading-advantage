@@ -87,15 +87,17 @@ export default function LessonMatchingWords({
   const checkActivityCompletion = async () => {
     try {
       const res = await fetch(
-        `/api/v1/users/${userId}/activitylog?articleId=${articleId}&activityType=${ActivityType.VocabularyMatching}`
+        `/api/v1/users/${userId}/activitylog?articleId=${articleId}&activityType=vocabulary_matching`
       );
       if (res.ok) {
         const data = await res.json();
+        console.log("Activity log response:", data); // Debug log
         if (data.activityLogs && data.activityLogs.length > 0) {
           const completedActivity = data.activityLogs.find(
-            (log: any) => log.activityStatus === ActivityStatus.Completed
+            (log: any) => log.completed === true
           );
           if (completedActivity) {
+            console.log("Found completed activity:", completedActivity); // Debug log
             setIsAlreadyCompleted(true);
             setIsScoreSaved(true);
             onCompleteChange(true);
@@ -242,13 +244,13 @@ export default function LessonMatchingWords({
             <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-gray-700">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Progress: {correctMatches.length / 2} / 5
+                Progress: {isAlreadyCompleted || correctMatches.length === 10 ? "5" : correctMatches.length / 2} / 5
               </span>
             </div>
             <div className="w-48 sm:w-64 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 className="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out"
-                style={{ width: `${(correctMatches.length / 10) * 100}%` }}
+                style={{ width: `${isAlreadyCompleted || correctMatches.length === 10 ? 100 : (correctMatches.length / 10) * 100}%` }}
               />
             </div>
           </div>

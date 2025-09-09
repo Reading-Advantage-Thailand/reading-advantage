@@ -1,13 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import LessonSentenseFlashCard from "../lesson-sentense-flash-card";
+import LessonSentenceFlashcardGame from "../lesson-sentence-flashcard-game";
 import { Book } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 
@@ -44,17 +38,11 @@ const Phase11SentenceFlashcards: React.FC<Phase11SentenceFlashcardsProps> = ({
       </div>
 
       {/* Sentence Flashcard Component */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="p-6">
-          <LessonSentenseFlashCard
-            userId={userId}
-            articleId={articleId}
-            showButton={showSentenseButton}
-            setShowButton={setShowSentenseButton}
-            onCompleteChange={onCompleteChange}
-          />
-        </div>
-      </div>
+      <LessonSentenceFlashcardGame
+        userId={userId}
+        articleId={articleId}
+        onCompleteChange={onCompleteChange}
+      />
     </div>
   );
 };
