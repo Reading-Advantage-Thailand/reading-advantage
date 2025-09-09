@@ -44,6 +44,7 @@ export enum UserXpEarned {
   Sentence_Cloze_Test = 2,
   Sentence_Ordering = 5,
   Sentence_Word_Ordering = 5,
+  Lesson_Flashcard = 20,
 }
 
 export enum ActivityType {
@@ -66,6 +67,7 @@ export enum ActivityType {
   SentenceClozeTest = "sentence_cloze_test",
   VocabularyFlashcards = "vocabulary_flashcards",
   VocabularyMatching = "vocabulary_matching",
+  LessonFlashcard = "lesson_flashcard",
 }
 
 export enum ActivityStatus {

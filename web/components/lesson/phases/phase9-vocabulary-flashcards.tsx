@@ -1,13 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import LessonVocabularyFlashCard from "../lesson-vocabulary-flash-card";
+import LessonVocabularyFlashcardGame from "../lesson-vocabulary-flashcard-game";
 import { Book } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 
@@ -29,26 +23,29 @@ const Phase9VocabularyFlashcards: React.FC<Phase9VocabularyFlashcardsProps> = ({
   const t = useScopedI18n("pages.student.lessonPage");
 
   return (
-    <Card className="pb-7 w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Book />
-          <div className="ml-2">{t("phase10Title")}</div>
-        </CardTitle>
-      </CardHeader>
-      <div className="px-6">
-        <span className="font-bold">{t("phase10Description")}</span>
+    <div className="pb-7 w-full">
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
+            <Book className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t("phase10Title")}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">
+              {t("phase10Description")}
+            </p>
+          </div>
+        </div>
       </div>
-      <CardDescription className="px-6">
-        <LessonVocabularyFlashCard
-          userId={userId}
-          articleId={articleId}
-          showButton={showVocabularyButton}
-          setShowButton={setShowVocabularyButton}
-          onCompleteChange={onCompleteChange}
-        />
-      </CardDescription>
-    </Card>
+      
+      <LessonVocabularyFlashcardGame
+        userId={userId}
+        articleId={articleId}
+        onCompleteChange={onCompleteChange}
+      />
+    </div>
   );
 };
 

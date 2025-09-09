@@ -178,10 +178,6 @@ export async function postActivityLog(
       }
     }
 
-    console.log(
-      `Activity logging: ${activityType}, originalTargetId: ${targetId}, finalTargetId: ${finalTargetId}`
-    );
-
     // Get article metadata if this is an article-related activity
     let articleMetadata = {};
     if (
@@ -233,7 +229,7 @@ export async function postActivityLog(
         ...articleMetadata,
         ...data.details,
       },
-      completed: data.activityStatus === "completed",
+      completed: data.completed || data.activityStatus === "completed",
     };
 
     let activity;
@@ -243,7 +239,7 @@ export async function postActivityLog(
       activity = await prisma.userActivity.create({
         data: commonData,
       });
-    } else if (data.activityStatus === "completed") {
+    } else if (data.activityStatus === "completed" || data.completed) {
       // Update existing activity
       activity = await prisma.userActivity.update({
         where: { id: existingActivity.id },

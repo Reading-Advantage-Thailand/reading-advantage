@@ -220,18 +220,64 @@ export async function postFlashCard(
     const json = await req.json();
 
     if (json.page === "vocabulary") {
+      // Exclude fields that are not updatable or should be handled as relations
+      const { 
+        id: jsonId, 
+        userId, 
+        articleId, 
+        user, 
+        article, 
+        createdAt, 
+        updatedAt, 
+        last_review,  // This field doesn't exist in schema, exclude it
+        elapsed_days,
+        scheduled_days,
+        page,
+        ...updateData 
+      } = json;
+      
+      // Map the field names correctly for Prisma
+      const cleanUpdateData = {
+        ...updateData,
+        elapsedDays: json.elapsed_days,
+        scheduledDays: json.scheduled_days,
+      };
+      
+      console.log("Updating UserWordRecord with data:", cleanUpdateData);
+      
       await prisma.userWordRecord.update({
         where: { id },
-        data: {
-          ...json,
-        },
+        data: cleanUpdateData,
       });
     } else {
+      // Exclude fields that are not updatable or should be handled as relations
+      const { 
+        id: jsonId, 
+        userId, 
+        articleId, 
+        user, 
+        article, 
+        createdAt, 
+        updatedAt, 
+        last_review,
+        elapsed_days,
+        scheduled_days,
+        page,
+        ...updateData 
+      } = json;
+      
+      // Map the field names correctly for Prisma
+      const cleanUpdateData = {
+        ...updateData,
+        elapsedDays: json.elapsed_days,
+        scheduledDays: json.scheduled_days,
+      };
+      
+      console.log("Updating UserSentenceRecord with data:", cleanUpdateData);
+      
       await prisma.userSentenceRecord.update({
         where: { id },
-        data: {
-          ...json,
-        },
+        data: cleanUpdateData,
       });
     }
 

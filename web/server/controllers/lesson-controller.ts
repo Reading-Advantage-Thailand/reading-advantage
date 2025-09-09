@@ -345,3 +345,210 @@ export async function getUserQuizPerformance(
     );
   }
 }
+
+interface LessonWordsContext {
+  params: {
+    articleId: string;
+  };
+}
+
+export async function getLessonWords(
+  req: NextRequest,
+  { params: { articleId } }: LessonWordsContext
+) {
+  try {
+    const extReq = req as ExtendedNextRequest;
+    const userId = extReq.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!articleId) {
+      return NextResponse.json(
+        { message: "Article ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Get all UserWordRecords for this specific article and user
+    const userWordRecords = await prisma.userWordRecord.findMany({
+      where: {
+        userId: userId,
+        articleId: articleId,
+        saveToFlashcard: true, // Only words saved to flashcard
+      },
+      orderBy: {
+        createdAt: 'asc', // Order by when they were added
+      },
+    });
+
+    // Transform to flashcard format with FSRS data
+    const flashcards = userWordRecords.map((record) => {
+      const wordData = record.word as any; // JSON field containing vocabulary data
+      
+      return {
+        id: record.id,
+        word: {
+          vocabulary: wordData.vocabulary || wordData.word || '',
+          definition: wordData.definition || {},
+          startTime: wordData.startTime || 0,
+          endTime: wordData.endTime || 0,
+          audioUrl: wordData.audioUrl || null,
+        },
+        articleId: articleId,
+        // FSRS card data
+        due: record.due,
+        stability: record.stability,
+        difficulty: record.difficulty,
+        elapsed_days: record.elapsedDays,
+        scheduled_days: record.scheduledDays,
+        reps: record.reps,
+        lapses: record.lapses,
+        state: record.state,
+        last_review: record.updatedAt,
+      };
+    });
+
+    return NextResponse.json({
+      flashcards,
+      total: flashcards.length,
+      message: "Lesson words retrieved successfully",
+    });
+
+  } catch (error) {
+    console.error("Error getting lesson words:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function updateLessonWord(
+  req: NextRequest,
+  { params: { wordId } }: { params: { wordId: string } }
+) {
+  try {
+    const extReq = req as ExtendedNextRequest;
+    const userId = extReq.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!wordId) {
+      return NextResponse.json(
+        { message: "Word ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const body = await req.json();
+    const {
+      due,
+      stability,
+      difficulty,
+      elapsed_days,
+      scheduled_days,
+      reps,
+      lapses,
+      state,
+    } = body;
+
+    // Update the UserWordRecord with new FSRS data
+    const updatedRecord = await prisma.userWordRecord.update({
+      where: {
+        id: wordId,
+        userId: userId, // Ensure user can only update their own records
+      },
+      data: {
+        due: due ? new Date(due) : undefined,
+        stability: stability ?? undefined,
+        difficulty: difficulty ?? undefined,
+        elapsedDays: elapsed_days ?? undefined,
+        scheduledDays: scheduled_days ?? undefined,
+        reps: reps ?? undefined,
+        lapses: lapses ?? undefined,
+        state: state ?? undefined,
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      record: updatedRecord,
+      message: "Word record updated successfully",
+    });
+
+  } catch (error) {
+    console.error("Error updating lesson word:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function deleteLessonWord(
+  req: NextRequest,
+  { params: { wordId } }: { params: { wordId: string } }
+) {
+  try {
+    const extReq = req as ExtendedNextRequest;
+    const userId = extReq.session?.user?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { message: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!wordId) {
+      return NextResponse.json(
+        { message: "Word ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Delete or mark as not for flashcard
+    await prisma.userWordRecord.update({
+      where: {
+        id: wordId,
+        userId: userId, // Ensure user can only delete their own records
+      },
+      data: {
+        saveToFlashcard: false,
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Word removed from flashcards",
+    });
+
+  } catch (error) {
+    console.error("Error deleting lesson word:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
