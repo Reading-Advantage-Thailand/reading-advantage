@@ -220,15 +220,11 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
         </div>
 
         {/* Cloze Test Component */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="p-6">
-            <LessonClozeTest
-              articleId={articleId}
-              userId={userId}
-              onCompleteChange={onCompleteChange}
-            />
-          </div>
-        </div>
+        <LessonClozeTest
+          articleId={articleId}
+          userId={userId}
+          onCompleteChange={onCompleteChange}
+        />
       </div>
     );
   }
