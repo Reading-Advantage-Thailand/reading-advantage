@@ -398,11 +398,6 @@ export const getLessonXp = async (
     const decodedArticleId = decodeURIComponent(articleId);
     const cleanArticleId = decodedArticleId.split("/")[0];
 
-    console.log("Debug getLessonXp:");
-    console.log("- userId:", userId);
-    console.log("- articleId (raw):", articleId);
-    console.log("- cleanArticleId:", cleanArticleId);
-
     // Get ALL UserActivities for this user
     const allUserActivities = await prisma.userActivity.findMany({
       where: {
@@ -414,42 +409,39 @@ export const getLessonXp = async (
         targetId: true,
         details: true,
         createdAt: true,
-      }
+      },
     });
 
     // Filter activities based on articleId:
     // 1. For activities with targetId = articleId (SA_QUESTION, LA_QUESTION, ARTICLE_READ, etc.)
     // 2. For MCQ activities, check articleId in details
-    const articleRelatedActivities = allUserActivities.filter(activity => {
+    const articleRelatedActivities = allUserActivities.filter((activity) => {
       // Direct match with targetId (for SA, LA, ARTICLE_READ, etc.)
       if (activity.targetId === cleanArticleId) {
         return true;
       }
-      
+
       // For MCQ activities, check articleId in details
-      if (activity.activityType === 'MC_QUESTION') {
+      if (activity.activityType === "MC_QUESTION") {
         const details = activity.details as any;
         return details?.articleId === cleanArticleId;
       }
-      
+
       return false;
     });
-
-    console.log("- User activities found for article:", articleRelatedActivities.length);
-    console.log("- Activities found:", articleRelatedActivities.map(a => ({ 
-      id: a.id, 
-      type: a.activityType, 
-      targetId: a.targetId 
-    })));
 
     // Also get vocabulary activities and article rating that might be related
     // Get activities from the same time period (within 1 hour of article activities)
     let allRelatedActivities = [...articleRelatedActivities];
-    
+
     if (articleRelatedActivities.length > 0) {
-      const earliestTime = new Date(Math.min(...articleRelatedActivities.map(a => a.createdAt.getTime())));
-      const latestTime = new Date(Math.max(...articleRelatedActivities.map(a => a.createdAt.getTime())));
-      
+      const earliestTime = new Date(
+        Math.min(...articleRelatedActivities.map((a) => a.createdAt.getTime()))
+      );
+      const latestTime = new Date(
+        Math.max(...articleRelatedActivities.map((a) => a.createdAt.getTime()))
+      );
+
       // Extend time range by 1 hour before and after
       earliestTime.setHours(earliestTime.getHours() - 1);
       latestTime.setHours(latestTime.getHours() + 1);
@@ -458,12 +450,16 @@ export const getLessonXp = async (
         where: {
           userId: userId,
           activityType: {
-            in: ['VOCABULARY_FLASHCARDS', 'VOCABULARY_MATCHING', 'ARTICLE_RATING']
+            in: [
+              "VOCABULARY_FLASHCARDS",
+              "VOCABULARY_MATCHING",
+              "ARTICLE_RATING",
+            ],
           },
           createdAt: {
             gte: earliestTime,
-            lte: latestTime
-          }
+            lte: latestTime,
+          },
         },
         select: {
           id: true,
@@ -471,11 +467,12 @@ export const getLessonXp = async (
           targetId: true,
           details: true,
           createdAt: true,
-        }
+        },
       });
-
-      console.log("- Vocabulary/Rating activities in time range:", vocabularyActivities.length);
-      allRelatedActivities = [...articleRelatedActivities, ...vocabularyActivities];
+      allRelatedActivities = [
+        ...articleRelatedActivities,
+        ...vocabularyActivities,
+      ];
     }
 
     if (articleRelatedActivities.length === 0) {
@@ -488,7 +485,7 @@ export const getLessonXp = async (
     }
 
     // Get ALL XP logs for these activities (including related vocabulary/rating activities)
-    const activityIds = allRelatedActivities.map(activity => activity.id);
+    const activityIds = allRelatedActivities.map((activity) => activity.id);
     const allXpLogs = await prisma.xPLog.findMany({
       where: {
         userId: userId,
@@ -498,17 +495,8 @@ export const getLessonXp = async (
         xpEarned: true,
         activityType: true,
         activityId: true,
-      }
+      },
     });
-
-    console.log("- Total related activities:", allRelatedActivities.length);
-    console.log("- All related activity IDs:", activityIds);
-    console.log("- XP logs found for all related activities:", allXpLogs.length);
-    console.log("- XP logs details:", allXpLogs.map(log => ({
-      activityId: log.activityId,
-      type: log.activityType,
-      xp: log.xpEarned
-    })));
 
     if (allXpLogs.length === 0) {
       return NextResponse.json({
@@ -520,24 +508,27 @@ export const getLessonXp = async (
     }
 
     // Calculate total XP from all article-related activities
-    const totalXp = allXpLogs.reduce((total: number, log) => total + (log.xpEarned || 0), 0);
+    const totalXp = allXpLogs.reduce(
+      (total: number, log) => total + (log.xpEarned || 0),
+      0
+    );
 
     // Break down XP by activity type
-    const xpByActivityType = allXpLogs.reduce((acc, log) => {
-      const activityType = log.activityType;
-      if (!acc[activityType]) {
-        acc[activityType] = {
-          totalXp: 0,
-          count: 0
-        };
-      }
-      acc[activityType].totalXp += log.xpEarned || 0;
-      acc[activityType].count += 1;
-      return acc;
-    }, {} as Record<string, { totalXp: number; count: number }>);
-
-    console.log("- XP breakdown by activity type:", xpByActivityType);
-    console.log("- Total XP from article:", totalXp);
+    const xpByActivityType = allXpLogs.reduce(
+      (acc, log) => {
+        const activityType = log.activityType;
+        if (!acc[activityType]) {
+          acc[activityType] = {
+            totalXp: 0,
+            count: 0,
+          };
+        }
+        acc[activityType].totalXp += log.xpEarned || 0;
+        acc[activityType].count += 1;
+        return acc;
+      },
+      {} as Record<string, { totalXp: number; count: number }>
+    );
 
     return NextResponse.json({
       success: true,
