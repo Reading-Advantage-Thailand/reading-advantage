@@ -94,7 +94,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
     5: t("SAQ5points"),
   };
 
-  const fetchWordList = async () => {
+  const fetchWordList = React.useCallback(async () => {
     try {
       const res = await fetch(
         `/api/v1/users/wordlist/${userId}?articleId=${articleId}`
@@ -111,9 +111,9 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
         variant: "destructive",
       });
     }
-  };
+  }, [userId, articleId]);
 
-  const fetchSentence = async () => {
+  const fetchSentence = React.useCallback(async () => {
     try {
       const res = await fetch(
         `/api/v1/users/sentences/${userId}?articleId=${articleId}`
@@ -128,9 +128,9 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
         variant: "destructive",
       });
     }
-  };
+  }, [userId, articleId]);
 
-  const fetchXp = async () => {
+  const fetchXp = React.useCallback(async () => {
     try {
       const res = await fetch(`/api/v1/xp/${userId}?articleId=${articleId}`);
       const data = await res.json();
@@ -143,9 +143,9 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
         variant: "destructive",
       });
     }
-  };
+  }, [userId, articleId]);
 
-  const fetchQuizScores = async () => {
+  const fetchQuizScores = React.useCallback(async () => {
     try {
       const res = await fetch(
         `/api/v1/lesson/${userId}/quize-performance?articleId=${articleId}`
@@ -160,7 +160,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
         variant: "destructive",
       });
     }
-  };
+  }, [userId, articleId]);
 
   const backToReadPage = () => {
     router.push("/student/read");
@@ -273,7 +273,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
           </h1>
 
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            🎊 Fantastic work! You've completed the lesson successfully. Here's
+            🎊 Fantastic work! You&apos;ve completed the lesson successfully. Here&apos;s
             your achievement summary!
           </p>
 
@@ -508,7 +508,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
                   className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-md transition-all duration-300"
                 >
                   <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
-                    "{sentence.sentence}"
+                    &ldquo;{sentence.sentence}&rdquo;
                   </p>
                 </div>
               ))}
