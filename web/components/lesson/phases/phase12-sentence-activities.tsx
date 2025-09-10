@@ -247,15 +247,12 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
         </div>
 
         {/* Order Words Component */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="p-6">
-            <LessonOrderWords
-              articleId={articleId}
-              userId={userId}
-              onCompleteChange={onCompleteChange}
-            />
-          </div>
-        </div>
+
+        <LessonOrderWords
+          articleId={articleId}
+          userId={userId}
+          onCompleteChange={onCompleteChange}
+        />
       </div>
     );
   }
