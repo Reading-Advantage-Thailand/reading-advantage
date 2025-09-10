@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Timer } from "lucide-react";
+import { ChevronDown, ChevronUp, Timer, ArrowLeft } from "lucide-react";
 import { Article } from "../models/article-model";
 import { useScopedI18n, useCurrentLocale } from "@/locales/client";
 import { useTimer } from "@/contexts/timer-context";
@@ -361,6 +361,68 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
     }
   };
 
+  const previousPhase = async () => {
+    // Prevent going back from phase 1 or 2 
+    if (currentPhase <= 2 || phaseLoading || isTransitioning) {
+      return;
+    }
+
+    try {
+      setIsTransitioning(true);
+      const newPhase = currentPhase - 1;
+
+      // Start fade out animation
+      setFadeOut(true);
+      setNextPhaseContent(newPhase);
+
+      // Wait for fade out animation
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      setPhaseLoading(true);
+
+      const url = classroomId
+        ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
+        : `/api/v1/lesson/${userId}?articleId=${articleId}`;
+
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phase: newPhase,
+          status: 1, // In progress status for going back
+          elapsedTime: elapsedTime,
+        }),
+      });
+
+      if (response.ok) {
+        setCurrentPhase(newPhase);
+        // Reset phase completion for the current phase since we're going back
+        const updatedCompletion = [...phaseCompletion];
+        updatedCompletion[currentPhase - 1] = false;
+        setPhaseCompletion(updatedCompletion);
+        
+        setPhaseLoading(false);
+
+        // Start fade in animation
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        setFadeOut(false);
+        setNextPhaseContent(null);
+      } else {
+        console.error("Failed to go back to previous phase");
+        setFadeOut(false);
+        setNextPhaseContent(null);
+        setPhaseLoading(false);
+      }
+    } catch (error) {
+      console.error("Error going back to previous phase:", error);
+      setFadeOut(false);
+      setNextPhaseContent(null);
+      setPhaseLoading(false);
+    } finally {
+      setTimeout(() => setIsTransitioning(false), 500);
+    }
+  };
+
   // Helper function for smooth phase transitions
   const getPhaseComponent = (phaseNum: number) => {
     switch (phaseNum) {
@@ -604,40 +666,83 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
               {currentPhase === 1 && (
                 <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                   <Button
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    size="lg"
+                    className="w-full group relative overflow-hidden bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 text-white py-4 px-6 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     onClick={startLesson}
                     disabled={phaseLoading || isTransitioning}
                   >
-                    {phaseLoading || isTransitioning ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                        Starting...
-                      </div>
-                    ) : (
-                      t("startLesson")
-                    )}
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="relative flex items-center justify-center">
+                      {phaseLoading || isTransitioning ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3" />
+                          <span>Starting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{t("startLesson")}</span>
+                          <ArrowLeft className="h-5 w-5 ml-3 rotate-180 transition-transform group-hover:translate-x-1" />
+                        </>
+                      )}
+                    </div>
                   </Button>
                 </div>
               )}
 
               {currentPhase < phases.length && currentPhase > 1 && (
                 <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                  <Button
-                    className={`w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 text-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      shakeButton ? "animate-shake" : ""
-                    }`}
-                    onClick={() => nextPhase(currentPhase, elapsedTime)}
-                    disabled={phaseLoading || isTransitioning}
-                  >
-                    {phaseLoading || isTransitioning ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                        Processing...
-                      </div>
-                    ) : (
-                      t("nextPhase")
+                  <div className="flex gap-4">
+                    {/* Back Button - Only show if phase > 2 */}
+                    {currentPhase > 2 && (
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="flex-1 group relative overflow-hidden border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-slate-200 py-4 px-6 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        onClick={previousPhase}
+                        disabled={phaseLoading || isTransitioning}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="relative flex items-center justify-center">
+                          {phaseLoading || isTransitioning ? (
+                            <>
+                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-slate-400 border-t-transparent mr-3" />
+                              <span>Processing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <ArrowLeft className="h-5 w-5 mr-3 transition-transform group-hover:-translate-x-1" />
+                              <span>{t("previousPhase")}</span>
+                            </>
+                          )}
+                        </div>
+                      </Button>
                     )}
-                  </Button>
+                    
+                    {/* Next Button */}
+                    <Button
+                      size="lg"
+                      className={`${currentPhase > 2 ? 'flex-1' : 'w-full'} group relative overflow-hidden bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white py-4 px-6 text-base font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
+                        shakeButton ? "animate-shake" : ""
+                      }`}
+                      onClick={() => nextPhase(currentPhase, elapsedTime)}
+                      disabled={phaseLoading || isTransitioning}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative flex items-center justify-center">
+                        {phaseLoading || isTransitioning ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3" />
+                            <span>Processing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>{t("nextPhase")}</span>
+                            <ArrowLeft className="h-5 w-5 ml-3 rotate-180 transition-transform group-hover:translate-x-1" />
+                          </>
+                        )}
+                      </div>
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
