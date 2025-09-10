@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Article } from "../../models/article-model";
-import { Book, PlayIcon, PauseIcon, VolumeXIcon, Settings } from "lucide-react";
+import { Book, PlayIcon, PauseIcon, VolumeXIcon, Settings, RotateCcwIcon } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,6 +58,50 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   const sentences = timepoints.map((tp: TimePoint) => tp.sentences);
   const paragraphs = article.passage.split("\n").filter((p) => p.trim());
 
+  // Generate storage key for this specific article and user
+  const completionStorageKey = `phase3_completed_${userId}_${articleId}`;
+
+  // Load completion status from localStorage on component mount
+  useEffect(() => {
+    const savedCompletionStatus = localStorage.getItem(completionStorageKey);
+    if (savedCompletionStatus === 'true') {
+      setHasCompletedReading(true);
+    }
+  }, [completionStorageKey]);
+
+  // Clean up localStorage for different articles (optional)
+  useEffect(() => {
+    // Clean up any old completion status for different articles
+    const currentKey = completionStorageKey;
+    const allKeys = Object.keys(localStorage);
+    allKeys.forEach(key => {
+      if (key.startsWith(`phase3_completed_${userId}_`) && key !== currentKey) {
+        // Optionally remove old completion status for other articles
+        // localStorage.removeItem(key);
+      }
+    });
+  }, [completionStorageKey, userId]);
+
+  // Helper function to mark reading as complete and save to localStorage
+  const markReadingComplete = () => {
+    console.log("Marking reading as complete");
+    setHasCompletedReading(true);
+    localStorage.setItem(completionStorageKey, 'true');
+  };
+
+  // Helper function to reset reading progress (if needed)
+  const resetReadingProgress = () => {
+    console.log("Resetting reading progress");
+    setHasCompletedReading(false);
+    setCurrentSentence(0);
+    localStorage.removeItem(completionStorageKey);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
   useEffect(() => {
     // Initialize audio
     if (audioUrl) {
@@ -92,8 +136,9 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     // Only mark as complete when audio has finished reading the last sentence
     // If there are no sentences/timepoints, mark as complete immediately
     if (sentences.length === 0) {
-      setHasCompletedReading(true);
+      markReadingComplete();
     }
+    
     onCompleteChange(hasCompletedReading);
   }, [onCompleteChange, hasCompletedReading, sentences.length]);
 
@@ -188,7 +233,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
         // Check if we've reached the last sentence
         if (newSentenceIndex >= sentences.length - 1) {
           console.log("Reached last sentence, marking as complete");
-          setHasCompletedReading(true);
+          markReadingComplete();
         }
 
         // Scroll to current sentence
@@ -214,7 +259,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       // Check if we've reached the last sentence when audio ends
       if (currentSentence >= sentences.length - 1) {
         console.log("Reading completed - reached last sentence");
-        setHasCompletedReading(true);
+        markReadingComplete();
       }
       // Don't reset sentence to 0, keep it at the last sentence
     };
@@ -231,6 +276,20 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     audioRef.current.ontimeupdate = () => {
       // Additional tracking through timeupdate event
       updateCurrentSentence();
+      
+      // Check if audio is near the end and mark as complete
+      if (audioRef.current && sentences.length > 0) {
+        const currentTime = audioRef.current.currentTime;
+        const duration = audioRef.current.duration;
+        
+        // If we're in the last 0.5 seconds or at 95% completion, mark as complete
+        if ((duration - currentTime <= 0.5) || (currentTime / duration >= 0.95)) {
+          if (!hasCompletedReading) {
+            console.log("Audio near end, marking as complete");
+            markReadingComplete();
+          }
+        }
+      }
     };
 
     // Start tracking immediately
@@ -320,6 +379,19 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
             {highlightMode ? "🔆" : "🔅"} Highlight{" "}
             {highlightMode ? "ON" : "OFF"}
           </Button>
+
+          {/* Reset Progress Button (only show when completed) */}
+          {hasCompletedReading && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetReadingProgress}
+              className="text-gray-600 hover:text-gray-800 border-gray-300 hover:border-gray-400"
+            >
+              <RotateCcwIcon className="h-4 w-4 mr-1" />
+              Listen Again
+            </Button>
+          )}
         </div>
       </div>
 
@@ -442,22 +514,35 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
         <div className="px-4 sm:px-8 pb-4 sm:pb-6">
           <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-3">
             <div
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 h-3 rounded-full transition-all duration-500"
+              className={`h-3 rounded-full transition-all duration-500 ${
+                hasCompletedReading 
+                  ? "bg-gradient-to-r from-green-500 to-emerald-600" 
+                  : "bg-gradient-to-r from-emerald-500 to-teal-600"
+              }`}
               style={{
-                width: `${sentences.length > 0 ? ((currentSentence + 1) / sentences.length) * 100 : 0}%`,
+                width: `${
+                  sentences.length > 0 
+                    ? hasCompletedReading 
+                      ? 100 
+                      : ((currentSentence + 1) / sentences.length) * 100 
+                    : 0
+                }%`,
               }}
             />
           </div>
           <div className="flex justify-between items-center mt-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            <span className="font-medium">
-              Sentence {Math.min(currentSentence + 1, sentences.length)} of{" "}
+            <span className={`font-medium ${hasCompletedReading ? "text-green-600 dark:text-green-400" : ""}`}>
+              Sentence {hasCompletedReading ? sentences.length : Math.min(currentSentence + 1, sentences.length)} of{" "}
               {sentences.length}
             </span>
-            <span className="font-medium">
+            <span className={`font-medium flex items-center gap-1 ${hasCompletedReading ? "text-green-600 dark:text-green-400" : ""}`}>
               {sentences.length > 0
-                ? Math.round(((currentSentence + 1) / sentences.length) * 100)
+                ? hasCompletedReading 
+                  ? 100
+                  : Math.round(((currentSentence + 1) / sentences.length) * 100)
                 : 0}
               % complete
+              {hasCompletedReading && <span className="text-green-500">🎉</span>}
             </span>
           </div>
         </div>
@@ -509,10 +594,15 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                 : "text-orange-800 dark:text-orange-200"
             }`}>
               {hasCompletedReading 
-                ? "✅ Reading completed! You can now proceed to the next phase."
+                ? "✅ Reading 100% completed! Your progress has been saved. You can now proceed to the next phase."
                 : "🎧 Listen to the complete audio to unlock the next phase."}
             </span>
           </div>
+          {hasCompletedReading && (
+            <div className="mt-2 text-xs text-green-600 dark:text-green-400">
+              💾 Your reading progress is automatically saved and will be remembered when you return.
+            </div>
+          )}
         </div>
       )}
     </div>

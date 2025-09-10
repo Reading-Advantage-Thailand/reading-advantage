@@ -76,20 +76,18 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
   useEffect(() => {
     const subscription = form.watch((value) => {
       const currentSelectedCount = value.items?.length || 0;
-      const totalSavedAndSelected = currentSelectedCount + savedWords.length;
       setSelectedCount(currentSelectedCount);
-      // Allow completion if total saved and selected words >= 5
-      onCompleteChange(totalSavedAndSelected >= 5);
+      // Only allow completion if user has saved at least 5 words (not just selected)
+      onCompleteChange(savedWords.length >= 5);
     });
     return () => subscription.unsubscribe();
   }, [form, onCompleteChange, savedWords.length]);
 
   // Also check when savedWords changes (on component mount)
   useEffect(() => {
-    const currentSelectedCount = form.getValues('items')?.length || 0;
-    const totalSavedAndSelected = currentSelectedCount + savedWords.length;
-    onCompleteChange(totalSavedAndSelected >= 5);
-  }, [savedWords.length, onCompleteChange, form]);
+    // Only allow completion if user has saved at least 5 words
+    onCompleteChange(savedWords.length >= 5);
+  }, [savedWords.length, onCompleteChange]);
 
   useEffect(() => {
     const fetchWordList = async () => {
@@ -176,10 +174,13 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
         includes(data?.items, vocab?.vocabulary)
       );
 
-      if (foundWordsList.length < 5) {
+      // Check if user will have at least 5 total saved words after this save
+      const totalAfterSave = savedWords.length + foundWordsList.length;
+      if (totalAfterSave < 5) {
+        const needed = 5 - savedWords.length;
         toast({
           title: "Insufficient Vocabulary",
-          description: "Please select at least 5 words to continue",
+          description: `Please select at least ${needed} more words. You need a total of 5 saved words to proceed.`,
           variant: "destructive",
         });
         return;
@@ -245,29 +246,29 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {selectedCount + savedWords.length >= 5 ? (
+            {savedWords.length >= 5 ? (
               <CheckCircle2Icon className="h-6 w-6 text-green-500" />
             ) : (
               <AlertCircleIcon className="h-6 w-6 text-amber-500" />
             )}
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                Selection Progress
+                Vocabulary Collection Progress
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {selectedCount} selected + {savedWords.length} saved ={" "}
-                {selectedCount + savedWords.length} words
-                {selectedCount + savedWords.length < 5 &&
-                  ` (minimum 5 required)`}
+                {selectedCount > 0 && `${selectedCount} selected, `}
+                {savedWords.length} saved
+                {savedWords.length < 5 &&
+                  ` (need to save at least 5 words to proceed)`}
               </p>
             </div>
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {selectedCount + savedWords.length}
+              {savedWords.length}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              total words
+              saved words
             </div>
           </div>
         </div>
@@ -277,12 +278,12 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
           <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all duration-300 ${
-                selectedCount + savedWords.length >= 5
+                savedWords.length >= 5
                   ? "bg-gradient-to-r from-green-500 to-emerald-500"
                   : "bg-gradient-to-r from-purple-500 to-pink-500"
               }`}
               style={{
-                width: `${Math.min(((selectedCount + savedWords.length) / 5) * 100, 100)}%`,
+                width: `${Math.min((savedWords.length / 5) * 100, 100)}%`,
               }}
             />
           </div>
@@ -426,7 +427,18 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                         <div className="flex items-center gap-2">
                           <CheckCircle2Icon className="h-5 w-5 text-green-600 dark:text-green-400" />
                           <p className="text-sm text-green-700 dark:text-green-300">
-                            You already have {savedWords.length} words saved. You can proceed to the next phase or select additional words if you&apos;d like.
+                            Great! You have {savedWords.length} words saved. You can now proceed to the next phase or select additional words if you&apos;d like.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {savedWords.length < 5 && (
+                      <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <AlertCircleIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                          <p className="text-sm text-amber-700 dark:text-amber-300">
+                            You need to save at least 5 words total to proceed to the next phase. Currently saved: {savedWords.length} words.
                           </p>
                         </div>
                       </div>
@@ -435,14 +447,13 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                     <Button
                       type="submit"
                       disabled={
-                        selectedCount + savedWords.length < 5 ||
                         saving ||
-                        selectedCount === 0
+                        selectedCount === 0 ||
+                        (savedWords.length + selectedCount < 5)
                       }
                       size="lg"
                       className={`w-full ${
-                        selectedCount + savedWords.length >= 5 &&
-                        selectedCount > 0
+                        selectedCount > 0 && (savedWords.length + selectedCount >= 5)
                           ? "bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
                           : "bg-gray-400 cursor-not-allowed"
                       }`}
@@ -455,7 +466,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                       ) : selectedCount === 0 ? (
                         savedWords.length >= 5 ? "Select more words (optional)" : "Select words to save"
                       ) : (
-                        `Save ${selectedCount} New Words${savedWords.length > 0 ? ` (${savedWords.length} already saved)` : ""}`
+                        `Save ${selectedCount} Words${savedWords.length > 0 ? ` (${savedWords.length} already saved)` : ""}`
                       )}
                     </Button>
                   </div>

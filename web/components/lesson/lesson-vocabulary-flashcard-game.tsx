@@ -203,7 +203,7 @@ export default function LessonVocabularyFlashcardGame({
       const data = await response.json();
 
       // Find lesson_flashcard activity for this article
-      const existingActivity = data?.results?.find(
+      const existingActivity = data?.activityLogs?.find(
         (log: any) =>
           log.activityType === "lesson_flashcard" && log.targetId === articleId
       );
