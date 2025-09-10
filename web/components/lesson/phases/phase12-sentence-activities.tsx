@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import LessonOrderSentences from "../lesson-order-sentence";
@@ -16,6 +16,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
+import { UserActivityLog } from "@/components/models/user-activity-log-model";
 
 interface Phase12SentenceActivitiesProps {
   userId: string;
@@ -34,9 +35,80 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
 }) => {
   const t = useScopedI18n("pages.student.lessonPage");
   const tb = useScopedI18n("pages.student.practicePage");
+  const [completedActivities, setCompletedActivities] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check for completed activities
+  useEffect(() => {
+    const checkCompletedActivities = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/v1/users/${userId}/activity-data`);
+        if (response.ok) {
+          const data = await response.json();
+          const activities: UserActivityLog[] = data.results || [];
+          
+          // Filter activities for this article and Phase 12 activity types
+          const phase12Activities = activities.filter((activity) => 
+            activity.details?.articleId === articleId && 
+            activity.completed &&
+            ['SENTENCE_ORDERING', 'SENTENCE_CLOZE_TEST', 'SENTENCE_WORD_ORDERING', 'SENTENCE_MATCHING'].includes(activity.activityType.toUpperCase())
+          );
+          
+          // Map activity types to our component names
+          const completed = phase12Activities.map((activity) => {
+            switch (activity.activityType.toUpperCase()) {
+              case 'SENTENCE_ORDERING':
+                return 'order-sentences';
+              case 'SENTENCE_CLOZE_TEST':
+                return 'cloze-test';
+              case 'SENTENCE_WORD_ORDERING':
+                return 'order-words';
+              case 'SENTENCE_MATCHING':
+                return 'matching';
+              default:
+                return '';
+            }
+          }).filter(Boolean);
+          
+          setCompletedActivities(completed);
+          
+          // If there's only one completed activity and no current selection, show it
+          if (completed.length === 1 && sentenceActivity === "none") {
+            setSentenceActivity(completed[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking completed activities:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkCompletedActivities();
+  }, [userId, articleId, sentenceActivity, setSentenceActivity]);
 
   // Activity Selection Screen
   if (sentenceActivity === "none") {
+    // Show loading state while checking activities
+    if (isLoading) {
+      return (
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="text-center space-y-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
+            <div className="inline-flex items-center justify-center p-3 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
+              <Book className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {t("phase12Title")}
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Loading activities...
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Section */}
@@ -55,10 +127,17 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
         {/* Activities Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Order Sentences */}
-          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-950 border border-blue-200 dark:border-blue-800 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-950 border border-blue-200 dark:border-blue-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+            completedActivities.includes('order-sentences') ? 'ring-2 ring-green-500 dark:ring-green-400' : ''
+          }`}>
             <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
               <ListOrdered className="h-16 w-16" />
             </div>
+            {completedActivities.includes('order-sentences') && (
+              <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                ✓
+              </div>
+            )}
             <div className="relative p-6 h-full flex flex-col">
               <div className="flex items-center mb-4">
                 <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full mr-4">
@@ -66,6 +145,9 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {tb("orderSentences")}
+                  {completedActivities.includes('order-sentences') && (
+                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">(Completed)</span>
+                  )}
                 </h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-6 flex-grow">
@@ -76,7 +158,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white group-hover:bg-blue-700 transition-all duration-300"
               >
                 <span className="flex items-center justify-center">
-                  {tb("orderSentencesPractice.orderSentences")}
+                  {completedActivities.includes('order-sentences') ? 'Review' : tb("orderSentencesPractice.orderSentences")}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Button>
@@ -84,10 +166,17 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
           </div>
 
           {/* Cloze Test */}
-          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-950 border border-green-200 dark:border-green-800 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-950 border border-green-200 dark:border-green-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+            completedActivities.includes('cloze-test') ? 'ring-2 ring-green-500 dark:ring-green-400' : ''
+          }`}>
             <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
               <FileText className="h-16 w-16" />
             </div>
+            {completedActivities.includes('cloze-test') && (
+              <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                ✓
+              </div>
+            )}
             <div className="relative p-6 h-full flex flex-col">
               <div className="flex items-center mb-4">
                 <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full mr-4">
@@ -95,6 +184,9 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {tb("clozeTest")}
+                  {completedActivities.includes('cloze-test') && (
+                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">(Completed)</span>
+                  )}
                 </h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-6 flex-grow">
@@ -105,7 +197,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 className="w-full bg-green-600 hover:bg-green-700 text-white group-hover:bg-green-700 transition-all duration-300"
               >
                 <span className="flex items-center justify-center">
-                  {tb("clozeTestPractice.clozeTest")}
+                  {completedActivities.includes('cloze-test') ? 'Review' : tb("clozeTestPractice.clozeTest")}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Button>
@@ -113,10 +205,17 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
           </div>
 
           {/* Order Words */}
-          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-950 dark:to-violet-950 border border-purple-200 dark:border-purple-800 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-950 dark:to-violet-950 border border-purple-200 dark:border-purple-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+            completedActivities.includes('order-words') ? 'ring-2 ring-green-500 dark:ring-green-400' : ''
+          }`}>
             <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
               <Shuffle className="h-16 w-16" />
             </div>
+            {completedActivities.includes('order-words') && (
+              <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                ✓
+              </div>
+            )}
             <div className="relative p-6 h-full flex flex-col">
               <div className="flex items-center mb-4">
                 <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full mr-4">
@@ -124,6 +223,9 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {tb("orderWords")}
+                  {completedActivities.includes('order-words') && (
+                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">(Completed)</span>
+                  )}
                 </h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-6 flex-grow">
@@ -134,7 +236,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white group-hover:bg-purple-700 transition-all duration-300"
               >
                 <span className="flex items-center justify-center">
-                  {tb("orderWordsPractice.orderWords")}
+                  {completedActivities.includes('order-words') ? 'Review' : tb("orderWordsPractice.orderWords")}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Button>
@@ -142,10 +244,17 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
           </div>
 
           {/* Matching */}
-          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 to-pink-100 dark:from-rose-950 dark:to-pink-950 border border-rose-200 dark:border-rose-800 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 to-pink-100 dark:from-rose-950 dark:to-pink-950 border border-rose-200 dark:border-rose-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+            completedActivities.includes('matching') ? 'ring-2 ring-green-500 dark:ring-green-400' : ''
+          }`}>
             <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
               <GitBranch className="h-16 w-16" />
             </div>
+            {completedActivities.includes('matching') && (
+              <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                ✓
+              </div>
+            )}
             <div className="relative p-6 h-full flex flex-col">
               <div className="flex items-center mb-4">
                 <div className="p-3 bg-rose-100 dark:bg-rose-900 rounded-full mr-4">
@@ -153,6 +262,9 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {tb("matching")}
+                  {completedActivities.includes('matching') && (
+                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">(Completed)</span>
+                  )}
                 </h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-6 flex-grow">
@@ -163,7 +275,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 className="w-full bg-rose-600 hover:bg-rose-700 text-white group-hover:bg-rose-700 transition-all duration-300"
               >
                 <span className="flex items-center justify-center">
-                  {tb("matchingPractice.matching")}
+                  {completedActivities.includes('matching') ? 'Review' : tb("matchingPractice.matching")}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Button>
