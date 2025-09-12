@@ -209,8 +209,8 @@ export async function getClassroom(req: ExtendedNextRequest) {
         importedFromGoogle: false,
         alternateLink: "",
         createdAt: classroom.createdAt,
-        createdBy: classroom.teacher,
-        isOwner: false,
+        createdBy: classroom.createdBy,
+        isOwner: classroom.createdBy ? true : false,
         teachers: [
           {
             teacherId: classroom.teacher?.id || "",

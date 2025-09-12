@@ -61,7 +61,7 @@ type ClassroomData = {
   createdBy: {
     id: string;
     name: string;
-  };
+  } | string | null;
   isOwner: boolean;
   teachers: Array<{
     teacherId: string;
@@ -153,7 +153,10 @@ function AdminReports({ classes }: AdminReportsProps) {
       }
       
       const teacherNames = classes
-        .map(classroom => classroom?.createdBy?.name)
+        .map(classroom => {
+          const ownerTeacher = classroom?.teachers?.find(teacher => teacher.role === "OWNER");
+          return ownerTeacher?.name;
+        })
         .filter((name): name is string => Boolean(name) && typeof name === 'string');
       
       return Array.from(new Set(teacherNames));
@@ -174,9 +177,10 @@ function AdminReports({ classes }: AdminReportsProps) {
         return classes;
       }
       
-      return classes.filter(classroom => 
-        classroom?.createdBy?.name === selectedTeacher
-      );
+      return classes.filter(classroom => {
+        const ownerTeacher = classroom?.teachers?.find(teacher => teacher.role === "OWNER");
+        return ownerTeacher?.name === selectedTeacher;
+      });
     } catch (error) {
       console.error('Error filtering classes:', error);
       return classes || [];
@@ -225,13 +229,14 @@ function AdminReports({ classes }: AdminReportsProps) {
       ),
     },
     {
-      accessorKey: "createdBy",
+      accessorKey: "teachers",
       header: "Teacher",
       cell: ({ row }) => {
-        const createdBy = row.getValue("createdBy") as ClassroomData["createdBy"];
+        const teachers = row.getValue("teachers") as ClassroomData["teachers"];
+        const ownerTeacher = teachers?.find(teacher => teacher.role === "OWNER");
         return (
           <div>
-            <div className="font-medium">{createdBy?.name || "N/A"}</div>
+            <div className="font-medium">{ownerTeacher?.name || "N/A"}</div>
           </div>
         );
       },

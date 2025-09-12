@@ -58,7 +58,7 @@ type ClassroomData = {
   createdBy: {
     id: string;
     name: string;
-  };
+  } | string | null;
   isOwner: boolean;
   teachers: Array<{
     teacherId: string;
@@ -198,6 +198,8 @@ function ClassroomXpComparisonChart({
             classroom.xpData?.[timeRange as keyof typeof classroom.xpData] || 0;
         }
 
+        const ownerTeacher = classroom.teachers?.find(teacher => teacher.role === "OWNER");
+        
         return {
           name: classroom.classroomName,
           shortName:
@@ -206,7 +208,7 @@ function ClassroomXpComparisonChart({
               : classroom.classroomName,
           xp: xpValue,
           students: classroom.student.length,
-          teacher: classroom.createdBy.name,
+          teacher: ownerTeacher?.name || "N/A",
           grade: classroom.grade,
         };
       })
