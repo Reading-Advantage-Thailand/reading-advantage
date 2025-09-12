@@ -48,9 +48,9 @@ import {
 
 type Payment = {
   id: string;
-  school_name: string;
-  total_licenses: number;
-  used_licenses: number;
+  schoolName: string;
+  maxUsers: number;
+  usedLicenses: number;
   //AvailableLicenses: string;
   //utilizationPercentage: string;
 };
@@ -65,27 +65,27 @@ const isArray = (data: Payment[] | Payment): data is Payment[] => {
 
 export const columns: ColumnDef<Payment>[] = [
   {
-    accessorKey: "school_name",
+    accessorKey: "schoolName",
     header: "School Name",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("school_name")}</div>
+      <div className="capitalize">{row.getValue("schoolName")}</div>
     ),
   },
   {
-    accessorKey: "total_licenses",
+    accessorKey: "maxUsers",
     header: () => <div className="capitalize text-center">Total Licenses</div>,
     cell: ({ row }) => (
       <div className="lowercase text-center">
-        {row.getValue("total_licenses")}
+        {row.getValue("maxUsers")}
       </div>
     ),
   },
   {
-    accessorKey: "used_licenses",
+    accessorKey: "usedLicenses",
     header: () => <div className="capitalize text-center">Usage Licenes</div>,
     cell: ({ row }) => (
       <div className="lowercase text-center">
-        {row.getValue("used_licenses")}
+        {row.getValue("usedLicenses")}
       </div>
     ),
   },
@@ -96,8 +96,8 @@ export const columns: ColumnDef<Payment>[] = [
     ),
     cell: ({ row }) => {
       const total =
-        Number(row.getValue("total_licenses")) -
-        Number(row.getValue("used_licenses"));
+        Number(row.getValue("maxUsers")) -
+        Number(row.getValue("usedLicenses"));
       return <div className="lowercase text-center">{total}</div>;
     },
   },
@@ -108,8 +108,8 @@ export const columns: ColumnDef<Payment>[] = [
     ),
     cell: ({ row }) => {
       const UtilizationRate =
-        (Number(row.getValue("used_licenses")) /
-          Number(row.getValue("total_licenses"))) *
+        (Number(row.getValue("usedLicenses")) /
+          Number(row.getValue("maxUsers"))) *
         100;
       return (
         <div className="lowercase text-center">
