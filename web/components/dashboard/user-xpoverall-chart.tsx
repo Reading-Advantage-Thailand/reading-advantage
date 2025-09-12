@@ -64,16 +64,18 @@ function formatDataForDays(
     monthlyXpEarned[month] = 0;
   }
 
-  articles.forEach((article: UserActivityLog) => {
-    if (article.completed) {
-      const articleDate = new Date(article.timestamp);
-      const month = `${monthNames[articleDate.getMonth()]} ${articleDate.getFullYear()}`;
+  if (articles) {
+    articles.forEach((article: UserActivityLog) => {
+      if (article.completed) {
+        const articleDate = new Date(article.timestamp);
+        const month = `${monthNames[articleDate.getMonth()]} ${articleDate.getFullYear()}`;
 
-      if (monthlyXpEarned.hasOwnProperty(month)) {
-        monthlyXpEarned[month] += article.xpEarned || 0;
+        if (monthlyXpEarned.hasOwnProperty(month)) {
+          monthlyXpEarned[month] += article.xpEarned || 0;
+        }
       }
-    }
-  });
+    });
+  }
 
   let cumulativeXp = 0;
   const data = Object.keys(monthlyXpEarned)

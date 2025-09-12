@@ -77,11 +77,11 @@ function formatDataForDays(
     const dayOfWeek = daysOfWeek[i.getDay()];
     const dayOfMonth = i.getDate();
 
-    const filteredArticles = articles.filter((article: UserActivityLog) => {
+    const filteredArticles = articles ? articles.filter((article: UserActivityLog) => {
       const articleDate = new Date(article.timestamp);
       articleDate.setHours(0, 0, 0, 0);
       return articleDate.toDateString() === i.toDateString();
-    });
+    }) : [];
 
     // Calculate total XP earned for that day from completed activities
     let xpEarnedForDay = 0;
@@ -135,13 +135,13 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
 
   const formattedData = formatDataForDays(data, date);
 
-  const inProgressCount = data.filter(
+  const inProgressCount = data ? data.filter(
     (item: UserActivityLog) => !item.completed
-  ).length;
+  ).length : 0;
 
-  const completedCount = data.filter(
+  const completedCount = data ? data.filter(
     (item: UserActivityLog) => item.completed
-  ).length;
+  ).length : 0;
 
   return (
     <>

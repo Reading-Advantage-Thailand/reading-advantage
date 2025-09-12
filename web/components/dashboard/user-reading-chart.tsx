@@ -49,7 +49,7 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
   const t = useScopedI18n("pages.student.reportpage");
 
   const formatData = (value: UserActivityLog[], selected: string) => {
-    const filterArtcileRead = value.filter((item) => {
+    const filterArtcileRead = value ? value.filter((item) => {
       const activityType = item.activityType?.toLowerCase();
       return (
         activityType === "article_read" ||
@@ -57,7 +57,7 @@ const ReadingStatsChart = ({ data }: UserActiviryChartProps) => {
         item.activityType === "ARTICLE_READ" ||
         item.activityType === "LESSON_READ"
       );
-    });
+    }) : [];
 
     if (filterArtcileRead.length === 0) {
       return [];

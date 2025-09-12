@@ -34,9 +34,9 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
   );
 
   // Sort the data by timestamp in descending order
-  const sortedData = data.sort(
+  const sortedData = data ? [...data].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
+  ) : [];
   // Get the most recent activity
   const mostRecentActivity = sortedData[0];
   // Get the remaining activities

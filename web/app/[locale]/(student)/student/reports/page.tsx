@@ -26,16 +26,16 @@ export default async function ReportsPage({}: Props) {
   return (
     <>
       <Header heading={t("title")} />
-      <UserRecentActivity data={res.results} />
+      <UserRecentActivity data={res.activityLogs} />
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3 mt-4 mb-10">
         <div className="flex flex-col gap-4 col-span-2">
-          <UserActivityChart data={res.results} />
-          <UserXpOverAllChart data={res.results} />
-          <ReadingStatsChart data={res.results} />
+          <UserActivityChart data={res.activityLogs} />
+          <UserXpOverAllChart data={res.activityLogs} />
+          <ReadingStatsChart data={res.activityLogs} />
         </div>
         <div className="flex flex-col gap-4">
           <CEFRLevels currentLevel={user.cefr_level} />
-          <UserActivityHeatMap data={res.results} />
+          <UserActivityHeatMap data={res.activityLogs} />
         </div>
       </div>
     </>
