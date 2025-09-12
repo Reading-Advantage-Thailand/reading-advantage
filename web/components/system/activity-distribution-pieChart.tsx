@@ -123,7 +123,7 @@ export default function ActivityDistributionPieChart() {
         },
         {
           activity: "Sent. act.",
-          numberOfTimes: element.totalSentenseActivityCount,
+          numberOfTimes: element.totalSentenceActivityCount,
           fill: "var(--color-sentense_activities)",
         },
         {
@@ -145,6 +145,16 @@ export default function ActivityDistributionPieChart() {
           activity: "Vocab. act.",
           numberOfTimes: element.totalVocabularyActivityCount,
           fill: "var(--color-vocabulary_activities)",
+        },
+        {
+          activity: "Lesson flash.",
+          numberOfTimes: element.totalLessonFlashcardCount,
+          fill: "var(--color-vocabulary_flashcards)",
+        },
+        {
+          activity: "Lesson sent. flash.",
+          numberOfTimes: element.totalLessonSentenceFlashcardsCount,
+          fill: "var(--color-sentense_flashcards)",
         },
       ];
     })

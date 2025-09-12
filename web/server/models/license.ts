@@ -5,15 +5,14 @@ import { randomUUID } from "crypto";
 export interface License extends DocumentData {
   id: string; // school id
   key: string;
-  total_licenses: number;
-  used_licenses: number;
-  subscription_level: LicenseSubScriptionLevel;
-  expiration_date: LicenseExpirationDate;
-  user_id: string; // id who created this license
-  created_at: string;
-  updated_at: string;
-  admin_id: string; // id of the admin who manages this license
-  school_name: string;
+  schoolName: string; // Updated field name
+  maxUsers: number; // Updated field name
+  usedLicenses: number; // Updated field name
+  licenseType: string; // Updated field name
+  ownerUserId: string; // Updated field name
+  expiresAt: string; // Updated field name
+  createdAt: string; // Updated field name
+  updatedAt: string; // Updated field name
 }
 
 // records (sub collection) of license

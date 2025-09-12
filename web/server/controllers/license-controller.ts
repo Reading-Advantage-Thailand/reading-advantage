@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import catchAsync from "../utils/catch-async";
 import { ExtendedNextRequest } from "./auth-controller";
-import { licenseService } from "../services/firestore-server-services";
-import { createLicenseModel, License } from "../models/license";
-import { DBCollection } from "../models/enum";
-import { getAlls, deleteOne } from "../handlers/handler-factory";
-import db from "@/configs/firestore-config";
-import { DocumentData } from "firebase-admin/firestore";
 import { prisma } from "@/lib/prisma";
+import { LicenseType } from "@prisma/client";
+import { randomUUID } from "crypto";
 
 interface RequestContext {
   params: {
@@ -29,91 +25,206 @@ export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
     admin_id,
     expiration_date,
   } = await req.json();
-  const license: Omit<License, "id"> = createLicenseModel({
-    totalLicense: total_licenses,
-    subscriptionLevel: subscription_level,
-    userId: req.session?.user.id || "",
-    adminId: admin_id,
-    schoolName: school_name,
-    expirationDate: expiration_date,
+
+  // Map subscription_level to LicenseType enum
+  const licenseTypeMap: { [key: string]: LicenseType } = {
+    'basic': LicenseType.BASIC,
+    'premium': LicenseType.PREMIUM,
+    'enterprise': LicenseType.ENTERPRISE,
+  };
+
+  const licenseType = licenseTypeMap[subscription_level?.toLowerCase()] || LicenseType.BASIC;
+
+  const license = await prisma.license.create({
+    data: {
+      key: randomUUID(),
+      schoolName: school_name,
+      maxUsers: total_licenses,
+      licenseType: licenseType,
+      ownerUserId: admin_id || req.session?.user.id,
+      expiresAt: expiration_date ? new Date(expiration_date) : null,
+      usedLicenses: 0,
+    },
   });
-  await licenseService.licenses.createDoc(license);
+
   return NextResponse.json({
     message: "License key created successfully",
     license,
   });
 });
 
-export const getAllLicenses = getAlls<License>(DBCollection.LICENSES);
-export const deleteLicense = deleteOne<License>(DBCollection.LICENSES);
+export const getAllLicenses = catchAsync(async (req: ExtendedNextRequest) => {
+  const licenses = await prisma.license.findMany({
+    include: {
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      licenseUsers: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          licenseUsers: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return NextResponse.json({
+    message: "Licenses fetched successfully",
+    data: licenses,
+  });
+});
+
+export const deleteLicense = catchAsync(async (req: ExtendedNextRequest, { params: { id } }: RequestContext) => {
+  // Check if license exists
+  const license = await prisma.license.findUnique({
+    where: { id },
+    include: {
+      licenseUsers: true,
+    },
+  });
+
+  if (!license) {
+    return NextResponse.json(
+      { message: "License not found" },
+      { status: 404 }
+    );
+  }
+
+  // If license has users, we might want to handle this case
+  if (license.licenseUsers.length > 0) {
+    return NextResponse.json(
+      { message: "Cannot delete license with active users" },
+      { status: 400 }
+    );
+  }
+
+  await prisma.license.delete({
+    where: { id },
+  });
+
+  return NextResponse.json({
+    message: "License deleted successfully",
+  });
+});
 
 export const activateLicense = async (req: ExtendedNextRequest) => {
   try {
     const { key, userId } = await req.json();
-    const license = await db
-      .collection(DBCollection.LICENSES)
-      .where("key", "==", key)
-      .get();
+    
+    // Find license by key
+    const license = await prisma.license.findUnique({
+      where: { key },
+      include: {
+        licenseUsers: true,
+      },
+    });
 
-    const licenseData = license.docs.map((license) => license.data());
-
-    if (license.empty) {
+    if (!license) {
       return NextResponse.json(
-        {
-          message: "License not found",
-        },
-        { status: 404 }
-      );
-    } else if (licenseData[0].total_licenses <= licenseData[0].used_licenses) {
-      return NextResponse.json(
-        {
-          message: "License is already used",
-        },
+        { message: "License not found" },
         { status: 404 }
       );
     }
 
-    //update user expired date
-    const user = await db.collection(DBCollection.USERS).doc(userId).get();
-    const userData = user.data();
-    if (!userData) {
+    // Check if license has available slots
+    if (license.licenseUsers.length >= license.maxUsers) {
       return NextResponse.json(
-        {
-          message: "User data not found",
-        },
-        { status: 404 }
+        { message: "License is already fully used" },
+        { status: 400 }
       );
-    } else if (userData.license_id === licenseData[0].id) {
+    }
+
+    // Check if license is expired
+    if (license.expiresAt && license.expiresAt < new Date()) {
       return NextResponse.json(
-        {
-          message: "License already activated",
-        },
+        { message: "License has expired" },
+        { status: 400 }
+      );
+    }
+
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        licenseOnUsers: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { message: "User not found" },
         { status: 404 }
       );
     }
 
-    if (!license.empty && userData) {
-      const licenseUpdate = await db
-        .collection(DBCollection.LICENSES)
-        .doc(licenseData[0].id)
-        .update({
-          used_licenses: licenseData[0].used_licenses + 1,
-        });
+    // Check if user already has this license
+    const existingLicenseUser = await prisma.licenseOnUser.findUnique({
+      where: {
+        userId_licenseId: {
+          userId,
+          licenseId: license.id,
+        },
+      },
+    });
 
-      const userUpdate = await db
-        .collection(DBCollection.USERS)
-        .doc(userId)
-        .update({
-          expired_date: licenseData[0].expiration_date,
-          license_id: licenseData[0].id,
-        });
-
+    if (existingLicenseUser) {
       return NextResponse.json(
-        { message: "License activated successfully" },
-        { status: 200 }
+        { message: "License already activated for this user" },
+        { status: 400 }
       );
     }
+
+    // Activate the license for the user
+    await prisma.$transaction([
+      // Create license-user relationship
+      prisma.licenseOnUser.create({
+        data: {
+          userId,
+          licenseId: license.id,
+        },
+      }),
+      // Update user's license and expiration date
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          licenseId: license.id,
+          expiredDate: license.expiresAt,
+        },
+      }),
+      // Update license used count
+      prisma.license.update({
+        where: { id: license.id },
+        data: {
+          usedLicenses: {
+            increment: 1,
+          },
+        },
+      }),
+    ]);
+
+    return NextResponse.json(
+      { message: "License activated successfully" },
+      { status: 200 }
+    );
   } catch (error) {
+    console.error("Error activating license:", error);
     return NextResponse.json({
       message: "Internal server error",
       status: 500,
@@ -126,20 +237,48 @@ export const getLicense = async (
   { params: { id } }: RequestContext
 ) => {
   try {
-    const license = await db.collection(DBCollection.LICENSES).doc(id).get();
-    if (!license.exists) {
-      return NextResponse.json(
-        {
-          message: "License not found",
+    const license = await prisma.license.findUnique({
+      where: { id },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
         },
+        licenseUsers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            licenseUsers: true,
+          },
+        },
+      },
+    });
+
+    if (!license) {
+      return NextResponse.json(
+        { message: "License not found" },
         { status: 404 }
       );
     }
+
     return NextResponse.json({
       message: "License fetched successfully",
-      license: license.data(),
+      license,
     });
   } catch (error) {
+    console.error("Error fetching license:", error);
     return NextResponse.json({
       message: "Internal server error",
       status: 500,
@@ -147,190 +286,124 @@ export const getLicense = async (
   }
 };
 
-// export const getFilteredLicenses = catchAsync(async (req: ExtendedNextRequest) => {
-//     // req.nextUrl.searchParams.get("page");
-//     // URLSearchParams { 'page' => '1' }
-//     // map to key
-//     const fil = req.nextUrl.searchParams.entries();
-//     const filter = Object.fromEntries(req.nextUrl.searchParams.entries());
-//     console.log('filter', filter);
-//     // pagination
-//     const licenses = await db.collection(DBCollection.NEWARTICLES)
-//         .orderBy("created_at")
-//         .startAt(1)
-//         .limit(10)
-//         .select("id", "key", "created_at")
-//         .get();
+export const getFilteredLicenses = catchAsync(async (req: ExtendedNextRequest) => {
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "10");
+  const schoolName = searchParams.get("schoolName");
+  const licenseType = searchParams.get("licenseType");
+  const ownerId = searchParams.get("ownerId");
 
-//     const list = licenses.docs.map((license) => license.data());
+  const skip = (page - 1) * limit;
 
-//     return NextResponse.json({
-//         message: "Licenses fetched successfully",
-//         length: list.length,
-//         data: list,
-//     });
-// });
+  // Build where condition
+  const where: any = {};
+  
+  if (schoolName) {
+    where.schoolName = {
+      contains: schoolName,
+      mode: 'insensitive',
+    };
+  }
+  
+  if (licenseType) {
+    where.licenseType = licenseType;
+  }
+  
+  if (ownerId) {
+    where.ownerUserId = ownerId;
+  }
 
-// export const getAllLicenses = getAll<License>(DBCollection.LICENSES);
+  const [licenses, total] = await Promise.all([
+    prisma.license.findMany({
+      where,
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: {
+            licenseUsers: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip,
+      take: limit,
+    }),
+    prisma.license.count({ where }),
+  ]);
 
-// export const generateLicenseKey = catchAsync(async (req: ExtendedNextRequest, { params: { id } }: { params: { id: string } }) => {
-//     const { totalLicenses, subscriptionLevel, userId } = await req.json();
-//     console.log(totalLicenses, subscriptionLevel, userId);
-//     const license: License = {
-//         key: randomUUID(),
-//         school_id: id,
-//         total_licenses: totalLicenses,
-//         used_licenses: 0,
-//         subscription_level: subscriptionLevel,
-//         // default expiration date is 1 day
-//         expiration_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-//         user_id: userId,
-//         created_at: new Date().toISOString(),
-//     };
-
-//     // save license to database
-//     await db.collection(DBCollection.LICENSES).doc(license.key).set({
-//         ...license,
-//     });
-
-//     return NextResponse.json({
-//         message: "License key generated successfully",
-//         license,
-//     });
-// });
-
-// // use in user route
-// export const activateLicense = catchAsync(async (req: ExtendedNextRequest, { params: { id } }: { params: { id: string } }) => {
-//     const { key } = await req.json();
-//     // check if license exists
-//     const license = await db.collection(DBCollection.LICENSES).doc(key).get();
-//     if (!license.exists) {
-//         return NextResponse.json({
-//             message: "License not found",
-//         }, { status: 404 });
-//     }
-
-//     // update user expired date
-//     const user = await db.collection(DBCollection.USERS).doc(id).get();
-//     const userData = user.data();
-//     if (!userData) {
-//         return NextResponse.json({
-//             message: "User data not found",
-//         }, { status: 404 });
-//     }
-//     await db.collection(DBCollection.USERS).doc(id).update({
-//         expired_date: new Date((userData.expired_date).getTime() + 24 * 60 * 60 * 1000).toISOString(),
-//     });
-//     return NextResponse.json({
-//         message: "Licenses fetched successfully",
-//     });
-// });
-
-// export const getAllLicenses = catchAsync(async (req: ExtendedNextRequest, { params: { id } }: { params: { id: string } }) => {
-//     const licenses = await db.collection(DBCollection.LICENSES).where("school_id", "==", id).get();
-//     const licensesData = licenses.docs.map((license) => license.data() as License);
-//     return NextResponse.json({
-//         message: "Licenses fetched successfully",
-//         licenses: licensesData,
-//     });
-// });
+  return NextResponse.json({
+    message: "Licenses fetched successfully",
+    data: licenses,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
+});
 
 export const calculateXpForLast30Days = async () => {
   try {
     const now = new Date();
+    const past30Days = new Date();
+    past30Days.setDate(now.getDate() - 30);
 
-    const xpByDateAndUser: Record<string, Record<string, number>> = {};
-
-    const activitySnapshot = await db.collection("user-activity-log").get();
-
-    const activityPromises = activitySnapshot.docs.map(async (doc) => {
-      const subCollections = await doc.ref.listCollections();
-      const subCollectionPromises = subCollections.map(
-        async (subCollection) => {
-          const subSnapshot = await subCollection.get();
-
-          subSnapshot.docs.forEach((subDoc) => {
-            const data = subDoc.data();
-
-            if (!data.userId || !data.timestamp || !data.xpEarned) {
-              return;
-            }
-
-            const userId = data.userId;
-            const xpEarned = data.xpEarned || 0;
-            const timestamp: Date = data.timestamp.toDate
-              ? data.timestamp.toDate()
-              : new Date(data.timestamp);
-            const dateStr = timestamp.toISOString().slice(0, 10);
-
-            const past30Days = new Date();
-            past30Days.setDate(now.getDate() - 30);
-
-            if (timestamp < past30Days || timestamp >= now) return;
-
-            if (!xpByDateAndUser[dateStr]) {
-              xpByDateAndUser[dateStr] = {};
-            }
-
-            if (!xpByDateAndUser[dateStr][userId]) {
-              xpByDateAndUser[dateStr][userId] = 0;
-            }
-
-            xpByDateAndUser[dateStr][userId] += xpEarned;
-          });
-        }
-      );
-
-      await Promise.all(subCollectionPromises);
+    // Get all XP logs from the last 30 days
+    const xpLogs = await prisma.xPLog.findMany({
+      where: {
+        createdAt: {
+          gte: past30Days,
+          lt: now,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            licenseId: true,
+          },
+        },
+      },
     });
 
-    await Promise.all(activityPromises);
+    // Group XP by date and license
+    const xpByDateAndLicense: Record<string, Record<string, number>> = {};
 
-    const usersSnapshot = await db.collection("users").get();
-    const licenseToUserMap: Record<string, Set<string>> = {};
+    xpLogs.forEach((log) => {
+      const dateStr = log.createdAt.toISOString().slice(0, 10);
+      const licenseId = log.user.licenseId;
 
-    usersSnapshot.forEach((doc) => {
-      const user = doc.data();
-      const userId = doc.id;
-      const licenseId = user.license_id;
-      if (licenseId) {
-        if (!licenseToUserMap[licenseId]) {
-          licenseToUserMap[licenseId] = new Set();
-        }
-        licenseToUserMap[licenseId].add(userId);
+      if (!licenseId) return; // Skip users without licenses
+
+      if (!xpByDateAndLicense[dateStr]) {
+        xpByDateAndLicense[dateStr] = {};
       }
-    });
 
-    const xpByDateAndLicenseFinal: Record<string, Record<string, number>> = {};
-
-    Object.entries(xpByDateAndUser).forEach(([date, xpByUser]) => {
-      xpByDateAndLicenseFinal[date] = {};
-
-      Object.entries(licenseToUserMap).forEach(([licenseId, userSet]) => {
-        let totalXp = 0;
-        userSet.forEach((userId) => {
-          if (xpByUser[userId]) {
-            totalXp += xpByUser[userId];
-          }
-        });
-        if (totalXp > 0) {
-          xpByDateAndLicenseFinal[date][licenseId] = totalXp;
-        }
-      });
-    });
-
-    for (const [date, xpByLicense] of Object.entries(xpByDateAndLicenseFinal)) {
-      for (const license_id in xpByLicense) {
-        await db.collection("xp-gained-log").doc(`${license_id}-${date}`).set({
-          license_id,
-          date,
-          total_xp: xpByLicense[license_id],
-          created_at: now.toISOString(),
-        });
+      if (!xpByDateAndLicense[dateStr][licenseId]) {
+        xpByDateAndLicense[dateStr][licenseId] = 0;
       }
-    }
 
-    return NextResponse.json({ success: true, data: xpByDateAndLicenseFinal });
+      xpByDateAndLicense[dateStr][licenseId] += log.xpEarned;
+    });
+
+    // Save aggregated data (you might want to create a separate table for this)
+    // For now, we'll just return the data since there's no xp-gained-log table in Prisma schema
+    
+    return NextResponse.json({ 
+      success: true, 
+      data: xpByDateAndLicense,
+      message: "XP calculation completed successfully"
+    });
   } catch (error) {
     console.error("Error calculating XP:", error);
     return NextResponse.json({
@@ -345,27 +418,51 @@ export const getXp30days = async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
     const license_id = searchParams.get("license_id");
 
-    //console.log(`Fetching XP logs${license_id ? ` for license: ${license_id}` : " (all licenses)"}`);
-
-    let querySnapshot;
-
-    if (license_id) {
-      querySnapshot = await db
-        .collection("xp-gained-log")
-        .where("license_id", "==", license_id)
-        .get();
-    } else {
-      querySnapshot = await db.collection("xp-gained-log").get();
-    }
+    const now = new Date();
+    const past30Days = new Date();
+    past30Days.setDate(now.getDate() - 30);
 
     let totalXp = 0;
 
-    querySnapshot.docs.forEach((doc) => {
-      const data = doc.data();
-      totalXp += data.total_xp || 0;
-    });
+    if (license_id) {
+      // Get XP for specific license
+      const xpLogs = await prisma.xPLog.findMany({
+        where: {
+          createdAt: {
+            gte: past30Days,
+            lt: now,
+          },
+          user: {
+            licenseId: license_id,
+          },
+        },
+        select: {
+          xpEarned: true,
+        },
+      });
 
-    //console.log(`Total XP Retrieved: ${totalXp}`);
+      totalXp = xpLogs.reduce((sum, log) => sum + log.xpEarned, 0);
+    } else {
+      // Get XP for all licenses
+      const xpLogs = await prisma.xPLog.findMany({
+        where: {
+          createdAt: {
+            gte: past30Days,
+            lt: now,
+          },
+          user: {
+            licenseId: {
+              not: null,
+            },
+          },
+        },
+        select: {
+          xpEarned: true,
+        },
+      });
+
+      totalXp = xpLogs.reduce((sum, log) => sum + log.xpEarned, 0);
+    }
 
     return NextResponse.json({
       success: true,

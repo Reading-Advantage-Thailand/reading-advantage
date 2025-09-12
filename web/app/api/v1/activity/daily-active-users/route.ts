@@ -1,10 +1,14 @@
 import { logRequest } from "@/server/middleware";
-import { createEdgeRouter } from "next-connect";
-import { NextRequest, NextResponse } from "next/server";
 import { protect } from "@/server/controllers/auth-controller";
-import { getSystemDashboard } from "@/server/controllers/system-dashboard-controller";
+import { createEdgeRouter } from "next-connect";
+import { NextResponse, type NextRequest } from "next/server";
+import { getDailyActiveUsers } from "@/server/controllers/activity-controller";
 
-interface RequestContext {}
+export interface RequestContext {
+  params?: {
+    license_id: string;
+  };
+}
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
@@ -12,13 +16,14 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 router.use(logRequest);
 router.use(protect);
 
-router.get(getSystemDashboard);
+// API: GET /api/v1/activity/daily-active-users?licenseId={license_id}
+router.get(getDailyActiveUsers);
 
+// Export API Route for Next.js
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
   }
-  // Handle the case where result is not a NextResponse
   throw new Error("Expected a NextResponse from router.run");
 }
