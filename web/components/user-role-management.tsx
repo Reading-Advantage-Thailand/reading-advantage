@@ -202,25 +202,23 @@ export default function UserRoleManagement({
   const role =
     page === "system"
       ? [
-          { name: "Student", value: "student" },
-          { name: "Teacher", value: "teacher" },
-          { name: "Admin", value: "admin" },
-          { name: "System", value: "system" },
+          { name: "Student", value: "STUDENT" },
+          { name: "Teacher", value: "TEACHER" },
+          { name: "Admin", value: "ADMIN" },
+          { name: "System", value: "SYSTEM" },
         ]
       : [
-          { name: "Student", value: "student" },
-          { name: "Teacher", value: "teacher" },
-          { name: "Admin", value: "admin" },
+          { name: "Student", value: "STUDENT" },
+          { name: "Teacher", value: "TEACHER" },
+          { name: "Admin", value: "ADMIN" },
         ];
 
   const columns: ColumnDef<Payment & { school_name: string }>[] = [
     {
-      accessorKey: "display_name",
+      accessorKey: "name",
       header: "User Name",
       cell: ({ row }) => (
-        <div className="capitalize">
-          {row.getValue("display_name") || "No Name"}
-        </div>
+        <div className="capitalize">{row.getValue("name") || "No Name"}</div>
       ),
     },
     {
