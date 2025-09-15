@@ -261,6 +261,10 @@ const AdminArticleCreation = () => {
     }
   };
 
+  useEffect(() => {
+    console.log("Selected article for edit:", selectedArticleForEdit);
+  }, [selectedArticleForEdit]);
+
   const getLoadingDescription = () => {
     switch (loadingType) {
       case "generate":
@@ -338,16 +342,16 @@ const AdminArticleCreation = () => {
         switch (loadingType) {
           case "generate":
             return {
-              interval: 1000,
+              interval: 800,
               increment: () => {
-                return Math.random() * 1.5 + 0.4;
+                return Math.random() * 0.8 + 0.6;
               },
             };
           case "save":
             return {
-              interval: 500,
+              interval: 800,
               increment: () => {
-                return Math.random() * 3.85 + 0.5;
+                return Math.random() * 0.8 + 0.2;
               },
             };
           case "approve":
@@ -399,6 +403,12 @@ const AdminArticleCreation = () => {
   useEffect(() => {
     if (currentTab === "manage") {
       fetchUserArticles();
+      // Reset editing states when going to manage tab
+      setSelectedArticleForEdit(null);
+      setGeneratedData(null);
+      setOriginalContent(null);
+      setHasContentChanged(false);
+      setIsPreviewMode(false);
     }
   }, [currentTab]);
 
@@ -441,12 +451,14 @@ const AdminArticleCreation = () => {
   };
 
   const confirmApproval = async () => {
-    if (!pendingApprovalId) return;
+    // Use selectedArticleForEdit's ID if it exists, otherwise use pendingApprovalId
+    const articleIdToApprove = selectedArticleForEdit?.id || pendingApprovalId;
+    if (!articleIdToApprove) return;
 
     try {
       setLoadingType("approve");
       setIsGenerating(true);
-      setIsApproving(pendingApprovalId);
+      setIsApproving(articleIdToApprove);
       setShowApprovalDialog(false);
 
       const response = await fetch(
@@ -456,7 +468,7 @@ const AdminArticleCreation = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ articleId: pendingApprovalId }),
+          body: JSON.stringify({ articleId: articleIdToApprove }),
         }
       );
 
@@ -481,10 +493,19 @@ const AdminArticleCreation = () => {
         )
       );
 
+      // Reset all related states
+      setSelectedArticleForEdit(null);
+      setGeneratedData(null);
+      setOriginalContent(null);
+      setHasContentChanged(false);
+
       toast({
         title: "Success",
         description: "Article approved and published successfully!",
       });
+
+      // Navigate to manage tab after successful approval
+      setCurrentTab("manage");
     } catch (error) {
       console.error("Error approving article:", error);
       toast({
@@ -602,18 +623,39 @@ const AdminArticleCreation = () => {
     setCurrentTab("preview");
   };
 
-  const handleEditArticle = (article: UserArticle) => {
-    setSelectedArticleForEdit(article);
-    setIsPreviewMode(false);
+  const handleEditArticle = async (article: UserArticle) => {
+    // รอให้ state ถูกเซ็ตเสร็จก่อนเปลี่ยน tab
+    await Promise.all([
+      new Promise<void>(resolve => {
+        setSelectedArticleForEdit(article);
+        resolve();
+      }),
+      new Promise<void>(resolve => {
+        setIsPreviewMode(false);
+        resolve();
+      })
+    ]);
+
     const articleData = {
       title: article.title,
       passage: article.passage,
       summary: article.summary,
       imageDesc: article.imageDesc || article.image_description || "",
     };
-    setGeneratedData(articleData);
-    // เซ็ต original content
-    setOriginalContent(articleData);
+
+    await Promise.all([
+      new Promise<void>(resolve => {
+        setGeneratedData(articleData);
+        resolve();
+      }),
+      new Promise<void>(resolve => {
+        setOriginalContent(articleData);
+        resolve();
+      })
+    ]);
+
+    // รอให้ state ทั้งหมดถูก update เสร็จก่อนเปลี่ยน tab
+    await new Promise(resolve => setTimeout(resolve, 0));
     setCurrentTab("preview");
   };
 
@@ -725,6 +767,9 @@ const AdminArticleCreation = () => {
   };
 
   const handleApprovePublishClick = () => {
+    if (selectedArticleForEdit) {
+      setPendingApprovalId(selectedArticleForEdit.id);
+    }
     setShowApprovePublishDialog(true);
   };
 
@@ -737,7 +782,11 @@ const AdminArticleCreation = () => {
     } else {
       // ถ้าไม่มีการแก้ไข ใช้ confirmApproval โดยตรง
       if (selectedArticleForEdit) {
-        setPendingApprovalId(selectedArticleForEdit.id);
+        // เซ็ต pendingApprovalId ก่อนเรียก confirmApproval
+        const articleId = selectedArticleForEdit.id;
+        setPendingApprovalId(articleId);
+        // รอให้ state update เสร็จก่อนเรียก confirmApproval
+        await new Promise(resolve => setTimeout(resolve, 0));
         await confirmApproval();
       }
     }
@@ -755,35 +804,36 @@ const AdminArticleCreation = () => {
       setIsGenerating(true);
 
       // First update the article with new data
-      const updateResponse = await fetch(
-        `/api/v1/articles/generate/custom-generate/user-generated/${selectedArticleForEdit.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title: generatedData.title,
-            passage: generatedData.passage,
-            summary: generatedData.summary,
-            imageDesc: generatedData.imageDesc,
-          }),
-        }
-      );
+      if (hasContentChanged) {
+        const updateResponse = await fetch(
+          `/api/v1/articles/generate/custom-generate/user-generated/${selectedArticleForEdit.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: generatedData.title,
+              passage: generatedData.passage,
+              summary: generatedData.summary,
+              imageDesc: generatedData.imageDesc,
+            }),
+          }
+        );
 
-      if (!updateResponse.ok) {
-        const errorData = await updateResponse.json();
-        throw new Error(errorData.details || "Failed to update article");
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json();
+          throw new Error(errorData.details || "Failed to update article");
+        }
       }
 
-      // Then approve the article
+      // Set pendingApprovalId before approval
+      setPendingApprovalId(selectedArticleForEdit.id);
+      
+      // Then approve the article using the same logic as confirmApproval
       const approveResponse = await fetch(
         "/api/v1/articles/generate/custom-generate/user-generated",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ articleId: selectedArticleForEdit.id }),
         }
       );
@@ -830,6 +880,8 @@ const AdminArticleCreation = () => {
     } finally {
       // Force reset all states immediately
       setIsGenerating(false);
+      setIsApproving(null);
+      setPendingApprovalId(null);
       setLoadingProgress(0);
       setCurrentMessage("");
       setShowLoadingDialog(false);
@@ -866,11 +918,11 @@ const AdminArticleCreation = () => {
               {t("confirmApprovalTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2 text-sm">
-              <p>{t("confirmApprovalMessage")}</p>
+              <span>{t("confirmApprovalMessage")}</span>
               <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
-                <p className="text-sm text-orange-800 font-medium">
+                <span className="text-sm text-orange-800 font-medium">
                   {t("confirmApprovalMessage")}
-                </p>
+                </span>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -903,23 +955,23 @@ const AdminArticleCreation = () => {
               {t("modalTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3 text-sm">
-              <p>{t("confirmApprovalMessage")}</p>
+              <span>{t("confirmApprovalMessage")}</span>
 
               {hasContentChanged && (
                 <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                  <p className="text-sm text-blue-800 font-medium">
+                  <span className="text-sm text-blue-800 font-medium block">
                     {t("modalContentChanged")}
-                  </p>
-                  <p className="text-sm text-blue-700 mt-1">
+                  </span>
+                  <span className="text-sm text-blue-700 mt-1 block">
                     {t("modalContentNote")}
-                  </p>
+                  </span>
                 </div>
               )}
 
               <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
-                <p className="text-sm text-orange-800 font-medium">
+                <span className="text-sm text-orange-800 font-medium">
                   {t("modalFinalWarning")}
-                </p>
+                </span>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -876,15 +876,25 @@ export async function generateUserArticle(req: NextRequest) {
 
     // Generate translations
     //console.log("Generating translations...");
-    const [translatedSummary, translatedPassage] = await Promise.all([
-      generateTranslatedSummary({
-        summary: generatedArticle.summary,
-      }),
-      generateTranslatedPassage({
-        passage: generatedArticle.passage,
-      }),
-    ]);
-    //console.log("Translations generated successfully");
+    let translatedSummary, translatedPassage;
+    try {
+      [translatedSummary, translatedPassage] = await Promise.all([
+        generateTranslatedSummary({
+          summary: generatedArticle.summary,
+        }),
+        generateTranslatedPassage({
+          passage: generatedArticle.passage,
+        }),
+      ]);
+      //console.log("Translations generated successfully");
+    } catch (translationError) {
+      console.error("Translation failed after all retries:", translationError);
+      // Cleanup the article and related files
+      if (articleId) {
+        await cleanupFailedPrismaGeneration(articleId);
+      }
+      throw new Error(`Translation failed: ${translationError instanceof Error ? translationError.message : 'Unknown translation error'}`);
+    }
 
     // Note: We don't update the article with word list here anymore
     // because generateAudioForWord will save the complete words with timepoints
@@ -1321,15 +1331,23 @@ export async function updateUserArticle(
 
     // Generate translations
     //console.log("Generating translations...");
-    const [translatedSummary, translatedPassage] = await Promise.all([
-      generateTranslatedSummary({
-        summary: summary,
-      }),
-      generateTranslatedPassage({
-        passage: passage,
-      }),
-    ]);
-    //console.log("Translations generated successfully");
+    let translatedSummary, translatedPassage;
+    try {
+      [translatedSummary, translatedPassage] = await Promise.all([
+        generateTranslatedSummary({
+          summary: summary,
+        }),
+        generateTranslatedPassage({
+          passage: passage,
+        }),
+      ]);
+      //console.log("Translations generated successfully");
+    } catch (translationError) {
+      console.error("Translation failed after all retries:", translationError);
+      // For update operations, we'll throw the error but won't delete the article
+      // since it's an existing article being updated
+      throw new Error(`Translation failed: ${translationError instanceof Error ? translationError.message : 'Unknown translation error'}`);
+    }
 
     // Delete old audio files before generating new ones
     //console.log("Deleting old audio files...");
