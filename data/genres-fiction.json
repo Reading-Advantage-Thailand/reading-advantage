@@ -1,272 +1,335 @@
 {
-   "Genres":[
-      {
-         "Name":"Action and Adventure",
-         "Subgenres":[]
-      },
-      {
-         "Name":"Thriller and Mystery",
-         "Subgenres":[
-            "Crime Thriller",
-            "Cozy Mystery",
-            "Detective Noir",
-            "Legal Thriller",
-            "Spy Thriller",
-            "Political Thriller"
-         ]
-      },
-      {
-         "Name":"Fantasy and Science Fiction",
-         "Subgenres":[
-            "High Fantasy",
-            "Low Fantasy",
-            "Urban Fantasy",
-            "Epic Fantasy",
-            "Sword and Sorcery",
-            "Portal Fantasy",
-            "Hard Science Fiction",
-            "Space Opera",
-            "Cyberpunk",
-            "Dystopian Fiction",
-            "Alien Encounters",
-            "Time Travel"
-         ]
-      },
-      {
-         "Name":"Gothic and Horror",
-         "Subgenres":[
-            "Supernatural Horror",
-            "Psychological Horror",
-            "Gothic Horror",
-            "Lovecraftian Horror",
-            "Haunted House",
-            "Body Horror"
-         ]
-      },
-      {
-         "Name":"Historical",
-         "Subgenres":[]
-      },
-      {
-         "Name":"Drama and Family",
-         "Subgenres":[]
-      },
-      {
-         "Name":"Romance and Contemporary",
-         "Subgenres":[
-            "Contemporary Romance",
-            "Historical Romance",
-            "Paranormal Romance",
-            "Romantic Suspense",
-            "Regency Romance",
-            "Second Chance Romance",
-            "Realistic Contemporary",
-            "Domestic Fiction",
-            "Urban Fiction",
-            "Social Commentary",
-            "Relationship Drama",
-            "Coming-of-Age"
-         ]
-      },
-      {
-         "Name":"Comedy and Humor",
-         "Subgenres":[]
-      },
-      {
-         "Name":"Children's Literature",
-         "Subgenres":[
-            "Early Readers",
-            "Middle Grade Fiction",
-            "Adventure Stories",
-            "Fantasy for Kids",
-            "Mystery for Kids",
-            "Animal Adventures"
-         ]
-      },
-      {
-         "Name":"Classic and Literary Fiction",
-         "Subgenres":[
-            "Character-driven",
-            "Experimental",
-            "Metafiction",
-            "Cultural Commentary",
-            "Stream of Consciousness",
-            "Postmodern Fiction"
-         ]
-      },
-      {
-         "Name":"Folklore and Mythology",
-         "Subgenres":[]
-      },
-      {
-         "Name":"Epic and Heroic",
-         "Subgenres":[]
-      },
-      {
-         "Name":"Western",
-         "Subgenres":[
-            "Classic Western",
-            "Western Romance",
-            "Weird West",
-            "Frontier Adventure",
-            "Bounty Hunter",
-            "Gold Rush"
-         ]
-      },
-      {
-         "Name":"Sports",
-         "Subgenres":[]
-      },
-      {
-         "Name":"Religious Fiction",
-         "Subgenres":[]
-      },
-      {
-         "Name":"Media",
-         "Subgenres":[]
-      },
-      {
-         "Name":"Contemporary Fiction",
-         "Subgenres":[
-            "Realistic Contemporary",
-            "Domestic Fiction",
-            "Urban Fiction",
-            "Social Commentary",
-            "Relationship Drama",
-            "Coming-of-Age"
-         ]
-      },
-      {
-         "Name":"Historical Fiction",
-         "Subgenres":[
-            "Ancient History",
-            "Medieval Era",
-            "19th Century",
-            "World War I and II",
-            "Historical Romance",
-            "Regency Era"
-         ]
-      },
-      {
-         "Name":"Horror",
-         "Subgenres":[
-            "Supernatural Horror",
-            "Psychological Horror",
-            "Gothic Horror",
-            "Lovecraftian Horror",
-            "Haunted House",
-            "Body Horror"
-         ]
-      },
-      {
-         "Name":"Fantasy",
-         "Subgenres":[
-            "High Fantasy",
-            "Low Fantasy",
-            "Urban Fantasy",
-            "Epic Fantasy",
-            "Sword and Sorcery",
-            "Portal Fantasy"
-         ]
-      },
-      {
-         "Name":"Literary Fiction",
-         "Subgenres":[
-            "Character-driven",
-            "Experimental",
-            "Metafiction",
-            "Cultural Commentary",
-            "Stream of Consciousness",
-            "Postmodern Fiction"
-         ]
-      },
-      {
-         "Name":"Mystery/Thriller",
-         "Subgenres":[
-            "Crime Thriller",
-            "Cozy Mystery",
-            "Detective Noir",
-            "Legal Thriller",
-            "Spy Thriller",
-            "Political Thriller"
-         ]
-      },
-      {
-         "Name":"Romance",
-         "Subgenres":[
-            "Contemporary Romance",
-            "Historical Romance",
-            "Paranormal Romance",
-            "Romantic Suspense",
-            "Regency Romance",
-            "Second Chance Romance"
-         ]
-      },
-      {
-         "Name":"Science Fiction",
-         "Subgenres":[
-            "Hard Science Fiction",
-            "Space Opera",
-            "Cyberpunk",
-            "Dystopian Fiction",
-            "Alien Encounters",
-            "Time Travel"
-         ]
-      },
-      {
-         "Name":"War",
-         "Subgenres":[
-            "Historical War Fiction",
-            "Military Thriller",
-            "Post-Apocalyptic War",
-            "Espionage",
-            "War Romance",
-            "Alternate History War"
-         ]
-      },
-      {
-         "Name":"Westerns",
-         "Subgenres":[
-            "Classic Western",
-            "Western Romance",
-            "Weird West",
-            "Frontier Adventure",
-            "Bounty Hunter",
-            "Gold Rush"
-         ]
-      },
-      {
-         "Name":"Children's Fiction",
-         "Subgenres":[
-            "Early Readers",
-            "Middle Grade Fiction",
-            "Adventure Stories",
-            "Fantasy for Kids",
-            "Mystery for Kids",
-            "Animal Adventures"
-         ]
-      },
-      {
-         "Name":"Young Adult Fiction",
-         "Subgenres":[
-            "Contemporary YA",
-            "Fantasy YA",
-            "Dystopian YA",
-            "Romance YA",
-            "Science Fiction YA",
-            "Historical YA"
-         ]
-      },
-      {
-         "Name":"Adult Fiction",
-         "Subgenres":[
-            "Literary Fiction",
-            "Mystery/Thriller",
-            "Romance",
-            "Science Fiction",
-            "Historical Fiction",
-            "Psychological Fiction"
-         ]
-      }
-   ]
+  "Genres": [
+    {
+      "Name": "Action and Adventure",
+      "Subgenres": [
+        "High Octane Action",
+        "Survival Adventure",
+        "Treasure Hunt",
+        "Military Action",
+        "Heist Fiction",
+        "Rescue Mission"
+      ]
+    },
+    {
+      "Name": "Thriller and Mystery",
+      "Subgenres": [
+        "Crime Thriller",
+        "Cozy Mystery",
+        "Detective Noir",
+        "Legal Thriller",
+        "Spy Thriller",
+        "Political Thriller"
+      ]
+    },
+    {
+      "Name": "Fantasy and Science Fiction",
+      "Subgenres": [
+        "High Fantasy",
+        "Low Fantasy",
+        "Urban Fantasy",
+        "Epic Fantasy",
+        "Sword and Sorcery",
+        "Portal Fantasy",
+        "Hard Science Fiction",
+        "Space Opera",
+        "Cyberpunk",
+        "Dystopian Fiction",
+        "Alien Encounters",
+        "Time Travel"
+      ]
+    },
+    {
+      "Name": "Gothic and Horror",
+      "Subgenres": [
+        "Supernatural Horror",
+        "Psychological Horror",
+        "Gothic Horror",
+        "Lovecraftian Horror",
+        "Haunted House",
+        "Body Horror"
+      ]
+    },
+    {
+      "Name": "Historical",
+      "Subgenres": [
+        "Ancient Civilizations",
+        "Medieval Times",
+        "Renaissance Period",
+        "Colonial Era",
+        "Victorian Era",
+        "Modern Historical"
+      ]
+    },
+    {
+      "Name": "Drama and Family",
+      "Subgenres": [
+        "Family Saga",
+        "Generational Drama",
+        "Domestic Drama",
+        "Coming-of-Age Drama",
+        "Social Drama",
+        "Emotional Drama"
+      ]
+    },
+    {
+      "Name": "Romance and Contemporary",
+      "Subgenres": [
+        "Contemporary Romance",
+        "Historical Romance",
+        "Paranormal Romance",
+        "Romantic Suspense",
+        "Regency Romance",
+        "Second Chance Romance",
+        "Realistic Contemporary",
+        "Domestic Fiction",
+        "Urban Fiction",
+        "Social Commentary",
+        "Relationship Drama",
+        "Coming-of-Age"
+      ]
+    },
+    {
+      "Name": "Comedy and Humor",
+      "Subgenres": [
+        "Satirical Comedy",
+        "Romantic Comedy",
+        "Dark Comedy",
+        "Absurdist Humor",
+        "Parody Fiction",
+        "Witty Banter"
+      ]
+    },
+    {
+      "Name": "Children's Literature",
+      "Subgenres": [
+        "Early Readers",
+        "Middle Grade Fiction",
+        "Adventure Stories",
+        "Fantasy for Kids",
+        "Mystery for Kids",
+        "Animal Adventures"
+      ]
+    },
+    {
+      "Name": "Classic and Literary Fiction",
+      "Subgenres": [
+        "Character-driven",
+        "Experimental",
+        "Metafiction",
+        "Cultural Commentary",
+        "Stream of Consciousness",
+        "Postmodern Fiction"
+      ]
+    },
+    {
+      "Name": "Folklore and Mythology",
+      "Subgenres": [
+        "Greek Mythology",
+        "Norse Legends",
+        "Celtic Folklore",
+        "Eastern Mythology",
+        "Native American Legends",
+        "Fairy Tale Retellings"
+      ]
+    },
+    {
+      "Name": "Epic and Heroic",
+      "Subgenres": [
+        "Heroic Quest",
+        "Epic Adventure",
+        "Legendary Heroes",
+        "Mythic Journey",
+        "Champion's Tale",
+        "Divine Mission"
+      ]
+    },
+    {
+      "Name": "Western",
+      "Subgenres": [
+        "Classic Western",
+        "Western Romance",
+        "Weird West",
+        "Frontier Adventure",
+        "Bounty Hunter",
+        "Gold Rush"
+      ]
+    },
+    {
+      "Name": "Sports",
+      "Subgenres": [
+        "Team Sports Fiction",
+        "Individual Athletes",
+        "Sports Romance",
+        "Underdog Stories",
+        "Professional Sports",
+        "Youth Sports"
+      ]
+    },
+    {
+      "Name": "Religious Fiction",
+      "Subgenres": [
+        "Christian Fiction",
+        "Biblical Fiction",
+        "Inspirational Fiction",
+        "Spiritual Journey",
+        "Faith-based Drama",
+        "Religious Historical Fiction"
+      ]
+    },
+    {
+      "Name": "Media",
+      "Subgenres": [
+        "Journalism Fiction",
+        "Entertainment Industry",
+        "Social Media Drama",
+        "Broadcasting Fiction",
+        "Celebrity Culture",
+        "Digital Age Stories"
+      ]
+    },
+    {
+      "Name": "Contemporary Fiction",
+      "Subgenres": [
+        "Realistic Contemporary",
+        "Domestic Fiction",
+        "Urban Fiction",
+        "Social Commentary",
+        "Relationship Drama",
+        "Coming-of-Age"
+      ]
+    },
+    {
+      "Name": "Historical Fiction",
+      "Subgenres": [
+        "Ancient History",
+        "Medieval Era",
+        "19th Century",
+        "World War I and II",
+        "Historical Romance",
+        "Regency Era"
+      ]
+    },
+    {
+      "Name": "Horror",
+      "Subgenres": [
+        "Supernatural Horror",
+        "Psychological Horror",
+        "Gothic Horror",
+        "Lovecraftian Horror",
+        "Haunted House",
+        "Body Horror"
+      ]
+    },
+    {
+      "Name": "Fantasy",
+      "Subgenres": [
+        "High Fantasy",
+        "Low Fantasy",
+        "Urban Fantasy",
+        "Epic Fantasy",
+        "Sword and Sorcery",
+        "Portal Fantasy"
+      ]
+    },
+    {
+      "Name": "Literary Fiction",
+      "Subgenres": [
+        "Character-driven",
+        "Experimental",
+        "Metafiction",
+        "Cultural Commentary",
+        "Stream of Consciousness",
+        "Postmodern Fiction"
+      ]
+    },
+    {
+      "Name": "Mystery/Thriller",
+      "Subgenres": [
+        "Crime Thriller",
+        "Cozy Mystery",
+        "Detective Noir",
+        "Legal Thriller",
+        "Spy Thriller",
+        "Political Thriller"
+      ]
+    },
+    {
+      "Name": "Romance",
+      "Subgenres": [
+        "Contemporary Romance",
+        "Historical Romance",
+        "Paranormal Romance",
+        "Romantic Suspense",
+        "Regency Romance",
+        "Second Chance Romance"
+      ]
+    },
+    {
+      "Name": "Science Fiction",
+      "Subgenres": [
+        "Hard Science Fiction",
+        "Space Opera",
+        "Cyberpunk",
+        "Dystopian Fiction",
+        "Alien Encounters",
+        "Time Travel"
+      ]
+    },
+    {
+      "Name": "War",
+      "Subgenres": [
+        "Historical War Fiction",
+        "Military Thriller",
+        "Post-Apocalyptic War",
+        "Espionage",
+        "War Romance",
+        "Alternate History War"
+      ]
+    },
+    {
+      "Name": "Westerns",
+      "Subgenres": [
+        "Classic Western",
+        "Western Romance",
+        "Weird West",
+        "Frontier Adventure",
+        "Bounty Hunter",
+        "Gold Rush"
+      ]
+    },
+    {
+      "Name": "Children's Fiction",
+      "Subgenres": [
+        "Early Readers",
+        "Middle Grade Fiction",
+        "Adventure Stories",
+        "Fantasy for Kids",
+        "Mystery for Kids",
+        "Animal Adventures"
+      ]
+    },
+    {
+      "Name": "Young Adult Fiction",
+      "Subgenres": [
+        "Contemporary YA",
+        "Fantasy YA",
+        "Dystopian YA",
+        "Romance YA",
+        "Science Fiction YA",
+        "Historical YA"
+      ]
+    },
+    {
+      "Name": "Adult Fiction",
+      "Subgenres": [
+        "Literary Fiction",
+        "Mystery/Thriller",
+        "Romance",
+        "Science Fiction",
+        "Historical Fiction",
+        "Psychological Fiction"
+      ]
+    }
+  ]
 }
