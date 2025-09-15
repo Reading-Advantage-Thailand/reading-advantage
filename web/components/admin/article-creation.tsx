@@ -261,10 +261,6 @@ const AdminArticleCreation = () => {
     }
   };
 
-  useEffect(() => {
-    console.log("Selected article for edit:", selectedArticleForEdit);
-  }, [selectedArticleForEdit]);
-
   const getLoadingDescription = () => {
     switch (loadingType) {
       case "generate":
@@ -626,14 +622,14 @@ const AdminArticleCreation = () => {
   const handleEditArticle = async (article: UserArticle) => {
     // รอให้ state ถูกเซ็ตเสร็จก่อนเปลี่ยน tab
     await Promise.all([
-      new Promise<void>(resolve => {
+      new Promise<void>((resolve) => {
         setSelectedArticleForEdit(article);
         resolve();
       }),
-      new Promise<void>(resolve => {
+      new Promise<void>((resolve) => {
         setIsPreviewMode(false);
         resolve();
-      })
+      }),
     ]);
 
     const articleData = {
@@ -644,18 +640,18 @@ const AdminArticleCreation = () => {
     };
 
     await Promise.all([
-      new Promise<void>(resolve => {
+      new Promise<void>((resolve) => {
         setGeneratedData(articleData);
         resolve();
       }),
-      new Promise<void>(resolve => {
+      new Promise<void>((resolve) => {
         setOriginalContent(articleData);
         resolve();
-      })
+      }),
     ]);
 
     // รอให้ state ทั้งหมดถูก update เสร็จก่อนเปลี่ยน tab
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     setCurrentTab("preview");
   };
 
@@ -786,7 +782,7 @@ const AdminArticleCreation = () => {
         const articleId = selectedArticleForEdit.id;
         setPendingApprovalId(articleId);
         // รอให้ state update เสร็จก่อนเรียก confirmApproval
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
         await confirmApproval();
       }
     }
@@ -827,7 +823,7 @@ const AdminArticleCreation = () => {
 
       // Set pendingApprovalId before approval
       setPendingApprovalId(selectedArticleForEdit.id);
-      
+
       // Then approve the article using the same logic as confirmApproval
       const approveResponse = await fetch(
         "/api/v1/articles/generate/custom-generate/user-generated",
