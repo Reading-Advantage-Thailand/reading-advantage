@@ -491,6 +491,9 @@ export default {
       preview: "预览",
       edit: "编辑",
       approveText: "批准",
+      approved: "已批准",
+      draft: "草稿",
+      published: "已发布",
     },
   },
   components: {

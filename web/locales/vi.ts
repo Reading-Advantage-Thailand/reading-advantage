@@ -521,6 +521,9 @@ export default {
       preview: "Xem trước",
       edit: "Chỉnh sửa",
       approveText: "Phê duyệt",
+      approved: "Đã phê duyệt",
+      draft: "Bản nháp",
+      published: "Đã xuất bản",
     },
   },
   components: {

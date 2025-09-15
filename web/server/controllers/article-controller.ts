@@ -96,7 +96,9 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     }
 
     // Build Prisma query conditions
-    const whereConditions: any = {};
+    const whereConditions: any = {
+      isPublic: true,
+    };
 
     // Add type/genre/subgenre filters if specified
     if (type) {
@@ -254,7 +256,9 @@ export async function getArticles(req: ExtendedNextRequest) {
     const validDate = date === "asc" || date === "desc" ? date : "desc";
 
     // Build where conditions
-    const whereConditions: any = {};
+    const whereConditions: any = {
+      isPublic: true,
+    };
 
     if (type) {
       whereConditions.type = type;
@@ -525,8 +529,9 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
       searchTermParam,
     } = validatedParams;
 
-    // Build where conditions
-    const whereConditions: any = {};
+    const whereConditions: any = {
+      isPublic: true, // Only select articles that are public
+    };
 
     if (typeParam) {
       whereConditions.type = typeParam;

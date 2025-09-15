@@ -64,12 +64,55 @@ interface StatusConfig {
 
 interface StatusConfigMap {
   draft: StatusConfig;
-  pending: StatusConfig;
   approved: StatusConfig;
-  rejected: StatusConfig;
+  published: StatusConfig;
 }
 
 type ArticleStatus = keyof StatusConfigMap;
+
+interface Timepoint {
+  file: string;
+  index: number;
+  markName: string;
+  sentences: string;
+  timeSeconds: number;
+}
+
+interface TranslatedContent {
+  cn: string[];
+  en: string[];
+  th: string[];
+  tw: string[];
+  vi: string[];
+}
+
+interface TranslatedSummary {
+  cn: string;
+  en: string;
+  th: string;
+  tw: string;
+  vi: string;
+}
+
+interface ArticleResponse {
+  id: string;
+  type: string;
+  genre: string;
+  subgenre?: string;
+  title: string;
+  summary: string;
+  passage: string;
+  image_description: string;
+  cefr_level: string;
+  ra_level: number;
+  average_rating: number;
+  audio_url: string;
+  created_at: string;
+  timepoints: Timepoint[];
+  translatedPassage: TranslatedContent;
+  translatedSummary: TranslatedSummary;
+  read_count: number;
+}
 
 interface UserArticle {
   id: string;
@@ -86,6 +129,14 @@ interface UserArticle {
   summary: string;
   imageDesc: string;
   topic: string;
+  ra_level?: number;
+  average_rating?: number;
+  audio_url?: string;
+  timepoints?: Timepoint[];
+  translatedPassage?: TranslatedContent;
+  translatedSummary?: TranslatedSummary;
+  read_count?: number;
+  image_description?: string;
 }
 
 const AdminArticleCreation = () => {
@@ -146,6 +197,13 @@ const AdminArticleCreation = () => {
   const [showApprovePublishDialog, setShowApprovePublishDialog] =
     useState(false);
   const [hasContentChanged, setHasContentChanged] = useState(false);
+  // เพิ่ม state สำหรับการจัดการข้อมูลเพิ่มเติม
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("en");
+  const [showTimepoints, setShowTimepoints] = useState(false);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+  // เพิ่ม state สำหรับเก็บข้อมูล response ที่สมบูรณ์
+  const [fullArticleData, setFullArticleData] =
+    useState<ArticleResponse | null>(null);
   const t = useScopedI18n("pages.admin");
 
   const loadingMessages = {
@@ -492,15 +550,22 @@ const AdminArticleCreation = () => {
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      // ปรับให้รองรับ response structure ใหม่ แต่ใช้เฉพาะฟิลด์ที่จำเป็นสำหรับ preview
+      const articleData = data.article || data; // รองรับทั้ง { article: {...} } และ {...}
+
+      // เก็บข้อมูลครบถ้วนไว้ใน fullArticleData
+      setFullArticleData(articleData);
+
       const newGeneratedData = {
-        title: data.title,
-        passage: data.passage,
-        summary: data.summary,
-        imageDesc: data.imageDesc,
+        title: articleData.title,
+        passage: articleData.passage,
+        summary: articleData.summary,
+        imageDesc: articleData.image_description || articleData.imageDesc || "",
       };
 
       setGeneratedData(newGeneratedData);
       setOriginalContent(newGeneratedData);
+      setIsPreviewMode(false); // Set to edit mode
       setCurrentTab("preview");
 
       toast({
@@ -529,7 +594,7 @@ const AdminArticleCreation = () => {
       title: article.title,
       passage: article.passage,
       summary: article.summary,
-      imageDesc: article.imageDesc,
+      imageDesc: article.imageDesc || article.image_description || "",
     };
     setGeneratedData(articleData);
     // เซ็ต original content
@@ -544,7 +609,7 @@ const AdminArticleCreation = () => {
       title: article.title,
       passage: article.passage,
       summary: article.summary,
-      imageDesc: article.imageDesc,
+      imageDesc: article.imageDesc || article.image_description || "",
     };
     setGeneratedData(articleData);
     // เซ็ต original content
@@ -553,7 +618,21 @@ const AdminArticleCreation = () => {
   };
 
   const handleSaveArticle = async () => {
-    if (!selectedArticleForEdit || !generatedData) return;
+    // หากไม่มีการแก้ไข ให้ redirect ไปยังหน้า manage เลย
+    if (!hasContentChanged) {
+      setCurrentTab("manage");
+      return;
+    }
+
+    // หากมีการแก้ไข ให้เรียกใช้ API เพื่อบันทึก
+    if (!selectedArticleForEdit || !generatedData) {
+      toast({
+        title: "Error",
+        description: "No article selected or no data to save",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       setLoadingType("save");
@@ -582,26 +661,33 @@ const AdminArticleCreation = () => {
 
       // Complete the progress
       setLoadingProgress(100);
-      setCurrentMessage("💾 Article saved successfully!");
+      setCurrentMessage("✅ Article saved successfully!");
 
       // Small delay to show completion
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         title: "Success",
-        description: "Article saved as draft successfully!",
+        description: "Article saved successfully!",
       });
 
       // Refresh the articles list
       await fetchUserArticles();
 
-      // Update local state และ original content
-      setSelectedArticleForEdit((prev) =>
-        prev
-          ? { ...prev, ...generatedData, updatedAt: new Date().toISOString() }
-          : null
+      // Update local state
+      setUserArticles((prev) =>
+        prev.map((article) =>
+          article.id === selectedArticleForEdit.id
+            ? { ...article, ...generatedData }
+            : article
+        )
       );
+
+      // อัปเดต original content ให้เป็นข้อมูลใหม่ที่บันทึกแล้ว
       setOriginalContent(generatedData);
+
+      // Navigate to manage tab
+      setCurrentTab("manage");
     } catch (error) {
       console.error("Error saving article:", error);
       toast({
@@ -623,18 +709,17 @@ const AdminArticleCreation = () => {
   const getStatusBadge = (status: ArticleStatus) => {
     const statusConfig: StatusConfigMap = {
       draft: { color: "bg-gray-100 text-gray-800", icon: Edit3 },
-      pending: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
-      approved: { color: "bg-green-100 text-green-800", icon: CheckCircle2 },
-      rejected: { color: "bg-red-100 text-red-800", icon: AlertCircle },
+      approved: { color: "bg-blue-100 text-blue-800", icon: CheckCircle2 },
+      published: { color: "bg-green-100 text-green-800", icon: CheckCircle2 },
     };
 
-    const config = statusConfig[status];
+    const config = statusConfig[status] || statusConfig.draft;
     const Icon = config.icon;
 
     return (
       <Badge className={`${config.color} flex items-center gap-1`}>
         <Icon className="h-3 w-3" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {t(status) || status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
   };
@@ -764,7 +849,7 @@ const AdminArticleCreation = () => {
     : [];
 
   const isArticlePublished = (status: string) => {
-    return status === "approved" || status === "published";
+    return status === "published" || status === "approved";
   };
 
   return (
@@ -879,8 +964,8 @@ const AdminArticleCreation = () => {
                     loadingType === "generate"
                       ? "text-blue-500"
                       : loadingType === "save"
-                      ? "text-green-500"
-                      : "text-purple-500"
+                        ? "text-green-500"
+                        : "text-purple-500"
                   }`}
                 />
                 <div
@@ -888,8 +973,8 @@ const AdminArticleCreation = () => {
                     loadingType === "generate"
                       ? "bg-blue-100"
                       : loadingType === "save"
-                      ? "bg-green-100"
-                      : "bg-purple-100"
+                        ? "bg-green-100"
+                        : "bg-purple-100"
                   }`}
                 ></div>
               </div>
@@ -904,8 +989,8 @@ const AdminArticleCreation = () => {
                     loadingType === "generate"
                       ? "text-blue-600"
                       : loadingType === "save"
-                      ? "text-green-600"
-                      : "text-purple-600"
+                        ? "text-green-600"
+                        : "text-purple-600"
                   }`}
                 >
                   {Math.round(loadingProgress)}%
@@ -928,8 +1013,8 @@ const AdminArticleCreation = () => {
                   loadingType === "generate"
                     ? "bg-blue-400"
                     : loadingType === "save"
-                    ? "bg-green-400"
-                    : "bg-purple-400"
+                      ? "bg-green-400"
+                      : "bg-purple-400"
                 }`}
               ></div>
               <div
@@ -937,8 +1022,8 @@ const AdminArticleCreation = () => {
                   loadingType === "generate"
                     ? "bg-blue-400"
                     : loadingType === "save"
-                    ? "bg-green-400"
-                    : "bg-purple-400"
+                      ? "bg-green-400"
+                      : "bg-purple-400"
                 }`}
                 style={{ animationDelay: "0.1s" }}
               ></div>
@@ -947,8 +1032,8 @@ const AdminArticleCreation = () => {
                   loadingType === "generate"
                     ? "bg-blue-400"
                     : loadingType === "save"
-                    ? "bg-green-400"
-                    : "bg-purple-400"
+                      ? "bg-green-400"
+                      : "bg-purple-400"
                 }`}
                 style={{ animationDelay: "0.2s" }}
               ></div>
@@ -1376,7 +1461,7 @@ const AdminArticleCreation = () => {
                           ) : (
                             <Save className="h-4 w-4 mr-2" />
                           )}
-                          {t("saveAsDraft")}
+                          {hasContentChanged ? "Save Edit" : t("saveAsDraft")}
                         </Button>
                       </>
                     )}

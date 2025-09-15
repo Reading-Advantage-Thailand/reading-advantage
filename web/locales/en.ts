@@ -538,6 +538,9 @@ export default {
       preview: "Preview",
       edit: "Edit",
       approveText: "Approve",
+      approved: "Approved",
+      draft: "Draft",
+      published: "Published",
     },
   },
 

@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import db from "@/configs/firestore-config";
 import { NextResponse, NextRequest } from "next/server";
 import { ExtendedNextRequest } from "./auth-controller";
@@ -17,7 +18,14 @@ import { generateAudio } from "../utils/generators/audio-generator";
 import { generateImage } from "../utils/generators/image-generator";
 import { calculateLevel } from "@/lib/calculateLevel";
 import { generateWordList } from "../utils/generators/word-list-generator";
-import { generateAudioForWord } from "../utils/generators/audio-words-generator";
+import {
+  generateAudioForWord,
+  WordWithTimePoint,
+} from "../utils/generators/audio-words-generator";
+import {
+  generateTranslatedSummary,
+  generateTranslatedPassage,
+} from "../utils/generators/translation-generator";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -604,7 +612,7 @@ async function evaluateArticle(
 }
 
 export async function generateUserArticle(req: NextRequest) {
-  let articleRef: any = null;
+  let articleId: string = "";
   let userId: string = "";
 
   try {
@@ -620,25 +628,28 @@ export async function generateUserArticle(req: NextRequest) {
     userId = session.user.id;
     //console.log(`User ID: ${userId}`);
 
-    // Get user data to fetch license_id
-    const userDoc = await db.collection("users").doc(userId).get();
-    if (!userDoc.exists) {
+    // Get user data from Prisma to fetch license_id
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        licenseOnUsers: {
+          include: {
+            license: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userData = userDoc.data();
     let author = "Unknown Author";
 
-    // Fetch school name from licenses collection if user has license_id
-    if (userData?.license_id) {
-      const licenseDoc = await db
-        .collection("licenses")
-        .doc(userData.license_id)
-        .get();
-      if (licenseDoc.exists) {
-        const licenseData = licenseDoc.data();
-        author = licenseData?.school_name || "Unknown School";
-      }
+    // Get school name from the latest active license
+    const latestLicense = user.licenseOnUsers[0]; // Get the first license
+    if (latestLicense?.license) {
+      author = latestLicense.license.schoolName || "Unknown School";
     }
 
     // Parse request body
@@ -709,41 +720,29 @@ export async function generateUserArticle(req: NextRequest) {
     //  `Calculated CEFR level: ${calculatedCefrLevel}, RA level: ${raLevel}`
     //);
 
-    // Create article document
-    articleRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles")
-      .doc();
+    // Create article using Prisma
+    const article = await prisma.article.create({
+      data: {
+        type: articleType,
+        genre,
+        subGenre: subgenre || "",
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        passage: generatedArticle.passage,
+        imageDescription: generatedArticle.imageDesc,
+        cefrLevel: calculatedCefrLevel,
+        raLevel,
+        rating: evaluatedRating.rating,
+        authorId: userId,
+        isPublic: false, // Set as private by default for user-generated articles
+      },
+    });
 
-    const articleData = {
-      id: articleRef.id,
-      title: generatedArticle.title,
-      passage: generatedArticle.passage,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-      type: articleType,
-      genre,
-      subgenre: subgenre || "",
-      topic,
-      cefr_level: calculatedCefrLevel,
-      raLevel,
-      wordCount: generatedArticle.passage.split(" ").length,
-      targetWordCount: wordCount,
-      rating: evaluatedRating.rating,
-      status: "draft",
-      author, // Add author field
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    articleId = article.id;
 
-    //console.log(`Saving article to Firestore with ID: ${articleRef.id}`);
-    //console.log(`Word count: ${articleData.wordCount}, Target: ${wordCount}`);
+    //console.log(`Saving article to database with ID: ${articleId}`);
+    //console.log(`Word count: ${generatedArticle.passage.split(" ").length}, Target: ${wordCount}`);
     //console.log(`Author: ${author}`);
-
-    // Save to Firestore
-    await articleRef.set(articleData);
-    //console.log("Article saved successfully to Firestore");
 
     // Generate additional content
     //console.log("Generating additional content...");
@@ -752,7 +751,7 @@ export async function generateUserArticle(req: NextRequest) {
     //console.log("Generating image...");
     await generateImage({
       imageDesc: generatedArticle.imageDesc,
-      articleId: articleRef.id,
+      articleId: articleId,
     });
     //console.log("Image generated successfully");
 
@@ -786,6 +785,88 @@ export async function generateUserArticle(req: NextRequest) {
     ]);
     //console.log("Questions generated successfully");
 
+    // Save questions to database using Prisma
+    //console.log("Saving questions...");
+
+    // Transform and validate questions before saving
+    const transformedMCQuestions = mcq.questions
+      .map((q: any) => {
+        // Create options array with correct answer and distractors
+        const options = [
+          q.correct_answer,
+          q.distractor_1,
+          q.distractor_2,
+          q.distractor_3,
+        ].filter(Boolean); // Remove any undefined values
+
+        if (options.length !== 4) return null; // Must have exactly 4 options
+
+        // Shuffle the options
+        const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+
+        return {
+          question: q.question,
+          options: shuffledOptions,
+          answer: q.correct_answer, // Keep the correct answer as text
+          textualEvidence: q.textual_evidence || "",
+          articleId: articleId,
+        };
+      })
+      .filter(
+        (q): q is NonNullable<typeof q> =>
+          q !== null &&
+          q.question &&
+          q.options &&
+          q.options.length === 4 &&
+          q.answer
+      );
+
+    const transformedSAQuestions = saq.questions
+      .map((q: any) => ({
+        question: q.question,
+        answer: q.suggested_answer || q.answer, // Handle both formats
+        articleId: articleId,
+      }))
+      .filter((q: any) => q.question && q.answer);
+
+    const questionPromises = [];
+
+    // Save multiple choice questions if valid
+    if (transformedMCQuestions.length > 0) {
+      questionPromises.push(
+        prisma.multipleChoiceQuestion.createMany({
+          data: transformedMCQuestions,
+        })
+      );
+    }
+
+    // Save short answer questions if valid
+    if (transformedSAQuestions.length > 0) {
+      questionPromises.push(
+        prisma.shortAnswerQuestion.createMany({
+          data: transformedSAQuestions,
+        })
+      );
+    }
+
+    // Save long answer question if valid
+    if (laq.question) {
+      questionPromises.push(
+        prisma.longAnswerQuestion.create({
+          data: {
+            question: laq.question,
+            articleId: articleId,
+          },
+        })
+      );
+    }
+
+    // Execute all question saves
+    if (questionPromises.length > 0) {
+      await Promise.all(questionPromises);
+    }
+    //console.log("Questions saved successfully");
+
     // Generate Word List
     //console.log("Generating word list...");
     const wordList = await generateWordList({
@@ -793,64 +874,87 @@ export async function generateUserArticle(req: NextRequest) {
     });
     //console.log("Word list generated successfully");
 
-    // Save questions and word list to user's article subcollections
-    //console.log("Saving questions and word list...");
-    await Promise.all([
-      addUserQuestionsToCollection(
-        userId,
-        articleRef.id,
-        "mc-questions",
-        mcq.questions
-      ),
-      addUserQuestionsToCollection(
-        userId,
-        articleRef.id,
-        "sa-questions",
-        saq.questions
-      ),
-      addUserQuestionsToCollection(userId, articleRef.id, "la-questions", [
-        laq,
-      ]),
-      addUserWordList(
-        userId,
-        articleRef.id,
-        wordList.word_list,
-        articleData.createdAt
-      ),
-    ]);
-    //console.log("Questions and word list saved successfully");
-
-    // Generate Audio
-    //console.log("Generating audio...");
-    await Promise.all([
-      generateAudio({
+    // Generate translations
+    //console.log("Generating translations...");
+    const [translatedSummary, translatedPassage] = await Promise.all([
+      generateTranslatedSummary({
+        summary: generatedArticle.summary,
+      }),
+      generateTranslatedPassage({
         passage: generatedArticle.passage,
-        articleId: articleRef.id,
-        isUserGenerated: true,
-        userId: userId,
-      }),
-      generateAudioForWord({
-        wordList: wordList.word_list,
-        articleId: articleRef.id,
-        isUserGenerated: true,
-        userId: userId,
       }),
     ]);
+    //console.log("Translations generated successfully");
+
+    // Note: We don't update the article with word list here anymore
+    // because generateAudioForWord will save the complete words with timepoints
+
+    // Generate Audio and get timepoints
+    //console.log("Generating audio...");
+    await generateAudio({
+      passage: generatedArticle.passage,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
+
+    const wordsWithTimePoints = await generateAudioForWord({
+      wordList: wordList.word_list,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
     //console.log("Audio generated successfully");
+
+    // Update article with translations
+    await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        translatedSummary: translatedSummary,
+        translatedPassage: translatedPassage,
+      },
+    });
+
+    // Get the updated article with timepoints
+    const updatedArticle = await prisma.article.findUnique({
+      where: { id: articleId },
+      include: {
+        multipleChoiceQuestions: true,
+        shortAnswerQuestions: true,
+        longAnswerQuestions: true,
+      },
+    });
+
+    if (!updatedArticle) {
+      throw new Error("Article was created but not found in database");
+    }
 
     // Return the generated article
     //console.log("Returning generated article response");
     return NextResponse.json({
-      id: articleRef.id,
-      title: generatedArticle.title,
-      passage: generatedArticle.passage,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-      rating: evaluatedRating.rating,
-      cefrLevel: calculatedCefrLevel,
-      raLevel,
-      wordCount: articleData.wordCount,
-      author, // Include author in response
+      article: {
+        id: articleId,
+        type: articleType,
+        genre,
+        subgenre: subgenre || "",
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        passage: generatedArticle.passage,
+        image_description: generatedArticle.imageDesc,
+        cefr_level: calculatedCefrLevel,
+        ra_level: raLevel,
+        average_rating: evaluatedRating.rating,
+        audioUrl: `${articleId}.mp3`,
+        audioUrlWords: `${articleId}.mp3`,
+        created_at: updatedArticle.createdAt.toISOString(),
+        timepoints: updatedArticle.sentences || [],
+        translatedPassage: translatedPassage,
+        translatedSummary: translatedSummary,
+        read_count: 0,
+        isPublic: false,
+        author, // Include author in response
+        words: wordsWithTimePoints, // Include words with timepoints and definitions
+      },
     });
   } catch (error) {
     console.error("Error generating user article:", error);
@@ -860,9 +964,9 @@ export async function generateUserArticle(req: NextRequest) {
     );
 
     // Cleanup on error
-    if (articleRef && userId) {
+    if (articleId) {
       //console.log("Starting cleanup process...");
-      await cleanupFailedGeneration(userId, articleRef.id);
+      await cleanupFailedPrismaGeneration(articleId);
     }
 
     return NextResponse.json(
@@ -900,94 +1004,27 @@ export async function approveUserArticle(req: NextRequest) {
 
     //console.log(`Approving article: ${articleId}`);
 
-    // Get the user's generated article
-    const userArticleRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles")
-      .doc(articleId);
+    // Get the user's generated article using Prisma
+    const article = await prisma.article.findUnique({
+      where: {
+        id: articleId,
+        authorId: userId, // Ensure the article belongs to the requesting user
+      },
+    });
 
-    const userArticleDoc = await userArticleRef.get();
-    if (!userArticleDoc.exists) {
+    if (!article) {
       return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
 
-    const articleData = userArticleDoc.data();
-    if (!articleData) {
-      return NextResponse.json(
-        { error: "Article data is invalid" },
-        { status: 400 }
-      );
-    }
+    //console.log("Article found, starting approval process...", article);
 
-    //console.log("Article found, starting approval process...",articleData);
-
-    // 1. Copy article to new-articles collection (including author)
-    const newArticleRef = db.collection("new-articles").doc(articleId);
-    const newArticleData = {
-      id: articleId,
-      title: articleData.title,
-      passage: articleData.passage,
-      summary: articleData.summary,
-      image_description: articleData.imageDesc,
-      type: articleData.type,
-      genre: articleData.genre,
-      subgenre: articleData.subgenre,
-      topic: articleData.topic,
-      cefr_level: articleData.cefr_level,
-      ra_level: articleData.raLevel,
-      average_rating: articleData.rating,
-      read_count: 0,
-      author: articleData.author, // Include author field
-      created_at: articleData.createdAt,
-      updated_at: new Date().toISOString(),
-      ...(articleData.timepoints && { timepoints: articleData.timepoints }),
-    };
-
-    await newArticleRef.set(newArticleData);
-    //console.log("Article copied to new-articles collection");
-
-    // 2. Copy questions subcollections
-    const questionTypes = ["mc-questions", "sa-questions", "la-questions"];
-
-    for (const questionType of questionTypes) {
-      const userQuestionsRef = userArticleRef.collection(questionType);
-      const userQuestionsSnapshot = await userQuestionsRef.get();
-
-      if (!userQuestionsSnapshot.empty) {
-        const newQuestionsRef = newArticleRef.collection(questionType);
-        const batch = db.batch();
-
-        userQuestionsSnapshot.docs.forEach((doc) => {
-          const newQuestionRef = newQuestionsRef.doc(doc.id);
-          batch.set(newQuestionRef, doc.data());
-        });
-
-        await batch.commit();
-        //console.log(`Copied ${questionType} to new-articles`);
-      }
-    }
-
-    // 3. Move word list to main word-list collection
-    const userWordListRef = userArticleRef
-      .collection("word-list")
-      .doc(articleId);
-    const userWordListDoc = await userWordListRef.get();
-
-    if (userWordListDoc.exists) {
-      const wordListData = userWordListDoc.data();
-      if (wordListData) {
-        const mainWordListRef = db.collection("word-list").doc(articleId);
-        await mainWordListRef.set(wordListData);
-        //console.log("Word list moved to main collection");
-      }
-    }
-
-    // 4. Update user's article status to approved
-    await userArticleRef.update({
-      status: "approved",
-      approvedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    // Update article to make it public (approved)
+    const updatedArticle = await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        isPublic: true,
+        updatedAt: new Date(),
+      },
     });
 
     //console.log("Article approval process completed successfully");
@@ -995,6 +1032,7 @@ export async function approveUserArticle(req: NextRequest) {
     return NextResponse.json({
       message: "Article approved successfully",
       articleId: articleId,
+      isPublic: updatedArticle.isPublic,
     });
   } catch (error) {
     console.error("Error approving article:", error);
@@ -1023,20 +1061,47 @@ export async function getUserGeneratedArticles(req: NextRequest) {
 
     const userId = session.user.id;
 
-    // Get user's generated articles
-    const articlesRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles");
+    // Get user's generated articles using Prisma
+    const articles = await prisma.article.findMany({
+      where: {
+        authorId: userId,
+      },
+      include: {
+        multipleChoiceQuestions: true,
+        shortAnswerQuestions: true,
+        longAnswerQuestions: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-    const snapshot = await articlesRef.orderBy("createdAt", "desc").get();
-
-    const articles = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+    // Transform the data to match the expected format
+    const transformedArticles = articles.map((article) => ({
+      id: article.id,
+      type: article.type,
+      genre: article.genre,
+      subgenre: article.subGenre,
+      title: article.title,
+      summary: article.summary,
+      passage: article.passage,
+      imageDesc: article.imageDescription,
+      cefr_level: article.cefrLevel,
+      raLevel: article.raLevel,
+      rating: article.rating,
+      createdAt: article.createdAt.toISOString(),
+      updatedAt: article.updatedAt.toISOString(),
+      translatedSummary: article.translatedSummary,
+      translatedPassage: article.translatedPassage,
+      sentences: article.sentences,
+      words: article.words,
+      status: article.isPublic ? "approved" : "draft", // Map isPublic to status
+      multipleChoiceQuestions: article.multipleChoiceQuestions,
+      shortAnswerQuestions: article.shortAnswerQuestions,
+      longAnswerQuestions: article.longAnswerQuestions,
     }));
 
-    return NextResponse.json({ articles });
+    return NextResponse.json({ articles: transformedArticles });
   } catch (error) {
     console.error("Error fetching user articles:", error);
     return NextResponse.json(
@@ -1080,40 +1145,19 @@ export async function updateUserArticle(
       );
     }
 
-    // Get the existing article
-    const articleRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles")
-      .doc(articleId);
+    // Get the existing article using Prisma
+    const existingArticle = await prisma.article.findUnique({
+      where: {
+        id: articleId,
+        authorId: userId, // Ensure the article belongs to the requesting user
+      },
+    });
 
-    const articleDoc = await articleRef.get();
-    if (!articleDoc.exists) {
+    if (!existingArticle) {
       return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
 
-    const existingData = articleDoc.data();
-    if (!existingData) {
-      return NextResponse.json(
-        { error: "Article data is invalid" },
-        { status: 400 }
-      );
-    }
-
-    //console.log(
-    //  "Existing article found, starting update process...",
-    //  existingData
-    //);
-
-    // 1. Clean up existing audio files only (not images)
-    //console.log("Cleaning up existing audio files...");
-    await cleanupAudioFiles(articleId, userId);
-
-    // 2. Recalculate levels based on new passage
-    //console.log("Recalculating levels...");
-    const normalizedCefrLevel = (
-      existingData.cefr_level || existingData.cefrLevel
-    )
+    const normalizedCefrLevel = existingArticle.cefrLevel
       ?.replace("+", "")
       ?.toLowerCase();
 
@@ -1124,7 +1168,7 @@ export async function updateUserArticle(
       );
     }
     //console.log(
-    //  `Normalized CEFR level: ${normalizedCefrLevel} (from ${existingData.cefrLevel})`
+    //  `Normalized CEFR level: ${normalizedCefrLevel} (from ${existingArticle.cefrLevel})`
     //);
 
     const { raLevel, cefrLevel: calculatedCefrLevel } = calculateLevel(
@@ -1132,47 +1176,40 @@ export async function updateUserArticle(
       normalizedCefrLevel
     );
 
-    // 3. Update article data (preserve author field and existing rating)
-    const updatedData = {
-      title,
-      passage,
-      summary,
-      imageDesc,
-      cefr_level: calculatedCefrLevel,
-      raLevel,
-      wordCount: passage.split(" ").length,
-      rating: existingData.rating,
-      author: existingData.author,
-      updatedAt: new Date().toISOString(),
-    };
+    // 3. Update article data using Prisma
+    await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        title,
+        passage,
+        summary,
+        imageDescription: imageDesc,
+        cefrLevel: calculatedCefrLevel,
+        raLevel,
+        updatedAt: new Date(),
+      },
+    });
+    //console.log("Article data updated in database");
 
-    await articleRef.update(updatedData);
-    //console.log("Article data updated in Firestore");
-
-    // 4. Regenerate questions and word list only
-    //console.log("Regenerating questions and word list...");
-
-    // Delete existing subcollections (except images)
-    const subcollections = [
-      "mc-questions",
-      "sa-questions",
-      "la-questions",
-      "word-list",
-    ];
-    for (const subcollectionName of subcollections) {
-      const subcollectionRef = articleRef.collection(subcollectionName);
-      const snapshot = await subcollectionRef.get();
-
-      const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
-      await Promise.all(deletePromises);
-      //console.log(`Deleted existing ${subcollectionName}`);
-    }
+    // 4. Delete existing questions using Prisma
+    //console.log("Deleting existing questions...");
+    await Promise.all([
+      prisma.multipleChoiceQuestion.deleteMany({
+        where: { articleId },
+      }),
+      prisma.shortAnswerQuestion.deleteMany({
+        where: { articleId },
+      }),
+      prisma.longAnswerQuestion.deleteMany({
+        where: { articleId },
+      }),
+    ]);
 
     // Generate new questions
     //console.log("Generating new questions...");
     const [mcq, saq, laq] = await Promise.all([
       generateMCQuestion({
-        type: existingData.type,
+        type: existingArticle.type as ArticleType,
         cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
         passage: passage,
         title: title,
@@ -1180,7 +1217,7 @@ export async function updateUserArticle(
         imageDesc: imageDesc,
       }),
       generateSAQuestion({
-        type: existingData.type,
+        type: existingArticle.type as ArticleType,
         cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
         passage: passage,
         title: title,
@@ -1188,7 +1225,7 @@ export async function updateUserArticle(
         imageDesc: imageDesc,
       }),
       generateLAQuestion({
-        type: existingData.type,
+        type: existingArticle.type as ArticleType,
         cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
         passage: passage,
         title: title,
@@ -1197,59 +1234,160 @@ export async function updateUserArticle(
       }),
     ]);
 
+    // Transform and validate questions before saving (same as generateUserArticle)
+    const transformedMCQuestions = mcq.questions
+      .map((q: any) => {
+        // Create options array with correct answer and distractors
+        const options = [
+          q.correct_answer,
+          q.distractor_1,
+          q.distractor_2,
+          q.distractor_3,
+        ].filter(Boolean); // Remove any undefined values
+
+        if (options.length !== 4) return null; // Must have exactly 4 options
+
+        // Shuffle the options
+        const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+
+        return {
+          question: q.question,
+          options: shuffledOptions,
+          answer: q.correct_answer, // Keep the correct answer as text
+          textualEvidence: q.textual_evidence || "",
+          articleId: articleId,
+        };
+      })
+      .filter(
+        (q): q is NonNullable<typeof q> =>
+          q !== null &&
+          q.question &&
+          q.options &&
+          q.options.length === 4 &&
+          q.answer
+      );
+
+    const transformedSAQuestions = saq.questions
+      .map((q: any) => ({
+        question: q.question,
+        answer: q.suggested_answer || q.answer, // Handle both formats
+        articleId: articleId,
+      }))
+      .filter((q: any) => q.question && q.answer);
+
+    const questionPromises = [];
+
+    // Save multiple choice questions if valid
+    if (transformedMCQuestions.length > 0) {
+      questionPromises.push(
+        prisma.multipleChoiceQuestion.createMany({
+          data: transformedMCQuestions,
+        })
+      );
+    }
+
+    // Save short answer questions if valid
+    if (transformedSAQuestions.length > 0) {
+      questionPromises.push(
+        prisma.shortAnswerQuestion.createMany({
+          data: transformedSAQuestions,
+        })
+      );
+    }
+
+    // Save long answer question if valid
+    if (laq.question) {
+      questionPromises.push(
+        prisma.longAnswerQuestion.create({
+          data: {
+            question: laq.question,
+            articleId: articleId,
+          },
+        })
+      );
+    }
+
+    // Execute all question saves
+    if (questionPromises.length > 0) {
+      await Promise.all(questionPromises);
+    }
+    //console.log("Questions saved successfully");
+
     // Generate new word list
     //console.log("Generating new word list...");
     const wordList = await generateWordList({
       passage: passage,
     });
 
-    // Save new questions and word list
-    //console.log("Saving new questions and word list...");
-    await Promise.all([
-      addUserQuestionsToCollection(
-        userId,
-        articleId,
-        "mc-questions",
-        mcq.questions
-      ),
-      addUserQuestionsToCollection(
-        userId,
-        articleId,
-        "sa-questions",
-        saq.questions
-      ),
-      addUserQuestionsToCollection(userId, articleId, "la-questions", [laq]),
-      addUserWordList(
-        userId,
-        articleId,
-        wordList.word_list,
-        updatedData.updatedAt
-      ),
+    // Generate translations
+    //console.log("Generating translations...");
+    const [translatedSummary, translatedPassage] = await Promise.all([
+      generateTranslatedSummary({
+        summary: summary,
+      }),
+      generateTranslatedPassage({
+        passage: passage,
+      }),
     ]);
+    //console.log("Translations generated successfully");
+
+    // Delete old audio files before generating new ones
+    //console.log("Deleting old audio files...");
+    await cleanupAudioFiles(articleId, userId);
 
     // Generate new audio only (not images)
     //console.log("Generating new audio...");
-    await Promise.all([
-      generateAudio({
-        passage: passage,
-        articleId: articleId,
-        isUserGenerated: true,
-        userId: userId,
-      }),
-      generateAudioForWord({
-        wordList: wordList.word_list,
-        articleId: articleId,
-        isUserGenerated: true,
-        userId: userId,
-      }),
-    ]);
+    await generateAudio({
+      passage: passage,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
+
+    // Generate word audio separately since it returns data
+    const wordsWithTimePoints = await generateAudioForWord({
+      wordList: wordList.word_list,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
+
+    // Update article with translations and word data
+    const updatedArticle = await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        translatedSummary: translatedSummary,
+        translatedPassage: translatedPassage,
+      },
+    });
 
     //console.log("Article update completed successfully");
 
     return NextResponse.json({
       message: "Article updated successfully",
-      articleId: articleId,
-      ...updatedData,
+      article: {
+        id: articleId,
+        type: existingArticle.type,
+        genre: existingArticle.genre,
+        subgenre: existingArticle.subGenre,
+        title: title,
+        summary: summary,
+        passage: passage,
+        image_description: imageDesc,
+        cefr_level: calculatedCefrLevel,
+        ra_level: raLevel,
+        average_rating: existingArticle.rating,
+        audioUrl: `${articleId}.mp3`,
+        audioUrlWords: `${articleId}.mp3`,
+        created_at: existingArticle.createdAt.toISOString(),
+        updated_at: updatedArticle.updatedAt.toISOString(),
+        timepoints: updatedArticle.sentences || [],
+        translatedPassage: translatedPassage,
+        translatedSummary: translatedSummary,
+        read_count: 0,
+        isPublic: existingArticle.isPublic,
+        words: wordsWithTimePoints,
+      },
     });
   } catch (error) {
     console.error("Error updating article:", error);
@@ -1277,54 +1415,27 @@ async function cleanupAudioFiles(articleId: string, userId?: string) {
       "artifacts.reading-advantage.appspot.com"
     );
 
-    // Audio file paths only (not images)
-    const basePaths = [
-      // Regular audio paths
-      `tts/${articleId}`,
-      // User-generated audio paths (if userId provided)
-      ...(userId
-        ? [
-            `users/${userId}/tts/${articleId}`,
-          ]
-        : []),
+    // Audio file paths for articles
+    const audioFiles = [
+      `tts/${articleId}.mp3`,
+      `audios-words/${articleId}.mp3`,
     ];
 
-    const audioExtensions = [".mp3"];
-
-    for (const basePath of basePaths) {
-      for (const ext of audioExtensions) {
-        try {
-          const filePath = basePath + ext;
-          const file = bucket.file(filePath);
-          const [exists] = await file.exists();
-          if (exists) {
-            await file.delete();
-            //console.log(`Deleted audio file: ${filePath}`);
-          }
-        } catch (fileError) {
-          // File might not exist, continue
-          //console.log(`Could not delete audio file: ${basePath}${ext}`);
-        }
-      }
-
-      // Also try to delete audio directories
+    for (const filePath of audioFiles) {
       try {
-        const [files] = await bucket.getFiles({ prefix: `${basePath}/` });
-        if (files.length > 0) {
-          // Filter to only delete audio files
-          const audioFiles = files.filter(file => file.name.endsWith('.mp3'));
-          if (audioFiles.length > 0) {
-            const deletePromises = audioFiles.map((file) => file.delete());
-            await Promise.all(deletePromises);
-            //console.log(
-            //  `Deleted ${audioFiles.length} audio files in directory: ${basePath}/`
-            //);
-          }
+        const file = bucket.file(filePath);
+        const [exists] = await file.exists();
+        if (exists) {
+          await file.delete();
+          //console.log(`Deleted audio file: ${filePath}`);
         }
-      } catch (dirError) {
-        //console.log(`Could not delete audio directory: ${basePath}/`);
+      } catch (fileError) {
+        // File might not exist, continue
+        //console.log(`Could not delete audio file: ${filePath}`);
       }
     }
+
+    //console.log("Audio files cleanup completed");
   } catch (storageError) {
     console.error("Error cleaning up audio files:", storageError);
   }
@@ -1390,40 +1501,34 @@ async function cleanupStorageFiles(articleId: string, userId?: string) {
   }
 }
 
-async function cleanupFailedGeneration(userId: string, articleId: string) {
+async function cleanupFailedPrismaGeneration(articleId: string) {
   try {
     //console.log(`Cleaning up failed generation for article: ${articleId}`);
 
-    // 1. Delete article document and all subcollections from Firestore
-    const articleRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles")
-      .doc(articleId);
+    // Delete article and all related records from database using Prisma
+    await prisma.$transaction(async (tx) => {
+      // Delete questions first (due to foreign key constraints)
+      await tx.multipleChoiceQuestion.deleteMany({
+        where: { articleId },
+      });
 
-    // Delete subcollections
-    const subcollections = [
-      "mc-questions",
-      "sa-questions",
-      "la-questions",
-      "word-list",
-    ];
+      await tx.shortAnswerQuestion.deleteMany({
+        where: { articleId },
+      });
 
-    for (const subcollectionName of subcollections) {
-      const subcollectionRef = articleRef.collection(subcollectionName);
-      const snapshot = await subcollectionRef.get();
+      await tx.longAnswerQuestion.deleteMany({
+        where: { articleId },
+      });
 
-      const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
-      await Promise.all(deletePromises);
+      // Delete the article itself
+      await tx.article.delete({
+        where: { id: articleId },
+      });
+    });
 
-      //console.log(`Deleted ${subcollectionName} subcollection`);
-    }
+    //console.log("Deleted article and questions from database");
 
-    // Delete the main article document
-    await articleRef.delete();
-    //console.log("Deleted article document");
-
-    // 2. Delete files from Cloud Storage bucket
+    // Delete files from Cloud Storage bucket
     await cleanupStorageFiles(articleId);
 
     //console.log("Cleanup completed successfully");
@@ -1431,43 +1536,4 @@ async function cleanupFailedGeneration(userId: string, articleId: string) {
     console.error("Error during cleanup:", cleanupError);
     // Log cleanup error but don't throw to avoid masking original error
   }
-}
-
-async function addUserQuestionsToCollection(
-  userId: string,
-  articleId: string,
-  collectionName: string,
-  questions: any[]
-) {
-  const collectionRef = db
-    .collection("users")
-    .doc(userId)
-    .collection("generated-articles")
-    .doc(articleId)
-    .collection(collectionName);
-
-  const promises = questions.map((question) => collectionRef.add(question));
-  await Promise.all(promises);
-}
-
-async function addUserWordList(
-  userId: string,
-  articleId: string,
-  wordList: any[],
-  createdAt: string
-) {
-  const wordListRef = db
-    .collection("users")
-    .doc(userId)
-    .collection("generated-articles")
-    .doc(articleId)
-    .collection("word-list")
-    .doc(articleId);
-
-  await wordListRef.set({
-    word_list: wordList,
-    articleId,
-    id: articleId,
-    created_at: createdAt,
-  });
 }

@@ -492,6 +492,9 @@ export default {
       preview: "預覽",
       edit: "編輯",
       approveText: "批准",
+      approved: "已批准",
+      draft: "草稿",
+      published: "已發佈",
     },
   },
   components: {

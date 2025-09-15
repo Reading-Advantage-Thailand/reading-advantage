@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Article } from "./models/article-model";
 import { cn, splitTextIntoSentences } from "@/lib/utils";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
@@ -104,7 +104,10 @@ export default function ArticleContent({
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const [speed, setSpeed] = useState<string>("1");
 
-  const sentenceList: Sentence[] =
+  // Create cache busting key - simpler approach
+  const cacheKey = useMemo(() => Date.now(), [article.id]);
+
+  const sentenceList: Sentence[] = useMemo(() =>
     Array.isArray(article.timepoints) && article.timepoints.length > 0
       ? article.timepoints.map((timepoint, index) => {
           const endTime =
@@ -112,14 +115,17 @@ export default function ArticleContent({
               ? article.timepoints![index + 1].timeSeconds - 0.3
               : timepoint.timeSeconds + 10;
 
+          // Generate the correct audio URL with cache busting
+          const audioUrl = timepoint.file
+            ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}?v=${cacheKey}`
+            : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`;
+
           return {
             sentence: timepoint.sentences,
             index: timepoint.index,
             startTime: timepoint.timeSeconds,
             endTime,
-            audioUrl: timepoint.file
-              ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}`
-              : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3`,
+            audioUrl,
           };
         })
       : sentences.map((sentence, index) => ({
@@ -127,8 +133,8 @@ export default function ArticleContent({
           index,
           startTime: index * 2,
           endTime: (index + 1) * 2,
-          audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3`,
-        }));
+          audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`,
+        })), [article.timepoints, article.id, sentences, cacheKey]);
 
   const handlePlayPause = async () => {
     if (audioRef.current) {
@@ -437,13 +443,13 @@ export default function ArticleContent({
   useEffect(() => {
     const audio = audioRef.current;
     setSelectedIndex(-1);
-    if (audio) {
+    if (audio && sentenceList[currentAudioIndex]) {
+      // Use the URL from sentenceList (already has cache busting)
       audio.src = sentenceList[currentAudioIndex].audioUrl;
-
       audio.load();
+      
       const handleLoadedMetadata = () => {
         audio.currentTime = sentenceList[currentAudioIndex].startTime;
-
         audio.playbackRate = Number(speed);
 
         if (isPlaying) {
@@ -461,6 +467,16 @@ export default function ArticleContent({
       };
     }
   }, [currentAudioIndex, speed]);
+
+  // Reset audio player when article changes
+  useEffect(() => {
+    setIsPlaying(false);
+    setCurrentAudioIndex(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.load();
+    }
+  }, [article.id]);
 
   return (
     <div>

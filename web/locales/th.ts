@@ -516,6 +516,9 @@ export default {
       preview: "ดูตัวอย่าง",
       edit: "แก้ไข",
       approveText: "อนุมัติ",
+      approved: "อนุมัติแล้ว",
+      draft: "ร่าง",
+      published: "เผยแพร่แล้ว",
     },
   },
   components: {

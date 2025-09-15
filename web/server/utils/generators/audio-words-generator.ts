@@ -7,6 +7,9 @@ import base64 from "base64-js";
 import fs from "fs";
 import uploadToBucket from "@/utils/uploadToBucket";
 import db from "@/configs/firestore-config";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export type WordListResponse = {
   vocabulary: string;
@@ -46,6 +49,19 @@ function contentToSSML(content: string[]): string {
   return ssml;
 }
 
+export type WordWithTimePoint = {
+  markName: string;
+  definition: {
+    cn: string;
+    en: string;
+    th: string;
+    tw: string;
+    vi: string;
+  };
+  vocabulary: string;
+  timeSeconds: number;
+};
+
 export async function generateAudioForWord({
   wordList,
   articleId,
@@ -54,7 +70,7 @@ export async function generateAudioForWord({
 }: GenerateAudioParams & {
   isUserGenerated?: boolean;
   userId?: string;
-}): Promise<void> {
+}): Promise<WordWithTimePoint[]> {
   try {
     const voice =
       AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
@@ -106,27 +122,36 @@ export async function generateAudioForWord({
 
     await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);
 
+    // Combine word list with time points
+    const wordsWithTimePoints: WordWithTimePoint[] = wordList.map((word, index) => {
+      const timePoint = allTimePoints.find(tp => tp.markName === `word${index + 1}`);
+      return {
+        markName: `word${index + 1}`,
+        definition: word.definition,
+        vocabulary: word.vocabulary,
+        timeSeconds: timePoint?.timeSeconds || 0,
+      };
+    });
+
     // Update based on article type
     if (isUserGenerated && userId) {
-      // For user-generated articles
-      await db
-        .collection("users")
-        .doc(userId)
-        .collection("generated-articles")
-        .doc(articleId)
-        .collection("word-list")
-        .doc(articleId)
-        .update({
-          timepoints: allTimePoints,
-          id: articleId,
-        });
+      // For user-generated articles - use Prisma
+      await prisma.article.update({
+        where: { id: articleId },
+        data: {
+          words: wordsWithTimePoints
+        }
+      });
     } else {
-      // For regular articles
+      // For regular articles - use Firestore
       await db.collection("word-list").doc(articleId).update({
         timepoints: allTimePoints,
+        word_list_with_timepoints: wordsWithTimePoints,
         id: articleId,
       });
     }
+
+    return wordsWithTimePoints;
   } catch (error: any) {
     console.error("Error in generateAudioForWord:", error);
     throw `failed to generate audio: ${error}`;

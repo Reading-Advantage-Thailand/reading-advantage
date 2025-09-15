@@ -229,18 +229,17 @@ export async function generateAudio({
 
     // Update the database with all timepoints
     if (isUserGenerated && userId) {
-      // For user-generated articles
-      await db
-        .collection("users")
-        .doc(userId)
-        .collection("generated-articles")
-        .doc(articleId)
-        .update({
-          timepoints: result,
-          id: articleId,
-        });
+      // For user-generated articles, update using Prisma
+      const { prisma } = await import("@/lib/prisma");
+      await prisma.article.update({
+        where: { id: articleId },
+        data: {
+          sentences: result,
+          audioUrl: `${articleId}.mp3`,
+        },
+      });
     } else {
-      // For regular articles
+      // For regular articles, still use Firestore for now
       await db.collection("new-articles").doc(articleId).update({
         timepoints: result,
         id: articleId,
