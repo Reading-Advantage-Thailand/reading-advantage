@@ -84,10 +84,10 @@ export function LicenseDataTable({
         <Input
           placeholder="Filter school name..."
           value={
-            (table.getColumn("school_name")?.getFilterValue() as string) ?? ""
+            (table.getColumn("schoolName")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("school_name")?.setFilterValue(event.target.value)
+            table.getColumn("schoolName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
