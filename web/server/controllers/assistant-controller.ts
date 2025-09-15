@@ -207,8 +207,6 @@ export async function getWordlist(req: ExtendedNextRequest) {
       articleId: articleId,
     });
 
-    console.log("result:", enhancedWordList);
-
     return NextResponse.json(enhancedWordList, { status: 200 });
   }
 }
@@ -222,60 +220,56 @@ export async function postFlashCard(
 
     if (json.page === "vocabulary") {
       // Exclude fields that are not updatable or should be handled as relations
-      const { 
-        id: jsonId, 
-        userId, 
-        articleId, 
-        user, 
-        article, 
-        createdAt, 
-        updatedAt, 
-        last_review,  // This field doesn't exist in schema, exclude it
+      const {
+        id: jsonId,
+        userId,
+        articleId,
+        user,
+        article,
+        createdAt,
+        updatedAt,
+        last_review, // This field doesn't exist in schema, exclude it
         elapsed_days,
         scheduled_days,
         page,
-        ...updateData 
+        ...updateData
       } = json;
-      
+
       // Map the field names correctly for Prisma
       const cleanUpdateData = {
         ...updateData,
         elapsedDays: json.elapsed_days,
         scheduledDays: json.scheduled_days,
       };
-      
-      console.log("Updating UserWordRecord with data:", cleanUpdateData);
-      
+
       await prisma.userWordRecord.update({
         where: { id },
         data: cleanUpdateData,
       });
     } else {
       // Exclude fields that are not updatable or should be handled as relations
-      const { 
-        id: jsonId, 
-        userId, 
-        articleId, 
-        user, 
-        article, 
-        createdAt, 
-        updatedAt, 
+      const {
+        id: jsonId,
+        userId,
+        articleId,
+        user,
+        article,
+        createdAt,
+        updatedAt,
         last_review,
         elapsed_days,
         scheduled_days,
         page,
-        ...updateData 
+        ...updateData
       } = json;
-      
+
       // Map the field names correctly for Prisma
       const cleanUpdateData = {
         ...updateData,
         elapsedDays: json.elapsed_days,
         scheduledDays: json.scheduled_days,
       };
-      
-      console.log("Updating UserSentenceRecord with data:", cleanUpdateData);
-      
+
       await prisma.userSentenceRecord.update({
         where: { id },
         data: cleanUpdateData,
@@ -354,13 +348,21 @@ export async function lessonChatBotQuestion(req: ExtendedNextRequest) {
     const validatedData = createLessonChatbotQuestionSchema.parse(param);
     //console.log("Validated Data:", validatedData);
 
-    const { messages, title, passage, summary, image_description, blacklistedQuestions, isInitial } =
-      validatedData;
+    const {
+      messages,
+      title,
+      passage,
+      summary,
+      image_description,
+      blacklistedQuestions,
+      isInitial,
+    } = validatedData;
 
     // เตรียม system prompt ตามว่าเริ่มบทสนทนาใหม่หรือไม่
-    const blacklistedQuestionsText = blacklistedQuestions && blacklistedQuestions.length > 0 
-      ? `\n\nBlacklisted Questions (DO NOT answer these):\n${blacklistedQuestions.map((q, index) => `${index + 1}. ${q}`).join('\n')}`
-      : '';
+    const blacklistedQuestionsText =
+      blacklistedQuestions && blacklistedQuestions.length > 0
+        ? `\n\nBlacklisted Questions (DO NOT answer these):\n${blacklistedQuestions.map((q, index) => `${index + 1}. ${q}`).join("\n")}`
+        : "";
 
     const systemMessage = {
       role: "system" as const,

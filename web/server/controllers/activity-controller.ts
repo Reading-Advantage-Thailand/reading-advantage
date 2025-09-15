@@ -25,8 +25,6 @@ export async function getAllUserActivity() {
       },
     });
 
-    console.log("Raw activity counts from database:", activityCounts);
-
     const totalUsers = await prisma.user.count();
 
     const userActivityData = {
@@ -92,8 +90,6 @@ export async function getAllUserActivity() {
           break;
       }
     });
-
-    console.log("Final userActivityData:", userActivityData);
 
     return NextResponse.json(
       {
@@ -217,8 +213,6 @@ export async function getAllUsersActivity() {
       },
       take: 100, // Limit to top 100 most active users
     });
-
-    console.log(`Processed ${data.length} activities with ${articles.length} article references`);
 
     return NextResponse.json({ 
       data,

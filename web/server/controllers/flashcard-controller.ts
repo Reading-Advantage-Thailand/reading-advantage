@@ -822,8 +822,6 @@ export async function saveClozeTestResults(req: ExtendedNextRequest) {
 
     // Calculate XP earned early in the function
     const xpEarned = Math.floor(totalScore * 2); // 2 XP per correct answer as per UserXpEarned.Sentence_Cloze_Test
-    
-    console.log(`Cloze Test - User: ${userId}, Score: ${totalScore}, XP Earned: ${xpEarned}`); // Debug logging
 
     // Update FSRS data for each sentence based on performance
     const updatePromises = results.map(async (result: any) => {
@@ -1487,8 +1485,6 @@ export async function saveWordOrderingResults(req: ExtendedNextRequest) {
 
     const accuracy = (correctAnswers / totalQuestions) * 100;
     const xpEarned = Math.floor(correctAnswers * 5); // 5 XP per correct answer as per UserXpEarned.Sentence_Word_Ordering
-
-    console.log(`Word Ordering - User: ${userId}, Correct: ${correctAnswers}, XP Earned: ${xpEarned}`); // Debug logging
 
     // Update sentence records if results provided
     if (sentenceResults.length > 0) {

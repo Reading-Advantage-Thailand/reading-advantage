@@ -81,7 +81,6 @@ export async function validateArticle(
     .where("created_at", ">=", isoStartDate)
     .where("created_at", "<", isoEndDate);
   const snapshot = await query.get();
-  console.log("total article: ", snapshot.docs.length);
 
   // Send webhook
   await sendDiscordWebhook({
@@ -212,7 +211,6 @@ async function validator(articleId: string): Promise<{
   const articleDoc = await db.collection("new-articles").doc(articleId).get();
   const wordListDoc = await db.collection("word-list").doc(articleId).get();
 
-  console.log(`Validating article ${articleId}`);
   if (!articleDoc.exists) {
     throw new Error(`article ${articleId} not found in Firestore`);
   }
@@ -236,7 +234,6 @@ async function validator(articleId: string): Promise<{
 
   if (!articleData.id) {
     // Set article id
-    console.log(`Setting article id for article ${articleId}`);
     await db
       .collection("new-articles")
       .doc(articleId)
@@ -268,8 +265,6 @@ async function validator(articleId: string): Promise<{
       validateAudioWords({ wordList: wordListData.word_list, articleId }),
     ]);
 
-    console.log("rating", articleData.average_rating);
-    console.log("cefr_level", articleData.cefr_level);
     return {
       id: articleId,
       validation: resp,
@@ -304,10 +299,6 @@ async function validateQuestions(
       .collection(collectionName)
       .get();
     if (questionsSnapshot.empty) {
-      console.log(
-        `Regenerating ${collectionName.toUpperCase()} for article`,
-        articleId
-      );
       const articleResp = await generateFunction(
         articleData.cefr_level,
         articleData.type,
@@ -318,7 +309,6 @@ async function validateQuestions(
         articleData.summary,
         articleData.image_description
       );
-      console.log(`Questions generated: ${JSON.stringify(articleResp)}`);
 
       if (collectionName === "la-questions") {
         await db
