@@ -94,7 +94,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
     if (isLoading) {
       return (
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="text-center space-y-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
+          <div className="text-center space-y-4 bg-gradient-to-br from-orange-300 via-amber-300 to-yellow-300 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
             <div className="inline-flex items-center justify-center p-3 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
               <Book className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             </div>
@@ -112,7 +112,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Section */}
-        <div className="text-center space-y-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
+        <div className="text-center space-y-4 bg-gradient-to-br from-orange-300 via-amber-300 to-yellow-300 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
           <div className="inline-flex items-center justify-center p-3 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
             <Book className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           </div>
@@ -127,7 +127,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
         {/* Activities Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Order Sentences */}
-          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-950 border border-blue-200 dark:border-blue-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-300 to-indigo-200 dark:from-blue-950 dark:to-indigo-950 border border-blue-200 dark:border-blue-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
             completedActivities.includes('order-sentences') ? 'ring-2 ring-green-500 dark:ring-green-400' : ''
           }`}>
             <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
@@ -166,7 +166,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
           </div>
 
           {/* Cloze Test */}
-          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-950 border border-green-200 dark:border-green-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-300 to-emerald-200 dark:from-green-950 dark:to-emerald-950 border border-green-200 dark:border-green-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
             completedActivities.includes('cloze-test') ? 'ring-2 ring-green-500 dark:ring-green-400' : ''
           }`}>
             <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
@@ -205,7 +205,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
           </div>
 
           {/* Order Words */}
-          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-950 dark:to-violet-950 border border-purple-200 dark:border-purple-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-300 to-violet-200 dark:from-purple-950 dark:to-violet-950 border border-purple-200 dark:border-purple-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
             completedActivities.includes('order-words') ? 'ring-2 ring-green-500 dark:ring-green-400' : ''
           }`}>
             <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
@@ -244,7 +244,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
           </div>
 
           {/* Matching */}
-          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 to-pink-100 dark:from-rose-950 dark:to-pink-950 border border-rose-200 dark:border-rose-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+          <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-300 to-pink-200 dark:from-rose-950 dark:to-pink-950 border border-rose-200 dark:border-rose-800 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
             completedActivities.includes('matching') ? 'ring-2 ring-green-500 dark:ring-green-400' : ''
           }`}>
             <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity duration-300">
@@ -291,7 +291,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Section */}
-        <div className="text-center space-y-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
+        <div className="text-center space-y-4 bg-gradient-to-br from-orange-300 via-amber-300 to-yellow-300 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
           <div className="inline-flex items-center justify-center p-3 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
             <Book className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           </div>
@@ -319,7 +319,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Section */}
-        <div className="text-center space-y-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
+        <div className="text-center space-y-4 bg-gradient-to-br from-orange-300 via-amber-300 to-yellow-300 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
           <div className="inline-flex items-center justify-center p-3 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
             <Book className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           </div>
@@ -346,7 +346,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Section */}
-        <div className="text-center space-y-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
+        <div className="text-center space-y-4 bg-gradient-to-br from-orange-300 via-amber-300 to-yellow-300 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
           <div className="inline-flex items-center justify-center p-3 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
             <Book className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           </div>
@@ -374,7 +374,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Section */}
-        <div className="text-center space-y-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
+        <div className="text-center space-y-4 bg-gradient-to-br from-orange-300 via-amber-300 to-yellow-300 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
           <div className="inline-flex items-center justify-center p-3 bg-orange-100 dark:bg-orange-900 rounded-full mb-4">
             <Book className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           </div>
@@ -387,7 +387,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
         </div>
 
         {/* Matching Component */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="p-6">
             <LessonMatching
               articleId={articleId}

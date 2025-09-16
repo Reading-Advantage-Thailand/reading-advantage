@@ -42,7 +42,7 @@ export default async function LessonCard({
     <div className="w-full">
       {/* Header Section */}
       <div className="mb-8">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-indigo-400 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full">
@@ -57,7 +57,7 @@ export default async function LessonCard({
                 </p>
               </div>
             </div>
-            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-full">
+            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-200 to-pink-200 dark:from-purple-950 dark:to-pink-950 rounded-full">
               <GraduationCapIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
                 Learning Mode
@@ -66,7 +66,7 @@ export default async function LessonCard({
           </div>
 
           {/* Article Title */}
-          <div className="p-4 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-950 rounded-xl border-l-4 border-blue-500">
+          <div className="p-4 bg-gradient-to-r from-gray-300 to-blue-300 dark:from-gray-800 dark:to-blue-950 rounded-xl border-l-4 border-blue-500">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white leading-tight">
               {article.title}
             </h2>

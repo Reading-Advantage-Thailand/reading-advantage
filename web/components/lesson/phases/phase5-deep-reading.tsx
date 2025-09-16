@@ -266,7 +266,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     <div className="max-w-4xl mx-auto space-y-6">
       {/* ลบ modal overlay ออก */}
       {/* Header Section */}
-      <div className="text-center space-y-4 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950 dark:via-teal-950 dark:to-cyan-950 p-8 rounded-2xl border border-emerald-200 dark:border-emerald-800">
+      <div className="text-center space-y-4 bg-gradient-to-br from-emerald-300 via-teal-300 to-cyan-300 dark:from-emerald-950 dark:via-teal-950 dark:to-cyan-950 p-8 rounded-2xl border border-emerald-200 dark:border-emerald-800">
         <div className="inline-flex items-center justify-center p-3 bg-emerald-100 dark:bg-emerald-900 rounded-full mb-4">
           <Book className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
         </div>
@@ -279,7 +279,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       </div>
 
       {/* Reading Controls */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex flex-wrap items-center gap-6">
           {/* Play/Pause Button */}
           <Button
@@ -351,7 +351,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       </div>
 
       {/* Reading Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative">
         {/* Translation overlay inside content */}
         {showTranslation &&
           selectedSentence !== null &&
@@ -556,7 +556,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       </div>
 
       {/* Reading Tips */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+      <div className="bg-gradient-to-r from-blue-300 to-indigo-300 dark:from-blue-950 dark:to-indigo-950 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
         <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-3">
           📚 First Reading Tips
         </h3>

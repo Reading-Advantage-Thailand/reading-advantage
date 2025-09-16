@@ -30,7 +30,7 @@ const Phase7MultipleChoice: React.FC<Phase7MultipleChoiceProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header Section */}
-      <div className="text-center space-y-4 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-950 dark:via-blue-950 dark:to-indigo-950 p-8 rounded-2xl border border-purple-200 dark:border-purple-800">
+      <div className="text-center space-y-4 bg-gradient-to-br from-purple-300 via-blue-300 to-indigo-300 dark:from-purple-950 dark:via-blue-950 dark:to-indigo-950 p-8 rounded-2xl border border-purple-200 dark:border-purple-800">
         <div className="inline-flex items-center justify-center p-3 bg-purple-100 dark:bg-purple-900 rounded-full mb-4">
           <Book className="h-8 w-8 text-purple-600 dark:text-purple-400" />
         </div>
@@ -43,7 +43,7 @@ const Phase7MultipleChoice: React.FC<Phase7MultipleChoiceProps> = ({
       </div>
 
       {/* MCQ Component */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="p-6">
           <LessonMCQ
             userId={userId}

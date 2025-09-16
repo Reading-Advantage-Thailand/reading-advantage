@@ -222,7 +222,7 @@ const AudioButton: React.FC<{
       className={`p-2 rounded-full transition-colors cursor-pointer ${
         isPlaying
           ? "bg-blue-100 dark:bg-blue-900"
-          : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+          : "bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700"
       }`}
       onClick={handlePlayAudio}
       title={`${isPlaying ? "Stop" : "Play"} audio for "${vocabulary}"`}
@@ -371,7 +371,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header Section */}
-      <div className="text-center space-y-4 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-amber-950 dark:via-orange-950 dark:to-red-950 p-8 rounded-2xl border border-amber-200 dark:border-amber-800">
+      <div className="text-center space-y-4 bg-gradient-to-br from-amber-300 via-orange-300 to-red-300 dark:from-amber-950 dark:via-orange-950 dark:to-red-950 p-8 rounded-2xl border border-amber-200 dark:border-amber-800">
         <div className="inline-flex items-center justify-center p-3 bg-amber-100 dark:bg-amber-900 rounded-full mb-4">
           <BookmarkIcon className="h-8 w-8 text-amber-600 dark:text-amber-400" />
         </div>
@@ -384,7 +384,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
       </div>
 
       {/* Vocabulary Cards */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-zinc-300 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="p-6">
           {loading ? (
             <div className="space-y-4">
@@ -408,7 +408,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
                   key={index}
                   className={`group p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-md ${
                     activeWordIndex === index
-                      ? "border-blue-400 bg-blue-50 dark:bg-blue-950 dark:border-blue-600"
+                      ? "border-blue-400 bg-blue-100 dark:bg-blue-950 dark:border-blue-600"
                       : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                   }`}
                   onClick={() => handleWordClick(index)}
@@ -476,7 +476,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
 
       {/* Progress Indicator */}
       {wordList.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <div className="bg-zinc-200 dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
             <span>Vocabulary Progress</span>
             <span>{wordList.length} words to learn</span>

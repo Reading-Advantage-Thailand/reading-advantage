@@ -753,7 +753,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
       {/* Sidebar - Progress Tracker */}
       <div className="xl:col-span-1">
         <div className="sticky top-6">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-gray-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
             {/* Progress Header */}
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6">
               <div className="flex items-center justify-between text-white">

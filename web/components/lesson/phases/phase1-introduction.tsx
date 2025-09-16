@@ -35,8 +35,8 @@ const Phase1Introduction: React.FC<Phase1IntroductionProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header Section */}
-      <div className="text-center space-y-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950 dark:via-indigo-950 dark:to-purple-950 p-8 rounded-2xl border border-blue-200 dark:border-blue-800">
-        <div className="inline-flex items-center justify-center p-3 bg-blue-100 dark:bg-blue-900 rounded-full mb-4">
+      <div className="text-center space-y-4 bg-gradient-to-br from-blue-300 via-indigo-300 to-purple-300 dark:from-blue-950 dark:via-indigo-950 dark:to-purple-950 p-8 rounded-2xl border border-blue-200 dark:border-blue-800">
+        <div className="inline-flex items-center justify-center p-3 bg-blue-200 dark:bg-blue-900 rounded-full mb-4">
           <BookOpenIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -48,9 +48,9 @@ const Phase1Introduction: React.FC<Phase1IntroductionProps> = ({
       </div>
 
       {/* Article Preview Card */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         {/* Article Image */}
-        <div className="relative h-64 md:h-80 overflow-hidden bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
+        <div className="relative h-64 md:h-80 overflow-hidden bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700">
           <Image
             src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${articleId}.png`}
             alt={article.title}
@@ -70,15 +70,15 @@ const Phase1Introduction: React.FC<Phase1IntroductionProps> = ({
 
             {/* Article Stats */}
             <div className="flex flex-wrap gap-3">
-              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200">
+              <Badge className="bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-300">
                 <GlobeIcon className="w-4 h-4 mr-1" />
                 {tc("cefrLevel", { cefrLevel: article.cefr_level })}
               </Badge>
-              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200">
+              <Badge className="bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-300">
                 <LightbulbIcon className="w-4 h-4 mr-1" />
                 {tc("raLevel", { raLevel: article.ra_level })}
               </Badge>
-              <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 hover:bg-purple-200">
+              <Badge className="bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-200 hover:bg-purple-300">
                 <ClockIcon className="w-4 h-4 mr-1" />
                 Est. {Math.ceil(article.passage.split(" ").length / 20)} min
                 read
@@ -87,7 +87,7 @@ const Phase1Introduction: React.FC<Phase1IntroductionProps> = ({
 
             {/* Article Summary */}
             {article.summary && (
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border-l-4 border-blue-500">
+              <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-xl border-l-4 border-blue-500">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                   Article Summary
                 </h3>
@@ -99,7 +99,7 @@ const Phase1Introduction: React.FC<Phase1IntroductionProps> = ({
           </div>
 
           {/* Learning Objectives */}
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 p-4 rounded-xl border border-green-200 dark:border-green-800">
+          <div className="bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-950 dark:to-emerald-950 p-4 rounded-xl border border-green-200 dark:border-green-800">
             <h3 className="font-semibold text-green-800 dark:text-green-200 mb-3 flex items-center">
               <LightbulbIcon className="w-5 h-5 mr-2" />
               Learning Objectives

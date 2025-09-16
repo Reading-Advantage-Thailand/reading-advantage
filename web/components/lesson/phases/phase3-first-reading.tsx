@@ -314,7 +314,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     <div className="max-w-4xl mx-auto space-y-6">
       {/* ลบ modal overlay ออก */}
       {/* Header Section */}
-      <div className="text-center space-y-4 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950 dark:via-teal-950 dark:to-cyan-950 p-8 rounded-2xl border border-emerald-200 dark:border-emerald-800">
+      <div className="text-center space-y-4 bg-gradient-to-br from-emerald-300 via-teal-300 to-cyan-300 dark:from-emerald-950 dark:via-teal-950 dark:to-cyan-950 p-8 rounded-2xl border border-emerald-200 dark:border-emerald-800">
         <div className="inline-flex items-center justify-center p-3 bg-emerald-100 dark:bg-emerald-900 rounded-full mb-4">
           <Book className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
         </div>
@@ -327,7 +327,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       </div>
 
       {/* Reading Controls */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex flex-wrap items-center gap-6">
           {/* Play/Pause Button */}
           <Button
@@ -396,7 +396,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       </div>
 
       {/* Reading Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative">
         <div className="p-4 sm:p-8 lg:p-12 max-w-none">
           {/* Article Title - Book style with responsive sizing */}
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6 sm:mb-8 lg:mb-12 text-center leading-tight font-serif tracking-normal sm:tracking-wide">
@@ -549,7 +549,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       </div>
 
       {/* Reading Tips */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+      <div className="bg-gradient-to-r from-blue-300 to-indigo-300 dark:from-blue-950 dark:to-indigo-950 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
         <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-3">
           📚 First Reading Tips
         </h3>
@@ -581,8 +581,8 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       {sentences.length > 0 && (
         <div className={`p-4 rounded-xl border transition-all duration-500 ${
           hasCompletedReading 
-            ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800"
-            : "bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950 dark:to-yellow-950 border-orange-200 dark:border-orange-800"
+            ? "bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800"
+            : "bg-gradient-to-r from-orange-300 to-yellow-300 dark:from-orange-950 dark:to-yellow-950 border-orange-200 dark:border-orange-800"
         }`}>
           <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${

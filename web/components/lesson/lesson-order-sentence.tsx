@@ -832,7 +832,7 @@ export default React.memo(function LessonOrderSentences({
   // Start screen
   if (!isPlaying && activeSentences.length > 0) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-2 mt-4">
+      <div className="flex flex-col items-center justify-center space-y-2 mt-4 ">
         <Card className="w-full">
           <CardHeader className="pb-6 text-center">
             <CardTitle className="text-2xl">Ready to Start?</CardTitle>

@@ -229,7 +229,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header Section */}
-      <div className="text-center space-y-4 bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 dark:from-purple-950 dark:via-pink-950 dark:to-rose-950 p-8 rounded-2xl border border-purple-200 dark:border-purple-800">
+      <div className="text-center space-y-4 bg-gradient-to-br from-purple-300 via-pink-300 to-rose-300 dark:from-purple-950 dark:via-pink-950 dark:to-rose-950 p-8 rounded-2xl border border-purple-200 dark:border-purple-800">
         <div className="inline-flex items-center justify-center p-3 bg-purple-100 dark:bg-purple-900 rounded-full mb-4">
           <BookPlusIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
         </div>
@@ -243,7 +243,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
       </div>
 
       {/* Progress Card */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {savedWords.length >= 5 ? (
@@ -291,7 +291,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
       </div>
 
       {/* Vocabulary Selection */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -326,9 +326,9 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                                 <FormItem
                                   className={`group p-4 border-2 rounded-xl transition-all duration-300 hover:shadow-md ${
                                     savedWords.includes(word.vocabulary)
-                                      ? "border-green-400 bg-green-50 dark:bg-green-950 dark:border-green-600 opacity-75"
+                                      ? "border-green-400 bg-green-100 dark:bg-green-950 dark:border-green-600 opacity-75"
                                       : field.value?.includes(word.vocabulary)
-                                        ? "border-purple-400 bg-purple-50 dark:bg-purple-950 dark:border-purple-600 shadow-sm"
+                                        ? "border-purple-400 bg-purple-100 dark:bg-purple-950 dark:border-purple-600 shadow-sm"
                                         : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                                   }`}
                                 >
@@ -423,7 +423,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                   {/* Submit Button */}
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                     {savedWords.length >= 5 && selectedCount === 0 && (
-                      <div className="mb-4 p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
+                      <div className="mb-4 p-4 bg-green-100 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-xl">
                         <div className="flex items-center gap-2">
                           <CheckCircle2Icon className="h-5 w-5 text-green-600 dark:text-green-400" />
                           <p className="text-sm text-green-700 dark:text-green-300">
@@ -434,7 +434,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                     )}
                     
                     {savedWords.length < 5 && (
-                      <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl">
+                      <div className="mb-4 p-4 bg-amber-100 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl">
                         <div className="flex items-center gap-2">
                           <AlertCircleIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                           <p className="text-sm text-amber-700 dark:text-amber-300">
@@ -478,7 +478,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
       </div>
 
       {/* Collection Tips */}
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 p-6 rounded-xl border border-indigo-200 dark:border-indigo-800">
+      <div className="bg-gradient-to-r from-indigo-300 to-purple-300 dark:from-indigo-950 dark:to-purple-950 p-6 rounded-xl border border-indigo-200 dark:border-indigo-800">
         <h3 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-3">
           💡 Collection Tips
         </h3>

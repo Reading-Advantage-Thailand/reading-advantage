@@ -131,7 +131,7 @@ export default function LessonLanguageQuestion({
     <>
       <div className="relative">
         {loadingPage ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl z-10">
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-200 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl z-10">
             <div className="flex flex-col items-center space-y-3">
               <Loader2 className="animate-spin text-indigo-600 dark:text-indigo-400 h-10 w-10" />
               <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Loading conversation...</p>
@@ -165,7 +165,7 @@ export default function LessonLanguageQuestion({
             </div>
 
             {/* Chat Messages Area */}
-            <div className="bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-gradient-to-b from-gray-gray-300 to-white dark:from-gray-800/50 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="h-80 sm:h-96 overflow-y-auto p-3 sm:p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
                 {messages.length === 0 && !loading && (
                   <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
@@ -201,7 +201,7 @@ export default function LessonLanguageQuestion({
                         "rounded-2xl px-3 py-2 sm:px-4 sm:py-3 shadow-sm transition-all duration-200 hover:shadow-md",
                         message.sender === "user"
                           ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-br-md"
-                          : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-bl-md"
+                          : "bg-gray-200 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-bl-md"
                       )}
                     >
                       <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
@@ -227,7 +227,7 @@ export default function LessonLanguageQuestion({
                     <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
                       <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl rounded-bl-md px-3 py-2 sm:px-4 sm:py-3 shadow-sm">
+                    <div className="bg-gray-200 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl rounded-bl-md px-3 py-2 sm:px-4 sm:py-3 shadow-sm">
                       <div className="flex items-center space-x-2">
                         <div className="flex space-x-1">
                           <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
@@ -243,7 +243,7 @@ export default function LessonLanguageQuestion({
               </div>
               
               {/* Input Area */}
-              <div className="border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-3 sm:p-4">
+              <div className="border-t border-gray-200 dark:border-gray-600 bg-gray-200 dark:bg-gray-800 p-3 sm:p-4">
                 <form
                   onSubmit={(event) => {
                     event.preventDefault();
@@ -265,7 +265,7 @@ export default function LessonLanguageQuestion({
                           setUserInput(e.target.value);
                         }
                       }}
-                      className="resize-none border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-16 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-200 bg-gray-50 dark:bg-gray-700"
+                      className="resize-none border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 pr-16 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800 transition-all duration-200 bg-slate-300 dark:bg-gray-700"
                       autoComplete="off"
                       disabled={loading}
                       maxLength={500}

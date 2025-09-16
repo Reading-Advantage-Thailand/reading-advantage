@@ -217,7 +217,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="text-center space-y-4 bg-gradient-to-br from-green-50 via-lime-50 to-emerald-50 dark:from-green-950 dark:via-lime-950 dark:to-emerald-950 p-8 rounded-2xl border border-green-200 dark:border-green-800">
+        <div className="text-center space-y-4 bg-gradient-to-br from-green-300 via-lime-300 to-emerald-300 dark:from-green-950 dark:via-lime-950 dark:to-emerald-950 p-8 rounded-2xl border border-green-200 dark:border-green-800">
           <div className="space-y-4 animate-pulse">
             <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-full w-12 mx-auto"></div>
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mx-auto"></div>
@@ -245,7 +245,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
     <div className="max-w-6xl mx-auto space-y-8 p-6">
       {/* Celebration Header */}
       <div
-        className={`text-center space-y-6 relative overflow-hidden bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-950 dark:via-green-950 dark:to-teal-950 p-8 rounded-3xl border border-emerald-200 dark:border-emerald-800 shadow-2xl ${showCelebration ? "animate-in slide-in-from-top duration-700" : ""}`}
+        className={`text-center space-y-6 relative overflow-hidden bg-gradient-to-br from-emerald-300 via-green-300 to-teal-300 dark:from-emerald-950 dark:via-green-950 dark:to-teal-950 p-8 rounded-3xl border border-emerald-200 dark:border-emerald-800 shadow-2xl ${showCelebration ? "animate-in slide-in-from-top duration-700" : ""}`}
       >
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -290,7 +290,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {/* Time Card */}
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-blue-200 dark:border-blue-800">
+        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-blue-200 dark:border-blue-800 bg-blue-400 dark:bg-background">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full group-hover:scale-110 transition-transform duration-300">
@@ -309,7 +309,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
         </Card>
 
         {/* Words Card */}
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-purple-200 dark:border-purple-800">
+        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-purple-200 dark:border-purple-800 bg-purple-400 dark:bg-background">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-full group-hover:scale-110 transition-transform duration-300">
@@ -328,7 +328,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
         </Card>
 
         {/* Sentences Card */}
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-indigo-200 dark:border-indigo-800">
+        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-indigo-200 dark:border-indigo-800 bg-indigo-400 dark:bg-background">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-full group-hover:scale-110 transition-transform duration-300">
@@ -347,7 +347,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
         </Card>
 
         {/* XP Card */}
-        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-yellow-200 dark:border-yellow-800">
+        <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 border-yellow-200 dark:border-yellow-800 bg-yellow-400 dark:bg-background">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full group-hover:scale-110 transition-transform duration-300">
@@ -368,8 +368,8 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
 
       {/* Quiz Performance */}
       {quizScores && (
-        <Card className="overflow-hidden border-2 border-gradient-to-r from-pink-200 to-violet-200 dark:from-pink-800 dark:to-violet-800">
-          <CardHeader className="bg-gradient-to-r from-pink-50 to-violet-50 dark:from-pink-950 dark:to-violet-950 pb-4">
+        <Card className="overflow-hidden border-2 border-gradient-to-r from-pink-400 to-violet-400 dark:from-pink-800 dark:to-violet-800 bg-violet-200">
+          <CardHeader className="bg-gradient-to-r from-pink-300 to-violet-300 dark:from-pink-950 dark:to-violet-950 pb-4">
             <div className="flex items-center gap-3">
               <Target className="h-6 w-6 text-pink-600 dark:text-pink-400" />
               <CardTitle className="text-xl font-bold text-pink-700 dark:text-pink-300">
@@ -459,8 +459,8 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Saved Words */}
         {wordList.length > 0 && (
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950">
+          <Card className="overflow-hidden bg-emerald-100 dark:bg-background">
+            <CardHeader className="bg-gradient-to-r from-emerald-300 to-green-300 dark:from-emerald-950 dark:to-green-950">
               <div className="flex items-center gap-3">
                 <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 <CardTitle className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
@@ -473,7 +473,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
                 {wordList.slice(0, 8).map((word, index) => (
                   <div
                     key={index}
-                    className="group p-3 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900 dark:to-green-900 rounded-lg border border-emerald-200 dark:border-emerald-700 hover:shadow-md transition-all duration-300 hover:scale-105"
+                    className="group p-3 bg-gradient-to-r from-emerald-300 to-green-300 dark:from-emerald-900 dark:to-green-900 rounded-lg border border-emerald-200 dark:border-emerald-700 hover:shadow-md transition-all duration-300 hover:scale-105"
                   >
                     <span className="font-semibold text-emerald-700 dark:text-emerald-300 group-hover:text-emerald-800 dark:group-hover:text-emerald-200">
                       {word.vocabulary}
@@ -492,8 +492,8 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
 
         {/* Saved Sentences */}
         {sentenceList.length > 0 && (
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+          <Card className="overflow-hidden bg-blue-100 dark:bg-background">
+            <CardHeader className="bg-gradient-to-r from-blue-300 to-indigo-300 dark:from-blue-950 dark:to-indigo-950">
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 <CardTitle className="text-xl font-bold text-blue-700 dark:text-blue-300">
@@ -505,7 +505,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
               {sentenceList.slice(0, 3).map((sentence, index) => (
                 <div
                   key={index}
-                  className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-md transition-all duration-300"
+                  className="p-4 bg-gradient-to-r from-blue-300 to-indigo-300 dark:from-blue-900 dark:to-indigo-900 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-md transition-all duration-300"
                 >
                   <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
                     &ldquo;{sentence.sentence}&rdquo;

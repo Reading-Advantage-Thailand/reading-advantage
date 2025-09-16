@@ -248,7 +248,7 @@ export default function LessonMatching({
   }, [correctMatches.length, isAlreadyCompleted]);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 py-6">
+    <div className=" dark:bg-gray-900 py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
         <div className="text-center mb-8">
@@ -281,7 +281,7 @@ export default function LessonMatching({
         <div className="mb-8">
           {articleMatching.length === 0 ? (
             // Loading State
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
+            <div className="bg-gray-200 dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
               <div className="space-y-4">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="flex space-x-4">
@@ -294,7 +294,7 @@ export default function LessonMatching({
           ) : articleMatching.length >= 5 ? (
             correctMatches.length < 10 &&
             !isAlreadyCompleted && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8">
+              <div className="bg-gray-200 dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8">
                 <div className="text-center mb-6">
                   <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
                     Match the sentences with their translations
@@ -307,7 +307,7 @@ export default function LessonMatching({
                       key={index}
                       className={`
                         group relative cursor-pointer 
-                        bg-white dark:bg-gray-700
+                        bg-gray-300 dark:bg-gray-700
                         border-2 border-gray-200 dark:border-gray-600
                         rounded-lg sm:rounded-xl
                         p-3 sm:p-4 lg:p-5
@@ -322,8 +322,8 @@ export default function LessonMatching({
                         ${correctMatches.includes(word.text) ? "opacity-0 pointer-events-none scale-95" : ""}
                         ${
                           selectedCard?.text === word.text
-                            ? "border-blue-500 dark:border-blue-400 shadow-lg bg-blue-50 dark:bg-blue-900/30 scale-105"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-600"
+                            ? "border-blue-500 dark:border-blue-400 shadow-lg bg-blue-300 dark:bg-blue-900/30 scale-105"
+                            : "hover:bg-gray-300 dark:hover:bg-gray-600"
                         }
                         ${animateShake && selectedCard?.text === word.text ? animateShake : ""}
                       `}
@@ -366,7 +366,7 @@ export default function LessonMatching({
         {(correctMatches.length === 10 || isAlreadyCompleted) && (
           <div className="text-center">
             <div
-              className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 
+              className="bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-900/20 dark:to-emerald-900/20 
                           rounded-2xl border border-green-200 dark:border-green-700 p-6 sm:p-8 lg:p-10 mb-6"
             >
               <div className="text-5xl sm:text-6xl lg:text-7xl mb-6 animate__animated animate__bounceIn">

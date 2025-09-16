@@ -366,7 +366,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-12">
+        <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-12">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mr-4" />
             <span className="text-lg text-gray-600 dark:text-gray-400">
@@ -381,7 +381,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header Section */}
-      <div className="text-center space-y-4 bg-gradient-to-br from-teal-50 via-green-50 to-emerald-50 dark:from-teal-950 dark:via-green-950 dark:to-emerald-950 p-8 rounded-2xl border border-teal-200 dark:border-teal-800">
+      <div className="text-center space-y-4 bg-gradient-to-br from-teal-300 via-green-300 to-emerald-300 dark:from-teal-950 dark:via-green-950 dark:to-emerald-950 p-8 rounded-2xl border border-teal-200 dark:border-teal-800">
         <div className="inline-flex items-center justify-center p-3 bg-teal-100 dark:bg-teal-900 rounded-full mb-4">
           <FileTextIcon className="h-8 w-8 text-teal-600 dark:text-teal-400" />
         </div>
@@ -394,7 +394,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
       </div>
 
       {/* Controls */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* Progress Info */}
           <div className="flex items-center gap-3">
@@ -481,7 +481,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
       </div>
 
       {/* Article Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative">
+      <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative">
         {/* Translation overlay */}
         {showTranslation &&
           selectedForTranslation !== null &&
@@ -542,7 +542,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
           </h2>
 
           {/* Instructions */}
-          <div className="mb-8 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="mb-8 p-4 bg-blue-100 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-blue-800 dark:text-blue-200 text-center font-medium">
               {savedCount >= 5 ? (
                 <>
@@ -723,7 +723,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
               <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                 {savedCount >= 5 ? (
                   <div className="text-center">
-                    <div className="inline-flex items-center justify-center p-4 bg-green-50 dark:bg-green-900 rounded-xl border border-green-200 dark:border-green-700 mb-4">
+                    <div className="inline-flex items-center justify-center p-4 bg-green-100 dark:bg-green-900 rounded-xl border border-green-200 dark:border-green-700 mb-4">
                       <CheckCircle2Icon className="h-8 w-8 text-green-600 dark:text-green-400 mr-3" />
                       <div>
                         <h3 className="font-semibold text-green-800 dark:text-green-200">
@@ -766,7 +766,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
       </div>
 
       {/* Collection Guide */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 p-6 rounded-xl border border-green-200 dark:border-green-800">
+      <div className="bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-950 dark:to-emerald-950 p-6 rounded-xl border border-green-200 dark:border-green-800">
         <h3 className="font-semibold text-green-800 dark:text-green-200 mb-3">
           📖 Sentence Collection Guide
         </h3>
