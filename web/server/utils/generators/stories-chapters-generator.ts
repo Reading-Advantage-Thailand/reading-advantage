@@ -59,15 +59,17 @@ interface StoryBible {
   characters: Character[];
   setting: StorySetting;
   themes: StoryTheme[];
+  summary: string;
+  "image-description": string;
   worldRules?: String;
 }
 
 interface Chapter {
   title: string;
-  content: string;
+  passage: string; // Changed from 'content' to 'passage' to match Article
   summary: string;
   "image-description": string;
-  analysis: {
+  analysis?: {
     wordCount: number;
     averageSentenceLength: number;
     vocabulary: {
@@ -87,7 +89,7 @@ interface Chapter {
     grammarStructures: string[];
     readabilityScore: number;
   };
-  continuityData: {
+  continuityData?: {
     events: string[];
     characterStates: {
       character: string;
@@ -120,7 +122,7 @@ interface GenerateChaptersParams {
 
 const ChapterSchema = z.object({
   title: z.string(),
-  content: z.string(),
+  passage: z.string(), // Changed from 'content' to 'passage'
   summary: z.string(),
   "image-description": z.string(),
   analysis: z.object({
@@ -232,17 +234,17 @@ export async function generateChapters(
           //console.log("Generating chapter audio...");
 
           await generateChapterAudio({
-            content: newChapter.content,
+            passage: newChapter.passage,
             storyId: storyId,
             chapterNumber: `${i + 1}`,
           });
           //console.log("Chapter audio generated successfully.");
 
           const wordListForAudio =
-            newChapter.analysis.vocabulary.targetWordsUsed.map((word) => ({
+            newChapter.analysis?.vocabulary.targetWordsUsed.map((word) => ({
               vocabulary: word.vocabulary,
               definition: word.definition,
-            }));
+            })) || [];
 
           //console.log("Saving word list for audio...");
 
@@ -392,7 +394,7 @@ async function generateChapterQuestions(
     const mcResponse = await generateMCQuestion({
       cefrlevel: cefrLevel,
       type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
-      passage: chapter.content,
+      passage: chapter.passage,
       title: chapter.title,
       summary: chapter.summary,
       imageDesc: chapter["image-description"],
@@ -414,7 +416,7 @@ async function generateChapterQuestions(
     const saResponse = await generateSAQuestion({
       cefrlevel: cefrLevel,
       type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
-      passage: chapter.content,
+      passage: chapter.passage,
       title: chapter.title,
       summary: chapter.summary,
       imageDesc: chapter["image-description"],
@@ -429,7 +431,7 @@ async function generateChapterQuestions(
     const laResponse = await generateLAQuestion({
       cefrlevel: cefrLevel,
       type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
-      passage: chapter.content,
+      passage: chapter.passage,
       title: chapter.title,
       summary: chapter.summary,
       imageDesc: chapter["image-description"],

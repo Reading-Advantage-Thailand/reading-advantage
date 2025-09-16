@@ -327,47 +327,59 @@ model UserSentenceRecord {
 }
 
 model Story {
-  id               String            @id @default(cuid())
-  title            String
-  summary          String?
-  type             String?
-  genre            String?
-  subgenre         String?
-  raLevel          Int               @map("ra_level")
-  cefrLevel        String            @map("cefr_level")
-  rating           Float?
-  averageRating    Float?            @map("average_rating")
-  audioUrl         String?           @map("audio_url")
-  imageUrl         String?           @map("image_url")
-  authorId         String?           @map("author_id")
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
-  chapters         Chapter[]
-  storyAssignments StoryAssignment[]
-  storyRecords     StoryRecord[]
-  timepoints       StoryTimepoint[]
+  id                String            @id @default(cuid())
+  title             String
+  summary           String?
+  translatedSummary Json?             @map("translated_summary")
+  type              String?
+  genre             String?
+  subgenre          String?
+  storyBible        Json?             @map("story_bible")
+  imageDescription  String?           @map("image_description")
+  raLevel           Int?              @map("ra_level")
+  cefrLevel         String?           @map("cefr_level")
+  rating            Float?
+  averageRating     Float?            @map("average_rating")
+  authorId          String?           @map("author_id")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  isPublic          Boolean           @default(false) @map("is_public")
+  chapters          Chapter[]
+  storyAssignments  StoryAssignment[]
+  storyRecords      StoryRecord[]
+  timepoints        StoryTimepoint[]
 
   @@map("stories")
 }
 
 model Chapter {
-  id               String            @id @default(cuid())
-  storyId          String            @map("story_id")
-  chapterNumber    Int               @map("chapter_number")
-  title            String
-  content          String
-  summary          String?
-  imageUrl         String?           @map("image_url")
-  audioUrl         String?           @map("audio_url")
-  rating           Float?
-  userRatingCount  Int?              @map("user_rating_count")
-  wordCount        Int?              @map("word_count")
-  sentences        Json?
-  words            Json?
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
-  chapterTrackings ChapterTracking[]
-  story            Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  id                      String            @id @default(cuid())
+  storyId                 String            @map("story_id")
+  chapterNumber           Int               @map("chapter_number")
+  type                    String?
+  genre                   String?
+  subGenre                String?           @map("sub_genre")
+  title                   String
+  summary                 String?
+  passage                 String?
+  translatedSummary       Json?             @map("translated_summary")
+  translatedPassage       Json?             @map("translated_passage")
+  imageDescription        String?           @map("image_description")
+  cefrLevel               String?           @map("cefr_level")
+  raLevel                 Int?              @map("ra_level")
+  rating                  Float?
+  audioUrl                String?           @map("audio_url")
+  audioWordUrl            String?           @map("audio_word_url")
+  sentences               Json?
+  words                   Json?
+  authorId                String?           @map("author_id")
+  createdAt               DateTime          @default(now()) @map("created_at")
+  updatedAt               DateTime          @updatedAt @map("updated_at")
+  isPublic                Boolean           @default(false) @map("is_public")
+  wordCount               Int?              @map("word_count")
+  userRatingCount         Int?              @map("user_rating_count")
+  chapterTrackings        ChapterTracking[]
+  story                   Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
   @@unique([storyId, chapterNumber])
   @@map("chapters")

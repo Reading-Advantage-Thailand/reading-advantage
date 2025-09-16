@@ -72,14 +72,27 @@ export async function generateAudioForWord({
   userId?: string;
 }): Promise<WordWithTimePoint[]> {
   try {
+    console.log(`🎵 Starting generateAudioForWord for ${articleId}...`);
+    console.log(`📝 Word list count: ${Array.isArray(wordList) ? wordList.length : 'not an array'}`);
+    
     const voice =
       AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
 
     const vocabulary: string[] = Array.isArray(wordList)
-      ? wordList.map((item: any) => item?.vocabulary)
+      ? wordList.map((item: any) => item?.vocabulary).filter(Boolean)
       : [];
 
+    console.log(`📝 Vocabulary count after filtering: ${vocabulary.length}`);
+    
+    if (vocabulary.length === 0) {
+      console.log(`⚠️ No vocabulary found for ${articleId}, returning empty array`);
+      return [];
+    }
+
     let allTimePoints: TimePoint[] = [];
+
+    const ssmlContent = contentToSSML(vocabulary);
+    console.log(`📝 SSML content length: ${ssmlContent.length}`);
 
     const response = await fetch(
       `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize?key=${process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY}`,
@@ -89,7 +102,7 @@ export async function generateAudioForWord({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          input: { ssml: contentToSSML(vocabulary) },
+          input: { ssml: ssmlContent },
           voice: {
             languageCode: "en-US",
             name: voice,
@@ -103,14 +116,19 @@ export async function generateAudioForWord({
     );
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      console.error(`❌ Text-to-speech API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error(`❌ Error response: ${errorText}`);
+      throw new Error(`Text-to-speech API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log(`📝 API response keys: ${Object.keys(data)}`);
 
     // Check if data exists and has required properties
     if (!data || !data.audioContent) {
-      throw new Error("Invalid response from text-to-speech API");
+      console.error("❌ Text-to-speech API response:", data);
+      throw new Error("Invalid response from text-to-speech API - missing audioContent");
     }
 
     const audio = data.audioContent;
@@ -143,12 +161,9 @@ export async function generateAudioForWord({
         }
       });
     } else {
-      // For regular articles - use Firestore
-      await db.collection("word-list").doc(articleId).update({
-        timepoints: allTimePoints,
-        word_list_with_timepoints: wordsWithTimePoints,
-        id: articleId,
-      });
+      // For stories/chapters or other non-user content, don't update any database
+      // Just return the words with timepoints for the caller to handle
+      console.log(`Generated ${wordsWithTimePoints.length} words with timepoints for ${articleId}`);
     }
 
     return wordsWithTimePoints;

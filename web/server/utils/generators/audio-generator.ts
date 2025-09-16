@@ -22,7 +22,7 @@ interface GenerateAudioParams {
 }
 
 interface GenerateChapterAudioParams {
-  content: string;
+  passage: string; // Changed from 'content' to 'passage' to match Article structure
   storyId: string;
   chapterNumber: string;
 }
@@ -143,7 +143,7 @@ export async function generateAudio({
 }: GenerateAudioParams & {
   isUserGenerated?: boolean;
   userId?: string;
-}): Promise<void> {
+}): Promise<any[]> {
   try {
     const voice =
       AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
@@ -240,21 +240,30 @@ export async function generateAudio({
       });
     } else {
       // For regular articles, still use Firestore for now
-      await db.collection("new-articles").doc(articleId).update({
-        timepoints: result,
-        id: articleId,
-      });
+      // But first check if document exists
+      try {
+        await db.collection("new-articles").doc(articleId).update({
+          timepoints: result,
+          id: articleId,
+        });
+      } catch (firestoreError: any) {
+        // If document doesn't exist (like for stories), just continue
+        console.log(`Firestore document ${articleId} not found, skipping timepoints update`);
+      }
     }
+    
+    // Return the timepoints for stories to use
+    return result;
   } catch (error: any) {
     console.log(error);
     throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
-      error.response.data
+      error.response?.data || error
     )}`;
   }
 }
 
 export async function generateChapterAudio({
-  content,
+  passage, // Changed from 'content' to 'passage'
   storyId,
   chapterNumber,
 }: GenerateChapterAudioParams): Promise<void> {
@@ -264,7 +273,7 @@ export async function generateChapterAudio({
     const newVoice =
       NEW_MODEL_VOICES[Math.floor(Math.random() * NEW_MODEL_VOICES.length)];
 
-    const { sentences, chunks } = await splitTextIntoChunks(content, 5000);
+    const { sentences, chunks } = await splitTextIntoChunks(passage, 5000);
     let currentIndex = 0;
     let cumulativeTime = 0;
 

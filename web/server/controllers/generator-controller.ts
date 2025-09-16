@@ -901,7 +901,7 @@ export async function generateUserArticle(req: NextRequest) {
 
     // Generate Audio and get timepoints
     //console.log("Generating audio...");
-    await generateAudio({
+    const sentences = await generateAudio({
       passage: generatedArticle.passage,
       articleId: articleId,
       isUserGenerated: true,
@@ -1355,7 +1355,7 @@ export async function updateUserArticle(
 
     // Generate new audio only (not images)
     //console.log("Generating new audio...");
-    await generateAudio({
+    const sentences = await generateAudio({
       passage: passage,
       articleId: articleId,
       isUserGenerated: true,

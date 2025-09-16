@@ -43,7 +43,7 @@ export async function getAllStories(req: ExtendedNextRequest) {
         );
       }
 
-      if (story.raLevel > userLevel) {
+      if (story.raLevel && story.raLevel > userLevel) {
         return NextResponse.json(
           { message: "Story level too high for user", result: null },
           { status: 403 }
@@ -91,7 +91,7 @@ export async function getAllStories(req: ExtendedNextRequest) {
     // Filter by user level and add completion status
     const availableStories = await Promise.all(
       stories
-        .filter((story) => story.raLevel <= 3 || story.raLevel <= userLevel)
+        .filter((story) => (story.raLevel ?? 0) <= 3 || (story.raLevel ?? 0) <= userLevel)
         .map(async (story) => {
           const chapterCount = story.chapters.length;
 
