@@ -57,6 +57,83 @@ export interface StoryChapter {
   timepoints: Timepoint[];
 }
 
+export interface Chapter {
+  storyId: string;
+  chapterNumber: number;
+  ra_Level: number;
+  type: string;
+  genre: string;
+  subgenre: string;
+  cefr_level: string;
+  totalChapters: number;
+  chapter: {
+    id: string;
+    storyId: string;
+    chapterNumber: number;
+    type: string;
+    genre: string;
+    subGenre: string;
+    title: string;
+    summary: string;
+    passage: string;
+    translatedSummary: {
+      cn: string;
+      en: string;
+      th: string;
+      tw: string;
+      vi: string;
+      [key: string]: string | undefined;
+    };
+    translatedPassage: {
+      cn: string[];
+      en: string[];
+      th: string[];
+      tw: string[];
+      vi: string[];
+      [key: string]: string[] | undefined;
+    };
+    imageDescription: string;
+    cefrLevel: string;
+    raLevel: number;
+    rating: number;
+    audioUrl: string;
+    audioWordUrl: string;
+    sentences: {
+      file: string;
+      index: number;
+      markName: string;
+      sentences: string;
+      timeSeconds: number;
+    }[];
+    words: {
+      markName: string;
+      definition: {
+        cn: string;
+        en: string;
+        th: string;
+        tw: string;
+        vi: string;
+      };
+      vocabulary: string;
+      timeSeconds: number;
+    }[];
+    questions: any;
+    authorId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    isPublic: boolean;
+    wordCount: number;
+    userRatingCount: number | null;
+  };
+  timepoints: {
+    file: string;
+    index: number;
+    markName: string;
+    sentences: string;
+    timeSeconds: number;
+  }[];
+}
+
 export interface Article {
   summary: string;
   image_description: string;

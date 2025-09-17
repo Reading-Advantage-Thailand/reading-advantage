@@ -11,6 +11,7 @@ import { ExtendedNextRequest } from "./auth-controller";
 import { promptChatBot } from "@/data/prompt-chatbot";
 import { openai, openaiModel } from "@/utils/openai";
 import { generateWordList } from "../utils/generators/word-list-generator";
+import { prisma } from "@/lib/prisma";
 
 interface RequestContext {
   params: {
@@ -129,75 +130,99 @@ export async function getChapterWordlist(
   req: ExtendedNextRequest,
   { params: { storyId, chapterNumber } }: RequestContext
 ) {
-  //console.log(
-  //  `[getChapterWordlist] Starting - storyId: ${storyId}, chapter: ${chapterNumber}`
-  //);
+  try {
+    console.log(`Starting getChapterWordlist for storyId: ${storyId}, chapterNumber: ${chapterNumber}`);
+    const { chapter } = await req.json();
+    console.log(`Received chapter data: ${JSON.stringify(chapter)}`);
 
-  const { chapter } = await req.json();
-  //console.log(`[getChapterWordlist] Got chapter content`);
-
-  const wordListRef = db
-    .collection(`stories-word-list`)
-    .doc(`${storyId}-${chapterNumber}`);
-  const wordListSnapshot = await wordListRef.get();
-  //console.log(
-  //  `[getChapterWordlist] Word list exists in DB: ${wordListSnapshot}`
-  //);
-
-  const fileExtension = ".mp3";
-
-  const fileExists = await storage
-    .bucket("artifacts.reading-advantage.appspot.com")
-    .file(`${AUDIO_WORDS_URL}/${storyId}-${chapterNumber}${fileExtension}`)
-    .exists();
-  //console.log(`[getChapterWordlist] Audio file exists: ${fileExists[0]}`);
-
-  if (wordListSnapshot?.exists && fileExists[0]) {
-    //console.log(`[getChapterWordlist] Found existing word list and audio`);
-    const dataList = wordListSnapshot.data();
-    //console.log(`[getChapterWordlist] Data list: ${dataList}`);
-    return NextResponse.json(
-      {
-        messeges: "success",
-        word_list: dataList?.word_list,
-        timepoints: dataList?.timepoints,
+    const chapterData = await prisma.chapter.findUnique({
+      where: {
+        storyId_chapterNumber: {
+          storyId,
+          chapterNumber: parseInt(chapterNumber),
+        },
       },
-      { status: 200 }
-    );
-  } else {
-    //console.log(`[getChapterWordlist] Generating new word list and audio`);
-    const wordList = await generateWordList({
-      passage: chapter.chapter.content,
+      select: { words: true },
     });
-    //console.log(`[getChapterWordlist] Generated ${wordList.word_list} words`);
+    console.log(`Fetched chapter data: ${JSON.stringify(chapterData)}`);
 
-    await wordListRef.set({
-      word_list: wordList.word_list,
-      storyId: storyId,
-      chapterNumber: chapterNumber,
-    });
-    //console.log(`[getChapterWordlist] Saved word list to DB`);
+    const fileExtension = ".mp3";
 
-    await generateChapterAudioForWord({
-      wordList: wordList.word_list,
-      storyId: storyId,
-      chapterNumber: chapterNumber,
-    });
-    //console.log(`[getChapterWordlist] Generated audio file`);
+    const fileExists = await storage
+      .bucket("artifacts.reading-advantage.appspot.com")
+      .file(`${AUDIO_WORDS_URL}/${storyId}-${chapterNumber}${fileExtension}`)
+      .exists();
+    console.log(`Audio file exists: ${fileExists[0]}`);
 
+    if (chapterData?.words && fileExists[0]) {
+      const wordList = typeof chapterData.words === "string" ? JSON.parse(chapterData.words) : chapterData.words;
+      console.log(`Returning existing word list: ${JSON.stringify(wordList)}`);
+
+      return NextResponse.json(
+        {
+          messeges: "success",
+          word_list: wordList.word_list,
+          timepoints: wordList.timepoints,
+        },
+        { status: 200 }
+      );
+    } else {
+      console.log("Generating new word list");
+      const wordList = await generateWordList({
+        passage: chapter.chapter.content,
+      });
+      console.log(`Generated word list: ${JSON.stringify(wordList)}`);
+
+      const enhancedWordList = wordList.word_list.map((word, index) => ({
+        ...word,
+        markName: `word${index + 1}`,
+        timeSeconds: index * 2,
+      }));
+      console.log(`Enhanced word list: ${JSON.stringify(enhancedWordList)}`);
+
+      await prisma.chapter.update({
+        where: {
+          storyId_chapterNumber: {
+            storyId,
+            chapterNumber: parseInt(chapterNumber),
+          },
+        },
+        data: {
+          words: JSON.stringify({
+            word_list: enhancedWordList,
+          }),
+        },
+      });
+      console.log("Updated chapter with new word list");
+
+      await generateChapterAudioForWord({
+        wordList: wordList.word_list,
+        storyId: storyId,
+        chapterNumber: chapterNumber,
+      });
+      console.log("Generated chapter audio for words");
+
+      return NextResponse.json(
+        {
+          messeges: "success",
+          word_list: enhancedWordList,
+          timepoints: enhancedWordList.map((word) => ({
+            timeSeconds: word.timeSeconds,
+          })),
+        },
+        { status: 200 }
+      );
+    }
+  } catch (error) {
+    console.error("Error in getChapterWordlist:", error);
     return NextResponse.json(
-      {
-        messeges: "success",
-        word_list: wordList.word_list,
-      },
-      { status: 200 }
+      { error: "Internal Server Error" },
+      { status: 500 }
     );
   }
 }
 
-export async function postFlashCard(
-  req: ExtendedNextRequest,
-) {
+export async function postFlashCard(req: ExtendedNextRequest) {
   try {
     const id = req.session?.user.id as string;
     const json = await req.json();

@@ -153,10 +153,12 @@ model MultipleChoiceQuestion {
   options         String[]
   answer          String
   textualEvidence String   @map("textual_evidence")
-  articleId       String   @map("article_id")
+  articleId       String?  @map("article_id")
+  chapterId       String?  @map("chapter_id")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  article         Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  chapter         Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
   @@map("MultipleChoiceQuestion")
 }
@@ -165,10 +167,12 @@ model ShortAnswerQuestion {
   id        String   @id @default(cuid())
   question  String
   answer    String
-  articleId String   @map("article_id")
+  articleId String?  @map("article_id")
+  chapterId String?  @map("chapter_id")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
   @@map("ShortAnswerQuestion")
 }
@@ -176,10 +180,12 @@ model ShortAnswerQuestion {
 model LongAnswerQuestion {
   id        String   @id @default(cuid())
   question  String
-  articleId String   @map("article_id")
+  articleId String?  @map("article_id")
+  chapterId String?  @map("chapter_id")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
   @@map("LongAnswerQuestion")
 }
@@ -374,12 +380,16 @@ model Chapter {
   audioWordUrl            String?           @map("audio_word_url")
   sentences               Json?
   words                   Json?
+  questions               Json?             @map("questions")
   authorId                String?           @map("author_id")
   createdAt               DateTime          @default(now()) @map("created_at")
   updatedAt               DateTime          @updatedAt @map("updated_at")
   isPublic                Boolean           @default(false) @map("is_public")
   wordCount               Int?              @map("word_count")
   userRatingCount         Int?              @map("user_rating_count")
+  longAnswerQuestions     LongAnswerQuestion[]
+  multipleChoiceQuestions MultipleChoiceQuestion[]
+  shortAnswerQuestions    ShortAnswerQuestion[]
   chapterTrackings        ChapterTracking[]
   story                   Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
@@ -536,4 +546,13 @@ enum TeacherRole {
 enum QuizStatus {
   READ
   COMPLETED
+  COMPLETED_MCQ
+  COMPLETED_SAQ
+  COMPLETED_LAQ
+}
+
+enum AnswerStatus {
+  UNANSWERED
+  CORRECT
+  INCORRECT
 }

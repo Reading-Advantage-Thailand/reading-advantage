@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Article } from "@/components/models/article-model";
-import { QuizStatus } from "@/components/models/questions-model";
 import { ExtendedNextRequest } from "./auth-controller";
+import { QuizStatus } from "@prisma/client";
 import { z } from "zod";
 import { splitTextIntoSentences } from "@/lib/utils";
 import { Translate } from "@google-cloud/translate/build/src/v2";

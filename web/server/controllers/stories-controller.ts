@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
-import { QuizStatus } from "@/components/models/questions-model";
+import { QuizStatus } from "@prisma/client";
 
 interface RequestContext {
   params: {
