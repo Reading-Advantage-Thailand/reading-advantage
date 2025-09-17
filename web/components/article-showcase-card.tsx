@@ -131,9 +131,9 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
                 readOnly
               />
             </Badge>
-            {article.author && (
+            {article.author?.name && (
               <Badge className="shadow-lg max-w-max" variant="destructive">
-                Author: {article.author}
+                Author: {article.author.name}
               </Badge>
             )}
             <div className="mt-auto">

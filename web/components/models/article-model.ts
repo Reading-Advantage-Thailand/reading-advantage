@@ -15,7 +15,7 @@ export interface ArticleShowcase {
   subgenre?: string;
   genre?: string;
   storyBible?: StoryBible;
-  author?: string;
+  author?: { authorId: string | null; name: string | null };
 }
 
 export interface StoryChapter {
