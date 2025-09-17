@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import db from "@/configs/firestore-config";
 import { NextResponse, NextRequest } from "next/server";
 import { ExtendedNextRequest } from "./auth-controller";
 import { sendDiscordWebhook } from "../utils/send-discord-webhook";
@@ -25,6 +24,7 @@ import {
 import {
   generateTranslatedSummary,
   generateTranslatedPassage,
+  generateTranslatedPassageFromSentences,
 } from "../utils/generators/translation-generator";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -42,6 +42,30 @@ interface Context {
   params?: {
     articleId?: string;
   };
+}
+
+// Helper function to retry Prisma operations
+async function retryPrismaOperation<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3
+): Promise<T> {
+  let retries = 0;
+  while (retries < maxRetries) {
+    try {
+      return await operation();
+    } catch (error) {
+      retries++;
+      console.error(`Prisma operation attempt ${retries}/${maxRetries} failed:`, error);
+      
+      if (retries >= maxRetries) {
+        throw new Error(`Prisma operation failed after ${maxRetries} attempts: ${error instanceof Error ? error.message : 'Unknown Prisma error'}`);
+      }
+      
+      // Wait before retrying
+      await new Promise((resolve) => setTimeout(resolve, 1000 * retries));
+    }
+  }
+  throw new Error("This should never be reached");
 }
 
 // Function to generate queue
@@ -153,15 +177,8 @@ export async function generateQueue(req: ExtendedNextRequest) {
 
     // Log failed results
     if (failedCount > 0) {
-      const currentDate = new Date();
-      const formattedDate = currentDate.toISOString().split(".")[0];
-      const errorLogRef = db.collection("error-log").doc(formattedDate);
-      await errorLogRef.set({
-        error: failedReasons,
-        created_at: new Date().toISOString(),
-        amount: amount * 6 * 2,
-        id: formattedDate,
-      });
+      console.error("Failed to generate articles:", failedReasons);
+      // Note: Error logging to database is removed as part of Firestore to Prisma migration
     }
 
     await sendDiscordWebhook({
@@ -252,6 +269,8 @@ async function generateForGenre(
       subgenre: randomGenre.subgenre,
       amountPerGenre: amountPerGenre,
     });
+
+    console.log(`Generated topics for ${randomGenre.genre} - ${randomGenre.subgenre}:`, generatedTopic.topics);
 
     // Step 3: Queue tasks for each topic in this CEFR level
     for (const topic of generatedTopic.topics) {
@@ -355,7 +374,7 @@ async function generateForGenre(
   return results.flat();
 }
 
-// Function to generate article, questions, and save to db
+// Function to generate article, questions, and save to db using Prisma
 // Returns a string if failed, otherwise returns an object
 async function queue(
   type: ArticleType,
@@ -367,16 +386,28 @@ async function queue(
   userAgent: string,
   maxRetries: number = 5
 ) {
+  console.log(`[DEBUG] queue() called with:`, {
+    type,
+    genre,
+    subgenre,
+    topic,
+    cefrLevel,
+    reqUrl,
+    userAgent,
+    maxRetries
+  });
+
   let attempts = 0;
   let lastError: unknown = null;
+  let articleId: string = "";
+  let prismaRetries = 0;
+  const maxPrismaRetries = 3;
 
   while (attempts < maxRetries) {
+    console.log(`[DEBUG] Starting attempt ${attempts + 1}/${maxRetries} to generate article`);
     try {
-      //console.log(`Attempt ${attempts + 1}/${maxRetries} to generate article`);
-      // Generate article and evaluate rating
-      const ref = db.collection("new-articles").doc();
-      const articleId = ref.id;
-
+      console.log(`[DEBUG] Calling evaluateArticle()...`);
+      // Generate article and evaluate rating using the same approach as generateUserArticle
       const {
         article: generatedArticle,
         rating,
@@ -384,118 +415,281 @@ async function queue(
         raLevel,
       } = await evaluateArticle(type, genre, subgenre, topic, cefrLevel);
 
-      // Generate Image with retry
+      console.log(`[DEBUG] evaluateArticle() completed:`, {
+        title: generatedArticle.title,
+        rating,
+        cefrlevel,
+        raLevel,
+        wordCount: generatedArticle.passage.split(' ').length
+      });
+
+      // Create article using Prisma with retry mechanism
+      let article;
+      prismaRetries = 0;
+      console.log(`[DEBUG] Starting Prisma article creation...`);
+      while (prismaRetries < maxPrismaRetries) {
+        try {
+          console.log(`[DEBUG] Prisma create attempt ${prismaRetries + 1}/${maxPrismaRetries}`);
+          article = await prisma.article.create({
+            data: {
+              type: type,
+              genre,
+              subGenre: subgenre,
+              title: generatedArticle.title,
+              summary: generatedArticle.summary,
+              passage: generatedArticle.passage,
+              imageDescription: generatedArticle.imageDesc,
+              cefrLevel: cefrlevel,
+              raLevel,
+              rating: rating,
+              isPublic: true,
+            },
+          });
+          console.log(`[DEBUG] Article created successfully in Prisma`);
+          break;
+        } catch (prismaError) {
+          prismaRetries++;
+          console.error(`[DEBUG] Prisma create attempt ${prismaRetries}/${maxPrismaRetries} failed:`, prismaError);
+
+          if (prismaRetries >= maxPrismaRetries) {
+            throw new Error(`Failed to save article to database after ${maxPrismaRetries} attempts: ${prismaError instanceof Error ? prismaError.message : 'Unknown Prisma error'}`);
+          }
+
+          // Wait before retrying Prisma operation
+          console.log(`[DEBUG] Waiting ${1000 * prismaRetries}ms before retrying Prisma operation...`);
+          await new Promise((resolve) => setTimeout(resolve, 1000 * prismaRetries));
+        }
+      }
+
+      if (!article) {
+        throw new Error("Failed to create article after all Prisma retries");
+      }
+
+      articleId = article.id;
+      console.log(`[DEBUG] Article created with ID: ${articleId}`);
+      // Generate Image
+      console.log(`[DEBUG] Starting image generation for articleId: ${articleId}`);
       await generateImage({
         imageDesc: generatedArticle.imageDesc,
         articleId,
       });
+      console.log(`[DEBUG] Image generation completed`);
 
-      const createdAt = new Date().toISOString();
-      await ref.set({
-        average_rating: rating,
-        cefr_level: cefrlevel,
-        created_at: createdAt,
-        genre,
-        image_description: generatedArticle.imageDesc,
-        passage: generatedArticle.passage,
-        ra_level: raLevel,
-        read_count: 0,
-        subgenre,
-        summary: generatedArticle.summary,
-        title: generatedArticle.title,
-        type,
-        id: articleId,
+      // Generate Questions (same approach as generateUserArticle)
+      console.log(`[DEBUG] Starting question generation...`);
+      const [mcq, saq, laq] = await Promise.all([
+        generateMCQuestion({
+          type,
+          cefrlevel: cefrLevel,
+          passage: generatedArticle.passage,
+          title: generatedArticle.title,
+          summary: generatedArticle.summary,
+          imageDesc: generatedArticle.imageDesc,
+        }),
+        generateSAQuestion({
+          type,
+          cefrlevel: cefrLevel,
+          passage: generatedArticle.passage,
+          title: generatedArticle.title,
+          summary: generatedArticle.summary,
+          imageDesc: generatedArticle.imageDesc,
+        }),
+        generateLAQuestion({
+          type,
+          cefrlevel: cefrLevel,
+          passage: generatedArticle.passage,
+          title: generatedArticle.title,
+          summary: generatedArticle.summary,
+          imageDesc: generatedArticle.imageDesc,
+        }),
+      ]);
+      console.log(`[DEBUG] Question generation completed:`, {
+        mcqCount: mcq.questions?.length || 0,
+        saqCount: saq.questions?.length || 0,
+        laqExists: !!laq.question
       });
 
-      // Sequential execution for question generation
-      const mcq = await generateMCQuestion({
-        type,
-        cefrlevel: cefrLevel,
-        passage: generatedArticle.passage,
-        title: generatedArticle.title,
-        summary: generatedArticle.summary,
-        imageDesc: generatedArticle.imageDesc,
+      // Transform and save questions using Prisma (same approach as generateUserArticle)
+      console.log(`[DEBUG] Starting question transformation...`);
+      const transformedMCQuestions = mcq.questions
+        .map((q: any) => {
+          const options = [
+            q.correct_answer,
+            q.distractor_1,
+            q.distractor_2,
+            q.distractor_3,
+          ].filter(Boolean);
+
+          if (options.length !== 4) return null;
+
+          const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+
+          return {
+            question: q.question,
+            options: shuffledOptions,
+            answer: q.correct_answer,
+            textualEvidence: q.textual_evidence || "",
+            articleId: articleId,
+          };
+        })
+        .filter(
+          (q): q is NonNullable<typeof q> =>
+            q !== null &&
+            q.question &&
+            q.options &&
+            q.options.length === 4 &&
+            q.answer
+        );
+
+      const transformedSAQuestions = saq.questions
+        .map((q: any) => ({
+          question: q.question,
+          answer: q.suggested_answer || q.answer,
+          articleId: articleId,
+        }))
+        .filter((q: any) => q.question && q.answer);
+
+      console.log(`[DEBUG] Question transformation completed:`, {
+        validMCQCount: transformedMCQuestions.length,
+        validSAQCount: transformedSAQuestions.length,
+        laqExists: !!laq.question
       });
 
-      const saq = await generateSAQuestion({
-        type,
-        cefrlevel: cefrLevel,
-        passage: generatedArticle.passage,
-        title: generatedArticle.title,
-        summary: generatedArticle.summary,
-        imageDesc: generatedArticle.imageDesc,
-      });
+      // Save questions to database using Prisma with retry mechanism
+      console.log(`[DEBUG] Starting question saving to database...`);
+      const questionPromises = [];
 
-      const laq = await generateLAQuestion({
-        type,
-        cefrlevel: cefrLevel,
-        passage: generatedArticle.passage,
-        title: generatedArticle.title,
-        summary: generatedArticle.summary,
-        imageDesc: generatedArticle.imageDesc,
-      });
+      // Save multiple choice questions if valid
+      if (transformedMCQuestions.length > 0) {
+        questionPromises.push(
+          retryPrismaOperation(() => prisma.multipleChoiceQuestion.createMany({
+            data: transformedMCQuestions,
+          }), maxPrismaRetries)
+        );
+      }
 
+      // Save short answer questions if valid
+      if (transformedSAQuestions.length > 0) {
+        questionPromises.push(
+          retryPrismaOperation(() => prisma.shortAnswerQuestion.createMany({
+            data: transformedSAQuestions,
+          }), maxPrismaRetries)
+        );
+      }
+
+      // Save long answer question if valid
+      if (laq.question) {
+        questionPromises.push(
+          retryPrismaOperation(() => prisma.longAnswerQuestion.create({
+            data: {
+              question: laq.question,
+              articleId: articleId,
+            },
+          }), maxPrismaRetries)
+        );
+      }
+
+      // Execute all question saves
+      if (questionPromises.length > 0) {
+        await Promise.all(questionPromises);
+        console.log(`[DEBUG] All questions saved successfully`);
+      } else {
+        console.log(`[DEBUG] No questions to save`);
+      }
+
+      // Generate Word List
+      console.log(`[DEBUG] Starting word list generation...`);
       const wordList = await generateWordList({
         passage: generatedArticle.passage,
       });
+      console.log(`[DEBUG] Word list generation completed:`, {
+        wordCount: wordList.word_list?.length || 0
+      });
 
-      // Save generated data to Firestore
-      await addQuestionsToCollection(articleId, "mc-questions", mcq.questions);
-      await addQuestionsToCollection(articleId, "sa-questions", saq.questions);
-      await addQuestionsToCollection(articleId, "la-questions", [laq]);
-      await addWordList(articleId, wordList.word_list, createdAt);
+      // Generate Audio and get timepoints first (to get consistent sentence splitting)
+      console.log(`[DEBUG] Starting audio generation...`);
+      const sentences = await generateAudio({
+        passage: generatedArticle.passage,
+        articleId: articleId,
+      });
+      console.log(`[DEBUG] Audio generation completed:`, {
+        sentenceCount: sentences?.length || 0
+      });
 
-      // Generate audio (Sequential execution)
-      await generateAudio({ passage: generatedArticle.passage, articleId });
-      await generateAudioForWord({ wordList: wordList.word_list, articleId });
+      // Generate translations using the sentences from audio generation
+      console.log(`[DEBUG] Starting translation generation...`);
+      let translatedSummary, translatedPassage;
+      try {
+        // Extract just the sentence text from the audio results
+        const sentenceTexts = sentences.map(s => s.sentences);
+        
+        [translatedSummary, translatedPassage] = await Promise.all([
+          generateTranslatedSummary({
+            summary: generatedArticle.summary,
+          }),
+          generateTranslatedPassageFromSentences({
+            sentences: sentenceTexts,
+          }),
+        ]);
+        console.log(`[DEBUG] Translation generation completed`);
+      } catch (translationError) {
+        console.error("[DEBUG] Translation failed:", translationError);
+        // Cleanup the article and related files
+        if (articleId) {
+          await cleanupFailedPrismaGeneration(articleId);
+        }
+        throw new Error(`Translation failed: ${translationError instanceof Error ? translationError.message : 'Unknown translation error'}`);
+      }
 
-      // const [mcq, saq, laq, wordList] = await Promise.all([
-      //   generateMCQuestion({
-      //     type,
-      //     cefrlevel: cefrLevel,
-      //     passage: generatedArticle.passage,
-      //     title: generatedArticle.title,
-      //     summary: generatedArticle.summary,
-      //     imageDesc: generatedArticle.imageDesc,
-      //   }),
-      //   generateSAQuestion({
-      //     type,
-      //     cefrlevel: cefrLevel,
-      //     passage: generatedArticle.passage,
-      //     title: generatedArticle.title,
-      //     summary: generatedArticle.summary,
-      //     imageDesc: generatedArticle.imageDesc,
-      //   }),
-      //   generateLAQuestion({
-      //     type,
-      //     cefrlevel: cefrLevel,
-      //     passage: generatedArticle.passage,
-      //     title: generatedArticle.title,
-      //     summary: generatedArticle.summary,
-      //     imageDesc: generatedArticle.imageDesc,
-      //   }),
-      //   generateWordList({
-      //     passage: generatedArticle.passage,
-      //   }),
-      // ]);
+      console.log(`[DEBUG] Starting word audio generation...`);
+      const wordsWithTimePoints = await generateAudioForWord({
+        wordList: wordList.word_list,
+        articleId: articleId,
+      });
+      console.log(`[DEBUG] Word audio generation completed:`, {
+        wordsWithTimePointsCount: wordsWithTimePoints?.length || 0
+      });
 
-      //console.log("Article generation successful!");
+      // Update article with translations, sentences, and words
+      console.log(`[DEBUG] Starting final article update with all data...`);
+      await retryPrismaOperation(() => prisma.article.update({
+        where: { id: articleId },
+        data: {
+          translatedSummary: translatedSummary,
+          translatedPassage: translatedPassage,
+          sentences: sentences,
+          words: wordsWithTimePoints,
+        },
+      }), maxPrismaRetries);
+      console.log(`[DEBUG] Final article update completed`);
+
+      console.log("[DEBUG] Article generation successful!");
       return articleId;
     } catch (error) {
       console.error(
-        `Error during article generation (Attempt ${attempts + 1}):`,
+        `[DEBUG] Error during article generation (Attempt ${attempts + 1}/${maxRetries}):`,
         error
       );
       lastError = error;
+
+      // Cleanup on error if article was created
+      if (articleId) {
+        console.log(`[DEBUG] Starting cleanup for failed article: ${articleId}`);
+        await cleanupFailedPrismaGeneration(articleId);
+        articleId = ""; // Reset for next attempt
+        console.log(`[DEBUG] Cleanup completed for failed article`);
+      }
     }
 
     attempts++;
-    const delay = Math.pow(2, attempts) * 1000;
-    //console.log(`Retrying in ${delay / 1000} seconds...`);
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    if (attempts < maxRetries) {
+      const delay = Math.pow(2, attempts) * 1000;
+      console.log(`[DEBUG] Retrying in ${delay / 1000} seconds... (Attempt ${attempts + 1}/${maxRetries})`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
 
-  console.error("Failed to generate article after max retries.");
+  console.error(`[DEBUG] Failed to generate article after ${maxRetries} max retries.`);
 
   let errorMessage = "Unknown error occurred";
   if (lastError instanceof Error) {
@@ -506,6 +700,7 @@ async function queue(
     errorMessage = JSON.stringify(lastError);
   }
 
+  console.log(`[DEBUG] Sending failure notification to Discord: ${errorMessage}`);
   await sendDiscordWebhook({
     title: "Queue Generation Failed",
     embeds: [
@@ -518,37 +713,8 @@ async function queue(
     userAgent,
   });
 
+  console.log(`[DEBUG] queue() function completed with failure, returning null`);
   return null;
-}
-
-// Helper function to add questions to a specific subcollection
-async function addQuestionsToCollection(
-  articleId: string,
-  collectionName: string,
-  questions: any[]
-) {
-  const collectionRef = db
-    .collection("new-articles")
-    .doc(articleId)
-    .collection(collectionName);
-
-  const promises = questions.map((question) => collectionRef.add(question));
-  await Promise.all(promises);
-}
-
-// Helper function to store word list
-async function addWordList(
-  articleId: string,
-  wordList: any[],
-  createdAt: string
-) {
-  const wordListRef = db.collection("word-list").doc(articleId);
-  await wordListRef.set({
-    word_list: wordList,
-    articleId,
-    id: articleId,
-    created_at: createdAt,
-  });
 }
 
 async function evaluateArticle(
@@ -874,16 +1040,28 @@ export async function generateUserArticle(req: NextRequest) {
     });
     //console.log("Word list generated successfully");
 
-    // Generate translations
+    // Generate Audio and get timepoints first (to get consistent sentence splitting)
+    //console.log("Generating audio...");
+    const sentences = await generateAudio({
+      passage: generatedArticle.passage,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
+
+    // Generate translations using the sentences from audio generation
     //console.log("Generating translations...");
     let translatedSummary, translatedPassage;
     try {
+      // Extract just the sentence text from the audio results
+      const sentenceTexts = sentences.map(s => s.sentences);
+      
       [translatedSummary, translatedPassage] = await Promise.all([
         generateTranslatedSummary({
           summary: generatedArticle.summary,
         }),
-        generateTranslatedPassage({
-          passage: generatedArticle.passage,
+        generateTranslatedPassageFromSentences({
+          sentences: sentenceTexts,
         }),
       ]);
       //console.log("Translations generated successfully");
@@ -898,15 +1076,6 @@ export async function generateUserArticle(req: NextRequest) {
 
     // Note: We don't update the article with word list here anymore
     // because generateAudioForWord will save the complete words with timepoints
-
-    // Generate Audio and get timepoints
-    //console.log("Generating audio...");
-    const sentences = await generateAudio({
-      passage: generatedArticle.passage,
-      articleId: articleId,
-      isUserGenerated: true,
-      userId: userId,
-    });
 
     const wordsWithTimePoints = await generateAudioForWord({
       wordList: wordList.word_list,
@@ -1329,16 +1498,32 @@ export async function updateUserArticle(
       passage: passage,
     });
 
-    // Generate translations
+    // Delete old audio files before generating new ones
+    //console.log("Deleting old audio files...");
+    await cleanupAudioFiles(articleId, userId);
+
+    // Generate new audio first (to get consistent sentence splitting)
+    //console.log("Generating new audio...");
+    const sentences = await generateAudio({
+      passage: passage,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
+
+    // Generate translations using the sentences from audio generation
     //console.log("Generating translations...");
     let translatedSummary, translatedPassage;
     try {
+      // Extract just the sentence text from the audio results
+      const sentenceTexts = sentences.map(s => s.sentences);
+      
       [translatedSummary, translatedPassage] = await Promise.all([
         generateTranslatedSummary({
           summary: summary,
         }),
-        generateTranslatedPassage({
-          passage: passage,
+        generateTranslatedPassageFromSentences({
+          sentences: sentenceTexts,
         }),
       ]);
       //console.log("Translations generated successfully");
@@ -1348,19 +1533,6 @@ export async function updateUserArticle(
       // since it's an existing article being updated
       throw new Error(`Translation failed: ${translationError instanceof Error ? translationError.message : 'Unknown translation error'}`);
     }
-
-    // Delete old audio files before generating new ones
-    //console.log("Deleting old audio files...");
-    await cleanupAudioFiles(articleId, userId);
-
-    // Generate new audio only (not images)
-    //console.log("Generating new audio...");
-    const sentences = await generateAudio({
-      passage: passage,
-      articleId: articleId,
-      isUserGenerated: true,
-      userId: userId,
-    });
 
     // Generate word audio separately since it returns data
     const wordsWithTimePoints = await generateAudioForWord({

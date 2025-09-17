@@ -65,7 +65,6 @@ export type WordWithTimePoint = {
 export async function generateAudioForWord({
   wordList,
   articleId,
-  isUserGenerated = false,
   userId = "",
 }: GenerateAudioParams & {
   isUserGenerated?: boolean;
@@ -73,8 +72,10 @@ export async function generateAudioForWord({
 }): Promise<WordWithTimePoint[]> {
   try {
     console.log(`🎵 Starting generateAudioForWord for ${articleId}...`);
-    console.log(`📝 Word list count: ${Array.isArray(wordList) ? wordList.length : 'not an array'}`);
-    
+    console.log(
+      `📝 Word list count: ${Array.isArray(wordList) ? wordList.length : "not an array"}`
+    );
+
     const voice =
       AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
 
@@ -83,9 +84,11 @@ export async function generateAudioForWord({
       : [];
 
     console.log(`📝 Vocabulary count after filtering: ${vocabulary.length}`);
-    
+
     if (vocabulary.length === 0) {
-      console.log(`⚠️ No vocabulary found for ${articleId}, returning empty array`);
+      console.log(
+        `⚠️ No vocabulary found for ${articleId}, returning empty array`
+      );
       return [];
     }
 
@@ -116,10 +119,14 @@ export async function generateAudioForWord({
     );
 
     if (!response.ok) {
-      console.error(`❌ Text-to-speech API error: ${response.status} ${response.statusText}`);
+      console.error(
+        `❌ Text-to-speech API error: ${response.status} ${response.statusText}`
+      );
       const errorText = await response.text();
       console.error(`❌ Error response: ${errorText}`);
-      throw new Error(`Text-to-speech API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Text-to-speech API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -128,7 +135,9 @@ export async function generateAudioForWord({
     // Check if data exists and has required properties
     if (!data || !data.audioContent) {
       console.error("❌ Text-to-speech API response:", data);
-      throw new Error("Invalid response from text-to-speech API - missing audioContent");
+      throw new Error(
+        "Invalid response from text-to-speech API - missing audioContent"
+      );
     }
 
     const audio = data.audioContent;
@@ -141,29 +150,30 @@ export async function generateAudioForWord({
     await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);
 
     // Combine word list with time points
-    const wordsWithTimePoints: WordWithTimePoint[] = wordList.map((word, index) => {
-      const timePoint = allTimePoints.find(tp => tp.markName === `word${index + 1}`);
-      return {
-        markName: `word${index + 1}`,
-        definition: word.definition,
-        vocabulary: word.vocabulary,
-        timeSeconds: timePoint?.timeSeconds || 0,
-      };
-    });
+    const wordsWithTimePoints: WordWithTimePoint[] = wordList.map(
+      (word, index) => {
+        const timePoint = allTimePoints.find(
+          (tp) => tp.markName === `word${index + 1}`
+        );
+        return {
+          markName: `word${index + 1}`,
+          definition: word.definition,
+          vocabulary: word.vocabulary,
+          timeSeconds: timePoint?.timeSeconds || 0,
+        };
+      }
+    );
 
-    // Update based on article type
-    if (isUserGenerated && userId) {
-      // For user-generated articles - use Prisma
+    // Update using Prisma
+    try {
       await prisma.article.update({
         where: { id: articleId },
         data: {
-          words: wordsWithTimePoints
-        }
+          words: wordsWithTimePoints,
+        },
       });
-    } else {
-      // For stories/chapters or other non-user content, don't update any database
-      // Just return the words with timepoints for the caller to handle
-      console.log(`Generated ${wordsWithTimePoints.length} words with timepoints for ${articleId}`);
+    } catch (error) {
+      console.error("Prisma update error:", error);
     }
 
     return wordsWithTimePoints;

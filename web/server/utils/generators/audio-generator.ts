@@ -138,7 +138,6 @@ function mergeAudioFiles(files: string[], outputPath: string): Promise<void> {
 export async function generateAudio({
   passage,
   articleId,
-  isUserGenerated = false,
   userId = "",
 }: GenerateAudioParams & {
   isUserGenerated?: boolean;
@@ -227,10 +226,9 @@ export async function generateAudio({
 
     await uploadToBucket(combinedAudioPath, `${AUDIO_URL}/${articleId}.mp3`);
 
-    // Update the database with all timepoints
-    if (isUserGenerated && userId) {
-      // For user-generated articles, update using Prisma
-      const { prisma } = await import("@/lib/prisma");
+    //update using Prisma
+    const { prisma } = await import("@/lib/prisma");
+    try {
       await prisma.article.update({
         where: { id: articleId },
         data: {
@@ -238,20 +236,10 @@ export async function generateAudio({
           audioUrl: `${articleId}.mp3`,
         },
       });
-    } else {
-      // For regular articles, still use Firestore for now
-      // But first check if document exists
-      try {
-        await db.collection("new-articles").doc(articleId).update({
-          timepoints: result,
-          id: articleId,
-        });
-      } catch (firestoreError: any) {
-        // If document doesn't exist (like for stories), just continue
-        console.log(`Firestore document ${articleId} not found, skipping timepoints update`);
-      }
+    } catch (error) {
+      console.log("Prisma update error:", error);
     }
-    
+
     // Return the timepoints for stories to use
     return result;
   } catch (error: any) {

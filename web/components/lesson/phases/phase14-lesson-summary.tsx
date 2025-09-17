@@ -368,7 +368,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
 
       {/* Quiz Performance */}
       {quizScores && (
-        <Card className="overflow-hidden border-2 border-gradient-to-r from-pink-400 to-violet-400 dark:from-pink-800 dark:to-violet-800 bg-violet-200">
+        <Card className="overflow-hidden border-2 border-gradient-to-r from-pink-400 to-violet-400 dark:from-pink-800 dark:to-violet-800 bg-violet-200 dark:bg-background">
           <CardHeader className="bg-gradient-to-r from-pink-300 to-violet-300 dark:from-pink-950 dark:to-violet-950 pb-4">
             <div className="flex items-center gap-3">
               <Target className="h-6 w-6 text-pink-600 dark:text-pink-400" />
