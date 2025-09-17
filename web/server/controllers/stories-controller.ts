@@ -7,7 +7,7 @@ import { QuizStatus } from "@/components/models/questions-model";
 interface RequestContext {
   params: {
     storyId: string;
-    chapterNumber: number;
+    chapterNumber: string;
   };
 }
 
@@ -288,13 +288,20 @@ export async function getStoryById(
 
 export async function updateAverageRating(
   req: ExtendedNextRequest,
-  { params }: { params: { storyId: string } }
+  ctx: RequestContext
 ) {
-  const storyId = params.storyId;
+  const { storyId, chapterNumber: chapterNumberStr } = ctx.params;
+  const chapterNumber = parseInt(chapterNumberStr, 10);
+  
+  if (!storyId || isNaN(chapterNumber)) {
+    return NextResponse.json(
+      { message: "Missing storyId or invalid chapterNumber", result: null },
+      { status: 400 }
+    );
+  }
   
   try {
     const data = await req.json();
-    const chapterNumber = Number(data.chapterNumber);
     const rating = Math.round((data.rating as number) * 4) / 4; // Round to nearest 0.25
 
     // Update the specific chapter's rating
@@ -374,12 +381,13 @@ export async function getChapter(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { storyId, chapterNumber } = ctx.params;
+  const { storyId, chapterNumber: chapterNumberStr } = ctx.params;
+  const chapterNumber = parseInt(chapterNumberStr, 10);
   const userId = req.session?.user.id as string;
 
-  if (!storyId || chapterNumber === undefined) {
+  if (!storyId || isNaN(chapterNumber)) {
     return NextResponse.json(
-      { message: "Missing storyId or chapterNumber", result: null },
+      { message: "Missing storyId or invalid chapterNumber", result: null },
       { status: 400 }
     );
   }
@@ -412,21 +420,7 @@ export async function getChapter(
       );
     }
 
-    const timepoints = await prisma.storyTimepoint.findUnique({
-      where: {
-        storyId_chapterNumber: {
-          storyId,
-          chapterNumber,
-        },
-      },
-    });
-
-    if (!timepoints) {
-      return NextResponse.json(
-        { message: "Timepoints not found", result: null },
-        { status: 404 }
-      );
-    }
+    const timepoints = chapter.sentences || [];
 
     // Check if chapter tracking record exists, create if not
     let chapterTracking = await prisma.chapterTracking.findUnique({
@@ -466,7 +460,7 @@ export async function getChapter(
       cefr_level: story.cefrLevel,
       totalChapters,
       chapter: chapter,
-      timepoints: timepoints.timepoints,
+      timepoints: timepoints,
     });
   } catch (error) {
     console.error("Error getting chapter", error);

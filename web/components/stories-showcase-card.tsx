@@ -109,7 +109,7 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             {t(story.genre)}, {t(story.subgenre)}
           </Badge>
           <Badge className="shadow-lg max-w-max" variant="destructive">
-            <Rating name="read-only" value={story.average_rating} readOnly />
+            <Rating name="read-only" value={story.averageRating} readOnly />
           </Badge>
           <div className="mt-auto">
             <div className=" bg-black bg-opacity-40">

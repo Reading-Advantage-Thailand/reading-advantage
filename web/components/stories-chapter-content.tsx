@@ -88,7 +88,7 @@ export default function ChapterContent({
   const [isTranslateOpen, setIsTranslateOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const sentences = splitTextIntoSentences(story.chapter.content, true);
+  const sentences = splitTextIntoSentences(story.chapter.passage, true);
   const router = useRouter();
   const chapter = Number(chapterNumber);
   const [isTranslateClicked, setIsTranslateClicked] = useState(false);

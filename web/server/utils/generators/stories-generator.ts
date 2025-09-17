@@ -213,41 +213,17 @@ export async function generateStories(req: NextRequest) {
                   cefrLevel: level,
                   raLevel: raLevel,
                   title: chapter.title,
-                  passage: chapter.passage, // Use 'passage' instead of 'content' to match Article
+                  passage: chapter.passage,
                   summary: chapter.summary,
                   imageDescription: chapter["image-description"],
                   rating: chapter.rating,
                   wordCount: chapter.analysis?.wordCount,
-                  audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/stories/${storyId}/${i + 1}/audio.mp3`,
-                  audioWordUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/stories/${storyId}/${i + 1}/words.json`,
+                  audioUrl: `${storyId}-${i + 1}.mp3`,
+                  audioWordUrl: `${storyId}-${i + 1}.json`,
+                  translatedSummary: chapter.translatedSummary as any,
+                  translatedPassage: chapter.translatedPassage as any,
                 },
               });
-
-              // Generate translations for chapter
-              try {
-                console.log(`🌐 Generating translations for chapter ${i + 1}...`);
-                const [translatedSummary, translatedPassage] = await Promise.all([
-                  generateTranslatedSummary({
-                    summary: chapter.summary || "",
-                  }),
-                  generateTranslatedPassage({
-                    passage: chapter.passage || "",
-                  }),
-                ]);
-
-                // Update chapter with translations
-                await prisma.chapter.update({
-                  where: { id: createdChapter.id },
-                  data: {
-                    translatedSummary: translatedSummary as any,
-                    translatedPassage: translatedPassage as any,
-                  },
-                });
-                console.log(`✅ Chapter ${i + 1} translations generated successfully`);
-              } catch (translationError) {
-                console.error(`❌ Chapter ${i + 1} translation failed:`, translationError);
-                // Continue without translations rather than failing completely
-              }
 
               // Generate audio and timepoints for chapter (similar to generateUserArticle)
               try {
@@ -262,6 +238,8 @@ export async function generateStories(req: NextRequest) {
                 const sentences = await generateAudio({
                   passage: chapter.passage,
                   articleId: `${storyId}-${i + 1}`,
+                  isChapter: true,
+                  chapterId: createdChapter.id,
                   isUserGenerated: false, // This is system generated
                   userId: "",
                 });
@@ -270,6 +248,8 @@ export async function generateStories(req: NextRequest) {
                 const wordsWithTimePoints = await generateAudioForWord({
                   wordList: wordListForAudio,
                   articleId: `${storyId}-${i + 1}`,
+                  isChapter: true,
+                  chapterId: createdChapter.id,
                   isUserGenerated: false, // This is system generated
                   userId: "",
                 });

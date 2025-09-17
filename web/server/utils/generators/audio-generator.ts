@@ -19,6 +19,8 @@ import ffmpeg from "fluent-ffmpeg";
 interface GenerateAudioParams {
   passage: string;
   articleId: string;
+  isChapter?: boolean;
+  chapterId?: string;
 }
 
 interface GenerateChapterAudioParams {
@@ -138,6 +140,8 @@ function mergeAudioFiles(files: string[], outputPath: string): Promise<void> {
 export async function generateAudio({
   passage,
   articleId,
+  isChapter = false,
+  chapterId,
   userId = "",
 }: GenerateAudioParams & {
   isUserGenerated?: boolean;
@@ -229,13 +233,18 @@ export async function generateAudio({
     //update using Prisma
     const { prisma } = await import("@/lib/prisma");
     try {
-      await prisma.article.update({
-        where: { id: articleId },
-        data: {
-          sentences: result,
-          audioUrl: `${articleId}.mp3`,
-        },
-      });
+      if (isChapter && chapterId) {
+        // For chapters, don't update database here, just return the result
+        // The caller will handle the database update
+      } else {
+        await prisma.article.update({
+          where: { id: articleId },
+          data: {
+            sentences: result,
+            audioUrl: `${articleId}.mp3`,
+          },
+        });
+      }
     } catch (error) {
       console.log("Prisma update error:", error);
     }
@@ -308,7 +317,7 @@ export async function generateChapterAudio({
       const audio = data.audioContent;
       const MP3 = base64.toByteArray(audio);
 
-      const localPath = `${process.cwd()}/data/audios/${storyId}-${chapterNumber}_${i}.mp3`;
+      const localPath = `${process.cwd()}/data/tts/${storyId}-${chapterNumber}_${i}.mp3`;
       fs.writeFileSync(localPath, MP3);
       audioPaths.push(localPath);
 

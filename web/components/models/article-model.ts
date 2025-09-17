@@ -16,6 +16,7 @@ export interface ArticleShowcase {
   genre?: string;
   storyBible?: StoryBible;
   author?: { authorId: string | null; name: string | null };
+  averageRating?: number;
 }
 
 export interface StoryChapter {
@@ -30,7 +31,7 @@ export interface StoryChapter {
   storyBible: StoryBible;
   chapter: {
     title: string;
-    content: string;
+    passage: string;
     summary: string;
     "image-description": string;
     rating: number;

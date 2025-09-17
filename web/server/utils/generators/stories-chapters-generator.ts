@@ -3,13 +3,14 @@ import { generateObject } from "ai";
 import { openai, openaiModel4o } from "@/utils/openai";
 import { z } from "zod";
 import { getCEFRRequirements } from "../CEFR-requirements";
-import { generateChapterAudio } from "./audio-generator";
-import { generateChapterAudioForWord } from "./audio-words-generator";
-import { saveWordList } from "./audio-words-generator";
 import { generateMCQuestion } from "./mc-question-generator";
 import { generateSAQuestion } from "./sa-question-generator";
 import { generateLAQuestion } from "./la-question-generator";
 import { evaluateRating } from "./evaluate-rating-generator";
+import path from "path";
+import { readJsonFile } from "../read-json";
+import { google, googleModel, googleProPrewiew } from "@/utils/google";
+import { TranslatedSummaryResponse, TranslatedPassageResponse } from "./translation-generator";
 
 interface Place {
   name: string;
@@ -101,6 +102,8 @@ interface Chapter {
   questions: Question[];
   rating?: number;
   user_rating_count?: number;
+  translatedSummary?: TranslatedSummaryResponse;
+  translatedPassage?: TranslatedPassageResponse;
 }
 
 interface Question {
@@ -166,6 +169,74 @@ const ChapterSchema = z.object({
       answer: z.string(),
     })
   ),
+  translatedSummary: z.object({
+    cn: z.string(),
+    en: z.string(),
+    th: z.string(),
+    tw: z.string(),
+    vi: z.string(),
+  }).optional(),
+  translatedPassage: z.object({
+    cn: z.array(z.string()),
+    en: z.array(z.string()),
+    th: z.array(z.string()),
+    tw: z.array(z.string()),
+    vi: z.array(z.string()),
+  }).optional(),
+});
+
+const ChapterWithoutQuestionsSchema = z.object({
+  title: z.string(),
+  passage: z.string(), // Changed from 'content' to 'passage'
+  summary: z.string(),
+  "image-description": z.string(),
+  analysis: z.object({
+    wordCount: z.number(),
+    averageSentenceLength: z.number(),
+    vocabulary: z.object({
+      uniqueWords: z.number(),
+      complexWords: z.number(),
+      targetWordsUsed: z.array(
+        z.object({
+          vocabulary: z.string(),
+          definition: z.object({
+            en: z.string(),
+            th: z.string(),
+            cn: z.string(),
+            tw: z.string(),
+            vi: z.string(),
+          }),
+        })
+      ),
+    }),
+    grammarStructures: z.array(z.string()),
+    readabilityScore: z.number(),
+  }),
+  continuityData: z.object({
+    events: z.array(z.string()),
+    characterStates: z.array(
+      z.object({
+        character: z.string(),
+        currentState: z.string(),
+        location: z.string(),
+      })
+    ),
+    introducedElements: z.array(z.string()),
+  }),
+  translatedSummary: z.object({
+    cn: z.string(),
+    en: z.string(),
+    th: z.string(),
+    tw: z.string(),
+    vi: z.string(),
+  }).optional(),
+  translatedPassage: z.object({
+    cn: z.array(z.string()),
+    en: z.array(z.string()),
+    th: z.array(z.string()),
+    tw: z.array(z.string()),
+    vi: z.array(z.string()),
+  }).optional(),
 });
 
 export async function generateChapters(
@@ -231,40 +302,7 @@ export async function generateChapters(
           );
           newChapter.questions = questions;
 
-          //console.log("Generating chapter audio...");
-
-          await generateChapterAudio({
-            passage: newChapter.passage,
-            storyId: storyId,
-            chapterNumber: `${i + 1}`,
-          });
-          //console.log("Chapter audio generated successfully.");
-
-          const wordListForAudio =
-            newChapter.analysis?.vocabulary.targetWordsUsed.map((word) => ({
-              vocabulary: word.vocabulary,
-              definition: word.definition,
-            })) || [];
-
-          //console.log("Saving word list for audio...");
-
-          await saveWordList({
-            wordList: wordListForAudio,
-            storyId: storyId,
-            chapterNumber: `${i + 1}`,
-          });
-
-          //console.log("Word list saved for audio successfully.");
-
-          //console.log("Generating chapter audio for words...");
-
-          await generateChapterAudioForWord({
-            wordList: wordListForAudio,
-            storyId: storyId,
-            chapterNumber: `${i + 1}`,
-          });
-
-          //console.log("Chapter audio for words generated successfully.");
+          // Note: Audio generation is now handled in stories-generator.ts to avoid duplication
 
           break;
         } catch (error) {
@@ -312,6 +350,19 @@ async function generateSingleChapter({
   const cefrRequirements = getCEFRRequirements(cefrLevel);
   const minWordCount = Math.floor(wordCountPerChapter * 0.9);
   const maxWordCount = Math.ceil(wordCountPerChapter * 1.1);
+
+  const dataFilePath = path.join(
+    process.cwd(),
+    "data",
+    "cefr-level-prompts.json"
+  );
+  const prompts = readJsonFile<any[]>(dataFilePath);
+  const levelConfig = prompts
+    .find((item: any) => item.type === "fiction")
+    ?.levels.find((lvl: any) => lvl.level === cefrLevel);
+  if (!levelConfig) {
+    throw new Error(`level config not found for ${cefrLevel}`);
+  }
 
   const previousChapterSummaries = previousChapters
     .map((c, index) => `Chapter ${index + 1}: ${c.summary}`)
@@ -367,18 +418,24 @@ Ensure that:
 - The text meets CEFR-level requirements for readability, grammar, and vocabulary.
 - Include an **image-description** summarizing the chapter visually.
 
+Additionally, provide translations for the summary in Simplified Chinese (cn), Traditional Chinese (tw), Thai (th), and Vietnamese (vi). Keep the English version (en) as is.
+
+For the passage, split it into sentences and provide translations for each sentence in Simplified Chinese (cn), Traditional Chinese (tw), Thai (th), and Vietnamese (vi). Keep the English version (en) as is for each sentence.
+
 Return only valid JSON.
 `;
 
   try {
     const response = await generateObject({
-      model: openai(openaiModel4o),
-      schema: ChapterSchema,
+      model: google(googleProPrewiew),
+      schema: ChapterWithoutQuestionsSchema,
+      system: levelConfig.systemPrompt + "\n\nAdditionally, provide translations for the summary and passage as specified in the schema. For passage translations, split the passage into sentences and provide each sentence translation as a separate array element.",
       prompt,
       temperature: 1,
+      seed: Math.floor(Math.random() * 1000),
     });
 
-    return response.object;
+    return response.object as Chapter;
   } catch (error) {
     console.error("Error generating single chapter:", error);
     return null;

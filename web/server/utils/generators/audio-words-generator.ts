@@ -25,6 +25,8 @@ export type WordListResponse = {
 export type GenerateAudioParams = {
   wordList: WordListResponse[];
   articleId: string;
+  isChapter?: boolean;
+  chapterId?: string;
 };
 
 export type GenerateChapterAudioParams = {
@@ -65,6 +67,8 @@ export type WordWithTimePoint = {
 export async function generateAudioForWord({
   wordList,
   articleId,
+  isChapter = false,
+  chapterId,
   userId = "",
 }: GenerateAudioParams & {
   isUserGenerated?: boolean;
@@ -166,13 +170,18 @@ export async function generateAudioForWord({
 
     // Update using Prisma
     try {
-      await prisma.article.update({
-        where: { id: articleId },
-        data: {
-          words: wordsWithTimePoints,
-          audioWordUrl: `${articleId}.mp3`,
-        },
-      });
+      if (isChapter && chapterId) {
+        // For chapters, don't update database here, just return the result
+        // The caller will handle the database update
+      } else {
+        await prisma.article.update({
+          where: { id: articleId },
+          data: {
+            words: wordsWithTimePoints,
+            audioWordUrl: `${articleId}.mp3`,
+          },
+        });
+      }
     } catch (error) {
       console.error("Prisma update error:", error);
     }

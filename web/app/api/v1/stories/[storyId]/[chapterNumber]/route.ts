@@ -8,7 +8,7 @@ import { updateAverageRating } from "@/server/controllers/stories-controller";
 interface ExtendedNextRequest {
   params: {
     storyId: string;
-    chapterNumber: number;
+    chapterNumber: string;
   };
 }
 
