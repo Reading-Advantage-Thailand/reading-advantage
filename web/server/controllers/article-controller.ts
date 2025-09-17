@@ -136,6 +136,13 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
         raLevel: true,
         rating: true,
         createdAt: true,
+        authorId: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -160,6 +167,13 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
           raLevel: true,
           rating: true,
           createdAt: true,
+          authorId: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       });
     }
@@ -197,6 +211,11 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       is_read: readArticleIds.has(article.id),
       is_completed: completedArticleIds.has(article.id),
       is_approved: true,
+      authorId: article.authorId,
+      author: {
+        id: article.author?.id || null,
+        name: article.author?.name || null,
+      },
     }));
 
     return NextResponse.json({

@@ -40,6 +40,7 @@ model User {
   storyRecords        StoryRecord[]
   userSentenceRecords UserSentenceRecord[]
   userWordRecords     UserWordRecord[]
+  articles            Article[]
 
   @@map("users")
 }
@@ -133,6 +134,7 @@ model Article {
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   isPublic                Boolean                  @default(false) @map("is_public")
+  author                  User?                    @relation(fields: [authorId], references: [id])
   longAnswerQuestions     LongAnswerQuestion[]
   multipleChoiceQuestions MultipleChoiceQuestion[]
   shortAnswerQuestions    ShortAnswerQuestion[]

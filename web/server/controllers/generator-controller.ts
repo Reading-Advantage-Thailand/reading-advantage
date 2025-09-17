@@ -810,11 +810,11 @@ export async function generateUserArticle(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    let author = "Unknown Author";
+    let author = user.name || user.email || "Unknown Author";
 
-    // Get school name from the latest active license
+    // Get school name from the latest active license if needed for additional context
     const latestLicense = user.licenseOnUsers[0]; // Get the first license
-    if (latestLicense?.license) {
+    if (latestLicense?.license && !user.name) {
       author = latestLicense.license.schoolName || "Unknown School";
     }
 

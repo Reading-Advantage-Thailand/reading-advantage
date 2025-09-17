@@ -170,6 +170,7 @@ export async function generateAudioForWord({
         where: { id: articleId },
         data: {
           words: wordsWithTimePoints,
+          audioWordUrl: `${articleId}.mp3`,
         },
       });
     } catch (error) {
