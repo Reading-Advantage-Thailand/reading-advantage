@@ -144,9 +144,6 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
         where: whereConditions,
         orderBy: [
           {
-            raLevel: "asc",
-          },
-          {
             createdAt: "desc",
           },
         ],
