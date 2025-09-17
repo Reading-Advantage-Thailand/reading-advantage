@@ -59,8 +59,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
   } else {
     return (
       <div className="bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
-        <div className="flex min-h-screen flex-col">
-          <header className="container z-40">
+        <div className="flex min-h-screen flex-col bg-foreground/10">
+          <header className="container z-40 ">
             <div className="flex h-20 items-center justify-between py-6">
               <MainNav />
               {/* <ProgressBar progress={user.xp} level={user.level!} /> */}

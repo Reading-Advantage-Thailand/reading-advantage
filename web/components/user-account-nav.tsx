@@ -59,7 +59,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
               name: user.display_name || null,
               image: user.picture || null,
             }}
-            className="h-8 w-8 border-2 border-[#E5E7EB] rounded-full cursor-pointer"
+            className="h-8 w-8 border-2 border-border rounded-full cursor-pointer"
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="md:w-56 lg:w-fit">
