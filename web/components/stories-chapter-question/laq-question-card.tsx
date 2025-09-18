@@ -356,6 +356,7 @@ function LAQuestion({
               answer: dataForm.answer,
               feedback: feedback.result,
               timeRecorded: timer,
+              createActivity: false,
             }),
           }
         );
@@ -378,12 +379,15 @@ function LAQuestion({
 
   async function onGetExp() {
     setIsLoading(true);
-    fetch(`/api/v1/stories/${storyId}/${chapterNumber}/question/laq/${resp.result.id}/getxp`, {
-      method: "POST",
-      body: JSON.stringify({
-        rating,
-      }),
-    })
+    fetch(
+      `/api/v1/stories/${storyId}/${chapterNumber}/question/laq/${resp.result.id}/getxp`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          rating,
+        }),
+      }
+    )
       .then((res) => res.json())
       .then((data) => {
         if (data) {
@@ -398,22 +402,7 @@ function LAQuestion({
       .finally(() => {
         setIsLoading(false);
       });
-    await fetch(`/api/v1/users/${userId}/activitylog`, {
-      method: "POST",
-      body: JSON.stringify({
-        storyId: storyId,
-        activityType: ActivityType.LA_Question,
-        activityStatus: ActivityStatus.Completed,
-        timeTaken: timer,
-        xpEarned: rating,
-        details: {
-          ...data,
-          title: articleTitle,
-          level: articleLevel,
-          cefr_level: levelCalculation(rating).cefrLevel,
-        },
-      }),
-    });
+    // Activity and XP are created server-side in getxp; refresh to update UI
     router.refresh();
   }
 
