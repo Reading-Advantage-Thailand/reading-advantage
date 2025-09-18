@@ -73,14 +73,28 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       );
     }
 
+    const normalizeGenreDoc = (doc: any) => {
+      // Accept either { Name, Subgenres } or { name, subgenres }
+      const name = doc.Name ?? doc.name ?? "";
+      const subgenres = doc.Subgenres ?? doc.subgenres ?? [];
+      return { Name: name, Subgenres: subgenres };
+    };
+
     const fetchGenres = async (type: string, genre?: string | null) => {
       const genreData = type === "fiction" ? genresFiction : genresNonfiction;
-      const allGenres = genreData.Genres;
+      const rawGenres = genreData.Genres || [];
+      const allGenres = rawGenres.map(normalizeGenreDoc);
 
       if (genre) {
-        const genreItem = allGenres.find((data: any) => data.Name === genre);
+        // Try to find by label (Name) or by a slug/value form
+        const genreItem = allGenres.find((data: any) => {
+          if (data.Name === genre) return true;
+          const slug = nameToValue(data.Name);
+          if (slug === genre) return true;
+          return false;
+        });
         if (genreItem) {
-          return genreItem.Subgenres;
+          return genreItem.Subgenres || [];
         }
       }
 
@@ -761,22 +775,34 @@ export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
 
 export const getGenres = async (req: Request): Promise<Response> => {
   try {
-    // Fetch fiction genres from JSON data
-    const fictionGenres: GenreResponse[] = genresFiction.Genres.map(
-      (genreData: any) => ({
-        value: nameToValue(genreData.Name),
-        label: genreData.Name,
-        subgenres: genreData.Subgenres || [],
-      })
-    );
+    // Normalize and fetch fiction genres from JSON data
+    const rawFiction = genresFiction.Genres || [];
+    const fictionGenres: GenreResponse[] = rawFiction.map((genreData: any) => {
+      const normalized = {
+        Name: genreData.Name ?? genreData.name ?? "",
+        Subgenres: genreData.Subgenres ?? genreData.subgenres ?? [],
+      };
+      return {
+        value: nameToValue(normalized.Name),
+        label: normalized.Name,
+        subgenres: normalized.Subgenres || [],
+      };
+    });
 
-    // Fetch nonfiction genres from JSON data
-    const nonfictionGenres: GenreResponse[] = genresNonfiction.Genres.map(
-      (genreData: any) => ({
-        value: nameToValue(genreData.Name),
-        label: genreData.Name,
-        subgenres: genreData.Subgenres || [],
-      })
+    // Normalize and fetch nonfiction genres from JSON data
+    const rawNonfiction = genresNonfiction.Genres || [];
+    const nonfictionGenres: GenreResponse[] = rawNonfiction.map(
+      (genreData: any) => {
+        const normalized = {
+          Name: genreData.Name ?? genreData.name ?? "",
+          Subgenres: genreData.Subgenres ?? genreData.subgenres ?? [],
+        };
+        return {
+          value: nameToValue(normalized.Name),
+          label: normalized.Name,
+          subgenres: normalized.Subgenres || [],
+        };
+      }
     );
 
     // Sort genres alphabetically by label

@@ -192,17 +192,11 @@ export async function getAllStories(req: ExtendedNextRequest) {
     const userId = req.session?.user.id as string;
     const userLevel = req.session?.user.level as number;
 
-    // Get available genres (you might want to create a genres table later)
-    const selectionGenres = [
-      "Adventure",
-      "Fantasy",
-      "Mystery",
-      "Science Fiction",
-      "Romance",
-      "Horror",
-      "Comedy",
-      "Drama",
-    ]; // Placeholder - you can implement dynamic genre fetching
+    // Get available genres from JSON data (normalize both legacy and new shapes)
+    // We import the fiction genres file which contains the available genre labels.
+    const genresFiction = require("../../../data/genres-fiction.json");
+    const rawGenres = genresFiction.Genres || [];
+    const selectionGenres = rawGenres.map((g: any) => g.Name ?? g.name ?? "").filter(Boolean);
 
     if (storyId) {
       const story = await prisma.story.findUnique({
