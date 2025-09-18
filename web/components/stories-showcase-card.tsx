@@ -70,7 +70,7 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             method: "POST",
             body: JSON.stringify({
               articleId: story.id,
-              activityType: ActivityType.ChapterRead,
+              activityType: ActivityType.StoriesRead,
               activityStatus: ActivityStatus.InProgress,
               details: {
                 title: story.title,

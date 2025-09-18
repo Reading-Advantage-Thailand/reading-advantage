@@ -2,13 +2,183 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
-import { QuizStatus } from "@prisma/client";
+import { QuizStatus, ActivityType } from "@prisma/client";
 
 interface RequestContext {
   params: {
     storyId: string;
     chapterNumber: string;
   };
+}
+
+export async function checkChapterCompletion(
+  userId: string,
+  storyId: string,
+  chapterNumber: number
+): Promise<boolean> {
+  const chapterTargetId = `${storyId}_${chapterNumber}`;
+
+  // Check MCQ completion (5 questions) - use chapter-based targetId pattern
+  const mcqCount = await prisma.userActivity.count({
+    where: {
+      userId,
+      activityType: ActivityType.MC_QUESTION,
+      targetId: {
+        startsWith: `${chapterTargetId}_mcq_`,
+      },
+      completed: true,
+    },
+  });
+
+  // Check SAQ completion (1 question)
+  // Try exact composite targetId first, then fall back to other possible legacy formats
+  let saqExists = await prisma.userActivity.findFirst({
+    where: {
+      userId,
+      activityType: ActivityType.SA_QUESTION,
+      targetId: chapterTargetId,
+      completed: true,
+    },
+  });
+
+  if (!saqExists) {
+    saqExists = await prisma.userActivity.findFirst({
+      where: {
+        userId,
+        activityType: ActivityType.SA_QUESTION,
+        completed: true,
+        OR: [
+          { targetId: storyId },
+          { targetId: { startsWith: `${storyId}_` } },
+          { details: { path: ["storyId"], equals: storyId } },
+        ],
+      },
+    });
+  }
+
+  // Check LAQ completion (1 question)
+  // Try exact composite targetId first, then fallback to legacy/alternate formats
+  let laqExists = await prisma.userActivity.findFirst({
+    where: {
+      userId,
+      activityType: ActivityType.LA_QUESTION,
+      targetId: chapterTargetId,
+      completed: true,
+    },
+  });
+
+  if (!laqExists) {
+    laqExists = await prisma.userActivity.findFirst({
+      where: {
+        userId,
+        activityType: ActivityType.LA_QUESTION,
+        completed: true,
+        OR: [
+          { targetId: storyId },
+          { targetId: { startsWith: `${storyId}_` } },
+          { details: { path: ["storyId"], equals: storyId } },
+        ],
+      },
+    });
+  }
+
+  try {
+    const passed = mcqCount >= 5 && !!saqExists && !!laqExists;
+    if (!passed) {
+      try {
+        const mcqActivities = await prisma.userActivity.findMany({
+          where: {
+            userId,
+            activityType: ActivityType.MC_QUESTION,
+            targetId: { startsWith: `${chapterTargetId}_mcq_` },
+          },
+          orderBy: { createdAt: "asc" },
+        });
+
+        const saqCandidates = await prisma.userActivity.findMany({
+          where: {
+            userId,
+            activityType: ActivityType.SA_QUESTION,
+            OR: [
+              { targetId: chapterTargetId },
+              { targetId: storyId },
+              { targetId: { startsWith: `${storyId}_` } },
+              { details: { path: ["storyId"], equals: storyId } },
+            ],
+          },
+        });
+
+        const laqCandidates = await prisma.userActivity.findMany({
+          where: {
+            userId,
+            activityType: ActivityType.LA_QUESTION,
+            OR: [
+              { targetId: chapterTargetId },
+              { targetId: storyId },
+              { targetId: { startsWith: `${storyId}_` } },
+              { details: { path: ["storyId"], equals: storyId } },
+            ],
+          },
+        });
+      } catch (e) {
+        console.error("Failed to fetch candidate activities", e);
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  return mcqCount >= 5 && !!saqExists && !!laqExists;
+}
+
+export async function updateChapterCompletion(
+  userId: string,
+  storyId: string,
+  chapterNumber: number
+): Promise<void> {
+  const targetId = `${storyId}_${chapterNumber}`;
+  const isCompleted = await checkChapterCompletion(
+    userId,
+    storyId,
+    chapterNumber
+  );
+
+  if (isCompleted) {
+    // Update CHAPTER_READ to completed
+    try {
+      // Try to find existing CHAPTER_READ record first
+      const existing = await prisma.userActivity.findUnique({
+        where: {
+          userId_activityType_targetId: {
+            userId,
+            activityType: ActivityType.CHAPTER_READ,
+            targetId,
+          },
+        },
+      });
+
+      if (existing) {
+        await prisma.userActivity.update({
+          where: { id: existing.id },
+          data: { completed: true, updatedAt: new Date() },
+        });
+      } else {
+        await prisma.userActivity.create({
+          data: {
+            userId,
+            activityType: ActivityType.CHAPTER_READ,
+            targetId,
+            completed: true,
+          },
+        });
+      }
+    } catch (err) {
+      console.error(
+        `[updateChapterCompletion] Failed to upsert CHAPTER_READ userId=${userId} storyId=${storyId} chapter=${chapterNumber} targetId=${targetId}`,
+        err
+      );
+    }
+  }
 }
 
 export async function getAllStories(req: ExtendedNextRequest) {
@@ -24,8 +194,14 @@ export async function getAllStories(req: ExtendedNextRequest) {
 
     // Get available genres (you might want to create a genres table later)
     const selectionGenres = [
-      "Adventure", "Fantasy", "Mystery", "Science Fiction", 
-      "Romance", "Horror", "Comedy", "Drama"
+      "Adventure",
+      "Fantasy",
+      "Mystery",
+      "Science Fiction",
+      "Romance",
+      "Horror",
+      "Comedy",
+      "Drama",
     ]; // Placeholder - you can implement dynamic genre fetching
 
     if (storyId) {
@@ -79,9 +255,6 @@ export async function getAllStories(req: ExtendedNextRequest) {
       where: whereClause,
       include: {
         chapters: true,
-        storyRecords: {
-          where: { userId },
-        },
       },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
@@ -91,9 +264,22 @@ export async function getAllStories(req: ExtendedNextRequest) {
     // Filter by user level and add completion status
     const availableStories = await Promise.all(
       stories
-        .filter((story) => (story.raLevel ?? 0) <= 3 || (story.raLevel ?? 0) <= userLevel)
+        .filter(
+          (story) =>
+            (story.raLevel ?? 0) <= 3 || (story.raLevel ?? 0) <= userLevel
+        )
         .map(async (story) => {
           const chapterCount = story.chapters.length;
+
+          // Check if story is read (STORIES_READ activity exists)
+          const storyReadActivity = await prisma.userActivity.findFirst({
+            where: {
+              userId,
+              activityType: ActivityType.STORIES_READ,
+              targetId: story.id,
+            },
+          });
+          const isRead = !!storyReadActivity;
 
           // Check completion status for each chapter
           const completedChapters = await Promise.all(
@@ -101,8 +287,10 @@ export async function getAllStories(req: ExtendedNextRequest) {
               const mcqCount = await prisma.userActivity.count({
                 where: {
                   userId,
-                  activityType: 'MC_QUESTION',
-                  targetId: `${story.id}_${chapter.chapterNumber}`,
+                  activityType: ActivityType.MC_QUESTION,
+                  targetId: {
+                    startsWith: `${story.id}_${chapter.chapterNumber}_mcq_`,
+                  },
                   completed: true,
                 },
               });
@@ -110,7 +298,7 @@ export async function getAllStories(req: ExtendedNextRequest) {
               const saqCount = await prisma.userActivity.count({
                 where: {
                   userId,
-                  activityType: 'SA_QUESTION',
+                  activityType: ActivityType.SA_QUESTION,
                   targetId: `${story.id}_${chapter.chapterNumber}`,
                   completed: true,
                 },
@@ -119,7 +307,7 @@ export async function getAllStories(req: ExtendedNextRequest) {
               const laqCount = await prisma.userActivity.count({
                 where: {
                   userId,
-                  activityType: 'LA_QUESTION',
+                  activityType: ActivityType.LA_QUESTION,
                   targetId: `${story.id}_${chapter.chapterNumber}`,
                   completed: true,
                 },
@@ -129,8 +317,16 @@ export async function getAllStories(req: ExtendedNextRequest) {
             })
           );
 
-          const isComplete = completedChapters.filter(Boolean).length === chapterCount;
-          const isRead = story.storyRecords.length > 0;
+          const isComplete =
+            completedChapters.filter(Boolean).length === chapterCount;
+
+          // Update STORIES_READ to completed if all chapters are completed
+          if (isComplete && storyReadActivity && !storyReadActivity.completed) {
+            await prisma.userActivity.update({
+              where: { id: storyReadActivity.id },
+              data: { completed: true },
+            });
+          }
 
           return {
             ...story,
@@ -194,48 +390,49 @@ export async function getStoryById(
       );
     }
 
-    // Check if story record exists, create if not
-    let storyRecord = await prisma.storyRecord.findUnique({
+    // Check if STORIES_READ activity exists, create if not
+    let storyReadActivity = await prisma.userActivity.findUnique({
       where: {
-        userId_storyId: {
+        userId_activityType_targetId: {
           userId,
-          storyId,
+          activityType: ActivityType.STORIES_READ,
+          targetId: storyId,
         },
       },
     });
 
-    if (!storyRecord) {
-      storyRecord = await prisma.storyRecord.create({
+    if (!storyReadActivity) {
+      storyReadActivity = await prisma.userActivity.create({
         data: {
           userId,
-          storyId,
-          title: story.title,
-          level: req.session?.user.level || 1,
-          status: "READ",
+          activityType: ActivityType.STORIES_READ,
+          targetId: storyId,
+          completed: false,
         },
       });
     }
 
-    // Get chapter tracking data
-    const chapterTrackings = await prisma.chapterTracking.findMany({
-      where: {
-        userId,
-        storyId,
-      },
-    });
-
     // Get completion status for each chapter
     const chaptersWithCompletion = await Promise.all(
       story.chapters.map(async (chapter) => {
-        const chapterTracking = chapterTrackings.find(
-          (ct) => ct.chapterNumber === chapter.chapterNumber
-        );
+        // Check if CHAPTER_READ activity exists
+        const chapterReadActivity = await prisma.userActivity.findUnique({
+          where: {
+            userId_activityType_targetId: {
+              userId,
+              activityType: ActivityType.CHAPTER_READ,
+              targetId: `${storyId}_${chapter.chapterNumber}`,
+            },
+          },
+        });
 
         const mcqCount = await prisma.userActivity.count({
           where: {
             userId,
-            activityType: 'MC_QUESTION',
-            targetId: `${storyId}_${chapter.chapterNumber}`,
+            activityType: ActivityType.MC_QUESTION,
+            targetId: {
+              startsWith: `${storyId}_${chapter.chapterNumber}_mcq_`,
+            },
             completed: true,
           },
         });
@@ -243,7 +440,7 @@ export async function getStoryById(
         const saqExists = await prisma.userActivity.findFirst({
           where: {
             userId,
-            activityType: 'SA_QUESTION',
+            activityType: ActivityType.SA_QUESTION,
             targetId: `${storyId}_${chapter.chapterNumber}`,
             completed: true,
           },
@@ -252,7 +449,7 @@ export async function getStoryById(
         const laqExists = await prisma.userActivity.findFirst({
           where: {
             userId,
-            activityType: 'LA_QUESTION',
+            activityType: ActivityType.LA_QUESTION,
             targetId: `${storyId}_${chapter.chapterNumber}`,
             completed: true,
           },
@@ -262,7 +459,7 @@ export async function getStoryById(
 
         return {
           ...chapter,
-          is_read: !!chapterTracking,
+          is_read: !!chapterReadActivity,
           is_completed: isCompleted,
         };
       })
@@ -271,7 +468,7 @@ export async function getStoryById(
     const storyWithCompletion = {
       ...story,
       chapters: chaptersWithCompletion,
-      is_read: true, // Since we have a record
+      is_read: true, // Since we have STORIES_READ activity
     };
 
     return NextResponse.json({
@@ -292,14 +489,14 @@ export async function updateAverageRating(
 ) {
   const { storyId, chapterNumber: chapterNumberStr } = ctx.params;
   const chapterNumber = parseInt(chapterNumberStr, 10);
-  
+
   if (!storyId || isNaN(chapterNumber)) {
     return NextResponse.json(
       { message: "Missing storyId or invalid chapterNumber", result: null },
       { status: 400 }
     );
   }
-  
+
   try {
     const data = await req.json();
     const rating = Math.round((data.rating as number) * 4) / 4; // Round to nearest 0.25
@@ -354,9 +551,10 @@ export async function updateAverageRating(
       }
     });
 
-    const averageRating = totalUserCount > 0 
-      ? Math.round((totalRating / totalUserCount) * 4) / 4 
-      : 0;
+    const averageRating =
+      totalUserCount > 0
+        ? Math.round((totalRating / totalUserCount) * 4) / 4
+        : 0;
 
     // Update story average rating
     await prisma.story.update({
@@ -422,26 +620,24 @@ export async function getChapter(
 
     const timepoints = chapter.sentences || [];
 
-    // Check if chapter tracking record exists, create if not
-    let chapterTracking = await prisma.chapterTracking.findUnique({
+    // Check if CHAPTER_READ activity exists, create if not
+    let chapterReadActivity = await prisma.userActivity.findUnique({
       where: {
-        userId_storyId_chapterNumber: {
+        userId_activityType_targetId: {
           userId,
-          storyId,
-          chapterNumber,
+          activityType: ActivityType.CHAPTER_READ,
+          targetId: `${storyId}_${chapterNumber}`,
         },
       },
     });
 
-    if (!chapterTracking) {
-      chapterTracking = await prisma.chapterTracking.create({
+    if (!chapterReadActivity) {
+      chapterReadActivity = await prisma.userActivity.create({
         data: {
           userId,
-          storyId,
-          chapterNumber,
-          title: story.title,
-          level: req.session?.user.level || 1,
-          status: "READ",
+          activityType: ActivityType.CHAPTER_READ,
+          targetId: `${storyId}_${chapterNumber}`,
+          completed: false,
         },
       });
     }
