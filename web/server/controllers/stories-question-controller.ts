@@ -96,7 +96,6 @@ export async function getStoryMCQuestions(
     if (!story) {
       return NextResponse.json({ message: "Story not found" }, { status: 404 });
     }
-
     const chapter = story.chapters[0];
     if (!chapter) {
       return NextResponse.json(
@@ -167,7 +166,10 @@ export async function getStoryMCQuestions(
     // Keep only activities for this story chapter (details.storyId + details.chapterNumber)
     const chapterActivities = userActivities.filter((activity) => {
       const details = activity.details as any;
-      return details?.storyId === storyId && String(details?.chapterNumber) === String(chapterNumber);
+      return (
+        details?.storyId === storyId &&
+        String(details?.chapterNumber) === String(chapterNumber)
+      );
     });
 
     // Get XP logs for these chapter activities
@@ -187,7 +189,8 @@ export async function getStoryMCQuestions(
     const questionData = new Map();
 
     const sortedActivities = chapterActivities.sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
 
     sortedActivities.forEach((activity) => {
@@ -207,7 +210,9 @@ export async function getStoryMCQuestions(
           createdAt: activity.createdAt,
         });
 
-        progress.push(details.isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT);
+        progress.push(
+          details.isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT
+        );
       }
     });
 
@@ -258,7 +263,10 @@ export async function getStoryMCQuestions(
     const questionsForThisChapter = questions.slice(0, 5);
 
     if (questionsForThisChapter.length === 0) {
-      return NextResponse.json({ message: "No questions found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "No questions found" },
+        { status: 404 }
+      );
     }
 
     const unansweredQuestions = questionsForThisChapter.filter(
@@ -344,7 +352,6 @@ export async function getStoryMCQuestions(
     );
   }
 }
-
 
 export async function getStorySAQuestion(
   req: ExtendedNextRequest,
@@ -435,26 +442,69 @@ export async function getStorySAQuestion(
       );
     }
 
+    // Return the DB question id so front-end can post with questionId
     const formattedQuestion = {
       question: question.question,
-      suggested_answer: question.suggested_answer,
+      suggested_answer: (question as any).answer,
       chapter_number: chapterNumber,
-      question_number: 1,
-      id: `${chapterNumber}-1`,
+      questionId: question.id,
+      id: question.id,
     };
 
-    // Get user activity for this question
-    const userActivity = await prisma.userActivity.findUnique({
+    // Get user activity for this question (article flow):
+    // 1) try details.storyId equality,
+    // 2) then try details.questionId equality (new guard),
+    // 3) then fallback to targetId
+    let userActivity = await prisma.userActivity.findFirst({
       where: {
-        userId_activityType_targetId: {
-          userId,
-          activityType: ActivityType.SA_QUESTION,
-          targetId: `${storyId}-${chapterNumber}-1`,
+        userId,
+        activityType: ActivityType.SA_QUESTION,
+        completed: true,
+        details: {
+          path: ["storyId"],
+          equals: storyId,
         },
       },
     });
+    console.info("[getStorySAQuestion] lookup by details.storyId result:", userActivity?.id);
+
+    if (!userActivity) {
+      // Try matching by details.questionId (we store questionId in details)
+      userActivity = await prisma.userActivity.findFirst({
+        where: {
+          userId,
+          activityType: ActivityType.SA_QUESTION,
+          completed: true,
+          details: {
+            path: ["questionId"],
+            equals: question.id,
+          },
+        },
+      });
+      console.info("[getStorySAQuestion] lookup by details.questionId result:", userActivity?.id);
+    }
+
+    if (!userActivity) {
+      // Fallback to activity keyed by targetId
+      userActivity = await prisma.userActivity.findUnique({
+        where: {
+          userId_activityType_targetId: {
+            userId,
+            activityType: ActivityType.SA_QUESTION,
+            targetId: `${storyId}-${chapterNumber}-${question.id}`,
+          },
+        },
+      });
+      console.info("[getStorySAQuestion] lookup by targetId result:", userActivity?.id);
+    }
 
     const userRecord = userActivity?.details as any;
+    if (userActivity) {
+      console.info("[getStorySAQuestion] matched activity details:", {
+        activityId: userActivity.id,
+        details: userActivity.details,
+      });
+    }
 
     if (userRecord && userRecord.status !== AnswerStatus.UNANSWERED) {
       return NextResponse.json(
@@ -479,6 +529,7 @@ export async function getStorySAQuestion(
         result: {
           id: formattedQuestion.id,
           question: formattedQuestion.question,
+          questionId: formattedQuestion.questionId,
         },
       },
       { status: 200 }
@@ -501,9 +552,11 @@ export async function answerStorySAQuestion(
   }
 ) {
   try {
-    const { answer, timeRecorded } = await req.json();
-    const userId = req.session?.user.id as string;
+  const body = await req.json();
+  const { answer, timeRecorded, createActivity = false } = body;
+  console.info('[answerStorySAQuestion] createActivity flag:', createActivity);
 
+    const userId = req.session?.user.id as string;
     if (!userId) {
       return NextResponse.json(
         { message: "User not authenticated" },
@@ -518,20 +571,16 @@ export async function answerStorySAQuestion(
       );
     }
 
-    // Get story with chapter
+    // Load story and chapter
     const story = await prisma.story.findUnique({
       where: { id: storyId },
       include: {
-        chapters: {
-          where: { chapterNumber: parseInt(chapterNumber, 10) },
-        },
+        chapters: { where: { chapterNumber: parseInt(chapterNumber, 10) } },
       },
     });
-
     if (!story) {
       return NextResponse.json({ message: "Story not found" }, { status: 404 });
     }
-
     const chapter = story.chapters[0];
     if (!chapter) {
       return NextResponse.json(
@@ -540,128 +589,183 @@ export async function answerStorySAQuestion(
       );
     }
 
-    let shortAnswerQuestions = await prisma.shortAnswerQuestion.findMany({
-      where: { chapterId: chapter.id },
+    // Treat incoming questionNumber as the DB question id
+    const questionId = questionNumber;
+
+    // Try to find the specific question by id first
+    let questionData = await prisma.shortAnswerQuestion.findUnique({
+      where: { id: questionId },
     });
 
-    if (!shortAnswerQuestions || shortAnswerQuestions.length === 0) {
-      const generateSAQ = await generateSAQuestion({
-        cefrlevel:
-          (story.cefrLevel?.replace(/[+-]/g, "") as ArticleBaseCefrLevel) ||
-          ArticleBaseCefrLevel.A1,
-        type: (story.type as ArticleType) || ArticleType.NONFICTION,
-        passage: chapter.passage || "",
-        title: story.title || "",
-        summary: story.summary || "",
-        imageDesc: story.imageDescription || "",
+    // Fallback: load questions for chapter and pick first if id not found
+    if (!questionData) {
+      let shortAnswerQuestions = await prisma.shortAnswerQuestion.findMany({
+        where: { chapterId: chapter.id },
       });
+      if (!shortAnswerQuestions || shortAnswerQuestions.length === 0) {
+        // generate if missing
+        const generateSAQ = await generateSAQuestion({
+          cefrlevel:
+            (story.cefrLevel?.replace(/[+-]/g, "") as ArticleBaseCefrLevel) ||
+            ArticleBaseCefrLevel.A1,
+          type: (story.type as ArticleType) || ArticleType.NONFICTION,
+          passage: chapter.passage || "",
+          title: story.title || "",
+          summary: story.summary || "",
+          imageDesc: story.imageDescription || "",
+        });
 
-      for (const question of generateSAQ.questions) {
-        await prisma.shortAnswerQuestion.create({
-          data: {
-            chapterId: chapter.id,
-            question: question.question,
-            answer: question.suggested_answer || "",
-          },
+        for (const q of generateSAQ.questions) {
+          await prisma.shortAnswerQuestion.create({
+            data: {
+              chapterId: chapter.id,
+              question: q.question,
+              answer: q.suggested_answer || "",
+            },
+          });
+        }
+
+        shortAnswerQuestions = await prisma.shortAnswerQuestion.findMany({
+          where: { chapterId: chapter.id },
         });
       }
 
-      shortAnswerQuestions = await prisma.shortAnswerQuestion.findMany({
-        where: { chapterId: chapter.id },
-      });
-
-      if (!shortAnswerQuestions || shortAnswerQuestions.length === 0) {
-        return NextResponse.json(
-          { message: "No questions found" },
-          { status: 404 }
-        );
-      }
+      questionData = (shortAnswerQuestions as any[])[0];
     }
-
-    const questionData = (shortAnswerQuestions as any[]).find(
-      (q: any) => q.type === "SAQ"
-    );
 
     if (!questionData) {
       return NextResponse.json(
-        { message: "Question not found" },
+        { message: "No questions found" },
         { status: 404 }
       );
     }
 
-    const targetId = `${storyId}-${chapterNumber}-${questionNumber}`;
+  // Use composite targetId so it matches the lookup in getStorySAQuestion
+  const targetId = `${questionData.id}`;
 
-    // Check if user already answered
-    const existingActivity = await prisma.userActivity.findUnique({
-      where: {
-        userId_activityType_targetId: {
+    if (createActivity !== false) {
+      // Check if user already answered (unique composite)
+      const existingActivity = await prisma.userActivity.findUnique({
+        where: {
+          userId_activityType_targetId: {
+            userId,
+            activityType: ActivityType.SA_QUESTION,
+            targetId,
+          },
+        },
+      });
+
+      if (existingActivity) {
+        return NextResponse.json(
+          { message: "User already answered", results: [] },
+          { status: 400 }
+        );
+      }
+
+      // Upsert user activity so updates are possible
+      const activity = await prisma.userActivity.upsert({
+        where: {
+          userId_activityType_targetId: {
+            userId,
+            activityType: ActivityType.SA_QUESTION,
+            targetId,
+          },
+        },
+        update: {
+          completed: true,
+          timer: timeRecorded,
+          details: {
+            storyId,
+            chapter_number: chapterNumber,
+            questionId: questionData.id,
+            question: questionData.question,
+            answer,
+            suggested_answer: questionData.answer,
+            created_at: new Date().toISOString(),
+          },
+          updatedAt: new Date(),
+        },
+        create: {
           userId,
           activityType: ActivityType.SA_QUESTION,
           targetId,
+          timer: timeRecorded,
+          completed: true,
+          details: {
+            storyId,
+            chapter_number: chapterNumber,
+            questionId: questionData.id,
+            question: questionData.question,
+            answer,
+            suggested_answer: questionData.answer,
+            created_at: new Date().toISOString(),
+          },
         },
-      },
-    });
+      });
 
-    if (existingActivity) {
-      return NextResponse.json(
-        { message: "User already answered", results: [] },
-        { status: 400 }
-      );
+      // Debug logging: show created/updated activity for tracing
+      try {
+        console.info("[answerStorySAQuestion] upserted activity", {
+          activityId: activity.id,
+          userId,
+          targetId,
+          details: activity.details,
+        });
+      } catch (e) {
+        console.error("[answerStorySAQuestion] logging failed", e);
+      }
+
+      // Award XP once (guard against duplicate xPLog)
+      const existingXpLog = await prisma.xPLog.findFirst({
+        where: {
+          activityId: activity.id,
+          activityType: ActivityType.SA_QUESTION,
+        },
+      });
+      if (!existingXpLog) {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (user) {
+          const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: { xp: user.xp + 3 },
+          });
+          await prisma.xPLog.create({
+            data: {
+              userId,
+              xpEarned: 3,
+              activityId: activity.id,
+              activityType: ActivityType.SA_QUESTION,
+            },
+          });
+          if (req.session?.user) req.session.user.xp = updatedUser.xp;
+        }
+      }
+    } else {
+      console.info('[answerStorySAQuestion] createActivity=false, skipping activity upsert/xp award');
     }
 
-    // Create user activity record
-    await prisma.userActivity.create({
-      data: {
-        userId,
-        activityType: ActivityType.SA_QUESTION,
-        targetId,
-        timer: timeRecorded,
-        completed: true,
-        details: {
-          chapter_number: chapterNumber,
-          question_number: questionNumber,
-          question: questionData.question,
-          answer,
-          suggested_answer: questionData.suggested_answer,
-          created_at: new Date().toISOString(),
-        },
-      },
-    });
-
-    // Get all user activities for SA questions in this story
+    // Build progress for SA questions in this story
     const userActivities = await prisma.userActivity.findMany({
       where: {
         userId,
         activityType: ActivityType.SA_QUESTION,
-        targetId: {
-          startsWith: `${storyId}-`,
-        },
+        targetId: { startsWith: `${storyId}-` },
       },
-      orderBy: {
-        createdAt: "asc",
-      },
+      orderBy: { createdAt: "asc" },
     });
 
     const progress = userActivities.map(
-      (activity) => (activity.details as any)?.status || AnswerStatus.UNANSWERED
+      (a) => (a.details as any)?.status || AnswerStatus.UNANSWERED
     );
-    for (let i = 0; i < 5 - userActivities.length; i++) {
+    for (let i = 0; i < 5 - userActivities.length; i++)
       progress.push(AnswerStatus.UNANSWERED);
-    }
 
     if (!progress.includes(AnswerStatus.UNANSWERED)) {
-      // Update story record status
       await prisma.storyRecord.upsert({
-        where: {
-          userId_storyId: {
-            userId,
-            storyId,
-          },
-        },
+        where: { userId_storyId: { userId, storyId } },
         update: {
           status: QuizStatus.COMPLETED_SAQ,
-          score: progress.filter((status) => status === AnswerStatus.CORRECT)
-            .length,
+          score: progress.filter((s) => s === AnswerStatus.CORRECT).length,
           rated: 0,
           level: req.session?.user.level,
           updatedAt: new Date(),
@@ -670,8 +774,7 @@ export async function answerStorySAQuestion(
           userId,
           storyId,
           status: QuizStatus.COMPLETED_SAQ,
-          score: progress.filter((status) => status === AnswerStatus.CORRECT)
-            .length,
+          score: progress.filter((s) => s === AnswerStatus.CORRECT).length,
           rated: 0,
           level: req.session?.user.level,
         },
@@ -681,10 +784,10 @@ export async function answerStorySAQuestion(
     return NextResponse.json(
       {
         chapter_number: chapterNumber,
-        question_number: questionNumber,
+        questionId: questionData.id,
         progress,
         answer,
-        suggested_answer: questionData.suggested_answer,
+        suggested_answer: questionData.answer,
       },
       { status: 200 }
     );
@@ -1085,7 +1188,10 @@ export async function retakeStoryMCQuestion(
     const storyActivityIds = activitiesToDelete
       .filter((activity) => {
         const details = activity.details as any;
-        return details?.storyId === storyId && String(details?.chapterNumber) === String(chapterNumber);
+        return (
+          details?.storyId === storyId &&
+          String(details?.chapterNumber) === String(chapterNumber)
+        );
       })
       .map((a) => a.id);
 
@@ -1117,10 +1223,15 @@ export async function retakeStoryMCQuestion(
     }
 
     // Delete the userActivity records by id
-    await prisma.userActivity.deleteMany({ where: { id: { in: storyActivityIds } } });
+    await prisma.userActivity.deleteMany({
+      where: { id: { in: storyActivityIds } },
+    });
 
     return NextResponse.json(
-      { message: `MCQ progress reset for chapter ${chapterNumber}`, state: QuestionState.INCOMPLETE },
+      {
+        message: `MCQ progress reset for chapter ${chapterNumber}`,
+        state: QuestionState.INCOMPLETE,
+      },
       { status: 200 }
     );
   } catch (error) {
