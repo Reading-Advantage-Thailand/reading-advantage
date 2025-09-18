@@ -88,7 +88,7 @@ function LessonMCQContent({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const { timer, setPaused } = useContext(QuizContext);
-  const t = useScopedI18n("components.mcq");
+  const t = useScopedI18n("pages.student.lessonPage");
   const router = useRouter();
 
   // Initialize quiz data
@@ -204,8 +204,8 @@ function LessonMCQContent({
       const totalXp = correctCount * 2;
 
       toast({
-        title: "🎉 Quiz Completed!",
-        description: `Great job! You got ${correctCount}/${data.total || 5} correct and earned ${totalXp} XP.`,
+        title: t("quizCompleted"),
+        description: t("greatJobXpEarned", { correct: correctCount, total: data.total || 5, xp: totalXp }),
       });
 
       // Clear session storage
@@ -335,11 +335,11 @@ function LessonMCQContent({
             <div className="space-y-2">
               <CardTitle className="text-2xl font-bold text-green-800 dark:text-green-200 flex items-center justify-center gap-2">
                 <span>🎉</span>
-                Quiz Completed!
+                {t("quizCompleted")}
                 <span>🎉</span>
               </CardTitle>
               <div className="text-green-700 dark:text-green-300">
-                Congratulations! You&apos;ve finished the multiple choice quiz.
+                {t("quizCompletedDescription")}
               </div>
             </div>
 
@@ -351,7 +351,7 @@ function LessonMCQContent({
                     {correctCount}/{data.total || 5}
                   </div>
                   <div className="text-sm text-green-700 dark:text-green-300">
-                    Correct Answers
+                    {t("correctAnswers")}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -359,7 +359,7 @@ function LessonMCQContent({
                     {Math.round((correctCount / (data.total || 5)) * 100)}%
                   </div>
                   <div className="text-sm text-blue-700 dark:text-blue-300">
-                    Accuracy
+                    {t("accuracy")}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -367,7 +367,7 @@ function LessonMCQContent({
                     +{totalXpEarned}
                   </div>
                   <div className="text-sm text-purple-700 dark:text-purple-300">
-                    XP Earned
+                    {t("mcqXpEarned")}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -376,7 +376,7 @@ function LessonMCQContent({
                     {String(totalTimer % 60).padStart(2, "0")}
                   </div>
                   <div className="text-sm text-orange-700 dark:text-orange-300">
-                    Total Time
+                    {t("totalTime")}
                   </div>
                 </div>
               </div>
@@ -434,7 +434,7 @@ function LessonMCQContent({
               <Brain className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
             <span className="font-semibold text-blue-900 dark:text-blue-100">
-              Multiple Choice Quiz
+              {t("multipleChoiceQuiz")}
             </span>
           </div>
           <Badge variant="secondary" className="flex items-center space-x-1">
@@ -447,9 +447,9 @@ function LessonMCQContent({
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-blue-700 dark:text-blue-300">
             <span>
-              Question {currentQuestionIndex + 1} of {data.total || 5}
+              {t("questionOfTotal", { current: currentQuestionIndex + 1, total: data.total || 5 })}
             </span>
-            <span>{Math.round(progressPercentage)}% Complete</span>
+            <span>{t("mcqPercentComplete", { percent: Math.round(progressPercentage) })}</span>
           </div>
           <Progress
             value={progressPercentage}
@@ -494,7 +494,7 @@ function LessonMCQContent({
                     <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <div>
                       <div className="font-semibold text-green-800 dark:text-green-200 mb-1">
-                        Correct Answer
+                        {t("correctAnswer")}
                       </div>
                       <div className="text-green-700 dark:text-green-300">
                         {correctAnswer}
@@ -507,7 +507,7 @@ function LessonMCQContent({
                     <Circle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                     <div>
                       <div className="font-semibold text-blue-800 dark:text-blue-200 mb-1">
-                        Your Answer
+                        {t("mcqYourAnswer")}
                       </div>
                       <div className="text-blue-700 dark:text-blue-300">
                         {currentQuestion.options?.[selectedOption]}
@@ -591,11 +591,11 @@ function LessonMCQContent({
                       .length >= (data.total || 5) ? (
                     <>
                       <Trophy className="w-4 h-4 mr-2" />
-                      Finish Quiz
+                      {t("finishQuiz")}
                     </>
                   ) : (
                     <>
-                      Next Question
+                      {t("nextQuestion")}
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </>
                   )}

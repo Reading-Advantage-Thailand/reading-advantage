@@ -72,7 +72,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   // Get translation for specific sentence
   const getTranslation = (sentenceIndex: number): string => {
     const translations = translatedPassage[locale] || [];
-    return translations[sentenceIndex] || "Translation not available";
+    return translations[sentenceIndex] || t("translationNotAvailablePhase5");
   };
 
   useEffect(() => {
@@ -304,7 +304,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
           <div className="flex items-center gap-3">
             <Settings className="h-4 w-4 text-gray-500" />
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Speed:
+              {t("speed")}
             </span>
             <Select value={readingSpeed} onValueChange={setReadingSpeed}>
               <SelectTrigger className="w-20">
@@ -328,8 +328,8 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
             onClick={() => setHighlightMode(!highlightMode)}
             className={highlightMode ? "bg-yellow-500 hover:bg-yellow-600" : ""}
           >
-            {highlightMode ? "🔆" : "🔅"} Highlight{" "}
-            {highlightMode ? "ON" : "OFF"}
+            {highlightMode ? "🔆" : "🔅"} {t("highlight")}{" "}
+            {highlightMode ? t("on") : t("off")}
           </Button>
 
           {/* Translation Toggle */}
@@ -344,8 +344,8 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
             }}
             className={showTranslation ? "bg-blue-500 hover:bg-blue-600" : ""}
           >
-            {showTranslation ? "🌐" : "🌍"} Translation{" "}
-            {showTranslation ? "ON" : "OFF"}
+            {showTranslation ? "🌐" : "🌍"} {t("translation")}{" "}
+            {showTranslation ? t("on") : t("off")}
           </Button>
         </div>
       </div>
@@ -549,7 +549,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                       100
                     )
                 : 0}
-              % complete
+              {t("percentComplete")}
             </span>
           </div>
         </div>
@@ -558,24 +558,24 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       {/* Reading Tips */}
       <div className="bg-gradient-to-r from-blue-300 to-indigo-300 dark:from-blue-950 dark:to-indigo-950 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
         <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-3">
-          📚 First Reading Tips
+          {t("deepReadingTips")}
         </h3>
         <ul className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Read through the entire article to get the general idea
+            {t("readEntireArticleDeep")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Click &quot;Start Reading&quot; to hear the article read aloud
+            {t("clickStartReadingDeep")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Click on any sentence to see its translation
+            {t("clickSentenceTranslation")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Use highlight mode to follow along with the audio
+            {t("useHighlightModeDeep")}
           </li>
         </ul>
       </div>

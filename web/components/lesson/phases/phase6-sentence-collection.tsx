@@ -159,10 +159,9 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
     }
   }, [userId, articleId, sentences.length]);
 
-  // Get translation for specific sentence
   const getTranslation = (sentenceIndex: number): string => {
     const translations = translatedPassage[locale] || [];
-    return translations[sentenceIndex] || "Translation not available";
+    return translations[sentenceIndex] || t("translationNotAvailable");
   };
 
   // Update form and completion status when selection changes
@@ -245,8 +244,8 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
 
       if (selectedSentences.size < 5) {
         toast({
-          title: "Insufficient Sentences",
-          description: "Please select at least 5 sentences to continue",
+          title: t("insufficientSentences"),
+          description: t("selectAtLeast5Sentences"),
           variant: "destructive",
         });
         return;
@@ -319,8 +318,8 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
       await Promise.all(savePromises);
 
       toast({
-        title: "Success!",
-        description: `${selectedSentences.size} sentences added to your collection`,
+        title: t("success"),
+        description: t("sentencesAddedToCollection", { count: selectedSentences.size }),
         variant: "default",
       });
       onCompleteChange(true);
@@ -334,8 +333,8 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
     } catch (error: any) {
       console.error("Error saving sentences:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to save sentences",
+        title: t("error"),
+        description: error.message || t("failedToSaveSentences"),
         variant: "destructive",
       });
     } finally {
@@ -347,18 +346,18 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
     const wordCount = sentence.split(" ").length;
     if (wordCount < 10)
       return {
-        level: "Simple",
+        level: t("simple"),
         color:
           "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
       };
     if (wordCount < 20)
       return {
-        level: "Medium",
+        level: t("medium"),
         color:
           "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
       };
     return {
-      level: "Complex",
+      level: t("complex"),
       color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     };
   };
@@ -370,7 +369,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mr-4" />
             <span className="text-lg text-gray-600 dark:text-gray-400">
-              Loading your sentence collection...
+              {t("loadingSentenceCollection")}
             </span>
           </div>
         </div>
@@ -407,39 +406,38 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
             )}
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                Collection Status
+                {t("collectionStatus")}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {savedCount >= 5 ? (
                   <>
-                    ✅ Phase completed! You have saved {savedCount} sentences to your collection
+                    ✅ {t("phaseCompletedSavedSentences", { count: savedCount })}
                   </>
                 ) : selectedCount >= 5 ? (
                   <>
-                    📝 {selectedCount} sentences selected - click &quot;Add to Collection&quot; to save them
+                    📝 {t("sentencesSelectedClickAdd", { count: selectedCount })}
                     <br />
                     <span className="text-amber-600 dark:text-amber-400 font-medium text-xs">
-                      ⚠️ You must save at least 5 sentences to proceed to the next phase
+                      {t("mustSaveAtLeast5Sentences")}
                     </span>
                   </>
                 ) : (
                   <>
-                    {selectedCount} of {sentences.length - disabledSentences.size}{" "}
-                    available sentences selected
+                    {t("availableSentencesSelected", { selected: selectedCount, available: sentences.length - disabledSentences.size })}
                     <br />
                     <span className="text-amber-600 dark:text-amber-400 font-medium text-xs">
-                      Select and save at least 5 sentences to proceed
+                      {t("selectAndSaveAtLeast5")}
                     </span>
                   </>
                 )}
                 {savedCount > 0 && savedCount < 5 && (
                   <span className="block text-xs text-blue-600 dark:text-blue-400 mt-1">
-                    {savedCount} sentences saved - need {5 - savedCount} more to proceed
+                    {t("sentencesSavedNeedMore", { saved: savedCount, needed: 5 - savedCount })}
                   </span>
                 )}
                 {disabledSentences.size > 0 && (
                   <span className="block text-xs text-gray-500 mt-1">
-                    {disabledSentences.size} sentences already in your collection
+                    {t("sentencesAlreadyInCollection", { count: disabledSentences.size })}
                   </span>
                 )}
               </p>
@@ -459,7 +457,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
             className={showTranslation ? "bg-blue-500 hover:bg-blue-600" : ""}
           >
             {showTranslation ? "🌐" : "🌍"} Translation{" "}
-            {showTranslation ? "ON" : "OFF"}
+            {showTranslation ? t("translationOn") : t("translationOff")}
           </Button>
         </div>
 
@@ -519,7 +517,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="font-medium text-yellow-300 dark:text-blue-600">
-                    Translation:
+                    {t("translation")}:
                   </div>
                   <button
                     className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold flex items-center justify-center transition-colors ml-2"
@@ -546,18 +544,15 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
             <p className="text-blue-800 dark:text-blue-200 text-center font-medium">
               {savedCount >= 5 ? (
                 <>
-                  🎉 Great! You have successfully saved {savedCount} sentences to your collection. 
-                  You can now proceed to the next phase!
+                  {t("greatSavedSentencesMessage", { count: savedCount })}
                 </>
               ) : (
                 <>
-                  📖 Click on sentences to add them to your collection. Selected
-                  sentences will be marked with a bookmark icon.
+                  {t("clickSentencesToAdd")}
                   {showTranslation && (
                     <>
                       <br />
-                      💬 Desktop: Right-click to see translations. Mobile:
-                      Long-press (hold) for translations.
+                      {t("desktopRightClick")}
                     </>
                   )}
                 </>
@@ -662,10 +657,10 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
                                         onTouchCancel={handleTouchEnd}
                                         title={`${complexity.level} sentence (${sentence.split(" ").length} words) - ${
                                           isDisabled
-                                            ? "Already in your collection"
-                                            : `Click to ${isSelected ? "deselect" : "select"}${
+                                            ? t("alreadyInCollection")
+                                            : `Click to ${isSelected ? t("clickToDeselect") : t("clickToSelect")}${
                                                 showTranslation
-                                                  ? ". Right-click (desktop) or long-press (mobile) for translation"
+                                                  ? `. ${t("rightClickOrLongPress")}`
                                                   : ""
                                               }`
                                         }`}
@@ -727,10 +722,10 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
                       <CheckCircle2Icon className="h-8 w-8 text-green-600 dark:text-green-400 mr-3" />
                       <div>
                         <h3 className="font-semibold text-green-800 dark:text-green-200">
-                          Phase Completed!
+                          {t("phaseCompleted")}
                         </h3>
                         <p className="text-sm text-green-600 dark:text-green-300">
-                          {savedCount} sentences saved to your collection
+                          {t("sentencesSavedToCollection", { count: savedCount })}
                         </p>
                       </div>
                     </div>
@@ -749,12 +744,12 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
                     {saving ? (
                       <div className="flex items-center">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                        Saving...
+                        {t("saving")}
                       </div>
                     ) : (
                       <>
                         <BookmarkIcon className="w-5 h-5 mr-2" />
-                        Add {selectedCount} Sentences to Collection
+                        {t("addSentencesToCollection", { count: selectedCount })}
                       </>
                     )}
                   </Button>
@@ -768,39 +763,34 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
       {/* Collection Guide */}
       <div className="bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-950 dark:to-emerald-950 p-6 rounded-xl border border-green-200 dark:border-green-800">
         <h3 className="font-semibold text-green-800 dark:text-green-200 mb-3">
-          📖 Sentence Collection Guide
+          {t("sentenceCollectionGuide")}
         </h3>
         <div className="grid gap-3 text-sm text-green-700 dark:text-green-300">
           <div className="flex items-start">
             <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
             <div>
-              <strong>Simple sentences:</strong> Good for practicing basic
-              structure and common vocabulary
+              <strong>{t("simple")} sentences:</strong> {t("simpleSentencesDesc")}
             </div>
           </div>
           <div className="flex items-start">
             <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
             <div>
-              <strong>Medium sentences:</strong> Help develop understanding of
-              complex ideas
+              <strong>{t("medium")} sentences:</strong> {t("mediumSentencesDesc")}
             </div>
           </div>
           <div className="flex items-start">
             <span className="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
             <div>
-              <strong>Complex sentences:</strong> Challenge your comprehension
-              and analytical skills
+              <strong>{t("complex")} sentences:</strong> {t("complexSentencesDesc")}
             </div>
           </div>
           <div className="flex items-start mt-4 pt-3 border-t border-green-300 dark:border-green-700">
             <BookmarkIcon className="w-4 h-4 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
             <div>
-              <strong>How to select:</strong> Click on sentences to bookmark
-              them.{" "}
+              <strong>{t("howToSelect")}:</strong> {t("howToSelectDesc")}{" "}
               {showTranslation && (
                 <>
-                  Use translation feature - right-click (desktop) or long-press
-                  (mobile) to understand difficult sentences before selecting.
+                  {t("useTranslationFeature")}
                 </>
               )}
             </div>
@@ -808,8 +798,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
           <div className="flex items-start">
             <LockIcon className="w-4 h-4 text-gray-500 mr-3 mt-0.5 flex-shrink-0" />
             <div>
-              <strong>Already collected:</strong> Sentences with lock icons are
-              already in your collection and cannot be selected again.
+              <strong>{t("alreadyCollected")}:</strong> {t("alreadyCollectedDesc")}
             </div>
           </div>
         </div>

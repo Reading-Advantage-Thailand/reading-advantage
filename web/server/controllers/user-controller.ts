@@ -121,6 +121,39 @@ export async function updateUser(
         licenseId: data.license_id,
       },
     });
+    if (data.resetXP) {
+      await prisma.$transaction(async (tx) => {
+        // Delete lesson records
+        await tx.lessonRecord.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete user activities
+        await tx.userActivity.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete XP logs
+        await tx.xPLog.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete user activities (replaces MCQ, SAQ, LAQ records)
+        await tx.userActivity.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete user word records (flashcard-related)
+        await tx.userWordRecord.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete user sentence records (flashcard-related)
+        await tx.userSentenceRecord.deleteMany({
+          where: { userId: id },
+        });
+      });
+    }
 
     return NextResponse.json({
       data: user,

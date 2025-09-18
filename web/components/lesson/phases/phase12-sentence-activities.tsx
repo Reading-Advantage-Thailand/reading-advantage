@@ -102,7 +102,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
               {t("phase12Title")}
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Loading activities...
+              {t("loadingActivities")}
             </p>
           </div>
         </div>
@@ -146,7 +146,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {tb("orderSentences")}
                   {completedActivities.includes('order-sentences') && (
-                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">(Completed)</span>
+                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">{t("completed")}</span>
                   )}
                 </h3>
               </div>
@@ -158,7 +158,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white group-hover:bg-blue-700 transition-all duration-300"
               >
                 <span className="flex items-center justify-center">
-                  {completedActivities.includes('order-sentences') ? 'Review' : tb("orderSentencesPractice.orderSentences")}
+                  {completedActivities.includes('order-sentences') ? t("review") : tb("orderSentencesPractice.orderSentences")}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Button>
@@ -185,7 +185,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {tb("clozeTest")}
                   {completedActivities.includes('cloze-test') && (
-                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">(Completed)</span>
+                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">{t("completed")}</span>
                   )}
                 </h3>
               </div>
@@ -197,7 +197,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 className="w-full bg-green-600 hover:bg-green-700 text-white group-hover:bg-green-700 transition-all duration-300"
               >
                 <span className="flex items-center justify-center">
-                  {completedActivities.includes('cloze-test') ? 'Review' : tb("clozeTestPractice.clozeTest")}
+                  {completedActivities.includes('cloze-test') ? t("review") : tb("clozeTestPractice.clozeTest")}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Button>
@@ -224,7 +224,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {tb("orderWords")}
                   {completedActivities.includes('order-words') && (
-                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">(Completed)</span>
+                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">{t("completed")}</span>
                   )}
                 </h3>
               </div>
@@ -236,7 +236,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white group-hover:bg-purple-700 transition-all duration-300"
               >
                 <span className="flex items-center justify-center">
-                  {completedActivities.includes('order-words') ? 'Review' : tb("orderWordsPractice.orderWords")}
+                  {completedActivities.includes('order-words') ? t("review") : tb("orderWordsPractice.orderWords")}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Button>
@@ -263,7 +263,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                   {tb("matching")}
                   {completedActivities.includes('matching') && (
-                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">(Completed)</span>
+                    <span className="ml-2 text-sm text-green-600 dark:text-green-400">{t("completed")}</span>
                   )}
                 </h3>
               </div>
@@ -275,7 +275,7 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
                 className="w-full bg-rose-600 hover:bg-rose-700 text-white group-hover:bg-rose-700 transition-all duration-300"
               >
                 <span className="flex items-center justify-center">
-                  {completedActivities.includes('matching') ? 'Review' : tb("matchingPractice.matching")}
+                  {completedActivities.includes('matching') ? t("review") : tb("matchingPractice.matching")}
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </Button>

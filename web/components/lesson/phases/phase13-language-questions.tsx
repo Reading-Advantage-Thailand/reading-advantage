@@ -37,15 +37,15 @@ const Phase13LanguageQuestions: React.FC<Phase13LanguageQuestionsProps> = ({
         <div className="flex flex-wrap justify-center gap-4 mt-6">
           <div className="flex items-center gap-2 px-4 py-2 bg-zinc-200/50 dark:bg-gray-800/50 rounded-full border border-indigo-200 dark:border-indigo-700">
             <Brain className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">AI-Powered</span>
+            <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">{t("aiPowered")}</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-zinc-200/50 dark:bg-gray-800/50 rounded-full border border-purple-200 dark:border-purple-700">
             <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Interactive</span>
+            <span className="text-sm font-medium text-purple-700 dark:text-purple-300">{t("interactive")}</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-zinc-200/50 dark:bg-gray-800/50 rounded-full border border-pink-200 dark:border-pink-700">
             <HelpCircle className="h-4 w-4 text-pink-600 dark:text-pink-400" />
-            <span className="text-sm font-medium text-pink-700 dark:text-pink-300">Ask Questions</span>
+            <span className="text-sm font-medium text-pink-700 dark:text-pink-300">{t("askQuestions")}</span>
           </div>
         </div>
       </div>

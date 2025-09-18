@@ -342,17 +342,17 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
               <PlayIcon className="h-5 w-5 mr-2" />
             )}
             {isPlaying
-              ? "Pause Reading"
+              ? t("pauseReading")
               : isAudioLoaded
-                ? "Start Reading"
-                : "Loading Audio..."}
+                ? t("startReading")
+                : t("loadingAudio")}
           </Button>
 
           {/* Reading Speed Control */}
           <div className="flex items-center gap-3">
             <Settings className="h-4 w-4 text-gray-500" />
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Speed:
+              {t("speed")}
             </span>
             <Select value={readingSpeed} onValueChange={setReadingSpeed}>
               <SelectTrigger className="w-20">
@@ -376,8 +376,8 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
             onClick={() => setHighlightMode(!highlightMode)}
             className={highlightMode ? "bg-yellow-500 hover:bg-yellow-600" : ""}
           >
-            {highlightMode ? "🔆" : "🔅"} Highlight{" "}
-            {highlightMode ? "ON" : "OFF"}
+            {highlightMode ? "🔆" : "🔅"} {t("highlight")}{" "}
+            {highlightMode ? t("on") : t("off")}
           </Button>
 
           {/* Reset Progress Button (only show when completed) */}
@@ -389,7 +389,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
               className="text-gray-600 hover:text-gray-800 border-gray-300 hover:border-gray-400"
             >
               <RotateCcwIcon className="h-4 w-4 mr-1" />
-              Listen Again
+              {t("listenAgain")}
             </Button>
           )}
         </div>
@@ -532,8 +532,10 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
           </div>
           <div className="flex justify-between items-center mt-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             <span className={`font-medium ${hasCompletedReading ? "text-green-600 dark:text-green-400" : ""}`}>
-              Sentence {hasCompletedReading ? sentences.length : Math.min(currentSentence + 1, sentences.length)} of{" "}
-              {sentences.length}
+              {t("sentenceProgress", { 
+                current: hasCompletedReading ? sentences.length : Math.min(currentSentence + 1, sentences.length),
+                total: sentences.length 
+              })}
             </span>
             <span className={`font-medium flex items-center gap-1 ${hasCompletedReading ? "text-green-600 dark:text-green-400" : ""}`}>
               {sentences.length > 0
@@ -541,7 +543,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                   ? 100
                   : Math.round(((currentSentence + 1) / sentences.length) * 100)
                 : 0}
-              % complete
+              {t("percentComplete")}
               {hasCompletedReading && <span className="text-green-500">🎉</span>}
             </span>
           </div>
@@ -551,28 +553,28 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       {/* Reading Tips */}
       <div className="bg-gradient-to-r from-blue-300 to-indigo-300 dark:from-blue-950 dark:to-indigo-950 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
         <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-3">
-          📚 First Reading Tips
+          {t("firstReadingTips")}
         </h3>
         <ul className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Read through the entire article to get the general idea
+            {t("readEntireArticle")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Click &quot;Start Reading&quot; to hear the article read aloud
+            {t("clickStartReading")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Click on any sentence to jump to that part of the audio
+            {t("clickSentenceJump")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Use highlight mode to follow along with the audio
+            {t("useHighlightMode")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-            Listen to the complete audio to proceed to the next phase
+            {t("listenCompleteAudio")}
           </li>
         </ul>
       </div>
@@ -594,13 +596,13 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                 : "text-orange-800 dark:text-orange-200"
             }`}>
               {hasCompletedReading 
-                ? "✅ Reading 100% completed! Your progress has been saved. You can now proceed to the next phase."
-                : "🎧 Listen to the complete audio to unlock the next phase."}
+                ? t("readingCompleted")
+                : t("listenToUnlock")}
             </span>
           </div>
           {hasCompletedReading && (
             <div className="mt-2 text-xs text-green-600 dark:text-green-400">
-              💾 Your reading progress is automatically saved and will be remembered when you return.
+              {t("progressAutoSaved")}
             </div>
           )}
         </div>

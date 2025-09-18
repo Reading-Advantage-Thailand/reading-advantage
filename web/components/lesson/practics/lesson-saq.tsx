@@ -138,7 +138,7 @@ const LessonSAQ: React.FC<LessonSAQProps> = ({
 };
 
 function LessonSAQLoading() {
-  const t = useScopedI18n("components.saq");
+  const t = useScopedI18n("pages.student.lessonPage");
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
@@ -169,7 +169,7 @@ function LessonSAQLoading() {
 }
 
 function LessonSAQError() {
-  const t = useScopedI18n("components.saq");
+  const t = useScopedI18n("pages.student.lessonPage");
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -189,7 +189,7 @@ function LessonSAQError() {
 }
 
 function LessonSAQComplete({ resp }: { resp: QuestionResponse }) {
-  const t = useScopedI18n("components.saq");
+  const t = useScopedI18n("pages.student.lessonPage");
   const question = resp.result?.question || "";
   const suggestedAnswer = resp.suggested_answer || "";
   const userAnswer = resp.answer || "";
@@ -273,21 +273,21 @@ function LessonSAQForm({
   articleTitle: string;
   articleLevel: number;
 }) {
+  const t = useScopedI18n("pages.student.lessonPage");
+  const tf = useScopedI18n("components.rate");
+
   const shortAnswerSchema = z.object({
     answer: z
       .string()
       .min(1, {
-        message: "Answer is required",
+        message: t("answerRequired"),
       })
       .max(1000, {
-        message: "Answer must be less than 1000 characters",
+        message: t("answerTooLong"),
       }),
   });
 
   type FormData = z.infer<typeof shortAnswerSchema>;
-
-  const t = useScopedI18n("components.saq");
-  const tf = useScopedI18n("components.rate");
   const { timer, setPaused } = useContext(QuizContext);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -368,7 +368,7 @@ function LessonSAQForm({
 
       toast({
         title: tf("toast.success"),
-        description: `Congratulations! You received ${rating} XP for completing this activity.`,
+        description: t("congratulationsXpEarned", { rating }),
       });
 
       handleCompleted();
@@ -406,7 +406,7 @@ function LessonSAQForm({
                 autoFocus
                 disabled={isCompleted}
                 id="short-answer"
-                placeholder="Type your thoughtful answer here..."
+                placeholder={t("answerPlaceholder")}
                 className="w-full p-4 rounded-xl resize-none appearance-none overflow-hidden 
                          bg-white dark:bg-gray-800 
                          border-2 border-gray-200 dark:border-gray-700
@@ -421,7 +421,7 @@ function LessonSAQForm({
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-500 dark:text-gray-400">
-                  Write a detailed response to demonstrate your understanding
+                  {t("answerDescription")}
                 </span>
                 <span className="text-blue-600 dark:text-blue-400 font-medium">
                   {t("wordCount", { count: wordCount })}
@@ -495,7 +495,7 @@ function LessonSAQForm({
                     <div className="space-y-4">
                       <div className="text-center">
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          Rate your learning experience
+                          {t("rateLearningExperience")}
                         </p>
                         <Rating
                           sx={{

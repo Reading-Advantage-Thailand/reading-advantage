@@ -53,14 +53,14 @@ export default async function LessonCard({
                   {tb("lesson")}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Interactive Reading Experience
+                  {tb("interactiveReadingExperience")}
                 </p>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-200 to-pink-200 dark:from-purple-950 dark:to-pink-950 rounded-full">
               <GraduationCapIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                Learning Mode
+                {tb("learningMode")}
               </span>
             </div>
           </div>
@@ -71,7 +71,7 @@ export default async function LessonCard({
               {article.title}
             </h2>
             <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-              Begin your interactive reading journey with this article
+              {tb("beginReadingJourney")}
             </p>
           </div>
         </div>

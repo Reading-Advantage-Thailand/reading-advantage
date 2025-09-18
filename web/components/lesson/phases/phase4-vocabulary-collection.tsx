@@ -151,7 +151,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
       } catch (error: any) {
         console.error("error: ", error);
         toast({
-          title: "Something went wrong.",
+          title: t("somethingWentWrong"),
           description: `${error?.response?.data?.message || error?.message}`,
           variant: "destructive",
         });
@@ -179,7 +179,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
       if (totalAfterSave < 5) {
         const needed = 5 - savedWords.length;
         toast({
-          title: "Insufficient Vocabulary",
+          title: t("insufficientVocabulary"),
           description: `Please select at least ${needed} more words. You need a total of 5 saved words to proceed.`,
           variant: "destructive",
         });
@@ -207,8 +207,8 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
         form.reset({ items: [] });
 
         toast({
-          title: "Success!",
-          description: `${foundWordsList.length} words added to your vocabulary collection`,
+          title: t("success"),
+          description: t("wordsAddedToCollection", { count: foundWordsList.length }),
           variant: "default",
         });
         onCompleteChange(true);
@@ -217,8 +217,8 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
       }
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to save vocabulary",
+        title: t("error"),
+        description: error.message || t("failedToSaveVocabulary"),
         variant: "destructive",
       });
     } finally {
@@ -237,8 +237,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
           {t("phase4Title")}
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Select vocabulary words you&apos;d like to add to your personal
-          collection for future study
+          {t("selectVocabularyDescription")}
         </p>
       </div>
 
@@ -253,13 +252,13 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
             )}
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                Vocabulary Collection Progress
+                {t("vocabularyCollectionProgress")}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {selectedCount > 0 && `${selectedCount} selected, `}
-                {savedWords.length} saved
+                {savedWords.length} {t("saved")}
                 {savedWords.length < 5 &&
-                  ` (need to save at least 5 words to proceed)`}
+                  ` (${t("needSaveAtLeast5Words")})`}
               </p>
             </div>
           </div>
@@ -268,7 +267,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
               {savedWords.length}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              saved words
+              {t("savedWords")}
             </div>
           </div>
         </div>
@@ -407,7 +406,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                                       <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                                         {word.definition?.[currentLocale] ||
                                           word.definition?.en ||
-                                          "Definition not available"}
+                                          t("definitionNotAvailable")}
                                       </p>
                                     </div>
                                   </div>
@@ -427,7 +426,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                         <div className="flex items-center gap-2">
                           <CheckCircle2Icon className="h-5 w-5 text-green-600 dark:text-green-400" />
                           <p className="text-sm text-green-700 dark:text-green-300">
-                            Great! You have {savedWords.length} words saved. You can now proceed to the next phase or select additional words if you&apos;d like.
+                            {t("greatSavedWordsMessage", { count: savedWords.length })}
                           </p>
                         </div>
                       </div>
@@ -438,7 +437,7 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                         <div className="flex items-center gap-2">
                           <AlertCircleIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                           <p className="text-sm text-amber-700 dark:text-amber-300">
-                            You need to save at least 5 words total to proceed to the next phase. Currently saved: {savedWords.length} words.
+                            {t("needAtLeast5WordsMessage", { count: savedWords.length })}
                           </p>
                         </div>
                       </div>
@@ -461,12 +460,14 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
                       {saving ? (
                         <div className="flex items-center">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                          Saving...
+                          {t("saving")}
                         </div>
                       ) : selectedCount === 0 ? (
-                        savedWords.length >= 5 ? "Select more words (optional)" : "Select words to save"
+                        savedWords.length >= 5 ? t("selectMoreWordsOptional") : t("selectWordsToSave")
                       ) : (
-                        `Save ${selectedCount} Words${savedWords.length > 0 ? ` (${savedWords.length} already saved)` : ""}`
+                        savedWords.length > 0 
+                          ? t("saveWordsCountWithSaved", { count: selectedCount, saved: savedWords.length })
+                          : t("saveWordsCount", { count: selectedCount })
                       )}
                     </Button>
                   </div>
@@ -480,24 +481,24 @@ const Phase4VocabularyCollection: React.FC<Phase4VocabularyCollectionProps> = ({
       {/* Collection Tips */}
       <div className="bg-gradient-to-r from-indigo-300 to-purple-300 dark:from-indigo-950 dark:to-purple-950 p-6 rounded-xl border border-indigo-200 dark:border-indigo-800">
         <h3 className="font-semibold text-indigo-800 dark:text-indigo-200 mb-3">
-          💡 Collection Tips
+          {t("collectionTips")}
         </h3>
         <ul className="space-y-2 text-sm text-indigo-700 dark:text-indigo-300">
           <li className="flex items-center">
             <span className="w-2 h-2 bg-indigo-500 rounded-full mr-3"></span>
-            Choose words that are new or challenging for you
+            {t("chooseNewWords")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-indigo-500 rounded-full mr-3"></span>
-            Selected words will be added to your flashcard collection
+            {t("wordsAddedToFlashcards")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-indigo-500 rounded-full mr-3"></span>
-            You can review these words later in practice sessions
+            {t("reviewWordsLater")}
           </li>
           <li className="flex items-center">
             <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-            Words with green checkmarks are already saved to your collection
+            {t("greenCheckmarkWords")}
           </li>
         </ul>
       </div>

@@ -56,6 +56,7 @@ export default function LessonWordCollection({
   onCompleteChange,
 }: Props) {
   const t = useScopedI18n("pages.student.lessonPage");
+  const lt = useScopedI18n("lesson");
   const [loading, setLoading] = useState<boolean>(false);
   const [wordList, setWordList] = useState<WordList[]>([]);
   const [savedWordlistCount, setSavedWordlistCount] = useState(0);
@@ -384,7 +385,9 @@ export default function LessonWordCollection({
                                           </div>
 
                                           <span>
-                                            {word.definition?.[currentLocale] || word.definition?.en || 'Definition not available'}
+                                            {word.definition?.[currentLocale] ||
+                                              word.definition?.en ||
+                                              lt("translationNotAvailable")}
                                           </span>
                                         </div>
                                       </FormControl>
@@ -410,7 +413,7 @@ export default function LessonWordCollection({
               </>
             ) : (
               <div className="text-center py-8">
-                <span className="text-gray-500">No vocabulary words available for this article.</span>
+                <span className="text-gray-500">{lt("noVocabularyWords")}</span>
               </div>
             )}
           </form>

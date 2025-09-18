@@ -11,6 +11,7 @@ import {
   LightbulbIcon,
 } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
+import { useCurrentLocale } from "@/locales/client";
 
 interface Phase1IntroductionProps {
   article: Article;
@@ -31,6 +32,9 @@ const Phase1Introduction: React.FC<Phase1IntroductionProps> = ({
   useEffect(() => {
     onCompleteChange(true);
   }, [onCompleteChange]);
+
+  type Locale = "en" | "th" | "vn" | "cn" | "tw" | "vi";
+  const locale: Locale = useCurrentLocale();
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -80,19 +84,20 @@ const Phase1Introduction: React.FC<Phase1IntroductionProps> = ({
               </Badge>
               <Badge className="bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-200 hover:bg-purple-300">
                 <ClockIcon className="w-4 h-4 mr-1" />
-                Est. {Math.ceil(article.passage.split(" ").length / 20)} min
-                read
+                {t("estimatedReadTime", {
+                  time: Math.ceil(article.passage.split(" ").length / 20),
+                })}
               </Badge>
             </div>
 
             {/* Article Summary */}
-            {article.summary && (
+            {article.translatedSummary && (
               <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-xl border-l-4 border-blue-500">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Article Summary
+                  {t("articleSummary")}
                 </h3>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {article.summary}
+                  {article.translatedSummary[locale]}
                 </p>
               </div>
             )}
@@ -102,20 +107,20 @@ const Phase1Introduction: React.FC<Phase1IntroductionProps> = ({
           <div className="bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-950 dark:to-emerald-950 p-4 rounded-xl border border-green-200 dark:border-green-800">
             <h3 className="font-semibold text-green-800 dark:text-green-200 mb-3 flex items-center">
               <LightbulbIcon className="w-5 h-5 mr-2" />
-              Learning Objectives
+              {t("learningObjectives")}
             </h3>
             <ul className="space-y-2 text-sm text-green-700 dark:text-green-300">
               <li className="flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                Understand the main ideas and themes
+                {t("understandMainIdeas")}
               </li>
               <li className="flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                Learn new vocabulary in context
+                {t("learnVocabulary")}
               </li>
               <li className="flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                Improve reading comprehension skills
+                {t("improveComprehension")}
               </li>
             </ul>
           </div>

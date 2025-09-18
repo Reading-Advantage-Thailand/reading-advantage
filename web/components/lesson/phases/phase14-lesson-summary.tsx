@@ -106,7 +106,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
     } catch (error: any) {
       console.error(error);
       toast({
-        title: "Something went wrong.",
+        title: t("somethingWentWrong"),
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
@@ -123,7 +123,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
     } catch (error: any) {
       console.error(error);
       toast({
-        title: "Something went wrong.",
+        title: t("somethingWentWrong"),
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
@@ -138,7 +138,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
     } catch (error: any) {
       console.error(error);
       toast({
-        title: "Something went wrong.",
+        title: t("somethingWentWrong"),
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
@@ -155,7 +155,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
     } catch (error: any) {
       console.error(error);
       toast({
-        title: "Something went wrong.",
+        title: t("somethingWentWrong"),
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
@@ -273,8 +273,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
           </h1>
 
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            🎊 Fantastic work! You&apos;ve completed the lesson successfully. Here&apos;s
-            your achievement summary!
+            {t("fantasticWork")}
           </p>
 
           {/* XP Highlight */}
@@ -298,7 +297,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Time Spent
+                  {t("timeSpent")}
                 </p>
                 <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {elapsedTime}
@@ -317,7 +316,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Words Saved
+                  {t("wordsSaved")}
                 </p>
                 <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {wordList.length}
@@ -336,7 +335,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Sentences
+                  {t("sentences")}
                 </p>
                 <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                   {sentenceList.length}
@@ -355,7 +354,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Total XP
+                  {t("totalXp")}
                 </p>
                 <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                   {totalXp}
@@ -373,7 +372,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
             <div className="flex items-center gap-3">
               <Target className="h-6 w-6 text-pink-600 dark:text-pink-400" />
               <CardTitle className="text-xl font-bold text-pink-700 dark:text-pink-300">
-                Quiz Performance
+                {t("quizPerformance")}
               </CardTitle>
             </div>
           </CardHeader>
@@ -383,7 +382,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  Multiple Choice Questions
+                  {t("multipleChoiceQuestions")}
                 </h4>
                 <Badge {...getPerformanceBadge(quizScores.mcqScore || 0)}>
                   {getPerformanceBadge(quizScores.mcqScore || 0).label}
@@ -421,7 +420,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                   <Brain className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  Short Answer Questions
+                  {t("shortAnswerQuestions")}
                 </h4>
                 <Badge {...getPerformanceBadge(quizScores.saqScore || 0)}>
                   {getPerformanceBadge(quizScores.saqScore || 0).label}
@@ -464,7 +463,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
               <div className="flex items-center gap-3">
                 <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 <CardTitle className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
-                  Vocabulary Learned ({wordList.length})
+                  {t("vocabularyLearned", { count: wordList.length })}
                 </CardTitle>
               </div>
             </CardHeader>
@@ -497,7 +496,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 <CardTitle className="text-xl font-bold text-blue-700 dark:text-blue-300">
-                  Key Sentences ({sentenceList.length})
+                  {t("keySentences", { count: sentenceList.length })}
                 </CardTitle>
               </div>
             </CardHeader>
@@ -530,7 +529,7 @@ const Phase14LessonSummary: React.FC<Phase14LessonSummaryProps> = ({
           className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
         >
           <BookOpen className="h-5 w-5 mr-2" />
-          {t("readPageButton") || "Continue Reading"}
+          {t("readPageButton") || t("continueReading")}
         </Button>
       </div>
     </div>

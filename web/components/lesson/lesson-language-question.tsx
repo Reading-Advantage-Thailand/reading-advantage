@@ -68,7 +68,7 @@ export default function LessonLanguageQuestion({
       } catch (error) {
         setMessages((msgs) => [
           ...msgs,
-          { text: "Error: Could not fetch response.", sender: "bot" },
+          { text: t("errorFetchResponse"), sender: "bot" },
         ]);
       } finally {
         setLoading(false);
@@ -110,7 +110,7 @@ export default function LessonLanguageQuestion({
         setMessages([initialMessage]);
       } catch (error) {
         setMessages([
-          { text: "Error: Could not fetch initial question.", sender: "bot" },
+          { text: t("errorFetchInitialQuestion"), sender: "bot" },
         ]);
       } finally {
         setLoading(false);

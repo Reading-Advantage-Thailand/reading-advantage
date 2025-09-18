@@ -245,6 +245,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
   onCompleteChange,
 }) => {
   const t = useScopedI18n("pages.student.lessonPage");
+  const lt = useScopedI18n("pages.student.lessonPage");
   const [loading, setLoading] = useState<boolean>(false);
   const [wordList, setWordList] = useState<WordList[]>([]);
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
@@ -443,7 +444,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
 
                     {/* Definition */}
                     <div className="flex-1 min-w-0">
-                      <p>Definition</p>
+                      <p>{lt("definition")}</p>
                       {/* Always show basic definition */}
                       <div
                         className={`transition-all duration-300 ${
@@ -455,7 +456,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                           {word.definition?.[currentLocale] ||
                             word.definition?.en ||
-                            "Definition not available"}
+                            lt("translationNotAvailable")}
                         </p>
                       </div>
                     </div>
@@ -467,7 +468,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
             <div className="text-center py-12">
               <VolumeXIcon className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
               <p className="text-gray-500 dark:text-gray-400">
-                No vocabulary words available for this article.
+                {lt("noVocabularyWords")}
               </p>
             </div>
           )}
@@ -478,8 +479,8 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
       {wordList.length > 0 && (
         <div className="bg-zinc-200 dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-            <span>Vocabulary Progress</span>
-            <span>{wordList.length} words to learn</span>
+            <span>{lt("vocabularyProgress")}</span>
+            <span>{(lt as any)("wordsToLearn", { count: wordList.length })}</span>
           </div>
           <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
