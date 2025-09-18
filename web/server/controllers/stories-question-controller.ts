@@ -2,6 +2,7 @@ import {
   AnswerStatus,
   QuestionState,
 } from "@/components/models/questions-model";
+import { UserXpEarned } from "@/components/models/user-activity-log-model";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getFeedbackWritter } from "./assistant-controller";
@@ -65,15 +66,10 @@ export interface LARecord {
   type: "LAQ";
 }
 
-interface Data {
-  question: string;
-}
-
 export async function getStoryMCQuestions(
   req: ExtendedNextRequest,
   { params: { storyId, chapterNumber } }: RequestContext
 ) {
-  console.log("getStoryMCQuestions called with:", { storyId, chapterNumber });
   try {
     if (!storyId || typeof storyId !== "string") {
       return NextResponse.json({ message: "Invalid storyId" }, { status: 400 });
@@ -157,23 +153,25 @@ export async function getStoryMCQuestions(
       textual_evidence: q.textualEvidence,
     }));
 
-    console.log("Filtered MCQ questions count:", questions.length);
-
-    // Get user activities for these questions
+    // Get user activities for MC questions (filter by story & chapter)
     const userActivities = await prisma.userActivity.findMany({
       where: {
         userId,
         activityType: ActivityType.MC_QUESTION,
-        targetId: {
-          in: questions.map((q) => q.id),
-        },
+      },
+      orderBy: {
+        createdAt: "asc",
       },
     });
 
-    console.log("User activities found:", userActivities.length);
+    // Keep only activities for this story chapter (details.storyId + details.chapterNumber)
+    const chapterActivities = userActivities.filter((activity) => {
+      const details = activity.details as any;
+      return details?.storyId === storyId && String(details?.chapterNumber) === String(chapterNumber);
+    });
 
-    // Get XP logs for these activities
-    const activityIds = userActivities.map((activity) => activity.id);
+    // Get XP logs for these chapter activities
+    const activityIds = chapterActivities.map((activity) => activity.id);
     const xpLogs = await prisma.xPLog.findMany({
       where: {
         activityId: { in: activityIds },
@@ -188,22 +186,19 @@ export async function getStoryMCQuestions(
     const questionAnswers = new Map();
     const questionData = new Map();
 
-    const sortedActivities = userActivities.sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    const sortedActivities = chapterActivities.sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
 
     sortedActivities.forEach((activity) => {
       const details = activity.details as any;
-      if (details?.status) {
-        answeredQuestionIds.add(activity.targetId);
-        questionAnswers.set(
-          activity.targetId,
-          details.status === AnswerStatus.CORRECT
-        );
+      // Activities created by answerStoryMCQuestion include questionId and isCorrect
+      if (details?.questionId) {
+        answeredQuestionIds.add(details.questionId);
+        questionAnswers.set(details.questionId, details.isCorrect);
 
         const xpLog = xpLogMap.get(activity.id);
-        questionData.set(activity.targetId, {
+        questionData.set(details.questionId, {
           timer: activity.timer,
           xpEarned: xpLog?.xpEarned || 0,
           selectedAnswer: details.selectedAnswer,
@@ -212,48 +207,25 @@ export async function getStoryMCQuestions(
           createdAt: activity.createdAt,
         });
 
-        progress.push(details.status);
+        progress.push(details.isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT);
       }
     });
 
+    // Fill remaining slots with UNANSWERED
     while (progress.length < 5) {
       progress.push(AnswerStatus.UNANSWERED);
     }
-
-    const unansweredQuestions = questions.filter(
-      (q) => !answeredQuestionIds.has(q.id)
-    );
-
-    const nextQuestion = unansweredQuestions[0];
-
-    const options = [...nextQuestion.options];
-
-    const currentQuestionData = questionData.get(nextQuestion.id) || {};
-
-    const mcq = [
-      {
-        id: nextQuestion.id,
-        chapter_number: chapterNumber,
-        question_number:
-          questions.findIndex((q) => q.id === nextQuestion.id) + 1,
-        question: nextQuestion.question,
-        options: options.sort(() => 0.5 - Math.random()),
-        textual_evidence: nextQuestion.textualEvidence,
-        timer: currentQuestionData.timer || null,
-        xpEarned: currentQuestionData.xpEarned || 0,
-        selectedAnswer: currentQuestionData.selectedAnswer || null,
-        correctAnswer: currentQuestionData.correctAnswer || null,
-      },
-    ];
 
     const currentQuestionIndex = progress.findIndex(
       (p) => p === AnswerStatus.UNANSWERED
     );
 
+    // If there are no UNANSWERED slots, the quiz is completed
     if (currentQuestionIndex === -1) {
-      const totalXpEarned = Array.from(questionData.values())
-
-        .reduce((total, data) => total + (data.xpEarned || 0), 0);
+      const totalXpEarned = Array.from(questionData.values()).reduce(
+        (total, data) => total + (data.xpEarned || 0),
+        0
+      );
       const totalTimer = Array.from(questionData.values()).reduce(
         (total, data) => total + (data.timer || 0),
         0
@@ -282,6 +254,17 @@ export async function getStoryMCQuestions(
       });
     }
 
+    // Only consider the first 5 questions for the quiz flow (same as articles)
+    const questionsForThisChapter = questions.slice(0, 5);
+
+    if (questionsForThisChapter.length === 0) {
+      return NextResponse.json({ message: "No questions found" }, { status: 404 });
+    }
+
+    const unansweredQuestions = questionsForThisChapter.filter(
+      (q) => !answeredQuestionIds.has(q.id)
+    );
+
     if (unansweredQuestions.length === 0) {
       const responseData = {
         state: QuestionState.INCOMPLETE,
@@ -297,6 +280,26 @@ export async function getStoryMCQuestions(
         },
       });
     }
+
+    const nextQuestion = unansweredQuestions[0];
+    const options = [...nextQuestion.options];
+    const currentQuestionData = questionData.get(nextQuestion.id) || {};
+
+    const mcq = [
+      {
+        id: nextQuestion.id,
+        chapter_number: chapterNumber,
+        question_number:
+          questions.findIndex((q) => q.id === nextQuestion.id) + 1,
+        question: nextQuestion.question,
+        options: options.sort(() => 0.5 - Math.random()),
+        textual_evidence: nextQuestion.textualEvidence,
+        timer: currentQuestionData.timer || null,
+        xpEarned: currentQuestionData.xpEarned || 0,
+        selectedAnswer: currentQuestionData.selectedAnswer || null,
+        correctAnswer: currentQuestionData.correctAnswer || null,
+      },
+    ];
 
     const answeredQuestionData = Array.from(questionData.values());
 
@@ -341,6 +344,7 @@ export async function getStoryMCQuestions(
     );
   }
 }
+
 
 export async function getStorySAQuestion(
   req: ExtendedNextRequest,
@@ -387,7 +391,6 @@ export async function getStorySAQuestion(
     });
 
     if (!shortAnswerQuestions || shortAnswerQuestions.length === 0) {
-      console.log("No ShortAnswerQuestions found, generating new ones...");
       const generateSAQ = await generateSAQuestion({
         cefrlevel:
           (story.cefrLevel?.replace(/[+-]/g, "") as ArticleBaseCefrLevel) ||
@@ -701,7 +704,7 @@ export async function answerStoryMCQuestion(
   }
 ) {
   try {
-    const { answer, timeRecorded } = await req.json();
+    const { selectedAnswer, timeRecorded } = await req.json();
     const { storyId, chapterNumber, questionNumber } = ctx.params;
     const userId = req.session?.user.id as string;
 
@@ -741,49 +744,51 @@ export async function answerStoryMCQuestion(
       );
     }
 
-    const chapterData = chapter as any;
-    if (!chapterData.questions || chapterData.questions.length === 0) {
-      const generateSAQ = await generateSAQuestion({
-        cefrlevel:
-          (story.cefrLevel?.replace(/[+-]/g, "") as ArticleBaseCefrLevel) ||
-          ArticleBaseCefrLevel.A1,
-        type: (story.type as ArticleType) || ArticleType.NONFICTION,
-        passage: chapterData.passage || "",
+    let questions = await prisma.multipleChoiceQuestion.findMany({
+      where: { chapterId: chapter.id },
+    });
+
+    if (questions.length === 0) {
+      const cefrlevel = story.cefrLevel?.replace(/[+-]/g, "") as any;
+      const generateMCQ = await generateMCQuestion({
+        cefrlevel: cefrlevel,
+        type: story.type as any,
+        passage: chapter.passage || "",
         title: story.title || "",
         summary: story.summary || "",
         imageDesc: story.imageDescription || "",
       });
 
-      for (const question of generateSAQ.questions) {
-        await prisma.shortAnswerQuestion.create({
+      const questionsToCreate = generateMCQ.questions.slice(0, 5);
+
+      for (const question of questionsToCreate) {
+        await prisma.multipleChoiceQuestion.create({
           data: {
             chapterId: chapter.id,
             question: question.question,
-            answer: question.suggested_answer || "",
+            options: [
+              question.correct_answer,
+              question.distractor_1,
+              question.distractor_2,
+              question.distractor_3,
+            ],
+            answer: question.correct_answer || "",
+            textualEvidence: question.textual_evidence || "",
           },
         });
       }
 
-      chapterData.questions = await prisma.shortAnswerQuestion.findMany({
+      questions = await prisma.multipleChoiceQuestion.findMany({
         where: { chapterId: chapter.id },
       });
-
-      if (!chapterData.questions || chapterData.questions.length === 0) {
-        return NextResponse.json(
-          { message: "No questions found" },
-          { status: 404 }
-        );
-      }
     }
 
-    const questions = (chapterData.questions as any[])
-      .filter((q: any) => q.type === "MCQ")
-      .map((q: any, index: number) => ({
-        ...q,
-        question_number: index + 1,
-      }));
+    const questionsMapped = questions.map((q, index) => ({
+      ...q,
+      question_number: index + 1,
+    }));
 
-    const questionData = questions.find(
+    const questionData = questionsMapped.find(
       (q) => q.question_number === parseInt(questionNumber, 10)
     );
 
@@ -795,13 +800,12 @@ export async function answerStoryMCQuestion(
     }
 
     const correctAnswer = questionData?.answer;
-    const isCorrect =
-      answer === correctAnswer ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT;
+    const isCorrect = selectedAnswer === correctAnswer;
 
-    const targetId = `${storyId}-${chapterNumber}-${questionNumber}`;
+    const targetId = questionData.id;
 
-    // Check if user already answered
-    const existingActivity = await prisma.userActivity.findUnique({
+    // Check if user already answered -> create or update (upsert) so answers can be updated like `answerMCQuestion`
+    const activity = await prisma.userActivity.upsert({
       where: {
         userId_activityType_targetId: {
           userId,
@@ -809,31 +813,67 @@ export async function answerStoryMCQuestion(
           targetId,
         },
       },
-    });
-
-    if (existingActivity) {
-      return NextResponse.json(
-        { message: "User already answered", results: [] },
-        { status: 400 }
-      );
-    }
-
-    // Create user activity record
-    await prisma.userActivity.create({
-      data: {
+      update: {
+        completed: true,
+        timer: timeRecorded,
+        details: {
+          storyId: storyId,
+          chapterNumber: chapterNumber,
+          questionNumber: questionNumber,
+          questionId: questionData.id,
+          question: questionData.question,
+          selectedAnswer: selectedAnswer,
+          correctAnswer: correctAnswer,
+          textualEvidence: questionData.textualEvidence,
+          isCorrect: isCorrect,
+        },
+        updatedAt: new Date(),
+      },
+      create: {
         userId,
         activityType: ActivityType.MC_QUESTION,
         targetId,
         timer: timeRecorded,
         completed: true,
         details: {
-          chapter_number: chapterNumber,
-          question_number: questionNumber,
-          status: isCorrect,
-          created_at: new Date().toISOString(),
+          storyId: storyId,
+          chapterNumber: chapterNumber,
+          questionNumber: questionNumber,
+          questionId: questionData.id,
+          question: questionData.question,
+          selectedAnswer: selectedAnswer,
+          correctAnswer: correctAnswer,
+          textualEvidence: questionData.textualEvidence,
+          isCorrect: isCorrect,
         },
       },
     });
+
+    if (isCorrect) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (user) {
+        const updatedUser = await prisma.user.update({
+          where: { id: userId },
+          data: { xp: user.xp + UserXpEarned.MC_Question },
+        });
+
+        await prisma.xPLog.create({
+          data: {
+            userId: userId,
+            xpEarned: UserXpEarned.MC_Question,
+            activityId: activity.id,
+            activityType: ActivityType.MC_QUESTION,
+          },
+        });
+
+        if (req.session?.user) {
+          req.session.user.xp = updatedUser.xp;
+        }
+      }
+    }
 
     // Get all user activities for this chapter
     const userActivities = await prisma.userActivity.findMany({
@@ -919,16 +959,15 @@ export async function answerStoryMCQuestion(
       });
     }
 
-    return NextResponse.json(
-      {
-        chapter_number: chapterNumber,
-        question_number: questionNumber,
-        progress,
-        status: isCorrect,
-        correct_answer: correctAnswer,
-      },
-      { status: 200 }
-    );
+    const responseData = {
+      correct: isCorrect,
+      correctAnswer: correctAnswer,
+      textualEvidence: questionData.textualEvidence,
+      xpEarned: isCorrect ? UserXpEarned.MC_Question : 0,
+      userXp: req.session?.user.xp,
+    };
+
+    return NextResponse.json(responseData, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -1034,40 +1073,54 @@ export async function retakeStoryMCQuestion(
       );
     }
 
-    // Delete all MCQ activities for this chapter
+    // Find all MCQ userActivity entries for this user
     const activitiesToDelete = await prisma.userActivity.findMany({
       where: {
         userId,
         activityType: ActivityType.MC_QUESTION,
-        targetId: {
-          startsWith: `${storyId}-${chapterNumber}-`,
-        },
       },
     });
 
-    if (activitiesToDelete.length === 0) {
+    // Filter to only those that are for this story chapter (details.storyId + details.chapterNumber)
+    const storyActivityIds = activitiesToDelete
+      .filter((activity) => {
+        const details = activity.details as any;
+        return details?.storyId === storyId && String(details?.chapterNumber) === String(chapterNumber);
+      })
+      .map((a) => a.id);
+
+    if (storyActivityIds.length === 0) {
       return NextResponse.json(
         { message: `No records found for chapter ${chapterNumber}` },
         { status: 404 }
       );
     }
 
-    // Delete activities in batch
-    await prisma.userActivity.deleteMany({
+    // Delete XP logs for those activities
+    await prisma.xPLog.deleteMany({
       where: {
         userId,
         activityType: ActivityType.MC_QUESTION,
-        targetId: {
-          startsWith: `${storyId}-${chapterNumber}-`,
+        activityId: {
+          in: storyActivityIds,
         },
       },
     });
 
+    // Recalculate total XP from remaining xp logs and update user xp/session
+    const remainingXpLogs = await prisma.xPLog.findMany({ where: { userId } });
+    const totalXp = remainingXpLogs.reduce((sum, log) => sum + log.xpEarned, 0);
+
+    await prisma.user.update({ where: { id: userId }, data: { xp: totalXp } });
+    if (req.session?.user) {
+      req.session.user.xp = totalXp;
+    }
+
+    // Delete the userActivity records by id
+    await prisma.userActivity.deleteMany({ where: { id: { in: storyActivityIds } } });
+
     return NextResponse.json(
-      {
-        message: `Retake quiz for chapter ${chapterNumber}`,
-        state: QuestionState.INCOMPLETE,
-      },
+      { message: `MCQ progress reset for chapter ${chapterNumber}`, state: QuestionState.INCOMPLETE },
       { status: 200 }
     );
   } catch (error) {
@@ -1260,7 +1313,6 @@ export async function getStoryFeedbackLAquestion(
 
     let cefrLevelReformatted = story.cefrLevel?.replace(/[+-]/g, "") || "";
 
-    //console.log("Sending request for feedback...");
     const feedbackResponse = await getFeedbackWritter({
       preferredLanguage,
       targetCEFRLevel: cefrLevelReformatted,
