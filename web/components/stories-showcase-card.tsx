@@ -36,6 +36,8 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
     const systemPathRegex = /\/(?:[a-z]{2}\/)?system\/.*\/?$/i;
     const t: string | any = useScopedI18n("selectType.types");
 
+    console.log("story", story);
+
     React.useEffect(() => {
       handleTranslateSummary();
     }, [story, locale]);
@@ -75,7 +77,7 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
               details: {
                 title: story.title,
                 level: story.ra_level,
-                cefr_level: story.cefr_level,
+                cefr_level: story.cefr_level || story.cefrLevel,
                 type: story.type,
                 genre: story.genre,
                 subgenre: story.subgenre,
@@ -103,7 +105,7 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             </Badge>
           )}
           <Badge className="shadow-lg max-w-max" variant="destructive">
-            CEFR Level: {story.cefr_level}
+            CEFR Level: {story.cefr_level || story.cefrLevel}
           </Badge>
           <Badge className="shadow-lg max-w-max" variant="destructive">
             {t(story.genre)}, {t(story.subgenre)}

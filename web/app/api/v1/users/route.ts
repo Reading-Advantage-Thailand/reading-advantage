@@ -2,6 +2,7 @@ import { protect } from "@/server/controllers/auth-controller";
 import {
   getAllUsers,
   updateUserData,
+  deleteUser,
 } from "@/server/controllers/user-controller";
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
@@ -13,6 +14,7 @@ router.use(logRequest);
 router.use(protect);
 router.get(getAllUsers);
 router.patch(updateUserData);
+router.delete(deleteUser); // Future implementation for deleting a user
 
 export async function GET(request: NextRequest, ctx: NextResponse) {
   const result = await router.run(request, ctx);

@@ -1219,3 +1219,84 @@ export async function getUserXpLogs(
     );
   }
 }
+
+export async function deleteUser(req: ExtendedNextRequest) {
+  try {
+    const { id } = await req.json();
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    // ลบข้อมูลที่เกี่ยวข้องในตารางอื่นก่อน
+    await prisma.$transaction(async (tx) => {
+      // ลบข้อมูลในตาราง classroomStudent
+      await tx.classroomStudent.deleteMany({
+        where: { studentId: id },
+      });
+
+      // ลบผู้ใช้
+      await tx.user.delete({
+        where: { id },
+      });
+    });
+
+    return NextResponse.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function deleteAllUsers(req: ExtendedNextRequest) {
+  try {
+    const batchSize = 100;
+
+    // Delete classroom-student relationships in batches
+    let classroomStudents;
+    do {
+      classroomStudents = await prisma.classroomStudent.findMany({
+        take: batchSize,
+      });
+
+      await Promise.all(
+        classroomStudents.map((student) =>
+          prisma.classroomStudent.delete({
+            where: { id: student.id },
+          })
+        )
+      );
+    } while (classroomStudents.length > 0);
+
+    // Delete users in batches
+    let users;
+    do {
+      users = await prisma.user.findMany({
+        take: batchSize,
+      });
+
+      await Promise.all(
+        users.map((user) =>
+          prisma.user.delete({
+            where: { id: user.id },
+          })
+        )
+      );
+    } while (users.length > 0);
+
+    return NextResponse.json({ message: "All users deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting all users:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

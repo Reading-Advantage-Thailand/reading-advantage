@@ -26,6 +26,7 @@ model User {
   userActivities      UserActivity[]
   xpLogs              XPLog[]
   accounts            Account[]
+  articles            Article[]
   assignments         Assignment[]
   chapterTrackings    ChapterTracking[]
   studentClassrooms   ClassroomStudent[]
@@ -40,7 +41,6 @@ model User {
   storyRecords        StoryRecord[]
   userSentenceRecords UserSentenceRecord[]
   userWordRecords     UserWordRecord[]
-  articles            Article[]
 
   @@map("users")
 }
@@ -134,10 +134,10 @@ model Article {
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   isPublic                Boolean                  @default(false) @map("is_public")
-  author                  User?                    @relation(fields: [authorId], references: [id])
   longAnswerQuestions     LongAnswerQuestion[]
   multipleChoiceQuestions MultipleChoiceQuestion[]
   shortAnswerQuestions    ShortAnswerQuestion[]
+  author                  User?                    @relation(fields: [authorId], references: [id])
   assignments             Assignment[]
   lessonRecords           LessonRecord[]
   storyAssignments        StoryAssignment[]
@@ -154,9 +154,9 @@ model MultipleChoiceQuestion {
   answer          String
   textualEvidence String   @map("textual_evidence")
   articleId       String?  @map("article_id")
-  chapterId       String?  @map("chapter_id")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  chapterId       String?  @map("chapter_id")
   article         Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
   chapter         Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
@@ -168,9 +168,9 @@ model ShortAnswerQuestion {
   question  String
   answer    String
   articleId String?  @map("article_id")
-  chapterId String?  @map("chapter_id")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  chapterId String?  @map("chapter_id")
   article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
   chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
@@ -181,9 +181,9 @@ model LongAnswerQuestion {
   id        String   @id @default(cuid())
   question  String
   articleId String?  @map("article_id")
-  chapterId String?  @map("chapter_id")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  chapterId String?  @map("chapter_id")
   article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
   chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
@@ -216,8 +216,8 @@ model ClassroomStudent {
   studentId   String    @map("student_id")
   classroomId String    @map("classroom_id")
   createdAt   DateTime  @default(now())
-  classroom   Classroom @relation(fields: [classroomId], references: [id])
-  student     User      @relation(fields: [studentId], references: [id])
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  student     User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([classroomId, studentId])
   @@map("classroomStudents")
@@ -229,8 +229,8 @@ model ClassroomTeacher {
   classroomId String      @map("classroom_id")
   role        TeacherRole @default(CO_TEACHER)
   createdAt   DateTime    @default(now())
-  classroom   Classroom   @relation(fields: [classroomId], references: [id])
-  teacher     User        @relation("ClassroomTeachers", fields: [teacherId], references: [id])
+  classroom   Classroom   @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  teacher     User        @relation("ClassroomTeachers", fields: [teacherId], references: [id], onDelete: Cascade)
 
   @@unique([classroomId, teacherId])
   @@map("classroomTeachers")
@@ -257,8 +257,8 @@ model LicenseOnUser {
   userId     String
   licenseId  String
   activateAt DateTime @default(now())
-  license    License  @relation(fields: [licenseId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
+  license    License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, licenseId])
   @@map("license_on_users")
@@ -338,12 +338,9 @@ model Story {
   id                String            @id @default(cuid())
   title             String
   summary           String?
-  translatedSummary Json?             @map("translated_summary")
   type              String?
   genre             String?
   subgenre          String?
-  storyBible        Json?             @map("story_bible")
-  imageDescription  String?           @map("image_description")
   raLevel           Int?              @map("ra_level")
   cefrLevel         String?           @map("cefr_level")
   rating            Float?
@@ -351,7 +348,10 @@ model Story {
   authorId          String?           @map("author_id")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
+  imageDescription  String?           @map("image_description")
+  storyBible        Json?             @map("story_bible")
   isPublic          Boolean           @default(false) @map("is_public")
+  translatedSummary Json?             @map("translated_summary")
   chapters          Chapter[]
   storyAssignments  StoryAssignment[]
   storyRecords      StoryRecord[]
@@ -361,37 +361,36 @@ model Story {
 }
 
 model Chapter {
-  id                      String            @id @default(cuid())
-  storyId                 String            @map("story_id")
-  chapterNumber           Int               @map("chapter_number")
-  type                    String?
-  genre                   String?
-  subGenre                String?           @map("sub_genre")
+  id                      String                   @id @default(cuid())
+  storyId                 String                   @map("story_id")
+  chapterNumber           Int                      @map("chapter_number")
   title                   String
   summary                 String?
-  passage                 String?
-  translatedSummary       Json?             @map("translated_summary")
-  translatedPassage       Json?             @map("translated_passage")
-  imageDescription        String?           @map("image_description")
-  cefrLevel               String?           @map("cefr_level")
-  raLevel                 Int?              @map("ra_level")
+  audioUrl                String?                  @map("audio_url")
   rating                  Float?
-  audioUrl                String?           @map("audio_url")
-  audioWordUrl            String?           @map("audio_word_url")
+  userRatingCount         Int?                     @map("user_rating_count")
+  wordCount               Int?                     @map("word_count")
   sentences               Json?
   words                   Json?
-  questions               Json?             @map("questions")
-  authorId                String?           @map("author_id")
-  createdAt               DateTime          @default(now()) @map("created_at")
-  updatedAt               DateTime          @updatedAt @map("updated_at")
-  isPublic                Boolean           @default(false) @map("is_public")
-  wordCount               Int?              @map("word_count")
-  userRatingCount         Int?              @map("user_rating_count")
+  createdAt               DateTime                 @default(now()) @map("created_at")
+  updatedAt               DateTime                 @updatedAt @map("updated_at")
+  imageDescription        String?                  @map("image_description")
+  audioWordUrl            String?                  @map("audio_word_url")
+  authorId                String?                  @map("author_id")
+  cefrLevel               String?                  @map("cefr_level")
+  genre                   String?
+  isPublic                Boolean                  @default(false) @map("is_public")
+  passage                 String?
+  raLevel                 Int?                     @map("ra_level")
+  subGenre                String?                  @map("sub_genre")
+  translatedPassage       Json?                    @map("translated_passage")
+  translatedSummary       Json?                    @map("translated_summary")
+  type                    String?
   longAnswerQuestions     LongAnswerQuestion[]
   multipleChoiceQuestions MultipleChoiceQuestion[]
   shortAnswerQuestions    ShortAnswerQuestion[]
   chapterTrackings        ChapterTracking[]
-  story                   Story             @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  story                   Story                    @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
   @@unique([storyId, chapterNumber])
   @@map("chapters")

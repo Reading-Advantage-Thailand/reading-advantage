@@ -54,6 +54,9 @@ import {
 
 export type Icon = LucideIcon;
 export const Icons = {
+  warning: AlertCircle,
+  info: Lightbulb,
+  check: CheckCircle2,
   close: X,
   sun: SunMedium,
   moon: Moon,

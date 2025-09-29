@@ -6,6 +6,7 @@ export interface ArticleShowcase {
   cefr_level: string;
   id: string;
   ra_level?: string;
+  cefrLevel?: string;
   summary?: string;
   title: string;
   is_read?: boolean;
