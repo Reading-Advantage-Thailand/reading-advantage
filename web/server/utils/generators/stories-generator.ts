@@ -318,10 +318,6 @@ export async function generateStories(req: NextRequest) {
       })
     );
 
-    console.log(
-      `✅ Story generation process completed: ${successfulCount} successful, ${failedCount} failed, ${skippedCount} skipped`
-    );
-    console.log(`⏱️ Total time: ${Date.now() - startTime}ms`);
     await sendDiscordWebhook({
       title: "Generate Stories Completed",
       embeds: [
@@ -330,7 +326,7 @@ export async function generateStories(req: NextRequest) {
             Successful: successfulCount.toString(),
             Failed: failedCount.toString(),
             Skipped: skippedCount.toString(),
-            "Total time": `${Date.now() - startTime}ms`,
+            "Total time": `${((Date.now() - startTime) / 1000 / 60).toFixed(2)} minutes`,
           },
           color: successfulCount > 0 ? 0x00ff00 : 0xff0000,
         },
