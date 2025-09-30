@@ -10,7 +10,6 @@ import { evaluateRating } from "./evaluate-rating-generator";
 import path from "path";
 import { readJsonFile } from "../read-json";
 import { google, googleModel, googleProPrewiew } from "@/utils/google";
-import { TranslatedSummaryResponse, TranslatedPassageResponse } from "./translation-generator";
 
 interface Place {
   name: string;
@@ -102,8 +101,6 @@ interface Chapter {
   questions: Question[];
   rating?: number;
   user_rating_count?: number;
-  translatedSummary?: TranslatedSummaryResponse;
-  translatedPassage?: TranslatedPassageResponse;
 }
 
 interface Question {
@@ -169,20 +166,6 @@ const ChapterSchema = z.object({
       answer: z.string(),
     })
   ),
-  translatedSummary: z.object({
-    cn: z.string(),
-    en: z.string(),
-    th: z.string(),
-    tw: z.string(),
-    vi: z.string(),
-  }).optional(),
-  translatedPassage: z.object({
-    cn: z.array(z.string()),
-    en: z.array(z.string()),
-    th: z.array(z.string()),
-    tw: z.array(z.string()),
-    vi: z.array(z.string()),
-  }).optional(),
 });
 
 const ChapterWithoutQuestionsSchema = z.object({
@@ -223,20 +206,6 @@ const ChapterWithoutQuestionsSchema = z.object({
     ),
     introducedElements: z.array(z.string()),
   }),
-  translatedSummary: z.object({
-    cn: z.string(),
-    en: z.string(),
-    th: z.string(),
-    tw: z.string(),
-    vi: z.string(),
-  }).optional(),
-  translatedPassage: z.object({
-    cn: z.array(z.string()),
-    en: z.array(z.string()),
-    th: z.array(z.string()),
-    tw: z.array(z.string()),
-    vi: z.array(z.string()),
-  }).optional(),
 });
 
 export async function generateChapters(
@@ -417,10 +386,6 @@ Ensure that:
 - Character states, introduced elements, and locations remain consistent.
 - The text meets CEFR-level requirements for readability, grammar, and vocabulary.
 - Include an **image-description** summarizing the chapter visually.
-
-Additionally, provide translations for the summary in Simplified Chinese (cn), Traditional Chinese (tw), Thai (th), and Vietnamese (vi). Keep the English version (en) as is.
-
-For the passage, split it into sentences and provide translations for each sentence in Simplified Chinese (cn), Traditional Chinese (tw), Thai (th), and Vietnamese (vi). Keep the English version (en) as is for each sentence.
 
 Return only valid JSON.
 `;

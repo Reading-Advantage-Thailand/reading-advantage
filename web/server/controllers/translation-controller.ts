@@ -48,6 +48,7 @@ export async function translate(
       translatedSummary: true,
       passage: true,
       translatedPassage: true,
+      sentences: true,
     },
   });
 
@@ -61,171 +62,101 @@ export async function translate(
   }
 
   if (type === "summary") {
-    const existingTranslations = article.translatedSummary as {
-      cn: string[];
-      en: string[];
-      th: string[];
-      tw: string[];
-      vi: string[];
-    } | null;
-
+    const existingTranslations = article.translatedSummary as Record<
+      string,
+      string[]
+    > | null;
     if (
       existingTranslations &&
-      existingTranslations[
-        targetLanguage as keyof typeof existingTranslations
-      ] &&
-      existingTranslations[targetLanguage as keyof typeof existingTranslations]
-        .length > 0
+      existingTranslations[targetLanguage]?.length > 0
     ) {
       return NextResponse.json({
-        message: "article already translated",
-        translated_sentences:
-          existingTranslations[
-            targetLanguage as keyof typeof existingTranslations
-          ],
+        message: "Translation already exists",
+        translated_sentences: existingTranslations[targetLanguage],
       });
     }
-
-    if (!article.summary) {
+    const content = article.summary;
+    if (!content) {
       return NextResponse.json(
-        {
-          message: "Article summary not found",
-        },
+        { message: "Summary not found" },
         { status: 404 }
       );
     }
-
-    const sentences = splitTextIntoSentences(article.summary);
-
-    let translated: {
-      cn: string[];
-      en: string[];
-      th: string[];
-      tw: string[];
-      vi: string[];
-    };
+    const sentences = splitTextIntoSentences(content);
     try {
-      translated = await translatePassageWithGPT(sentences);
-
+      const temp = await translatePassageWithGoogle(sentences, targetLanguage);
+      const translatedSentences =
+        temp[targetLanguage as keyof typeof temp] || [];
       const updatedTranslations = {
-        ...(existingTranslations || { cn: [], en: [], th: [], tw: [], vi: [] }),
-        ...translated,
+        ...(existingTranslations || {}),
+        [targetLanguage]: translatedSentences,
       };
-
       await prisma.article.update({
         where: { id: article_id },
-        data: {
-          translatedSummary: updatedTranslations,
-        },
+        data: { translatedSummary: updatedTranslations },
       });
-
       return NextResponse.json({
-        message: "translation successful",
-        translated_sentences:
-          translated[targetLanguage as keyof typeof translated] || [],
+        message: "Translation successful",
+        translated_sentences: translatedSentences,
       });
     } catch (error) {
-      return NextResponse.json(
-        {
-          message: error,
-        },
-        { status: 500 }
-      );
+      return NextResponse.json({ message: error }, { status: 500 });
     }
-  }
-  if (type === "passage") {
-    const existingTranslations = article.translatedPassage as {
-      cn: string[];
-      en: string[];
-      th: string[];
-      tw: string[];
-      vi: string[];
-    } | null;
-
+  } else if (type === "passage") {
+    const existingTranslations = article.translatedPassage as Record<
+      string,
+      string[]
+    > | null;
     if (
       existingTranslations &&
-      existingTranslations[
-        targetLanguage as keyof typeof existingTranslations
-      ] &&
-      existingTranslations[targetLanguage as keyof typeof existingTranslations]
-        .length > 0
+      existingTranslations[targetLanguage]?.length > 0
     ) {
       return NextResponse.json({
-        message: "article already translated",
-        translated_sentences:
-          existingTranslations[
-            targetLanguage as keyof typeof existingTranslations
-          ],
+        message: "Translation already exists",
+        translated_sentences: existingTranslations[targetLanguage],
       });
     }
-
-    if (!article.passage) {
+    if (!article.sentences) {
       return NextResponse.json(
-        {
-          message: "Article passage not found",
-        },
+        { message: "Sentences not found" },
         { status: 404 }
       );
     }
-
-    let sentences: string[];
-    try {
-      const parsed = JSON.parse(article.passage);
-      if (
-        Array.isArray(parsed) &&
-        parsed.length > 0 &&
-        typeof parsed[0] === "object" &&
-        "sentences" in parsed[0]
-      ) {
-        sentences = parsed.map((s: any) => s.sentences);
-      } else {
-        sentences = splitTextIntoSentences(article.passage);
-      }
-    } catch {
-      sentences = splitTextIntoSentences(article.passage);
+    let sentences: string[] = [];
+    if (Array.isArray(article.sentences)) {
+      sentences = (article.sentences as any[]).flatMap((s: any) => {
+        if (typeof s === "string") return [s];
+        if (Array.isArray(s)) return s;
+        if (s && typeof s === "object" && s.sentences) {
+          return Array.isArray(s.sentences) ? s.sentences : [s.sentences];
+        }
+        return [];
+      });
+    } else {
+      sentences = [];
     }
-
-    let translated: {
-      cn: string[];
-      en: string[];
-      th: string[];
-      tw: string[];
-      vi: string[];
-    };
     try {
-      translated = await translatePassageWithGPT(sentences);
-
+      const temp = await translatePassageWithGPT(sentences, targetLanguage);
+      const translatedSentences =
+        temp[targetLanguage as keyof typeof temp] || [];
       const updatedTranslations = {
-        ...(existingTranslations || { cn: [], en: [], th: [], tw: [], vi: [] }),
-        ...translated,
+        ...(existingTranslations || {}),
+        [targetLanguage]: translatedSentences,
       };
-
       await prisma.article.update({
         where: { id: article_id },
-        data: {
-          translatedPassage: updatedTranslations,
-        },
+        data: { translatedPassage: updatedTranslations },
       });
-
       return NextResponse.json({
-        message: "translation successful",
-        translated_sentences:
-          translated[targetLanguage as keyof typeof translated] || [],
+        message: "Translation successful",
+        translated_sentences: translatedSentences,
       });
     } catch (error) {
-      return NextResponse.json(
-        {
-          message: error,
-        },
-        { status: 500 }
-      );
+      return NextResponse.json({ message: error }, { status: 500 });
     }
+  } else {
+    return NextResponse.json({ message: "Invalid type" }, { status: 400 });
   }
-
-  return NextResponse.json(
-    { message: "Invalid type parameter" },
-    { status: 400 }
-  );
 }
 
 export async function translateForPrint(request: NextRequest) {
@@ -265,12 +196,11 @@ export async function translateForPrint(request: NextRequest) {
     vi: string[];
   };
   try {
-    translated = await translatePassageWithGPT(paragraphs);
-
+    const temp = await translatePassageWithGoogle(paragraphs, targetLanguage);
+    const translatedSentences = temp[targetLanguage as keyof typeof temp] || [];
     return NextResponse.json({
       message: "translation successful",
-      translated_sentences:
-        translated[targetLanguage as keyof typeof translated] || [],
+      translated_sentences: translatedSentences,
     });
   } catch (error) {
     return NextResponse.json(
@@ -285,43 +215,18 @@ export async function translateForPrint(request: NextRequest) {
 async function translatePassageWithGoogle(
   sentences: string[],
   targetLanguage: string
-): Promise<{
-  cn: string[];
-  en: string[];
-  th: string[];
-  tw: string[];
-  vi: string[];
-}> {
+): Promise<Record<string, string[]>> {
   const translate = new Translate({
     projectId: process.env.GOOGLE_PROJECT_ID,
     key: process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY,
   });
 
-  const result = {
-    cn: [] as string[],
+  const result: Record<string, string[]> = {
     en: sentences,
-    th: [] as string[],
-    tw: [] as string[],
-    vi: [] as string[],
   };
 
-  const langMap: Record<string, keyof typeof result> = {
-    [LanguageType.CN]: "cn",
-    [LanguageType.TH]: "th",
-    [LanguageType.TW]: "tw",
-    [LanguageType.VI]: "vi",
-  };
-
-  const key = langMap[targetLanguage];
-
-  if (key) {
+  if (targetLanguage !== "en") {
     const [translations] = await translate.translate(sentences, targetLanguage);
-    console.log(
-      "Google Translate response for",
-      targetLanguage,
-      ":",
-      translations
-    );
     if (!translations) {
       throw new Error("error translating passage with Google");
     }
@@ -330,68 +235,73 @@ async function translatePassageWithGoogle(
         "translated sentences length does not match original sentences length"
       );
     }
-    result[key] = translations;
+    result[targetLanguage] = translations;
   }
 
-  console.log("Google Translate result:", result);
   return result;
 }
 
 async function translatePassageWithGPT(
   sentences: string[],
+  targetLanguage: LanguageType,
   maxRetries: number = 3
-): Promise<{
-  cn: string[];
-  en: string[];
-  th: string[];
-  tw: string[];
-  vi: string[];
-}> {
+): Promise<Record<string, string[]>> {
   let lastError: any = null;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const passageText = sentences.join(' ');
+      const passageText = sentences.join(" ");
 
-      const userPrompt = `Translate the following passage into Simplified Chinese (cn), Traditional Chinese (tw), Thai (th), and Vietnamese (vi). Keep the English version (en) as is. The passage has been pre-split into ${sentences.length} sentences. Return each sentence as a separate array element. Passage: ${passageText}`;
+      const userPrompt = `Translate the following passage into ${targetLanguage}. The passage has been pre-split into ${sentences.length} sentences. Return each sentence as a separate array element. Passage: ${passageText}`;
 
       const schema = z.object({
-        cn: z.array(z.string()).describe("Simplified Chinese translation of each sentence"),
-        en: z.array(z.string()).describe("English version of each sentence (original)"),
-        th: z.array(z.string()).describe("Thai translation of each sentence"),
-        tw: z.array(z.string()).describe("Traditional Chinese translation of each sentence"),
-        vi: z.array(z.string()).describe("Vietnamese translation of each sentence"),
+        translations: z
+          .array(z.string())
+          .describe(`${targetLanguage} translation of each sentence`),
       });
 
       const { object: response } = await generateObject({
         model: google(googleModel),
         schema,
-        system: `You are a professional translator. Translate the given passage sentence by sentence accurately while maintaining the original meaning and tone. The passage has been pre-split into exactly ${sentences.length} sentences. Return exactly ${sentences.length} translated sentences in each language array, maintaining the same sentence structure as the original.`,
+        system: `You are a professional translator. Translate the given passage sentence by sentence accurately while maintaining the original meaning and tone. The passage has been pre-split into exactly ${sentences.length} sentences. Return exactly ${sentences.length} translated sentences in the specified language array, maintaining the same sentence structure as the original.`,
         prompt: userPrompt,
       });
 
-      // Ensure the response arrays match the input sentence count
+      // Ensure the response array matches the input sentence count
       const expectedLength = sentences.length;
-      if (response.en.length !== expectedLength) {
-        response.en = sentences; // Use the original sentences for English
+      if (response.translations.length !== expectedLength) {
+        throw new Error("Mismatch in translated sentences length");
       }
 
-      return response;
+      const translations = response.translations;
+
+      const result: Record<string, string[]> = {
+        en: sentences,
+      };
+
+      result[targetLanguage] = translations;
+
+      return result;
     } catch (error) {
       lastError = error;
-      console.error(`Error generating translated passage (attempt ${attempt}/${maxRetries}):`, error);
+      console.error(
+        `Error generating translated passage (attempt ${attempt}/${maxRetries}):`,
+        error
+      );
 
       if (attempt < maxRetries) {
         // Wait before retrying (exponential backoff)
         const delay = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s...
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
       }
     }
   }
 
   // If all retries failed, throw the error to be handled by calling function
-  throw new Error(`Failed to generate translated passage after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`);
+  throw new Error(
+    `Failed to generate translated passage after ${maxRetries} attempts: ${lastError?.message || "Unknown error"}`
+  );
 }
 
 export async function translateChapterContent(
@@ -435,28 +345,19 @@ export async function translateChapterContent(
   }
 
   if (type === "summary") {
-    const existingTranslations = chapter.translatedSummary as {
-      cn: string[];
-      en: string[];
-      th: string[];
-      tw: string[];
-      vi: string[];
-    } | null;
+    const existingTranslations = chapter.translatedSummary as Record<
+      string,
+      string[]
+    > | null;
 
     if (
       existingTranslations &&
-      existingTranslations[
-        targetLanguage as keyof typeof existingTranslations
-      ] &&
-      existingTranslations[targetLanguage as keyof typeof existingTranslations]
-        .length > 0
+      existingTranslations[targetLanguage] &&
+      existingTranslations[targetLanguage].length > 0
     ) {
       return NextResponse.json({
         message: "Chapter summary already translated",
-        translated_sentences:
-          existingTranslations[
-            targetLanguage as keyof typeof existingTranslations
-          ],
+        translated_sentences: existingTranslations[targetLanguage],
       });
     }
 
@@ -468,18 +369,12 @@ export async function translateChapterContent(
     }
 
     const sentences = splitTextIntoSentences(chapter.summary);
-    let translated: {
-      cn: string[];
-      en: string[];
-      th: string[];
-      tw: string[];
-      vi: string[];
-    };
+    let translated: Record<string, string[]>;
     try {
-      translated = await translatePassageWithGPT(sentences);
+      translated = await translatePassageWithGPT(sentences, targetLanguage);
 
       const updatedTranslations = {
-        ...(existingTranslations || { cn: [], en: [], th: [], tw: [], vi: [] }),
+        ...(existingTranslations || {}),
         ...translated,
       };
 
@@ -497,8 +392,7 @@ export async function translateChapterContent(
 
       return NextResponse.json({
         message: "Translation successful",
-        translated_sentences:
-          translated[targetLanguage as keyof typeof translated] || [],
+        translated_sentences: translated[targetLanguage] || [],
       });
     } catch (error) {
       console.error("Translation error:", error);
@@ -510,28 +404,18 @@ export async function translateChapterContent(
   }
 
   if (type === "content") {
-    const existingTranslations = chapter.translatedPassage as {
-      cn: string[];
-      en: string[];
-      th: string[];
-      tw: string[];
-      vi: string[];
-    } | null;
+    const existingTranslations = chapter.translatedPassage as Record<
+      string,
+      string[]
+    > | null;
 
-    if (
-      existingTranslations &&
-      existingTranslations[
-        targetLanguage as keyof typeof existingTranslations
-      ] &&
-      existingTranslations[targetLanguage as keyof typeof existingTranslations]
-        .length > 0
-    ) {
+    const translationsForTarget =
+      existingTranslations?.[targetLanguage as string] ?? [];
+
+    if (translationsForTarget.length > 0) {
       return NextResponse.json({
         message: "Chapter content already translated",
-        translated_sentences:
-          existingTranslations[
-            targetLanguage as keyof typeof existingTranslations
-          ],
+        translated_sentences: translationsForTarget,
       });
     }
 
@@ -542,39 +426,34 @@ export async function translateChapterContent(
       );
     }
 
-    let sentences: string[];
-    try {
-      const parsed = JSON.parse(chapter.passage);
-      if (
-        Array.isArray(parsed) &&
-        parsed.length > 0 &&
-        typeof parsed[0] === "object" &&
-        "sentences" in parsed[0]
-      ) {
-        sentences = parsed.map((s: any) => s.sentences);
-      } else {
-        sentences = splitTextIntoSentences(chapter.passage);
-      }
-    } catch {
-      sentences = splitTextIntoSentences(chapter.passage);
+    let sentences: string[] = [];
+
+    if (Array.isArray(chapter.sentences)) {
+      // Normalize possible shapes into a flat string[] for translation
+      sentences = (chapter.sentences as any[]).flatMap((s: any) => {
+        if (typeof s === "string") return [s];
+        if (Array.isArray(s)) return s;
+        if (s && typeof s === "object" && s.sentences) {
+          return Array.isArray(s.sentences) ? s.sentences : [s.sentences];
+        }
+        return [];
+      });
+    } else {
+      sentences = [];
     }
 
-    let translated: {
-      cn: string[];
-      en: string[];
-      th: string[];
-      tw: string[];
-      vi: string[];
-    };
     try {
-      translated = await translatePassageWithGPT(sentences);
+      const temp = await translatePassageWithGPT(sentences, targetLanguage);
+
+      const translatedSentences =
+        temp[targetLanguage as keyof typeof temp] || [];
 
       const updatedTranslations = {
-        ...(existingTranslations || { cn: [], en: [], th: [], tw: [], vi: [] }),
-        ...translated,
+        ...(existingTranslations || {}),
+        [targetLanguage]: translatedSentences,
       };
 
-      await prisma.chapter.update({
+      const updated = await prisma.chapter.update({
         where: {
           storyId_chapterNumber: {
             storyId,
@@ -588,11 +467,10 @@ export async function translateChapterContent(
 
       return NextResponse.json({
         message: "Translation successful",
-        translated_sentences:
-          translated[targetLanguage as keyof typeof translated] || [],
+        translated_sentences: translatedSentences,
       });
     } catch (error) {
-      console.error("Translation error:", error);
+      console.error("[translateChapterContent] Translation error:", error);
       return NextResponse.json(
         { message: "Translation failed" },
         { status: 500 }
@@ -648,7 +526,7 @@ export async function translateStorySummary(
     // console.log("Translating story summary...");
     const existingTranslations = storyData.translatedSummary as Record<
       string,
-      string
+      string[]
     > | null;
 
     if (existingTranslations && existingTranslations[targetLanguage]) {
@@ -662,21 +540,14 @@ export async function translateStorySummary(
     const sentences = splitTextIntoSentences(
       (storyData.storyBible as any).summary
     );
-    let translated: {
-      cn: string[];
-      en: string[];
-      th: string[];
-      tw: string[];
-      vi: string[];
-    };
+    let translated: Record<string, string[]>;
     let translatedSentences: string[];
     try {
-      translated = await translatePassageWithGPT(sentences);
-      translatedSentences =
-        translated[targetLanguage as keyof typeof translated] || [];
+      translated = await translatePassageWithGoogle(sentences, targetLanguage);
+      translatedSentences = translated[targetLanguage] || [];
       const updatedTranslations = {
         ...(existingTranslations || {}),
-        [targetLanguage]: translatedSentences.join(" "),
+        [targetLanguage]: translatedSentences,
       };
 
       await prisma.story.update({
@@ -736,18 +607,14 @@ export async function translateStorySummary(
         if (!chapter.summary) {
           continue;
         }
-        let translated: {
-          cn: string[];
-          en: string[];
-          th: string[];
-          tw: string[];
-          vi: string[];
-        };
+        let translated: Record<string, string[]>;
         let translatedSentences: string[];
 
-        translated = await translatePassageWithGPT([chapter.summary]);
-        translatedSentences =
-          translated[targetLanguage as keyof typeof translated] || [];
+        translated = await translatePassageWithGoogle(
+          [chapter.summary],
+          targetLanguage
+        );
+        translatedSentences = translated[targetLanguage] || [];
 
         allTranslatedSentences[index] = translatedSentences;
 
