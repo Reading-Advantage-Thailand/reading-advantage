@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { Article } from "../../models/article-model";
 import {
   FileTextIcon,
@@ -171,7 +177,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
     );
     form.setValue("sentences", selectedSentenceTexts);
     setSelectedCount(selectedSentences.size);
-    
+
     // Phase can only be completed when user has saved at least 5 sentences
     // Selection alone is not enough - must actually save to database
     onCompleteChange(savedCount >= 5);
@@ -319,7 +325,9 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
 
       toast({
         title: t("success"),
-        description: t("sentencesAddedToCollection", { count: selectedSentences.size }),
+        description: t("sentencesAddedToCollection", {
+          count: selectedSentences.size,
+        }),
         variant: "default",
       });
       onCompleteChange(true);
@@ -327,7 +335,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
       // Clear selections and refresh disabled sentences
       setSelectedSentences(new Set());
       await fetchExistingSentences();
-      
+
       // Keep completion status as true since user has now saved 5+ sentences
       onCompleteChange(true);
     } catch (error: any) {
@@ -411,11 +419,13 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {savedCount >= 5 ? (
                   <>
-                    ✅ {t("phaseCompletedSavedSentences", { count: savedCount })}
+                    ✅{" "}
+                    {t("phaseCompletedSavedSentences", { count: savedCount })}
                   </>
                 ) : selectedCount >= 5 ? (
                   <>
-                    📝 {t("sentencesSelectedClickAdd", { count: selectedCount })}
+                    📝{" "}
+                    {t("sentencesSelectedClickAdd", { count: selectedCount })}
                     <br />
                     <span className="text-amber-600 dark:text-amber-400 font-medium text-xs">
                       {t("mustSaveAtLeast5Sentences")}
@@ -423,7 +433,10 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
                   </>
                 ) : (
                   <>
-                    {t("availableSentencesSelected", { selected: selectedCount, available: sentences.length - disabledSentences.size })}
+                    {t("availableSentencesSelected", {
+                      selected: selectedCount,
+                      available: sentences.length - disabledSentences.size,
+                    })}
                     <br />
                     <span className="text-amber-600 dark:text-amber-400 font-medium text-xs">
                       {t("selectAndSaveAtLeast5")}
@@ -432,12 +445,17 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
                 )}
                 {savedCount > 0 && savedCount < 5 && (
                   <span className="block text-xs text-blue-600 dark:text-blue-400 mt-1">
-                    {t("sentencesSavedNeedMore", { saved: savedCount, needed: 5 - savedCount })}
+                    {t("sentencesSavedNeedMore", {
+                      saved: savedCount,
+                      needed: 5 - savedCount,
+                    })}
                   </span>
                 )}
                 {disabledSentences.size > 0 && (
                   <span className="block text-xs text-gray-500 mt-1">
-                    {t("sentencesAlreadyInCollection", { count: disabledSentences.size })}
+                    {t("sentencesAlreadyInCollection", {
+                      count: disabledSentences.size,
+                    })}
                   </span>
                 )}
               </p>
@@ -543,9 +561,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
           <div className="mb-8 p-4 bg-blue-100 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-blue-800 dark:text-blue-200 text-center font-medium">
               {savedCount >= 5 ? (
-                <>
-                  {t("greatSavedSentencesMessage", { count: savedCount })}
-                </>
+                <>{t("greatSavedSentencesMessage", { count: savedCount })}</>
               ) : (
                 <>
                   {t("clickSentencesToAdd")}
@@ -599,7 +615,7 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
                         (sentenceGroup, groupIndex) => (
                           <div
                             key={`paragraph-${groupIndex}`}
-                            className="mb-4 sm:mb-6"
+                            className="mb-4 sm:mb-6 no-select"
                           >
                             <p
                               className={`text-justify leading-relaxed sm:leading-loose text-base sm:text-lg font-serif tracking-normal sm:tracking-wide ${
@@ -725,7 +741,9 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
                           {t("phaseCompleted")}
                         </h3>
                         <p className="text-sm text-green-600 dark:text-green-300">
-                          {t("sentencesSavedToCollection", { count: savedCount })}
+                          {t("sentencesSavedToCollection", {
+                            count: savedCount,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -749,7 +767,9 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
                     ) : (
                       <>
                         <BookmarkIcon className="w-5 h-5 mr-2" />
-                        {t("addSentencesToCollection", { count: selectedCount })}
+                        {t("addSentencesToCollection", {
+                          count: selectedCount,
+                        })}
                       </>
                     )}
                   </Button>
@@ -769,36 +789,36 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
           <div className="flex items-start">
             <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
             <div>
-              <strong>{t("simple")} sentences:</strong> {t("simpleSentencesDesc")}
+              <strong>{t("simple")} sentences:</strong>{" "}
+              {t("simpleSentencesDesc")}
             </div>
           </div>
           <div className="flex items-start">
             <span className="w-2 h-2 bg-yellow-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
             <div>
-              <strong>{t("medium")} sentences:</strong> {t("mediumSentencesDesc")}
+              <strong>{t("medium")} sentences:</strong>{" "}
+              {t("mediumSentencesDesc")}
             </div>
           </div>
           <div className="flex items-start">
             <span className="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
             <div>
-              <strong>{t("complex")} sentences:</strong> {t("complexSentencesDesc")}
+              <strong>{t("complex")} sentences:</strong>{" "}
+              {t("complexSentencesDesc")}
             </div>
           </div>
           <div className="flex items-start mt-4 pt-3 border-t border-green-300 dark:border-green-700">
             <BookmarkIcon className="w-4 h-4 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
             <div>
               <strong>{t("howToSelect")}:</strong> {t("howToSelectDesc")}{" "}
-              {showTranslation && (
-                <>
-                  {t("useTranslationFeature")}
-                </>
-              )}
+              {showTranslation && <>{t("useTranslationFeature")}</>}
             </div>
           </div>
           <div className="flex items-start">
             <LockIcon className="w-4 h-4 text-gray-500 mr-3 mt-0.5 flex-shrink-0" />
             <div>
-              <strong>{t("alreadyCollected")}:</strong> {t("alreadyCollectedDesc")}
+              <strong>{t("alreadyCollected")}:</strong>{" "}
+              {t("alreadyCollectedDesc")}
             </div>
           </div>
         </div>

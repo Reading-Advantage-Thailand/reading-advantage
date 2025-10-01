@@ -453,7 +453,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                   return paragraphGroups.map((sentenceGroup, groupIndex) => (
                     <div
                       key={`paragraph-${groupIndex}`}
-                      className="mb-4 sm:mb-6"
+                      className="mb-4 sm:mb-6 no-select"
                     >
                       <p
                         className={`text-justify leading-relaxed sm:leading-loose text-base sm:text-lg font-serif tracking-normal sm:tracking-wide ${

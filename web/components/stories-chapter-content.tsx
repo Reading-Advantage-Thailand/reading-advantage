@@ -465,8 +465,8 @@ export default function ChapterContent({
             {loading
               ? "Loading"
               : isTranslate && isTranslateOpen
-              ? t("translateButton.close")
-              : t("translateButton.open")}
+                ? t("translateButton.close")
+                : t("translateButton.open")}
           </Button>
         </div>
       </div>
@@ -535,7 +535,7 @@ export default function ChapterContent({
       )}
 
       <ContextMenu>
-        <ContextMenuTrigger>
+        <ContextMenuTrigger className="no-select">
           {sentenceList.map((sentence, index) => (
             <span
               id="onborda-savesentences"

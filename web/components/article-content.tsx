@@ -568,7 +568,7 @@ export default function ArticleContent({
         </div>
       )}
       <ContextMenu>
-        <ContextMenuTrigger>
+        <ContextMenuTrigger className="no-select">
           {sentenceList.map((sentence, index) => (
             <span
               id="onborda-savesentences"
