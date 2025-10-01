@@ -742,6 +742,7 @@ export default {
         totalTeachers: "Total Teachers",
         totalAssignments: "Total Assignments",
         totalStudents: "Total Students",
+        completed: "Completed",
         completionRate: "Completion Rate",
         searchAssignments: "Search assignments...",
         filterByTeacher: "Filter by teacher",

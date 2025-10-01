@@ -747,6 +747,7 @@ export default {
         totalTeachers: "จำนวนครูทั้งหมด",
         totalAssignments: "จำนวนการมอบหมายงาน",
         totalStudents: "จำนวนนักเรียนทั้งหมด",
+        completed: "เสร็จสิ้น",
         completionRate: "อัตราการเสร็จสิ้น",
         searchAssignments: "ค้นหาการมอบหมายงาน...",
         filterByTeacher: "กรองตามครู",

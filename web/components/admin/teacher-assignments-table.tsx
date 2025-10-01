@@ -372,6 +372,25 @@ function TeacherAssignmentsTable({
           return <div className="text-sm">{t("loading")}</div>;
         }
 
+        const total = row.original.totalStudents;
+        const completed = row.original.completedStudents;
+        const completionRate =
+          total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        // If 100% complete, show "Complete" badge
+        if (completionRate === 100) {
+          return (
+            <div className="text-sm">
+              <Badge
+                variant="default"
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {t("completed")}
+              </Badge>
+            </div>
+          );
+        }
+
         const dueDate = row.getValue("dueDate") as string | null;
         if (!dueDate) {
           return (
@@ -867,7 +886,7 @@ function TeacherAssignmentsTable({
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2 text-green-600">
                       <CheckCircle2 className="h-4 w-4" />
-                      <span>Completed</span>
+                      <span>{t("completed")}</span>
                     </div>
                     <span className="font-semibold">
                       {selectedAssignment.completedStudents}
@@ -915,24 +934,50 @@ function TeacherAssignmentsTable({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-semibold text-sm mb-2">{t("dueDate")}</h4>
-                  {selectedAssignment.dueDate ? (
-                    <Badge
-                      variant={
-                        new Date(selectedAssignment.dueDate) < new Date()
-                          ? "destructive"
-                          : "default"
-                      }
-                    >
-                      {format(
-                        new Date(selectedAssignment.dueDate),
-                        "MMM dd, yyyy"
-                      )}
-                    </Badge>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      {t("noDueDate")}
-                    </span>
-                  )}
+                  {(() => {
+                    const completionRate =
+                      selectedAssignment.totalStudents > 0
+                        ? Math.round(
+                            (selectedAssignment.completedStudents /
+                              selectedAssignment.totalStudents) *
+                              100
+                          )
+                        : 0;
+
+                    if (completionRate === 100) {
+                      return (
+                        <Badge
+                          variant="default"
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {t("completed")}
+                        </Badge>
+                      );
+                    }
+
+                    if (selectedAssignment.dueDate) {
+                      return (
+                        <Badge
+                          variant={
+                            new Date(selectedAssignment.dueDate) < new Date()
+                              ? "destructive"
+                              : "default"
+                          }
+                        >
+                          {format(
+                            new Date(selectedAssignment.dueDate),
+                            "MMM dd, yyyy"
+                          )}
+                        </Badge>
+                      );
+                    }
+
+                    return (
+                      <span className="text-sm text-muted-foreground">
+                        {t("noDueDate")}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm mb-2">{t("created")}</h4>

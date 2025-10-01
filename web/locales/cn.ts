@@ -695,6 +695,7 @@ export default {
         totalTeachers: "教师总数",
         totalAssignments: "作业总数",
         totalStudents: "学生总数",
+        completed: "已完成",
         completionRate: "完成率",
         searchAssignments: "搜索作业...",
         filterByTeacher: "按教师筛选",

@@ -17,9 +17,11 @@ export default {
       orContinueWith: "Hoặc tiếp tục với",
       google: "Google",
       databaseMigrationRequired: "Cần di chuyển cơ sở dữ liệu",
-      migrationDescription: "Tài khoản của bạn cần được di chuyển sang hệ thống mới. Vui lòng đặt mật khẩu mới an toàn để tiếp tục.",
+      migrationDescription:
+        "Tài khoản của bạn cần được di chuyển sang hệ thống mới. Vui lòng đặt mật khẩu mới an toàn để tiếp tục.",
       newPassword: "Mật khẩu mới",
-      newPasswordPlaceholder: "Nhập mật khẩu mạnh (tối thiểu 8 ký tự, có chữ cái và số)",
+      newPasswordPlaceholder:
+        "Nhập mật khẩu mạnh (tối thiểu 8 ký tự, có chữ cái và số)",
       passwordMinLength: "Mật khẩu phải có ít nhất 8 ký tự",
       passwordMustContainLetter: "Mật khẩu phải chứa ít nhất một chữ cái",
       passwordMustContainNumber: "Mật khẩu phải chứa ít nhất một số",
@@ -312,7 +314,8 @@ export default {
         phase14Title: "Tóm tắt bài học",
         phase14Description: "Tóm tắt nội dung bài học này",
         // Phase 14 Lesson Summary keys
-        fantasticWork: "🎊 Tuyệt vời! Bạn đã hoàn thành bài học thành công. Đây là tóm tắt thành tích của bạn!",
+        fantasticWork:
+          "🎊 Tuyệt vời! Bạn đã hoàn thành bài học thành công. Đây là tóm tắt thành tích của bạn!",
         timeSpent: "Thời gian đã dùng",
         wordsSaved: "Từ đã lưu",
         sentences: "Câu",
@@ -374,7 +377,8 @@ export default {
         // Additional keys for lesson components
         interactiveReadingExperience: "Trải nghiệm đọc tương tác",
         learningMode: "Chế độ học tập",
-        beginReadingJourney: "Bắt đầu hành trình đọc tương tác với bài viết này",
+        beginReadingJourney:
+          "Bắt đầu hành trình đọc tương tác với bài viết này",
         articleSummary: "Tóm tắt bài viết",
         learningObjectives: "Mục tiêu học tập",
         understandMainIdeas: "Hiểu ý chính và chủ đề",
@@ -401,9 +405,11 @@ export default {
         rateButton: "Đánh giá câu trả lời",
         // Additional SAQ component keys
         answerPlaceholder: "Nhập câu trả lời suy nghĩ kỹ của bạn ở đây...",
-        answerDescription: "Viết câu trả lời chi tiết để thể hiện sự hiểu biết của bạn",
+        answerDescription:
+          "Viết câu trả lời chi tiết để thể hiện sự hiểu biết của bạn",
         rateLearningExperience: "Đánh giá trải nghiệm học tập của bạn",
-        congratulationsXpEarned: "Chúc mừng! Bạn đã nhận được {rating} XP cho việc hoàn thành hoạt động này.",
+        congratulationsXpEarned:
+          "Chúc mừng! Bạn đã nhận được {rating} XP cho việc hoàn thành hoạt động này.",
         answerRequired: "Câu trả lời là bắt buộc",
         answerTooLong: "Câu trả lời phải ít hơn 1000 ký tự",
         // Phase 3 First Reading keys
@@ -419,27 +425,34 @@ export default {
         percentComplete: "% hoàn thành",
         firstReadingTips: "📚 Mẹo đọc lần đầu",
         readEntireArticle: "Đọc toàn bộ bài viết để nắm ý chính",
-        clickStartReading: "Nhấp \"Bắt đầu đọc\" để nghe bài viết được đọc to",
-        clickSentenceJump: "Nhấp vào bất kỳ câu nào để nhảy đến phần đó của âm thanh",
+        clickStartReading: 'Nhấp "Bắt đầu đọc" để nghe bài viết được đọc to',
+        clickSentenceJump:
+          "Nhấp vào bất kỳ câu nào để nhảy đến phần đó của âm thanh",
         useHighlightMode: "Sử dụng chế độ đánh dấu để theo dõi âm thanh",
-        listenCompleteAudio: "Nghe toàn bộ âm thanh để chuyển sang giai đoạn tiếp theo",
-        readingCompleted: "✅ Đọc hoàn thành 100%! Tiến độ của bạn đã được lưu. Bây giờ bạn có thể chuyển sang giai đoạn tiếp theo.",
-        listenToUnlock: "🎧 Nghe toàn bộ âm thanh để mở khóa giai đoạn tiếp theo.",
-        progressAutoSaved: "💾 Tiến độ đọc của bạn được tự động lưu và sẽ được ghi nhớ khi bạn quay lại.",
+        listenCompleteAudio:
+          "Nghe toàn bộ âm thanh để chuyển sang giai đoạn tiếp theo",
+        readingCompleted:
+          "✅ Đọc hoàn thành 100%! Tiến độ của bạn đã được lưu. Bây giờ bạn có thể chuyển sang giai đoạn tiếp theo.",
+        listenToUnlock:
+          "🎧 Nghe toàn bộ âm thanh để mở khóa giai đoạn tiếp theo.",
+        progressAutoSaved:
+          "💾 Tiến độ đọc của bạn được tự động lưu và sẽ được ghi nhớ khi bạn quay lại.",
         // Phase 5 Deep Reading keys
         translationNotAvailablePhase5: "Dịch không khả dụng",
         translation: "Dịch",
         clickSentenceTranslation: "Nhấp vào bất kỳ câu nào để xem bản dịch",
         deepReadingTips: "📚 Mẹo đọc sâu",
         readEntireArticleDeep: "Đọc toàn bộ bài viết để nắm ý chính",
-        clickStartReadingDeep: "Nhấp \"Bắt đầu đọc\" để nghe bài viết được đọc to",
+        clickStartReadingDeep:
+          'Nhấp "Bắt đầu đọc" để nghe bài viết được đọc to',
         useHighlightModeDeep: "Sử dụng chế độ đánh dấu để theo dõi âm thanh",
         // Phase 12 Sentence Activities keys
         loadingActivities: "Đang tải hoạt động...",
         completed: "(Đã hoàn thành)",
         review: "Ôn tập",
         // Phase 4 Vocabulary Collection keys
-        selectVocabularyDescription: "Chọn các từ vựng bạn muốn thêm vào bộ sưu tập cá nhân để học tập trong tương lai",
+        selectVocabularyDescription:
+          "Chọn các từ vựng bạn muốn thêm vào bộ sưu tập cá nhân để học tập trong tương lai",
         vocabularyCollectionProgress: "Tiến độ thu thập từ vựng",
         saved: "đã lưu",
         needSaveAtLeast5Words: "cần lưu ít nhất 5 từ để tiếp tục",
@@ -449,13 +462,18 @@ export default {
         selectWordsToSave: "Chọn từ để lưu",
         saveWordsCount: "Lưu {count} từ",
         saveWordsCountWithSaved: "Lưu {count} từ ({saved} đã lưu)",
-        greatSavedWordsMessage: "Tuyệt vời! Bạn đã lưu {count} từ. Bây giờ bạn có thể chuyển sang giai đoạn tiếp theo hoặc chọn thêm từ nếu muốn.",
-        needAtLeast5WordsMessage: "Bạn cần lưu tổng cộng ít nhất 5 từ để chuyển sang giai đoạn tiếp theo. Hiện tại đã lưu: {count} từ.",
+        greatSavedWordsMessage:
+          "Tuyệt vời! Bạn đã lưu {count} từ. Bây giờ bạn có thể chuyển sang giai đoạn tiếp theo hoặc chọn thêm từ nếu muốn.",
+        needAtLeast5WordsMessage:
+          "Bạn cần lưu tổng cộng ít nhất 5 từ để chuyển sang giai đoạn tiếp theo. Hiện tại đã lưu: {count} từ.",
         collectionTips: "💡 Mẹo thu thập",
         chooseNewWords: "Chọn các từ mới hoặc thách thức đối với bạn",
-        wordsAddedToFlashcards: "Các từ đã chọn sẽ được thêm vào bộ sưu tập thẻ từ của bạn",
-        reviewWordsLater: "Bạn có thể ôn tập các từ này sau trong các buổi thực hành",
-        greenCheckmarkWords: "Các từ có dấu tích xanh đã được lưu vào bộ sưu tập của bạn",
+        wordsAddedToFlashcards:
+          "Các từ đã chọn sẽ được thêm vào bộ sưu tập thẻ từ của bạn",
+        reviewWordsLater:
+          "Bạn có thể ôn tập các từ này sau trong các buổi thực hành",
+        greenCheckmarkWords:
+          "Các từ có dấu tích xanh đã được lưu vào bộ sưu tập của bạn",
         definitionNotAvailable: "Định nghĩa không khả dụng",
         // Toast messages
         somethingWentWrong: "Đã xảy ra lỗi.",
@@ -463,45 +481,63 @@ export default {
         success: "Thành công!",
         error: "Lỗi",
         failedToSaveVocabulary: "Không thể lưu từ vựng",
-        wordsAddedToCollection: "{count} từ đã được thêm vào bộ sưu tập từ vựng của bạn",
+        wordsAddedToCollection:
+          "{count} từ đã được thêm vào bộ sưu tập từ vựng của bạn",
         // Phase 6 Sentence Collection keys
         loadingSentenceCollection: "Đang tải bộ sưu tập câu của bạn...",
         collectionStatus: "Trạng thái thu thập",
-        phaseCompletedSavedSentences: "Giai đoạn hoàn thành! Bạn đã lưu {count} câu vào bộ sưu tập của mình",
-        sentencesSelectedClickAdd: "{count} câu đã chọn - nhấp \"Thêm vào bộ sưu tập\" để lưu chúng",
-        mustSaveAtLeast5Sentences: "⚠️ Bạn phải lưu ít nhất 5 câu để chuyển sang giai đoạn tiếp theo",
-        availableSentencesSelected: "Đã chọn {selected} / {available} câu có sẵn",
+        phaseCompletedSavedSentences:
+          "Giai đoạn hoàn thành! Bạn đã lưu {count} câu vào bộ sưu tập của mình",
+        sentencesSelectedClickAdd:
+          '{count} câu đã chọn - nhấp "Thêm vào bộ sưu tập" để lưu chúng',
+        mustSaveAtLeast5Sentences:
+          "⚠️ Bạn phải lưu ít nhất 5 câu để chuyển sang giai đoạn tiếp theo",
+        availableSentencesSelected:
+          "Đã chọn {selected} / {available} câu có sẵn",
         selectAndSaveAtLeast5: "Chọn và lưu ít nhất 5 câu để tiếp tục",
-        sentencesSavedNeedMore: "Đã lưu {saved} câu - cần {needed} câu nữa để tiếp tục",
-        sentencesAlreadyInCollection: "{count} câu đã có trong bộ sưu tập của bạn",
+        sentencesSavedNeedMore:
+          "Đã lưu {saved} câu - cần {needed} câu nữa để tiếp tục",
+        sentencesAlreadyInCollection:
+          "{count} câu đã có trong bộ sưu tập của bạn",
         translationOn: "Bật",
         translationOff: "Tắt",
-        greatSavedSentencesMessage: "🎉 Tuyệt vời! Bạn đã lưu thành công {count} câu vào bộ sưu tập của mình. Bây giờ bạn có thể chuyển sang giai đoạn tiếp theo!",
-        clickSentencesToAdd: "📖 Nhấp vào câu để thêm chúng vào bộ sưu tập của bạn. Các câu đã chọn sẽ được đánh dấu bằng biểu tượng bookmark.",
-        desktopRightClick: "💬 Máy tính: Nhấp chuột phải để xem bản dịch. Điện thoại: Nhấn giữ để xem bản dịch.",
+        greatSavedSentencesMessage:
+          "🎉 Tuyệt vời! Bạn đã lưu thành công {count} câu vào bộ sưu tập của mình. Bây giờ bạn có thể chuyển sang giai đoạn tiếp theo!",
+        clickSentencesToAdd:
+          "📖 Nhấp vào câu để thêm chúng vào bộ sưu tập của bạn. Các câu đã chọn sẽ được đánh dấu bằng biểu tượng bookmark.",
+        desktopRightClick:
+          "💬 Máy tính: Nhấp chuột phải để xem bản dịch. Điện thoại: Nhấn giữ để xem bản dịch.",
         simple: "Đơn giản",
         medium: "Trung bình",
         complex: "Phức tạp",
         alreadyInCollection: "Đã có trong bộ sưu tập của bạn",
         clickToSelect: "Nhấp để chọn",
         clickToDeselect: "Nhấp để bỏ chọn",
-        rightClickOrLongPress: "Nhấp chuột phải (máy tính) hoặc nhấn giữ (điện thoại) để xem bản dịch",
+        rightClickOrLongPress:
+          "Nhấp chuột phải (máy tính) hoặc nhấn giữ (điện thoại) để xem bản dịch",
         phaseCompleted: "Giai đoạn hoàn thành!",
-        sentencesSavedToCollection: "{count} câu đã được lưu vào bộ sưu tập của bạn",
+        sentencesSavedToCollection:
+          "{count} câu đã được lưu vào bộ sưu tập của bạn",
         addSentencesToCollection: "Thêm {count} câu vào bộ sưu tập",
         sentenceCollectionGuide: "📖 Hướng dẫn thu thập câu",
-        simpleSentencesDesc: "Tốt để luyện tập cấu trúc cơ bản và từ vựng thông dụng",
-        mediumSentencesDesc: "Giúp phát triển sự hiểu biết về các ý tưởng phức tạp",
-        complexSentencesDesc: "Thách thức khả năng hiểu và kỹ năng phân tích của bạn",
+        simpleSentencesDesc:
+          "Tốt để luyện tập cấu trúc cơ bản và từ vựng thông dụng",
+        mediumSentencesDesc:
+          "Giúp phát triển sự hiểu biết về các ý tưởng phức tạp",
+        complexSentencesDesc:
+          "Thách thức khả năng hiểu và kỹ năng phân tích của bạn",
         howToSelect: "Cách chọn",
         howToSelectDesc: "Nhấp vào câu để đánh dấu bookmark cho chúng.",
-        useTranslationFeature: "Sử dụng tính năng dịch - nhấp chuột phải (máy tính) hoặc nhấn giữ (điện thoại) để hiểu các câu khó trước khi chọn.",
+        useTranslationFeature:
+          "Sử dụng tính năng dịch - nhấp chuột phải (máy tính) hoặc nhấn giữ (điện thoại) để hiểu các câu khó trước khi chọn.",
         alreadyCollected: "Đã thu thập",
-        alreadyCollectedDesc: "Các câu có biểu tượng khóa đã có trong bộ sưu tập của bạn và không thể chọn lại.",
+        alreadyCollectedDesc:
+          "Các câu có biểu tượng khóa đã có trong bộ sưu tập của bạn và không thể chọn lại.",
         // Toast messages for Phase 6
         insufficientSentences: "Không đủ câu",
         selectAtLeast5Sentences: "Vui lòng chọn ít nhất 5 câu để tiếp tục",
-        sentencesAddedToCollection: "{count} câu đã được thêm vào bộ sưu tập của bạn",
+        sentencesAddedToCollection:
+          "{count} câu đã được thêm vào bộ sưu tập của bạn",
         failedToSaveSentences: "Không thể lưu câu",
         // MCQ component keys
         multipleChoiceQuiz: "Bài kiểm tra trắc nghiệm",
@@ -512,13 +548,15 @@ export default {
         nextQuestion: "Câu hỏi tiếp theo",
         finishQuiz: "Hoàn thành bài kiểm tra",
         quizCompleted: "🎉 Hoàn thành bài kiểm tra! 🎉",
-        quizCompletedDescription: "Chúc mừng! Bạn đã hoàn thành bài kiểm tra trắc nghiệm.",
+        quizCompletedDescription:
+          "Chúc mừng! Bạn đã hoàn thành bài kiểm tra trắc nghiệm.",
         correctAnswers: "Đáp án đúng",
         accuracy: "Độ chính xác",
         mcqXpEarned: "XP kiếm được",
         totalTime: "Tổng thời gian",
         quizScore: "Điểm bài kiểm tra: {correct}/{total}",
-        greatJobXpEarned: "Tuyệt vời! Bạn đã trả lời đúng {correct}/{total} câu và kiếm được {xp} XP.",
+        greatJobXpEarned:
+          "Tuyệt vời! Bạn đã trả lời đúng {correct}/{total} câu và kiếm được {xp} XP.",
       },
       assignmentPage: {
         overdue: "Quá hạn",
@@ -724,6 +762,7 @@ export default {
         totalTeachers: "Tổng số giáo viên",
         totalAssignments: "Tổng số bài tập",
         totalStudents: "Tổng số học sinh",
+        completed: "Hoàn thành",
         completionRate: "Tỷ lệ hoàn thành",
         searchAssignments: "Tìm kiếm bài tập...",
         filterByTeacher: "Lọc theo giáo viên",
@@ -1358,12 +1397,14 @@ export default {
     loadingSentenceFlashcards: "Đang tải thẻ câu...",
     prepareFlashcards: "Vui lòng đợi, chúng tôi đang chuẩn bị thẻ của bạn.",
     noCardsToPractice: "Không có thẻ để luyện tập",
-    noCardsDescription: "Làm tốt lắm! Bạn hiện không có thẻ câu nào cần luyện tập.",
+    noCardsDescription:
+      "Làm tốt lắm! Bạn hiện không có thẻ câu nào cần luyện tập.",
     somethingWentWrong: "Đã xảy ra lỗi",
     failedToLoadFlashcards: "Tải thẻ thất bại. Vui lòng thử lại.",
     noCardAvailable: "Không có thẻ khả dụng",
     noCardsToStudy: "Hiện không có thẻ nào để học.",
-    thinkAboutMeaning: "Hãy nghĩ về ý nghĩa của câu này, sau đó tiết lộ câu trả lời.",
+    thinkAboutMeaning:
+      "Hãy nghĩ về ý nghĩa của câu này, sau đó tiết lộ câu trả lời.",
     showTranslation: "Hiển thị bản dịch",
     correct: "Đúng",
     incorrect: "Sai",
@@ -1392,7 +1433,8 @@ export default {
     progressFraction: "Tiến độ: {{current}} / {{total}}",
     matchWordsWithDefinitions: "Ghép từ với định nghĩa của nó",
     needMoreWords: "Cần thêm từ",
-    needMoreWordsDescription: "Bạn cần thu thập ít nhất 5 từ ở Giai đoạn 2 để luyện tập ghép.",
+    needMoreWordsDescription:
+      "Bạn cần thu thập ít nhất 5 từ ở Giai đoạn 2 để luyện tập ghép.",
     alreadyCompleted: "Đã hoàn thành!",
     alreadyCompletedDescription: "Bạn đã hoàn thành hoạt động này!",
     perfectScore: "Điểm hoàn hảo!",
@@ -1400,14 +1442,16 @@ export default {
     sentenceMatchingPractice: "Luyện tập ghép câu",
     matchSentencesWithTranslations: "Ghép câu với bản dịch của nó",
     needMoreSentences: "Cần thêm câu",
-    needMoreSentencesDescription: "Bạn cần thu thập ít nhất 5 câu ở Giai đoạn 6 để luyện tập ghép.",
+    needMoreSentencesDescription:
+      "Bạn cần thu thập ít nhất 5 câu ở Giai đoạn 6 để luyện tập ghép.",
     matchedAllSentences: "Bạn đã ghép đúng tất cả các câu!",
     wordOrderingPractice: "Luyện tập sắp xếp từ",
     tryToSortThisSentence: "Hãy thử sắp xếp câu này",
     clickWordsToFormSentence: "Nhấp vào các từ bên dưới để tạo thành câu đúng",
     translation: "Bản dịch:",
     yourSentence: "Câu của bạn:",
-    clickWordsToAdd: "Nhấp vào từ để thêm vào câu của bạn (còn {{remaining}} từ)",
+    clickWordsToAdd:
+      "Nhấp vào từ để thêm vào câu của bạn (còn {{remaining}} từ)",
     perfectCorrectWordOrder: "Hoàn hảo! Thứ tự từ đúng! 🎉",
     notQuiteRightRearrangeWords: "Không hẳn đúng. Hãy thử sắp xếp lại các từ",
     correctOrder: "Thứ tự đúng:",
@@ -1418,16 +1462,19 @@ export default {
     nextSentence: "Câu tiếp theo",
     finishPractice: "Hoàn thành luyện tập",
     amazingWork: "Công việc tuyệt vời!",
-    completedWordOrderingChallenges: "Bạn đã hoàn thành {{count}} thử thách sắp xếp từ",
+    completedWordOrderingChallenges:
+      "Bạn đã hoàn thành {{count}} thử thách sắp xếp từ",
     previouslyCompleted: "Đã hoàn thành trước đó",
     correctAnswers: "Câu trả lời đúng",
     loadingNextChallenge: "Đang tải thử thách tiếp theo...",
     needMoreSentencesWordOrdering: "Cần thêm câu",
-    needMoreSentencesWordOrderingDescription: "Bạn cần thu thập ít nhất 5 câu ở Giai đoạn 6 để luyện tập sắp xếp từ.",
+    needMoreSentencesWordOrderingDescription:
+      "Bạn cần thu thập ít nhất 5 câu ở Giai đoạn 6 để luyện tập sắp xếp từ.",
     orderTheSentences: "Sắp xếp câu",
     arrangeFiveSentences: "Sắp xếp 5 câu này theo thứ tự thời gian",
     readyToStart: "Sẵn sàng bắt đầu?",
-    arrangeSentencesChronologicalOrder: "Sắp xếp câu theo thứ tự thời gian đúng",
+    arrangeSentencesChronologicalOrder:
+      "Sắp xếp câu theo thứ tự thời gian đúng",
     sentenceGroups: "Nhóm câu",
     readyToOrder: "Sẵn sàng sắp xếp",
     dragAndDrop: "Kéo thả",
@@ -1436,10 +1483,12 @@ export default {
     instructions: "Hướng dẫn",
     dragDropInstructions: "Kéo thả câu để sắp xếp theo thứ tự thời gian",
     useHintFeatures: "Nếu cần trợ giúp, hãy sử dụng tính năng gợi ý",
-    completeAllSentenceGroups: "Hoàn thành tất cả nhóm câu để kết thúc giai đoạn này",
+    completeAllSentenceGroups:
+      "Hoàn thành tất cả nhóm câu để kết thúc giai đoạn này",
     startGame: "Bắt đầu trò chơi!",
     noSentencesAvailable: "Không có câu nào khả dụng",
-    unableToLoadSentences: "Không thể tải câu của bài viết này. Vui lòng thử lại.",
+    unableToLoadSentences:
+      "Không thể tải câu của bài viết này. Vui lòng thử lại.",
     outstanding: "Xuất sắc!",
     correctSentenceOrder: "Bạn đã có thứ tự câu đúng!",
     notQuiteRightSentenceOrder: "Thứ tự câu không đúng. Hãy thử lại!",
