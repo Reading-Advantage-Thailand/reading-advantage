@@ -32,7 +32,6 @@ function isPublicPage(path: string, locale: string): boolean {
 
 async function middleware(req: NextRequest) {
   const token = await getToken({ req });
-  console.log("Middleware token:", token);
   const isAuth = !!token;
   const authLocales = localeConfig.locales;
   const locale =
