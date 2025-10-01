@@ -156,10 +156,13 @@ export async function postLessonStatus(
           });
 
           if (studentAssignment) {
-            // Update student assignment status to IN_PROGRESS
+            // Update student assignment status to IN_PROGRESS and set startedAt
             await tx.studentAssignment.update({
               where: { id: studentAssignment.id },
-              data: { status: "IN_PROGRESS" },
+              data: { 
+                status: "IN_PROGRESS",
+                startedAt: new Date(),
+              },
             });
           }
         }
@@ -255,7 +258,10 @@ export async function putLessonPhaseStatus(
           if (studentAssignment) {
             await tx.studentAssignment.update({
               where: { id: studentAssignment.id },
-              data: { status: "COMPLETED" },
+              data: { 
+                status: "COMPLETED",
+                completedAt: new Date(),
+              },
             });
           }
         }

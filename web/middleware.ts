@@ -32,6 +32,7 @@ function isPublicPage(path: string, locale: string): boolean {
 
 async function middleware(req: NextRequest) {
   const token = await getToken({ req });
+  console.log("Middleware token:", token);
   const isAuth = !!token;
   const authLocales = localeConfig.locales;
   const locale =
@@ -62,33 +63,50 @@ async function middleware(req: NextRequest) {
 
     if (isAuth) {
       const userRole = token.role; // Assuming the token contains the user's role
+      const currentPath = req.nextUrl.pathname;
+      
       // Redirect to the level selection page if the user's level is unknown
-      if (userRole === Role.USER) {
+      if (userRole === Role.USER && !currentPath.startsWith("/role-selection")) {
         return NextResponse.redirect(new URL("/role-selection", req.url));
       }
+      
+      // Redirect to level test if user has no level/xp (except if already on /level page)
       if (
-        token.level === undefined ||
-        token.level === null ||
-        token.level === 0
+        (token.level === undefined ||
+          token.level === null ||
+          token.level === 0 ||
+          token.xp === 0 ||
+          token.xp === null ||
+          token.xp === undefined) &&
+        !currentPath.startsWith("/level") &&
+        userRole !== Role.USER
       ) {
         return NextResponse.redirect(new URL("/level", req.url));
       }
+      
+      // Don't redirect if already on the correct page
+      if (currentPath.startsWith("/level") || currentPath.startsWith("/role-selection")) {
+        return null;
+      }
+      
       // Redirect to the appropriate page based on the user's role
       // if (userRole === Role.STUDENT) {
       //   return NextResponse.redirect(new URL("/student/read", req.url));
       // }
-      if (userRole === Role.TEACHER) {
+      if (userRole === Role.TEACHER && !currentPath.startsWith("/teacher")) {
         return NextResponse.redirect(new URL("/teacher/my-classes", req.url));
       }
-      if (userRole === Role.ADMIN) {
+      if (userRole === Role.ADMIN && !currentPath.startsWith("/admin")) {
         return NextResponse.redirect(new URL("/admin/dashboard", req.url));
       }
-      if (userRole === Role.SYSTEM) {
+      if (userRole === Role.SYSTEM && !currentPath.startsWith("/system")) {
         return NextResponse.redirect(new URL("/system/dashboard", req.url));
       }
       // else redirect to the student home page
       // DEFAULT ()
-      return NextResponse.redirect(new URL("/student/read", req.url));
+      if (userRole === Role.STUDENT && !currentPath.startsWith("/student")) {
+        return NextResponse.redirect(new URL("/student/read", req.url));
+      }
     }
 
     return null;
