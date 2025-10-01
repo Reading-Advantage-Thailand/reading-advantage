@@ -27,7 +27,7 @@ model User {
   xpLogs              XPLog[]
   accounts            Account[]
   articles            Article[]
-  assignments         Assignment[]
+  studentAssignments  StudentAssignment[]
   chapterTrackings    ChapterTracking[]
   studentClassrooms   ClassroomStudent[]
   teacherClassrooms   ClassroomTeacher[]   @relation("ClassroomTeachers")
@@ -265,20 +265,36 @@ model LicenseOnUser {
 }
 
 model Assignment {
-  classroomId String    @map("classroom_id")
-  id          String    @id @default(cuid())
-  userId      String?   @map("user_id")
-  articleId   String    @map("article_id")
-  title       String?   @db.VarChar
-  description String?
-  dueDate     DateTime? @map("due_date")
-  createdAt   DateTime  @default(now())
-  status      Status?   @default(NOT_STARTED)
-  article     Article   @relation(fields: [articleId], references: [id])
-  classroom   Classroom @relation(fields: [classroomId], references: [id])
-  user        User?     @relation(fields: [userId], references: [id])
+  id                    String                  @id @default(cuid())
+  classroomId           String                  @map("classroom_id")
+  articleId             String                  @map("article_id")
+  title                 String?                 @db.VarChar
+  description           String?
+  dueDate               DateTime?               @map("due_date")
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @default(now()) @updatedAt
+  article               Article                 @relation(fields: [articleId], references: [id])
+  classroom             Classroom               @relation(fields: [classroomId], references: [id])
+  studentAssignments    StudentAssignment[]
 
   @@map("assignments")
+}
+
+model StudentAssignment {
+  id            String      @id @default(cuid())
+  assignmentId  String      @map("assignment_id")
+  studentId     String      @map("student_id")
+  status        Status      @default(NOT_STARTED)
+  startedAt     DateTime?   @map("started_at")
+  completedAt   DateTime?   @map("completed_at")
+  score         Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  assignment    Assignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student       User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, studentId])
+  @@map("student_assignments")
 }
 
 model UserWordRecord {

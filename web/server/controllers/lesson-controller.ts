@@ -138,20 +138,30 @@ export async function postLessonStatus(
       const classroomId = req.nextUrl.searchParams.get("classroomId");
 
       if (classroomId) {
-        // Check if assignment exists and update its status
+        // Check if assignment exists
         const assignment = await tx.assignment.findFirst({
           where: {
             classroomId,
             articleId,
-            userId,
           },
         });
 
         if (assignment) {
-          await tx.assignment.update({
-            where: { id: assignment.id },
-            data: { status: "IN_PROGRESS" },
+          // Check if student assignment exists
+          const studentAssignment = await tx.studentAssignment.findFirst({
+            where: {
+              assignmentId: assignment.id,
+              studentId: userId,
+            },
           });
+
+          if (studentAssignment) {
+            // Update student assignment status to IN_PROGRESS
+            await tx.studentAssignment.update({
+              where: { id: studentAssignment.id },
+              data: { status: "IN_PROGRESS" },
+            });
+          }
         }
       }
     });
@@ -225,20 +235,29 @@ export async function putLessonPhaseStatus(
       const classroomId = req.nextUrl.searchParams.get("classroomId");
 
       if (classroomId && phase === 13 && status === 2) {
-        // Find and update assignment
+        // Find assignment
         const assignment = await tx.assignment.findFirst({
           where: {
             classroomId,
             articleId,
-            userId,
           },
         });
 
         if (assignment) {
-          await tx.assignment.update({
-            where: { id: assignment.id },
-            data: { status: "COMPLETED" },
+          // Find student assignment and update status
+          const studentAssignment = await tx.studentAssignment.findFirst({
+            where: {
+              assignmentId: assignment.id,
+              studentId: userId,
+            },
           });
+
+          if (studentAssignment) {
+            await tx.studentAssignment.update({
+              where: { id: studentAssignment.id },
+              data: { status: "COMPLETED" },
+            });
+          }
         }
       }
     });

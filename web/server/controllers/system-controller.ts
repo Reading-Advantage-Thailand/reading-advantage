@@ -8,27 +8,15 @@ export async function getSystemLicenses(req: NextRequest) {
     const user = await getCurrentUser();
 
     if (!user || user.role !== Role.SYSTEM) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Get all licenses with their users and XP data
+    // Get all licenses with their users
     const licenses = await prisma.license.findMany({
       include: {
         licenseUsers: {
-          include: {
-            user: {
-              include: {
-                xpLogs: {
-                  select: {
-                    xpEarned: true,
-                    createdAt: true,
-                  },
-                },
-              },
-            },
+          select: {
+            userId: true, // Only fetch userId
           },
         },
         owner: {
@@ -39,8 +27,33 @@ export async function getSystemLicenses(req: NextRequest) {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
+    });
+
+    // Collect all userIds from licenses
+    const allUserIds = licenses.flatMap((license) =>
+      license.licenseUsers.map((licenseUser) => licenseUser.userId)
+    );
+
+    // Fetch XP logs for all userIds
+    const xpLogs = await prisma.xPLog.findMany({
+      where: {
+        userId: {
+          in: allUserIds,
+        },
+      },
+      select: {
+        userId: true,
+        xpEarned: true,
+      },
+    });
+
+    // Group XP logs by userId
+    const userXpMap = new Map<string, number>();
+    xpLogs.forEach((log: { userId: string; xpEarned: number | null }) => {
+      const currentXp = userXpMap.get(log.userId) || 0;
+      userXpMap.set(log.userId, currentXp + (log.xpEarned || 0));
     });
 
     // Process licenses to include XP totals
@@ -48,11 +61,7 @@ export async function getSystemLicenses(req: NextRequest) {
       let totalXp = 0;
 
       license.licenseUsers.forEach((licenseUser) => {
-        const userXp = licenseUser.user.xpLogs.reduce(
-          (sum, log) => sum + log.xpEarned,
-          0
-        );
-        totalXp += userXp;
+        totalXp += userXpMap.get(licenseUser.userId) || 0;
       });
 
       return {
@@ -64,7 +73,9 @@ export async function getSystemLicenses(req: NextRequest) {
         licenseType: license.licenseType,
         currentUsers: license.licenseUsers.length,
         totalXp,
-        isActive: license.expiresAt ? new Date(license.expiresAt) > new Date() : false,
+        isActive: license.expiresAt
+          ? new Date(license.expiresAt) > new Date()
+          : false,
         createdAt: license.createdAt,
         updatedAt: license.updatedAt,
         owner: license.owner,
@@ -89,16 +100,13 @@ export async function getSchoolXpData(req: NextRequest) {
     const user = await getCurrentUser();
 
     if (!user || user.role !== Role.SYSTEM) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
-    const dateFrom = searchParams.get('dateFrom');
-    const dateTo = searchParams.get('dateTo');
-    const period = searchParams.get('period'); // 'day', 'week', 'month', 'all'
+    const dateFrom = searchParams.get("dateFrom");
+    const dateTo = searchParams.get("dateTo");
+    const period = searchParams.get("period"); // 'day', 'week', 'month', 'all'
 
     let startDate: Date | undefined;
     let endDate: Date | undefined;
@@ -107,20 +115,20 @@ export async function getSchoolXpData(req: NextRequest) {
       startDate = new Date(dateFrom);
       endDate = new Date(dateTo);
       endDate.setHours(23, 59, 59, 999);
-    } else if (period && period !== 'all') {
+    } else if (period && period !== "all") {
       endDate = new Date();
-      
+
       switch (period) {
-        case 'day':
+        case "day":
           startDate = new Date();
           startDate.setHours(0, 0, 0, 0);
           break;
-        case 'week':
+        case "week":
           startDate = new Date();
           startDate.setDate(startDate.getDate() - 7);
           startDate.setHours(0, 0, 0, 0);
           break;
-        case 'month':
+        case "month":
           startDate = new Date();
           startDate.setMonth(startDate.getMonth() - 1);
           startDate.setHours(0, 0, 0, 0);
@@ -169,7 +177,7 @@ export async function getSchoolXpData(req: NextRequest) {
     licensesWithXp.forEach((license) => {
       if (license.schoolName) {
         let schoolXp = 0;
-        
+
         license.licenseUsers.forEach((licenseUser) => {
           const userXp = licenseUser.user.xpLogs.reduce(
             (sum, log) => sum + log.xpEarned,
@@ -191,7 +199,7 @@ export async function getSchoolXpData(req: NextRequest) {
     return NextResponse.json({
       data: schoolXpData,
       total: schoolXpData.length,
-      period: period || 'all',
+      period: period || "all",
       dateRange: startDate && endDate ? { from: startDate, to: endDate } : null,
     });
   } catch (error) {

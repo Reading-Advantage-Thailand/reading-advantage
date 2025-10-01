@@ -35,6 +35,14 @@ export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
 
   const licenseType = licenseTypeMap[subscription_level?.toLowerCase()] || LicenseType.BASIC;
 
+  // Calculate expiration date from number of days
+  let expiresAt: Date | null = null;
+  if (expiration_date) {
+    const daysToAdd = typeof expiration_date === 'number' ? expiration_date : parseInt(expiration_date);
+    expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + daysToAdd);
+  }
+
   const license = await prisma.license.create({
     data: {
       key: randomUUID(),
@@ -42,7 +50,7 @@ export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
       maxUsers: total_licenses,
       licenseType: licenseType,
       ownerUserId: admin_id || req.session?.user.id,
-      expiresAt: expiration_date ? new Date(expiration_date) : null,
+      expiresAt: expiresAt,
       usedLicenses: 0,
     },
   });
@@ -124,9 +132,29 @@ export const deleteLicense = catchAsync(async (req: ExtendedNextRequest, { param
   });
 });
 
-export const activateLicense = async (req: ExtendedNextRequest) => {
+export const activateLicense = async (
+  req: ExtendedNextRequest,
+  context?: RequestContext
+) => {
   try {
     const { key, userId } = await req.json();
+    
+    // Use userId from context (URL parameter) if available, otherwise from body
+    const targetUserId = context?.params?.id || userId;
+    
+    // Authorization check: users can only activate license for themselves
+    // unless they are ADMIN or TEACHER
+    const currentUser = req.session?.user;
+    if (
+      currentUser?.role !== 'ADMIN' &&
+      currentUser?.role !== 'TEACHER' &&
+      currentUser?.id !== targetUserId
+    ) {
+      return NextResponse.json(
+        { message: "You can only activate license for yourself" },
+        { status: 403 }
+      );
+    }
     
     // Find license by key
     const license = await prisma.license.findUnique({
@@ -161,7 +189,7 @@ export const activateLicense = async (req: ExtendedNextRequest) => {
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: targetUserId },
       include: {
         licenseOnUsers: true,
       },
@@ -178,7 +206,7 @@ export const activateLicense = async (req: ExtendedNextRequest) => {
     const existingLicenseUser = await prisma.licenseOnUser.findUnique({
       where: {
         userId_licenseId: {
-          userId,
+          userId: targetUserId,
           licenseId: license.id,
         },
       },
@@ -196,13 +224,13 @@ export const activateLicense = async (req: ExtendedNextRequest) => {
       // Create license-user relationship
       prisma.licenseOnUser.create({
         data: {
-          userId,
+          userId: targetUserId,
           licenseId: license.id,
         },
       }),
       // Update user's license and expiration date
       prisma.user.update({
-        where: { id: userId },
+        where: { id: targetUserId },
         data: {
           licenseId: license.id,
           expiredDate: license.expiresAt,
@@ -279,6 +307,218 @@ export const getLicense = async (
     });
   } catch (error) {
     console.error("Error fetching license:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      status: 500,
+    });
+  }
+};
+
+export const deactivateLicense = async (
+  req: ExtendedNextRequest,
+  context?: RequestContext
+) => {
+  try {
+    const { userId, licenseId } = await req.json();
+    
+    // Use userId from context (URL parameter) if available, otherwise from body
+    const targetUserId = context?.params?.id || userId;
+    
+    // Authorization check
+    const currentUser = req.session?.user;
+    if (
+      currentUser?.role !== 'ADMIN' &&
+      currentUser?.role !== 'TEACHER' &&
+      currentUser?.id !== targetUserId
+    ) {
+      return NextResponse.json(
+        { message: "You can only deactivate license for yourself" },
+        { status: 403 }
+      );
+    }
+
+    // Check if license-user relationship exists
+    const licenseUser = await prisma.licenseOnUser.findUnique({
+      where: {
+        userId_licenseId: {
+          userId: targetUserId,
+          licenseId: licenseId,
+        },
+      },
+    });
+
+    if (!licenseUser) {
+      return NextResponse.json(
+        { message: "License not found for this user" },
+        { status: 404 }
+      );
+    }
+
+    // Remove license from user
+    await prisma.$transaction([
+      // Delete license-user relationship
+      prisma.licenseOnUser.delete({
+        where: {
+          userId_licenseId: {
+            userId: targetUserId,
+            licenseId: licenseId,
+          },
+        },
+      }),
+      // Update user's license to null
+      prisma.user.update({
+        where: { id: targetUserId },
+        data: {
+          licenseId: null,
+          expiredDate: null,
+        },
+      }),
+      // Decrement license used count
+      prisma.license.update({
+        where: { id: licenseId },
+        data: {
+          usedLicenses: {
+            decrement: 1,
+          },
+        },
+      }),
+    ]);
+
+    return NextResponse.json(
+      { message: "License deactivated successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deactivating license:", error);
+    return NextResponse.json({
+      message: "Internal server error",
+      status: 500,
+    });
+  }
+};
+
+export const updateUserLicense = async (
+  req: ExtendedNextRequest,
+  context?: RequestContext
+) => {
+  try {
+    const { userId, oldLicenseId, newLicenseKey } = await req.json();
+    
+    // Use userId from context (URL parameter) if available, otherwise from body
+    const targetUserId = context?.params?.id || userId;
+    
+    // Authorization check
+    const currentUser = req.session?.user;
+    if (
+      currentUser?.role !== 'ADMIN' &&
+      currentUser?.role !== 'TEACHER'
+    ) {
+      return NextResponse.json(
+        { message: "Only admins and teachers can update user licenses" },
+        { status: 403 }
+      );
+    }
+
+    // Find new license by key
+    const newLicense = await prisma.license.findUnique({
+      where: { key: newLicenseKey },
+      include: {
+        licenseUsers: true,
+      },
+    });
+
+    if (!newLicense) {
+      return NextResponse.json(
+        { message: "New license not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if new license has available slots
+    if (newLicense.licenseUsers.length >= newLicense.maxUsers) {
+      return NextResponse.json(
+        { message: "New license is already fully used" },
+        { status: 400 }
+      );
+    }
+
+    // Check if new license is expired
+    if (newLicense.expiresAt && newLicense.expiresAt < new Date()) {
+      return NextResponse.json(
+        { message: "New license has expired" },
+        { status: 400 }
+      );
+    }
+
+    // Check if user already has the new license
+    const existingNewLicenseUser = await prisma.licenseOnUser.findUnique({
+      where: {
+        userId_licenseId: {
+          userId: targetUserId,
+          licenseId: newLicense.id,
+        },
+      },
+    });
+
+    if (existingNewLicenseUser) {
+      return NextResponse.json(
+        { message: "User already has this license" },
+        { status: 400 }
+      );
+    }
+
+    // Update license
+    await prisma.$transaction([
+      // Remove old license-user relationship if exists
+      ...(oldLicenseId ? [
+        prisma.licenseOnUser.deleteMany({
+          where: {
+            userId: targetUserId,
+            licenseId: oldLicenseId,
+          },
+        }),
+        // Decrement old license used count
+        prisma.license.update({
+          where: { id: oldLicenseId },
+          data: {
+            usedLicenses: {
+              decrement: 1,
+            },
+          },
+        }),
+      ] : []),
+      // Create new license-user relationship
+      prisma.licenseOnUser.create({
+        data: {
+          userId: targetUserId,
+          licenseId: newLicense.id,
+        },
+      }),
+      // Update user's license and expiration date
+      prisma.user.update({
+        where: { id: targetUserId },
+        data: {
+          licenseId: newLicense.id,
+          expiredDate: newLicense.expiresAt,
+        },
+      }),
+      // Increment new license used count
+      prisma.license.update({
+        where: { id: newLicense.id },
+        data: {
+          usedLicenses: {
+            increment: 1,
+          },
+        },
+      }),
+    ]);
+
+    return NextResponse.json(
+      { message: "License updated successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating user license:", error);
     return NextResponse.json({
       message: "Internal server error",
       status: 500,

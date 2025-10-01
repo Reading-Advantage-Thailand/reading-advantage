@@ -40,5 +40,10 @@ export const adminPageConfig: AdminPageConfig = {
       href: "/admin/reports",
       icon: "report",
     },
+    {
+      title: "Teacher Assignments",
+      href: "/admin/teacher-assignments",
+      icon: "clipboard",
+    },
   ],
 };
