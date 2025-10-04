@@ -119,7 +119,7 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
               </Badge>
             )}
             <Badge className="shadow-lg max-w-max" variant="destructive">
-              CEFR Level: {article.cefrLevel}
+              CEFR Level: {article.cefrLevel || article.cefr_level}
             </Badge>
             <Badge className="shadow-lg max-w-max" variant="destructive">
               {t(article.genre)}, {t(article.subgenre)}
@@ -127,7 +127,7 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             <Badge className="shadow-lg max-w-max" variant="destructive">
               <Rating
                 name="read-only"
-                value={article.rating}
+                value={article.rating || article.average_rating}
                 readOnly
               />
             </Badge>
