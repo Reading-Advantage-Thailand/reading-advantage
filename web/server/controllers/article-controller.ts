@@ -10,8 +10,9 @@ import { generateObject } from "ai";
 import { openai, openaiModel } from "@/utils/openai";
 
 // Import genre data
-const genresFiction = require("../../../data/genres-fiction.json");
-const genresNonfiction = require("../../../data/genres-nonfiction.json");
+const typeGenreData = require("../../data/type-genre.json");
+const genresFiction = typeGenreData.fiction || [];
+const genresNonfiction = typeGenreData.nonfiction || [];
 
 // GET article by id
 // GET /api/articles/[id]
