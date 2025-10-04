@@ -93,74 +93,70 @@ function calculateAverageCEFRLevel(
   // calendarValue: DateValueType
   lastmonth: number
 ) {
-  console.log("calculateAverageCEFRLevel input:", { articles: articles.length, lastmonth });
   
   // ISO date
   const sixMonthsAgo = new Date();
-
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - lastmonth);
-  console.log("Filtering from date:", sixMonthsAgo);
 
   const recentData = articles.filter(
     (item) => new Date(item.timestamp) >= sixMonthsAgo
   );
-  console.log("Recent data after date filter:", recentData.length);
 
-  // Check if we have any article read activities
+  // Check if we have any article read activities with CEFR level
   const articleReadActivities = recentData.filter(activity => 
-    activity.activityType === 'ARTICLE_READ' && activity.targetId
+    (activity.activityType === 'ARTICLE_READ' || 
+     activity.activityType === 'ARTICLE_RATING') && 
+    activity.details?.cefr_level && 
+    activity.details.cefr_level in CEFR_LEVEL_MAP
   );
-  console.log("Article read activities:", articleReadActivities.length);
 
-  // If no article read activities, we can't calculate CEFR level
+  // Initialize structure with 6 months
+  const monthlyCEFR: Record<string, { total: number; count: number }> = {};
+  const months = getLastSixMonths();
+  months.forEach((month) => {
+    monthlyCEFR[month] = { total: 0, count: 0 };
+  });
+
+  // If no article read activities, return empty data (null values)
   if (articleReadActivities.length === 0) {
-    console.log("No article read activities found, using default values");
-    const months = getLastSixMonths();
+    console.warn("No article read activities found with CEFR levels");
     return months.map(month => ({
       month,
-      average_cefr_level: "A0-",
-      number: 0,
+      average_cefr_level: null,
+      number: null,
     }));
   }
 
-  // Initialize a default structure with 6 months, default CEFR level set to 0 (A0)
-  const monthlyCEFR: Record<string, { total: number; count: number }> = {};
-  getLastSixMonths().forEach((month) => {
-    monthlyCEFR[month] = { total: CEFR_LEVEL_MAP["A0-"], count: 1 }; // Default to A0 if no data
-  });
-
-  /// Aggregate actual data into the structure
-  recentData.forEach((item) => {
-    // For now, we need to get CEFR level from article data
-    // This is a workaround since the activity log doesn't include CEFR level directly
+  // Aggregate actual data into the structure
+  articleReadActivities.forEach((item) => {
     const cefrLevel = item.details?.cefr_level;
-    console.log("Processing item:", { 
-      timestamp: item.timestamp, 
-      activityType: item.activityType,
-      targetId: item.targetId,
-      cefrLevel: cefrLevel,
-      details: item.details,
-      fullItem: item
-    });
     
     if (!cefrLevel || !(cefrLevel in CEFR_LEVEL_MAP)) {
-      console.log("Skipping invalid CEFR level:", cefrLevel, "Available keys:", Object.keys(CEFR_LEVEL_MAP));
-      return; // Skip invalid CEFR levels
+      console.warn("Skipping invalid CEFR level:", cefrLevel);
+      return;
     }
 
     const month = getMonthName(new Date(item.timestamp));
-    if (!monthlyCEFR[month]) monthlyCEFR[month] = { total: 0, count: 0 };
-
-    monthlyCEFR[month].total += CEFR_LEVEL_MAP[cefrLevel];
-    monthlyCEFR[month].count += 1;
-    console.log("Added to month", month, "CEFR:", cefrLevel, "Value:", CEFR_LEVEL_MAP[cefrLevel]);
+    if (monthlyCEFR[month]) {
+      monthlyCEFR[month].total += CEFR_LEVEL_MAP[cefrLevel];
+      monthlyCEFR[month].count += 1;
+    }
   });
 
-  console.log("Monthly CEFR totals:", monthlyCEFR);
-
   // Convert the monthly totals to averages and map to CEFR levels
-  const result = Object.entries(monthlyCEFR).map(([month, { total, count }]) => {
-    const averageNumeric = total / count;
+  const result = months.map((month) => {
+    const monthData = monthlyCEFR[month];
+    
+    // If no data for this month, return null
+    if (monthData.count === 0) {
+      return {
+        month,
+        average_cefr_level: null,
+        number: null,
+      };
+    }
+    
+    const averageNumeric = monthData.total / monthData.count;
     const roundedAverage = Math.round(averageNumeric);
     return {
       month,
@@ -169,7 +165,6 @@ function calculateAverageCEFRLevel(
     };
   });
   
-  console.log("Final result:", result);
   return result;
 }
 
@@ -201,16 +196,33 @@ const CustomTooltip = ({ active, payload, label, nameKey }: any) => {
 };
 
 export default function LineChartCustom({ data }: UserActiviryChartProps) {
-  console.log("LineChartCustom received data:", data);
   const formattedData = calculateAverageCEFRLevel(data, 5);
-  console.log("LineChartCustom formatted data:", formattedData);
+
+  // Check if we have any actual data
+  const hasData = formattedData.some(item => item.number !== null);
+
+  if (!hasData) {
+    return (
+      <CardContent>
+        <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+          <div className="text-center">
+            <p className="text-lg font-medium">No data available</p>
+            <p className="text-sm mt-2">No article reading activities found in the last 6 months</p>
+          </div>
+        </div>
+      </CardContent>
+    );
+  }
+
+  // Filter out null values for the chart
+  const chartData = formattedData.filter(item => item.number !== null);
 
   return (
     <CardContent>
       <ChartContainer config={chartConfig}>
         <LineChart
           accessibilityLayer
-          data={formattedData}
+          data={chartData}
           margin={{
             left: 12,
             right: 12,
@@ -227,14 +239,17 @@ export default function LineChartCustom({ data }: UserActiviryChartProps) {
           <YAxis
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => `${value}`}
+            domain={[0, 18]}
+            ticks={[0, 3, 6, 9, 12, 15, 18]}
+            tickFormatter={(value) => REVERSE_CEFR_LEVEL_MAP[value] || value}
           />
           <Tooltip content={<CustomTooltip nameKey="Average CEFR Level" />} />
           <Line
             dataKey="number"
             stroke="var(--color-number)"
             strokeWidth={2}
-            dot={false}
+            dot={true}
+            connectNulls={false}
           />
         </LineChart>
       </ChartContainer>
