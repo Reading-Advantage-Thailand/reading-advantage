@@ -9,10 +9,9 @@ import dayjs_plugin_isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import { useScopedI18n } from "@/locales/client";
 import "animate.css";
 import Image from "next/image";
-import { Header } from "../header";
 import { toast } from "../ui/use-toast";
 import { Skeleton } from "../ui/skeleton";
-import { Sentence } from "../dnd/types";
+import { Sentence } from "../practic/types";
 import AudioButton from "../audio-button";
 import {
   UserXpEarned,
@@ -20,6 +19,7 @@ import {
   ActivityType,
 } from "../models/user-activity-log-model";
 import { levelCalculation } from "@/lib/utils";
+import { AUDIO_URL } from "@/server/constants";
 dayjs.extend(utc);
 dayjs.extend(dayjs_plugin_isSameOrBefore);
 dayjs.extend(dayjs_plugin_isSameOrAfter);
@@ -51,14 +51,16 @@ export default function LessonMatching({
   const router = useRouter();
   const [articleMatching, setArticleMatching] = useState<Word[]>([]);
   const [selectedCard, setSelectedCard] = useState<Word | null>(null);
-
   const [correctMatches, setCorrectMatches] = useState<string[]>([]);
   const [words, setWords] = useState<Word[]>([]);
   const [animateShake, setAnimateShake] = useState<string>("");
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isScoreSaved, setIsScoreSaved] = useState<boolean>(false);
+  const [isAlreadyCompleted, setIsAlreadyCompleted] = useState<boolean>(false);
 
   useEffect(() => {
     getUserSentenceSaved();
+    checkActivityCompletion();
   }, []);
 
   useEffect(() => {
@@ -80,18 +82,25 @@ export default function LessonMatching({
 
   useEffect(() => {
     const updateScoreCorrectMatches = async () => {
-      if (correctMatches.length === 10) {
+      if (
+        correctMatches.length === 10 &&
+        !isScoreSaved &&
+        !isAlreadyCompleted
+      ) {
         try {
+          setIsScoreSaved(true);
+
           const updateScrore = await fetch(
             `/api/v1/users/${userId}/activitylog`,
             {
               method: "POST",
               body: JSON.stringify({
-                articleId: articleId,
                 activityType: ActivityType.SentenceMatching,
                 activityStatus: ActivityStatus.Completed,
                 xpEarned: UserXpEarned.Sentence_Matching,
+                articleId: articleId,
                 details: {
+                  articleId: articleId,
                   cefr_level: levelCalculation(UserXpEarned.Sentence_Matching)
                     .cefrLevel,
                 },
@@ -110,8 +119,11 @@ export default function LessonMatching({
             setIsCompleted(true);
           }
         } catch (error) {
+          console.error("Error saving score:", error);
+          setIsScoreSaved(false);
           toast({
             title: t("toast.error"),
+            imgSrc: true,
             description: t("toast.errorDescription"),
             variant: "destructive",
           });
@@ -119,7 +131,7 @@ export default function LessonMatching({
       }
     };
     updateScoreCorrectMatches();
-  }, [correctMatches]);
+  }, [correctMatches, isScoreSaved, isAlreadyCompleted]);
 
   const getUserSentenceSaved = async () => {
     try {
@@ -127,8 +139,6 @@ export default function LessonMatching({
         `/api/v1/users/sentences/${userId}?articleId=${articleId}`
       );
       const data = await res.json();
-
-      console.log(data);
 
       // step 1 : sort Article sentence: ID and SN due date expired
       const matching = data.sentences.sort((a: Sentence, b: Sentence) => {
@@ -155,6 +165,32 @@ export default function LessonMatching({
     }
   };
 
+  const checkActivityCompletion = async () => {
+    try {
+      const res = await fetch(
+        `/api/v1/users/${userId}/activitylog?articleId=${articleId}&activityType=sentence_matching`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        console.log("Activity log response:", data); // Debug log
+        if (data.activityLogs && data.activityLogs.length > 0) {
+          const completedActivity = data.activityLogs.find(
+            (log: any) => log.completed === true
+          );
+          if (completedActivity) {
+            console.log("Found completed activity:", completedActivity); // Debug log
+            setIsAlreadyCompleted(true);
+            setIsScoreSaved(true);
+            setIsCompleted(true);
+            onCompleteChange(true);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error checking activity completion:", error);
+    }
+  };
+
   const shuffleWords = (words: Word[]): Word[] => {
     const rawData: Word[] = JSON.parse(JSON.stringify(words));
     return rawData
@@ -171,133 +207,193 @@ export default function LessonMatching({
   };
 
   const handleCardClick = async (word: Word) => {
+    if (correctMatches.includes(word.text)) return;
+
     if (selectedCard === null) {
       setSelectedCard(word);
     } else if (selectedCard.text === word.match) {
+      // Correct match
       setCorrectMatches([...correctMatches, selectedCard.text, word.text]);
       setSelectedCard(null);
-      setAnimateShake(""); // Clear any previous shakes
+      setAnimateShake("animate__animated animate__pulse");
+      setTimeout(() => setAnimateShake(""), 800);
     } else {
-      setAnimateShake("animate__animated animate__wobble"); // Trigger shake
-      setTimeout(() => setAnimateShake(""), 2000); // Clear shake effect after 1 second
-      setSelectedCard(null);
+      // Wrong match
+      setAnimateShake("animate__animated animate__shakeX");
+      setTimeout(() => {
+        setAnimateShake("");
+        setSelectedCard(null);
+      }, 600);
     }
   };
 
   const getCardStyle = (word: Word) => {
-    let styles = {
-      backgroundColor: selectedCard?.text === word.text ? "#edefff" : "", // Change to a light yellow on wrong select
-      border:
-        selectedCard?.text === word.text
-          ? "2px solid #425fff"
-          : "1px solid #ced4da", // Change to orange on wrong select
-    };
+    if (correctMatches.includes(word.text)) {
+      return {
+        opacity: 0,
+        transform: "scale(0.8)",
+        transition: "all 0.5s ease-out",
+      };
+    }
 
-    return styles;
+    return {
+      transition: "all 0.3s ease-in-out",
+    };
   };
 
   useEffect(() => {
-    if (isCompleted) {
+    if (correctMatches.length === 10 || isAlreadyCompleted) {
       onCompleteChange(true);
     }
-  }, [isCompleted]);
+  }, [correctMatches.length, isAlreadyCompleted]);
 
   return (
-    <>
-      {correctMatches.length !== 10 && (
-        <div className="flex">
-          <div className="w-1/2 px-12">
-            <Image
-              src={"/ninja.svg"}
-              alt="Man"
-              width={92}
-              height={115}
-              className="animate__animated animate__fadeInTopLeft animate__fast"
-            />
-          </div>
-          <div className="w-1/2 flex justify-end px-12">
-            <Image
-              src={"/knight.svg"}
-              alt="Man"
-              width={92}
-              height={115}
-              className="animate__animated animate__fadeInTopRight animate__fast"
-            />
+    <div className=" dark:bg-gray-900 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Sentence Matching Practice
+          </h1>
+
+          {/* Progress Section */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Progress:{" "}
+                {isAlreadyCompleted || correctMatches.length === 10 ? "5" : correctMatches.length / 2}{" "}
+                / 5
+              </span>
+            </div>
+            <div className="w-48 sm:w-64 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div
+                className="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out"
+                style={{
+                  width: `${isAlreadyCompleted || correctMatches.length === 10 ? 100 : (correctMatches.length / 10) * 100}%`,
+                }}
+              />
+            </div>
           </div>
         </div>
-      )}
 
-      <div className="mt-10">
-        {articleMatching.length === 0 ? (
-          <>
-            <div className="grid w-full gap-10">
-              <div className="mx-auto px-12 xl:h-[400px] w-full md:w-[725px] xl:w-[760px] space-y-6 ">
-                <Skeleton className="h-[200px] w-full" />
-                <Skeleton className="h-[20px] w-2/3" />
-                <Skeleton className="h-[20px] w-full" />
-                <Skeleton className="h-[20px] w-full" />
+        {/* Content Area */}
+        <div className="mb-8">
+          {articleMatching.length === 0 ? (
+            // Loading State
+            <div className="bg-gray-200 dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
+              <div className="space-y-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="flex space-x-4">
+                    <Skeleton className="h-4 w-1/3 rounded" />
+                    <Skeleton className="h-4 w-1/2 rounded" />
+                  </div>
+                ))}
               </div>
             </div>
-          </>
-        ) : (
-          <>
-            {articleMatching.length == 5 ? (
-              <>
-                <div className="flex flex-wrap justify-center w-full md:w-[725px] xl:w-[760px] space-y-6">
+          ) : articleMatching.length >= 5 ? (
+            correctMatches.length < 10 &&
+            !isAlreadyCompleted && (
+              <div className="bg-gray-200 dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8">
+                <div className="text-center mb-6">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                    Match the sentences with their translations
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   {words.map((word, index) => (
-                    <>
-                      <div
-                        key={index}
-                        className={`cursor-pointer rounded-xl p-5 m-5 w-64 text-center dark:bg-[#020817] border-solid border border-[#282e3e14] bg-slate-50 hover:bg-slate-200 shadow-lg 
-              ${correctMatches.includes(word.text) && "hidden"}
-              ${animateShake}  
-              ${
-                selectedCard?.text === word.text && "dark:text-black"
-              }            
-              `}
-                        style={getCardStyle(word)}
-                      >
-                        <div className="mb-5">
-                          {new RegExp(/^[a-zA-Z\s,.']+$/).test(word.text) && (
-                            <AudioButton
-                              key={word?.text}
-                              audioUrl={word?.audioUrl}
-                              startTimestamp={word?.timepoint}
-                              endTimestamp={word?.endTimepoint}
-                            />
-                          )}
-                        </div>
-                        <div onClick={() => handleCardClick(word)}>
+                    <div
+                      key={index}
+                      className={`
+                        group relative cursor-pointer 
+                        bg-gray-300 dark:bg-gray-700
+                        border-2 border-gray-200 dark:border-gray-600
+                        rounded-lg sm:rounded-xl
+                        p-3 sm:p-4 lg:p-5
+                        min-h-[80px] sm:min-h-[90px] lg:min-h-[100px]
+                        flex flex-col items-center justify-center
+                        text-center text-sm sm:text-base
+                        font-medium text-gray-800 dark:text-gray-200
+                        transition-all duration-300 ease-in-out
+                        hover:shadow-md hover:-translate-y-1
+                        hover:border-blue-300 dark:hover:border-blue-400
+                        active:scale-95
+                        ${correctMatches.includes(word.text) ? "opacity-0 pointer-events-none scale-95" : ""}
+                        ${
+                          selectedCard?.text === word.text
+                            ? "border-blue-500 dark:border-blue-400 shadow-lg bg-blue-300 dark:bg-blue-900/30 scale-105"
+                            : "hover:bg-gray-300 dark:hover:bg-gray-600"
+                        }
+                        ${animateShake && selectedCard?.text === word.text ? animateShake : ""}
+                      `}
+                      style={getCardStyle(word)}
+                    >
+                      <div onClick={() => handleCardClick(word)}>
+                        <span className="break-words leading-tight">
                           {word.text}
-                        </div>
+                        </span>
                       </div>
-                    </>
+
+                      {/* Selection indicator */}
+                      {selectedCard?.text === word.text && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
-              </>
-            ) : (
-              <>
-                <div className="flex flex-wrap justify-center rounded-2xl border-2 border-gray-200 p-4 mt-20">
-                  <div className="text-rose-600 dark:text-rose-300 font-bold">
-                    {t("matchingPractice.minSentencesAlert")}
-                  </div>
-                </div>
-              </>
-            )}
-          </>
-        )}
-        {isCompleted && (
-          <div className="flex flex-wrap justify-center mt-10 xl:h-[400px] w-full md:w-[725px] xl:w-[760px] space-y-6">
-            <Image
-              src={"/winners.svg"}
-              alt="winners"
-              width={250}
-              height={100}
-              className="animate__animated animate__jackInTheBox"
-            />
+              </div>
+            )
+          ) : (
+            // Not Enough Words
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-orange-200 dark:border-orange-700 p-6 sm:p-8">
+              <div className="text-center">
+                <div className="text-4xl sm:text-5xl mb-4">📚</div>
+                <h3 className="text-lg sm:text-xl font-semibold text-orange-700 dark:text-orange-300 mb-2">
+                  Need More Sentences
+                </h3>
+                <p className="text-orange-600 dark:text-orange-400 text-sm sm:text-base">
+                  {t("matchingPractice.minSentencesAlert")}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Success State */}
+        {(correctMatches.length === 10 || isAlreadyCompleted) && (
+          <div className="text-center">
+            <div
+              className="bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-900/20 dark:to-emerald-900/20 
+                          rounded-2xl border border-green-200 dark:border-green-700 p-6 sm:p-8 lg:p-10 mb-6"
+            >
+              <div className="text-5xl sm:text-6xl lg:text-7xl mb-6 animate__animated animate__bounceIn">
+                🎉
+              </div>
+              <div className="flex flex-row items-center justify-center mb-4">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-700 dark:text-green-300 mb-4">
+                  {isAlreadyCompleted ? "Already Completed!" : "Perfect Score!"}
+                </h2>
+                <Image
+                  src="/winners.svg"
+                  alt="Success illustration"
+                  width={50}
+                  height={50}
+                  className="animate__animated animate__jackInTheBox w-8 sm:w-19 lg:w-19 h-auto mb-2 ml-2"
+                />
+              </div>
+
+              <p className="text-green-600 dark:text-green-400 text-base sm:text-lg lg:text-xl">
+                {isAlreadyCompleted
+                  ? "You have already completed this activity!"
+                  : "You've matched all sentences correctly!"}
+              </p>
+            </div>
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -21,16 +21,17 @@ interface Classes {
   id: string;
   archived: boolean;
   title: string;
-  student: [
-    {
-      studentId: string;
-      lastActivity: Date;
-    }
-  ];
+  student: {
+    studentId: string;
+    email?: string;
+    lastActivity: Date | string;
+  }[];
   importedFromGoogle: boolean;
   alternateLink: string;
-  googleClassroomId: string;
+  googleClassroomId?: string;
 }
+
+export type { Classes };
 
 type StudentData = {
   id: string;

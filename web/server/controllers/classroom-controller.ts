@@ -1,8 +1,7 @@
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import * as z from "zod";
-import admin from "firebase-admin";
 import { getAllLicenses } from "./license-controller";
 import { getCurrentUser } from "@/lib/session";
 import dayjs from "dayjs";
@@ -82,16 +81,75 @@ interface Classroom {
 export async function getAllStudentList(req: ExtendedNextRequest) {
   try {
     const user = await getCurrentUser();
-    const licenseId = user?.license_id;
 
-    const studentRef = await db
-      .collection("users")
-      .where("role", "==", "student")
-      .where("license_id", "==", licenseId)
-      .get();
-    const studentData = studentRef.docs.map((doc) => doc.data());
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    return NextResponse.json({ students: studentData }, { status: 200 });
+    const teacherLicensesFromTable = await prisma.licenseOnUser.findMany({
+      where: {
+        userId: user.id,
+      },
+      select: {
+        licenseId: true,
+      },
+    });
+
+    const teacherData = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { licenseId: true },
+    });
+
+    const licenseIdsFromTable = teacherLicensesFromTable.map(
+      (license) => license.licenseId
+    );
+    const allLicenseIds = teacherData?.licenseId
+      ? [...licenseIdsFromTable, teacherData.licenseId]
+      : licenseIdsFromTable;
+
+    const uniqueLicenseIds = [...new Set(allLicenseIds)];
+
+    const students = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ["STUDENT", "USER"],
+        },
+        OR: [
+          {
+            licenseOnUsers: {
+              some: {
+                licenseId: {
+                  in: uniqueLicenseIds,
+                },
+              },
+            },
+          },
+          {
+            licenseId: {
+              in: uniqueLicenseIds,
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        xp: true,
+        level: true,
+        cefrLevel: true,
+        createdAt: true,
+        updatedAt: true,
+        licenseId: true,
+        licenseOnUsers: {
+          select: {
+            licenseId: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ students }, { status: 200 });
   } catch (error) {
     console.error("Error fetching student list:", error);
     return NextResponse.json({ error }, { status: 500 });
@@ -102,41 +160,413 @@ export async function getClassroom(req: ExtendedNextRequest) {
   try {
     const user = await getCurrentUser();
 
-    const [stringQuery, arrayQuery] = await Promise.all([
-      db
-        .collection("classroom")
-        .where("teacherId", "==", user?.id)
-        .get(),
-      db
-        .collection("classroom")
-        .where("teacherId", "array-contains", user?.id)
-        .get()
-    ]);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const allDocs = [...stringQuery.docs, ...arrayQuery.docs];
-    const uniqueDocs = allDocs.filter((doc, index, self) => 
-      index === self.findIndex(d => d.id === doc.id)
-    );
+    let classrooms: any[] = [];
 
-    const docData = uniqueDocs
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-      .sort((a: any, b: any) => {
-        const dateA = a.createdAt?.toDate?.() || new Date(0);
-        const dateB = b.createdAt?.toDate?.() || new Date(0);
-        return dateB.getTime() - dateA.getTime();
+    // Handle different user roles
+    if (user.role === "SYSTEM") {
+      // SYSTEM role: show all classrooms
+      const allClassrooms = await prisma.classroom.findMany({
+        where: {
+          archived: {
+            not: true,
+          },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
       });
+
+      classrooms = allClassrooms.map((classroom) => ({
+        id: classroom.id,
+        classroomName: classroom.classroomName,
+        classCode: classroom.classCode,
+        grade: classroom.grade?.toString(),
+        archived: classroom.archived || false,
+        title: classroom.classroomName,
+        importedFromGoogle: false,
+        alternateLink: "",
+        createdAt: classroom.createdAt,
+        createdBy: classroom.createdBy,
+        isOwner: classroom.createdBy ? true : false,
+        teachers: [
+          {
+            teacherId: classroom.teacher?.id || "",
+            name: classroom.teacher?.name || "",
+            role: "OWNER" as const,
+            joinedAt: classroom.createdAt,
+          },
+        ],
+        student: classroom.students.map((cs) => ({
+          studentId: cs.student.id,
+          email: cs.student.email,
+          lastActivity: cs.createdAt,
+        })),
+      }));
+    } else if (user.role === "ADMIN") {
+      // ADMIN role: show all classrooms of the same license
+      const adminUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { licenseId: true },
+      });
+
+      if (!adminUser?.licenseId) {
+        return NextResponse.json(
+          { error: "Admin license not found" },
+          { status: 404 }
+        );
+      }
+
+      // Get all users with the same license
+      const usersWithSameLicense = await prisma.user.findMany({
+        where: {
+          OR: [
+            { licenseId: adminUser.licenseId },
+            {
+              licenseOnUsers: {
+                some: {
+                  licenseId: adminUser.licenseId,
+                },
+              },
+            },
+          ],
+        },
+        select: { id: true },
+      });
+
+      const userIds = usersWithSameLicense.map((u) => u.id);
+
+      // Get classrooms where teacher is in the same license
+      const licenseClassrooms = await prisma.classroom.findMany({
+        where: {
+          teacherId: {
+            in: userIds,
+          },
+          archived: {
+            not: true,
+          },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      classrooms = licenseClassrooms.map((classroom) => ({
+        id: classroom.id,
+        classroomName: classroom.classroomName,
+        classCode: classroom.classCode,
+        grade: classroom.grade?.toString(),
+        archived: classroom.archived || false,
+        title: classroom.classroomName,
+        importedFromGoogle: false,
+        alternateLink: "",
+        createdAt: classroom.createdAt,
+        createdBy: classroom.teacher,
+        isOwner: classroom.teacherId === user.id,
+        teachers: [
+          {
+            teacherId: classroom.teacher?.id || "",
+            name: classroom.teacher?.name || "",
+            role: "OWNER" as const,
+            joinedAt: classroom.createdAt,
+          },
+        ],
+        student: classroom.students.map((cs) => ({
+          studentId: cs.student.id,
+          email: cs.student.email,
+          lastActivity: cs.createdAt,
+        })),
+      }));
+    } else {
+      // Default behavior for TEACHER role
+      const ownedClassrooms = await prisma.classroom.findMany({
+        where: {
+          teacherId: user.id,
+          archived: {
+            not: true,
+          },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      const coTeacherClassrooms = (await prisma.$queryRaw`
+        SELECT c.*, 
+               t.id as teacher_id, t.name as teacher_name,
+               ct.role as user_role, ct."createdAt" as joined_at
+        FROM "classrooms" c
+        JOIN "classroomTeachers" ct ON c.id = ct.classroom_id
+        LEFT JOIN "users" t ON c.teacher_id = t.id
+        WHERE ct.teacher_id = ${user.id}
+          AND c.archived != true
+        ORDER BY c."createdAt" DESC
+      `) as any[];
+
+      const coTeacherClassroomIds = coTeacherClassrooms.map((c: any) => c.id);
+      const coTeacherStudents =
+        coTeacherClassroomIds.length > 0
+          ? await prisma.classroomStudent.findMany({
+              where: {
+                classroomId: {
+                  in: coTeacherClassroomIds,
+                },
+              },
+              include: {
+                student: {
+                  select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                  },
+                },
+              },
+            })
+          : [];
+
+      const transformedOwnedData = ownedClassrooms.map((classroom) => ({
+        id: classroom.id,
+        classroomName: classroom.classroomName,
+        classCode: classroom.classCode,
+        grade: classroom.grade?.toString(),
+        archived: classroom.archived || false,
+        title: classroom.classroomName,
+        importedFromGoogle: false,
+        alternateLink: "",
+        createdAt: classroom.createdAt,
+        createdBy: classroom.teacher,
+        isOwner: true,
+        teachers: [
+          {
+            teacherId: classroom.teacher?.id || "",
+            name: classroom.teacher?.name || "",
+            role: "OWNER" as const,
+            joinedAt: classroom.createdAt,
+          },
+        ],
+        student: classroom.students.map((cs) => ({
+          studentId: cs.student.id,
+          email: cs.student.email,
+          lastActivity: cs.createdAt,
+        })),
+      }));
+
+      const transformedCoTeacherData = coTeacherClassrooms.map(
+        (classroom: any) => {
+          const studentsForClassroom = coTeacherStudents.filter(
+            (cs) => cs.classroomId === classroom.id
+          );
+
+          return {
+            id: classroom.id,
+            classroomName: classroom.classroom_name,
+            classCode: classroom.class_code,
+            grade: classroom.grade?.toString(),
+            archived: classroom.archived || false,
+            title: classroom.classroom_name,
+            importedFromGoogle: false,
+            alternateLink: "",
+            createdAt: classroom.createdAt,
+            createdBy: {
+              id: classroom.teacher_id,
+              name: classroom.teacher_name,
+            },
+            isOwner: false,
+            teachers: [
+              {
+                teacherId: classroom.teacher_id || "",
+                name: classroom.teacher_name || "",
+                role: "OWNER" as const,
+                joinedAt: classroom.createdAt,
+              },
+            ],
+            student: studentsForClassroom.map((cs) => ({
+              studentId: cs.student.id,
+              email: cs.student.email,
+              lastActivity: cs.createdAt,
+            })),
+          };
+        }
+      );
+
+      const allClassrooms = [
+        ...transformedOwnedData,
+        ...transformedCoTeacherData,
+      ];
+      classrooms = allClassrooms.filter(
+        (classroom, index, self) =>
+          index === self.findIndex((c) => c.id === classroom.id)
+      );
+    }
+
+    // Calculate XP data for each classroom
+    const classroomsWithXp = await Promise.all(
+      classrooms.map(async (classroom) => {
+        try {
+          // Get all students in this classroom
+          const studentIds = classroom.student
+            .map((s: any) => s.studentId)
+            .filter(Boolean);
+
+          if (studentIds.length === 0) {
+            return {
+              ...classroom,
+              xpData: {
+                today: 0,
+                week: 0,
+                month: 0,
+                allTime: 0,
+              },
+            };
+          }
+
+          const now = new Date();
+
+          // Calculate date ranges
+          const todayStart = new Date(now);
+          todayStart.setHours(0, 0, 0, 0);
+
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() - 7);
+
+          const monthStart = new Date(now);
+          monthStart.setMonth(now.getMonth() - 1);
+
+          // Get XP logs for all students in this classroom
+          const xpLogs = await prisma.xPLog.findMany({
+            where: {
+              userId: { in: studentIds },
+            },
+            select: {
+              xpEarned: true,
+              createdAt: true,
+            },
+          });
+
+          // Get total XP for all students in this classroom
+          const totalXp = await prisma.user.findMany({
+            where: {
+              id: { in: studentIds },
+            },
+            select: {
+              xp: true,
+            },
+          });
+
+          // Calculate XP for different time periods
+          const todayXp = xpLogs
+            .filter((log) => log.createdAt >= todayStart)
+            .reduce((sum, log) => sum + log.xpEarned, 0);
+
+          const weekXp = xpLogs
+            .filter((log) => log.createdAt >= weekStart)
+            .reduce((sum, log) => sum + log.xpEarned, 0);
+
+          const monthXp = xpLogs
+            .filter((log) => log.createdAt >= monthStart)
+            .reduce((sum, log) => sum + log.xpEarned, 0);
+
+          const allTimeXp = totalXp.reduce(
+            (sum, user) => sum + (user.xp || 0),
+            0
+          );
+
+          return {
+            ...classroom,
+            xpData: {
+              today: todayXp,
+              week: weekXp,
+              month: monthXp,
+              allTime: allTimeXp,
+            },
+          };
+        } catch (error) {
+          console.error(
+            `Error calculating XP for classroom ${classroom.id}:`,
+            error
+          );
+          return {
+            ...classroom,
+            xpData: {
+              today: 0,
+              week: 0,
+              month: 0,
+              allTime: 0,
+            },
+          };
+        }
+      })
+    );
 
     return NextResponse.json(
       {
         message: "success",
-        data: docData,
+        data: classroomsWithXp,
       },
       { status: 200 }
     );
   } catch (error) {
+    console.error(error);
     console.error(error);
     return NextResponse.json(
       {
@@ -151,27 +581,21 @@ export async function getStudentClassroom(req: ExtendedNextRequest) {
   try {
     const user = await getCurrentUser();
 
-    const docRef = await db
-      .collection("classroom")
-      .where("license_id", "==", user?.license_id)
-      .get();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const docData = docRef.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    // Filter classrooms where the current user is a student
-    const studentClassrooms = docData.filter((classroom: any) => {
-      return classroom.student?.some(
-        (student: Student) =>
-          student.studentId === user?.id || student.email === user?.email
-      );
+    const studentClassrooms = await prisma.classroomStudent.findMany({
+      where: {
+        studentId: user.id,
+      },
+      include: {
+        classroom: true,
+      },
     });
 
-    // Return only the classroom IDs
     const classroomId =
-      studentClassrooms.length > 0 ? studentClassrooms[0].id : null;
+      studentClassrooms.length > 0 ? studentClassrooms[0].classroom.id : null;
 
     return NextResponse.json(
       {
@@ -181,6 +605,7 @@ export async function getStudentClassroom(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    console.error(error);
     console.error(error);
     return NextResponse.json(
       {
@@ -196,57 +621,45 @@ export async function getClassroomStudent(req: ExtendedNextRequest) {
   try {
     const user = await getCurrentUser();
 
-    const studentRef = await db.collection("users").get();
-    const studentData = studentRef.docs.map((doc) => doc.data());
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const [stringQuery, arrayQuery] = await Promise.all([
-      db
-        .collection("classroom")
-        .where("teacherId", "==", user?.id)
-        .get(),
-      db
-        .collection("classroom")
-        .where("teacherId", "array-contains", user?.id)
-        .get()
-    ]);
+    const teacher = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { licenseId: true },
+    });
 
-    const allDocs = [...stringQuery.docs, ...arrayQuery.docs];
-    const uniqueDocs = allDocs.filter((doc, index, self) => 
-      index === self.findIndex(d => d.id === doc.id)
-    );
-
-    const classroomData = uniqueDocs
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-      .sort((a: any, b: any) => {
-        const dateA = a.createdAt?.toDate?.() || new Date(0);
-        const dateB = b.createdAt?.toDate?.() || new Date(0);
-        return dateB.getTime() - dateA.getTime();
-      });
-
-    const filteredStudents = (users: any[], classroom: any[]) => {
-      const studentIdentifiers = new Set<string>();
-
-      classroom.forEach((classroom) => {
-        classroom.student.forEach((student: any) => {
-          if (student.studentId) studentIdentifiers.add(student.studentId);
-          if (student.email) studentIdentifiers.add(student.email);
-        });
-      });
-
-      return users.filter(
-        (student) =>
-          studentIdentifiers.has(student.id) ||
-          studentIdentifiers.has(student.email)
+    if (!teacher || !teacher.licenseId) {
+      return NextResponse.json(
+        { error: "Teacher license not found" },
+        { status: 404 }
       );
-    };
+    }
 
-    const filteredStudent = filteredStudents(studentData, classroomData);
+    const students = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ["STUDENT", "USER"],
+        },
+        licenseId: teacher.licenseId,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        xp: true,
+        level: true,
+        cefrLevel: true,
+        createdAt: true,
+        updatedAt: true,
+        licenseId: true,
+      },
+    });
 
-    return NextResponse.json({ students: filteredStudent }, { status: 200 });
+    return NextResponse.json({ students }, { status: 200 });
   } catch (error) {
+    console.error(error);
     console.error(error);
     return NextResponse.json({ error }, { status: 500 });
   }
@@ -265,52 +678,80 @@ export async function getEnrollClassroom(req: ExtendedNextRequest) {
       );
     }
 
-    const studentRef = await db.collection("users").doc(params).get();
-    const studentData = studentRef.data();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (studentData && studentData.last_activity) {
-      studentData.last_activity = new Date(
-        studentData.last_activity._seconds * 1000
+    const studentData = await prisma.user.findUnique({
+      where: { id: params },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        xp: true,
+        level: true,
+        cefrLevel: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!studentData) {
+      return NextResponse.json(
+        { messages: "Student not found" },
+        { status: 404 }
       );
     }
 
-    const [stringQuery, arrayQuery] = await Promise.all([
-      db
-        .collection("classroom")
-        .where("teacherId", "==", user?.id)
-        .get(),
-      db
-        .collection("classroom")
-        .where("teacherId", "array-contains", user?.id)
-        .get()
-    ]);
-
-    const allDocs = [...stringQuery.docs, ...arrayQuery.docs];
-    const uniqueDocs = allDocs.filter((doc, index, self) => 
-      index === self.findIndex(d => d.id === doc.id)
-    );
-
-    const classrooms: FirebaseFirestore.DocumentData[] = [];
-
-    uniqueDocs.forEach((doc) => {
-      const classroom = doc.data();
-      classroom.id = doc.id;
-      classrooms.push(classroom);
+    const classrooms = await prisma.classroom.findMany({
+      where: {
+        teacherId: user.id,
+        archived: { not: true },
+        students: {
+          none: {
+            studentId: params,
+          },
+        },
+      },
+      include: {
+        students: {
+          include: {
+            student: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        },
+      },
     });
 
-    const filteredClassrooms = classrooms.filter(
-      (classroom) =>
-        classroom.importedFromGoogle !== true &&
-        classroom.student.every(
-          (student: { studentId: string }) => student.studentId !== params
-        )
-    );
+    const filteredClassrooms = classrooms.map((classroom) => ({
+      id: classroom.id,
+      classroomName: classroom.classroomName,
+      classCode: classroom.classCode,
+      grade: classroom.grade?.toString(),
+      archived: classroom.archived,
+      teacherId: classroom.teacherId,
+      importedFromGoogle: false,
+      student: classroom.students.map((cs) => ({
+        studentId: cs.student.id,
+        email: cs.student.email,
+        lastActivity: cs.createdAt,
+      })),
+    }));
 
     return NextResponse.json(
-      { student: studentData, classroom: filteredClassrooms },
+      {
+        student: {
+          ...studentData,
+          display_name: studentData.name,
+          last_activity: studentData.updatedAt,
+        },
+        classroom: filteredClassrooms,
+      },
       { status: 200 }
     );
   } catch (error) {
+    console.error("Error in getEnrollClassroom:", error);
     return NextResponse.json({ error }, { status: 500 });
   }
 }
@@ -328,52 +769,80 @@ export async function getUnenrollClassroom(req: ExtendedNextRequest) {
       );
     }
 
-    const studentRef = await db.collection("users").doc(params).get();
-    const studentData = studentRef.data();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (studentData && studentData.last_activity) {
-      studentData.last_activity = new Date(
-        studentData.last_activity._seconds * 1000
+    const studentData = await prisma.user.findUnique({
+      where: { id: params },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        xp: true,
+        level: true,
+        cefrLevel: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!studentData) {
+      return NextResponse.json(
+        { messages: "Student not found" },
+        { status: 404 }
       );
     }
 
-    const [stringQuery, arrayQuery] = await Promise.all([
-      db
-        .collection("classroom")
-        .where("teacherId", "==", user?.id)
-        .get(),
-      db
-        .collection("classroom")
-        .where("teacherId", "array-contains", user?.id)
-        .get()
-    ]);
-
-    const allDocs = [...stringQuery.docs, ...arrayQuery.docs];
-    const uniqueDocs = allDocs.filter((doc, index, self) => 
-      index === self.findIndex(d => d.id === doc.id)
-    );
-
-    const classrooms: FirebaseFirestore.DocumentData[] = [];
-
-    uniqueDocs.forEach((doc) => {
-      const classroom = doc.data();
-      classroom.id = doc.id;
-      classrooms.push(classroom);
+    const classrooms = await prisma.classroom.findMany({
+      where: {
+        teacherId: user.id,
+        archived: { not: true },
+        students: {
+          some: {
+            studentId: params,
+          },
+        },
+      },
+      include: {
+        students: {
+          include: {
+            student: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        },
+      },
     });
 
-    const filteredClassrooms = classrooms.filter(
-      (classroom) =>
-        classroom.importedFromGoogle !== true &&
-        classroom.student.some(
-          (student: { studentId: string }) => student.studentId === params
-        )
-    );
+    const filteredClassrooms = classrooms.map((classroom) => ({
+      id: classroom.id,
+      classroomName: classroom.classroomName,
+      classCode: classroom.classCode,
+      grade: classroom.grade?.toString(),
+      archived: classroom.archived,
+      teacherId: classroom.teacherId,
+      importedFromGoogle: false,
+      student: classroom.students.map((cs) => ({
+        studentId: cs.student.id,
+        email: cs.student.email,
+        lastActivity: cs.createdAt,
+      })),
+    }));
 
     return NextResponse.json(
-      { student: studentData, classroom: filteredClassrooms },
+      {
+        student: {
+          ...studentData,
+          display_name: studentData.name,
+          last_activity: studentData.updatedAt,
+        },
+        classroom: filteredClassrooms,
+      },
       { status: 200 }
     );
   } catch (error) {
+    console.error("Error in getUnenrollClassroom:", error);
     return NextResponse.json({ error }, { status: 500 });
   }
 }
@@ -384,37 +853,61 @@ export async function getStudentInClassroom(
 ) {
   try {
     const { classroomId } = params;
-    let studentQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
-      db.collection("users");
 
-    const studentsSnapshot = await studentQuery.get();
-    const students = studentsSnapshot.docs.map((doc) => doc.data());
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+      include: {
+        students: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                xp: true,
+                level: true,
+                cefrLevel: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
-    const classroomRef = await db
-      .collection("classroom")
-      .doc(classroomId)
-      .get();
-    const classroomDoc = classroomRef.data();
+    if (!classroom) {
+      return NextResponse.json(
+        { error: "Classroom not found" },
+        { status: 404 }
+      );
+    }
 
-    const filteredUsers = students
-      .filter((user) =>
-        classroomDoc?.student.some(
-          (student: { email: string; studentId: string }) =>
-            student.studentId === user.id || student.email === user.email
-        )
-      )
-      .map((user) => ({
-        ...user,
-        last_activity: user.last_activity
-          ? new Date(user.last_activity._seconds * 1000)
-          : null,
-      }));
+    const filteredUsers = classroom.students.map((cs) => ({
+      ...cs.student,
+      display_name: cs.student.name,
+      last_activity: cs.createdAt,
+    }));
+
+    const classroomDoc = {
+      id: classroom.id,
+      classroomName: classroom.classroomName,
+      classCode: classroom.classCode,
+      teacherId: classroom.teacherId,
+      archived: classroom.archived,
+      grade: classroom.grade?.toString(),
+      createdAt: classroom.createdAt,
+      updatedAt: classroom.updatedAt,
+      importedFromGoogle: false,
+      googleClassroomId: null,
+    };
 
     return NextResponse.json(
       { studentInClass: filteredUsers, classroom: classroomDoc },
       { status: 200 }
     );
   } catch (error) {
+    console.error(error);
     console.error(error);
     return NextResponse.json({ error }, { status: 500 });
   }
@@ -427,14 +920,14 @@ export async function updateStudentClassroom(req: ExtendedNextRequest) {
     const name = json.name;
     const studentId = json.studentId;
 
-    await db.collection("users").doc(studentId).update({
-      display_name: name,
+    await prisma.user.update({
+      where: { id: studentId },
+      data: { name: name },
     });
 
     return NextResponse.json({ message: "success" }, { status: 200 });
   } catch (error) {
     console.error("error", error);
-
     return NextResponse.json({ message: error }, { status: 500 });
   }
 }
@@ -442,9 +935,17 @@ export async function updateStudentClassroom(req: ExtendedNextRequest) {
 // get all classrooms teachers
 export async function getClassroomTeacher(req: ExtendedNextRequest) {
   try {
-    const userRef = db.collection("users").where("role", "==", "teacher");
-    const snapshot = await userRef.get();
-    const teachers = snapshot.docs.map((doc) => doc.data());
+    const teachers = await prisma.user.findMany({
+      where: { role: "TEACHER" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
     return NextResponse.json({ teachers }, { status: 200 });
   } catch (error) {
@@ -456,49 +957,65 @@ export async function getClassroomTeacher(req: ExtendedNextRequest) {
 export async function createdClassroom(req: ExtendedNextRequest) {
   try {
     const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const json: { classroom?: Course; courses?: Course[] } = await req.json();
     const isImportedFromGoogle: boolean = Array.isArray(json.courses);
     const courses: Course[] = isImportedFromGoogle
       ? json.courses!
       : [json.classroom!];
 
-    const classrooms: Classroom[] = courses
-      .filter((course): course is Course => !!course)
-      .map((data) => ({
-        teacherId: user?.id || "",
-        archived: false,
-        classCode: data.classCode || data.enrollmentCode || "",
-        classroomName: data.classroomName || data.name || "",
-        grade: data.grade || "",
-        student: isImportedFromGoogle
-          ? (data.studentCount ?? []).map((student) => ({
-              email: student.profile?.emailAddress || "",
-              lastActivity: student.lastActivity || "No activity",
-            }))
-          : (data.classroom?.student ?? []).map((student) => ({
-              studentId: student.studentId,
-              lastActivity: student.lastActivity,
-            })),
-        title: data.title || "",
-        createdAt: data.creationTime ? new Date(data.creationTime) : new Date(),
-        importedFromGoogle: isImportedFromGoogle,
-        alternateLink: data.alternateLink || "",
-        license_id: user?.license_id || "",
-        ...(isImportedFromGoogle && {
-          googleClassroomId: data.id,
-        }),
-      }));
+    for (const data of courses.filter((course): course is Course => !!course)) {
+      const classCode =
+        data.classCode || data.enrollmentCode || generateClassCode();
 
-    // Save all classrooms to Firestore
-    const batch = db.batch();
-    const classroomCollection = db.collection("classroom");
+      // Use raw SQL to create classroom with new schema
+      const classroomResult = await prisma.$queryRaw`
+        INSERT INTO classrooms (id, classroom_name, created_by, class_code, archived, grade, "createdAt", "updatedAt")
+        VALUES (gen_random_uuid(), ${data.classroomName || data.name || ""}, ${user.id}, ${classCode}, false, ${data.grade ? parseInt(data.grade) : null}, ${data.creationTime ? new Date(data.creationTime) : new Date()}, NOW())
+        RETURNING *
+      `;
 
-    classrooms.forEach((classroom) => {
-      const docRef = classroomCollection.doc();
-      batch.set(docRef, classroom);
-    });
+      const classroom = (classroomResult as any[])[0];
 
-    await batch.commit();
+      // Add creator as OWNER in ClassroomTeacher table
+      await prisma.$queryRaw`
+        INSERT INTO "classroomTeachers" (id, teacher_id, classroom_id, role, "createdAt")
+        VALUES (gen_random_uuid(), ${user.id}, ${classroom.id}, 'OWNER'::"TeacherRole", NOW())
+      `;
+
+      if (isImportedFromGoogle && data.studentCount) {
+        for (const student of data.studentCount) {
+          if (student.profile?.emailAddress) {
+            const userRecord = await prisma.user.findUnique({
+              where: { email: student.profile.emailAddress },
+            });
+
+            if (userRecord) {
+              await prisma.classroomStudent.create({
+                data: {
+                  classroomId: classroom.id,
+                  studentId: userRecord.id,
+                },
+              });
+            }
+          }
+        }
+      } else if (!isImportedFromGoogle && data.classroom?.student) {
+        for (const student of data.classroom.student) {
+          if (student.studentId) {
+            await prisma.classroomStudent.create({
+              data: {
+                classroomId: classroom.id,
+                studentId: student.studentId,
+              },
+            });
+          }
+        }
+      }
+    }
 
     return NextResponse.json(
       {
@@ -507,9 +1024,23 @@ export async function createdClassroom(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: error }, { status: 500 });
+    console.error("Error creating classroom:", error);
+    return NextResponse.json(
+      {
+        message: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
   }
+}
+
+function generateClassCode(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
 // achive classroom
@@ -520,20 +1051,21 @@ export async function achivedClassroom(
   try {
     const { archived } = await req.json();
 
-    // Fetch the classroom from the database
-    const docRef = db.collection("classroom").doc(classroomId);
-    const doc = await docRef.get();
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+    });
 
-    // Check if the classroom exists and the id matches
-    if (!doc.exists || doc.id !== classroomId) {
+    if (!classroom) {
       return NextResponse.json(
-        { message: "Classroom not found or id does not match" },
+        { message: "Classroom not found" },
         { status: 404 }
       );
     }
 
-    // Update the classroom
-    await docRef.update({ archived });
+    await prisma.classroom.update({
+      where: { id: classroomId },
+      data: { archived },
+    });
 
     return NextResponse.json(
       { message: "success updated archived status" },
@@ -552,23 +1084,29 @@ export async function updateClassroom(
   try {
     const { classroomName, grade } = await req.json();
 
-    // Fetch the classroom from the database
-    const docRef = db.collection("classroom").doc(classroomId);
-    const doc = await docRef.get();
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+    });
 
-    // Check if the classroom exists and the id matches
-    if (!doc.exists || doc.id !== classroomId) {
+    if (!classroom) {
       return NextResponse.json(
-        { message: "Classroom not found or id does not match" },
+        { message: "Classroom not found" },
         { status: 404 }
       );
     }
 
     // Update the classroom
-    await docRef.update({ classroomName, grade });
+    await prisma.classroom.update({
+      where: { id: classroomId },
+      data: {
+        classroomName,
+        grade: grade ? parseInt(grade) : null,
+      },
+    });
 
     return NextResponse.json({ message: "success updated" }, { status: 200 });
   } catch (error) {
+    console.error("Error updating classroom:", error);
     return NextResponse.json({ message: error }, { status: 500 });
   }
 }
@@ -579,19 +1117,20 @@ export async function deleteClassroom(
   { params: { classroomId } }: RequestContext
 ) {
   try {
-    const docRef = db.collection("classroom").doc(classroomId);
-    const doc = await docRef.get();
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+    });
 
-    // Check if the classroom exists and the id matches
-    if (!doc.exists || doc.id !== classroomId) {
+    if (!classroom) {
       return NextResponse.json(
-        { message: "Classroom not found or id does not match" },
+        { message: "Classroom not found" },
         { status: 404 }
       );
     }
 
-    // Delete the classroom
-    await docRef.delete();
+    await prisma.classroom.delete({
+      where: { id: classroomId },
+    });
 
     return NextResponse.json({ message: "success deleted" }, { status: 200 });
   } catch (error) {
@@ -599,7 +1138,6 @@ export async function deleteClassroom(
   }
 }
 
-// patch classroom enroll
 export async function patchClassroomEnroll(
   req: ExtendedNextRequest,
   { params: { classroomId } }: RequestContext
@@ -611,301 +1149,117 @@ export async function patchClassroomEnroll(
 
   try {
     const json = await req.json();
-    const newStudent = z.array(studentSchema).parse(json.student);
+    const newStudents = z.array(studentSchema).parse(json.student);
 
-    // const enrollmentClassroom = {
-    //     student: json.student,
-    //     // lastActivity: json.lastActivity,
-    // };
-    // Fetch the classroom from the database
-    const docRef = db.collection("classroom").doc(classroomId);
-    const doc = await docRef.get();
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+    });
 
-    // Check if the classroom exists and the id matches
-    if (!doc.exists || doc.id !== classroomId) {
-      return new Response(
-        JSON.stringify({
-          message: "Classroom not found or id does not match",
-        }),
+    if (!classroom) {
+      return NextResponse.json(
+        { message: "Classroom not found" },
         { status: 404 }
       );
     }
 
-    const currentStudents = doc.data()?.student || [];
-    const updatedStudents = mergeStudents(currentStudents, newStudent);
-    // Update the classroom
-    // await docRef.update(enrollmentClassroom);
+    for (const student of newStudents) {
+      const existingEnrollment = await prisma.classroomStudent.findFirst({
+        where: {
+          studentId: student.studentId,
+        },
+        include: {
+          classroom: true,
+        },
+      });
 
-    await docRef.update({ student: updatedStudents });
+      if (existingEnrollment) {
+        return NextResponse.json(
+          {
+            message: `Student is already enrolled in classroom: ${existingEnrollment.classroom.classroomName}`,
+            error: "ALREADY_ENROLLED",
+          },
+          { status: 400 }
+        );
+      }
+
+      await prisma.classroomStudent.upsert({
+        where: {
+          classroomId_studentId: {
+            classroomId: classroomId,
+            studentId: student.studentId,
+          },
+        },
+        update: {},
+        create: {
+          classroomId: classroomId,
+          studentId: student.studentId,
+        },
+      });
+    }
 
     return NextResponse.json({ message: "success" }, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.error("Error enrolling students:", error);
     return NextResponse.json({ message: error }, { status: 500 });
-  }
-
-  function mergeStudents(
-    currentStudents: any[],
-    newStudents: z.infer<typeof studentSchema>[]
-  ) {
-    const studentMap = new Map(
-      currentStudents.map((student) => [student.studentId, student])
-    );
-
-    newStudents.forEach((newStudent) => {
-      if (studentMap.has(newStudent.studentId)) {
-        // Update lastActivity if the student already exists
-        studentMap.get(newStudent.studentId)!.lastActivity =
-          newStudent.lastActivity;
-      } else {
-        // Add new student if they don't exist
-        studentMap.set(newStudent.studentId, newStudent);
-      }
-    });
-
-    return Array.from(studentMap.values());
   }
 }
 
-// patch classroom unenroll
 export async function patchClassroomUnenroll(
   req: ExtendedNextRequest,
   { params: { classroomId } }: RequestContext
 ) {
   try {
     const json = await req.json();
+    const studentId = json.studentId;
 
-    const unenrollmentClassroom = json.student;
-
-    // Fetch the classroom from the database
-    const docRef = db.collection("classroom").doc(classroomId);
-    const doc = await docRef.get();
-
-    // Check if the classroom exists and the id matches
-    if (!doc.exists || doc.id !== classroomId) {
+    if (!studentId) {
       return NextResponse.json(
-        { message: "Classroom not found or id does not match" },
+        { message: "Student ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+    });
+
+    if (!classroom) {
+      return NextResponse.json(
+        { message: "Classroom not found" },
         { status: 404 }
       );
     }
 
-    // Update the classroom
-    await docRef.update({
-      student: unenrollmentClassroom,
+    await prisma.classroomStudent.delete({
+      where: {
+        classroomId_studentId: {
+          classroomId: classroomId,
+          studentId: studentId,
+        },
+      },
     });
 
     return NextResponse.json({ message: "success" }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: error }, { status: 500 });
-  }
-}
+    console.error("Error unenrolling student:", error);
 
-//update xp for classroom
-export async function calculateClassXp(
-  req: NextRequest,
-  ctx: RequestContext = { params: { classroomId: "" } }
-) {
-  try {
-    const firestore = admin.firestore();
-    //console.log("Fetching licenses...");
-
-    const licensesSnapshot = await firestore.collection("licenses").get();
-    const licenses = licensesSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    if (licenses.length === 0) {
-      console.error("No licenses found.");
+    if (error instanceof Error && error.message.includes("P2025")) {
       return NextResponse.json(
-        { message: "No licenses found" },
+        { message: "Student not found in classroom" },
         { status: 404 }
       );
     }
 
-    //console.log(`Found ${licenses.length} licenses.`);
-
-    const now = new Date();
-    const currentYear = now.getFullYear(); // ปีปัจจุบัน เช่น 2025
-    const startOfYear = new Date(currentYear, 0, 1).getTime();
-    const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59).getTime();
-
-    for (const license of licenses) {
-      const licenseId = license.id;
-      //console.log(`Processing license: ${licenseId}`, license);
-
-      if (!licenseId) {
-        console.warn("License ID is missing, skipping...");
-        continue;
-      }
-
-      if (
-        !licenseId ||
-        typeof licenseId !== "string" ||
-        licenseId.trim() === ""
-      ) {
-        console.error("Invalid licenseId:", licenseId);
-        continue;
-      }
-
-      const classroomSnapshot = await firestore
-        .collection("classroom")
-        .where("license_id", "==", licenseId)
-        .get();
-      //console.log(
-      //`Found ${classroomSnapshot.size} classrooms for license ${licenseId}`
-      //);
-
-      let classXpData: {
-        name: string;
-        xp: { week: number; month: number; year: number };
-      }[] = [];
-
-      for (const docSnap of classroomSnapshot.docs) {
-        const classroomData = docSnap.data();
-        const classroomName = classroomData.classroomName;
-        //console.log(`Processing classroom: ${classroomName}`);
-
-        const studentIds: string[] = (classroomData.student || []).map(
-          (student: any) => student.studentId
-        );
-
-        if (studentIds.length === 0) continue;
-
-        const userActivityLogs: any[] = [];
-
-        for (const studentId of studentIds) {
-          //console.log(`Fetching activity for student: ${studentId}`);
-
-          if (
-            !studentId ||
-            typeof studentId !== "string" ||
-            studentId.trim() === ""
-          ) {
-            console.warn(`Skipping invalid student ID: ${studentId}`);
-            continue;
-          }
-
-          const studentRef = firestore
-            .collection("user-activity-log")
-            .doc(studentId);
-
-          const subCollections = await studentRef.listCollections();
-
-          for (const subCollection of subCollections) {
-            //console.log(
-            //`Fetching activities from subcollection: ${subCollection.id}`
-            //);
-
-            const subCollectionSnapshot = await subCollection.get();
-
-            subCollectionSnapshot.forEach((doc) => {
-              const data = doc.data();
-              if (
-                data.timestamp &&
-                data.userId &&
-                data.activityStatus === "completed" &&
-                data.activityType !== "level_test"
-              ) {
-                userActivityLogs.push({
-                  ...data,
-                  timestamp: data.timestamp?.toDate(),
-                });
-              }
-            });
-          }
-        }
-
-        //console.log(
-        //  `Found ${userActivityLogs.length} activities for classroom ${classroomName}`
-        //);
-
-        let xpByPeriod = { week: 0, month: 0, year: 0 };
-
-        userActivityLogs.forEach((data) => {
-          const xpEarned = data.xpEarned || 0;
-          const activityDate = new Date(data.timestamp).getTime();
-
-          if (activityDate >= startOfYear && activityDate <= endOfYear) {
-            const diffTime = now.getTime() - activityDate;
-            const diffDays = diffTime / (1000 * 60 * 60 * 24);
-
-            if (diffDays <= 7) xpByPeriod.week += xpEarned;
-            if (diffDays <= 30) xpByPeriod.month += xpEarned;
-            xpByPeriod.year += xpEarned;
-          }
-        });
-
-        //console.log(
-        //`Calculated XP for classroom ${classroomName}:`,
-        //xpByPeriod
-        //);
-        classXpData.push({ name: classroomName, xp: xpByPeriod });
-      }
-
-      const sortedClasses = classXpData.sort((a, b) => b.xp.year - a.xp.year);
-
-      const dataMostActive = {
-        week: sortedClasses
-          .slice(0, 5)
-          .map((cls) => ({ name: cls.name, xp: cls.xp.week })),
-        month: sortedClasses
-          .slice(0, 5)
-          .map((cls) => ({ name: cls.name, xp: cls.xp.month })),
-        year: sortedClasses
-          .slice(0, 5)
-          .map((cls) => ({ name: cls.name, xp: cls.xp.year })),
-      };
-
-      const dataLeastActive = {
-        week: sortedClasses
-          .slice(-5)
-          .map((cls) => ({ name: cls.name, xp: cls.xp.week })),
-        month: sortedClasses
-          .slice(-5)
-          .map((cls) => ({ name: cls.name, xp: cls.xp.month })),
-        year: sortedClasses
-          .slice(-5)
-          .map((cls) => ({ name: cls.name, xp: cls.xp.year })),
-      };
-
-      //console.log(`Saving XP log for license ${licenseId} in year ${currentYear}`);
-
-      const classXpLogRef = firestore
-        .collection("class-xp-log")
-        .doc(`${currentYear}`)
-        .collection("licenses")
-        .doc(licenseId);
-
-      await classXpLogRef.set({
-        dataMostActive,
-        dataLeastActive,
-        createdAt: new Date(),
-      });
-
-      //console.log(`Saved XP log for license ${licenseId} in year ${currentYear}`);
-    }
-
-    return NextResponse.json(
-      { message: `Data stored successfully for year ${currentYear}` },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error fetching class XP data:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: error }, { status: 500 });
   }
 }
 
-// get Class Xp
 export async function getClassXp(req: NextRequest) {
-  const firestore = admin.firestore();
   try {
     const { searchParams } = new URL(req.url);
     const year = searchParams.get("year");
     const licenseId = searchParams.get("licenseId");
+    const timeRange = searchParams.get("timeRange") || "year";
 
     if (!year) {
       return NextResponse.json(
@@ -914,48 +1268,130 @@ export async function getClassXp(req: NextRequest) {
       );
     }
 
-    //console.log(`Fetching class XP data for year: ${year}`);
+    const yearNum = parseInt(year);
+    let startDate: Date;
+    let endDate: Date;
 
-    const yearRef = firestore.collection("class-xp-log").doc(year);
-    const licensesCollectionRef = yearRef.collection("licenses");
+    const now = new Date();
+    switch (timeRange) {
+      case "week":
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - 7);
+        endDate = now;
+        break;
+      case "month":
+        startDate = new Date(now);
+        startDate.setMonth(now.getMonth() - 1);
+        endDate = now;
+        break;
+      case "year":
+      default:
+        startDate = new Date(yearNum, 0, 1);
+        endDate = new Date(yearNum + 1, 0, 1);
+        break;
+    }
 
     if (licenseId) {
-      //console.log(`Fetching data for license: ${licenseId}`);
-      const licenseDoc = await licensesCollectionRef.doc(licenseId).get();
+      const license = await prisma.license.findUnique({
+        where: { id: licenseId },
+        include: {
+          licenseUsers: {
+            select: {
+              userId: true,
+            },
+          },
+        },
+      });
 
-      if (!licenseDoc.exists) {
+      if (!license) {
         return NextResponse.json(
-          { message: `No data found for license ${licenseId} in ${year}` },
+          { message: `License ${licenseId} not found` },
           { status: 404 }
         );
       }
 
+      const userIds = license.licenseUsers.map((lu) => lu.userId);
+
+      const classrooms = await prisma.classroom.findMany({
+        where: {
+          students: {
+            some: {
+              studentId: { in: userIds },
+            },
+          },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  xpLogs: {
+                    where: {
+                      createdAt: {
+                        gte: startDate,
+                        lt: endDate,
+                      },
+                    },
+                    select: {
+                      xpEarned: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const classroomXpMap: {
+        [classroomId: string]: { name: string; xp: number };
+      } = {};
+
+      classrooms.forEach((classroom) => {
+        let totalClassroomXp = 0;
+
+        classroom.students.forEach((classroomStudent) => {
+          if (userIds.includes(classroomStudent.studentId)) {
+            const studentXp = classroomStudent.student.xpLogs.reduce(
+              (sum, log) => sum + log.xpEarned,
+              0
+            );
+            totalClassroomXp += studentXp;
+          }
+        });
+
+        if (totalClassroomXp > 0) {
+          classroomXpMap[classroom.id] = {
+            name: classroom.classroomName || `Classroom ${classroom.id}`,
+            xp: totalClassroomXp,
+          };
+        }
+      });
+
+      const classroomData = Object.values(classroomXpMap);
+      const mostActive = classroomData.sort((a, b) => b.xp - a.xp).slice(0, 5);
+      const leastActive = classroomData.sort((a, b) => a.xp - b.xp).slice(0, 5);
+
+      const data = {
+        dataMostActive: {
+          [timeRange]: mostActive,
+        },
+        dataLeastActive: {
+          [timeRange]: leastActive,
+        },
+      };
+
       return NextResponse.json({
         year,
         licenseId,
-        data: licenseDoc.data(),
+        timeRange,
+        data,
       });
     }
-
-    //console.log(`Fetching all license data for year ${year}`);
-    const licensesSnapshot = await licensesCollectionRef.get();
-
-    if (licensesSnapshot.empty) {
-      return NextResponse.json(
-        { message: `No XP data found for year ${year}` },
-        { status: 404 }
-      );
-    }
-
-    const licensesData: Record<string, any> = {};
-    licensesSnapshot.forEach((doc) => {
-      licensesData[doc.id] = doc.data();
-    });
-
-    return NextResponse.json({
-      year,
-      licenses: licensesData,
-    });
+    return NextResponse.json(
+      { message: "Please specify a licenseId parameter" },
+      { status: 400 }
+    );
   } catch (error) {
     console.error("Error fetching XP data:", error);
     return NextResponse.json(
@@ -965,103 +1401,49 @@ export async function getClassXp(req: NextRequest) {
   }
 }
 
-export async function calculateSchoolsXp(
-  req: NextRequest
-): Promise<NextResponse> {
-  try {
-    //console.log("Starting calculateLicenseXp API");
-
-    const summaryCollection = db.collection("license-xp-summary");
-    const summarySnapshot = await summaryCollection.get();
-    const batch = db.batch();
-
-    //console.log(`Found ${summarySnapshot.size} documents in license-xp-summary, deleting...`);
-    summarySnapshot.forEach((doc) => {
-      batch.delete(doc.ref);
-    });
-
-    await batch.commit();
-    //console.log("Cleared license-xp-summary collection");
-
-    const licensesSnapshot = await db.collection("licenses").get();
-    //console.log(`Found ${licensesSnapshot.size} licenses`);
-
-    const licenses: License[] = licensesSnapshot.docs.map((doc) => {
-      return { id: doc.id, ...doc.data() } as License;
-    });
-
-    if (licenses.length === 0) {
-      console.error("No licenses found.");
-      return NextResponse.json(
-        { message: "No licenses found" },
-        { status: 404 }
-      );
-    }
-
-    for (const license of licenses) {
-      const licenseId: string = license.id;
-      const schoolName: string = license.school_name || "Unknown School";
-
-      //console.log(`Processing license: ${licenseId}, School: ${schoolName}`);
-
-      if (!licenseId) {
-        console.warn("License ID is missing, skipping...");
-        continue;
-      }
-
-      const usersSnapshot = await db
-        .collection("users")
-        .where("license_id", "==", licenseId)
-        .get();
-
-      //console.log(`Found ${usersSnapshot.size} users for license ${licenseId}`);
-
-      const users: User[] = usersSnapshot.docs.map((doc) => doc.data() as User);
-
-      const totalXp: number = users.reduce((sum, user) => {
-        const userXp: number = user.xp || 0;
-        //console.log(`User XP: ${userXp}`);
-        return sum + userXp;
-      }, 0);
-
-      //console.log(`Total XP for license ${licenseId}: ${totalXp}`);
-
-      await summaryCollection.doc(licenseId).set({
-        school: schoolName,
-        xp: totalXp,
-        updatedAt: new Date(),
-      });
-
-      //console.log(`Saved XP summary for license ${licenseId}`);
-    }
-
-    //console.log("Finished processing all licenses.");
-    return NextResponse.json(
-      { message: "XP data stored successfully" },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error fetching license XP data:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
 export async function getTopSchoolsXp(req: NextRequest): Promise<NextResponse> {
   try {
-    //console.log("Fetching top schools by XP");
-    const summaryCollection = db.collection("license-xp-summary");
-    const summarySnapshot = await summaryCollection
-      .orderBy("xp", "desc")
-      .limit(10)
-      .get();
+    const licenses = await prisma.license.findMany({
+      include: {
+        licenseUsers: {
+          include: {
+            user: {
+              include: {
+                xpLogs: {
+                  select: {
+                    xpEarned: true,
+                    createdAt: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
 
-    const topSchools: SchoolXP[] = summarySnapshot.docs.map((doc) => ({
-      school: doc.data().school,
-      xp: doc.data().xp,
-    }));
+    const schoolXpData: { school: string; xp: number }[] = [];
+
+    licenses.forEach((license) => {
+      let totalXp = 0;
+
+      license.licenseUsers.forEach((licenseUser) => {
+        const userXp = licenseUser.user.xpLogs.reduce(
+          (sum, log) => sum + log.xpEarned,
+          0
+        );
+        totalXp += userXp;
+      });
+
+      if (totalXp > 0) {
+        schoolXpData.push({
+          school: license.schoolName,
+          xp: totalXp,
+        });
+      }
+    });
+
+    const topSchools = schoolXpData.sort((a, b) => b.xp - a.xp).slice(0, 10);
 
     return NextResponse.json({ data: topSchools }, { status: 200 });
   } catch (error) {
@@ -1073,106 +1455,246 @@ export async function getTopSchoolsXp(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-export async function processAllLicensesXP() {
+// Get classroom XP data for custom date range
+export async function getClassroomXpCustomRange(req: NextRequest) {
   try {
-    const licensesSnap = await db.collection("licenses").get();
+    const { searchParams } = new URL(req.url);
+    const fromDate = searchParams.get("from");
+    const toDate = searchParams.get("to");
+    const licenseId = searchParams.get("licenseId");
 
-    const studentToLicense = new Map<
-      string,
-      { licenseId: string; classroomId: string }
-    >();
-    const licenseData = new Map<
-      string,
-      Map<
-        string,
-        Map<
-          string,
-          { today: number; week: number; month: number; allTime: number }
-        >
-      >
-    >();
-
-    // 1. Loop licenses → classrooms → students
-    for (const licenseDoc of licensesSnap.docs) {
-      const licenseId = licenseDoc.id;
-      const classSnap = await db
-        .collection("classroom")
-        .where("license_id", "==", licenseId)
-        .get();
-
-      const licenseMap = new Map();
-      for (const classDoc of classSnap.docs) {
-        const classData = classDoc.data();
-        const classroomId = classDoc.id;
-        const students = classData.student || [];
-
-        const studentMap = new Map();
-        for (const s of students) {
-          const studentId = s.studentId;
-          studentToLicense.set(studentId, { licenseId, classroomId });
-          studentMap.set(studentId, {
-            today: 0,
-            week: 0,
-            month: 0,
-            allTime: 0,
-          });
-        }
-        licenseMap.set(classroomId, studentMap);
-      }
-      licenseData.set(licenseId, licenseMap);
+    if (!fromDate || !toDate) {
+      return NextResponse.json(
+        { message: "Both 'from' and 'to' date parameters are required" },
+        { status: 400 }
+      );
     }
 
-    // 2. Prepare dates
-    const today = dayjs().startOf("day");
-    const weekStart = dayjs().startOf("isoWeek");
-    const monthStart = dayjs().startOf("month");
+    const startDate = new Date(fromDate);
+    const endDate = new Date(toDate);
+    // Add one day to end date to include the entire day
+    endDate.setDate(endDate.getDate() + 1);
 
-    // 3. Scan activity logs
-    const activitySnap = await db.collection("user-activity-log").get();
-
-    for (const activityDoc of activitySnap.docs) {
-      const subcollections = await activityDoc.ref.listCollections();
-
-      for (const sub of subcollections) {
-        if (sub.id === "level-test-activity-log") continue;
-
-        const subSnap = await sub.get();
-        for (const doc of subSnap.docs) {
-          const data = doc.data();
-          const userId = data.userId;
-          const xp = data.xpEarned || 0;
-          const ts = data.timestamp?.toDate?.();
-          if (!ts || !studentToLicense.has(userId)) continue;
-
-          const { licenseId, classroomId } = studentToLicense.get(userId)!;
-          const classMap = licenseData.get(licenseId);
-          const studentMap = classMap?.get(classroomId);
-          const entry = studentMap?.get(userId);
-          if (!entry) continue;
-
-          const date = dayjs(ts);
-          entry.allTime += xp;
-          if (date.isSameOrAfter(monthStart)) entry.month += xp;
-          if (date.isSameOrAfter(weekStart)) entry.week += xp;
-          if (date.isSameOrAfter(today)) entry.today += xp;
-        }
-      }
+    // Validate dates
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return NextResponse.json(
+        { message: "Invalid date format. Use ISO 8601 format (YYYY-MM-DD)" },
+        { status: 400 }
+      );
     }
 
-    // 4. Save summary to Firestore
-    for (const [licenseId, classMap] of licenseData) {
-      const payload: Record<string, any> = {};
-      for (const [classroomId, studentMap] of classMap) {
-        payload[classroomId] = {};
-        for (const [studentId, xp] of studentMap) {
-          payload[classroomId][studentId] = xp;
-        }
-      }
-      await db.collection("xp-summary").doc(licenseId).set(payload);
+    if (startDate > endDate) {
+      return NextResponse.json(
+        { message: "Start date must be before end date" },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ message: "XP summary processed" });
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    let classrooms: any[] = [];
+
+    // Get classrooms based on user role and license
+    if (user.role === "SYSTEM") {
+      // SYSTEM role: get all classrooms
+      classrooms = await prisma.classroom.findMany({
+        where: {
+          archived: { not: true },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  xpLogs: {
+                    where: {
+                      createdAt: {
+                        gte: startDate,
+                        lte: endDate,
+                      },
+                    },
+                    select: {
+                      xpEarned: true,
+                      createdAt: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+    } else if (user.role === "ADMIN") {
+      // ADMIN role: get classrooms from same license
+      const adminUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { licenseId: true },
+      });
+
+      if (!adminUser?.licenseId) {
+        return NextResponse.json(
+          { error: "Admin user must have a license" },
+          { status: 400 }
+        );
+      }
+
+      const usersWithSameLicense = await prisma.user.findMany({
+        where: {
+          OR: [
+            { licenseId: adminUser.licenseId },
+            {
+              licenseOnUsers: {
+                some: {
+                  licenseId: adminUser.licenseId,
+                },
+              },
+            },
+          ],
+        },
+        select: { id: true },
+      });
+
+      const userIds = usersWithSameLicense.map((u) => u.id);
+
+      classrooms = await prisma.classroom.findMany({
+        where: {
+          teacherId: { in: userIds },
+          archived: { not: true },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  xpLogs: {
+                    where: {
+                      createdAt: {
+                        gte: startDate,
+                        lte: endDate,
+                      },
+                    },
+                    select: {
+                      xpEarned: true,
+                      createdAt: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+    } else {
+      // TEACHER role: get only their classrooms
+      classrooms = await prisma.classroom.findMany({
+        where: {
+          teacherId: user.id,
+          archived: { not: true },
+        },
+        include: {
+          students: {
+            include: {
+              student: {
+                include: {
+                  xpLogs: {
+                    where: {
+                      createdAt: {
+                        gte: startDate,
+                        lte: endDate,
+                      },
+                    },
+                    select: {
+                      xpEarned: true,
+                      createdAt: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+    }
+
+    // Calculate XP data for each classroom in the custom date range
+    const classroomData = classrooms.map((classroom) => {
+      const customRangeXp = classroom.students.reduce(
+        (total: number, cs: any) => {
+          const studentXp = cs.student.xpLogs.reduce(
+            (sum: number, log: any) => sum + log.xpEarned,
+            0
+          );
+          return total + studentXp;
+        },
+        0
+      );
+
+      return {
+        id: classroom.id,
+        classroomName: classroom.classroomName,
+        classCode: classroom.classCode,
+        grade: classroom.grade?.toString(),
+        archived: classroom.archived || false,
+        title: classroom.classroomName,
+        importedFromGoogle: false,
+        alternateLink: "",
+        createdAt: classroom.createdAt,
+        createdBy: classroom.teacher,
+        isOwner: classroom.teacherId === user.id,
+        teachers: [
+          {
+            teacherId: classroom.teacher?.id || "",
+            name: classroom.teacher?.name || "",
+            role: "OWNER" as const,
+            joinedAt: classroom.createdAt,
+          },
+        ],
+        student: classroom.students.map((cs: any) => ({
+          studentId: cs.student.id,
+          email: cs.student.email,
+          lastActivity: cs.createdAt,
+        })),
+        xpData: {
+          customRange: customRangeXp,
+          today: 0, // These could be calculated if needed
+          week: 0,
+          month: 0,
+          allTime: 0,
+        },
+      };
+    });
+
+    return NextResponse.json({
+      message: "success",
+      data: classroomData,
+      dateRange: {
+        from: fromDate,
+        to: toDate,
+      },
+    });
   } catch (error) {
+    console.error("Error fetching custom range XP data:", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -1193,61 +1715,73 @@ export async function getClassXpPerStudents(
       );
     }
 
-    const { searchParams } = new URL(req.url);
-    const filter = searchParams.get("filter"); // "today", "week", "month", "allTime"
+    // Get classroom with students using Prisma
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+      include: {
+        students: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                name: true,
+                xp: true,
+                xpLogs: {
+                  select: {
+                    xpEarned: true,
+                    createdAt: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
 
-    const classroomRef = await db
-      .collection("classroom")
-      .doc(classroomId)
-      .get();
-    const classroomDoc = classroomRef.data();
-
-    const license_id = classroomDoc?.license_id;
-    if (!license_id) {
+    if (!classroom) {
       return NextResponse.json(
-        { message: "Classroom not found or license_id is missing" },
+        { message: "Classroom not found" },
         { status: 404 }
       );
     }
 
-    const studentsXpSnapshot = await db
-      .collection("xp-summary")
-      .doc(license_id)
-      .get();
+    const result: Record<string, any> = {};
 
-    const studentsXpData = studentsXpSnapshot.data();
-    if (!studentsXpData) {
-      return NextResponse.json(
-        { message: "XP data not found" },
-        { status: 404 }
+    // Calculate XP for each student for all periods
+    for (const cs of classroom.students) {
+      const student = cs.student;
+      const displayName = student.name || student.id;
+
+      const now = new Date();
+
+      // Calculate date ranges
+      const todayStart = new Date(now);
+      todayStart.setHours(0, 0, 0, 0);
+
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - 7);
+
+      const monthStart = new Date(now);
+      monthStart.setMonth(now.getMonth() - 1);
+
+      // Filter and calculate XP for each period
+      const todayLogs = student.xpLogs.filter(
+        (log) => log.createdAt >= todayStart
       );
-    }
-
-    const classroomXpData = studentsXpData[classroomId];
-    if (!classroomXpData) {
-      return NextResponse.json(
-        { message: "XP data for classroom not found" },
-        { status: 404 }
+      const weekLogs = student.xpLogs.filter(
+        (log) => log.createdAt >= weekStart
       );
-    }
+      const monthLogs = student.xpLogs.filter(
+        (log) => log.createdAt >= monthStart
+      );
 
-    const result: Record<string, number> = {};
-
-    // Loop เพื่อดึง display_name ทีละคน
-    for (const [studentId, xpData] of Object.entries(classroomXpData)) {
-      // ดึง display_name จาก users/{studentId}
-      const userSnapshot = await db.collection("users").doc(studentId).get();
-      const userData = userSnapshot.data();
-      const displayName = userData?.display_name || studentId;
-
-      // filter ค่า XP ที่ต้องการ
-      if (filter) {
-        const xpValue = (xpData as any)[filter] ?? 0;
-        result[displayName] = xpValue;
-      } else {
-        // ถ้าไม่ filter ก็เก็บทั้ง object
-        result[displayName] = xpData as number;
-      }
+      result[displayName] = {
+        today: todayLogs.reduce((sum, log) => sum + log.xpEarned, 0),
+        week: weekLogs.reduce((sum, log) => sum + log.xpEarned, 0),
+        month: monthLogs.reduce((sum, log) => sum + log.xpEarned, 0),
+        allTime: student.xp,
+      };
     }
 
     return NextResponse.json(result);
@@ -1255,6 +1789,256 @@ export async function getClassXpPerStudents(
     console.error("Error fetching XP data:", error);
     return NextResponse.json(
       { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function addCoTeacher(
+  req: ExtendedNextRequest,
+  { params: { classroomId } }: RequestContext
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { teacherEmail, role = "CO_TEACHER" } = body;
+
+    if (!teacherEmail) {
+      return NextResponse.json(
+        { error: "Teacher email is required" },
+        { status: 400 }
+      );
+    }
+
+    const classroom = await prisma.$queryRaw`
+      SELECT * FROM classrooms 
+      WHERE id = ${classroomId} 
+      AND (teacher_id = ${user.id} OR created_by = ${user.id})
+    `;
+
+    if ((classroom as any[]).length === 0) {
+      return NextResponse.json(
+        { error: "Only classroom creator can add co-teachers" },
+        { status: 403 }
+      );
+    }
+
+    const teacher = await prisma.user.findUnique({
+      where: { email: teacherEmail },
+      select: { id: true, name: true, email: true, role: true },
+    });
+
+    if (!teacher) {
+      return NextResponse.json({ error: "Teacher not found" }, { status: 404 });
+    }
+
+    if (teacher.role !== "TEACHER") {
+      return NextResponse.json(
+        { error: "User must have TEACHER role" },
+        { status: 400 }
+      );
+    }
+
+    const existingTeacher = await prisma.$queryRaw`
+      SELECT * FROM "classroomTeachers" 
+      WHERE classroom_id = ${classroomId} AND teacher_id = ${teacher.id}
+    `;
+
+    if ((existingTeacher as any[]).length > 0) {
+      return NextResponse.json(
+        { error: "Teacher is already in this classroom" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.$queryRaw`
+      INSERT INTO "classroomTeachers" (id, teacher_id, classroom_id, role, "createdAt")
+      VALUES (gen_random_uuid(), ${teacher.id}, ${classroomId}, ${role}::"TeacherRole", NOW())
+    `;
+
+    return NextResponse.json(
+      {
+        message: "Co-teacher added successfully",
+        teacher: {
+          id: teacher.id,
+          name: teacher.name,
+          email: teacher.email,
+          role: role,
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error adding co-teacher:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function removeCoTeacher(
+  req: ExtendedNextRequest,
+  { params: { classroomId } }: RequestContext
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { teacherId } = body;
+
+    if (!teacherId) {
+      return NextResponse.json(
+        { error: "Teacher ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const classroom = await prisma.$queryRaw`
+      SELECT * FROM classrooms 
+      WHERE id = ${classroomId} 
+      AND (teacher_id = ${user.id} OR created_by = ${user.id})
+    `;
+
+    if ((classroom as any[]).length === 0) {
+      return NextResponse.json(
+        { error: "Only classroom creator can remove co-teachers" },
+        { status: 403 }
+      );
+    }
+
+    const teacherInClassroom = await prisma.$queryRaw`
+      SELECT ct.*, u.name 
+      FROM "classroomTeachers" ct
+      JOIN users u ON ct.teacher_id = u.id
+      WHERE ct.classroom_id = ${classroomId} AND ct.teacher_id = ${teacherId}
+    `;
+
+    if ((teacherInClassroom as any[]).length === 0) {
+      return NextResponse.json(
+        { error: "Teacher not found in this classroom" },
+        { status: 404 }
+      );
+    }
+
+    const teacher = (teacherInClassroom as any[])[0];
+    if (teacher.role === "OWNER") {
+      return NextResponse.json(
+        { error: "Cannot remove classroom owner" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.$queryRaw`
+      DELETE FROM "classroomTeachers" 
+      WHERE classroom_id = ${classroomId} AND teacher_id = ${teacherId}
+    `;
+
+    return NextResponse.json(
+      {
+        message: "Co-teacher removed successfully",
+        removedTeacher: {
+          id: teacherId,
+          name: teacher.name,
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error removing co-teacher:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// Get all teachers in a classroom
+export async function getClassroomTeachers(
+  req: ExtendedNextRequest,
+  { params: { classroomId } }: RequestContext
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const classroom = await prisma.$queryRaw`
+      SELECT c.*, 
+             t.id as teacher_id, t.name as teacher_name, t.email as teacher_email
+      FROM classrooms c
+      LEFT JOIN users t ON c.teacher_id = t.id
+      WHERE c.id = ${classroomId} 
+      AND (c.teacher_id = ${user.id} OR c.created_by = ${user.id})
+    `;
+
+    if ((classroom as any[]).length === 0) {
+      return NextResponse.json(
+        { error: "Classroom not found or access denied" },
+        { status: 404 }
+      );
+    }
+
+    const classroomData = (classroom as any[])[0];
+
+    const newTeachers = await prisma.$queryRaw`
+      SELECT 
+        ct.role,
+        ct."createdAt" as joined_at,
+        u.id,
+        u.name,
+        u.email,
+        true as is_from_new_table
+      FROM "classroomTeachers" ct
+      JOIN users u ON ct.teacher_id = u.id
+      WHERE ct.classroom_id = ${classroomId}
+      ORDER BY 
+        CASE WHEN ct.role = 'OWNER' THEN 0 ELSE 1 END,
+        ct."createdAt" ASC
+    `;
+
+    let teachers;
+    if ((newTeachers as any[]).length === 0) {
+      teachers = [
+        {
+          id: classroomData.teacher_id || "",
+          name: classroomData.teacher_name || "Unknown",
+          email: classroomData.teacher_email || "",
+          role: "OWNER",
+          joined_at: classroomData.createdAt,
+          is_creator: true,
+        },
+      ];
+    } else {
+      teachers = (newTeachers as any[]).map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        email: t.email,
+        role: t.role,
+        joined_at: t.joined_at,
+        is_creator: t.role === "OWNER",
+      }));
+    }
+
+    return NextResponse.json(
+      {
+        classroomId,
+        teachers: teachers,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error getting classroom teachers:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

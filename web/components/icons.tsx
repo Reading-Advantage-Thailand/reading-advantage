@@ -49,10 +49,15 @@ import {
   CircleCheckBig,
   UserRound,
   BookPlus,
+  Lock,
+  Clipboard,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
 export const Icons = {
+  warning: AlertCircle,
+  info: Lightbulb,
+  check: CheckCircle2,
   close: X,
   sun: SunMedium,
   moon: Moon,
@@ -101,6 +106,8 @@ export const Icons = {
   CircleCheckBig: CircleCheckBig,
   UserRound: UserRound,
   BookPlus: BookPlus,
+  lock: Lock,
+  clipboard: Clipboard,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"

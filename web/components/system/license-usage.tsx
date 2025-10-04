@@ -59,10 +59,18 @@ export default async function LicenseUsageChart() {
                   <div className="p-1 sm:p-2 md:p-4">
                     <div className="flex justify-between flex-col sm:flex-row mb-2 sm:mb-4">
                       <CardDescription className="text-xs sm:text-sm">
-                        School: {license.school_name}
+                        School: {license.schoolName}
                       </CardDescription>
                       <CardDescription className="text-xs sm:text-sm">
-                        School Level: {license.subscription_level}
+                        License Type: {license.licenseType}
+                      </CardDescription>
+                    </div>
+                    <div className="flex justify-between flex-col sm:flex-row mb-2 sm:mb-4">
+                      <CardDescription className="text-xs sm:text-sm">
+                        Used: {license.usedLicenses}/{license.maxUsers} licenses
+                      </CardDescription>
+                      <CardDescription className="text-xs sm:text-sm">
+                        Expires: {new Date(license.expiresAt).toLocaleDateString()}
                       </CardDescription>
                     </div>
                     <CardContent className="flex items-center justify-center sm:p-4 md:p-6">
@@ -74,7 +82,7 @@ export default async function LicenseUsageChart() {
                           id="gauge-chart"
                           // nrOfLevels={30}
                           percent={
-                            license.used_licenses / license.total_licenses
+                            license.usedLicenses / license.maxUsers
                           }
                           arcWidth={0.3}
                           cornerRadius={0}
@@ -92,8 +100,7 @@ export default async function LicenseUsageChart() {
 
                         <div className="text-center text-2xl font-bold mt-2 sm:text-3xl md:text-4xl sm:mt-4">
                           {(
-                            Math.round(license.used_licenses * 100) /
-                            license.total_licenses
+                            (license.usedLicenses / license.maxUsers) * 100
                           ).toFixed(2)}
                           %
                         </div>

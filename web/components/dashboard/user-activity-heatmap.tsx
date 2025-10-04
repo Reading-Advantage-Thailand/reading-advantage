@@ -13,16 +13,18 @@ import { useScopedI18n } from "@/locales/client";
 function formatDataHeatmap(article: UserActivityLog[]) {
   const dateCounts: { [date: string]: number } = {};
 
-  article.forEach((activity) => {
-    const date = new Date(activity.timestamp);
-    const dateString = date.toISOString().split("T")[0];
+  if (article) {
+    article.forEach((activity) => {
+      const date = new Date(activity.timestamp);
+      const dateString = date.toISOString().split("T")[0];
 
-    if (dateCounts[dateString]) {
-      dateCounts[dateString]++;
-    } else {
-      dateCounts[dateString] = 1;
-    }
-  });
+      if (dateCounts[dateString]) {
+        dateCounts[dateString]++;
+      } else {
+        dateCounts[dateString] = 1;
+      }
+    });
+  }
 
   const result: string[][] = [[], [], []];
 

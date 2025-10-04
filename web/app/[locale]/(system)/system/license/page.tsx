@@ -1,4 +1,4 @@
-import { Role } from "@/server/models/enum";
+import { Role } from "@prisma/client";
 import React from "react";
 import { headers } from "next/headers";
 import { Badge } from "@/components/ui/badge";
@@ -25,17 +25,16 @@ async function getAllLicenses() {
     {
       select: [
         "id",
-        "school_name",
-        "total_licenses",
-        "used_licenses",
-        "expiration_date",
-        "subscription_level",
+        "schoolName",
+        "maxUsers",
+        "usedLicenses",
+        "expiresAt",
+        "licenseType",
         "key",
       ],
     },
     headers()
   );
-
   return response.data;
 }
 

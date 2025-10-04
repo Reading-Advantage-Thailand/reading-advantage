@@ -9,7 +9,7 @@ import { z } from "zod";
 import { createEmptyCard, Card } from "ts-fsrs";
 import { filter, includes } from "lodash";
 import { useCurrentLocale } from "@/locales/client";
-import { Article } from "@/components/models/article-model";
+import { Chapter } from "@/components/models/article-model";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -25,13 +25,6 @@ import {
 import { toast } from "./ui/use-toast";
 import AudioImg from "./audio-img";
 
-interface Props {
-  chapter: Article;
-  storyId: string;
-  chapterNumber: string;
-  userId: string;
-}
-
 interface WordList {
   vocabulary: string;
   definition: {
@@ -45,6 +38,13 @@ interface WordList {
   startTime: number;
   endTime: number;
   audioUrl: string;
+}
+
+interface Props {
+  chapter: Chapter;
+  storyId: string;
+  chapterNumber: string;
+  userId: string;
 }
 
 export default function StoriesWordList({
@@ -70,76 +70,37 @@ export default function StoriesWordList({
     resolver: zodResolver(FormSchema),
   });
 
-  const handleWordList = useCallback(async () => {
+  const handleWordList = useCallback(() => {
     try {
       setLoading(true);
-      const resWordlist = await fetch(
-        `/api/v1/assistant/stories-wordlist/${storyId}/${chapterNumber}`,
-        {
-          method: "POST",
-          body: JSON.stringify({ chapter }),
-        }
-      );
+      console.log("chapter", chapter);
 
-      const data = await resWordlist.json();
-      //console.log("API Response Full Data:", {
-      //  message: data.messeges,
-      //  timepoints: JSON.stringify(data.timepoints, null, 2),
-      //  wordList: JSON.stringify(data.word_list, null, 2),
-      //  chapter: JSON.stringify(chapter, null, 2),
-      //});
-
-      let wordList = [];
-
-      if (data?.timepoints?.length > 0 && Array.isArray(data?.word_list)) {
-        //  console.log("Creating wordList with:", {
-        //  timepoints_length: data.timepoints.length,
-        //  word_list_length: data.word_list?.length,
-        //  minLength: Math.min(
-        //  data.timepoints.length,
-        //  data.word_list?.length || 0
-        //  ),
-        //});
-
-        const minLength = Math.min(
-          data.timepoints.length,
-          data.word_list.length
-        );
-        wordList = Array.from({ length: minLength }, (_, index) => {
-          const timepoint = data.timepoints[index];
-          const nextTimepoint = data.timepoints[index + 1];
-          const word = data.word_list[index];
-
-          //  console.log(`Processing item ${index}:`, {
-          //    timepoint,
-          //    nextTimepoint,
-          //    word,
-          //  });
-
-          return {
-            vocabulary: word.vocabulary,
-            definition: word.definition,
-            index,
-            startTime: timepoint.timeSeconds,
-            endTime: nextTimepoint
-              ? nextTimepoint.timeSeconds
-              : timepoint.timeSeconds + 10,
-            audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${storyId}-${chapterNumber}.mp3`,
-          };
-        });
+      let wordList: WordList[] = [];
+      if (Array.isArray(chapter.chapter.words)) {
+        wordList = chapter.chapter.words
+          .filter((word) => word.vocabulary && word.definition)
+          .map((word: any, index: number) => {
+            const nextWord = chapter.chapter.words[index + 1];
+            return {
+              vocabulary: word.vocabulary,
+              definition: word.definition,
+              markName: word.markName,
+              index,
+              startTime: word.timeSeconds || 0,
+              endTime: nextWord
+                ? nextWord.timeSeconds
+                : (word.timeSeconds || 0) + 10,
+              audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${storyId}-${chapterNumber}.mp3`,
+            };
+          });
       } else {
-        //console.log("Falling back to word_list only:", {
-        //  has_timepoints: !!data?.timepoints,
-        //  timepoints_length: data?.timepoints?.length,
-        //  is_word_list_array: Array.isArray(data?.word_list),
-        //  word_list: data?.word_list,
-        //});
-        wordList = data?.word_list || [];
+        console.error("Invalid words format", chapter.chapter.words);
       }
+
       setWordList(wordList);
       form.reset();
     } catch (error: any) {
-      //console.log("error: ", error);
+      console.error("Error processing words", error);
       toast({
         title: "Something went wrong.",
         description: `${error?.response?.data?.message || error?.message}`,

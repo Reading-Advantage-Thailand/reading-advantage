@@ -74,7 +74,7 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
     } catch (error: any) {
       console.error(error);
       toast({
-        title: "Something went wrong.",
+        title: t("somethingWentWrong"),
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
@@ -91,7 +91,7 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
     } catch (error: any) {
       console.error(error);
       toast({
-        title: "Something went wrong.",
+        title: t("somethingWentWrong"),
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
@@ -106,7 +106,7 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
     } catch (error: any) {
       console.error(error);
       toast({
-        title: "Something went wrong.",
+        title: t("somethingWentWrong"),
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
@@ -127,7 +127,7 @@ const LessonSummary: React.FC<LessonSummaryProps> = ({
     } catch (error: any) {
       console.error(error);
       toast({
-        title: "Something went wrong.",
+        title: t("somethingWentWrong"),
         description: error?.message || "Unknown error",
         variant: "destructive",
       });

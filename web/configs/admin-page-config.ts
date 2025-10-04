@@ -35,5 +35,15 @@ export const adminPageConfig: AdminPageConfig = {
       href: "/admin/article-creation",
       icon: "BookPlus",
     },
+    {
+      title: "Reports",
+      href: "/admin/reports",
+      icon: "report",
+    },
+    {
+      title: "Teacher Assignments",
+      href: "/admin/teacher-assignments",
+      icon: "clipboard",
+    },
   ],
 };

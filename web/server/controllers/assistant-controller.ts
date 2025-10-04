@@ -3,7 +3,7 @@ import { generateObject, streamText } from "ai";
 import fs, { stat } from "fs";
 import path from "path";
 import { z } from "zod";
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 import storage from "@/utils/storage";
 import { AUDIO_WORDS_URL } from "@/server/constants";
 import { generateAudioForWord } from "@/server/utils/generators/audio-words-generator";
@@ -43,6 +43,7 @@ const createLessonChatbotQuestionSchema = z.object({
   passage: z.string(),
   summary: z.string(),
   image_description: z.string(),
+  blacklistedQuestions: z.array(z.string()).optional().default([]),
   isInitial: z.boolean().optional().default(false),
 });
 
@@ -104,8 +105,8 @@ export async function getFeedbackWritter(res: object) {
           suggestions: z.string(),
         }),
       }),
-      exampleRevisions: z.array(z.string()).min(2).max(3),
-      nextSteps: z.array(z.string()).min(2).max(3),
+      exampleRevisions: z.array(z.string()).optional(),
+      nextSteps: z.array(z.string()).min(2).max(3).optional(),
     }),
   });
 
@@ -122,6 +123,8 @@ export async function getFeedbackWritter(res: object) {
     Student Response: ${validatedInput.studentResponse}
 
     Please provide detailed feedback based on the CEFR criteria and Preferred Language.
+    
+    Important: For exampleRevisions, if the writing is very good and needs minimal improvements, you may provide an empty array []. If revisions are needed, provide 1-3 specific examples.
     `;
 
     const { object } = await generateObject({
@@ -145,9 +148,10 @@ export async function getFeedbackWritter(res: object) {
 export async function getWordlist(req: ExtendedNextRequest) {
   const { articleId, article } = await req.json();
 
-  // First need to find the word list of the article in db
-  const wordListRef = db.collection(`word-list`).doc(articleId);
-  const wordListSnapshot = await wordListRef.get();
+  const articleData = await prisma.article.findUnique({
+    where: { id: articleId },
+    select: { words: true },
+  });
 
   const fileExtension = ".mp3";
 
@@ -156,23 +160,46 @@ export async function getWordlist(req: ExtendedNextRequest) {
     .file(`${AUDIO_WORDS_URL}/${articleId}${fileExtension}`)
     .exists();
 
-  if (wordListSnapshot?.exists && fileExists[0]) {
-    const dataList = wordListSnapshot.data();
-    return NextResponse.json(
-      {
-        messeges: "success",
-        word_list: dataList?.word_list,
-        timepoints: dataList?.timepoints,
-      },
-      { status: 200 }
-    );
+  if (articleData?.words && fileExists[0]) {
+    const wordlistData = articleData.words as any;
+
+    let wordList = [];
+
+    if (Array.isArray(wordlistData)) {
+      wordList = wordlistData;
+    } else if (wordlistData?.wordlist && Array.isArray(wordlistData.wordlist)) {
+      wordList = wordlistData.wordlist;
+    }
+
+    if (wordList.length > 0 && !wordList[0].markName) {
+      wordList = wordList.map((word: any, index: number) => ({
+        ...word,
+        markName: `word${index + 1}`,
+        timeSeconds: index * 2,
+      }));
+    }
+
+    return NextResponse.json(wordList, { status: 200 });
   } else {
     const wordList = await generateWordList({
       passage: article.passage,
     });
-    await wordListRef.set({
-      word_list: wordList.word_list,
-      articleId: articleId,
+
+    const enhancedWordList = wordList.word_list.map(
+      (word: any, index: number) => ({
+        ...word,
+        markName: `word${index + 1}`,
+        timeSeconds: index * 2,
+      })
+    );
+
+    await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        words: {
+          wordlist: enhancedWordList,
+        },
+      },
     });
 
     await generateAudioForWord({
@@ -180,13 +207,7 @@ export async function getWordlist(req: ExtendedNextRequest) {
       articleId: articleId,
     });
 
-    return NextResponse.json(
-      {
-        messeges: "success",
-        word_list: wordList.word_list,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json(enhancedWordList, { status: 200 });
   }
 }
 
@@ -198,19 +219,61 @@ export async function postFlashCard(
     const json = await req.json();
 
     if (json.page === "vocabulary") {
-      await db
-        .collection("user-word-records")
-        .doc(id)
-        .update({
-          ...json,
-        });
+      // Exclude fields that are not updatable or should be handled as relations
+      const {
+        id: jsonId,
+        userId,
+        articleId,
+        user,
+        article,
+        createdAt,
+        updatedAt,
+        last_review, // This field doesn't exist in schema, exclude it
+        elapsed_days,
+        scheduled_days,
+        page,
+        ...updateData
+      } = json;
+
+      // Map the field names correctly for Prisma
+      const cleanUpdateData = {
+        ...updateData,
+        elapsedDays: json.elapsed_days,
+        scheduledDays: json.scheduled_days,
+      };
+
+      await prisma.userWordRecord.update({
+        where: { id },
+        data: cleanUpdateData,
+      });
     } else {
-      await db
-        .collection("user-sentence-records")
-        .doc(id)
-        .update({
-          ...json,
-        });
+      // Exclude fields that are not updatable or should be handled as relations
+      const {
+        id: jsonId,
+        userId,
+        articleId,
+        user,
+        article,
+        createdAt,
+        updatedAt,
+        last_review,
+        elapsed_days,
+        scheduled_days,
+        page,
+        ...updateData
+      } = json;
+
+      // Map the field names correctly for Prisma
+      const cleanUpdateData = {
+        ...updateData,
+        elapsedDays: json.elapsed_days,
+        scheduledDays: json.scheduled_days,
+      };
+
+      await prisma.userSentenceRecord.update({
+        where: { id },
+        data: cleanUpdateData,
+      });
     }
 
     return NextResponse.json(
@@ -285,35 +348,76 @@ export async function lessonChatBotQuestion(req: ExtendedNextRequest) {
     const validatedData = createLessonChatbotQuestionSchema.parse(param);
     //console.log("Validated Data:", validatedData);
 
-    const { messages, title, passage, summary, image_description, isInitial } =
-      validatedData;
+    const {
+      messages,
+      title,
+      passage,
+      summary,
+      image_description,
+      blacklistedQuestions,
+      isInitial,
+    } = validatedData;
 
     // เตรียม system prompt ตามว่าเริ่มบทสนทนาใหม่หรือไม่
+    const blacklistedQuestionsText =
+      blacklistedQuestions && blacklistedQuestions.length > 0
+        ? `\n\nBlacklisted Questions (DO NOT answer these):\n${blacklistedQuestions.map((q, index) => `${index + 1}. ${q}`).join("\n")}`
+        : "";
+
     const systemMessage = {
       role: "system" as const,
       content: isInitial
-        ? `You are a helpful and friendly AI language tutor. Start the conversation by asking the user one engaging, open-ended question related to the following article to encourage reflection or discussion. Do not answer anything yet.
+        ? `You are a helpful and friendly AI English language tutor. Start the conversation by asking the user one engaging, open-ended question related to the following article to encourage reflection or discussion. Do not answer anything yet.
+
+**IMPORTANT RULES:**
+- You can answer questions about the article content, vocabulary, grammar, language learning, pronunciation, and related educational topics.
+- You can explain vocabulary words, grammar structures, and language concepts from the article.
+- You can provide translation help and explanations in Thai when requested.
+- Do NOT respond to inquiries about comprehension questions from the lesson.
+- For any questions completely unrelated to language learning or the article topic, respond with: "I am sorry, but I can only discuss the current article and help with English language learning. Let me ask you something related to the content instead."
+- Always respond in the language of the user's question. If the user asks in Thai, explain in Thai.
+- Always recommend a next step or question in the conversation after answering.
 
 Article:
 Title: "${title}"
 Summary: "${summary}"
 Passage: "${passage}"
-Image Description: "${image_description}"`
-        : `You are an AI English tutor. The user is practicing their English conversation skills.
+Image Description: "${image_description}"${blacklistedQuestionsText}`
+        : `You are an AI English tutor helping with conversation practice and language learning about a specific article. You are here to help students improve their English skills.
 
-When the user responds, you should do the following:
-1. Correct any grammar or sentence structure errors.
-2. Provide a revised version of their response (if needed).
-3. Give constructive feedback and encouragement on their answer.
+**IMPORTANT RULES:**
+- You can answer questions about the article content, vocabulary, grammar, pronunciation, and language learning concepts.
+- You can explain difficult words, phrases, and grammar structures from the article.
+- You can provide translations and explanations in Thai when students need clarification.
+- You can discuss vocabulary that students should learn from the article.
+- You can help with understanding the meaning and usage of words and phrases.
+- Do NOT respond to inquiries about comprehension questions from the lesson - instead respond with: "That is one of our article's comprehension questions that you must answer on your own, so I can't help you with that. Sorry."
+- If the user asks any of the blacklisted questions, respond with: "That is one of our article's comprehension questions that you must answer on your own, so I can't help you with that. Sorry."
+- For questions completely unrelated to the article or English language learning, respond with: "I am sorry, but I can only help with the current article and English language learning. Let me redirect our conversation back to the content."
+- Always respond in the language of the user's question. If the user asks in Thai, explain in Thai.
+- After answering, provide helpful feedback and ask a related follow-up question.
+
+**TOPICS YOU CAN HELP WITH:**
+- Vocabulary explanations and usage
+- Grammar structures in the article
+- Pronunciation guidance
+- Translation and Thai explanations
+- Article content discussion
+- Language learning tips related to the article
+
+When the user asks appropriate questions, you should:
+1. Correct any grammar or sentence structure errors in their question (if any).
+2. Answer their question about the article content, vocabulary, or language learning.
+3. Provide constructive feedback and encouragement.
 4. Ask a related follow-up question to continue the conversation.
 
-Use clear, friendly, and helpful language. Do not just say "Good job" — be specific about what they did well or how they can improve.
+Use clear, friendly, and helpful language. Be specific about what they did well and how they can improve.
 
 Article:
 Title: "${title}"
 Summary: "${summary}"
 Passage: "${passage}"
-Image Description: "${image_description}"`,
+Image Description: "${image_description}"${blacklistedQuestionsText}`,
     };
 
     //console.log("System Message:", systemMessage);

@@ -42,13 +42,28 @@ export default async function AppLayout({
 
   const feactlearderboard = async () => {
     if (!user.license_id) return [];
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/ranking/${user.license_id}`,
-      { method: "GET", headers: headers() }
-    );
-    if (!res.ok) throw new Error("Failed to fetch LeaderBoard list");
-    const fetchdata = await res.json();
-    return fetchdata.results;
+    
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/ranking/${user.license_id}`,
+        { 
+          method: "GET", 
+          headers: headers(),
+          cache: 'no-store'
+        }
+      );
+      
+      if (!res.ok) {
+        console.error("Failed to fetch LeaderBoard:", res.status, res.statusText);
+        return [];
+      }
+      
+      const fetchdata = await res.json();
+      return fetchdata.results || [];
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      return [];
+    }
   };
 
   const leaderboard = await feactlearderboard();

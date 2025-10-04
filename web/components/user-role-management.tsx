@@ -59,9 +59,9 @@ import { useRouter } from "next/navigation";
 
 interface School {
   id: string;
-  school_name: string;
-  total_licenses: number;
-  used_licenses: number;
+  schoolName: string;
+  maxUsers: number;
+  usedLicenses: number;
 }
 
 export type Payment = {
@@ -69,7 +69,7 @@ export type Payment = {
   name: string;
   email: string;
   role: string;
-  license_id: string;
+  licenseId: string;
 };
 
 export default function UserRoleManagement({
@@ -202,25 +202,23 @@ export default function UserRoleManagement({
   const role =
     page === "system"
       ? [
-          { name: "Student", value: "student" },
-          { name: "Teacher", value: "teacher" },
-          { name: "Admin", value: "admin" },
-          { name: "System", value: "system" },
+          { name: "Student", value: "STUDENT" },
+          { name: "Teacher", value: "TEACHER" },
+          { name: "Admin", value: "ADMIN" },
+          { name: "System", value: "SYSTEM" },
         ]
       : [
-          { name: "Student", value: "student" },
-          { name: "Teacher", value: "teacher" },
-          { name: "Admin", value: "admin" },
+          { name: "Student", value: "STUDENT" },
+          { name: "Teacher", value: "TEACHER" },
+          { name: "Admin", value: "ADMIN" },
         ];
 
   const columns: ColumnDef<Payment & { school_name: string }>[] = [
     {
-      accessorKey: "display_name",
+      accessorKey: "name",
       header: "User Name",
       cell: ({ row }) => (
-        <div className="capitalize">
-          {row.getValue("display_name") || "No Name"}
-        </div>
+        <div className="capitalize">{row.getValue("name") || "No Name"}</div>
       ),
     },
     {
@@ -312,8 +310,8 @@ export default function UserRoleManagement({
           user.id === currentPayment?.id
             ? {
                 ...user,
-                license_id: selectedSchool,
-                school_name: newSchool ? newSchool.school_name : "-",
+                licenseId: selectedSchool,
+                school_name: newSchool ? newSchool.schoolName : "-",
               }
             : user
         )
@@ -321,7 +319,7 @@ export default function UserRoleManagement({
 
       toast({
         title: "School updated.",
-        description: `User is now in ${newSchool?.school_name || "Unknown"}.`,
+        description: `User is now in ${newSchool?.schoolName || "Unknown"}.`,
       });
 
       setIsSchoolDialogOpen(false);
@@ -336,10 +334,10 @@ export default function UserRoleManagement({
 
   const mergedUserData = React.useMemo(() => {
     return userData.map((user) => {
-      const school = schoolList.find((s) => s.id === user.license_id);
+      const school = schoolList.find((s) => s.id === user.licenseId);
       return {
         ...user,
-        school_name: school ? school.school_name : "-",
+        school_name: school ? school.schoolName : "-",
       };
     });
   }, [userData, schoolList]);
@@ -554,7 +552,7 @@ export default function UserRoleManagement({
             <p>Select a new school for this user.</p>
             <Select
               onValueChange={(value) => setSelectedSchool(value)}
-              defaultValue={currentPayment?.license_id}
+              defaultValue={currentPayment?.licenseId}
               onOpenChange={setDropdownOpen}
             >
               <SelectTrigger className="w-full">
@@ -564,7 +562,7 @@ export default function UserRoleManagement({
                 <SelectGroup>
                   {schoolList.map((school) => (
                     <SelectItem key={school.id} value={school.id}>
-                      {school.school_name}
+                      {school.schoolName}
                     </SelectItem>
                   ))}
                 </SelectGroup>

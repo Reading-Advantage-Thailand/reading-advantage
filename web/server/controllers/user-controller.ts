@@ -3,11 +3,46 @@ import { DBCollection } from "../models/enum";
 import { levelCalculation } from "@/lib/utils";
 import { ExtendedNextRequest } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/configs/firestore-config";
-import { create, update } from "lodash";
+import { prisma } from "@/lib/prisma";
+import { ActivityType, LicenseType } from "@prisma/client";
 
-export const getUser = getOne(DBCollection.USERS);
-export const updateUser = updateOne(DBCollection.USERS);
+async function getUserLicenseLevel(userId: string): Promise<LicenseType> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        licenseId: true,
+        expiredDate: true,
+      },
+    });
+
+    if (!user) {
+      return LicenseType.BASIC;
+    }
+
+    if (user.licenseId) {
+      const license = await prisma.license.findUnique({
+        where: { id: user.licenseId },
+        select: { licenseType: true },
+      });
+      return license?.licenseType || LicenseType.BASIC;
+    }
+
+    if (!user.expiredDate) {
+      return LicenseType.ENTERPRISE;
+    }
+
+    const now = new Date();
+    if (user.expiredDate > now) {
+      return LicenseType.ENTERPRISE;
+    } else {
+      return LicenseType.BASIC;
+    }
+  } catch (error) {
+    console.error("Error getting user license level:", error);
+    return LicenseType.BASIC;
+  }
+}
 
 interface RequestContext {
   params: {
@@ -15,171 +50,285 @@ interface RequestContext {
   };
 }
 
+export async function getUser(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        userActivities: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
+        xpLogs: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    const licenseLevel = await getUserLicenseLevel(id);
+
+    return NextResponse.json({
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        xp: user.xp,
+        level: user.level,
+        cefr_level: user.cefrLevel,
+        display_name: user.name,
+        expired_date: user.expiredDate,
+        license_id: user.licenseId,
+        license_level: licenseLevel,
+        created_at: user.createdAt,
+        updated_at: user.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting user", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function updateUser(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const data = await req.json();
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        xp: data.xp,
+        level: data.level,
+        cefrLevel: data.cefr_level,
+        expiredDate: data.expired_date,
+        licenseId: data.license_id,
+      },
+    });
+    if (data.resetXP) {
+      await prisma.$transaction(async (tx) => {
+        // Delete lesson records
+        await tx.lessonRecord.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete user activities
+        await tx.userActivity.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete XP logs
+        await tx.xPLog.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete user activities (replaces MCQ, SAQ, LAQ records)
+        await tx.userActivity.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete user word records (flashcard-related)
+        await tx.userWordRecord.deleteMany({
+          where: { userId: id },
+        });
+
+        // Delete user sentence records (flashcard-related)
+        await tx.userSentenceRecord.deleteMany({
+          where: { userId: id },
+        });
+      });
+    }
+
+    return NextResponse.json({
+      data: user,
+      message: "User updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating user", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function postActivityLog(
   req: ExtendedNextRequest,
   { params: { id } }: RequestContext
 ) {
   try {
-    //Data from frontend
+    // Data from frontend
     const data = await req.json();
-    // getActivityLog
-    const replType = data.activityType.replace(/_/g, "-");
 
-    const validActivityTypes = [
-      "level_test",
-      "mc_question",
-      "sa_question",
-      "la_question",
-      "article_rating",
-      "article_read",
-      "stories_rating",
-      "stories_read",
-      "chapter_rating",
-      "chapter_read",
-    ];
+    // Convert activity type to enum format
+    const activityType = data.activityType.toUpperCase() as ActivityType;
 
-    const collectionRef = db
-      .collection("user-activity-log")
-      .doc(id)
-      .collection(`${replType}-activity-log`);
+    // Validate activity type
+    if (!Object.values(ActivityType).includes(activityType)) {
+      console.error("Invalid activity type:", activityType);
+      return NextResponse.json({
+        message: "Invalid activity type",
+        status: 400,
+      });
+    }
 
-    const documentId =
-      data.articleId ||
-      data.storyId ||
-      id ||
-      data.contentId ||
-      collectionRef.doc().id;
+    const targetId = data.articleId || data.storyId || data.contentId || "";
 
-    const getActivity = await db
-      .collection("user-activity-log")
-      .doc(id)
-      .collection(`${replType}-activity-log`)
-      .doc(documentId)
-      .get();
+    // Special handling for vocabulary and article rating activities
+    // If targetId is empty but we have articleId in details, use that
+    let finalTargetId = targetId;
+    if (!finalTargetId && data.details?.articleId) {
+      finalTargetId = data.details.articleId;
+    }
+
+    // For article rating, if targetId is a userId (starts with 'cmesn' or similar),
+    // try to get articleId from details
+    if (
+      activityType === ActivityType.ARTICLE_RATING &&
+      finalTargetId &&
+      (finalTargetId.startsWith("cmesn") || finalTargetId.startsWith("cmeu"))
+    ) {
+      if (data.details?.articleId) {
+        finalTargetId = data.details.articleId;
+      } else if (data.articleId) {
+        finalTargetId = data.articleId;
+      }
+    }
+
+    // Get article metadata if this is an article-related activity
+    let articleMetadata = {};
+    if (
+      data.articleId &&
+      (activityType === ActivityType.ARTICLE_READ ||
+        activityType === ActivityType.ARTICLE_RATING)
+    ) {
+      const article = await prisma.article.findUnique({
+        where: { id: data.articleId },
+        select: {
+          type: true,
+          genre: true,
+          subGenre: true,
+          title: true,
+          cefrLevel: true,
+          raLevel: true,
+        },
+      });
+
+      if (article) {
+        articleMetadata = {
+          type: article.type,
+          genre: article.genre,
+          subgenre: article.subGenre,
+          title: article.title,
+          cefr_level: article.cefrLevel,
+          level: article.raLevel,
+        };
+      }
+    }
+
+    // Check if activity already exists
+    const existingActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId: id,
+          activityType: activityType,
+          targetId: finalTargetId,
+        },
+      },
+    });
 
     const commonData = {
       userId: id,
-      chapterNumber: data.chapterNumber || 0,
-      // articleId: data.articleId || "STSTEM",
-      activityType: data.activityType,
-      activityStatus: data.activityStatus || "in_progress",
-      timestamp: new Date(),
-      timeTaken: data.timeTaken || 0,
-      xpEarned: data.xpEarned || 0,
-      initialXp: req.session?.user.xp as number,
-      finalXp: (req.session?.user.xp as number) + data.xpEarned || 0,
-      initialLevel: req.session?.user.level as number,
-      finalLevel: Number(levelCalculation(
-        (req.session?.user.xp as number) + data.xpEarned || 0
-      ).raLevel),
-      // details: data.details || {},
-      ...data,
+      activityType: activityType,
+      targetId: finalTargetId,
+      timer: data.timeTaken || 0,
+      details: {
+        ...articleMetadata,
+        ...data.details,
+      },
+      completed: data.completed || data.activityStatus === "completed",
     };
 
-    if (id) {
-      // if not exists will create
-      if (!getActivity.exists) {
-        // createActivityLogTable
-        const userRef = await db.collection("user-activity-log").doc(id).get();
+    let activity;
 
-        if (!userRef.exists) {
-          await db.collection("user-activity-log").doc(id).set({ id: id });
-        }
-        // createActivityLog
-        if (validActivityTypes.includes(data.activityType)) {
-          await collectionRef.doc(documentId).set(commonData);
-        } else {
-          const createRefdoc = collectionRef.doc();
-          await createRefdoc.set({
-            contentId: createRefdoc.id,
-            ...commonData,
-          });
-        }
-      } else if (commonData.activityStatus === "completed") {
-        //Update if have data
-        await collectionRef.doc(documentId).update(commonData);
-      }
-
-      //Update Xp and Level
-      if (commonData.xpEarned !== 0) {
-        await db
-          .collection("users")
-          .doc(id)
-          .update({
-            xp: commonData.finalXp,
-            level: Number(commonData.finalLevel), // Ensure it's stored as number
-            cefr_level: levelCalculation(commonData.finalXp).cefrLevel,
-            last_activity: commonData.timestamp,
-          });
-      }
-
-      //update Rating to article-records collection
-      if (
-        commonData.activityType === "article_rating" &&
-        commonData.details.Rating
-      ) {
-        await db
-          .collection("users")
-          .doc(id)
-          .collection("article-records")
-          .doc(commonData.articleId)
-          .update({ rated: commonData.details.Rating });
-      }
-
-      if (
-        commonData.activityType === "chapter_rating" &&
-        commonData.details.Rating
-      ) {
-        const storiesRecords = await db
-          .collection("users")
-          .doc(id)
-          .collection("stories-records")
-          .doc(commonData.storyId)
-          .get();
-
-        if (storiesRecords.exists) {
-          await db
-            .collection("users")
-            .doc(id)
-            .collection("stories-records")
-            .doc(commonData.storyId)
-            .update({
-              rated: commonData.details.Rating,
-              chapterNumber: commonData.chapterNumber,
-            });
-        } else {
-          await db
-            .collection("users")
-            .doc(id)
-            .collection("stories-records")
-            .doc(commonData.storyId)
-            .set({
-              created_at: commonData.timestamp,
-              rated: commonData.details.Rating,
-              score: 0,
-              status: 0,
-              chapterNumber: commonData.chapterNumber,
-              storyId: commonData.storyId,
-              title: commonData.details.title,
-              raLevel: commonData.details.raLevel,
-              cefr_level: commonData.details.cefr_level,
-              updated_at: commonData.timestamp,
-            });
-        }
-      }
-
-      return NextResponse.json({
-        message: "Success",
-        status: 200,
+    if (!existingActivity) {
+      // Create new activity
+      activity = await prisma.userActivity.create({
+        data: commonData,
+      });
+    } else if (data.activityStatus === "completed" || data.completed) {
+      // Update existing activity
+      activity = await prisma.userActivity.update({
+        where: { id: existingActivity.id },
+        data: {
+          ...commonData,
+          updatedAt: new Date(),
+        },
       });
     } else {
-      return NextResponse.json({
-        message: "invalid user",
-        status: 500,
+      activity = existingActivity;
+    }
+
+    // Create XP log if XP is earned
+    if (data.xpEarned && data.xpEarned > 0) {
+      await prisma.xPLog.create({
+        data: {
+          userId: id,
+          xpEarned: data.xpEarned,
+          activityId: activity.id,
+          activityType: activityType,
+        },
+      });
+
+      // Get current user data from database to ensure we have the latest XP
+      const currentUser = await prisma.user.findUnique({
+        where: { id },
+        select: { xp: true, level: true, cefrLevel: true },
+      });
+
+      // For initial level test, set XP directly instead of adding to existing XP
+      const finalXp = data.isInitialLevelTest
+        ? data.xpEarned
+        : (currentUser?.xp || 0) + data.xpEarned;
+
+      const levelData = levelCalculation(finalXp);
+
+      await prisma.user.update({
+        where: { id },
+        data: {
+          xp: finalXp,
+          level:
+            typeof levelData.raLevel === "number"
+              ? levelData.raLevel
+              : parseInt(String(levelData.raLevel)),
+          cefrLevel: levelData.cefrLevel,
+          updatedAt: new Date(),
+        },
       });
     }
+
+    return NextResponse.json({
+      message: "Success",
+      status: 200,
+    });
   } catch (error) {
-    console.log("postActivity => ", error);
+    console.error("postActivity => ", error);
     return NextResponse.json({
       message: "Error",
       status: 500,
@@ -195,135 +344,145 @@ export async function putActivityLog(
     // Data from frontend
     const data = await req.json();
 
-    // Replace underscores with hyphens for collection name
-    const replType = data.activityType.replace(/_/g, "-");
+    // Convert activity type to enum format
+    const activityType = data.activityType.toUpperCase() as ActivityType;
 
-    const collectionRef = db
-      .collection("user-activity-log")
-      .doc(id)
-      .collection(`${replType}-activity-log`);
-
-    const articleId = data.articleId;
-
-    if (!articleId) {
+    // Validate activity type
+    if (!Object.values(ActivityType).includes(activityType)) {
       return NextResponse.json({
-        message: "Article ID is required for update",
+        message: "Invalid activity type",
         status: 400,
       });
     }
 
-    // Find document by articleId in the collection
-    const querySnapshot = await collectionRef
-      .where("articleId", "==", articleId)
-      .limit(1)
-      .get();
+    const targetId = data.articleId || data.storyId || data.contentId || "";
 
-    let documentId: string;
+    // Special handling for vocabulary and article rating activities (same as postActivityLog)
+    let finalTargetId = targetId;
+    if (!finalTargetId && data.details?.articleId) {
+      finalTargetId = data.details.articleId;
+    }
 
-    if (querySnapshot.empty) {
-      // If no document exists, create a new one
-      const newDocRef = collectionRef.doc();
-      documentId = newDocRef.id;
+    // For article rating, if targetId is a userId, try to get articleId from details
+    if (
+      activityType === ActivityType.ARTICLE_RATING &&
+      finalTargetId &&
+      (finalTargetId.startsWith("cmesn") || finalTargetId.startsWith("cmeu"))
+    ) {
+      if (data.details?.articleId) {
+        finalTargetId = data.details.articleId;
+      } else if (data.articleId) {
+        finalTargetId = data.articleId;
+      }
+    }
 
-      const newData = {
-        userId: id,
-        chapterNumber: data.chapterNumber || 0,
-        activityType: data.activityType,
-        activityStatus: data.activityStatus || "in_progress",
-        timestamp: new Date(),
-        timeTaken: data.timeTaken || 0,
-        xpEarned: data.xpEarned || 0,
-        initialXp: req.session?.user.xp as number,
-        finalXp: (req.session?.user.xp as number) + (data.xpEarned || 0),
-        initialLevel: req.session?.user.level as number,
-        finalLevel: levelCalculation(
-          (req.session?.user.xp as number) + (data.xpEarned || 0)
-        ).raLevel,
-        ...data,
-        created_at: new Date(), // Add creation timestamp
-      };
+    if (!finalTargetId) {
+      return NextResponse.json({
+        message: "Target ID is required for update",
+        status: 400,
+      });
+    }
 
-      await newDocRef.set(newData);
+    // Get article metadata if this is an article-related activity
+    let articleMetadata = {};
+    if (
+      data.articleId &&
+      (activityType === ActivityType.ARTICLE_READ ||
+        activityType === ActivityType.ARTICLE_RATING)
+    ) {
+      const article = await prisma.article.findUnique({
+        where: { id: data.articleId },
+        select: {
+          type: true,
+          genre: true,
+          subGenre: true,
+          title: true,
+          cefrLevel: true,
+          raLevel: true,
+        },
+      });
+
+      if (article) {
+        articleMetadata = {
+          type: article.type,
+          genre: article.genre,
+          subgenre: article.subGenre,
+          title: article.title,
+          cefr_level: article.cefrLevel,
+          level: article.raLevel,
+        };
+      }
+    }
+
+    // Find existing activity
+    const existingActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId: id,
+          activityType: activityType,
+          targetId: finalTargetId,
+        },
+      },
+    });
+
+    const commonData = {
+      userId: id,
+      activityType: activityType,
+      targetId: finalTargetId,
+      timer: data.timeTaken || 0,
+      details: {
+        ...articleMetadata,
+        ...data.details,
+      },
+      completed: data.activityStatus === "completed",
+    };
+
+    let activity;
+
+    if (!existingActivity) {
+      // Create new activity if it doesn't exist
+      activity = await prisma.userActivity.create({
+        data: commonData,
+      });
     } else {
-      // Get the first (and should be only) document
-      const activityDoc = querySnapshot.docs[0];
-      documentId = activityDoc.id;
-
-      // Prepare update data
-      const updateData = {
-        userId: id,
-        chapterNumber: data.chapterNumber || 0,
-        activityType: data.activityType,
-        activityStatus: data.activityStatus || "in_progress",
-        timestamp: new Date(),
-        timeTaken: data.timeTaken || 0,
-        xpEarned: data.xpEarned || 0,
-        initialXp: req.session?.user.xp as number,
-        finalXp: (req.session?.user.xp as number) + (data.xpEarned || 0),
-        initialLevel: req.session?.user.level as number,
-        finalLevel: Number(levelCalculation(
-          (req.session?.user.xp as number) + (data.xpEarned || 0)
-        ).raLevel),
-        ...data,
-        updated_at: new Date(), // Add update timestamp
-      };
-
-      // Update the existing activity log using the found documentId
-      await collectionRef.doc(documentId).update(updateData);
+      // Update existing activity
+      activity = await prisma.userActivity.update({
+        where: { id: existingActivity.id },
+        data: {
+          ...commonData,
+          updatedAt: new Date(),
+        },
+      });
     }
 
-    // Update XP and Level if XP is earned
-    if (data.xpEarned !== 0) {
-      await db
-        .collection("users")
-        .doc(id)
-        .update({
-          xp: (req.session?.user.xp as number) + (data.xpEarned || 0),
-          level: Number(levelCalculation(
-            (req.session?.user.xp as number) + (data.xpEarned || 0)
-          ).raLevel), // Ensure it's stored as number
-          cefr_level: levelCalculation(
-            (req.session?.user.xp as number) + (data.xpEarned || 0)
-          ).cefrLevel,
-          last_activity: new Date(),
-        });
-    }
+    // Create XP log if XP is earned
+    if (data.xpEarned && data.xpEarned > 0) {
+      await prisma.xPLog.create({
+        data: {
+          userId: id,
+          xpEarned: data.xpEarned,
+          activityId: activity.id,
+          activityType: activityType,
+        },
+      });
 
-    // Update Rating to article-records collection
-    if (data.activityType === "article_rating" && data.details?.Rating) {
-      const articleRecordRef = db
-        .collection("users")
-        .doc(id)
-        .collection("article-records")
-        .doc(data.articleId);
+      // Update user XP and level
+      const currentUser = req.session?.user;
+      const finalXp = (currentUser?.xp || 0) + data.xpEarned;
+      const levelData = levelCalculation(finalXp);
 
-      const articleRecord = await articleRecordRef.get();
-
-      if (articleRecord.exists) {
-        await articleRecordRef.update({
-          rated: data.details.Rating,
-          updated_at: new Date(),
-        });
-      }
-    }
-
-    // Update Rating to stories-records collection
-    if (data.activityType === "chapter_rating" && data.details?.Rating) {
-      const storiesRecordRef = db
-        .collection("users")
-        .doc(id)
-        .collection("stories-records")
-        .doc(data.storyId);
-
-      const storiesRecord = await storiesRecordRef.get();
-
-      if (storiesRecord.exists) {
-        await storiesRecordRef.update({
-          rated: data.details.Rating,
-          chapterNumber: data.chapterNumber,
-          updated_at: new Date(),
-        });
-      }
+      await prisma.user.update({
+        where: { id },
+        data: {
+          xp: finalXp,
+          level:
+            typeof levelData.raLevel === "number"
+              ? levelData.raLevel
+              : parseInt(String(levelData.raLevel)),
+          cefrLevel: levelData.cefrLevel,
+          updatedAt: new Date(),
+        },
+      });
     }
 
     return NextResponse.json({
@@ -331,7 +490,7 @@ export async function putActivityLog(
       status: 200,
     });
   } catch (error) {
-    console.log("putActivityLog => ", error);
+    console.error("putActivityLog => ", error);
     return NextResponse.json({
       message: "Error processing activity log",
       status: 500,
@@ -344,41 +503,138 @@ export async function getActivityLog(
   { params: { id } }: RequestContext
 ) {
   try {
-    const results: any[] = [];
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { xp: true, level: true },
+    });
 
-    // createActivityLogTable
-    const userRef = await db.collection("user-activity-log").doc(id).get();
+    // Get query parameters
+    const articleId = req.nextUrl.searchParams.get("articleId");
+    const activityType = req.nextUrl.searchParams.get("activityType");
 
-    if (!userRef.exists) {
-      await db.collection("user-activity-log").doc(id).set({ id });
+    // Build where condition
+    const whereCondition: any = {
+      userId: id,
+    };
+
+    if (articleId) {
+      whereCondition.targetId = articleId;
     }
 
-    const getActivity = await db
-      .collection("user-activity-log")
-      .doc(id)
-      .listCollections();
+    if (activityType) {
+      whereCondition.activityType = activityType.toUpperCase();
+    }
 
-    const promises = getActivity.map((subCollection) =>
-      subCollection.get().then((array) =>
-        array.docs.map((doc) =>
-          results.push({
-            ...doc.data(),
-            timestamp: doc.data().timestamp.toDate(),
-          })
-        )
-      )
+    const activities = await prisma.userActivity.findMany({
+      where: whereCondition,
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    const allXpLogs = await prisma.xPLog.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    const xpLogMap = new Map(allXpLogs.map((log) => [log.activityId, log]));
+
+    const articleIds = activities
+      .map((activity) => activity.targetId)
+      .filter((id) => id);
+
+    const articles = await prisma.article.findMany({
+      where: {
+        id: { in: articleIds },
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        genre: true,
+        subGenre: true,
+        cefrLevel: true,
+        raLevel: true,
+      },
+    });
+
+    const articleMap = new Map(
+      articles.map((article) => [article.id, article])
     );
 
-    await Promise.all(promises);
+    let cumulativeXp = 0;
+    const xpProgressionMap = new Map();
+
+    allXpLogs.forEach((xpLog) => {
+      cumulativeXp += xpLog.xpEarned || 0;
+      if (xpLog.activityId) {
+        xpProgressionMap.set(xpLog.activityId, {
+          xpEarned: xpLog.xpEarned || 0,
+          cumulativeXp: cumulativeXp,
+        });
+      }
+    });
+
+    const formattedResults = activities.map((activity) => {
+      const article = articleMap.get(activity.targetId);
+      const xpLog = xpLogMap.get(activity.id);
+      const xpProgression = xpProgressionMap.get(activity.id);
+
+      const xpEarned = xpProgression?.xpEarned || 0;
+      const finalXp = xpProgression?.cumulativeXp || 0;
+      const initialXp = finalXp - xpEarned;
+
+      const details = (activity.details as any) || {};
+
+      return {
+        id: activity.id,
+        userId: activity.userId,
+        activityType: activity.activityType.toLowerCase(),
+        targetId: activity.targetId,
+        timer: activity.timer,
+        details: {
+          title: article?.title || details.title || "Activity",
+          level: article?.raLevel || details.level || user?.level || 1,
+          cefr_level: article?.cefrLevel || details.cefr_level || "A1",
+          type: article?.type || details.type,
+          genre: article?.genre || details.genre,
+          subgenre: article?.subGenre || details.subgenre || details.subGenre,
+          subGenre: article?.subGenre || details.subgenre || details.subGenre,
+          articleId: activity.targetId,
+          contentId: activity.targetId,
+          ...details,
+        },
+        completed: activity.completed,
+        timestamp: activity.createdAt.toISOString(),
+        timeTaken: activity.timer || 0,
+        xpEarned: xpEarned,
+        initialXp: initialXp,
+        finalXp: finalXp,
+        createdAt: activity.createdAt.toISOString(),
+        updatedAt: activity.updatedAt.toISOString(),
+        contentId: activity.targetId,
+        articleId: activity.targetId,
+      };
+    });
+
+    formattedResults.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
 
     return NextResponse.json({
-      results,
-      message: "succcess",
+      activityLogs: formattedResults,
+      message: "success",
     });
   } catch (error) {
-    console.log("getActivity => ", error);
+    console.error("getActivity => ", error);
     return NextResponse.json({
       message: "Error",
+      status: 500,
     });
   }
 }
@@ -388,25 +644,94 @@ export async function getUserRecords(
   { params: { id } }: RequestContext
 ) {
   try {
-    const limit = req.nextUrl.searchParams.get("limit") || 10;
+    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10");
     const nextPage = req.nextUrl.searchParams.get("nextPage");
-
-    const records = await db
-      .collection("users")
-      .doc(id)
-      .collection("article-records")
-      .orderBy("created_at", "desc")
-      .get();
-
-    const results = records.docs.map((doc) => {
-      return {
-        id: doc.id,
-        ...doc.data(),
-      };
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        userId: id,
+        activityType: {
+          in: [ActivityType.ARTICLE_READ, ActivityType.ARTICLE_RATING],
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
+    const articleMap = new Map();
+
+    activities.forEach((activity) => {
+      const articleId =
+        (activity.details as any)?.articleId || activity.targetId;
+
+      if (!articleMap.has(articleId)) {
+        articleMap.set(articleId, {
+          readActivity: null,
+          ratingActivity: null,
+        });
+      }
+
+      const articleData = articleMap.get(articleId);
+
+      if (activity.activityType === ActivityType.ARTICLE_READ) {
+        articleData.readActivity = activity;
+      } else if (activity.activityType === ActivityType.ARTICLE_RATING) {
+        articleData.ratingActivity = activity;
+      }
+    });
+
+    const results: any[] = [];
+
+    articleMap.forEach((data, articleId) => {
+      if (data.readActivity) {
+        const readActivity = data.readActivity;
+        const ratingActivity = data.ratingActivity;
+
+        let extractedRating = 0;
+        if (ratingActivity?.details) {
+          try {
+            const detailsObj =
+              typeof ratingActivity.details === "string"
+                ? JSON.parse(ratingActivity.details)
+                : ratingActivity.details;
+            extractedRating = detailsObj?.rating || 0;
+          } catch (e) {
+            extractedRating = 0;
+          }
+        }
+
+        const resultItem = {
+          id: readActivity.id,
+          userId: readActivity.userId,
+          targetId: articleId,
+          activityType: "ARTICLE_READ_WITH_RATING",
+          completed: readActivity.completed,
+          details: {
+            level: (readActivity.details as any)?.level || 0,
+            articleTitle: (readActivity.details as any)?.articleTitle || "",
+            rating: extractedRating,
+            rated: extractedRating,
+            score: (readActivity.details as any)?.score || 0,
+            scores: (readActivity.details as any)?.score || 0,
+            timer: (readActivity.details as any)?.timer || 0,
+            ratingCompleted: ratingActivity?.completed || false,
+          },
+          created_at: readActivity.createdAt,
+          updated_at: ratingActivity?.updatedAt || readActivity.updatedAt,
+        };
+
+        results.push(resultItem);
+      }
+    });
+
+    results.sort(
+      (a, b) =>
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
+    const limitedResults = results.slice(0, limit);
+
     return NextResponse.json({
-      results,
+      results: limitedResults,
     });
   } catch (error) {
     console.error("Error getting documents", error);
@@ -422,20 +747,29 @@ export async function getUserHeatmap(
   { params: { id } }: RequestContext
 ) {
   try {
-    const records = await db
-      .collection("users")
-      .doc(id)
-      .collection("heatmap")
-      .doc("activity")
-      .get();
+    // Get user activities and group by date for heatmap
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-    const results = records.data();
+    // Process activities to create heatmap data
+    const heatmapData: { [key: string]: number } = {};
+
+    activities.forEach((activity) => {
+      const date = activity.createdAt.toISOString().split("T")[0]; // Get YYYY-MM-DD format
+      heatmapData[date] = (heatmapData[date] || 0) + 1;
+    });
 
     return NextResponse.json({
-      results,
+      results: heatmapData,
     });
   } catch (error) {
-    console.log("Error getting documents", error);
+    console.error("Error getting documents", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
       { status: 500 }
@@ -445,13 +779,25 @@ export async function getUserHeatmap(
 
 export async function getAllUsers(req: NextRequest) {
   try {
-    const users = await db.collection("users").get();
-    const results = users.docs.map((doc) => {
-      return {
-        id: doc.id,
-        ...doc.data(),
-      };
+    const users = await prisma.user.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
     });
+
+    const results = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      xp: user.xp,
+      level: user.level,
+      cefrLevel: user.cefrLevel,
+      expiredDate: user.expiredDate,
+      licenseId: user.licenseId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    }));
 
     return NextResponse.json({
       results,
@@ -468,10 +814,15 @@ export async function getAllUsers(req: NextRequest) {
 export async function updateUserData(req: ExtendedNextRequest) {
   try {
     const data = await req.json();
-    const userRef = db.collection("users").where("email", "==", data.email);
-    const user = await userRef.get();
 
-    if (user.empty) {
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: {
+        email: data.email,
+      },
+    });
+
+    if (!user) {
       return NextResponse.json(
         {
           message: "User not found",
@@ -479,22 +830,29 @@ export async function updateUserData(req: ExtendedNextRequest) {
         { status: 404 }
       );
     }
-    console.log();
-    const license = await db
-      .collection(DBCollection.LICENSES)
-      .where("id", "==", data.license_id)
-      .get();
 
-    const licenseData = license.docs.map((license) => license.data());
+    // Find license
+    const license = await prisma.license.findUnique({
+      where: {
+        id: data.license_id,
+      },
+      include: {
+        licenseUsers: true,
+      },
+    });
 
-    if (license.empty) {
+    if (!license) {
       return NextResponse.json(
         {
           message: "License not found",
         },
         { status: 404 }
       );
-    } else if (licenseData[0].total_licenses <= licenseData[0].used_licenses) {
+    }
+
+    const usedLicenses = license.licenseUsers.length;
+
+    if (license.maxUsers <= usedLicenses) {
       return NextResponse.json(
         {
           message: "License is already used",
@@ -502,29 +860,442 @@ export async function updateUserData(req: ExtendedNextRequest) {
         { status: 404 }
       );
     }
-    if (!license.empty && user) {
-      await db
-        .collection(DBCollection.LICENSES)
-        .doc(licenseData[0].id)
-        .update({
-          used_licenses: licenseData[0].used_licenses + 1,
-        });
 
-      await db.collection(DBCollection.USERS).doc(user.docs[0].id).update({
+    // Create license-user relationship
+    await prisma.licenseOnUser.create({
+      data: {
+        userId: user.id,
+        licenseId: license.id,
+      },
+    });
+
+    // Update user data
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
         role: data.role,
-        expired_date: licenseData[0].expiration_date,
-        license_id: licenseData[0].id,
-      });
+        expiredDate: license.expiresAt,
+        licenseId: license.id,
+      },
+    });
 
-      return NextResponse.json(
-        { message: "Update user successfully" },
-        { status: 200 }
-      );
-    }
+    return NextResponse.json(
+      { message: "Update user successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error updating documents", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getUserActivityData(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { xp: true, level: true },
+    });
+
+    // Get user activities
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: "asc", // Sort by ascending to calculate cumulative XP correctly
+      },
+    });
+
+    // Get ALL XP logs for this user to calculate cumulative progression
+    const allXpLogs = await prisma.xPLog.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    // Create a map of activity ID to XP log
+    const xpLogMap = new Map(allXpLogs.map((log) => [log.activityId, log]));
+
+    // Get article details for activities that reference articles
+    const articleIds = activities
+      .map((activity) => activity.targetId)
+      .filter((id) => id);
+
+    const articles = await prisma.article.findMany({
+      where: {
+        id: { in: articleIds },
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        genre: true,
+        subGenre: true,
+        cefrLevel: true,
+        raLevel: true,
+      },
+    });
+
+    const articleMap = new Map(
+      articles.map((article) => [article.id, article])
+    );
+
+    // Calculate cumulative XP progression from all XP logs chronologically
+    let cumulativeXp = 0;
+    const xpProgressionMap = new Map();
+
+    // Build XP progression map from all XP logs
+    allXpLogs.forEach((xpLog) => {
+      cumulativeXp += xpLog.xpEarned || 0;
+      if (xpLog.activityId) {
+        xpProgressionMap.set(xpLog.activityId, {
+          xpEarned: xpLog.xpEarned || 0,
+          cumulativeXp: cumulativeXp,
+        });
+      }
+    });
+
+    const formattedResults = activities.map((activity, index) => {
+      const article = articleMap.get(activity.targetId);
+      const xpLog = xpLogMap.get(activity.id);
+      const xpProgression = xpProgressionMap.get(activity.id);
+
+      const xpEarned = xpProgression?.xpEarned || 0;
+      const finalXp = xpProgression?.cumulativeXp || 0;
+      const initialXp = finalXp - xpEarned;
+
+      // Safely extract details
+      const details = (activity.details as any) || {};
+
+      return {
+        id: activity.id,
+        contentId: activity.targetId,
+        userId: id,
+        articleId: activity.targetId,
+        activityType: activity.activityType.toLowerCase(),
+        targetId: activity.targetId,
+        timer: activity.timer,
+        activityStatus: activity.completed ? "completed" : "in_progress",
+        completed: activity.completed,
+        timestamp: activity.createdAt.toISOString(),
+        timeTaken: activity.timer || 0,
+        xpEarned: xpEarned,
+        initialXp: initialXp,
+        finalXp: finalXp,
+        initialLevel: user?.level || 1,
+        finalLevel: user?.level || 1,
+        createdAt: activity.createdAt.toISOString(),
+        updatedAt: activity.updatedAt.toISOString(),
+        details: {
+          title: article?.title || details.title || "Activity",
+          level: article?.raLevel || details.level || user?.level || 1,
+          cefr_level: article?.cefrLevel || details.cefr_level || "A1",
+          type: article?.type || details.type,
+          genre: article?.genre || details.genre,
+          subgenre: article?.subGenre || details.subgenre || details.subGenre,
+          subGenre: article?.subGenre || details.subgenre || details.subGenre,
+          articleId: activity.targetId,
+          contentId: activity.targetId,
+          ...details,
+        },
+      };
+    });
+
+    // Sort results by timestamp descending for display (newest first)
+    formattedResults.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    return NextResponse.json({
+      results: formattedResults,
+      message: "success",
+    });
+  } catch (error) {
+    console.error("Error fetching user activity data:", error);
+    return NextResponse.json({
+      message: "Error fetching user activity data",
+      status: 500,
+    });
+  }
+}
+
+export async function getStudentData(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        xp: true,
+        level: true,
+        cefrLevel: true,
+        expiredDate: true,
+        licenseId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({
+        message: "Student not found",
+        status: 404,
+      });
+    }
+
+    const studentData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      xp: user.xp,
+      level: user.level,
+      cefrLevel: user.cefrLevel,
+      cefr_level: user.cefrLevel,
+      expiredDate: user.expiredDate,
+      licenseId: user.licenseId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      display_name: user.name,
+    };
+
+    return NextResponse.json({
+      data: studentData,
+      message: "success",
+    });
+  } catch (error) {
+    console.error("Error fetching student data:", error);
+    return NextResponse.json({
+      message: "Error fetching student data",
+      status: 500,
+    });
+  }
+}
+
+export async function resetUserProgress(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    // Delete all related records using transaction for data consistency
+    await prisma.$transaction(async (tx) => {
+      // Delete lesson records
+      await tx.lessonRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete user activities
+      await tx.userActivity.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete XP logs
+      await tx.xPLog.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete user activities (replaces MCQ, SAQ, LAQ records)
+      await tx.userActivity.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete story records
+      await tx.storyRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete user word records (flashcard-related)
+      await tx.userWordRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Delete user sentence records (flashcard-related)
+      await tx.userSentenceRecord.deleteMany({
+        where: { userId: id },
+      });
+
+      // Reset user progress
+      await tx.user.update({
+        where: { id },
+        data: {
+          xp: 0,
+          level: 0,
+          cefrLevel: "", // Reset to default CEFR level
+          updatedAt: new Date(),
+        },
+      });
+    });
+
+    return NextResponse.json({
+      message: "User progress reset successfully - all data cleared",
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error resetting user progress:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function getUserXpLogs(
+  req: ExtendedNextRequest,
+  { params: { id } }: RequestContext
+) {
+  try {
+    const xpLogs = await prisma.xPLog.findMany({
+      where: {
+        userId: id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const activityIds = xpLogs.map((log) => log.activityId);
+    const activities = await prisma.userActivity.findMany({
+      where: {
+        id: { in: activityIds },
+      },
+    });
+
+    const activityMap = new Map(
+      activities.map((activity) => [activity.id, activity])
+    );
+    const formattedResults = xpLogs.map((xpLog) => {
+      const activity = activityMap.get(xpLog.activityId);
+
+      return {
+        id: xpLog.activityId,
+        userId: xpLog.userId,
+        activityType: xpLog.activityType,
+        targetId: activity?.targetId || "",
+        timer: activity?.timer,
+        details: activity?.details || {},
+        completed: activity?.completed || true,
+        timestamp: xpLog.createdAt,
+        timeTaken: activity?.timer || 0,
+        xpEarned: xpLog.xpEarned,
+        createdAt: xpLog.createdAt,
+        updatedAt: xpLog.updatedAt,
+        contentId: activity?.targetId || "",
+        articleId: activity?.targetId || "",
+      };
+    });
+
+    return NextResponse.json({
+      results: formattedResults,
+      message: "success",
+    });
+  } catch (error) {
+    console.error("getUserXpLogs => ", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function deleteUser(req: ExtendedNextRequest) {
+  try {
+    const { id } = await req.json();
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    // ลบข้อมูลที่เกี่ยวข้องในตารางอื่นก่อน
+    await prisma.$transaction(async (tx) => {
+      // ลบข้อมูลในตาราง classroomStudent
+      await tx.classroomStudent.deleteMany({
+        where: { studentId: id },
+      });
+
+      // ลบผู้ใช้
+      await tx.user.delete({
+        where: { id },
+      });
+    });
+
+    return NextResponse.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function deleteAllUsers(req: ExtendedNextRequest) {
+  try {
+    const batchSize = 100;
+
+    // Delete classroom-student relationships in batches
+    let classroomStudents;
+    do {
+      classroomStudents = await prisma.classroomStudent.findMany({
+        take: batchSize,
+      });
+
+      await Promise.all(
+        classroomStudents.map((student) =>
+          prisma.classroomStudent.delete({
+            where: { id: student.id },
+          })
+        )
+      );
+    } while (classroomStudents.length > 0);
+
+    // Delete users in batches
+    let users;
+    do {
+      users = await prisma.user.findMany({
+        take: batchSize,
+      });
+
+      await Promise.all(
+        users.map((user) =>
+          prisma.user.delete({
+            where: { id: user.id },
+          })
+        )
+      );
+    } while (users.length > 0);
+
+    return NextResponse.json({ message: "All users deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting all users:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
       { status: 500 }
     );
   }

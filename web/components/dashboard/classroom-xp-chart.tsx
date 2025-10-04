@@ -41,8 +41,8 @@ export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
       try {
         const year = new Date().getFullYear();
         const url = licenseId
-          ? `/api/v1/classroom/xp-chart?year=${year}&licenseId=${licenseId}`
-          : `/api/v1/classroom/xp-chart?year=${year}`;
+          ? `/api/v1/classroom/xp-chart?year=${year}&licenseId=${licenseId}&timeRange=${timeRange}`
+          : `/api/v1/classroom/xp-chart?year=${year}&timeRange=${timeRange}`;
 
         const response = await fetch(url);
         if (!response.ok) throw new Error("Failed to fetch data");
@@ -74,8 +74,8 @@ export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
   }, [timeRange, view, licenseId]);
 
   const buttons = [
-    { id: "mostActive" as const, label: "5 Most Active" },
-    { id: "leastActive" as const, label: "5 Least Active" },
+    { id: "mostActive" as const, label: "5 Most Active Classrooms" },
+    { id: "leastActive" as const, label: "5 Least Active Classrooms" },
   ];
 
   const timeRanges = [
@@ -95,7 +95,7 @@ export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
     <Card className="col-span-3 p-4 rounded-lg shadow mt-2 mb-4">
       <CardHeader>
         <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
-          Class Activity
+          Classroom Activity (Total XP by Classroom)
         </CardTitle>
       </CardHeader>
 

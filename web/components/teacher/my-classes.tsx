@@ -54,6 +54,7 @@ import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { cn } from "@/lib/utils";
 import { array } from "zod";
+import { ClassroomTeachers } from "@/components/classroom-teachers";
 
 type Classes = {
   classroomName: string;
@@ -67,14 +68,14 @@ type Classes = {
   id: string;
   archived: boolean;
   title: string;
-  student: [
-    {
-      studentId: string;
-      lastActivity: Date;
-    }
-  ];
+  student: {
+    studentId: string;
+    email?: string;
+    lastActivity: Date | string;
+  }[];
   importedFromGoogle: boolean;
   alternateLink: string;
+  isOwner?: boolean;
 };
 
 type Schema$Course = classroom_v1.Schema$Course;
@@ -101,6 +102,8 @@ export default function MyClasses() {
   const [coursesOpen, setCoursesOpen] = useState<boolean>(false);
   const [importState, setImportState] = useState(0);
   const [selected, setSelected] = useState("");
+  const [isTeachersOpen, setIsTeachersOpen] = useState<boolean>(false);
+  const [selectedClassroomId, setSelectedClassroomId] = useState<string>("");
 
   const columns: ColumnDef<Classes>[] = [
     {
@@ -190,6 +193,16 @@ export default function MyClasses() {
                 >
                   {tc("reports")}
                 </DropdownMenuItem>
+                {payment.isOwner && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setIsTeachersOpen(true);
+                      setSelectedClassroomId(payment.id);
+                    }}
+                  >
+                    Manage Teachers
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -575,6 +588,20 @@ export default function MyClasses() {
               </p>
             </div>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isTeachersOpen} onOpenChange={setIsTeachersOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Manage Teachers</DialogTitle>
+          </DialogHeader>
+          {selectedClassroomId && (
+            <ClassroomTeachers 
+              classroomId={selectedClassroomId} 
+              isCreator={(classrooms.find(c => c.id === selectedClassroomId) as any)?.isOwner || false}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>

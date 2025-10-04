@@ -15,7 +15,7 @@ import { useScopedI18n } from "@/locales/client";
 import { Icons } from "./icons";
 import { Badge } from "./ui/badge";
 import { useState } from "react";
-import { Role } from "@/server/models/enum";
+import { Role } from "@prisma/client";
 
 interface UserAccountNavProps {
   user: User;
@@ -47,7 +47,8 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
     user: { label: "user", color: "bg-[#6C757D]" },
   };
 
-  const { label, color } = roles[user.role];
+  const userRoleLowerCase = user.role.toLowerCase() as keyof typeof roles;
+  const { label, color } = roles[userRoleLowerCase];
 
   return (
     <div id="onborda-usermanu">
@@ -58,7 +59,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
               name: user.display_name || null,
               image: user.picture || null,
             }}
-            className="h-8 w-8 border-2 border-[#E5E7EB] rounded-full cursor-pointer"
+            className="h-8 w-8 border-2 border-border rounded-full cursor-pointer"
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="md:w-56 lg:w-fit">
@@ -80,7 +81,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
 
               <div className="inline-flex gap-1">
                 <Badge className={`${color} w-max`} variant="outline">
-                  {td(`${user.role}`)}
+                  {td(userRoleLowerCase)}
                 </Badge>
                 {daysLeft > 0 ? ( // Check if the user has a free trial
                   <Badge className="bg-green-700 w-max" variant="outline">

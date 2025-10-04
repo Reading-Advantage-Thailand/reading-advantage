@@ -1,40 +1,40 @@
-// import { QuizStatus } from "./questions-model";
-
-// export interface UserArticleRecord {
-//     id: string;
-//     user_id: string;
-//     article_id: string;
-//     rated: number;
-//     scores: number;
-//     created_at: string;
-//     updated_at: string;
-//     status: QuizStatus;
-//     title: string;
-//     level: number;
-// }
-
 export interface UserActivityLog {
-  contentId: string;
+  id: string;
+  contentId?: string;
   userId: string;
-  articleId: string;
+  articleId?: string;
   activityType: string;
-  activityStatus: string;
+  targetId: string;
+  timer?: number | null;
+  activityStatus?: string;
+  completed: boolean;
   timestamp: string;
   timeTaken: number;
   xpEarned: number;
-  initialXp: number;
-  finalXp: number;
-  initialLevel: number;
-  finalLevel: number;
+  initialXp?: number;
+  finalXp?: number;
+  initialLevel?: number;
+  finalLevel?: number;
+  createdAt: string;
+  updatedAt: string;
   details: {
-    title: string;
-    level: number;
+    title?: string;
+    level?: number;
     cefr_level?: string;
+    type?: string;
+    genre?: string;
+    subgenre?: string;
+    subGenre?: string;
+    articleId?: string;
+    contentId?: string;
+    [key: string]: any;
   };
 }
 
 export enum UserXpEarned {
   MC_Question = 2,
+  SA_Question = 3,
+  LA_Question = 5,
   Article_Rating = 10,
   Chapter_Rating = 10,
   Vocabulary_Flashcards = 15,
@@ -44,6 +44,8 @@ export enum UserXpEarned {
   Sentence_Cloze_Test = 2,
   Sentence_Ordering = 5,
   Sentence_Word_Ordering = 5,
+  Lesson_Flashcard = 20,
+  Lesson_Sentence_Flashcards = 15,
 }
 
 export enum ActivityType {
@@ -66,6 +68,8 @@ export enum ActivityType {
   SentenceClozeTest = "sentence_cloze_test",
   VocabularyFlashcards = "vocabulary_flashcards",
   VocabularyMatching = "vocabulary_matching",
+  LessonFlashcard = "lesson_flashcard",
+  LessonSentenceFlashcards = "lesson_sentence_flashcards",
 }
 
 export enum ActivityStatus {

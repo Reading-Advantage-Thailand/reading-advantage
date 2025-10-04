@@ -7,37 +7,12 @@ import { Icons } from "@/components/icons";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { signIn } from "next-auth/react";
-import { firebaseAuth, firebaseApp } from "@/lib/firebase";
-import {
-  getAuth,
-  signInAnonymously,
-  signInWithEmailLink,
-  sendSignInLinkToEmail,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GithubAuthProvider,
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  sendEmailVerification,
-  signInWithRedirect,
-  getRedirectResult,
-} from "firebase/auth";
-import type { AuthProvider } from "firebase/auth";
-import { LucideCheck } from "lucide-react";
-import { 
-  isIOS, 
-  hasSessionStorageIssues, 
-  getAuthErrorMessage,
-  clearAuthState,
-  getIOSAuthConfig 
-} from "@/utils/ios-auth-handler";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserSignUpForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>("");
-  const isIOSDevice = isIOS();
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
@@ -51,32 +26,35 @@ export function UserSignUpForm({ className, ...props }: UserAuthFormProps) {
     };
     
     const email = target.email.value;
-    const password = target.password.value === target.confirmPassword.value
-      ? target.password.value
-      : null;
-      
-    if (!password) {
+    const password = target.password.value;
+    const confirmPassword = target.confirmPassword.value;
+    if (password !== confirmPassword) {
       setError("Password does not match");
+      setIsLoading(false);
       setIsLoading(false);
       return;
     }
-    
-    try {
-      const credential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
-      const idToken = await credential.user.getIdToken(true);
-      
-      if (idToken) {
-        await signIn("credentials", {
-          idToken,
-        });
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (res.ok) {
+      const signInRes = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+      if (signInRes?.error) {
+        setError("Sign in failed after registration");
+      } else if (signInRes?.ok) {
+        window.location.href = signInRes.url || "/";
       }
-    } catch (err: any) {
-      console.error("Sign-up error:", err);
-      const errorMessage = getAuthErrorMessage(err.code, isIOSDevice);
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setError(data?.message || "Sign up failed");
     }
+    setIsLoading(false);
   }
   return (
     <div className={cn("grid gap-6", className)} {...props}>

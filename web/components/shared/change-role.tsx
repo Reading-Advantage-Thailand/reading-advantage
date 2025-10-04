@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { Role } from "@/server/models/enum";
+import { Role } from "@prisma/client";
 import { UserCircle, GraduationCap, School, Ghost } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -24,7 +24,13 @@ type Props = {
 };
 
 export default function ChangeRole({ userId, userRole, className }: Props) {
-  const roles = [
+  const roles: Array<{
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    value: Role;
+    color: string;
+  }> = [
     {
       title: "Student",
       description:
@@ -88,13 +94,23 @@ export default function ChangeRole({ userId, userRole, className }: Props) {
           console.error("Failed to update role in session.", error);
         });
 
-      // refresh the page
-      router.refresh();
-
       toast({
         title: "Role updated.",
         description: `Changed role to ${selectedRole}.`,
       });
+
+      // Redirect to appropriate page based on role
+      if (selectedRole === Role.STUDENT) {
+        router.push("/level");
+      } else if (selectedRole === Role.TEACHER) {
+        router.push("/teacher/my-classes");
+      } else if (selectedRole === Role.ADMIN) {
+        router.push("/admin/dashboard");
+      } else if (selectedRole === Role.SYSTEM) {
+        router.push("/system/dashboard");
+      } else {
+        router.refresh();
+      }
     } catch (error) {
       toast({
         title: "An error occurred.",

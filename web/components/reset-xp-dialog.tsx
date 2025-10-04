@@ -31,6 +31,7 @@ export default function ResetDialog({ users }: { users: string }) {
           level: 0,
           cefrLevel: "",
           cefr_level: "",
+          resetXP: true,
         }),
       });
 

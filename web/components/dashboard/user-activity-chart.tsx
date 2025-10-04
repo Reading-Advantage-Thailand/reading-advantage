@@ -73,31 +73,28 @@ function formatDataForDays(
   const data = [];
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  let lastedLevel = 0;
-
   for (let i = new Date(startDate); i <= endDate; i.setDate(i.getDate() + 1)) {
     const dayOfWeek = daysOfWeek[i.getDay()];
     const dayOfMonth = i.getDate();
 
-    const filteredArticles = articles.filter((article: UserActivityLog) => {
+    const filteredArticles = articles ? articles.filter((article: UserActivityLog) => {
       const articleDate = new Date(article.timestamp);
       articleDate.setHours(0, 0, 0, 0);
       return articleDate.toDateString() === i.toDateString();
-    });
+    }) : [];
 
-    // get the latest level of the user for that day is the status is completed
-    // if level is dosent change then the user didnt complete any article that day return the last user updatedLevel
-    let xpEarned = lastedLevel;
+    // Calculate total XP earned for that day from completed activities
+    let xpEarnedForDay = 0;
 
     for (let j = 0; j < filteredArticles.length; j++) {
-      if (filteredArticles[j].activityStatus === "completed") {
-        xpEarned += filteredArticles[j].xpEarned;
+      if (filteredArticles[j].completed) {
+        xpEarnedForDay += filteredArticles[j].xpEarned;
       }
     }
 
     data.push({
       day: `${dayOfWeek} ${dayOfMonth}`,
-      xpEarned,
+      xpEarned: xpEarnedForDay,
     });
   }
 
@@ -138,13 +135,13 @@ export function UserActivityChart({ data }: UserActiviryChartProps) {
 
   const formattedData = formatDataForDays(data, date);
 
-  const inProgressCount = data.filter(
-    (item: UserActivityLog) => item.activityStatus === "in_progress"
-  ).length;
+  const inProgressCount = data ? data.filter(
+    (item: UserActivityLog) => !item.completed
+  ).length : 0;
 
-  const completedCount = data.filter(
-    (item: UserActivityLog) => item.activityStatus === "completed"
-  ).length;
+  const completedCount = data ? data.filter(
+    (item: UserActivityLog) => item.completed
+  ).length : 0;
 
   return (
     <>

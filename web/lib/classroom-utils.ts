@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
+import { Role } from "@prisma/client";
 
 async function fetchData(endpoint: string) {
   try {
@@ -501,15 +502,15 @@ export async function ClassesData() {
     //console.log(allClassroom);
     allClassroom.data.forEach(
       (classroom: { student: any; archived: boolean; teacherId: string }) => {
-        if (role === "teacher") {
+        if (role === Role.TEACHER) {
           if (!classroom.archived && classroom.teacherId === teacher[0]) {
             classrooms.push(classroom);
           }
-        } else if (role === "admin") {
+        } else if (role === Role.ADMIN) {
           if (!classroom.archived) {
             classrooms.push(classroom);
           }
-        } else if (role === "system") {
+        } else if (role === Role.SYSTEM) {
           classrooms.push(classroom);
         }
       }

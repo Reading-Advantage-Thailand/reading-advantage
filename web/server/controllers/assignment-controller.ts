@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
+import { Status } from "@prisma/client";
 
 interface StudentAssignment {
   id: string;
   classroomId: string;
   articleId: string;
-  title: string;
-  description: string;
+  title: string | null;
+  description: string | null;
   dueDate: string;
   status: number;
   createdAt: string;
-  teacherId: string;
-  displayName: string | null;
+  userId: string | null;
+  displayName?: string;
   teacherDisplayName?: string;
 }
 
@@ -33,64 +34,131 @@ export async function getAssignments(req: ExtendedNextRequest) {
     }
 
     if (articleId) {
-      const assignmentsRef = db
-        .collection("assignments")
-        .doc(classroomId)
-        .collection(articleId);
+      // Get assignment for specific article and classroom
+      const assignment = await prisma.assignment.findFirst({
+        where: {
+          classroomId,
+          articleId,
+        },
+        include: {
+          article: {
+            select: {
+              title: true,
+              summary: true,
+            },
+          },
+          classroom: {
+            select: {
+              classroomName: true,
+            },
+          },
+          studentAssignments: {
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
 
-      const snapshot = await assignmentsRef.get();
-      const metaDoc = await assignmentsRef.doc("meta").get();
-      const metaData = metaDoc.exists ? metaDoc.data() : {};
-
-      const students = snapshot.docs
-        .filter((doc) => doc.id !== "meta")
-        .map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as { studentId: string }),
-        }));
-
-      return NextResponse.json({ meta: metaData, students }, { status: 200 });
-    } else {
-      const articlesSnap = await db
-        .collection("assignments")
-        .doc(classroomId)
-        .listCollections();
-
-      let result: any[] = [];
-
-      for (const articleCol of articlesSnap) {
-        const metaDoc = await articleCol.doc("meta").get();
-        const metaData = metaDoc.exists ? metaDoc.data() : {};
-
-        const snapshot = await articleCol.get();
-        const students = snapshot.docs
-          .filter((doc) => doc.id !== "meta")
-          .map((doc) => ({
-            id: doc.id,
-            ...(doc.data() as { studentId: string }),
-          }));
-
-        result.push({
-          articleId: articleCol.id,
-          meta: metaData,
-          students,
-        });
+      if (!assignment) {
+        return NextResponse.json({ meta: {}, students: [] }, { status: 200 });
       }
 
-      // Apply search filter if provided
+      // Get metadata from assignment
+      const meta = {
+        title: assignment.title,
+        description: assignment.description,
+        dueDate: assignment.dueDate,
+        classroomId: assignment.classroomId,
+        articleId: assignment.articleId,
+        createdAt: assignment.createdAt,
+      };
+
+      const students = assignment.studentAssignments.map((sa) => ({
+        id: sa.id,
+        studentId: sa.studentId,
+        status: sa.status === Status.NOT_STARTED ? 0 : 
+                sa.status === Status.IN_PROGRESS ? 1 : 
+                sa.status === Status.COMPLETED ? 2 : 0,
+        displayName: sa.student?.name,
+      }));
+
+      return NextResponse.json({ meta, students }, { status: 200 });
+    } else {
+      // Get all assignments for classroom
+      let whereClause: any = {
+        classroomId,
+      };
+
       if (search && search.trim() !== "") {
         const searchLower = search.toLowerCase().trim();
-        result = result.filter(
-          (assignment) =>
-            assignment.meta.title?.toLowerCase().includes(searchLower) ||
-            assignment.meta.description?.toLowerCase().includes(searchLower)
-        );
+        whereClause.OR = [
+          { title: { contains: searchLower, mode: 'insensitive' } },
+          { description: { contains: searchLower, mode: 'insensitive' } },
+        ];
       }
 
-      // Apply pagination
-      const totalCount = result.length;
-      const offset = (page - 1) * limit;
-      const paginatedResult = result.slice(offset, offset + limit);
+      const totalCount = await prisma.assignment.count({
+        where: whereClause,
+      });
+
+      const assignments = await prisma.assignment.findMany({
+        where: whereClause,
+        include: {
+          article: {
+            select: {
+              id: true,
+              title: true,
+              summary: true,
+            },
+          },
+          studentAssignments: {
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+      // Transform assignments to include student data
+      const result = assignments.map((assignment) => ({
+        articleId: assignment.articleId,
+        meta: {
+          title: assignment.title,
+          description: assignment.description,
+          dueDate: assignment.dueDate,
+          classroomId: assignment.classroomId,
+          articleId: assignment.articleId,
+          createdAt: assignment.createdAt,
+        },
+        students: assignment.studentAssignments.map((sa) => ({
+          id: sa.id,
+          studentId: sa.studentId,
+          status: sa.status === Status.NOT_STARTED ? 0 : 
+                  sa.status === Status.IN_PROGRESS ? 1 : 
+                  sa.status === Status.COMPLETED ? 2 : 0,
+          displayName: sa.student?.name,
+        })),
+        article: assignment.article,
+      }));
 
       const totalPages = Math.ceil(totalCount / limit);
       const hasNextPage = page < totalPages;
@@ -98,7 +166,7 @@ export async function getAssignments(req: ExtendedNextRequest) {
 
       return NextResponse.json(
         {
-          assignments: paginatedResult,
+          assignments: result,
           pagination: {
             currentPage: page,
             totalPages,
@@ -134,83 +202,99 @@ export async function postAssignment(req: ExtendedNextRequest) {
       userId,
     } = data;
 
-    const createdAt = new Date().toISOString();
-    const batch = db.batch();
-    const studentsToSave: string[] = [];
+    if (!classroomId || !articleId || !selectedStudents || !Array.isArray(selectedStudents)) {
+      return NextResponse.json(
+        { message: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-    // Teacher perspective - existing structure
-    const metaRef = db
-      .collection("assignments")
-      .doc(classroomId)
-      .collection(articleId)
-      .doc("meta");
-
-    batch.set(metaRef, {
-      title,
-      description,
-      dueDate,
-      classroomId,
-      articleId,
-      userId,
-      createdAt,
+    // Check if classroom exists
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
     });
 
-    const checkPromises = selectedStudents.map(async (studentId: string) => {
-      const assignmentRef = db
-        .collection("assignments")
-        .doc(classroomId)
-        .collection(articleId)
-        .doc(studentId);
+    if (!classroom) {
+      return NextResponse.json(
+        { message: "Classroom not found" },
+        { status: 404 }
+      );
+    }
 
-      const docSnap = await assignmentRef.get();
-      if (!docSnap.exists) {
-        studentsToSave.push(studentId);
+    // Check if article exists
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+    });
 
-        let displayName = null;
-        try {
-          const userSnap = await db.collection("users").doc(studentId).get();
-          displayName = userSnap.exists
-            ? userSnap.data()?.display_name || null
-            : null;
-        } catch {
-          displayName = null;
-        }
+    if (!article) {
+      return NextResponse.json(
+        { message: "Article not found" },
+        { status: 404 }
+      );
+    }
 
-        // Teacher perspective
-        batch.set(assignmentRef, {
-          studentId,
-          status: 0,
-          displayName,
-        });
+    // Check if assignment already exists for this classroom and article
+    let assignment = await prisma.assignment.findFirst({
+      where: {
+        classroomId,
+        articleId,
+      },
+      include: {
+        studentAssignments: true,
+      },
+    });
 
-        // Student perspective - new structure
-        const assignmentId = `${classroomId}_${articleId}`;
-        const studentAssignmentRef = db
-          .collection("student-assignments")
-          .doc(studentId)
-          .collection("assignments")
-          .doc(assignmentId);
-
-        batch.set(studentAssignmentRef, {
+    // Create assignment if it doesn't exist
+    if (!assignment) {
+      assignment = await prisma.assignment.create({
+        data: {
           classroomId,
           articleId,
-          title,
-          description,
-          dueDate,
-          status: 0,
-          createdAt,
-          teacherId: userId,
-          displayName,
-        });
-      }
-    });
+          title: title || null,
+          description: description || null,
+          dueDate: dueDate ? new Date(dueDate) : null,
+        },
+        include: {
+          studentAssignments: true,
+        },
+      });
+    }
 
-    await Promise.all(checkPromises);
-    await batch.commit();
+    // Get existing student assignments
+    const existingStudentIds = new Set(
+      assignment.studentAssignments.map(sa => sa.studentId)
+    );
+
+    // Filter out students who already have assignments
+    const newStudentIds = selectedStudents.filter(
+      (studentId: string) => !existingStudentIds.has(studentId)
+    );
+
+    if (newStudentIds.length === 0) {
+      return NextResponse.json(
+        { message: "All students already have this assignment" },
+        { status: 200 }
+      );
+    }
+
+    // Create student assignments
+    const studentAssignmentsData = newStudentIds.map((studentId: string) => ({
+      assignmentId: assignment.id,
+      studentId,
+      status: Status.NOT_STARTED,
+    }));
+
+    const createdStudentAssignments = await prisma.studentAssignment.createMany({
+      data: studentAssignmentsData,
+      skipDuplicates: true,
+    });
 
     return NextResponse.json(
       {
-        message: `${studentsToSave.length} assignments created successfully`,
+        message: `${createdStudentAssignments.count} student assignments created successfully`,
+        assignmentId: assignment.id,
+        created: createdStudentAssignments.count,
+        skipped: selectedStudents.length - createdStudentAssignments.count,
       },
       { status: 200 }
     );
@@ -230,123 +314,134 @@ export async function updateAssignment(req: ExtendedNextRequest) {
     const data = await req.json();
     const { classroomId, articleId, studentId, updates } = data;
 
-    if (!classroomId || !articleId || !studentId || !updates) {
+    if (!classroomId || !articleId || !updates) {
       return NextResponse.json(
         {
-          message:
-            "Missing required fields: classroomId, articleId, studentId, or updates",
+          message: "Missing required fields: classroomId, articleId, or updates",
         },
         { status: 400 }
       );
     }
 
-    const batch = db.batch();
-
-    // Update teacher perspective
-    const assignmentRef = db
-      .collection("assignments")
-      .doc(classroomId)
-      .collection(articleId)
-      .doc(studentId);
-
-    const docSnap = await assignmentRef.get();
-
-    if (!docSnap.exists) {
-      return NextResponse.json(
-        { message: "Assignment not found" },
-        { status: 404 }
-      );
-    }
-
     if (studentId === "meta") {
-      const allowedMetaFields = [
-        "title",
-        "description",
-        "dueDate",
-        "classroomId",
-        "articleId",
-        "userId",
-        "createdAt",
-      ];
-      const filteredUpdates: Record<string, any> = {};
+      // Update metadata for the assignment (not student-specific)
+      const allowedMetaFields = ["title", "description", "dueDate"];
+      const filteredUpdates: any = {};
+      
       for (const key of allowedMetaFields) {
         if (updates.hasOwnProperty(key)) {
-          filteredUpdates[key] = updates[key];
+          if (key === "dueDate" && updates[key]) {
+            filteredUpdates[key] = new Date(updates[key]);
+          } else {
+            filteredUpdates[key] = updates[key];
+          }
         }
       }
+
       if (Object.keys(filteredUpdates).length === 0) {
         return NextResponse.json(
           { message: "No valid metadata fields to update" },
           { status: 400 }
         );
       }
-      batch.update(assignmentRef, filteredUpdates);
 
-      // Update student-assignments for all students in this assignment
-      const studentsSnapshot = await db
-        .collection("assignments")
-        .doc(classroomId)
-        .collection(articleId)
-        .get();
+      const updatedAssignment = await prisma.assignment.updateMany({
+        where: {
+          classroomId,
+          articleId,
+        },
+        data: filteredUpdates,
+      });
 
-      const assignmentId = `${classroomId}_${articleId}`;
-
-      studentsSnapshot.docs
-        .filter((doc) => doc.id !== "meta")
-        .forEach((doc) => {
-          const studentAssignmentRef = db
-            .collection("student-assignments")
-            .doc(doc.id)
-            .collection("assignments")
-            .doc(assignmentId);
-
-          // Only update relevant fields for student view (exclude userId, createdAt)
-          const studentUpdates: Record<string, any> = {};
-          if (filteredUpdates.title)
-            studentUpdates.title = filteredUpdates.title;
-          if (filteredUpdates.description)
-            studentUpdates.description = filteredUpdates.description;
-          if (filteredUpdates.dueDate)
-            studentUpdates.dueDate = filteredUpdates.dueDate;
-
-          if (Object.keys(studentUpdates).length > 0) {
-            batch.update(studentAssignmentRef, studentUpdates);
-          }
-        });
+      return NextResponse.json(
+        { 
+          message: "Assignment metadata updated successfully",
+          updatedCount: updatedAssignment.count 
+        },
+        { status: 200 }
+      );
     } else {
-      const allowedFields = ["status", "displayName"];
-      const filteredUpdates: Record<string, any> = {};
-      for (const key of allowedFields) {
-        if (updates.hasOwnProperty(key)) {
-          filteredUpdates[key] = updates[key];
+      // Update specific student assignment status
+      if (!studentId) {
+        return NextResponse.json(
+          { message: "Missing studentId for individual assignment update" },
+          { status: 400 }
+        );
+      }
+
+      // Find the assignment first
+      const assignment = await prisma.assignment.findFirst({
+        where: {
+          classroomId,
+          articleId,
+        },
+      });
+
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Assignment not found" },
+          { status: 404 }
+        );
+      }
+
+      // Prepare updates for StudentAssignment
+      const studentAssignmentUpdates: any = {};
+      
+      if (updates.hasOwnProperty("status")) {
+        studentAssignmentUpdates.status = updates.status as Status;
+        
+        // Update timestamps based on status
+        if (updates.status === Status.IN_PROGRESS && !updates.startedAt) {
+          studentAssignmentUpdates.startedAt = new Date();
+        } else if (updates.status === Status.COMPLETED && !updates.completedAt) {
+          studentAssignmentUpdates.completedAt = new Date();
         }
       }
-      if (Object.keys(filteredUpdates).length === 0) {
+
+      if (updates.hasOwnProperty("startedAt")) {
+        studentAssignmentUpdates.startedAt = updates.startedAt ? new Date(updates.startedAt) : null;
+      }
+
+      if (updates.hasOwnProperty("completedAt")) {
+        studentAssignmentUpdates.completedAt = updates.completedAt ? new Date(updates.completedAt) : null;
+      }
+
+      if (updates.hasOwnProperty("score")) {
+        studentAssignmentUpdates.score = updates.score;
+      }
+
+      if (Object.keys(studentAssignmentUpdates).length === 0) {
         return NextResponse.json(
           { message: "No valid fields to update" },
           { status: 400 }
         );
       }
 
-      batch.update(assignmentRef, filteredUpdates);
+      // Update or create student assignment
+      const updatedStudentAssignment = await prisma.studentAssignment.upsert({
+        where: {
+          assignmentId_studentId: {
+            assignmentId: assignment.id,
+            studentId: studentId,
+          },
+        },
+        update: studentAssignmentUpdates,
+        create: {
+          assignmentId: assignment.id,
+          studentId: studentId,
+          ...studentAssignmentUpdates,
+          status: studentAssignmentUpdates.status || Status.NOT_STARTED,
+        },
+      });
 
-      // Update student perspective
-      const assignmentId = `${classroomId}_${articleId}`;
-      const studentAssignmentRef = db
-        .collection("student-assignments")
-        .doc(studentId)
-        .collection("assignments")
-        .doc(assignmentId);
-
-      batch.update(studentAssignmentRef, filteredUpdates);
+      return NextResponse.json(
+        { 
+          message: "Student assignment updated successfully",
+          studentAssignment: updatedStudentAssignment,
+        },
+        { status: 200 }
+      );
     }
-
-    await batch.commit();
-
-    return NextResponse.json(
-      { message: "Assignment updated successfully" },
-      { status: 200 }
-    );
   } catch (error) {
     console.error("Error updating assignment:", error);
     return NextResponse.json(
@@ -366,6 +461,13 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
 
+    if (studentId) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: studentId },
+        select: { id: true, name: true, email: true }
+      });
+    }
+
     if (!studentId) {
       return NextResponse.json(
         { message: "Missing studentId in query parameters" },
@@ -373,98 +475,130 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
       );
     }
 
-    const snapshot = await db
-      .collection("student-assignments")
-      .doc(studentId)
-      .collection("assignments")
-      .orderBy("dueDate", "asc")
-      .get();
+    // Build where clause for StudentAssignment
+    let studentAssignmentWhere: any = {
+      studentId: studentId,
+    };
 
-    let assignments: StudentAssignment[] = snapshot.docs.map(
-      (doc: any) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as StudentAssignment)
-    );
-
-    const teacherIds = [
-      ...new Set(
-        assignments.map((assignment) => assignment.teacherId).filter(Boolean)
-      ),
-    ];
-
-    const teacherDisplayNames: { [key: string]: string } = {};
-
-    if (teacherIds.length > 0) {
-      const teacherPromises = teacherIds.map(async (teacherId) => {
-        try {
-          const teacherDoc = await db.collection("users").doc(teacherId).get();
-          if (teacherDoc.exists) {
-            const teacherData = teacherDoc.data();
-            teacherDisplayNames[teacherId] =
-              teacherData?.display_name ||
-              teacherData?.email ||
-              "Unknown Teacher";
-          } else {
-            teacherDisplayNames[teacherId] = "Unknown Teacher";
-          }
-        } catch (error) {
-          console.error(`Error fetching teacher ${teacherId}:`, error);
-          teacherDisplayNames[teacherId] = "Unknown Teacher";
-        }
-      });
-
-      await Promise.all(teacherPromises);
+    // Apply status filter
+    if (status && status !== "all") {
+      // Convert numeric string to Status enum
+      let statusEnum: Status;
+      switch (status) {
+        case "0":
+          statusEnum = Status.NOT_STARTED;
+          break;
+        case "1":
+          statusEnum = Status.IN_PROGRESS;
+          break;
+        case "2":
+          statusEnum = Status.COMPLETED;
+          break;
+        default:
+          statusEnum = status as Status; // fallback for enum values
+      }
+      studentAssignmentWhere.status = statusEnum;
     }
 
-    assignments = assignments.map((assignment) => ({
-      ...assignment,
-      teacherDisplayName:
-        teacherDisplayNames[assignment.teacherId] || "Unknown Teacher",
-    }));
+    // Build where clause for Assignment (for search and dueDate filters)
+    let assignmentWhere: any = {};
 
+    // Apply search filter
     if (search && search.trim() !== "") {
       const searchLower = search.toLowerCase().trim();
-
-      assignments = assignments.filter((assignment) => {
-        const titleMatch = assignment.title
-          ? assignment.title.toLowerCase().includes(searchLower)
-          : false;
-
-        return titleMatch;
-      });
+      assignmentWhere.OR = [
+        { title: { contains: searchLower, mode: 'insensitive' } },
+        { description: { contains: searchLower, mode: 'insensitive' } },
+      ];
     }
 
-    if (status && status !== "all") {
-      assignments = assignments.filter(
-        (assignment) => assignment.status === parseInt(status)
-      );
-    }
-
+    // Apply due date filter
     if (dueDateFilter && dueDateFilter !== "all") {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
 
-      assignments = assignments.filter((assignment) => {
-        const dueDate = new Date(assignment.dueDate);
-        switch (dueDateFilter) {
-          case "overdue":
-            return dueDate < today;
-          case "today":
-            return dueDate >= today && dueDate < tomorrow;
-          case "upcoming":
-            return dueDate >= tomorrow;
-          default:
-            return true;
-        }
-      });
+      switch (dueDateFilter) {
+        case "overdue":
+          assignmentWhere.dueDate = { lt: today };
+          break;
+        case "today":
+          assignmentWhere.dueDate = { gte: today, lt: tomorrow };
+          break;
+        case "upcoming":
+          assignmentWhere.dueDate = { gte: tomorrow };
+          break;
+      }
     }
 
-    const totalCount = assignments.length;
-    const offset = (page - 1) * limit;
-    const paginatedAssignments = assignments.slice(offset, offset + limit);
+    // Combine where clauses
+    if (Object.keys(assignmentWhere).length > 0) {
+      studentAssignmentWhere.assignment = assignmentWhere;
+    }
+
+    const totalCount = await prisma.studentAssignment.count({
+      where: studentAssignmentWhere,
+    });
+
+    const studentAssignments = await prisma.studentAssignment.findMany({
+      where: studentAssignmentWhere,
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        assignment: {
+          include: {
+            article: {
+              select: {
+                title: true,
+                summary: true,
+              },
+            },
+            classroom: {
+              select: {
+                classroomName: true,
+                teachers: {
+                  include: {
+                    teacher: {
+                      select: {
+                        name: true,
+                        email: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        assignment: {
+          dueDate: "asc",
+        },
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const formattedAssignments: StudentAssignment[] = studentAssignments.map((sa) => ({
+      id: sa.id,
+      classroomId: sa.assignment.classroomId,
+      articleId: sa.assignment.articleId,
+      title: sa.assignment.title,
+      description: sa.assignment.description,
+      dueDate: sa.assignment.dueDate ? sa.assignment.dueDate.toISOString() : "",
+      status: sa.status === Status.NOT_STARTED ? 0 : 
+              sa.status === Status.IN_PROGRESS ? 1 : 
+              sa.status === Status.COMPLETED ? 2 : 0,
+      createdAt: sa.createdAt.toISOString(),
+      userId: sa.studentId,
+      displayName: sa.student?.name || "Unknown User",
+      teacherDisplayName: sa.assignment.classroom?.teachers?.[0]?.teacher?.name || "Unknown Teacher",
+    }));
 
     const totalPages = Math.ceil(totalCount / limit);
     const hasNextPage = page < totalPages;
@@ -472,7 +606,7 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
 
     return NextResponse.json(
       {
-        assignments: paginatedAssignments,
+        assignments: formattedAssignments,
         pagination: {
           currentPage: page,
           totalPages,
@@ -485,7 +619,7 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error fetching student assignments:", error);
+    console.error("❌ Error fetching student assignments:", error);
     return NextResponse.json(
       {
         message: "Internal server error",
@@ -517,45 +651,57 @@ export async function deleteAssignment(req: ExtendedNextRequest) {
       );
     }
 
-    const batch = db.batch();
-    let deletedCount = 0;
+    // Find the assignment
+    const assignment = await prisma.assignment.findFirst({
+      where: {
+        classroomId,
+        articleId,
+      },
+    });
 
-    for (const studentId of studentIds) {
-      const assignmentRef = db
-        .collection("assignments")
-        .doc(classroomId)
-        .collection(articleId)
-        .doc(studentId);
-
-      const docSnap = await assignmentRef.get();
-      if (docSnap.exists) {
-        batch.delete(assignmentRef);
-        deletedCount++;
-
-        const assignmentId = `${classroomId}_${articleId}`;
-        const studentAssignmentRef = db
-          .collection("student-assignments")
-          .doc(studentId)
-          .collection("assignments")
-          .doc(assignmentId);
-
-        batch.delete(studentAssignmentRef);
-      }
-    }
-
-    if (deletedCount === 0) {
+    if (!assignment) {
       return NextResponse.json(
-        { message: "No assignments found to delete" },
+        { message: "Assignment not found" },
         { status: 404 }
       );
     }
 
-    await batch.commit();
+    // Delete student assignments
+    const deletedStudentAssignments = await prisma.studentAssignment.deleteMany({
+      where: {
+        assignmentId: assignment.id,
+        studentId: { in: studentIds },
+      },
+    });
+
+    if (deletedStudentAssignments.count === 0) {
+      return NextResponse.json(
+        { message: "No student assignments found to delete" },
+        { status: 404 }
+      );
+    }
+
+    // Check if there are any remaining student assignments
+    const remainingCount = await prisma.studentAssignment.count({
+      where: {
+        assignmentId: assignment.id,
+      },
+    });
+
+    // If no students left, delete the assignment itself
+    if (remainingCount === 0) {
+      await prisma.assignment.delete({
+        where: {
+          id: assignment.id,
+        },
+      });
+    }
 
     return NextResponse.json(
       {
-        message: `${deletedCount} assignment(s) deleted successfully`,
-        deletedCount,
+        message: `${deletedStudentAssignments.count} student assignment(s) deleted successfully`,
+        deletedCount: deletedStudentAssignments.count,
+        assignmentDeleted: remainingCount === 0,
       },
       { status: 200 }
     );
