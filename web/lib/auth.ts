@@ -8,6 +8,7 @@ import { PasswordUtils } from "@/lib/password-utils";
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   debug: false,
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",

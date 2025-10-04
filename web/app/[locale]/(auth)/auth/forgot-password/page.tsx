@@ -13,7 +13,7 @@ export default function ResetPasswordPage() {
   return (
     <>
       <Link
-        href={`${process.env.NEXT_PUBLIC_BASE_URL}/auth/signin`}
+        href="/auth/signin"
         className={cn(
           buttonVariants({ variant: "ghost" }),
           "absolute right-4 top-4 md:right-8 md:top-8"

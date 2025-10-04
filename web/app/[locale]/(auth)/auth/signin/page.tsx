@@ -15,7 +15,7 @@ export default function SignInPage() {
   return (
     <>
       <Link
-        href={`${process.env.NEXT_PUBLIC_BASE_URL}/auth/signup`}
+        href="/auth/signup"
         className={cn(
           buttonVariants({ variant: "ghost" }),
           "absolute right-4 top-4 md:right-8 md:top-8"
