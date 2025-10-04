@@ -42,11 +42,11 @@ export default async function SchoolsDashboardPage() {
     try {
       const cefrRes = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/activity/all`,
-        { 
-          method: "GET", 
+        {
+          method: "GET",
           headers: headers(),
           // Add timeout to prevent hanging
-          signal: AbortSignal.timeout(30000) // 30 second timeout
+          signal: AbortSignal.timeout(30000), // 30 second timeout
         }
       );
       if (!cefrRes.ok) {
@@ -72,7 +72,7 @@ export default async function SchoolsDashboardPage() {
       schoolName: license.schoolName,
       maxUsers: license.maxUsers,
       usedLicenses: license._count?.licenseUsers || 0, // Use count from Prisma
-    }))
+    })),
   };
 
   const mappedUserRoleList = {
@@ -84,11 +84,11 @@ export default async function SchoolsDashboardPage() {
       licenseId: user.licenseId,
       xp: user.xp?.toString() || "0",
       cefrLevel: user.cefrLevel,
-    }))
+    })),
   };
 
   const mappedCefrLevelData = {
-    data: averageCefrLevelData.data || []
+    data: averageCefrLevelData.data || [],
   };
 
   return (

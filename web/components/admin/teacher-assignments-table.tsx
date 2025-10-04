@@ -167,7 +167,6 @@ function TeacherAssignmentsTable({
 
     if (isMobile) {
       setColumnVisibility({
-        teacherEmail: false,
         grade: false,
         assignmentDescription: false,
         totalStudents: false,
@@ -176,7 +175,6 @@ function TeacherAssignmentsTable({
       });
     } else {
       setColumnVisibility({
-        teacherEmail: true,
         grade: true,
         assignmentDescription: false, // Hide by default even on desktop
         totalStudents: true,
@@ -236,15 +234,9 @@ function TeacherAssignmentsTable({
       cell: ({ row }) => (
         <div className="ml-4">
           <div className="font-medium">{row.getValue("teacherName")}</div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "teacherEmail",
-      header: t("email"),
-      cell: ({ row }) => (
-        <div className="text-sm text-muted-foreground">
-          {row.getValue("teacherEmail")}
+          <div className="text-sm text-muted-foreground">
+            {row.original.teacherEmail}
+          </div>
         </div>
       ),
     },
@@ -302,7 +294,7 @@ function TeacherAssignmentsTable({
       accessorKey: "assignmentDescription",
       header: t("description"),
       cell: ({ row }) => (
-        <div className="max-w-[300px] truncate text-sm">
+        <div className="max-w-[400px] text-xs">
           {row.getValue("assignmentDescription") || "-"}
         </div>
       ),

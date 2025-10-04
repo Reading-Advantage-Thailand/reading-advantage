@@ -79,6 +79,9 @@ export async function getAdminDashboard() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
     const userIds = licenseUsers.map((user) => user.id);
 
     const xpLogs = await prisma.xPLog.findMany({
@@ -90,33 +93,91 @@ export async function getAdminDashboard() {
 
     const totalXp = xpLogs.reduce((sum, log) => sum + log.xpEarned, 0);
 
+    // Get user activities for the last 6 months
     const userActivities = await prisma.userActivity.findMany({
       where: {
         userId: { in: userIds },
-        createdAt: { gte: thirtyDaysAgo },
+        createdAt: { gte: sixMonthsAgo },
       },
-      include: {
+      select: {
+        id: true,
+        userId: true,
+        activityType: true,
+        targetId: true,
+        completed: true,
+        createdAt: true,
+        details: true,
         user: {
           select: {
             id: true,
-            cefrLevel: true,
+            name: true,
+            email: true,
           },
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 100,
+      take: 5000,
     });
 
-    const filteredActivityLog = userActivities.map((activity) => ({
-      userId: activity.userId,
-      activityType: activity.activityType,
-      timestamp: activity.createdAt,
-      completed: activity.completed,
-      details: {
-        ...((activity.details as any) || {}),
-        cefr_level: activity.user.cefrLevel,
+    // Get article data for activities that reference articles
+    const articleIds = new Set<string>();
+    userActivities.forEach(activity => {
+      // Only get article IDs from ARTICLE_READ and ARTICLE_RATING activities
+      if ((activity.activityType === 'ARTICLE_READ' || 
+           activity.activityType === 'ARTICLE_RATING') && 
+          activity.targetId) {
+        articleIds.add(activity.targetId);
+      }
+    });
+
+    console.log(`Admin dashboard - Found ${articleIds.size} unique article IDs to fetch`);
+
+    // Fetch article data for CEFR levels
+    const articles = await prisma.article.findMany({
+      where: {
+        id: { in: Array.from(articleIds) }
       },
-    }));
+      select: {
+        id: true,
+        cefrLevel: true,
+        title: true,
+        raLevel: true,
+      }
+    });
+
+    console.log(`Admin dashboard - Retrieved ${articles.length} articles with CEFR levels`);
+
+    const articleMap = new Map(articles.map(article => [article.id, article]));
+
+    const filteredActivityLog = userActivities.map((activity) => {
+      let details: any = activity.details || {};
+      
+      // Add CEFR level to details if this activity references an article
+      const article = articleMap.get(activity.targetId);
+      if (article) {
+        details = {
+          ...details,
+          cefr_level: article.cefrLevel,
+          title: article.title,
+          level: article.raLevel,
+        };
+      }
+
+      return {
+        id: activity.id,
+        userId: activity.userId,
+        activityType: activity.activityType,
+        targetId: activity.targetId,
+        completed: activity.completed,
+        timestamp: activity.createdAt,
+        details: details,
+        user: activity.user,
+      };
+    });
+
+    // Count how many activities have CEFR levels
+    const activitiesWithCEFR = filteredActivityLog.filter(a => a.details?.cefr_level).length;
+    console.log(`Admin dashboard - Total activities: ${filteredActivityLog.length}, With CEFR level: ${activitiesWithCEFR}`);
 
     const licenseData = [
       {

@@ -38,13 +38,13 @@ function getDatabaseUrl(): string {
           throw new Error("DATABASE_URL must include username and password");
         }
         
-        console.log(`✅ Using Cloud SQL Unix socket: ${hostParam}`);
+        //console.log(`✅ Using Cloud SQL Unix socket: ${hostParam}`);
         return dbUrl;
       }
       
       // For regular TCP connection
       if (url.hostname && url.username && url.password) {
-        console.log(`✅ Using TCP connection: ${url.hostname}:${url.port || 5432}`);
+        //console.log(`✅ Using TCP connection: ${url.hostname}:${url.port || 5432}`);
         return dbUrl;
       }
       
@@ -82,12 +82,12 @@ function getDatabaseUrl(): string {
   if (process.env.CLOUD_SQL_CONNECTION_NAME && host.startsWith("/cloudsql")) {
     const connectionName = process.env.CLOUD_SQL_CONNECTION_NAME;
     const socketHost = `/cloudsql/${connectionName}`;
-    console.log(`🔌 Constructing Unix socket URL: ${socketHost}`);
+    //console.log(`🔌 Constructing Unix socket URL: ${socketHost}`);
     return `postgresql://${username}:${password}@/${database}?host=${socketHost}&schema=${schema}`;
   }
 
   // Otherwise use TCP connection
-  console.log(`🔌 Constructing TCP URL: ${host}:${port}`);
+  //console.log(`🔌 Constructing TCP URL: ${host}:${port}`);
   return `postgresql://${username}:${password}@${host}:${port}/${database}?schema=${schema}`;
 }
 
@@ -112,7 +112,7 @@ export const prisma: PrismaClient =
     
     // Validate database URL but let Prisma read from env directly
     getDatabaseUrl();
-    console.log(`🔌 Connecting to database...`);
+    //console.log(`🔌 Connecting to database...`);
     
     return new PrismaClient({
       // Don't override datasources - let Prisma read DATABASE_URL from .env

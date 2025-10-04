@@ -116,7 +116,7 @@ export async function getAllUserActivity() {
 
 export async function getAllUsersActivity() {
   try {
-    // Get recent activities with minimal data
+    // Get recent activities with minimal data - increased for 6 months of data
     const recentActivities = await prisma.userActivity.findMany({
       select: {
         id: true,
@@ -137,10 +137,10 @@ export async function getAllUsersActivity() {
       orderBy: {
         createdAt: "desc",
       },
-      take: 50, // Much smaller subset
+      take: 5000, // Increased to cover 6 months of data
       where: {
         createdAt: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+          gte: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000), // Last 6 months
         },
       },
     });
@@ -148,13 +148,10 @@ export async function getAllUsersActivity() {
     // Get article data for activities that reference articles
     const articleIds = new Set<string>();
     recentActivities.forEach(activity => {
-      // Check if targetId looks like an article ID or if activity is article-related
-      if (activity.activityType === 'ARTICLE_READ' || 
-          activity.activityType === 'ARTICLE_RATING' ||
-          (activity.targetId && (
-            activity.targetId.startsWith('cmeso') || // Legacy article IDs
-            activity.targetId.length > 10 // Likely article IDs
-          ))) {
+      // Only get article IDs from ARTICLE_READ and ARTICLE_RATING activities
+      if ((activity.activityType === 'ARTICLE_READ' || 
+           activity.activityType === 'ARTICLE_RATING') && 
+          activity.targetId) {
         articleIds.add(activity.targetId);
       }
     });
@@ -199,6 +196,9 @@ export async function getAllUsersActivity() {
         user: activity.user,
       };
     });
+
+    // Count how many activities have CEFR levels
+    const activitiesWithCEFR = data.filter(d => d.details?.cefr_level).length;
 
     // Get aggregated activity data for summary
     const activityCounts = await prisma.userActivity.groupBy({

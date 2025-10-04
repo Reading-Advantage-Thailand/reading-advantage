@@ -64,12 +64,13 @@ async function middleware(req: NextRequest) {
       const userRole = token.role; // Assuming the token contains the user's role
       const currentPath = req.nextUrl.pathname;
       
-      // Redirect to the level selection page if the user's level is unknown
+      // Step 1: Redirect to the level selection page if the user's role is still USER
       if (userRole === Role.USER && !currentPath.startsWith("/role-selection")) {
         return NextResponse.redirect(new URL("/role-selection", req.url));
       }
       
-      // Redirect to level test if user has no level/xp (except if already on /level page)
+      // Step 2: After role selection, redirect to level test if user has no level/xp
+      // (applies to all roles except USER)
       if (
         (token.level === undefined ||
           token.level === null ||
@@ -88,10 +89,7 @@ async function middleware(req: NextRequest) {
         return null;
       }
       
-      // Redirect to the appropriate page based on the user's role
-      // if (userRole === Role.STUDENT) {
-      //   return NextResponse.redirect(new URL("/student/read", req.url));
-      // }
+      // Step 3: After completing level test, redirect to the appropriate page based on role
       if (userRole === Role.TEACHER && !currentPath.startsWith("/teacher")) {
         return NextResponse.redirect(new URL("/teacher/my-classes", req.url));
       }
@@ -101,8 +99,7 @@ async function middleware(req: NextRequest) {
       if (userRole === Role.SYSTEM && !currentPath.startsWith("/system")) {
         return NextResponse.redirect(new URL("/system/dashboard", req.url));
       }
-      // else redirect to the student home page
-      // DEFAULT ()
+      // Default: redirect to the student page
       if (userRole === Role.STUDENT && !currentPath.startsWith("/student")) {
         return NextResponse.redirect(new URL("/student/read", req.url));
       }

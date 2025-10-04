@@ -102,16 +102,24 @@ export default async function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl text-center">
-              User Activity Trends (CEFR Level)
+              Average Article CEFR Level
             </CardTitle>
           </CardHeader>
           <CardContent>
             {dataDashboard?.filteredActivityLog &&
             dataDashboard.filteredActivityLog.length > 0 ? (
-              <LineChartCustom data={dataDashboard.filteredActivityLog} />
+              <>
+                <LineChartCustom data={dataDashboard.filteredActivityLog} />
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Based on articles read by users over the last 6 months
+                </p>
+              </>
             ) : (
-              <div className="text-center text-gray-500 py-8">
-                No activity data available
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                <div className="text-center">
+                  <p className="text-lg font-medium">No data available</p>
+                  <p className="text-sm mt-2">No article reading activities found</p>
+                </div>
               </div>
             )}
           </CardContent>
