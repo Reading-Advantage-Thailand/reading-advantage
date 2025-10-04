@@ -110,15 +110,13 @@ export const prisma: PrismaClient =
       });
     }
     
-    const databaseUrl = getDatabaseUrl();
+    // Validate database URL but let Prisma read from env directly
+    getDatabaseUrl();
     console.log(`🔌 Connecting to database...`);
     
     return new PrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
+      // Don't override datasources - let Prisma read DATABASE_URL from .env
+      // This ensures proper decoding of URL-encoded passwords
       log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
       // Cloud SQL connection pooling configuration
       // Helps prevent connection exhaustion in serverless environments
