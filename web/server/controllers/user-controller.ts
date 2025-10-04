@@ -649,9 +649,7 @@ export async function getUserRecords(
     const activities = await prisma.userActivity.findMany({
       where: {
         userId: id,
-        activityType: {
-          in: [ActivityType.ARTICLE_READ, ActivityType.ARTICLE_RATING],
-        },
+        activityType: ActivityType.ARTICLE_READ,
       },
       orderBy: {
         createdAt: "desc",
@@ -680,12 +678,32 @@ export async function getUserRecords(
       }
     });
 
+    // Get article IDs and fetch article details from database
+    const articleIds = Array.from(articleMap.keys()).filter((id) => id);
+    const articles = await prisma.article.findMany({
+      where: {
+        id: { in: articleIds },
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        genre: true,
+        subGenre: true,
+        cefrLevel: true,
+        raLevel: true,
+      },
+    });
+
+    const articlesById = new Map(articles.map((article) => [article.id, article]));
+
     const results: any[] = [];
 
     articleMap.forEach((data, articleId) => {
       if (data.readActivity) {
         const readActivity = data.readActivity;
         const ratingActivity = data.ratingActivity;
+        const article = articlesById.get(articleId);
 
         let extractedRating = 0;
         if (ratingActivity?.details) {
@@ -707,8 +725,13 @@ export async function getUserRecords(
           activityType: "ARTICLE_READ_WITH_RATING",
           completed: readActivity.completed,
           details: {
-            level: (readActivity.details as any)?.level || 0,
-            articleTitle: (readActivity.details as any)?.articleTitle || "",
+            type: article?.type || (readActivity.details as any)?.type || "",
+            genre: article?.genre || (readActivity.details as any)?.genre || "",
+            subgenre: article?.subGenre || (readActivity.details as any)?.subgenre || "",
+            level: article?.raLevel || (readActivity.details as any)?.level || 0,
+            cefr_level: article?.cefrLevel || (readActivity.details as any)?.cefr_level || "",
+            title: article?.title || (readActivity.details as any)?.articleTitle || (readActivity.details as any)?.title || "Unknown Article",
+            articleTitle: article?.title || (readActivity.details as any)?.articleTitle || (readActivity.details as any)?.title || "Unknown Article",
             rating: extractedRating,
             rated: extractedRating,
             score: (readActivity.details as any)?.score || 0,

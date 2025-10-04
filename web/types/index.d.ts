@@ -87,7 +87,12 @@ export type SidebarTeacherNavItem = {
     }
 );
 export type SystemSidebarNavItem = {
-  title: "System Dashboard" | "Schools Dashboard" | "Handle Passages" | "License" | "Reports";
+  title:
+    | "System Dashboard"
+    | "Schools Dashboard"
+    | "Handle Passages"
+    | "License"
+    | "Reports";
   disabled?: boolean;
   external?: boolean;
   icon?: keyof typeof Icons;
@@ -125,6 +130,7 @@ export type Question = {
 // article table type
 export type ArticleRecord = {
   id: string;
+  targetId?: string;
   createdAt: {
     _seconds: number;
     _nanoseconds: number;
@@ -219,7 +225,7 @@ export type ArticleType = {
     {
       timeSeconds: number;
       markName: string;
-    }
+    },
   ];
   questions: QuestionsType;
   averageRating: number;
