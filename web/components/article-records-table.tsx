@@ -105,26 +105,6 @@ export function ArticleRecordsTable({
       },
     },
     {
-      accessorKey: "rating",
-      header: ({ column }) => {
-        return (
-          <div className="text-center">
-            <Button
-              variant="ghost"
-              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            >
-              {td("rated")}
-              <CaretSortIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        const rating = row.getValue("rating") as number;
-        return <div className="text-center font-medium">{rating}/5</div>;
-      },
-    },
-    {
       accessorKey: "status",
       header: () => <div className="text-center">{td("status")}</div>,
       cell: ({ row }) => {

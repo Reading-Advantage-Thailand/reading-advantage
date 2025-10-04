@@ -88,34 +88,12 @@ export function ReminderRereadTable({
       ),
     },
     {
-      accessorKey: "updated_at",
+      accessorKey: "created_at",
       header: () => <div>{t("date")}</div>,
       cell: ({ row }) => {
-        const updatedAt = row.getValue("updated_at") as string;
-        const date = formatDate(updatedAt);
+        const createdAt = row.getValue("created_at") as string;
+        const date = formatDate(createdAt);
         return <div>{date}</div>;
-      },
-    },
-    {
-      accessorKey: "rating",
-      header: ({ column }) => {
-        return (
-          <div className="text-center">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-            >
-              {t("rated")}
-              <CaretSortIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        const rating = row.getValue("rating") as number;
-        return <div className="text-center font-medium">{rating}/5</div>;
       },
     },
     {
@@ -201,7 +179,11 @@ export function ReminderRereadTable({
                 <TableRow
                   className="cursor-pointer"
                   onClick={() =>
-                    handleNavigateToArticle(row.original.articleId)
+                    handleNavigateToArticle(
+                      row.original.targetId
+                        ? row.original.targetId
+                        : row.original.articleId
+                    )
                   }
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
@@ -223,7 +205,7 @@ export function ReminderRereadTable({
                   className="h-24 text-center text-muted-foreground"
                 >
                   {articles.length === 0
-                    ? "Great! No articles need to be re-read."
+                    ? "Great! No incomplete articles."
                     : "No articles match your current filters."}
                 </TableCell>
               </TableRow>

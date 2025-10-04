@@ -3,7 +3,6 @@ import { Header } from "@/components/header";
 import { ReminderRereadTable } from "@/components/reminder-reread-table";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import React from "react";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
@@ -33,21 +32,22 @@ export default async function HistoryPage({}: Props) {
   // Transform the data to match ArticleRecord type
   const transformedRecords = res.results.map((record: any) => ({
     ...record,
-    title: record.details?.articleTitle || 'Unknown Article',
+    title: record.details?.articleTitle || "Unknown Article",
     rating: record.details?.rated || 0,
-    status: record.completed ? RecordStatus.COMPLETED : RecordStatus.UNRATED
+    status: record.completed ? RecordStatus.COMPLETED : RecordStatus.UNRATED,
   }));
 
-  // articles that have been read
-  // put the articles that have rating lower than 3 in the reminder table
-  const reminderArticles = transformedRecords.filter(
-    (article: any) => article.rating < 3
+  // Separate articles based on completion status
+  // Incomplete articles (for reminder to reread)
+  const incompleteArticles = transformedRecords.filter(
+    (article: any) => article.status !== RecordStatus.COMPLETED
   );
 
-  //   // put the results that have rating higher than 3 in the article records table
-  const articleRecords = transformedRecords.filter(
-    (article: any) => article.rating >= 3
+  // Completed articles (for article records)
+  const completedArticles = transformedRecords.filter(
+    (article: any) => article.status === RecordStatus.COMPLETED
   );
+
   const t = await getScopedI18n("pages.student.historyPage");
   return (
     <>
@@ -56,14 +56,14 @@ export default async function HistoryPage({}: Props) {
         text={t("reminderToRereadDescription")}
         variant="warning"
       />
-      {reminderArticles.length !== 0 && (
-        <ReminderRereadTable articles={reminderArticles} />
+      {incompleteArticles.length !== 0 && (
+        <ReminderRereadTable articles={incompleteArticles} />
       )}
       <Header
         heading={t("articleRecords")}
         text={t("articleRecordsDescription")}
       />
-      <ArticleRecordsTable articles={articleRecords} />
+      <ArticleRecordsTable articles={completedArticles} />
     </>
   );
 }
