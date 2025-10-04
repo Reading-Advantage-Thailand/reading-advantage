@@ -15,9 +15,54 @@ function getDatabaseUrl(): string {
     return "postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public";
   }
 
-  // If DATABASE_URL is already set and valid, use it
+  // Validate DATABASE_URL if provided
   if (dbUrl) {
-    return dbUrl;
+    // Check if it's a valid format
+    try {
+      const url = new URL(dbUrl);
+      
+      // For Unix socket format (Cloud SQL)
+      if (dbUrl.includes("/cloudsql/")) {
+        // Validate Unix socket format: postgresql://user:pass@/db?host=/cloudsql/...
+        const params = new URLSearchParams(url.search);
+        const hostParam = params.get("host");
+        
+        if (!hostParam || !hostParam.startsWith("/cloudsql/")) {
+          console.error("❌ DATABASE_URL has invalid Unix socket format");
+          throw new Error("Invalid Unix socket format in DATABASE_URL");
+        }
+        
+        // Check username and password are not empty
+        if (!url.username || !url.password) {
+          console.error("❌ DATABASE_URL missing username or password");
+          throw new Error("DATABASE_URL must include username and password");
+        }
+        
+        console.log(`✅ Using Cloud SQL Unix socket: ${hostParam}`);
+        return dbUrl;
+      }
+      
+      // For regular TCP connection
+      if (url.hostname && url.username && url.password) {
+        console.log(`✅ Using TCP connection: ${url.hostname}:${url.port || 5432}`);
+        return dbUrl;
+      }
+      
+      // If we reach here, format is invalid
+      console.error("❌ DATABASE_URL has invalid format:", dbUrl);
+      throw new Error("DATABASE_URL is missing required components (host, username, or password)");
+      
+    } catch (error) {
+      console.error("❌ Error parsing DATABASE_URL:", error);
+      
+      // If in production, throw error
+      if (process.env.NODE_ENV === "production") {
+        throw error;
+      }
+      
+      // In development, fall through to construct from individual variables
+      console.warn("⚠️  Falling back to individual DB_ environment variables");
+    }
   }
 
   // Fallback to constructing from individual variables
@@ -28,12 +73,21 @@ function getDatabaseUrl(): string {
   const password = process.env.DB_PASSWORD || "";
   const schema = process.env.DB_SCHEMA || "public";
 
+  // Validate individual variables
+  if (!username || !database) {
+    throw new Error("Missing required database configuration: DB_USER and DB_NAME must be set");
+  }
+
   // If running on Cloud Run with Cloud SQL, use Unix socket
   if (process.env.CLOUD_SQL_CONNECTION_NAME && host.startsWith("/cloudsql")) {
-    return `postgresql://${username}:${password}@/${database}?host=${host}&schema=${schema}`;
+    const connectionName = process.env.CLOUD_SQL_CONNECTION_NAME;
+    const socketHost = `/cloudsql/${connectionName}`;
+    console.log(`🔌 Constructing Unix socket URL: ${socketHost}`);
+    return `postgresql://${username}:${password}@/${database}?host=${socketHost}&schema=${schema}`;
   }
 
   // Otherwise use TCP connection
+  console.log(`🔌 Constructing TCP URL: ${host}:${port}`);
   return `postgresql://${username}:${password}@${host}:${port}/${database}?schema=${schema}`;
 }
 
