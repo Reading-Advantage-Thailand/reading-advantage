@@ -59,6 +59,12 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app/
 
 RUN npm install
+
+# Generate Prisma Client with placeholder DATABASE_URL for build
+# The real DATABASE_URL will be set at runtime via Cloud Run environment variables
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
+RUN npx prisma generate
+
 ENV NODE_OPTIONS=--max-old-space-size=12288
 RUN npm run build
 
