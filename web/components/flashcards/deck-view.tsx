@@ -1,5 +1,6 @@
 // components/flashcards/single-deck-view-inline.tsx
 "use client";
+import { useCurrentLocale } from "@/locales/client";
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -125,11 +126,42 @@ export function SingleDeckViewInline({
 }: SingleDeckViewInlineProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const currentLocale = useCurrentLocale();
   const [isPlaying, setIsPlaying] = useState(false);
   const [gameCards, setGameCards] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Function to detect user's language preference based on current locale
+  const detectUserLanguage = (deckType: "VOCABULARY" | "SENTENCE"): string => {
+    // Map locale to supported languages
+    const languageMap: Record<string, string> = {
+      en: "en",
+      th: "th",
+      vi: "vi",
+      zh: "cn",
+      "zh-CN": "cn",
+      "zh-TW": "tw",
+    };
+
+    const detectedLang = languageMap[currentLocale] || currentLocale;
+
+    // For VOCABULARY deck, check if detected language is supported
+    if (deckType === "VOCABULARY") {
+      const supportedVocabLangs = ["en", "th", "vi", "cn", "tw"];
+      return detectedLang && supportedVocabLangs.includes(detectedLang)
+        ? detectedLang
+        : "en"; // Default to English for vocabulary
+    } else {
+      // For SENTENCE deck
+      const supportedSentenceLangs = ["th", "vi", "cn", "tw"];
+      return detectedLang && supportedSentenceLangs.includes(detectedLang)
+        ? detectedLang
+        : "en"; // Default to Thai for sentences
+    }
+  };
+
   const [selectedLanguage, setSelectedLanguage] = useState<string>(
-    deck.type === "VOCABULARY" ? "en" : "th"
+    detectUserLanguage(deck.type)
   );
 
   const handleStartStudying = async () => {
@@ -172,7 +204,7 @@ export function SingleDeckViewInline({
     setTimeout(() => {
       setIsPlaying(false);
       setGameCards([]);
-      
+
       // Use the callback to refresh data instead of full page reload
       if (onDeckUpdate) {
         onDeckUpdate();
