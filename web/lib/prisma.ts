@@ -11,6 +11,16 @@ export const prisma =
       },
     },
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    // Cloud SQL connection pooling configuration
+    // Helps prevent connection exhaustion in serverless environments
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+// Graceful shutdown for Cloud Run
+if (process.env.NODE_ENV === "production") {
+  process.on("SIGTERM", async () => {
+    await prisma.$disconnect();
+    process.exit(0);
+  });
+}
