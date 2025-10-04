@@ -22,7 +22,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Checkbox } from "../ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { useScopedI18n } from "@/locales/client";
 import { useParams, useRouter } from "next/navigation";
@@ -67,73 +67,76 @@ export default function MyUnEnrollClasses() {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [selectedClassroomId, setSelectedClassroomId] = useState<string>("");
+  const [isUnenrolling, setIsUnenrolling] = useState<boolean>(false);
   const t = useScopedI18n("components.articleRecordsTable");
   const tu = useScopedI18n("components.myStudent.unEnrollPage");
   const router = useRouter();
   const params = useParams();
   const [data, setData] = useState<MyEnrollProps>();
 
-  const handleStudentUnEnrollment = async (classroomId: string[]) => {
-    if (classroomId.length === 0) {
+  const handleStudentUnEnrollment = async () => {
+    if (!selectedClassroomId) {
       toast({
         title: tu("toast.errorUnenrollment"),
-        description: tu("toast.errorUnenrollDescription"),
+        description: "Please select a classroom first.",
         variant: "destructive",
       });
       return;
     }
-    for (const classId of classroomId) {
-      const studentDelete = data?.classroom
-        .find((classroom: Classroom) => classroom.id === classId)
-        ?.student.filter(
-          (student: StudentInClass) => student.studentId !== params.studentId
-        );
-
-      try {
-        const response = await fetch(`/api/v1/classroom/${classId}/unenroll`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            student: studentDelete,
-          }),
-        });
-        if (!response.ok) {
-          toast({
-            title: tu("toast.errorUnenrollment"),
-            description: tu("toast.errorUnenrollDescription"),
-            variant: "destructive",
-          });
-        } else {
-          setData((prevData) => {
-            const safePrevData = prevData ?? {
-              classroom: [],
-              student: {} as Student,
-            };
-
-            return {
-              ...safePrevData,
-              classroom: safePrevData.classroom.filter(
-                (classroom: Classroom) => classroom.id !== classId
-              ),
-            };
-          });
-        }
-      } catch (error) {
+    
+    setIsUnenrolling(true);
+    
+    try {
+      const response = await fetch(`/api/v1/classroom/${selectedClassroomId}/unenroll`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studentId: params.studentId,
+        }),
+      });
+      
+      if (!response.ok) {
         toast({
           title: tu("toast.errorUnenrollment"),
           description: tu("toast.errorUnenrollDescription"),
           variant: "destructive",
         });
-      } finally {
+        setIsUnenrolling(false);
+      } else {
+        setData((prevData) => {
+          const safePrevData = prevData ?? {
+            classroom: [],
+            student: {} as Student,
+          };
+
+          return {
+            ...safePrevData,
+            classroom: safePrevData.classroom.filter(
+              (classroom: Classroom) => classroom.id !== selectedClassroomId
+            ),
+          };
+        });
+        
         toast({
           title: tu("toast.successUnenrollment"),
           description: tu("toast.successUnenrollDescription"),
         });
-        router.refresh();
-        setRowSelection({});
+        
+        setTimeout(() => {
+          router.push("/teacher/my-students");
+        }, 1000);
       }
+    } catch (error) {
+      console.error("Error during unenrollment:", error);
+      toast({
+        title: tu("toast.errorUnenrollment"),
+        description: tu("toast.errorUnenrollDescription"),
+        variant: "destructive",
+      });
+      setIsUnenrolling(false);
     }
   };
 
@@ -164,10 +167,7 @@ export default function MyUnEnrollClasses() {
       },
       cell: ({ row }) => (
         <div className="captoliza text-center">
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-          />
+          <RadioGroupItem value={row.original.id} />
         </div>
       ),
     },
@@ -232,66 +232,63 @@ export default function MyUnEnrollClasses() {
         <Button
           variant="default"
           className="max-w-sm"
-          onClick={() => {
-            const selectedRows = table.getSelectedRowModel().rowsById;
-            const fileIds = Object.values(selectedRows).map(
-              (row) => row.original.id
-            );
-            handleStudentUnEnrollment(fileIds);
-          }}
+          onClick={handleStudentUnEnrollment}
+          disabled={isUnenrolling || !selectedClassroomId}
         >
-          {tu("remove")}
+          {isUnenrolling ? "Removing..." : tu("remove")}
         </Button>
       </div>
       <div className="rounded-md border">
-        <Table style={{ tableLayout: "fixed", width: "100%" }}>
-          <TableHeader className="font-bold">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+        <RadioGroup value={selectedClassroomId} onValueChange={setSelectedClassroomId}>
+          <Table style={{ tableLayout: "fixed", width: "100%" }}>
+            <TableHeader className="font-bold">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Empty
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Empty
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </RadioGroup>
       </div>
       <div className="flex items-center justify-end space-x-2">
         <div className="space-x-2">

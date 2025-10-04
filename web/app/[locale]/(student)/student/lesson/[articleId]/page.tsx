@@ -10,15 +10,15 @@ import { Article } from "@/components/models/article-model";
 import { headers } from "next/headers";
 
 export const metadata = {
-  title: "Article",
-  description: "Article",
+  title: "Lesson",
+  description: "Interactive Reading Lesson",
 };
 
 async function getArticle(articleId: string) {
   return fetchData(`/api/v1/articles/${articleId}`);
 }
 
-export default async function LessonQuizPage({
+export default async function LessonPage({
   params,
 }: {
   params: { articleId: string };
@@ -46,18 +46,20 @@ export default async function LessonQuizPage({
   const classroomId = data.data;
 
   return (
-    <>
-      <div className="md:flex md:flex-row md:gap-3 md:mb-5">
-        <LessonCard
-          article={articleResponse.article}
-          articleId={params.articleId}
-          userId={user.id}
-          classroomId={classroomId}
-        />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-[hsl(222.2_90%_4.9%)] to-20% rounded-xl">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className="relative">
+          <LessonCard
+            article={articleResponse.article}
+            articleId={params.articleId}
+            userId={user.id}
+            classroomId={classroomId}
+          />
+          <ChatBotFloatingChatButton
+            article={articleResponse?.article as Article}
+          />
+        </div>
       </div>
-      <ChatBotFloatingChatButton
-        article={articleResponse?.article as Article}
-      />
-    </>
+    </div>
   );
 }

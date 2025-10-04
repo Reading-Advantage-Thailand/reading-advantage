@@ -34,9 +34,9 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
   );
 
   // Sort the data by timestamp in descending order
-  const sortedData = data.sort(
+  const sortedData = data ? [...data].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
+  ) : [];
   // Get the most recent activity
   const mostRecentActivity = sortedData[0];
   // Get the remaining activities
@@ -68,13 +68,13 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
                   </div>
                   <div className="text-xs text-gray-500">
                     {formatDate(mostRecentActivity.timestamp)}
-                    {mostRecentActivity.activityStatus === "completed" &&
+                    {mostRecentActivity.completed &&
                     mostRecentActivity.xpEarned !== 0
                       ? ` - Completed with ${mostRecentActivity.xpEarned} XP`
                       : ""}
                   </div>
                 </div>
-                {mostRecentActivity.activityStatus === "completed" ? (
+                {mostRecentActivity.completed ? (
                   <Badge className="bg-green-500 hover:bg-green-500">
                     <CheckCircledIcon className="pr-1" />
                     {t("completed")}
@@ -99,13 +99,13 @@ export default function UserRecentActivity({ data }: UserActiviryChartProps) {
                     </div>
                     <div className="text-xs text-gray-500">
                       {formatDate(activity.timestamp)}
-                      {activity.activityStatus === "completed" &&
+                      {activity.completed &&
                       activity.xpEarned !== 0
                         ? ` - Completed with ${activity.xpEarned} XP`
                         : ""}
                     </div>
                   </div>
-                  {activity.activityStatus === "completed" ? (
+                  {activity.completed ? (
                     <Badge className="bg-green-500 hover:bg-green-500">
                       <CheckCircledIcon className="pr-1" />
                       {t("completed")}

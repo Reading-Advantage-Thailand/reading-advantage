@@ -35,10 +35,18 @@ interface WordList {
     tw: string;
     vi: string;
   };
-  index: number;
-  startTime: number;
-  endTime: number;
-  audioUrl: string;
+  index?: number;
+  startTime?: number;
+  endTime?: number | undefined; // Allow undefined for last word (play to end)
+  timeSeconds?: number;
+  markName?: string;
+  audioUrl?: string;
+}
+
+interface ApiResponse {
+  timepoints?: { timeSeconds: number }[];
+  word_list?: WordList[];
+  wordlist?: WordList[];
 }
 
 export default function LessonWordCollection({
@@ -48,6 +56,7 @@ export default function LessonWordCollection({
   onCompleteChange,
 }: Props) {
   const t = useScopedI18n("pages.student.lessonPage");
+  const lt = useScopedI18n("lesson");
   const [loading, setLoading] = useState<boolean>(false);
   const [wordList, setWordList] = useState<WordList[]>([]);
   const [savedWordlistCount, setSavedWordlistCount] = useState(0);
@@ -125,23 +134,52 @@ export default function LessonWordCollection({
     const fetchWordList = async () => {
       try {
         setLoading(true); // Start loading
+        console.log("Fetching wordlist for article:", articleId); // Debug log
+        
         const resWordlist = await fetch(`/api/v1/assistant/wordlist`, {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({ article, articleId }),
         });
 
+        if (!resWordlist.ok) {
+          throw new Error(`API request failed with status: ${resWordlist.status}`);
+        }
+
         const data = await resWordlist.json();
 
-        let wordList = [];
+        console.log("Raw API response:", data); // Debug log
 
-        if (data?.timepoints) {
-          wordList = data?.timepoints.map(
+        let processedWordList = [];
+
+        // Handle different response structures
+        if (Array.isArray(data)) {
+          // Direct array response (most common case from the API)
+          processedWordList = data.map((word: any, index: number) => {
+            const startTime = word.timeSeconds || word.startTime || index * 2;
+            // Use next word's startTime as current word's endTime
+            const nextWord = data[index + 1];
+            const endTime = nextWord ? (nextWord.timeSeconds || nextWord.startTime || ((index + 1) * 2)) : undefined; // undefined means play to end
+            
+            return {
+              ...word,
+              index,
+              startTime,
+              endTime,
+              audioUrl: word.audioUrl || `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`,
+            };
+          });
+          console.log("Direct array - processed with endTime logic:", processedWordList); // Debug log
+        } else if (data?.timepoints && Array.isArray(data.timepoints)) {
+          // Structure with timepoints and word_list arrays (legacy format)
+          processedWordList = data.timepoints.map(
             (timepoint: { timeSeconds: number }, index: number) => {
               const startTime = timepoint.timeSeconds;
-              const endTime =
-                index === data?.timepoints.length - 1
-                  ? timepoint.timeSeconds + 10
-                  : data?.timepoints[index + 1].timeSeconds;
+              const nextTimepoint = data.timepoints[index + 1];
+              const endTime = nextTimepoint ? nextTimepoint.timeSeconds : undefined; // undefined means play to end
+              
               return {
                 vocabulary: data?.word_list[index]?.vocabulary,
                 definition: data?.word_list[index]?.definition,
@@ -152,10 +190,43 @@ export default function LessonWordCollection({
               };
             }
           );
+        } else if (Array.isArray(data?.word_list)) {
+          // Structure with word_list array only
+          processedWordList = data.word_list.map((word: any, index: number) => {
+            const startTime = word.timeSeconds || word.startTime || index * 2;
+            const nextWord = data.word_list[index + 1];
+            const endTime = nextWord ? (nextWord.timeSeconds || nextWord.startTime || ((index + 1) * 2)) : undefined;
+            
+            return {
+              ...word,
+              index,
+              startTime,
+              endTime,
+              audioUrl: word.audioUrl || `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`,
+            };
+          });
+        } else if (data?.wordlist && Array.isArray(data.wordlist)) {
+          // Another possible structure
+          processedWordList = data.wordlist.map((word: any, index: number) => {
+            const startTime = word.timeSeconds || word.startTime || index * 2;
+            const nextWord = data.wordlist[index + 1];
+            const endTime = nextWord ? (nextWord.timeSeconds || nextWord.startTime || ((index + 1) * 2)) : undefined;
+            
+            return {
+              ...word,
+              index,
+              startTime,
+              endTime,
+              audioUrl: word.audioUrl || `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_WORDS_URL}/${articleId}.mp3`,
+            };
+          });
         } else {
-          wordList = data?.word_list;
+          console.warn("Unexpected data structure:", data);
+          processedWordList = [];
         }
-        setWordList(wordList);
+
+        console.log("Processed word list:", processedWordList); // Debug log
+        setWordList(processedWordList);
       } catch (error: any) {
         console.error("error: ", error);
         toast({
@@ -163,12 +234,17 @@ export default function LessonWordCollection({
           description: `${error?.response?.data?.message || error?.message}`,
           variant: "destructive",
         });
+        setWordList([]); // Set empty array on error
       } finally {
         setLoading(false); // Stop loading
       }
     };
 
-    fetchWordList();
+    if (articleId && article) {
+      fetchWordList();
+    } else {
+      console.warn("Missing required data:", { articleId, article });
+    }
   }, [article, articleId]);
 
   const playAudioSegment = (audioUrl: string, start: number, end: number) => {
@@ -221,7 +297,7 @@ export default function LessonWordCollection({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            {loading && wordList ? (
+            {loading ? (
               <div className="flex items-start xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
                 <div className="space-y-8 w-full">
                   <Skeleton className="h-4 w-full" />
@@ -234,7 +310,7 @@ export default function LessonWordCollection({
                   <Skeleton className="h-4 w-3/4" />
                 </div>
               </div>
-            ) : (
+            ) : wordList && wordList.length > 0 ? (
               <>
                 <div>
                   <span className="font-bold">{t("phase4Description")}</span>
@@ -294,7 +370,7 @@ export default function LessonWordCollection({
                                           </span>
 
                                           <div className="mr-1">
-                                            {word?.startTime && (
+                                            {word?.startTime !== undefined && (
                                               <AudioImg
                                                 key={word.vocabulary}
                                                 audioUrl={
@@ -309,7 +385,9 @@ export default function LessonWordCollection({
                                           </div>
 
                                           <span>
-                                            {word.definition[currentLocale]}
+                                            {word.definition?.[currentLocale] ||
+                                              word.definition?.en ||
+                                              lt("translationNotAvailable")}
                                           </span>
                                         </div>
                                       </FormControl>
@@ -333,6 +411,10 @@ export default function LessonWordCollection({
                   </Button>
                 </div>
               </>
+            ) : (
+              <div className="text-center py-8">
+                <span className="text-gray-500">{lt("noVocabularyWords")}</span>
+              </div>
             )}
           </form>
         </Form>

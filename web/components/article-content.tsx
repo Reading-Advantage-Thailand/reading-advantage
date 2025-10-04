@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Article } from "./models/article-model";
 import { cn, splitTextIntoSentences } from "@/lib/utils";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
@@ -60,11 +60,20 @@ async function getTranslateSentence(
   try {
     const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ type: "passage", targetLanguage }),
     });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
     const data = await res.json();
     return data;
   } catch (error) {
+    console.error("Error translating sentences:", error);
     return { message: "error", translated_sentences: [] };
   }
 }
@@ -75,7 +84,11 @@ export default function ArticleContent({
   userId,
 }: Props) {
   const t = useScopedI18n("components.articleContent");
-  const sentences = splitTextIntoSentences(article.passage, true);
+  const sentences =
+    article.timepoints && article.timepoints.length > 0
+      ? article.timepoints.map((timepoint) => timepoint.sentences)
+      : splitTextIntoSentences(article.passage, true);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -91,28 +104,37 @@ export default function ArticleContent({
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const [speed, setSpeed] = useState<string>("1");
 
-  const sentenceList: Sentence[] = article.timepoints.map(
-    (timepoint, index) => {
-      const startTime = timepoint.timeSeconds;
-      const endTime =
-        index === article.timepoints.length - 1
-          ? timepoint.timeSeconds + 10
-          : article.timepoints[index + 1].timeSeconds - 0.3;
-      const sentence =
-        sentences.length <= article.timepoints.length
-          ? article.timepoints[index].sentences
-          : sentences[index];
-      return {
-        sentence: sentence ?? sentences[index],
-        index: timepoint.index,
-        startTime,
-        endTime,
-        audioUrl: timepoint.file
-          ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}`
-          : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3`,
-      };
-    }
-  );
+  // Create cache busting key - simpler approach
+  const cacheKey = useMemo(() => Date.now(), [article.id]);
+
+  const sentenceList: Sentence[] = useMemo(() =>
+    Array.isArray(article.timepoints) && article.timepoints.length > 0
+      ? article.timepoints.map((timepoint, index) => {
+          const endTime =
+            index < article.timepoints!.length - 1
+              ? article.timepoints![index + 1].timeSeconds - 0.3
+              : timepoint.timeSeconds + 10;
+
+          // Generate the correct audio URL with cache busting
+          const audioUrl = timepoint.file
+            ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}?v=${cacheKey}`
+            : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`;
+
+          return {
+            sentence: timepoint.sentences,
+            index: timepoint.index,
+            startTime: timepoint.timeSeconds,
+            endTime,
+            audioUrl,
+          };
+        })
+      : sentences.map((sentence, index) => ({
+          sentence,
+          index,
+          startTime: index * 2,
+          endTime: (index + 1) * 2,
+          audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`,
+        })), [article.timepoints, article.id, sentences, cacheKey]);
 
   const handlePlayPause = async () => {
     if (audioRef.current) {
@@ -236,6 +258,22 @@ export default function ArticleContent({
           endTimepoint = audioRef.current?.duration as number;
         }
 
+        // Get the correct target language based on current locale
+        type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
+        let targetLanguage: ExtendedLocale = locale as ExtendedLocale;
+        switch (locale) {
+          case "cn":
+            targetLanguage = "zh-CN";
+            break;
+          case "tw":
+            targetLanguage = "zh-TW";
+            break;
+        }
+
+        // Create translation object with the correct language
+        const translationObj: Record<string, string> = {};
+        translationObj[targetLanguage] = translate[selectedSentence as number];
+
         const resSaveSentences = await fetch(
           `/api/v1/users/sentences/${userId}`,
           {
@@ -246,13 +284,11 @@ export default function ArticleContent({
               ].sentence.replace("~~", ""),
               sn: selectedSentence,
               articleId: article.id,
-              translation: {
-                th: translate[selectedSentence as number],
-              },
+              translation: translationObj,
               audioUrl: sentenceList[selectedSentence as number].audioUrl,
               timepoint: sentenceList[selectedSentence as number].startTime,
               endTimepoint: endTimepoint,
-              saveToFlashcard: true, // case ประโยคที่เลือกจะ save to flashcard
+              saveToFlashcard: true,
               ...card,
             }),
           }
@@ -294,6 +330,19 @@ export default function ArticleContent({
       case "tw":
         targetLanguage = "zh-TW";
         break;
+    }
+
+    const translatedPassage = article.translatedPassage as Record<
+      string,
+      string[]
+    > | null;
+
+    if (translatedPassage && translatedPassage[targetLanguage]) {
+      setTranslate(translatedPassage[targetLanguage]);
+      setIsTranslateOpen(!isTranslateOpen);
+      setIsTranslate(true);
+      setLoading(false);
+      return;
     }
     const response = await getTranslateSentence(article.id, targetLanguage);
     if (response.message === "error") {
@@ -383,7 +432,6 @@ export default function ArticleContent({
   };
 
   const handleTranslate = async () => {
-    //if not translate, translate
     if (isTranslate === false) {
       await handleTranslateSentence();
       setIsTranslateClicked(!isTranslateClicked);
@@ -395,18 +443,17 @@ export default function ArticleContent({
   useEffect(() => {
     const audio = audioRef.current;
     setSelectedIndex(-1);
-    if (audio) {
+    if (audio && sentenceList[currentAudioIndex]) {
+      // Use the URL from sentenceList (already has cache busting)
       audio.src = sentenceList[currentAudioIndex].audioUrl;
-
       audio.load();
+      
       const handleLoadedMetadata = () => {
         audio.currentTime = sentenceList[currentAudioIndex].startTime;
-
         audio.playbackRate = Number(speed);
 
         if (isPlaying) {
           audio.play().catch((error) => {
-            // Handle any errors (e.g., user interaction required)
             console.error("Playback error:", error);
           });
         }
@@ -420,6 +467,16 @@ export default function ArticleContent({
       };
     }
   }, [currentAudioIndex, speed]);
+
+  // Reset audio player when article changes
+  useEffect(() => {
+    setIsPlaying(false);
+    setCurrentAudioIndex(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.load();
+    }
+  }, [article.id]);
 
   return (
     <div>
@@ -511,11 +568,11 @@ export default function ArticleContent({
         </div>
       )}
       <ContextMenu>
-        <ContextMenuTrigger>
+        <ContextMenuTrigger className="no-select">
           {sentenceList.map((sentence, index) => (
             <span
               id="onborda-savesentences"
-              key={sentence.index}
+              key={`sentence-${index}`}
               className={cn(
                 selectedIndex === index && "bg-blue-200 dark:bg-blue-900",
                 `${getHighlightedClass(index)}`

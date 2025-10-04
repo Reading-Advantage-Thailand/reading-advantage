@@ -1,11 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScopedI18n } from "@/locales/client";
 import dynamic from "next/dynamic";
 
@@ -13,10 +8,22 @@ type Props = {
   userId: string;
 };
 
-const FlashCard = dynamic(() => import("@/components/flash-card"));
-const OrderSentences = dynamic(() => import("@/components/dnd/order-sentences"));
-const ClozeTest = dynamic(() => import("@/components/cloze-test"));
-const OrderWords = dynamic(() => import("@/components/order-words"));
+const FlashCard = dynamic(
+  () =>
+    import("@/components/flashcards").then((mod) => ({
+      default: mod.FlashcardDashboard,
+    })),
+  {
+    ssr: false,
+  }
+);
+const OrderSentences = dynamic(
+  () => import("@/components/practic/order-sentences-page")
+);
+const ClozeTestPage = dynamic(
+  () => import("@/components/practic/cloze-test-page")
+);
+const OrderWords = dynamic(() => import("@/components/practic/order-words-page"));
 const Matching = dynamic(() => import("@/components/matching"));
 const ManageTab = dynamic(() => import("./manage-tab"));
 
@@ -46,21 +53,17 @@ export default function TabsPractice({ userId }: Props) {
 
       <TabsContent className="space-y-2" value="tab1">
         {activeTab === "tab1" && (
-          <FlashCard
-            userId={userId}
-            showButton={showButton}
-            setShowButton={setShowButton}
-          />
+          <FlashCard userId={userId} deckType="SENTENCE" />
         )}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab2">
-        {activeTab === "tab2" && <OrderSentences userId={userId} />}
+        {activeTab === "tab2" && <OrderSentences />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab3">
-        {activeTab === "tab3" && <ClozeTest userId={userId} />}
+        {activeTab === "tab3" && <ClozeTestPage />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab4">
-        {activeTab === "tab4" && <OrderWords userId={userId} />}
+        {activeTab === "tab4" && <OrderWords />}
       </TabsContent>
       <TabsContent className="space-y-2" value="tab5">
         {activeTab === "tab5" && <Matching userId={userId} />}

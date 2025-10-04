@@ -93,14 +93,35 @@ function calculateAverageCEFRLevel(
   // calendarValue: DateValueType
   lastmonth: number
 ) {
+  console.log("calculateAverageCEFRLevel input:", { articles: articles.length, lastmonth });
+  
   // ISO date
   const sixMonthsAgo = new Date();
 
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - lastmonth);
+  console.log("Filtering from date:", sixMonthsAgo);
 
   const recentData = articles.filter(
     (item) => new Date(item.timestamp) >= sixMonthsAgo
   );
+  console.log("Recent data after date filter:", recentData.length);
+
+  // Check if we have any article read activities
+  const articleReadActivities = recentData.filter(activity => 
+    activity.activityType === 'ARTICLE_READ' && activity.targetId
+  );
+  console.log("Article read activities:", articleReadActivities.length);
+
+  // If no article read activities, we can't calculate CEFR level
+  if (articleReadActivities.length === 0) {
+    console.log("No article read activities found, using default values");
+    const months = getLastSixMonths();
+    return months.map(month => ({
+      month,
+      average_cefr_level: "A0-",
+      number: 0,
+    }));
+  }
 
   // Initialize a default structure with 6 months, default CEFR level set to 0 (A0)
   const monthlyCEFR: Record<string, { total: number; count: number }> = {};
@@ -110,18 +131,35 @@ function calculateAverageCEFRLevel(
 
   /// Aggregate actual data into the structure
   recentData.forEach((item) => {
+    // For now, we need to get CEFR level from article data
+    // This is a workaround since the activity log doesn't include CEFR level directly
     const cefrLevel = item.details?.cefr_level;
-    if (!cefrLevel || !(cefrLevel in CEFR_LEVEL_MAP)) return; // Skip invalid CEFR levels
+    console.log("Processing item:", { 
+      timestamp: item.timestamp, 
+      activityType: item.activityType,
+      targetId: item.targetId,
+      cefrLevel: cefrLevel,
+      details: item.details,
+      fullItem: item
+    });
+    
+    if (!cefrLevel || !(cefrLevel in CEFR_LEVEL_MAP)) {
+      console.log("Skipping invalid CEFR level:", cefrLevel, "Available keys:", Object.keys(CEFR_LEVEL_MAP));
+      return; // Skip invalid CEFR levels
+    }
 
     const month = getMonthName(new Date(item.timestamp));
     if (!monthlyCEFR[month]) monthlyCEFR[month] = { total: 0, count: 0 };
 
     monthlyCEFR[month].total += CEFR_LEVEL_MAP[cefrLevel];
     monthlyCEFR[month].count += 1;
+    console.log("Added to month", month, "CEFR:", cefrLevel, "Value:", CEFR_LEVEL_MAP[cefrLevel]);
   });
 
+  console.log("Monthly CEFR totals:", monthlyCEFR);
+
   // Convert the monthly totals to averages and map to CEFR levels
-  return Object.entries(monthlyCEFR).map(([month, { total, count }]) => {
+  const result = Object.entries(monthlyCEFR).map(([month, { total, count }]) => {
     const averageNumeric = total / count;
     const roundedAverage = Math.round(averageNumeric);
     return {
@@ -130,6 +168,9 @@ function calculateAverageCEFRLevel(
       number: averageNumeric,
     };
   });
+  
+  console.log("Final result:", result);
+  return result;
 }
 
 const chartConfig = {
@@ -160,7 +201,9 @@ const CustomTooltip = ({ active, payload, label, nameKey }: any) => {
 };
 
 export default function LineChartCustom({ data }: UserActiviryChartProps) {
+  console.log("LineChartCustom received data:", data);
   const formattedData = calculateAverageCEFRLevel(data, 5);
+  console.log("LineChartCustom formatted data:", formattedData);
 
   return (
     <CardContent>

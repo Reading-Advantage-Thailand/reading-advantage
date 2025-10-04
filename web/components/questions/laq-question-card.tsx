@@ -34,11 +34,8 @@ import { Button } from "../ui/button";
 import { toast } from "../ui/use-toast";
 import { useQuestionStore } from "@/store/question-store";
 import { useRouter } from "next/navigation";
-import {
-  ActivityType,
-  ActivityStatus,
-} from "../models/user-activity-log-model";
-import { levelCalculation } from "@/lib/utils";
+import { useArticleCompletion } from "@/lib/use-article-completion";
+import { LicenseType } from "@prisma/client";
 
 interface Props {
   userId: string;
@@ -46,6 +43,7 @@ interface Props {
   articleId: string;
   articleTitle: string;
   articleLevel: number;
+  userLicenseLevel?: LicenseType;
 }
 
 interface FeedbackDetails {
@@ -93,6 +91,7 @@ export default function LAQuestionCard({
   articleId,
   articleTitle,
   articleLevel,
+  userLicenseLevel,
 }: Props) {
   const [state, setState] = useState(QuestionState.LOADING);
   const [data, setData] = useState<QuestionResponse>({
@@ -102,6 +101,8 @@ export default function LAQuestionCard({
     },
     state: QuestionState.LOADING,
   });
+
+  const { checkAndNotifyCompletion } = useArticleCompletion();
 
   useEffect(() => {
     fetch(`/api/v1/articles/${articleId}/questions/laq`)
@@ -124,6 +125,20 @@ export default function LAQuestionCard({
     setState(QuestionState.LOADING);
   };
 
+  useEffect(() => {
+    if (state === QuestionState.COMPLETED) {
+      const checkCompletion = async () => {
+        try {
+          await checkAndNotifyCompletion(userId, articleId);
+        } catch (error) {
+          console.error("Error checking article completion:", error);
+        }
+      };
+
+      checkCompletion();
+    }
+  }, [state, userId, articleId, checkAndNotifyCompletion]);
+
   switch (state) {
     case QuestionState.LOADING:
       return <QuestionCardLoading />;
@@ -138,6 +153,7 @@ export default function LAQuestionCard({
           handleCancel={handleCancel}
           articleTitle={articleTitle}
           articleLevel={articleLevel}
+          userLicenseLevel={userLicenseLevel}
         />
       );
     case QuestionState.COMPLETED:
@@ -210,6 +226,7 @@ function QuestionCardIncomplete({
   handleCancel,
   articleTitle,
   articleLevel,
+  userLicenseLevel,
 }: {
   userId: string;
   resp: QuestionResponse;
@@ -219,8 +236,11 @@ function QuestionCardIncomplete({
   handleCancel: () => void;
   articleTitle: string;
   articleLevel: number;
+  userLicenseLevel?: LicenseType;
 }) {
   const t = useScopedI18n("components.laq");
+  const isLocked = userLicenseLevel !== LicenseType.ENTERPRISE;
+  
   return (
     <Card id="onborda-laq" className="mt-3">
       <QuestionHeader
@@ -230,6 +250,7 @@ function QuestionCardIncomplete({
         userId={userId}
         articleId={articleId}
         disabled={false}
+        isLocked={isLocked}
       >
         <QuizContextProvider>
           <LAQuestion
@@ -353,7 +374,11 @@ function LAQuestion({
         );
 
         const finalFeedback = await submitAnswer.json();
-        setData(finalFeedback);
+        setData({
+          state: finalFeedback.state,
+          answer: finalFeedback.answer,
+          result: finalFeedback.result,
+        });
         setRating(finalFeedback.sumScores);
       }
       setIsLoading(false);
@@ -370,46 +395,38 @@ function LAQuestion({
 
   async function onGetExp() {
     setIsLoading(true);
-    fetch(
-      `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/getxp`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          rating,
-        }),
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data) {
-          toast({
-            title: tf("toast.success"),
-            imgSrc: true,
-            description: `Congratulations!, You received ${rating} XP for completing this activity.`,
-          });
+    try {
+      const response = await fetch(
+        `/api/v1/articles/${articleId}/questions/laq/${resp.result.id}/getxp`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            rating,
+          }),
         }
-        handleCompleted();
-      })
-      .finally(() => {
-        setIsLoading(false);
+      );
+      const xpData = await response.json();
+
+      if (xpData && xpData.xpEarned) {
+        toast({
+          title: tf("toast.success"),
+          imgSrc: true,
+          description: `Congratulations!, You received ${xpData.xpEarned} XP for completing this activity.`,
+        });
+      }
+
+      handleCompleted();
+
+      router.refresh();
+    } catch (error) {
+      console.error("Error getting XP:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get XP. Please try again.",
       });
-    await fetch(`/api/v1/users/${userId}/activitylog`, {
-      method: "POST",
-      body: JSON.stringify({
-        articleId: articleId,
-        activityType: ActivityType.LA_Question,
-        activityStatus: ActivityStatus.Completed,
-        timeTaken: timer,
-        xpEarned: rating,
-        details: {
-          ...data,
-          title: articleTitle,
-          level: articleLevel,
-          cefr_level: levelCalculation(rating).cefrLevel,
-        },
-      }),
-    });
-    router.refresh();
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const handleCategoryChange = (category: string) => {

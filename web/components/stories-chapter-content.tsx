@@ -88,7 +88,7 @@ export default function ChapterContent({
   const [isTranslateOpen, setIsTranslateOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const sentences = splitTextIntoSentences(story.chapter.content, true);
+  const sentences = splitTextIntoSentences(story.chapter.passage, true);
   const router = useRouter();
   const chapter = Number(chapterNumber);
   const [isTranslateClicked, setIsTranslateClicked] = useState(false);
@@ -465,8 +465,8 @@ export default function ChapterContent({
             {loading
               ? "Loading"
               : isTranslate && isTranslateOpen
-              ? t("translateButton.close")
-              : t("translateButton.open")}
+                ? t("translateButton.close")
+                : t("translateButton.open")}
           </Button>
         </div>
       </div>
@@ -535,7 +535,7 @@ export default function ChapterContent({
       )}
 
       <ContextMenu>
-        <ContextMenuTrigger>
+        <ContextMenuTrigger className="no-select">
           {sentenceList.map((sentence, index) => (
             <span
               id="onborda-savesentences"

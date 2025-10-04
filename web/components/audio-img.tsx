@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 type Props = {
   audioUrl: string;
   startTimestamp: number;
-  endTimestamp: number;
+  endTimestamp?: number; // Optional - if not provided, play till end
 };
 
 export default function AudioImg({
@@ -32,18 +32,30 @@ export default function AudioImg({
         .play()
         .then(() => {
           setIsPlaying(true);
-          const tolerance = 0.5;
+          
+          // If no endTimestamp provided, just let it play without stopping
+          if (endTimestamp !== undefined) {
+            const tolerance = 0.5;
 
-          const checkProgress = setInterval(() => {
-            if (
-              audioRef.current &&
-              audioRef.current.currentTime + tolerance >= endTimestamp
-            ) {
-              audioRef.current.pause();
-              clearInterval(checkProgress);
+            const checkProgress = setInterval(() => {
+              if (
+                audioRef.current &&
+                audioRef.current.currentTime + tolerance >= endTimestamp
+              ) {
+                audioRef.current.pause();
+                clearInterval(checkProgress);
+                setIsPlaying(false);
+              }
+            }, 5);
+          } else {
+            // Listen for audio end event if no endTimestamp
+            const handleAudioEnd = () => {
               setIsPlaying(false);
-            }
-          }, 5);
+              audioRef.current?.removeEventListener('ended', handleAudioEnd);
+            };
+            
+            audioRef.current?.addEventListener('ended', handleAudioEnd);
+          }
         })
         .catch((error) => {
           console.error("Audio playback failed:", error);

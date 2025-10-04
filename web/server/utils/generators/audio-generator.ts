@@ -19,10 +19,12 @@ import ffmpeg from "fluent-ffmpeg";
 interface GenerateAudioParams {
   passage: string;
   articleId: string;
+  isChapter?: boolean;
+  chapterId?: string;
 }
 
 interface GenerateChapterAudioParams {
-  content: string;
+  passage: string; // Changed from 'content' to 'passage' to match Article structure
   storyId: string;
   chapterNumber: string;
 }
@@ -138,12 +140,13 @@ function mergeAudioFiles(files: string[], outputPath: string): Promise<void> {
 export async function generateAudio({
   passage,
   articleId,
-  isUserGenerated = false,
+  isChapter = false,
+  chapterId,
   userId = "",
 }: GenerateAudioParams & {
   isUserGenerated?: boolean;
   userId?: string;
-}): Promise<void> {
+}): Promise<any[]> {
   try {
     const voice =
       AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
@@ -227,35 +230,37 @@ export async function generateAudio({
 
     await uploadToBucket(combinedAudioPath, `${AUDIO_URL}/${articleId}.mp3`);
 
-    // Update the database with all timepoints
-    if (isUserGenerated && userId) {
-      // For user-generated articles
-      await db
-        .collection("users")
-        .doc(userId)
-        .collection("generated-articles")
-        .doc(articleId)
-        .update({
-          timepoints: result,
-          id: articleId,
+    //update using Prisma
+    const { prisma } = await import("@/lib/prisma");
+    try {
+      if (isChapter && chapterId) {
+        // For chapters, don't update database here, just return the result
+        // The caller will handle the database update
+      } else {
+        await prisma.article.update({
+          where: { id: articleId },
+          data: {
+            sentences: result,
+            audioUrl: `${articleId}.mp3`,
+          },
         });
-    } else {
-      // For regular articles
-      await db.collection("new-articles").doc(articleId).update({
-        timepoints: result,
-        id: articleId,
-      });
+      }
+    } catch (error) {
+      console.log("Prisma update error:", error);
     }
+
+    // Return the timepoints for stories to use
+    return result;
   } catch (error: any) {
     console.log(error);
     throw `failed to generate audio: ${error} \n\n error: ${JSON.stringify(
-      error.response.data
+      error.response?.data || error
     )}`;
   }
 }
 
 export async function generateChapterAudio({
-  content,
+  passage, // Changed from 'content' to 'passage'
   storyId,
   chapterNumber,
 }: GenerateChapterAudioParams): Promise<void> {
@@ -265,7 +270,7 @@ export async function generateChapterAudio({
     const newVoice =
       NEW_MODEL_VOICES[Math.floor(Math.random() * NEW_MODEL_VOICES.length)];
 
-    const { sentences, chunks } = await splitTextIntoChunks(content, 5000);
+    const { sentences, chunks } = await splitTextIntoChunks(passage, 5000);
     let currentIndex = 0;
     let cumulativeTime = 0;
 
@@ -312,7 +317,7 @@ export async function generateChapterAudio({
       const audio = data.audioContent;
       const MP3 = base64.toByteArray(audio);
 
-      const localPath = `${process.cwd()}/data/audios/${storyId}-${chapterNumber}_${i}.mp3`;
+      const localPath = `${process.cwd()}/data/tts/${storyId}-${chapterNumber}_${i}.mp3`;
       fs.writeFileSync(localPath, MP3);
       audioPaths.push(localPath);
 

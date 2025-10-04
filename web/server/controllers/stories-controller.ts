@@ -1,18 +1,184 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
-import { QuizStatus } from "@/components/models/questions-model";
-import { FieldPath } from "firebase-admin/firestore";
-import { Timestamp } from "firebase-admin/firestore";
-import { title } from "process";
-import { update } from "lodash";
+import { QuizStatus, ActivityType } from "@prisma/client";
 
 interface RequestContext {
   params: {
     storyId: string;
-    chapterNumber: number;
+    chapterNumber: string;
   };
+}
+
+export async function checkChapterCompletion(
+  userId: string,
+  storyId: string,
+  chapterNumber: number
+): Promise<boolean> {
+  const chapterTargetId = `${storyId}_${chapterNumber}`;
+
+  // Check MCQ completion (5 questions) - use chapter-based targetId pattern
+  const mcqCount = await prisma.userActivity.count({
+    where: {
+      userId,
+      activityType: ActivityType.MC_QUESTION,
+      targetId: {
+        startsWith: `${chapterTargetId}_mcq_`,
+      },
+      completed: true,
+    },
+  });
+
+  // Check SAQ completion (1 question)
+  // Try exact composite targetId first, then fall back to other possible legacy formats
+  let saqExists = await prisma.userActivity.findFirst({
+    where: {
+      userId,
+      activityType: ActivityType.SA_QUESTION,
+      targetId: chapterTargetId,
+      completed: true,
+    },
+  });
+
+  if (!saqExists) {
+    saqExists = await prisma.userActivity.findFirst({
+      where: {
+        userId,
+        activityType: ActivityType.SA_QUESTION,
+        completed: true,
+        OR: [
+          { targetId: storyId },
+          { targetId: { startsWith: `${storyId}_` } },
+          { details: { path: ["storyId"], equals: storyId } },
+        ],
+      },
+    });
+  }
+
+  // Check LAQ completion (1 question)
+  // Try exact composite targetId first, then fallback to legacy/alternate formats
+  let laqExists = await prisma.userActivity.findFirst({
+    where: {
+      userId,
+      activityType: ActivityType.LA_QUESTION,
+      targetId: chapterTargetId,
+      completed: true,
+    },
+  });
+
+  if (!laqExists) {
+    laqExists = await prisma.userActivity.findFirst({
+      where: {
+        userId,
+        activityType: ActivityType.LA_QUESTION,
+        completed: true,
+        OR: [
+          { targetId: storyId },
+          { targetId: { startsWith: `${storyId}_` } },
+          { details: { path: ["storyId"], equals: storyId } },
+        ],
+      },
+    });
+  }
+
+  try {
+    const passed = mcqCount >= 5 && !!saqExists && !!laqExists;
+    if (!passed) {
+      try {
+        const mcqActivities = await prisma.userActivity.findMany({
+          where: {
+            userId,
+            activityType: ActivityType.MC_QUESTION,
+            targetId: { startsWith: `${chapterTargetId}_mcq_` },
+          },
+          orderBy: { createdAt: "asc" },
+        });
+
+        const saqCandidates = await prisma.userActivity.findMany({
+          where: {
+            userId,
+            activityType: ActivityType.SA_QUESTION,
+            OR: [
+              { targetId: chapterTargetId },
+              { targetId: storyId },
+              { targetId: { startsWith: `${storyId}_` } },
+              { details: { path: ["storyId"], equals: storyId } },
+            ],
+          },
+        });
+
+        const laqCandidates = await prisma.userActivity.findMany({
+          where: {
+            userId,
+            activityType: ActivityType.LA_QUESTION,
+            OR: [
+              { targetId: chapterTargetId },
+              { targetId: storyId },
+              { targetId: { startsWith: `${storyId}_` } },
+              { details: { path: ["storyId"], equals: storyId } },
+            ],
+          },
+        });
+      } catch (e) {
+        console.error("Failed to fetch candidate activities", e);
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  return mcqCount >= 5 && !!saqExists && !!laqExists;
+}
+
+export async function updateChapterCompletion(
+  userId: string,
+  storyId: string,
+  chapterNumber: number
+): Promise<void> {
+  const targetId = `${storyId}_${chapterNumber}`;
+  const isCompleted = await checkChapterCompletion(
+    userId,
+    storyId,
+    chapterNumber
+  );
+
+  if (isCompleted) {
+    // Update CHAPTER_READ to completed
+    try {
+      // Try to find existing CHAPTER_READ record first
+      const existing = await prisma.userActivity.findUnique({
+        where: {
+          userId_activityType_targetId: {
+            userId,
+            activityType: ActivityType.CHAPTER_READ,
+            targetId,
+          },
+        },
+      });
+
+      if (existing) {
+        await prisma.userActivity.update({
+          where: { id: existing.id },
+          data: { completed: true, updatedAt: new Date() },
+        });
+      } else {
+        await prisma.userActivity.create({
+          data: {
+            userId,
+            activityType: ActivityType.CHAPTER_READ,
+            targetId,
+            completed: true,
+          },
+        });
+      }
+    } catch (err) {
+      console.error(
+        `[updateChapterCompletion] Failed to upsert CHAPTER_READ userId=${userId} storyId=${storyId} chapter=${chapterNumber} targetId=${targetId}`,
+        err
+      );
+    }
+  }
 }
 
 export async function getAllStories(req: ExtendedNextRequest) {
@@ -26,31 +192,37 @@ export async function getAllStories(req: ExtendedNextRequest) {
     const userId = req.session?.user.id as string;
     const userLevel = req.session?.user.level as number;
 
-    const fetchGenres = async () => {
-      const collectionRef = db.collection("genres-fiction");
-      const querySnapshot = await collectionRef.get();
-      return querySnapshot.docs.map((doc) => doc.data().name);
-    };
-
-    const selectionGenres = await fetchGenres();
+    // Get available genres from JSON data (normalize both legacy and new shapes)
+    // We import the fiction genres from type-genre.json which contains the available genre labels.
+    const typeGenreData = require("../../data/type-genre.json");
+    const genresFiction = typeGenreData.fiction || [];
+    const rawGenres = genresFiction;
+    const selectionGenres = rawGenres.map((g: any) => g.Name ?? g.name ?? "").filter(Boolean);
 
     if (storyId) {
-      const storyDoc = await db.collection("stories").doc(storyId).get();
-      if (!storyDoc.exists) {
+      const story = await prisma.story.findUnique({
+        where: { id: storyId },
+        include: {
+          chapters: true,
+        },
+      });
+
+      if (!story) {
         return NextResponse.json(
           { message: "Story not found", result: null },
           { status: 404 }
         );
       }
-      const storyData = storyDoc.data();
-      if (storyData?.ra_level > userLevel) {
+
+      if (story.raLevel && story.raLevel > userLevel) {
         return NextResponse.json(
           { message: "Story level too high for user", result: null },
           { status: 403 }
         );
       }
+
       return NextResponse.json({
-        result: { id: storyDoc.id, ...storyData },
+        result: story,
       });
     }
 
@@ -65,92 +237,105 @@ export async function getAllStories(req: ExtendedNextRequest) {
       );
     }
 
-    let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> =
-      db.collection("stories");
+    // Build where clause
+    const whereClause: any = {};
+    if (genre) whereClause.genre = genre;
+    if (subgenre) whereClause.subgenre = subgenre;
 
-    if (genre) {
-      query = query.where("genre", "==", genre);
-    }
-    if (subgenre) query = query.where("subgenre", "==", subgenre);
-    if (!genre && !subgenre) query = query.orderBy("createdAt", "desc");
+    // Get total count
+    const totalCount = await prisma.story.count({ where: whereClause });
 
-    const totalSnapshot = await query.get();
-
-    const availableStories = totalSnapshot.docs.filter((doc) => {
-      const raLevel = doc.data().ra_level;
-      return raLevel <= 3 || raLevel <= userLevel;
+    // Get stories with pagination
+    const stories = await prisma.story.findMany({
+      where: whereClause,
+      include: {
+        chapters: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    // Filter by user level and add completion status
+    const availableStories = await Promise.all(
+      stories
+        .filter(
+          (story) =>
+            (story.raLevel ?? 0) <= 3 || (story.raLevel ?? 0) <= userLevel
+        )
+        .map(async (story) => {
+          const chapterCount = story.chapters.length;
+
+          // Check if story is read (STORIES_READ activity exists)
+          const storyReadActivity = await prisma.userActivity.findFirst({
+            where: {
+              userId,
+              activityType: ActivityType.STORIES_READ,
+              targetId: story.id,
+            },
+          });
+          const isRead = !!storyReadActivity;
+
+          // Check completion status for each chapter
+          const completedChapters = await Promise.all(
+            story.chapters.map(async (chapter) => {
+              const mcqCount = await prisma.userActivity.count({
+                where: {
+                  userId,
+                  activityType: ActivityType.MC_QUESTION,
+                  targetId: {
+                    startsWith: `${story.id}_${chapter.chapterNumber}_mcq_`,
+                  },
+                  completed: true,
+                },
+              });
+
+              const saqCount = await prisma.userActivity.count({
+                where: {
+                  userId,
+                  activityType: ActivityType.SA_QUESTION,
+                  targetId: `${story.id}_${chapter.chapterNumber}`,
+                  completed: true,
+                },
+              });
+
+              const laqCount = await prisma.userActivity.count({
+                where: {
+                  userId,
+                  activityType: ActivityType.LA_QUESTION,
+                  targetId: `${story.id}_${chapter.chapterNumber}`,
+                  completed: true,
+                },
+              });
+
+              return mcqCount >= 5 && saqCount >= 1 && laqCount >= 1;
+            })
+          );
+
+          const isComplete =
+            completedChapters.filter(Boolean).length === chapterCount;
+
+          // Update STORIES_READ to completed if all chapters are completed
+          if (isComplete && storyReadActivity && !storyReadActivity.completed) {
+            await prisma.userActivity.update({
+              where: { id: storyReadActivity.id },
+              data: { completed: true },
+            });
+          }
+
+          return {
+            ...story,
+            is_read: isRead,
+            is_completed: isComplete,
+          };
+        })
+    );
 
     const totalAvailableStories = availableStories.length;
 
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedDocs = availableStories.slice(startIndex, endIndex);
-
-    const results = await Promise.all(
-      paginatedDocs.map(async (doc) => {
-        const storyData = doc.data();
-        const chapters = storyData.chapters || [];
-        const chapterCount = chapters.length;
-
-        const articleRecord = await db
-          .collection("users")
-          .doc(userId)
-          .collection("stories-records")
-          .doc(doc.id)
-          .get();
-
-        const completedChapters = await Promise.all(
-          chapters.map(async (chapter: any, index: number) => {
-            const chapterNumber = index + 1;
-
-            const mcqSnap = await db
-              .collection("users")
-              .doc(userId)
-              .collection("stories-records")
-              .doc(doc.id)
-              .collection("mcq-records")
-              .where(FieldPath.documentId(), ">=", `${chapterNumber}-`)
-              .where(FieldPath.documentId(), "<", `${chapterNumber + 1}-`)
-              .get();
-
-            const saqSnap = await db
-              .collection("users")
-              .doc(userId)
-              .collection("stories-records")
-              .doc(doc.id)
-              .collection("saq-records")
-              .where(FieldPath.documentId(), "==", `${chapterNumber}-1`)
-              .get();
-
-            const laqSnap = await db
-              .collection("users")
-              .doc(userId)
-              .collection("stories-records")
-              .doc(doc.id)
-              .collection("laq-records")
-              .where(FieldPath.documentId(), "==", `${chapterNumber}-1`)
-              .get();
-
-            return mcqSnap.size >= 5 && saqSnap.size >= 1 && laqSnap.size >= 1;
-          })
-        );
-
-        const is_complete =
-          completedChapters.filter(Boolean).length === chapterCount;
-
-        return {
-          id: doc.id,
-          ...storyData,
-          is_read: articleRecord.exists,
-          is_completed: is_complete,
-        };
-      })
-    );
-
     return NextResponse.json({
       params: { genre, subgenre, page, limit },
-      results,
+      results: availableStories,
       selectionGenres,
       total: totalAvailableStories,
       totalPages: Math.ceil(totalAvailableStories / limit),
@@ -184,117 +369,105 @@ export async function getStoryById(
   }
 
   try {
-    const storyDoc = await db.collection("stories").doc(storyId).get();
+    const story = await prisma.story.findUnique({
+      where: { id: storyId },
+      include: {
+        chapters: {
+          orderBy: { chapterNumber: "asc" },
+        },
+      },
+    });
 
-    if (!storyDoc.exists) {
+    if (!story) {
       return NextResponse.json(
         { message: "Story not found", result: null },
         { status: 404 }
       );
     }
 
-    const record = await db
-      .collection("users")
-      .doc(userId)
-      .collection("stories-records")
-      .doc(storyId)
-      .get();
+    // Check if STORIES_READ activity exists, create if not
+    let storyReadActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId,
+          activityType: ActivityType.STORIES_READ,
+          targetId: storyId,
+        },
+      },
+    });
 
-    if (!record.exists) {
-      await db.collection("users")
-        .doc(userId)
-        .collection("stories-records")
-        .doc(storyId)
-        .set({
-          created_at: Timestamp.now(),
-          id: storyId,
-          level: req.session?.user.level,
-          rated: 0,
-          score: 0,
-          status: QuizStatus.READ,
-          title: storyDoc.data()?.title,
-          updated_at: Timestamp.now(),
-        })
+    if (!storyReadActivity) {
+      storyReadActivity = await prisma.userActivity.create({
+        data: {
+          userId,
+          activityType: ActivityType.STORIES_READ,
+          targetId: storyId,
+          completed: false,
+        },
+      });
     }
 
-    const is_read = record.exists;
-
-    const chapterTrackingRef = await db
-      .collection("users")
-      .doc(userId)
-      .collection("stories-records")
-      .doc(storyId)
-      .collection("chapter-tracking")
-      .get();
-
-    const storyData = storyDoc.data();
-    if (!storyData) {
-      return NextResponse.json(
-        { message: "Story data not found", result: null },
-        { status: 404 }
-      );
-    }
-    const chapters = storyData.chapters || [];
-
-    const mcqSnapshot = await db
-      .collection("users")
-      .doc(userId)
-      .collection("stories-records")
-      .doc(storyId)
-      .collection("mcq-records")
-      .get();
-
+    // Get completion status for each chapter
     const chaptersWithCompletion = await Promise.all(
-      chapters.map(async (chapter: any, index: number) => {
-        const chapterNumber = (index + 1).toString();
-        const chapterRecord = chapterTrackingRef.docs.find(
-          (doc) => doc.id === chapterNumber
-        );
-        const is_read = !!chapterRecord;
+      story.chapters.map(async (chapter) => {
+        // Check if CHAPTER_READ activity exists
+        const chapterReadActivity = await prisma.userActivity.findUnique({
+          where: {
+            userId_activityType_targetId: {
+              userId,
+              activityType: ActivityType.CHAPTER_READ,
+              targetId: `${storyId}_${chapter.chapterNumber}`,
+            },
+          },
+        });
 
-        const mcqCount = mcqSnapshot.docs.filter((doc) => {
-          const [chapterInDoc] = doc.id.split("-");
-          return chapterInDoc === chapterNumber;
-        }).length;
+        const mcqCount = await prisma.userActivity.count({
+          where: {
+            userId,
+            activityType: ActivityType.MC_QUESTION,
+            targetId: {
+              startsWith: `${storyId}_${chapter.chapterNumber}_mcq_`,
+            },
+            completed: true,
+          },
+        });
 
-        const questionId = `${chapterNumber}-1`;
+        const saqExists = await prisma.userActivity.findFirst({
+          where: {
+            userId,
+            activityType: ActivityType.SA_QUESTION,
+            targetId: `${storyId}_${chapter.chapterNumber}`,
+            completed: true,
+          },
+        });
 
-        const saqDoc = await db
-          .collection("users")
-          .doc(userId)
-          .collection("stories-records")
-          .doc(storyId)
-          .collection("saq-records")
-          .doc(questionId)
-          .get();
+        const laqExists = await prisma.userActivity.findFirst({
+          where: {
+            userId,
+            activityType: ActivityType.LA_QUESTION,
+            targetId: `${storyId}_${chapter.chapterNumber}`,
+            completed: true,
+          },
+        });
 
-        const laqDoc = await db
-          .collection("users")
-          .doc(userId)
-          .collection("stories-records")
-          .doc(storyId)
-          .collection("laq-records")
-          .doc(questionId)
-          .get();
-
-        const is_completed = mcqCount === 5 && saqDoc.exists && laqDoc.exists;
+        const isCompleted = mcqCount === 5 && saqExists && laqExists;
 
         return {
           ...chapter,
-          is_read,
-          is_completed,
+          is_read: !!chapterReadActivity,
+          is_completed: isCompleted,
         };
       })
     );
 
-    storyData.chapters = chaptersWithCompletion;
+    const storyWithCompletion = {
+      ...story,
+      chapters: chaptersWithCompletion,
+      is_read: true, // Since we have STORIES_READ activity
+    };
 
     return NextResponse.json({
-      result: {
-        id: storyDoc.id,
-        ...storyData,
-        is_read,
-      },
+      result: storyWithCompletion,
     });
   } catch (error) {
     console.error("Error getting story", error);
@@ -307,47 +480,81 @@ export async function getStoryById(
 
 export async function updateAverageRating(
   req: ExtendedNextRequest,
-  { params }: { params: { storyId: string } }
+  ctx: RequestContext
 ) {
-  const storyId = params.storyId;
+  const { storyId, chapterNumber: chapterNumberStr } = ctx.params;
+  const chapterNumber = parseInt(chapterNumberStr, 10);
+
+  if (!storyId || isNaN(chapterNumber)) {
+    return NextResponse.json(
+      { message: "Missing storyId or invalid chapterNumber", result: null },
+      { status: 400 }
+    );
+  }
+
   try {
     const data = await req.json();
-    const chapterIndex = Number(data.chapterNumber) - 1;
-    const rating = data.rating;
+    const rating = Math.round((data.rating as number) * 4) / 4; // Round to nearest 0.25
 
-    const storyRef = await db
-      .collection("stories")
-      .doc(storyId)
-      .get();
+    // Update the specific chapter's rating
+    const chapter = await prisma.chapter.findUnique({
+      where: {
+        storyId_chapterNumber: {
+          storyId,
+          chapterNumber,
+        },
+      },
+    });
 
-    const storyData = storyRef.data() as FirebaseFirestore.DocumentData;
-
-    if (!storyData || !storyRef.exists) {
+    if (!chapter) {
       return NextResponse.json(
-        { message: "Story not found", results: [] },
+        { message: "Chapter not found", results: [] },
         { status: 404 }
       );
     }
 
-    storyData.chapters[chapterIndex].rating = Math.round((rating as number) * 4) / 4; // Round to nearest 0.25
-    storyData.chapters[chapterIndex].user_rating_count =
-      (storyData.chapters[chapterIndex].user_rating_count || 0) + 1;
+    // Update chapter rating
+    const updatedChapter = await prisma.chapter.update({
+      where: {
+        storyId_chapterNumber: {
+          storyId,
+          chapterNumber,
+        },
+      },
+      data: {
+        rating,
+        userRatingCount: (chapter.userRatingCount || 0) + 1,
+      },
+    });
+
+    // Calculate story average rating
+    const allChapters = await prisma.chapter.findMany({
+      where: { storyId },
+      select: {
+        rating: true,
+        userRatingCount: true,
+      },
+    });
 
     let totalRating = 0;
     let totalUserCount = 0;
 
-    storyData.chapters.forEach((chapter: any) => {
-      if (chapter.rating && chapter.user_rating_count) {
-      totalRating += chapter.rating * chapter.user_rating_count;
-      totalUserCount += chapter.user_rating_count;
+    allChapters.forEach((chapter) => {
+      if (chapter.rating && chapter.userRatingCount) {
+        totalRating += chapter.rating * chapter.userRatingCount;
+        totalUserCount += chapter.userRatingCount;
       }
     });
 
-    const averageRating = totalUserCount > 0 ? Math.round((totalRating / totalUserCount) * 4) / 4 : 0;
+    const averageRating =
+      totalUserCount > 0
+        ? Math.round((totalRating / totalUserCount) * 4) / 4
+        : 0;
 
-    await db.collection("stories").doc(storyId).update({
-      chapters: storyData.chapters,
-      averageRating: averageRating,
+    // Update story average rating
+    await prisma.story.update({
+      where: { id: storyId },
+      data: { averageRating },
     });
 
     return NextResponse.json(
@@ -367,107 +574,84 @@ export async function getChapter(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { storyId, chapterNumber } = ctx.params;
+  const { storyId, chapterNumber: chapterNumberStr } = ctx.params;
+  const chapterNumber = parseInt(chapterNumberStr, 10);
   const userId = req.session?.user.id as string;
 
-  if (!storyId || chapterNumber === undefined) {
+  if (!storyId || isNaN(chapterNumber)) {
     return NextResponse.json(
-      { message: "Missing storyId or chapterNumber", result: null },
+      { message: "Missing storyId or invalid chapterNumber", result: null },
       { status: 400 }
     );
   }
 
   try {
-    const storyDoc = await db.collection("stories").doc(storyId).get();
+    const story = await prisma.story.findUnique({
+      where: { id: storyId },
+    });
 
-    if (!storyDoc.exists || !storyDoc.data()) {
+    if (!story) {
       return NextResponse.json(
         { message: "Story not found", result: null },
         { status: 404 }
       );
     }
 
-    const timepointsDoc = await db
-      .collection("stories")
-      .doc(storyId)
-      .collection("timepoints")
-      .doc(`${chapterNumber}`)
-      .get();
+    const chapter = await prisma.chapter.findUnique({
+      where: {
+        storyId_chapterNumber: {
+          storyId,
+          chapterNumber,
+        },
+      },
+    });
 
-    if (!timepointsDoc.exists || !timepointsDoc.data()) {
-      return NextResponse.json(
-        { message: "Story not found", result: null },
-        { status: 404 }
-      );
-    }
-
-    const storyData = storyDoc.data() as FirebaseFirestore.DocumentData;
-    const timepointsData =
-      timepointsDoc.data() as FirebaseFirestore.DocumentData;
-
-    if (!storyData.chapters || !Array.isArray(storyData.chapters)) {
-      return NextResponse.json(
-        { message: "No chapters found for this story", result: null },
-        { status: 404 }
-      );
-    }
-
-    const chapterIndex = chapterNumber - 1;
-    if (chapterIndex < 0 || chapterIndex >= storyData.chapters.length) {
+    if (!chapter) {
       return NextResponse.json(
         { message: `Chapter ${chapterNumber} not found`, result: null },
         { status: 404 }
       );
     }
 
-    const record = await db
-      .collection("users")
-      .doc(userId)
-      .collection("stories-records")
-      .doc(storyId)
-      .collection(`chapter-tracking`)
-      .doc(`${chapterNumber}`)
-      .get();
+    const timepoints = chapter.sentences || [];
 
-    if (!record.exists) {
-      await db
-        .collection("users")
-        .doc(req.session?.user.id as string)
-        .collection("stories-records")
-        .doc(storyId)
-        .collection(`chapter-tracking`)
-        .doc(`${chapterNumber}`)
-        .set({
-          id: storyId,
-          rated: 0,
-          scores: 0,
-          title: storyDoc.data()?.title,
-          status: QuizStatus.READ,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          level: req.session?.user.level,
-        });
+    // Check if CHAPTER_READ activity exists, create if not
+    let chapterReadActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId,
+          activityType: ActivityType.CHAPTER_READ,
+          targetId: `${storyId}_${chapterNumber}`,
+        },
+      },
+    });
+
+    if (!chapterReadActivity) {
+      chapterReadActivity = await prisma.userActivity.create({
+        data: {
+          userId,
+          activityType: ActivityType.CHAPTER_READ,
+          targetId: `${storyId}_${chapterNumber}`,
+          completed: false,
+        },
+      });
     }
 
-    const chapter = storyData.chapters[chapterIndex];
-    const ra_Level = storyData.ra_level;
-    const cefr_level = storyData.cefr_level;
-    const totalChapters = storyData.chapters.length;
-    const type = storyData.type;
-    const genre = storyData.genre;
-    const subgenre = storyData.subgenre;
+    const totalChapters = await prisma.chapter.count({
+      where: { storyId },
+    });
 
     return NextResponse.json({
       storyId,
       chapterNumber,
-      ra_Level,
-      type,
-      genre,
-      subgenre,
-      cefr_level,
+      ra_Level: story.raLevel,
+      type: story.type,
+      genre: story.genre,
+      subgenre: story.subgenre,
+      cefr_level: story.cefrLevel,
       totalChapters,
       chapter: chapter,
-      timepoints: timepointsData.timepoints,
+      timepoints: timepoints,
     });
   } catch (error) {
     console.error("Error getting chapter", error);
@@ -483,6 +667,12 @@ export async function deleteStories(
   { params: { storyId } }: { params: { storyId: string } }
 ) {
   try {
+    // Delete from database first
+    await prisma.story.delete({
+      where: { id: storyId },
+    });
+
+    // Delete associated images and files
     await deleteStoryAndImages(storyId);
 
     return NextResponse.json(

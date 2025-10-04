@@ -96,7 +96,11 @@ Provide feedback in the following structure:
    a. Explain what the student did well.
    b. Identify areas for improvement and provide specific examples from the student's writing.
 
-4. **Example Revisions**: Provide several examples of how the student could revise specific paragraphs to improve their writing, based on your feedback.
+4. **Example Revisions**: 
+   - If the writing needs significant improvement, provide 2-3 specific examples of how the student could revise their writing.
+   - If the writing is good but could be enhanced, provide 1-2 examples of how to make it even better (e.g., using more sophisticated vocabulary, varying sentence structure).
+   - If the writing is excellent, you may provide an empty array [] to indicate no revisions are needed.
+   - Keep example revisions in English regardless of the preferred language.
 
 5. **Next Steps**: Suggest 2-3 concrete actions the student can take to improve their writing skills.
 

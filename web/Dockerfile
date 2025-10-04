@@ -59,7 +59,21 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app/
 
 RUN npm install
+
+# Set placeholder DATABASE_URL for build time
+# This prevents Prisma from trying to connect to a real database during build
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
+ENV NEXT_PHASE="phase-production-build"
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Build Next.js with placeholder DATABASE_URL
 ENV NODE_OPTIONS=--max-old-space-size=12288
 RUN npm run build
 
+# Unset build-time environment variables
+ENV NEXT_PHASE=""
+
+# The real DATABASE_URL will be injected at runtime by Cloud Run
 CMD ["npm", "start"]

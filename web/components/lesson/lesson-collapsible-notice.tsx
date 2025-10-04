@@ -32,7 +32,7 @@ export default function CollapsibleNotice() {
           className="mt-2 text-xs text-blue-600 hover:underline"
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? "Show less" : "Read more"}
+          {expanded ? t("showLess") : t("readMore")}
         </button>
       </div>
     </div>

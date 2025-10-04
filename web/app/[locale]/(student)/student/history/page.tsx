@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import React from "react";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
+import { RecordStatus } from "@/types/constants";
 
 type Props = {};
 
@@ -29,15 +30,23 @@ export default async function HistoryPage({}: Props) {
   }
   const res = await getUserArticleRecords(user.id);
 
+  // Transform the data to match ArticleRecord type
+  const transformedRecords = res.results.map((record: any) => ({
+    ...record,
+    title: record.details?.articleTitle || 'Unknown Article',
+    rating: record.details?.rated || 0,
+    status: record.completed ? RecordStatus.COMPLETED : RecordStatus.UNRATED
+  }));
+
   // articles that have been read
   // put the articles that have rating lower than 3 in the reminder table
-  const reminderArticles = res.results.filter(
-    (article: any) => article.rated < 3
+  const reminderArticles = transformedRecords.filter(
+    (article: any) => article.rating < 3
   );
 
   //   // put the results that have rating higher than 3 in the article records table
-  const articleRecords = res.results.filter(
-    (article: any) => article.rated >= 3
+  const articleRecords = transformedRecords.filter(
+    (article: any) => article.rating >= 3
   );
   const t = await getScopedI18n("pages.student.historyPage");
   return (

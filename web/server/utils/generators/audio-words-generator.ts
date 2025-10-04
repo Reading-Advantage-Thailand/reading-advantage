@@ -7,6 +7,9 @@ import base64 from "base64-js";
 import fs from "fs";
 import uploadToBucket from "@/utils/uploadToBucket";
 import db from "@/configs/firestore-config";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export type WordListResponse = {
   vocabulary: string;
@@ -22,6 +25,8 @@ export type WordListResponse = {
 export type GenerateAudioParams = {
   wordList: WordListResponse[];
   articleId: string;
+  isChapter?: boolean;
+  chapterId?: string;
 };
 
 export type GenerateChapterAudioParams = {
@@ -46,24 +51,55 @@ function contentToSSML(content: string[]): string {
   return ssml;
 }
 
+export type WordWithTimePoint = {
+  markName: string;
+  definition: {
+    cn: string;
+    en: string;
+    th: string;
+    tw: string;
+    vi: string;
+  };
+  vocabulary: string;
+  timeSeconds: number;
+};
+
 export async function generateAudioForWord({
   wordList,
   articleId,
-  isUserGenerated = false,
+  isChapter = false,
+  chapterId,
   userId = "",
 }: GenerateAudioParams & {
   isUserGenerated?: boolean;
   userId?: string;
-}): Promise<void> {
+}): Promise<WordWithTimePoint[]> {
   try {
+    console.log(`🎵 Starting generateAudioForWord for ${articleId}...`);
+    console.log(
+      `📝 Word list count: ${Array.isArray(wordList) ? wordList.length : "not an array"}`
+    );
+
     const voice =
       AVAILABLE_VOICES[Math.floor(Math.random() * AVAILABLE_VOICES.length)];
 
     const vocabulary: string[] = Array.isArray(wordList)
-      ? wordList.map((item: any) => item?.vocabulary)
+      ? wordList.map((item: any) => item?.vocabulary).filter(Boolean)
       : [];
 
+    console.log(`📝 Vocabulary count after filtering: ${vocabulary.length}`);
+
+    if (vocabulary.length === 0) {
+      console.log(
+        `⚠️ No vocabulary found for ${articleId}, returning empty array`
+      );
+      return [];
+    }
+
     let allTimePoints: TimePoint[] = [];
+
+    const ssmlContent = contentToSSML(vocabulary);
+    console.log(`📝 SSML content length: ${ssmlContent.length}`);
 
     const response = await fetch(
       `${BASE_TEXT_TO_SPEECH_URL}/v1beta1/text:synthesize?key=${process.env.GOOGLE_TEXT_TO_SPEECH_API_KEY}`,
@@ -73,7 +109,7 @@ export async function generateAudioForWord({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          input: { ssml: contentToSSML(vocabulary) },
+          input: { ssml: ssmlContent },
           voice: {
             languageCode: "en-US",
             name: voice,
@@ -87,14 +123,25 @@ export async function generateAudioForWord({
     );
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      console.error(
+        `❌ Text-to-speech API error: ${response.status} ${response.statusText}`
+      );
+      const errorText = await response.text();
+      console.error(`❌ Error response: ${errorText}`);
+      throw new Error(
+        `Text-to-speech API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
+    console.log(`📝 API response keys: ${Object.keys(data)}`);
 
     // Check if data exists and has required properties
     if (!data || !data.audioContent) {
-      throw new Error("Invalid response from text-to-speech API");
+      console.error("❌ Text-to-speech API response:", data);
+      throw new Error(
+        "Invalid response from text-to-speech API - missing audioContent"
+      );
     }
 
     const audio = data.audioContent;
@@ -106,27 +153,40 @@ export async function generateAudioForWord({
 
     await uploadToBucket(localPath, `${AUDIO_WORDS_URL}/${articleId}.mp3`);
 
-    // Update based on article type
-    if (isUserGenerated && userId) {
-      // For user-generated articles
-      await db
-        .collection("users")
-        .doc(userId)
-        .collection("generated-articles")
-        .doc(articleId)
-        .collection("word-list")
-        .doc(articleId)
-        .update({
-          timepoints: allTimePoints,
-          id: articleId,
+    // Combine word list with time points
+    const wordsWithTimePoints: WordWithTimePoint[] = wordList.map(
+      (word, index) => {
+        const timePoint = allTimePoints.find(
+          (tp) => tp.markName === `word${index + 1}`
+        );
+        return {
+          markName: `word${index + 1}`,
+          definition: word.definition,
+          vocabulary: word.vocabulary,
+          timeSeconds: timePoint?.timeSeconds || 0,
+        };
+      }
+    );
+
+    // Update using Prisma
+    try {
+      if (isChapter && chapterId) {
+        // For chapters, don't update database here, just return the result
+        // The caller will handle the database update
+      } else {
+        await prisma.article.update({
+          where: { id: articleId },
+          data: {
+            words: wordsWithTimePoints,
+            audioWordUrl: `${articleId}.mp3`,
+          },
         });
-    } else {
-      // For regular articles
-      await db.collection("word-list").doc(articleId).update({
-        timepoints: allTimePoints,
-        id: articleId,
-      });
+      }
+    } catch (error) {
+      console.error("Prisma update error:", error);
     }
+
+    return wordsWithTimePoints;
   } catch (error: any) {
     console.error("Error in generateAudioForWord:", error);
     throw `failed to generate audio: ${error}`;

@@ -8,7 +8,7 @@ type Props = {
   userId: string;
 };
 
-const FlashCard = dynamic(() => import("./tab-flash-card"));
+const FlashCard = dynamic(() => import("../flashcards").then(mod => ({ default: mod.FlashcardDashboard })));
 const MatchingWords = dynamic(() => import("./tab-matching-words"));
 const VocabularyManageTab = dynamic(() => import("./tab-manage"));
 
@@ -33,13 +33,7 @@ export default function TabsVocabulary({ userId }: Props) {
         <TabsTrigger value="tab6">{t("manage").toString()}</TabsTrigger>
       </TabsList>
       <TabsContent className="space-y-2" value="tab1">
-        {activeTab === "tab1" && (
-          <FlashCard
-            userId={userId}
-            showButton={showButton}
-            setShowButton={setShowButton}
-          />
-        )}
+        {activeTab === "tab1" && <FlashCard userId={userId} deckType="VOCABULARY" />}
       </TabsContent>
 
       <TabsContent className="space-y-2" value="tab5">

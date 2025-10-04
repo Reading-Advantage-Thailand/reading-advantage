@@ -62,10 +62,12 @@ export default function FirstRunLevelTest({
   );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-
-  const answerOptionIndexArray: number[] = [];
-  const answerValueArray: any[] = [];
-  const questionIndexArray: number[] = [];
+  const [selectedAnswers, setSelectedAnswers] = useState<{
+    [key: string]: string;
+  }>({});
+  const [processedSections, setProcessedSections] = useState<Set<number>>(
+    new Set()
+  );
 
   const getCorrectAnswer = useCallback(async () => {
     let allCorrectAnswers: string[] = [];
@@ -82,16 +84,16 @@ export default function FirstRunLevelTest({
     }
   }, [language_placement_test]);
 
-  const onAnswerSelected = (optionId: number, answer: string, index: any) => {
-    if (!answerOptionIndexArray.includes(optionId)) {
-      answerOptionIndexArray.push(optionId);
-    }
-    if (!answerValueArray.includes(answer)) {
-      answerValueArray.push(answer);
-    }
-    if (!questionIndexArray.includes(index)) {
-      questionIndexArray.push(index);
-    }
+  const onAnswerSelected = (
+    optionId: number,
+    answer: string,
+    index: number
+  ) => {
+    const questionKey = `${currentSectionIndex}-${index}`;
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [questionKey]: answer,
+    }));
   };
 
   function shuffleArray(array: any[]) {
@@ -117,7 +119,6 @@ export default function FirstRunLevelTest({
           [choices[i], choices[j]] = [choices[j], choices[i]];
         }
 
-        // Assign a unique ID to each option
         let updatedOptions = Object.fromEntries(
           choices.map(([key, value]) => [key, { id: optionId++, text: value }])
         );
@@ -130,39 +131,49 @@ export default function FirstRunLevelTest({
   }, [language_placement_test]);
 
   const handleNext = () => {
-    if (answerOptionIndexArray.length < 3) {
+    const currentQuestionCount = shuffledQuestions[currentPage]?.length || 0;
+    const answeredQuestions = Object.keys(selectedAnswers).filter((key) =>
+      key.startsWith(`${currentSectionIndex}-`)
+    );
+
+    if (answeredQuestions.length < currentQuestionCount) {
       toast({
         title: t("toast.attention"),
         description: t("toast.attentionDescription"),
         variant: "destructive",
       });
     } else {
-      const correctSelectedAnswer: string[] = [];
-      //For loop to check if the array answerValueArray is in the array correctAnswer
-      for (let i = 0; i < answerOptionIndexArray.length; i++) {
-        if (correctAnswer.includes(answerValueArray[i])) {
-          correctSelectedAnswer.push(answerValueArray[i]);
-          if (!isQuestionAnswered[questionIndexArray[i]]) {
-            setCountOfRightAnswers(countOfRightAnswers + 1);
-            const newIsQuestionAnswered = [...isQuestionAnswered];
-            newIsQuestionAnswered[questionIndexArray[i]] = true;
-            setIsQuestionAnswered(newIsQuestionAnswered);
-          }
+      let correctAnswersInSection = 0;
+
+      answeredQuestions.forEach((questionKey) => {
+        const selectedAnswer = selectedAnswers[questionKey];
+        if (correctAnswer.includes(selectedAnswer)) {
+          correctAnswersInSection++;
         }
+      });
+
+      if (!processedSections.has(currentSectionIndex)) {
+        const sectionXP =
+          correctAnswersInSection *
+          language_placement_test[currentSectionIndex].points;
+        setXp((prevXP) => prevXP + sectionXP);
+        setProcessedSections((prev) => new Set([...prev, currentSectionIndex]));
+
+        console.log(
+          `Section ${currentSectionIndex}: ${correctAnswersInSection} correct answers, +${sectionXP} XP`
+        );
       }
-      setXp(
-        (prevScore: number) =>
-          prevScore +
-          correctSelectedAnswer.length *
-            language_placement_test[currentSectionIndex].points
-      );
-      if (correctSelectedAnswer.length >= 2) {
+
+      if (correctAnswersInSection >= 2) {
         if (currentPage < shuffledQuestions.length - 1) {
           setCurrentPage(currentPage + 1);
           setCurrentSectionIndex(currentSectionIndex + 1);
           setFormKey(formkey + 1);
           setCurrentQuestionIndex(currentQuestionIndex + 1);
           setCountOfRightAnswers(0);
+          const newSelectedAnswers = { ...selectedAnswers };
+          answeredQuestions.forEach((key) => delete newSelectedAnswers[key]);
+          setSelectedAnswers(newSelectedAnswers);
         } else {
           onFinishTest();
         }
@@ -180,6 +191,13 @@ export default function FirstRunLevelTest({
     const fetchData = async () => {
       setLoading(true);
       try {
+        setXp(0);
+        setSelectedAnswers({});
+        setProcessedSections(new Set());
+        setCurrentPage(0);
+        setCurrentSectionIndex(0);
+        setTestFinished(false);
+
         await handleQuestions();
         await getCorrectAnswer();
       } catch (error) {
@@ -216,6 +234,8 @@ export default function FirstRunLevelTest({
               size="lg"
               onClick={async () => {
                 try {
+                  console.log(`Sending XP to API: ${xp}`);
+
                   const updateResult = await fetch(
                     `/api/v1/users/${userId}/activitylog`,
                     {
@@ -224,9 +244,12 @@ export default function FirstRunLevelTest({
                         activityType: ActivityType.LevelTest,
                         activityStatus: ActivityStatus.Completed,
                         xpEarned: xp,
+                        isInitialLevelTest: true,
                         details: {
-                          questionsAnswered: isQuestionAnswered,
-                          correctAnswers: countOfRightAnswers,
+                          questionsAnswered:
+                            Object.keys(selectedAnswers).length,
+                          totalQuestions: shuffledQuestions.flat().length,
+                          selectedAnswers: selectedAnswers,
                           cefr_level: levelCalculation(xp).cefrLevel,
                         },
                       }),

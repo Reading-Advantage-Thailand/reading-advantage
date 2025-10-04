@@ -5,7 +5,6 @@ import { Rating } from "@mui/material";
 import { ArticleShowcase } from "./models/article-model";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import { usePathname } from "next/navigation";
-import { ActivityType, ActivityStatus } from "./models/user-activity-log-model";
 
 type Props = {
   article: ArticleShowcase;
@@ -17,13 +16,22 @@ async function getTranslateSentence(
   targetLanguage: string
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
-    const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
+    const res = await fetch(`/api/v1/articles/${articleId}/translate`, {
       method: "POST",
-      body: JSON.stringify({ type: "summary", targetLanguage }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ targetLanguage }),
     });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
     const data = await res.json();
     return data;
   } catch (error) {
+    console.error("Translation error:", error);
     return { message: "error", translated_sentences: [] };
   }
 }
@@ -46,19 +54,7 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
       if (!locale || locale === "en") {
         return;
       }
-      type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
-      let localeTarget: ExtendedLocale = locale as ExtendedLocale;
-
-      switch (locale) {
-        case "cn":
-          localeTarget = "zh-CN";
-          break;
-        case "tw":
-          localeTarget = "zh-TW";
-          break;
-      }
-
-      const data = await getTranslateSentence(articleId, localeTarget);
+      const data = await getTranslateSentence(articleId, locale);
 
       setSummarySentence(data.translated_sentences);
     }
@@ -94,25 +90,6 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
                 <div className="flex flex-col gap-2 p-2">
                   <Link
                     href={`/student/lesson/${article.id}`}
-                    onClick={() =>
-                      fetch(`/api/v1/users/${userId}/activitylog`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          articleId: article.id,
-                          activityType: ActivityType.LessonRead,
-                          activityStatus: ActivityStatus.InProgress,
-                          details: {
-                            title: article.title,
-                            level: article.ra_level,
-                            cefr_level: article.cefr_level,
-                            type: article.type,
-                            genre: article.genre,
-                            subgenre: article.subgenre,
-                          },
-                        }),
-                      })
-                    }
                     className="hover:bg-red-600 bg-red-800 text-[12px] font-semibold p-1 rounded-md"
                   >
                     ▶ Study as 45-min Lesson
@@ -122,28 +99,7 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             </div>
           </div>
         )}
-        <Link
-          href={`/student/read/${article.id}`}
-          onClick={() =>
-            fetch(`/api/v1/users/${userId}/activitylog`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                articleId: article.id,
-                activityType: ActivityType.ArticleRead,
-                activityStatus: ActivityStatus.InProgress,
-                details: {
-                  title: article.title,
-                  level: article.ra_level,
-                  cefr_level: article.cefr_level,
-                  type: article.type,
-                  genre: article.genre,
-                  subgenre: article.subgenre,
-                },
-              }),
-            })
-          }
-        >
+        <Link href={`/student/read/${article.id}`}>
           <div
             ref={ref}
             className="w-full flex flex-col gap-1 h-[20rem] bg-cover bg-center p-3 rounded-md bg-black "
@@ -175,9 +131,9 @@ const ArticleShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
                 readOnly
               />
             </Badge>
-            {article.author && (
+            {article.author?.name && (
               <Badge className="shadow-lg max-w-max" variant="destructive">
-                Author: {article.author}
+                Author: {article.author.name}
               </Badge>
             )}
             <div className="mt-auto">

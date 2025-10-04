@@ -3,13 +3,13 @@ import { generateObject } from "ai";
 import { openai, openaiModel4o } from "@/utils/openai";
 import { z } from "zod";
 import { getCEFRRequirements } from "../CEFR-requirements";
-import { generateChapterAudio } from "./audio-generator";
-import { generateChapterAudioForWord } from "./audio-words-generator";
-import { saveWordList } from "./audio-words-generator";
 import { generateMCQuestion } from "./mc-question-generator";
 import { generateSAQuestion } from "./sa-question-generator";
 import { generateLAQuestion } from "./la-question-generator";
 import { evaluateRating } from "./evaluate-rating-generator";
+import path from "path";
+import { readJsonFile } from "../read-json";
+import { google, googleModel, googleProPrewiew } from "@/utils/google";
 
 interface Place {
   name: string;
@@ -59,15 +59,17 @@ interface StoryBible {
   characters: Character[];
   setting: StorySetting;
   themes: StoryTheme[];
+  summary: string;
+  "image-description": string;
   worldRules?: String;
 }
 
 interface Chapter {
   title: string;
-  content: string;
+  passage: string; // Changed from 'content' to 'passage' to match Article
   summary: string;
   "image-description": string;
-  analysis: {
+  analysis?: {
     wordCount: number;
     averageSentenceLength: number;
     vocabulary: {
@@ -87,7 +89,7 @@ interface Chapter {
     grammarStructures: string[];
     readabilityScore: number;
   };
-  continuityData: {
+  continuityData?: {
     events: string[];
     characterStates: {
       character: string;
@@ -120,7 +122,7 @@ interface GenerateChaptersParams {
 
 const ChapterSchema = z.object({
   title: z.string(),
-  content: z.string(),
+  passage: z.string(), // Changed from 'content' to 'passage'
   summary: z.string(),
   "image-description": z.string(),
   analysis: z.object({
@@ -164,6 +166,46 @@ const ChapterSchema = z.object({
       answer: z.string(),
     })
   ),
+});
+
+const ChapterWithoutQuestionsSchema = z.object({
+  title: z.string(),
+  passage: z.string(), // Changed from 'content' to 'passage'
+  summary: z.string(),
+  "image-description": z.string(),
+  analysis: z.object({
+    wordCount: z.number(),
+    averageSentenceLength: z.number(),
+    vocabulary: z.object({
+      uniqueWords: z.number(),
+      complexWords: z.number(),
+      targetWordsUsed: z.array(
+        z.object({
+          vocabulary: z.string(),
+          definition: z.object({
+            en: z.string(),
+            th: z.string(),
+            cn: z.string(),
+            tw: z.string(),
+            vi: z.string(),
+          }),
+        })
+      ),
+    }),
+    grammarStructures: z.array(z.string()),
+    readabilityScore: z.number(),
+  }),
+  continuityData: z.object({
+    events: z.array(z.string()),
+    characterStates: z.array(
+      z.object({
+        character: z.string(),
+        currentState: z.string(),
+        location: z.string(),
+      })
+    ),
+    introducedElements: z.array(z.string()),
+  }),
 });
 
 export async function generateChapters(
@@ -229,40 +271,7 @@ export async function generateChapters(
           );
           newChapter.questions = questions;
 
-          //console.log("Generating chapter audio...");
-
-          await generateChapterAudio({
-            content: newChapter.content,
-            storyId: storyId,
-            chapterNumber: `${i + 1}`,
-          });
-          //console.log("Chapter audio generated successfully.");
-
-          const wordListForAudio =
-            newChapter.analysis.vocabulary.targetWordsUsed.map((word) => ({
-              vocabulary: word.vocabulary,
-              definition: word.definition,
-            }));
-
-          //console.log("Saving word list for audio...");
-
-          await saveWordList({
-            wordList: wordListForAudio,
-            storyId: storyId,
-            chapterNumber: `${i + 1}`,
-          });
-
-          //console.log("Word list saved for audio successfully.");
-
-          //console.log("Generating chapter audio for words...");
-
-          await generateChapterAudioForWord({
-            wordList: wordListForAudio,
-            storyId: storyId,
-            chapterNumber: `${i + 1}`,
-          });
-
-          //console.log("Chapter audio for words generated successfully.");
+          // Note: Audio generation is now handled in stories-generator.ts to avoid duplication
 
           break;
         } catch (error) {
@@ -310,6 +319,19 @@ async function generateSingleChapter({
   const cefrRequirements = getCEFRRequirements(cefrLevel);
   const minWordCount = Math.floor(wordCountPerChapter * 0.9);
   const maxWordCount = Math.ceil(wordCountPerChapter * 1.1);
+
+  const dataFilePath = path.join(
+    process.cwd(),
+    "data",
+    "cefr-level-prompts.json"
+  );
+  const prompts = readJsonFile<any[]>(dataFilePath);
+  const levelConfig = prompts
+    .find((item: any) => item.type === "fiction")
+    ?.levels.find((lvl: any) => lvl.level === cefrLevel);
+  if (!levelConfig) {
+    throw new Error(`level config not found for ${cefrLevel}`);
+  }
 
   const previousChapterSummaries = previousChapters
     .map((c, index) => `Chapter ${index + 1}: ${c.summary}`)
@@ -370,13 +392,15 @@ Return only valid JSON.
 
   try {
     const response = await generateObject({
-      model: openai(openaiModel4o),
-      schema: ChapterSchema,
+      model: google(googleProPrewiew),
+      schema: ChapterWithoutQuestionsSchema,
+      system: levelConfig.systemPrompt + "\n\nAdditionally, provide translations for the summary and passage as specified in the schema. For passage translations, split the passage into sentences and provide each sentence translation as a separate array element.",
       prompt,
       temperature: 1,
+      seed: Math.floor(Math.random() * 1000),
     });
 
-    return response.object;
+    return response.object as Chapter;
   } catch (error) {
     console.error("Error generating single chapter:", error);
     return null;
@@ -392,7 +416,7 @@ async function generateChapterQuestions(
     const mcResponse = await generateMCQuestion({
       cefrlevel: cefrLevel,
       type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
-      passage: chapter.content,
+      passage: chapter.passage,
       title: chapter.title,
       summary: chapter.summary,
       imageDesc: chapter["image-description"],
@@ -414,7 +438,7 @@ async function generateChapterQuestions(
     const saResponse = await generateSAQuestion({
       cefrlevel: cefrLevel,
       type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
-      passage: chapter.content,
+      passage: chapter.passage,
       title: chapter.title,
       summary: chapter.summary,
       imageDesc: chapter["image-description"],
@@ -429,7 +453,7 @@ async function generateChapterQuestions(
     const laResponse = await generateLAQuestion({
       cefrlevel: cefrLevel,
       type: type === "fiction" ? ArticleType.FICTION : ArticleType.NONFICTION,
-      passage: chapter.content,
+      passage: chapter.passage,
       title: chapter.title,
       summary: chapter.summary,
       imageDesc: chapter["image-description"],

@@ -11,7 +11,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { LicenseSubScriptionLevel } from "@/server/models/enum";
 import { License } from "@/server/models/license";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
@@ -28,19 +27,19 @@ const convertToReadableDate = (isoDateString: string): string => {
     month: "long",
     day: "numeric",
   };
-  return date.toLocaleDateString(undefined, options);
+  return date.toLocaleDateString("en-US", options);
 };
 
 export const columns: ColumnDef<License>[] = [
   {
-    accessorKey: "school_name",
+    accessorKey: "schoolName",
     header: "School name",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("school_name")}</div>
+      <div className="capitalize">{row.getValue("schoolName")}</div>
     ),
   },
   {
-    accessorKey: "total_licenses",
+    accessorKey: "maxUsers",
     header: ({ column }) => {
       return (
         <Button
@@ -52,10 +51,10 @@ export const columns: ColumnDef<License>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("total_licenses")}</div>,
+    cell: ({ row }) => <div>{row.getValue("maxUsers")}</div>,
   },
   {
-    accessorKey: "used_licenses",
+    accessorKey: "usedLicenses",
     header: ({ column }) => {
       return (
         <Button
@@ -67,28 +66,27 @@ export const columns: ColumnDef<License>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("used_licenses")}</div>,
+    cell: ({ row }) => <div>{row.getValue("usedLicenses")}</div>,
   },
   {
-    accessorKey: "subscription_level",
+    accessorKey: "licenseType",
     header: "Subscription",
     cell: ({ row }) => (
       <Badge
         className={cn(
-          row.getValue("subscription_level") === LicenseSubScriptionLevel.BASIC
+          row.getValue("licenseType") === "BASIC"
             ? "bg-green-300"
-            : row.getValue("subscription_level") ===
-              LicenseSubScriptionLevel.ENTERPRISE
+            : row.getValue("licenseType") === "ENTERPRISE"
             ? "bg-blue-300"
             : "bg-red-300"
         )}
       >
-        {row.getValue("subscription_level")}
+        {row.getValue("licenseType")}
       </Badge>
     ),
   },
   {
-    accessorKey: "expiration_date",
+    accessorKey: "expiresAt",
     header: ({ column }) => {
       return (
         <Button
@@ -101,7 +99,7 @@ export const columns: ColumnDef<License>[] = [
       );
     },
     cell: ({ row }) => (
-      <div>{convertToReadableDate(row.getValue("expiration_date"))}</div>
+      <div>{convertToReadableDate(row.getValue("expiresAt"))}</div>
     ),
   },
   {

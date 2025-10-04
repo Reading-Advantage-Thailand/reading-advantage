@@ -5,7 +5,7 @@ import {
   getLicense,
 } from "@/server/controllers/license-controller";
 import { logRequest } from "@/server/middleware";
-import { Role } from "@/server/models/enum";
+import { Role } from "@prisma/client";
 import { handleRequest } from "@/server/utils/handle-request";
 import { get } from "lodash";
 import { createEdgeRouter } from "next-connect";
@@ -21,12 +21,14 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 
 // Middleware
 router.use(logRequest);
-router.use(restrictTo(Role.SYSTEM));
 
 // /api/license/[id]
-router.get(getLicense);
-router.patch(activateLicense);
-router.delete(deleteLicense);
+// GET and DELETE require SYSTEM role
+router.get(restrictTo(Role.SYSTEM), getLicense);
+router.delete(restrictTo(Role.SYSTEM), deleteLicense);
+
+// PATCH (activate license) allows ADMIN, TEACHER, and STUDENT
+router.patch(restrictTo(Role.ADMIN, Role.TEACHER, Role.STUDENT), activateLicense);
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

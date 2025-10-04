@@ -1,13 +1,13 @@
 import { User as NextAuthUser } from "next-auth";
 import { JWT as NextAuthJWT } from "next-auth/jwt";
-import { Role } from "@/server/models/enum";
+import { Role, LicenseType } from "@prisma/client";
 
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     email: string;
     display_name: string;
-    role: Role.USER;
+    role: Role;
     level: number;
     email_verified: boolean;
     picture: string;
@@ -16,6 +16,7 @@ declare module "next-auth/jwt" {
     expired_date: string;
     expired?: boolean;
     license_id?: string;
+    license_level: LicenseType | "EXPIRED";
     onborda: boolean;
   }
 }
@@ -35,6 +36,7 @@ declare module "next-auth" {
       expired_date: string;
       expired?: boolean;
       license_id?: string;
+      license_level: LicenseType | "EXPIRED";
       onborda: boolean;
     };
   }
@@ -52,6 +54,7 @@ declare module "next-auth" {
     expired_date: string;
     expired?: boolean;
     license_id?: string;
+    license_level: LicenseType | "EXPIRED";
     onborda: boolean;
   }
 }

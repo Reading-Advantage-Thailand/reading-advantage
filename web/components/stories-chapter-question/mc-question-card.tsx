@@ -23,12 +23,9 @@ import { Icons } from "../icons";
 import { useQuestionStore } from "@/store/question-store";
 import { set } from "lodash";
 import { toast } from "../ui/use-toast";
-import {
-  UserXpEarned,
-  ActivityStatus,
-  ActivityType,
-} from "../models/user-activity-log-model";
+// (no direct imports from user-activity-log-model needed here)
 import { useRouter } from "next/navigation";
+import { useStoryCompletion } from "@/lib/use-story-completion";
 
 type Props = {
   userId: string;
@@ -55,7 +52,10 @@ export type QuestionResponse = {
 interface MCQQuestionProps {
   storyId: string;
   resp: QuestionResponse;
-  handleCompleted: () => void;
+  handleCompleted: (
+    currentProgress?: AnswerStatus[],
+    newResp?: QuestionResponse
+  ) => void;
   userId: string;
   articleTitle: string;
   articleLevel: number;
@@ -77,34 +77,240 @@ export default function StoryMCQuestionCard({
     state: QuestionState.LOADING,
   });
 
-  useEffect(() => {
-    fetch(`/api/v1/stories/${storyId}/${chapterNumber}/question/mcq`)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setState(data.state);
-        useQuestionStore.setState({ mcQuestion: data });
-      });
-  }, [state, storyId]);
+  const [hasStarted, setHasStarted] = useState(false);
 
-  const handleCompleted = () => {
-    setState(QuestionState.LOADING);
+  // Keep in sync with global store (so lesson and story components stay consistent)
+  useEffect(() => {
+    const unsubscribe = useQuestionStore.subscribe((s) => {
+      const { mcQuestion } = s;
+      if (mcQuestion && mcQuestion.state === QuestionState.COMPLETED) {
+        setState(QuestionState.COMPLETED);
+        setData(mcQuestion as QuestionResponse);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Clear suspicious/ corrupted session storage entries for this story chapter
+  useEffect(() => {
+    const checkAndClear = async () => {
+      try {
+        const savedProgress = sessionStorage.getItem(
+          `quiz_progress_${storyId}_${chapterNumber}`
+        );
+        const savedStarted = sessionStorage.getItem(
+          `quiz_started_${storyId}_${chapterNumber}`
+        );
+
+        if (savedProgress) {
+          const parsed = JSON.parse(savedProgress);
+          if (
+            Array.isArray(parsed) &&
+            parsed.length === 5 &&
+            parsed.every((s: number) => s === AnswerStatus.CORRECT)
+          ) {
+            sessionStorage.removeItem(
+              `quiz_progress_${storyId}_${chapterNumber}`
+            );
+            sessionStorage.removeItem(
+              `quiz_started_${storyId}_${chapterNumber}`
+            );
+            setHasStarted(false);
+          }
+        }
+
+        if (savedStarted === "true" && !savedProgress) {
+          sessionStorage.removeItem(`quiz_started_${storyId}_${chapterNumber}`);
+          setHasStarted(false);
+        }
+      } catch (e) {
+        console.error("Error checking cached data:", e);
+        try {
+          sessionStorage.removeItem(
+            `quiz_progress_${storyId}_${chapterNumber}`
+          );
+          sessionStorage.removeItem(`quiz_started_${storyId}_${chapterNumber}`);
+          setHasStarted(false);
+        } catch (clearErr) {
+          console.error("Error clearing corrupted data:", clearErr);
+        }
+      }
+    };
+
+    checkAndClear();
+  }, [storyId, chapterNumber]);
+
+  // Read started flag
+  useEffect(() => {
+    try {
+      const quizStarted = sessionStorage.getItem(
+        `quiz_started_${storyId}_${chapterNumber}`
+      );
+      setHasStarted(quizStarted === "true");
+    } catch (e) {
+      console.error("Failed to read from sessionStorage:", e);
+      setHasStarted(false);
+    }
+  }, [storyId, chapterNumber]);
+
+  // Initial fetch (timestamped to avoid caching)
+  useEffect(() => {
+    const timestamp = new Date().getTime();
+    fetch(
+      `/api/v1/stories/${storyId}/${chapterNumber}/question/mcq?_t=${timestamp}`
+    )
+      .then((res) => res.json())
+      .then((d) => {
+        // If server returns suspicious progress (all correct but marked incomplete), reset
+        if (
+          d.progress &&
+          Array.isArray(d.progress) &&
+          d.progress.length === 5 &&
+          d.progress.every((s: number) => s === AnswerStatus.CORRECT) &&
+          d.state === QuestionState.INCOMPLETE
+        ) {
+          d.progress = [
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+          ];
+          setHasStarted(false);
+          try {
+            sessionStorage.removeItem(
+              `quiz_progress_${storyId}_${chapterNumber}`
+            );
+            sessionStorage.removeItem(
+              `quiz_started_${storyId}_${chapterNumber}`
+            );
+          } catch (clearError) {}
+        }
+
+        setData(d);
+        setState(d.state);
+        useQuestionStore.setState({ mcQuestion: d });
+
+        if (d.state === QuestionState.COMPLETED) {
+          setHasStarted(true);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching story mcq:", err);
+        setState(QuestionState.LOADING);
+      });
+    // only on mount / when story/chapter changes
+  }, [storyId, chapterNumber]);
+
+  const handleCompleted = (
+    currentProgress?: AnswerStatus[],
+    newResp?: QuestionResponse
+  ) => {
+    const progressToCheck = currentProgress || data.progress || [];
+    const completedAnswers = progressToCheck.filter(
+      (p) => p === AnswerStatus.CORRECT || p === AnswerStatus.INCORRECT
+    ).length;
+    if (currentProgress) {
+      const updatedData = { ...data, progress: currentProgress };
+      if (newResp) {
+        updatedData.results = newResp.results;
+        updatedData.total = newResp.total;
+        updatedData.state =
+          newResp.state ||
+          (completedAnswers >= 5
+            ? QuestionState.COMPLETED
+            : QuestionState.INCOMPLETE);
+      }
+      setData(updatedData);
+      useQuestionStore.setState({ mcQuestion: updatedData });
+
+      // When we're updating parent with currentProgress, set state to INCOMPLETE unless fully completed.
+      if (completedAnswers >= 5) {
+        setState(QuestionState.COMPLETED);
+        try {
+          sessionStorage.removeItem(
+            `quiz_progress_${storyId}_${chapterNumber}`
+          );
+          sessionStorage.removeItem(`quiz_started_${storyId}_${chapterNumber}`);
+        } catch (e) {
+          console.error("Error clearing session storage:", e);
+        }
+      } else {
+        setState(QuestionState.INCOMPLETE);
+      }
+    } else {
+      // If no currentProgress provided, use previous behavior (trigger a reload)
+      if (completedAnswers >= 5) {
+        setState(QuestionState.COMPLETED);
+        try {
+          sessionStorage.removeItem(
+            `quiz_progress_${storyId}_${chapterNumber}`
+          );
+          sessionStorage.removeItem(`quiz_started_${storyId}_${chapterNumber}`);
+        } catch (e) {
+          console.error("Error clearing session storage:", e);
+        }
+      } else {
+        setState(QuestionState.LOADING);
+      }
+    }
+
+    setHasStarted(true);
+    try {
+      sessionStorage.setItem(
+        `quiz_started_${storyId}_${chapterNumber}`,
+        "true"
+      );
+    } catch (e) {}
   };
 
   const onRetake = () => {
     setState(QuestionState.LOADING);
+
+    try {
+      sessionStorage.removeItem(`quiz_progress_${storyId}_${chapterNumber}`);
+      sessionStorage.removeItem(`quiz_started_${storyId}_${chapterNumber}`);
+    } catch (e) {}
+
+    setHasStarted(false);
+
     fetch(`/api/v1/stories/${storyId}/${chapterNumber}/question/mcq`, {
       method: "DELETE",
     })
       .then((res) => res.json())
-      .then((data) => {
-        setState(data.state);
-        setData({
-          progress: [2, 2, 2, 2, 2],
-          results: [],
-          total: 0,
-          state: data.state,
+      .then(() => {
+        const timestamp = new Date().getTime();
+        return fetch(
+          `/api/v1/stories/${storyId}/${chapterNumber}/question/mcq?_t=${timestamp}`
+        ).then((res) => res.json());
+      })
+      .then((d) => {
+        const newData = {
+          progress: [
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+            AnswerStatus.UNANSWERED,
+          ],
+          results: d.results || [],
+          total: d.total || 5,
+          state: QuestionState.INCOMPLETE,
+        } as QuestionResponse;
+
+        setData(newData);
+        useQuestionStore.setState({
+          mcQuestion: { ...d, state: QuestionState.INCOMPLETE },
         });
+
+        setTimeout(() => {
+          setState(QuestionState.INCOMPLETE);
+        }, 10);
+      })
+      .catch((error) => {
+        console.error("❌ Error during retake:", error);
+        setState(QuestionState.INCOMPLETE);
       });
   };
 
@@ -190,7 +396,10 @@ function QuestionCardIncomplete({
   userId: string;
   resp: QuestionResponse;
   storyId: string;
-  handleCompleted: () => void;
+  handleCompleted: (
+    currentProgress?: AnswerStatus[],
+    newResp?: QuestionResponse
+  ) => void;
   articleTitle: string;
   articleLevel: number;
   chapterNumber: string;
@@ -239,6 +448,39 @@ function MCQeustion({
   const { timer, setPaused } = useContext(QuizContext);
   const router = useRouter();
   const [textualEvidence, setTextualEvidence] = useState("");
+  const { checkAndNotifyCompletion } = useStoryCompletion();
+
+  useEffect(() => {
+    setProgress(resp.progress);
+  }, [resp.progress]);
+
+  // Whenever the visible question index changes, hide any textual feedback
+  // and reset selection so feedback only appears after a new submission.
+  useEffect(() => {
+    // Clear feedback and selection when user moves to another question
+    setTextualEvidence("");
+    setSelectedOption(-1);
+    setCorrectAnswer("");
+  }, [index]);
+
+  // If parent/server updates the resp.results (for example server returns
+  // a single-item results array), ensure our index is valid and clear
+  // feedback so we don't show previous question's feedback for the new data.
+  useEffect(() => {
+    try {
+      const resultsLen = resp?.results?.length || 0;
+      if (resultsLen === 0) return;
+      if (index >= resultsLen) {
+        setIndex(0);
+        setSelectedOption(-1);
+        setCorrectAnswer("");
+        setTextualEvidence("");
+        setPaused(false);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [resp.results]);
 
   const onSubmitted = async (
     storyId: string,
@@ -250,70 +492,103 @@ function MCQeustion({
     setPaused(true);
     setLoadingAnswer(true);
 
+    if (!option) {
+      console.error("Attempted to submit an empty option");
+      option = `Option ${i + 1}`;
+    }
+
+    const cleanOption = option.replace(/^\d+\.\s*/, "");
+
+    const originalOptions = resp.results[index]?.options || [];
+
+    const validOptions = originalOptions.filter(
+      (opt) => opt && typeof opt === "string" && opt.trim() !== ""
+    );
+
+    setSelectedOption(i);
+
     try {
       const response = await fetch(
         `/api/v1/stories/${storyId}/${chapterNumber}/question/mcq/${questionNumber}`,
         {
           method: "POST",
           body: JSON.stringify({
-            answer: option,
+            selectedAnswer: cleanOption,
             timeRecorded: timer,
           }),
         }
       );
 
       const data = await response.json();
+      if (data) {
+        const isCorrect = cleanOption === data.correctAnswer;
 
-      setCorrectAnswer(data.correct_answer);
-      setSelectedOption(i);
-      setProgress(data.progress);
-      setTextualEvidence(resp.results[index].textual_evidence);
+        setCorrectAnswer(data.correctAnswer || "");
+        setSelectedOption(i);
+        // Show textual feedback returned by the server (support camelCase and snake_case)
+        try {
+          setTextualEvidence(
+            data.textualEvidence || data.textual_evidence || ""
+          );
+        } catch (e) {
+          // ignore
+        }
+        const newProgress = [...(progress || [])];
+
+        const currentQuestionIndex = newProgress.findIndex(
+          (p) => p === AnswerStatus.UNANSWERED
+        );
+
+        if (currentQuestionIndex !== -1) {
+          const actuallyCorrect = isCorrect;
+          newProgress[currentQuestionIndex] = actuallyCorrect
+            ? AnswerStatus.CORRECT
+            : AnswerStatus.INCORRECT;
+          setProgress(newProgress);
+
+          try {
+            sessionStorage.setItem(
+              `quiz_progress_${storyId}_${chapterNumber}`,
+              JSON.stringify(newProgress)
+            );
+          } catch (e) {
+            console.error("Failed to save progress to sessionStorage:", e);
+          }
+        }
+      }
     } catch (error) {
       console.error("Error submitting answer:", error);
+      setSelectedOption(i);
     } finally {
       setLoadingAnswer(false);
     }
   };
 
   useEffect(() => {
-    let count = 0;
-    let countTest = 0;
-    progress.forEach(async (status, idx) => {
-      if (status === AnswerStatus.CORRECT) {
-        count += UserXpEarned.MC_Question;
-        countTest++;
-      } else if (status === AnswerStatus.INCORRECT) {
-        countTest++;
-      }
-      if (countTest === 5) {
-        await fetch(`/api/v1/users/${userId}/activitylog`, {
-          method: "POST",
-          body: JSON.stringify({
-            storyId,
-            chapterNumber,
-            questionNumber: index + 1,
-            activityType: ActivityType.MC_Question,
-            activityStatus: ActivityStatus.Completed,
-            timeTaken: timer,
-            xpEarned: count,
-            details: {
-              ceft_level: levelCalculation(count).cefrLevel,
-              correctAnswer,
-              progress,
-              title: articleTitle,
-              level: articleLevel,
-            },
-          }),
-        });
-        toast({
-          title: "Success",
-          imgSrc: true,
-          description: `Congratulations!, You received ${count} XP for completing this activity.`,
-        });
-        router.refresh();
-      }
-    });
-  }, [progress]);
+    const isCompleted =
+      progress &&
+      Array.isArray(progress) &&
+      progress.filter(
+        (p) => p === AnswerStatus.CORRECT || p === AnswerStatus.INCORRECT
+      ).length >= (resp.total || 5);
+
+    if (isCompleted) {
+      (async () => {
+        try {
+          await checkAndNotifyCompletion(userId, storyId, chapterNumber);
+        } catch (e) {
+          console.error("Error checking story completion:", e);
+        }
+      })();
+    }
+  }, [
+    progress,
+    userId,
+    storyId,
+    chapterNumber,
+    checkAndNotifyCompletion,
+    resp.total,
+  ]);
 
   return (
     <CardContent>
@@ -341,7 +616,7 @@ function MCQeustion({
       </div>
 
       <CardTitle className="font-bold text-3xl md:text-3xl mt-3">
-        Question {index + 1} of {resp.total}
+        Question {resp.results[0]?.question_number || 1} of {resp.total}
       </CardTitle>
       <CardDescription className="text-2xl md:text-2xl mt-3">
         {resp.results[index]?.question}
@@ -366,6 +641,13 @@ function MCQeustion({
           }`}
           disabled={isLoadingAnswer}
           onClick={() => {
+            // Clear any visible feedback immediately when user clicks Continue
+            // so previous question's textual evidence doesn't persist.
+            try {
+              setTextualEvidence("");
+            } catch (e) {
+              // ignore
+            }
             if (selectedOption === -1) {
               onSubmitted(
                 storyId,
@@ -389,14 +671,142 @@ function MCQeustion({
         className="mt-2"
         disabled={isLoadingAnswer || selectedOption === -1}
         onClick={() => {
-          if (index + 1 < resp.results.length) {
-            setIndex((prevIndex) => prevIndex + 1);
+          // Build a local updatedProgress that includes the most-recent answer
+          const updated = Array.isArray(progress) ? [...progress] : [];
+          while (updated.length < (resp.total || 5))
+            updated.push(AnswerStatus.UNANSWERED);
+
+          // If a selection was made, mark this question's progress locally
+          if (selectedOption !== -1) {
+            const selectedOptionText =
+              resp.results[index]?.options?.[selectedOption] || "";
+            // Only update if this slot wasn't already answered
+            if (updated[index] === AnswerStatus.UNANSWERED) {
+              updated[index] =
+                correctAnswer === selectedOptionText
+                  ? AnswerStatus.CORRECT
+                  : AnswerStatus.INCORRECT;
+            }
+          }
+
+          // Persist and set local progress immediately so UI reflects the answer
+          try {
+            sessionStorage.setItem(
+              `quiz_progress_${storyId}_${chapterNumber}`,
+              JSON.stringify(updated)
+            );
+            sessionStorage.setItem(
+              `quiz_started_${storyId}_${chapterNumber}`,
+              "true"
+            );
+          } catch (e) {}
+
+          setProgress(updated);
+
+          const nowAnsweredCount = updated.filter(
+            (p) => p === AnswerStatus.CORRECT || p === AnswerStatus.INCORRECT
+          ).length;
+
+          if (nowAnsweredCount >= (resp.total || 5)) {
+            // All answered — notify parent to finalize (don't force a reload)
+            handleCompleted(updated, {
+              ...resp,
+              progress: updated,
+              state: QuestionState.COMPLETED,
+            });
+            return;
+          }
+
+          // Advance to next unanswered question (if any)
+          let nextUnanswered = updated.findIndex(
+            (p) => p === AnswerStatus.UNANSWERED
+          );
+          if (nextUnanswered === -1) {
+            // fallback: move to next index
+            nextUnanswered = Math.min(index + 1, (resp.total || 5) - 1);
+          }
+
+          // If we don't have the next question in resp.results, fetch updated questions from server
+          if (!resp.results || !resp.results[nextUnanswered]) {
+            const ts = new Date().getTime();
+            fetch(
+              `/api/v1/stories/${storyId}/${chapterNumber}/question/mcq?_t=${ts}`
+            )
+              .then((res) => res.json())
+              .then((newData) => {
+                const merged = {
+                  ...newData,
+                  progress: updated,
+                  state: QuestionState.INCOMPLETE,
+                } as QuestionResponse;
+                // Ask parent to update its data/store
+                try {
+                  handleCompleted(updated, merged);
+                } catch (e) {
+                  console.error("[StoryMCQ] handleCompleted failed", e);
+                  // fallback to using global store directly
+                  useQuestionStore.setState({ mcQuestion: merged });
+                }
+
+                // Determine a safe index into the merged results.
+                // Prefer server-provided summary.currentQuestion if present, else prefer nextUnanswered, else clamp to 0.
+                let resolvedIndex = 0;
+                try {
+                  const serverIndex = (newData as any)?.summary
+                    ?.currentQuestion;
+                  if (typeof serverIndex === "number") {
+                    // serverIndex is 1-based
+                    resolvedIndex = Math.max(
+                      0,
+                      Math.min(
+                        (merged.results?.length || 1) - 1,
+                        serverIndex - 1
+                      )
+                    );
+                  } else if (merged.results && merged.results[nextUnanswered]) {
+                    resolvedIndex = nextUnanswered;
+                  } else if (merged.results && merged.results.length > 0) {
+                    // show first available result
+                    resolvedIndex = 0;
+                  } else {
+                    // nothing available, keep previous index
+                    resolvedIndex = Math.min(
+                      nextUnanswered,
+                      (resp.total || 5) - 1
+                    );
+                  }
+                } catch (e) {
+                  resolvedIndex = Math.min(
+                    nextUnanswered,
+                    (resp.total || 5) - 1
+                  );
+                }
+                // Always clear textualEvidence when advancing questions (or replacing results)
+                const advanced = resolvedIndex !== index;
+                setIndex(resolvedIndex);
+                setSelectedOption(-1);
+                setCorrectAnswer("");
+                setTextualEvidence("");
+                setPaused(false);
+              })
+              .catch((err) => {
+                console.error(
+                  "[StoryMCQ] failed to fetch updated questions",
+                  err
+                );
+                // fallback to local index advance
+                setIndex(nextUnanswered);
+                setSelectedOption(-1);
+                setCorrectAnswer("");
+                setTextualEvidence("");
+                setPaused(false);
+              });
+          } else {
+            setIndex(nextUnanswered);
             setSelectedOption(-1);
             setCorrectAnswer("");
-            setPaused(false);
             setTextualEvidence("");
-          } else {
-            handleCompleted();
+            setPaused(false);
           }
         }}
       >
@@ -405,7 +815,7 @@ function MCQeustion({
         ) : (
           ""
         )}
-        {index + 1 < resp.results.length ? "Next Question" : "Submit"}
+        Continue
       </Button>
     </CardContent>
   );

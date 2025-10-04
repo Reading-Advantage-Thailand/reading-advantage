@@ -1,13 +1,8 @@
 import { protect } from "@/server/controllers/auth-controller";
-import {
-  answerMCQuestion,
-  answerSAQuestion,
-  rateArticle,
-} from "@/server/controllers/question-controller";
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
-import { rateStory } from "@/server/controllers/stories-question-controller";
+import { getStoryLAQuestionXP } from "@/server/controllers/stories-question-controller";
 
 interface RequestContext {
   params: {
@@ -21,7 +16,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.post(rateStory);
+router.post(getStoryLAQuestionXP);
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

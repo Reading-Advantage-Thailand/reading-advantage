@@ -278,69 +278,85 @@ function SAQuestion({
   });
 
   const router = useRouter();
-  async function onSubmitted(data: FormData) {
+  async function onSubmitted(formData: FormData) {
     setIsLoading(true);
     setPaused(true);
-    fetch(
-      `/api/v1/stories/${storyId}/${chapterNumber}/question/sa/${resp.result.id}`,
-      {
+    const qId = (resp.result as any).questionId || resp.result.id;
+    try {
+      const res = await fetch(`/api/v1/stories/${storyId}/${chapterNumber}/question/sa/${qId}`, {
         method: "POST",
-        body: JSON.stringify({
-          answer: data.answer,
-          timeRecorded: timer,
-        }),
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-      })
-      .finally(() => {
-        setIsLoading(false);
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answer: formData.answer, timeRecorded: timer, createActivity: false }),
       });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("SA submit failed", { status: res.status, text });
+        toast({ title: "An error occurred.", description: "Unable to submit answer." });
+        return;
+      }
+
+  const responseData = await res.json();
+  setData(responseData);
+    } catch (err) {
+      console.error("Error submitting SA answer:", err);
+      toast({ title: "An error occurred.", description: "Unable to submit answer." });
+    } finally {
+      setIsLoading(false);
+      setPaused(false);
+    }
   }
 
   async function onRating() {
-    fetch(
-      `/api/v1/stories/${storyId}/${chapterNumber}/question/sa/${resp.result.id}/rate`,
-      {
+    const qId = (resp.result as any).questionId || resp.result.id;
+    const xpToAward = 5;
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/v1/users/${userId}/activitylog`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          rating,
+          articleId: storyId,
+          activityType: ActivityType.SA_Question,
+          activityStatus: ActivityStatus.Completed,
+          timeTaken: timer,
+          xpEarned: xpToAward,
+          details: {
+            // flatten answer fields (remove nested `data` wrapper)
+            answer: data?.answer ?? "",
+            suggested_answer: data?.suggested_answer ?? "",
+            questionId: qId,
+            chapter_number: chapterNumber,
+            // optional progress omitted if not available
+            rate: rating,
+            level: articleLevel,
+            title: articleTitle,
+            cefr_level: levelCalculation(rating).cefrLevel,
+          },
         }),
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data) {
-          toast({
-            title: tf("toast.success"),
-            imgSrc: true,
-            description: `Congratulations!, You received ${rating} XP for completing this activity.`,
-          });
-        }
-        handleCompleted();
-      })
-      .finally(() => {
-        setIsLoading(false);
       });
-    await fetch(`/api/v1/users/${userId}/activitylog`, {
-      method: "POST",
-      body: JSON.stringify({
-        articleId: storyId,
-        activityType: ActivityType.SA_Question,
-        activityStatus: ActivityStatus.Completed,
-        timeTaken: timer,
-        xpEarned: rating,
-        details: {
-          data,
-          title: articleTitle,
-          level: articleLevel,
-          cefr_level: levelCalculation(rating).cefrLevel,
-        },
-      }),
-    });
-    router.refresh();
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Activity log failed", { status: res.status, text });
+        toast({ title: "Error", description: "Unable to save activity." });
+        return;
+      }
+
+      toast({
+        title: tf("toast.success"),
+        imgSrc: true,
+        description: `Congratulations!, You received ${xpToAward} XP for completing this activity.`,
+      });
+
+      handleCompleted();
+      router.refresh();
+    } catch (err) {
+      console.error("Error creating activity log:", err);
+      toast({ title: "Error", description: "Unable to save activity." });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

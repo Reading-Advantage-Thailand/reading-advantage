@@ -59,15 +59,6 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-async function fetchActivity() {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/activity`
-  );
-
-  const data = await response.json();
-  return data;
-}
-
 export default function ActivityDistributionPieChart() {
   const [activityData, setActivityData] = useState<
     Array<{
@@ -77,6 +68,22 @@ export default function ActivityDistributionPieChart() {
       activityCount: number;
     }>
   >([]);
+
+  const fetchActivity = async () => {
+    try {
+      const response = await fetch(`/api/v1/activity`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch activity data');
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching activity data:', error);
+      return { userActivityData: {} };
+    }
+  };
 
   useEffect(() => {
     async function loadActivityData() {
@@ -116,7 +123,7 @@ export default function ActivityDistributionPieChart() {
         },
         {
           activity: "Sent. act.",
-          numberOfTimes: element.totalSentenseActivityCount,
+          numberOfTimes: element.totalSentenceActivityCount,
           fill: "var(--color-sentense_activities)",
         },
         {
@@ -138,6 +145,16 @@ export default function ActivityDistributionPieChart() {
           activity: "Vocab. act.",
           numberOfTimes: element.totalVocabularyActivityCount,
           fill: "var(--color-vocabulary_activities)",
+        },
+        {
+          activity: "Lesson flash.",
+          numberOfTimes: element.totalLessonFlashcardCount,
+          fill: "var(--color-vocabulary_flashcards)",
+        },
+        {
+          activity: "Lesson sent. flash.",
+          numberOfTimes: element.totalLessonSentenceFlashcardsCount,
+          fill: "var(--color-sentense_flashcards)",
         },
       ];
     })

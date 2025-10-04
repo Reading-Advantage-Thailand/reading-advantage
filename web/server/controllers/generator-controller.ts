@@ -1,4 +1,4 @@
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 import { NextResponse, NextRequest } from "next/server";
 import { ExtendedNextRequest } from "./auth-controller";
 import { sendDiscordWebhook } from "../utils/send-discord-webhook";
@@ -17,7 +17,15 @@ import { generateAudio } from "../utils/generators/audio-generator";
 import { generateImage } from "../utils/generators/image-generator";
 import { calculateLevel } from "@/lib/calculateLevel";
 import { generateWordList } from "../utils/generators/word-list-generator";
-import { generateAudioForWord } from "../utils/generators/audio-words-generator";
+import {
+  generateAudioForWord,
+  WordWithTimePoint,
+} from "../utils/generators/audio-words-generator";
+import {
+  generateTranslatedSummary,
+  generateTranslatedPassage,
+  generateTranslatedPassageFromSentences,
+} from "../utils/generators/translation-generator";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -34,6 +42,35 @@ interface Context {
   params?: {
     articleId?: string;
   };
+}
+
+// Helper function to retry Prisma operations
+async function retryPrismaOperation<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3
+): Promise<T> {
+  let retries = 0;
+  while (retries < maxRetries) {
+    try {
+      return await operation();
+    } catch (error) {
+      retries++;
+      console.error(
+        `Prisma operation attempt ${retries}/${maxRetries} failed:`,
+        error
+      );
+
+      if (retries >= maxRetries) {
+        throw new Error(
+          `Prisma operation failed after ${maxRetries} attempts: ${error instanceof Error ? error.message : "Unknown Prisma error"}`
+        );
+      }
+
+      // Wait before retrying
+      await new Promise((resolve) => setTimeout(resolve, 1000 * retries));
+    }
+  }
+  throw new Error("This should never be reached");
 }
 
 // Function to generate queue
@@ -66,94 +103,29 @@ export async function generateQueue(req: ExtendedNextRequest) {
       userAgent,
     });
 
-    // const [fictionResults, nonfictionResults] = await Promise.all([
-    //   generateForGenre(ArticleType.FICTION, amount),
-    //   generateForGenre(ArticleType.NONFICTION, amount),
-    // ]);
-
-    // // Combine results from both genres
-    // const combinedResults = [...fictionResults, ...nonfictionResults];
-
-    // // Separate and count results in a single pass
-    // const { failedResults, successCount } = combinedResults.reduce(
-    //   (acc, result) => {
-    //     if (typeof result === "string") {
-    //       acc.failedResults.push(result);
-    //     } else {
-    //       acc.successCount += 1;
-    //     }
-    //     return acc;
-    //   },
-    //   { failedResults: [], successCount: 0 } as {
-    //     failedResults: string[];
-    //     successCount: number;
-    //   }
-    // );
-
-    // // Calculate counts and time taken
-    // const failedCount = failedResults.length;
-    // const timeTakenMinutes = (Date.now() - timeTaken) / (1000 * 60);
-
-    // // Log failed results if any
-    // if (failedCount > 0) {
-    //   try {
-    //     const formattedDate = new Date().toISOString().split(".")[0];
-    //     await db
-    //       .collection("error-log")
-    //       .doc(formattedDate)
-    //       .set({
-    //         error: failedResults,
-    //         created_at: new Date().toISOString(),
-    //         amount: amount * 12,
-    //         id: formattedDate,
-    //       });
-    //   } catch (error) {
-    //     console.error("Failed to log errors:", error);
-    //   }
-    // }
-
-    // Generate queue for fiction and nonfiction
-    // Run fiction generation first, then nonfiction
-    const fictionResults = await generateForGenre(
-      ArticleType.FICTION,
-      amount,
-      reqUrl,
-      userAgent
-    );
-    const nonfictionResults = await generateForGenre(
-      ArticleType.NONFICTION,
-      amount,
-      reqUrl,
-      userAgent
-    );
+    // Generate queue for fiction and nonfiction in parallel
+    const [fictionResults, nonfictionResults] = await Promise.all([
+      generateForGenre(ArticleType.FICTION, amount, reqUrl, userAgent),
+      generateForGenre(ArticleType.NONFICTION, amount, reqUrl, userAgent),
+    ]);
 
     // Combine results from both genres
     const combinedResults = fictionResults.concat(nonfictionResults);
 
     // Count failed results
     const failedCount = combinedResults.filter(
-      (result) => typeof result === "string"
+      (result) => result === null
     ).length;
     const successCount = combinedResults.filter(
-      (result) => typeof result !== "string"
+      (result) => result !== null
     ).length;
-    const failedReasons = combinedResults.filter(
-      (result) => typeof result === "string"
-    );
     // calculate taken time
     const timeTakenMinutes = (Date.now() - timeTaken) / 1000 / 60;
 
     // Log failed results
     if (failedCount > 0) {
-      const currentDate = new Date();
-      const formattedDate = currentDate.toISOString().split(".")[0];
-      const errorLogRef = db.collection("error-log").doc(formattedDate);
-      await errorLogRef.set({
-        error: failedReasons,
-        created_at: new Date().toISOString(),
-        amount: amount * 6 * 2,
-        id: formattedDate,
-      });
+      console.error(`Failed to generate ${failedCount} articles`);
+      // Note: Error logging to database is removed as part of Firestore to Prisma migration
     }
 
     await sendDiscordWebhook({
@@ -212,14 +184,16 @@ async function generateForGenre(
   reqUrl: string,
   userAgent: string
 ) {
-  // const randomGenre = await randomSelectGenre({ type });
+  // Select genre once for this genre type
+  const randomGenre = await randomSelectGenre({ type });
 
-  // const generatedTopic = await generateTopic({
-  //   type: type,
-  //   genre: randomGenre.genre,
-  //   subgenre: randomGenre.subgenre,
-  //   amountPerGenre: amountPerGenre,
-  // });
+  // Generate topics once for this genre
+  const generatedTopic = await generateTopic({
+    type: type,
+    genre: randomGenre.genre,
+    subgenre: randomGenre.subgenre,
+    amountPerGenre: amountPerGenre,
+  });
 
   const cefrLevels = [
     ArticleBaseCefrLevel.A1,
@@ -230,124 +204,27 @@ async function generateForGenre(
     ArticleBaseCefrLevel.C2,
   ];
 
-  const results = [];
+  // Generate all combinations of topics and levels in parallel
+  const results = await Promise.all(
+    cefrLevels.flatMap((level) =>
+      generatedTopic.topics.map((topic) =>
+        queue(
+          type,
+          randomGenre.genre,
+          randomGenre.subgenre,
+          topic,
+          level,
+          reqUrl,
+          userAgent
+        )
+      )
+    )
+  );
 
-  // Process each CEFR level sequentially
-  for (const level of cefrLevels) {
-    // Step 1: Randomly select a genre for this CEFR level
-    const randomGenre = await randomSelectGenre({ type });
-
-    // Step 2: Generate topics based on the selected genre
-    const generatedTopic = await generateTopic({
-      type: type,
-      genre: randomGenre.genre,
-      subgenre: randomGenre.subgenre,
-      amountPerGenre: amountPerGenre,
-    });
-
-    // Step 3: Queue tasks for each topic in this CEFR level
-    for (const topic of generatedTopic.topics) {
-      const result = await queue(
-        type,
-        randomGenre.genre,
-        randomGenre.subgenre,
-        topic,
-        level,
-        reqUrl,
-        userAgent
-      );
-      results.push(result);
-    }
-  }
-
-  // const results = await Promise.all(
-  //   cefrLevels.map(async (level) => {
-  //     // Step 1: Randomly select a genre for this CEFR level
-  //     const randomGenre = await randomSelectGenre({ type });
-
-  //     // Step 2: Generate topics based on the selected genre
-  //     const generatedTopic = await generateTopic({
-  //       type,
-  //       genre: randomGenre.genre,
-  //       subgenre: randomGenre.subgenre,
-  //       amountPerGenre,
-  //     });
-
-  //     // Step 3: Queue tasks for each topic in this CEFR level
-  //     return Promise.all(
-  //       generatedTopic.topics.map((topic) =>
-  //         queue(type, randomGenre.genre, randomGenre.subgenre, topic, level)
-  //       )
-  //     );
-  //   })
-  // );
-
-  // Process each topic concurrently
-  // const results = await Promise.all(
-  //   generatedTopic.topics.map(async (topic) => {
-  //     const topicResults = [];
-  //     topicResults.push(
-  //       await queue(
-  //         type,
-  //         randomGenre.genre,
-  //         randomGenre.subgenre,
-  //         topic,
-  //         ArticleBaseCefrLevel.A1
-  //       )
-  //     );
-  //     topicResults.push(
-  //       await queue(
-  //         type,
-  //         randomGenre.genre,
-  //         randomGenre.subgenre,
-  //         topic,
-  //         ArticleBaseCefrLevel.A2
-  //       )
-  //     );
-  //     topicResults.push(
-  //       await queue(
-  //         type,
-  //         randomGenre.genre,
-  //         randomGenre.subgenre,
-  //         topic,
-  //         ArticleBaseCefrLevel.B1
-  //       )
-  //     );
-  //     topicResults.push(
-  //       await queue(
-  //         type,
-  //         randomGenre.genre,
-  //         randomGenre.subgenre,
-  //         topic,
-  //         ArticleBaseCefrLevel.B2
-  //       )
-  //     );
-  //     topicResults.push(
-  //       await queue(
-  //         type,
-  //         randomGenre.genre,
-  //         randomGenre.subgenre,
-  //         topic,
-  //         ArticleBaseCefrLevel.C1
-  //       )
-  //     );
-  //     topicResults.push(
-  //       await queue(
-  //         type,
-  //         randomGenre.genre,
-  //         randomGenre.subgenre,
-  //         topic,
-  //         ArticleBaseCefrLevel.C2
-  //       )
-  //     );
-  //     return topicResults;
-  //   })
-  // );
-
-  return results.flat();
+  return results;
 }
 
-// Function to generate article, questions, and save to db
+// Function to generate article, questions, and save to db using Prisma
 // Returns a string if failed, otherwise returns an object
 async function queue(
   type: ArticleType,
@@ -359,16 +236,30 @@ async function queue(
   userAgent: string,
   maxRetries: number = 5
 ) {
+  console.log(`[DEBUG] queue() called with:`, {
+    type,
+    genre,
+    subgenre,
+    topic,
+    cefrLevel,
+    reqUrl,
+    userAgent,
+    maxRetries,
+  });
+
   let attempts = 0;
   let lastError: unknown = null;
+  let articleId: string = "";
+  let prismaRetries = 0;
+  const maxPrismaRetries = 3;
 
   while (attempts < maxRetries) {
+    console.log(
+      `[DEBUG] Starting attempt ${attempts + 1}/${maxRetries} to generate article`
+    );
     try {
-      //console.log(`Attempt ${attempts + 1}/${maxRetries} to generate article`);
-      // Generate article and evaluate rating
-      const ref = db.collection("new-articles").doc();
-      const articleId = ref.id;
-
+      console.log(`[DEBUG] Calling evaluateArticle()...`);
+      // Generate article and evaluate rating using the same approach as generateUserArticle
       const {
         article: generatedArticle,
         rating,
@@ -376,118 +267,289 @@ async function queue(
         raLevel,
       } = await evaluateArticle(type, genre, subgenre, topic, cefrLevel);
 
-      // Generate Image with retry
+      console.log(`[DEBUG] evaluateArticle() completed:`, {
+        title: generatedArticle.title,
+        rating,
+        cefrlevel,
+        raLevel,
+        wordCount: generatedArticle.passage.split(" ").length,
+      });
+
+      // Create article using Prisma with retry mechanism
+      let article;
+      prismaRetries = 0;
+      console.log(`[DEBUG] Starting Prisma article creation...`);
+      while (prismaRetries < maxPrismaRetries) {
+        try {
+          console.log(
+            `[DEBUG] Prisma create attempt ${prismaRetries + 1}/${maxPrismaRetries}`
+          );
+          article = await prisma.article.create({
+            data: {
+              type: type,
+              genre,
+              subGenre: subgenre,
+              title: generatedArticle.title,
+              summary: generatedArticle.summary,
+              passage: generatedArticle.passage,
+              imageDescription: generatedArticle.imageDesc,
+              cefrLevel: cefrlevel,
+              raLevel,
+              rating: rating,
+              isPublic: true,
+            },
+          });
+          console.log(`[DEBUG] Article created successfully in Prisma`);
+          break;
+        } catch (prismaError) {
+          prismaRetries++;
+          console.error(
+            `[DEBUG] Prisma create attempt ${prismaRetries}/${maxPrismaRetries} failed:`,
+            prismaError
+          );
+
+          if (prismaRetries >= maxPrismaRetries) {
+            throw new Error(
+              `Failed to save article to database after ${maxPrismaRetries} attempts: ${prismaError instanceof Error ? prismaError.message : "Unknown Prisma error"}`
+            );
+          }
+
+          // Wait before retrying Prisma operation
+          console.log(
+            `[DEBUG] Waiting ${1000 * prismaRetries}ms before retrying Prisma operation...`
+          );
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * prismaRetries)
+          );
+        }
+      }
+
+      if (!article) {
+        throw new Error("Failed to create article after all Prisma retries");
+      }
+
+      articleId = article.id;
+      console.log(`[DEBUG] Article created with ID: ${articleId}`);
+      // Generate Image
+      console.log(
+        `[DEBUG] Starting image generation for articleId: ${articleId}`
+      );
       await generateImage({
         imageDesc: generatedArticle.imageDesc,
         articleId,
       });
+      console.log(`[DEBUG] Image generation completed`);
 
-      const createdAt = new Date().toISOString();
-      await ref.set({
-        average_rating: rating,
-        cefr_level: cefrlevel,
-        created_at: createdAt,
-        genre,
-        image_description: generatedArticle.imageDesc,
-        passage: generatedArticle.passage,
-        ra_level: raLevel,
-        read_count: 0,
-        subgenre,
-        summary: generatedArticle.summary,
-        title: generatedArticle.title,
-        type,
-        id: articleId,
+      // Generate Questions (same approach as generateUserArticle)
+      console.log(`[DEBUG] Starting question generation...`);
+      const [mcq, saq, laq] = await Promise.all([
+        generateMCQuestion({
+          type,
+          cefrlevel: cefrLevel,
+          passage: generatedArticle.passage,
+          title: generatedArticle.title,
+          summary: generatedArticle.summary,
+          imageDesc: generatedArticle.imageDesc,
+        }),
+        generateSAQuestion({
+          type,
+          cefrlevel: cefrLevel,
+          passage: generatedArticle.passage,
+          title: generatedArticle.title,
+          summary: generatedArticle.summary,
+          imageDesc: generatedArticle.imageDesc,
+        }),
+        generateLAQuestion({
+          type,
+          cefrlevel: cefrLevel,
+          passage: generatedArticle.passage,
+          title: generatedArticle.title,
+          summary: generatedArticle.summary,
+          imageDesc: generatedArticle.imageDesc,
+        }),
+      ]);
+      console.log(`[DEBUG] Question generation completed:`, {
+        mcqCount: mcq.questions?.length || 0,
+        saqCount: saq.questions?.length || 0,
+        laqExists: !!laq.question,
       });
 
-      // Sequential execution for question generation
-      const mcq = await generateMCQuestion({
-        type,
-        cefrlevel: cefrLevel,
-        passage: generatedArticle.passage,
-        title: generatedArticle.title,
-        summary: generatedArticle.summary,
-        imageDesc: generatedArticle.imageDesc,
+      // Transform and save questions using Prisma (same approach as generateUserArticle)
+      console.log(`[DEBUG] Starting question transformation...`);
+      const transformedMCQuestions = mcq.questions
+        .map((q: any) => {
+          const options = [
+            q.correct_answer,
+            q.distractor_1,
+            q.distractor_2,
+            q.distractor_3,
+          ].filter(Boolean);
+
+          if (options.length !== 4) return null;
+
+          const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+
+          return {
+            question: q.question,
+            options: shuffledOptions,
+            answer: q.correct_answer,
+            textualEvidence: q.textual_evidence || "",
+            articleId: articleId,
+          };
+        })
+        .filter(
+          (q): q is NonNullable<typeof q> =>
+            q !== null &&
+            q.question &&
+            q.options &&
+            q.options.length === 4 &&
+            q.answer
+        );
+
+      const transformedSAQuestions = saq.questions
+        .map((q: any) => ({
+          question: q.question,
+          answer: q.suggested_answer || q.answer,
+          articleId: articleId,
+        }))
+        .filter((q: any) => q.question && q.answer);
+
+      console.log(`[DEBUG] Question transformation completed:`, {
+        validMCQCount: transformedMCQuestions.length,
+        validSAQCount: transformedSAQuestions.length,
+        laqExists: !!laq.question,
       });
 
-      const saq = await generateSAQuestion({
-        type,
-        cefrlevel: cefrLevel,
-        passage: generatedArticle.passage,
-        title: generatedArticle.title,
-        summary: generatedArticle.summary,
-        imageDesc: generatedArticle.imageDesc,
-      });
+      // Save questions to database using Prisma with retry mechanism
+      console.log(`[DEBUG] Starting question saving to database...`);
+      const questionPromises = [];
 
-      const laq = await generateLAQuestion({
-        type,
-        cefrlevel: cefrLevel,
-        passage: generatedArticle.passage,
-        title: generatedArticle.title,
-        summary: generatedArticle.summary,
-        imageDesc: generatedArticle.imageDesc,
-      });
+      // Save multiple choice questions if valid
+      if (transformedMCQuestions.length > 0) {
+        questionPromises.push(
+          retryPrismaOperation(
+            () =>
+              prisma.multipleChoiceQuestion.createMany({
+                data: transformedMCQuestions,
+              }),
+            maxPrismaRetries
+          )
+        );
+      }
 
+      // Save short answer questions if valid
+      if (transformedSAQuestions.length > 0) {
+        questionPromises.push(
+          retryPrismaOperation(
+            () =>
+              prisma.shortAnswerQuestion.createMany({
+                data: transformedSAQuestions,
+              }),
+            maxPrismaRetries
+          )
+        );
+      }
+
+      // Save long answer question if valid
+      if (laq.question) {
+        questionPromises.push(
+          retryPrismaOperation(
+            () =>
+              prisma.longAnswerQuestion.create({
+                data: {
+                  question: laq.question,
+                  articleId: articleId,
+                },
+              }),
+            maxPrismaRetries
+          )
+        );
+      }
+
+      // Execute all question saves
+      if (questionPromises.length > 0) {
+        await Promise.all(questionPromises);
+        console.log(`[DEBUG] All questions saved successfully`);
+      } else {
+        console.log(`[DEBUG] No questions to save`);
+      }
+
+      // Generate Word List
+      console.log(`[DEBUG] Starting word list generation...`);
       const wordList = await generateWordList({
         passage: generatedArticle.passage,
       });
+      console.log(`[DEBUG] Word list generation completed:`, {
+        wordCount: wordList.word_list?.length || 0,
+      });
 
-      // Save generated data to Firestore
-      await addQuestionsToCollection(articleId, "mc-questions", mcq.questions);
-      await addQuestionsToCollection(articleId, "sa-questions", saq.questions);
-      await addQuestionsToCollection(articleId, "la-questions", [laq]);
-      await addWordList(articleId, wordList.word_list, createdAt);
+      // Generate Audio and get timepoints first (to get consistent sentence splitting)
+      console.log(`[DEBUG] Starting audio generation...`);
+      const sentences = await generateAudio({
+        passage: generatedArticle.passage,
+        articleId: articleId,
+      });
+      console.log(`[DEBUG] Audio generation completed:`, {
+        sentenceCount: sentences?.length || 0,
+      });
 
-      // Generate audio (Sequential execution)
-      await generateAudio({ passage: generatedArticle.passage, articleId });
-      await generateAudioForWord({ wordList: wordList.word_list, articleId });
+      console.log(`[DEBUG] Starting word audio generation...`);
+      const wordsWithTimePoints = await generateAudioForWord({
+        wordList: wordList.word_list,
+        articleId: articleId,
+      });
+      console.log(`[DEBUG] Word audio generation completed:`, {
+        wordsWithTimePointsCount: wordsWithTimePoints?.length || 0,
+      });
 
-      // const [mcq, saq, laq, wordList] = await Promise.all([
-      //   generateMCQuestion({
-      //     type,
-      //     cefrlevel: cefrLevel,
-      //     passage: generatedArticle.passage,
-      //     title: generatedArticle.title,
-      //     summary: generatedArticle.summary,
-      //     imageDesc: generatedArticle.imageDesc,
-      //   }),
-      //   generateSAQuestion({
-      //     type,
-      //     cefrlevel: cefrLevel,
-      //     passage: generatedArticle.passage,
-      //     title: generatedArticle.title,
-      //     summary: generatedArticle.summary,
-      //     imageDesc: generatedArticle.imageDesc,
-      //   }),
-      //   generateLAQuestion({
-      //     type,
-      //     cefrlevel: cefrLevel,
-      //     passage: generatedArticle.passage,
-      //     title: generatedArticle.title,
-      //     summary: generatedArticle.summary,
-      //     imageDesc: generatedArticle.imageDesc,
-      //   }),
-      //   generateWordList({
-      //     passage: generatedArticle.passage,
-      //   }),
-      // ]);
+      // Update article with translations, sentences, and words
+      console.log(`[DEBUG] Starting final article update with all data...`);
+      await retryPrismaOperation(
+        () =>
+          prisma.article.update({
+            where: { id: articleId },
+            data: {
+              sentences: sentences,
+              words: wordsWithTimePoints,
+            },
+          }),
+        maxPrismaRetries
+      );
+      console.log(`[DEBUG] Final article update completed`);
 
-      //console.log("Article generation successful!");
+      console.log("[DEBUG] Article generation successful!");
       return articleId;
     } catch (error) {
       console.error(
-        `Error during article generation (Attempt ${attempts + 1}):`,
+        `[DEBUG] Error during article generation (Attempt ${attempts + 1}/${maxRetries}):`,
         error
       );
       lastError = error;
+
+      // Cleanup on error if article was created
+      if (articleId) {
+        console.log(
+          `[DEBUG] Starting cleanup for failed article: ${articleId}`
+        );
+        await cleanupFailedPrismaGeneration(articleId);
+        articleId = ""; // Reset for next attempt
+        console.log(`[DEBUG] Cleanup completed for failed article`);
+      }
     }
 
     attempts++;
-    const delay = Math.pow(2, attempts) * 1000;
-    //console.log(`Retrying in ${delay / 1000} seconds...`);
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    if (attempts < maxRetries) {
+      const delay = Math.pow(2, attempts) * 1000;
+      console.log(
+        `[DEBUG] Retrying in ${delay / 1000} seconds... (Attempt ${attempts + 1}/${maxRetries})`
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
 
-  console.error("Failed to generate article after max retries.");
+  console.error(
+    `[DEBUG] Failed to generate article after ${maxRetries} max retries.`
+  );
 
   let errorMessage = "Unknown error occurred";
   if (lastError instanceof Error) {
@@ -498,6 +560,9 @@ async function queue(
     errorMessage = JSON.stringify(lastError);
   }
 
+  console.log(
+    `[DEBUG] Sending failure notification to Discord: ${errorMessage}`
+  );
   await sendDiscordWebhook({
     title: "Queue Generation Failed",
     embeds: [
@@ -510,37 +575,10 @@ async function queue(
     userAgent,
   });
 
+  console.log(
+    `[DEBUG] queue() function completed with failure, returning null`
+  );
   return null;
-}
-
-// Helper function to add questions to a specific subcollection
-async function addQuestionsToCollection(
-  articleId: string,
-  collectionName: string,
-  questions: any[]
-) {
-  const collectionRef = db
-    .collection("new-articles")
-    .doc(articleId)
-    .collection(collectionName);
-
-  const promises = questions.map((question) => collectionRef.add(question));
-  await Promise.all(promises);
-}
-
-// Helper function to store word list
-async function addWordList(
-  articleId: string,
-  wordList: any[],
-  createdAt: string
-) {
-  const wordListRef = db.collection("word-list").doc(articleId);
-  await wordListRef.set({
-    word_list: wordList,
-    articleId,
-    id: articleId,
-    created_at: createdAt,
-  });
 }
 
 async function evaluateArticle(
@@ -604,7 +642,7 @@ async function evaluateArticle(
 }
 
 export async function generateUserArticle(req: NextRequest) {
-  let articleRef: any = null;
+  let articleId: string = "";
   let userId: string = "";
 
   try {
@@ -620,25 +658,28 @@ export async function generateUserArticle(req: NextRequest) {
     userId = session.user.id;
     //console.log(`User ID: ${userId}`);
 
-    // Get user data to fetch license_id
-    const userDoc = await db.collection("users").doc(userId).get();
-    if (!userDoc.exists) {
+    // Get user data from Prisma to fetch license_id
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        licenseOnUsers: {
+          include: {
+            license: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userData = userDoc.data();
-    let author = "Unknown Author";
+    let author = user.name || user.email || "Unknown Author";
 
-    // Fetch school name from licenses collection if user has license_id
-    if (userData?.license_id) {
-      const licenseDoc = await db
-        .collection("licenses")
-        .doc(userData.license_id)
-        .get();
-      if (licenseDoc.exists) {
-        const licenseData = licenseDoc.data();
-        author = licenseData?.school_name || "Unknown School";
-      }
+    // Get school name from the latest active license if needed for additional context
+    const latestLicense = user.licenseOnUsers[0]; // Get the first license
+    if (latestLicense?.license && !user.name) {
+      author = latestLicense.license.schoolName || "Unknown School";
     }
 
     // Parse request body
@@ -709,41 +750,29 @@ export async function generateUserArticle(req: NextRequest) {
     //  `Calculated CEFR level: ${calculatedCefrLevel}, RA level: ${raLevel}`
     //);
 
-    // Create article document
-    articleRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles")
-      .doc();
+    // Create article using Prisma
+    const article = await prisma.article.create({
+      data: {
+        type: articleType,
+        genre,
+        subGenre: subgenre || "",
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        passage: generatedArticle.passage,
+        imageDescription: generatedArticle.imageDesc,
+        cefrLevel: calculatedCefrLevel,
+        raLevel,
+        rating: evaluatedRating.rating,
+        authorId: userId,
+        isPublic: false, // Set as private by default for user-generated articles
+      },
+    });
 
-    const articleData = {
-      id: articleRef.id,
-      title: generatedArticle.title,
-      passage: generatedArticle.passage,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-      type: articleType,
-      genre,
-      subgenre: subgenre || "",
-      topic,
-      cefr_level: calculatedCefrLevel,
-      raLevel,
-      wordCount: generatedArticle.passage.split(" ").length,
-      targetWordCount: wordCount,
-      rating: evaluatedRating.rating,
-      status: "draft",
-      author, // Add author field
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    articleId = article.id;
 
-    //console.log(`Saving article to Firestore with ID: ${articleRef.id}`);
-    //console.log(`Word count: ${articleData.wordCount}, Target: ${wordCount}`);
+    //console.log(`Saving article to database with ID: ${articleId}`);
+    //console.log(`Word count: ${generatedArticle.passage.split(" ").length}, Target: ${wordCount}`);
     //console.log(`Author: ${author}`);
-
-    // Save to Firestore
-    await articleRef.set(articleData);
-    //console.log("Article saved successfully to Firestore");
 
     // Generate additional content
     //console.log("Generating additional content...");
@@ -752,7 +781,7 @@ export async function generateUserArticle(req: NextRequest) {
     //console.log("Generating image...");
     await generateImage({
       imageDesc: generatedArticle.imageDesc,
-      articleId: articleRef.id,
+      articleId: articleId,
     });
     //console.log("Image generated successfully");
 
@@ -786,6 +815,88 @@ export async function generateUserArticle(req: NextRequest) {
     ]);
     //console.log("Questions generated successfully");
 
+    // Save questions to database using Prisma
+    //console.log("Saving questions...");
+
+    // Transform and validate questions before saving
+    const transformedMCQuestions = mcq.questions
+      .map((q: any) => {
+        // Create options array with correct answer and distractors
+        const options = [
+          q.correct_answer,
+          q.distractor_1,
+          q.distractor_2,
+          q.distractor_3,
+        ].filter(Boolean); // Remove any undefined values
+
+        if (options.length !== 4) return null; // Must have exactly 4 options
+
+        // Shuffle the options
+        const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+
+        return {
+          question: q.question,
+          options: shuffledOptions,
+          answer: q.correct_answer, // Keep the correct answer as text
+          textualEvidence: q.textual_evidence || "",
+          articleId: articleId,
+        };
+      })
+      .filter(
+        (q): q is NonNullable<typeof q> =>
+          q !== null &&
+          q.question &&
+          q.options &&
+          q.options.length === 4 &&
+          q.answer
+      );
+
+    const transformedSAQuestions = saq.questions
+      .map((q: any) => ({
+        question: q.question,
+        answer: q.suggested_answer || q.answer, // Handle both formats
+        articleId: articleId,
+      }))
+      .filter((q: any) => q.question && q.answer);
+
+    const questionPromises = [];
+
+    // Save multiple choice questions if valid
+    if (transformedMCQuestions.length > 0) {
+      questionPromises.push(
+        prisma.multipleChoiceQuestion.createMany({
+          data: transformedMCQuestions,
+        })
+      );
+    }
+
+    // Save short answer questions if valid
+    if (transformedSAQuestions.length > 0) {
+      questionPromises.push(
+        prisma.shortAnswerQuestion.createMany({
+          data: transformedSAQuestions,
+        })
+      );
+    }
+
+    // Save long answer question if valid
+    if (laq.question) {
+      questionPromises.push(
+        prisma.longAnswerQuestion.create({
+          data: {
+            question: laq.question,
+            articleId: articleId,
+          },
+        })
+      );
+    }
+
+    // Execute all question saves
+    if (questionPromises.length > 0) {
+      await Promise.all(questionPromises);
+    }
+    //console.log("Questions saved successfully");
+
     // Generate Word List
     //console.log("Generating word list...");
     const wordList = await generateWordList({
@@ -793,64 +904,102 @@ export async function generateUserArticle(req: NextRequest) {
     });
     //console.log("Word list generated successfully");
 
-    // Save questions and word list to user's article subcollections
-    //console.log("Saving questions and word list...");
-    await Promise.all([
-      addUserQuestionsToCollection(
-        userId,
-        articleRef.id,
-        "mc-questions",
-        mcq.questions
-      ),
-      addUserQuestionsToCollection(
-        userId,
-        articleRef.id,
-        "sa-questions",
-        saq.questions
-      ),
-      addUserQuestionsToCollection(userId, articleRef.id, "la-questions", [
-        laq,
-      ]),
-      addUserWordList(
-        userId,
-        articleRef.id,
-        wordList.word_list,
-        articleData.createdAt
-      ),
-    ]);
-    //console.log("Questions and word list saved successfully");
-
-    // Generate Audio
+    // Generate Audio and get timepoints first (to get consistent sentence splitting)
     //console.log("Generating audio...");
-    await Promise.all([
-      generateAudio({
-        passage: generatedArticle.passage,
-        articleId: articleRef.id,
-        isUserGenerated: true,
-        userId: userId,
-      }),
-      generateAudioForWord({
-        wordList: wordList.word_list,
-        articleId: articleRef.id,
-        isUserGenerated: true,
-        userId: userId,
-      }),
-    ]);
+    const sentences = await generateAudio({
+      passage: generatedArticle.passage,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
+
+    // Generate translations using the sentences from audio generation
+    //console.log("Generating translations...");
+    let translatedSummary, translatedPassage;
+    try {
+      // Extract just the sentence text from the audio results
+      const sentenceTexts = sentences.map((s) => s.sentences);
+
+      [translatedSummary, translatedPassage] = await Promise.all([
+        generateTranslatedSummary({
+          summary: generatedArticle.summary,
+        }),
+        generateTranslatedPassageFromSentences({
+          sentences: sentenceTexts,
+        }),
+      ]);
+      //console.log("Translations generated successfully");
+    } catch (translationError) {
+      console.error("Translation failed after all retries:", translationError);
+      // Cleanup the article and related files
+      if (articleId) {
+        await cleanupFailedPrismaGeneration(articleId);
+      }
+      throw new Error(
+        `Translation failed: ${translationError instanceof Error ? translationError.message : "Unknown translation error"}`
+      );
+    }
+
+    // Note: We don't update the article with word list here anymore
+    // because generateAudioForWord will save the complete words with timepoints
+
+    const wordsWithTimePoints = await generateAudioForWord({
+      wordList: wordList.word_list,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
     //console.log("Audio generated successfully");
+
+    // Update article with translations
+    await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        translatedSummary: translatedSummary,
+        translatedPassage: translatedPassage,
+      },
+    });
+
+    // Get the updated article with timepoints
+    const updatedArticle = await prisma.article.findUnique({
+      where: { id: articleId },
+      include: {
+        multipleChoiceQuestions: true,
+        shortAnswerQuestions: true,
+        longAnswerQuestions: true,
+      },
+    });
+
+    if (!updatedArticle) {
+      throw new Error("Article was created but not found in database");
+    }
 
     // Return the generated article
     //console.log("Returning generated article response");
     return NextResponse.json({
-      id: articleRef.id,
-      title: generatedArticle.title,
-      passage: generatedArticle.passage,
-      summary: generatedArticle.summary,
-      imageDesc: generatedArticle.imageDesc,
-      rating: evaluatedRating.rating,
-      cefrLevel: calculatedCefrLevel,
-      raLevel,
-      wordCount: articleData.wordCount,
-      author, // Include author in response
+      article: {
+        id: articleId,
+        type: articleType,
+        genre,
+        subgenre: subgenre || "",
+        title: generatedArticle.title,
+        summary: generatedArticle.summary,
+        passage: generatedArticle.passage,
+        image_description: generatedArticle.imageDesc,
+        cefr_level: calculatedCefrLevel,
+        ra_level: raLevel,
+        average_rating: evaluatedRating.rating,
+        audioUrl: `${articleId}.mp3`,
+        audioUrlWords: `${articleId}.mp3`,
+        created_at: updatedArticle.createdAt.toISOString(),
+        timepoints: updatedArticle.sentences || [],
+        translatedPassage: translatedPassage,
+        translatedSummary: translatedSummary,
+        read_count: 0,
+        isPublic: false,
+        author, // Include author in response
+        words: wordsWithTimePoints, // Include words with timepoints and definitions
+      },
     });
   } catch (error) {
     console.error("Error generating user article:", error);
@@ -860,9 +1009,9 @@ export async function generateUserArticle(req: NextRequest) {
     );
 
     // Cleanup on error
-    if (articleRef && userId) {
+    if (articleId) {
       //console.log("Starting cleanup process...");
-      await cleanupFailedGeneration(userId, articleRef.id);
+      await cleanupFailedPrismaGeneration(articleId);
     }
 
     return NextResponse.json(
@@ -900,94 +1049,27 @@ export async function approveUserArticle(req: NextRequest) {
 
     //console.log(`Approving article: ${articleId}`);
 
-    // Get the user's generated article
-    const userArticleRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles")
-      .doc(articleId);
+    // Get the user's generated article using Prisma
+    const article = await prisma.article.findUnique({
+      where: {
+        id: articleId,
+        authorId: userId, // Ensure the article belongs to the requesting user
+      },
+    });
 
-    const userArticleDoc = await userArticleRef.get();
-    if (!userArticleDoc.exists) {
+    if (!article) {
       return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
 
-    const articleData = userArticleDoc.data();
-    if (!articleData) {
-      return NextResponse.json(
-        { error: "Article data is invalid" },
-        { status: 400 }
-      );
-    }
+    //console.log("Article found, starting approval process...", article);
 
-    //console.log("Article found, starting approval process...",articleData);
-
-    // 1. Copy article to new-articles collection (including author)
-    const newArticleRef = db.collection("new-articles").doc(articleId);
-    const newArticleData = {
-      id: articleId,
-      title: articleData.title,
-      passage: articleData.passage,
-      summary: articleData.summary,
-      image_description: articleData.imageDesc,
-      type: articleData.type,
-      genre: articleData.genre,
-      subgenre: articleData.subgenre,
-      topic: articleData.topic,
-      cefr_level: articleData.cefr_level,
-      ra_level: articleData.raLevel,
-      average_rating: articleData.rating,
-      read_count: 0,
-      author: articleData.author, // Include author field
-      created_at: articleData.createdAt,
-      updated_at: new Date().toISOString(),
-      ...(articleData.timepoints && { timepoints: articleData.timepoints }),
-    };
-
-    await newArticleRef.set(newArticleData);
-    //console.log("Article copied to new-articles collection");
-
-    // 2. Copy questions subcollections
-    const questionTypes = ["mc-questions", "sa-questions", "la-questions"];
-
-    for (const questionType of questionTypes) {
-      const userQuestionsRef = userArticleRef.collection(questionType);
-      const userQuestionsSnapshot = await userQuestionsRef.get();
-
-      if (!userQuestionsSnapshot.empty) {
-        const newQuestionsRef = newArticleRef.collection(questionType);
-        const batch = db.batch();
-
-        userQuestionsSnapshot.docs.forEach((doc) => {
-          const newQuestionRef = newQuestionsRef.doc(doc.id);
-          batch.set(newQuestionRef, doc.data());
-        });
-
-        await batch.commit();
-        //console.log(`Copied ${questionType} to new-articles`);
-      }
-    }
-
-    // 3. Move word list to main word-list collection
-    const userWordListRef = userArticleRef
-      .collection("word-list")
-      .doc(articleId);
-    const userWordListDoc = await userWordListRef.get();
-
-    if (userWordListDoc.exists) {
-      const wordListData = userWordListDoc.data();
-      if (wordListData) {
-        const mainWordListRef = db.collection("word-list").doc(articleId);
-        await mainWordListRef.set(wordListData);
-        //console.log("Word list moved to main collection");
-      }
-    }
-
-    // 4. Update user's article status to approved
-    await userArticleRef.update({
-      status: "approved",
-      approvedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    // Update article to make it public (approved)
+    const updatedArticle = await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        isPublic: true,
+        updatedAt: new Date(),
+      },
     });
 
     //console.log("Article approval process completed successfully");
@@ -995,6 +1077,7 @@ export async function approveUserArticle(req: NextRequest) {
     return NextResponse.json({
       message: "Article approved successfully",
       articleId: articleId,
+      isPublic: updatedArticle.isPublic,
     });
   } catch (error) {
     console.error("Error approving article:", error);
@@ -1023,20 +1106,47 @@ export async function getUserGeneratedArticles(req: NextRequest) {
 
     const userId = session.user.id;
 
-    // Get user's generated articles
-    const articlesRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles");
+    // Get user's generated articles using Prisma
+    const articles = await prisma.article.findMany({
+      where: {
+        authorId: userId,
+      },
+      include: {
+        multipleChoiceQuestions: true,
+        shortAnswerQuestions: true,
+        longAnswerQuestions: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-    const snapshot = await articlesRef.orderBy("createdAt", "desc").get();
-
-    const articles = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+    // Transform the data to match the expected format
+    const transformedArticles = articles.map((article) => ({
+      id: article.id,
+      type: article.type,
+      genre: article.genre,
+      subgenre: article.subGenre,
+      title: article.title,
+      summary: article.summary,
+      passage: article.passage,
+      imageDesc: article.imageDescription,
+      cefr_level: article.cefrLevel,
+      raLevel: article.raLevel,
+      rating: article.rating,
+      createdAt: article.createdAt.toISOString(),
+      updatedAt: article.updatedAt.toISOString(),
+      translatedSummary: article.translatedSummary,
+      translatedPassage: article.translatedPassage,
+      sentences: article.sentences,
+      words: article.words,
+      status: article.isPublic ? "approved" : "draft", // Map isPublic to status
+      multipleChoiceQuestions: article.multipleChoiceQuestions,
+      shortAnswerQuestions: article.shortAnswerQuestions,
+      longAnswerQuestions: article.longAnswerQuestions,
     }));
 
-    return NextResponse.json({ articles });
+    return NextResponse.json({ articles: transformedArticles });
   } catch (error) {
     console.error("Error fetching user articles:", error);
     return NextResponse.json(
@@ -1080,40 +1190,19 @@ export async function updateUserArticle(
       );
     }
 
-    // Get the existing article
-    const articleRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles")
-      .doc(articleId);
+    // Get the existing article using Prisma
+    const existingArticle = await prisma.article.findUnique({
+      where: {
+        id: articleId,
+        authorId: userId, // Ensure the article belongs to the requesting user
+      },
+    });
 
-    const articleDoc = await articleRef.get();
-    if (!articleDoc.exists) {
+    if (!existingArticle) {
       return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
 
-    const existingData = articleDoc.data();
-    if (!existingData) {
-      return NextResponse.json(
-        { error: "Article data is invalid" },
-        { status: 400 }
-      );
-    }
-
-    //console.log(
-    //  "Existing article found, starting update process...",
-    //  existingData
-    //);
-
-    // 1. Clean up existing audio files only (not images)
-    //console.log("Cleaning up existing audio files...");
-    await cleanupAudioFiles(articleId, userId);
-
-    // 2. Recalculate levels based on new passage
-    //console.log("Recalculating levels...");
-    const normalizedCefrLevel = (
-      existingData.cefr_level || existingData.cefrLevel
-    )
+    const normalizedCefrLevel = existingArticle.cefrLevel
       ?.replace("+", "")
       ?.toLowerCase();
 
@@ -1124,7 +1213,7 @@ export async function updateUserArticle(
       );
     }
     //console.log(
-    //  `Normalized CEFR level: ${normalizedCefrLevel} (from ${existingData.cefrLevel})`
+    //  `Normalized CEFR level: ${normalizedCefrLevel} (from ${existingArticle.cefrLevel})`
     //);
 
     const { raLevel, cefrLevel: calculatedCefrLevel } = calculateLevel(
@@ -1132,47 +1221,40 @@ export async function updateUserArticle(
       normalizedCefrLevel
     );
 
-    // 3. Update article data (preserve author field and existing rating)
-    const updatedData = {
-      title,
-      passage,
-      summary,
-      imageDesc,
-      cefr_level: calculatedCefrLevel,
-      raLevel,
-      wordCount: passage.split(" ").length,
-      rating: existingData.rating,
-      author: existingData.author,
-      updatedAt: new Date().toISOString(),
-    };
+    // 3. Update article data using Prisma
+    await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        title,
+        passage,
+        summary,
+        imageDescription: imageDesc,
+        cefrLevel: calculatedCefrLevel,
+        raLevel,
+        updatedAt: new Date(),
+      },
+    });
+    //console.log("Article data updated in database");
 
-    await articleRef.update(updatedData);
-    //console.log("Article data updated in Firestore");
-
-    // 4. Regenerate questions and word list only
-    //console.log("Regenerating questions and word list...");
-
-    // Delete existing subcollections (except images)
-    const subcollections = [
-      "mc-questions",
-      "sa-questions",
-      "la-questions",
-      "word-list",
-    ];
-    for (const subcollectionName of subcollections) {
-      const subcollectionRef = articleRef.collection(subcollectionName);
-      const snapshot = await subcollectionRef.get();
-
-      const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
-      await Promise.all(deletePromises);
-      //console.log(`Deleted existing ${subcollectionName}`);
-    }
+    // 4. Delete existing questions using Prisma
+    //console.log("Deleting existing questions...");
+    await Promise.all([
+      prisma.multipleChoiceQuestion.deleteMany({
+        where: { articleId },
+      }),
+      prisma.shortAnswerQuestion.deleteMany({
+        where: { articleId },
+      }),
+      prisma.longAnswerQuestion.deleteMany({
+        where: { articleId },
+      }),
+    ]);
 
     // Generate new questions
     //console.log("Generating new questions...");
     const [mcq, saq, laq] = await Promise.all([
       generateMCQuestion({
-        type: existingData.type,
+        type: existingArticle.type as ArticleType,
         cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
         passage: passage,
         title: title,
@@ -1180,7 +1262,7 @@ export async function updateUserArticle(
         imageDesc: imageDesc,
       }),
       generateSAQuestion({
-        type: existingData.type,
+        type: existingArticle.type as ArticleType,
         cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
         passage: passage,
         title: title,
@@ -1188,7 +1270,7 @@ export async function updateUserArticle(
         imageDesc: imageDesc,
       }),
       generateLAQuestion({
-        type: existingData.type,
+        type: existingArticle.type as ArticleType,
         cefrlevel: normalizedCefrLevel as ArticleBaseCefrLevel,
         passage: passage,
         title: title,
@@ -1197,59 +1279,173 @@ export async function updateUserArticle(
       }),
     ]);
 
+    // Transform and validate questions before saving (same as generateUserArticle)
+    const transformedMCQuestions = mcq.questions
+      .map((q: any) => {
+        // Create options array with correct answer and distractors
+        const options = [
+          q.correct_answer,
+          q.distractor_1,
+          q.distractor_2,
+          q.distractor_3,
+        ].filter(Boolean); // Remove any undefined values
+
+        if (options.length !== 4) return null; // Must have exactly 4 options
+
+        // Shuffle the options
+        const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+
+        return {
+          question: q.question,
+          options: shuffledOptions,
+          answer: q.correct_answer, // Keep the correct answer as text
+          textualEvidence: q.textual_evidence || "",
+          articleId: articleId,
+        };
+      })
+      .filter(
+        (q): q is NonNullable<typeof q> =>
+          q !== null &&
+          q.question &&
+          q.options &&
+          q.options.length === 4 &&
+          q.answer
+      );
+
+    const transformedSAQuestions = saq.questions
+      .map((q: any) => ({
+        question: q.question,
+        answer: q.suggested_answer || q.answer, // Handle both formats
+        articleId: articleId,
+      }))
+      .filter((q: any) => q.question && q.answer);
+
+    const questionPromises = [];
+
+    // Save multiple choice questions if valid
+    if (transformedMCQuestions.length > 0) {
+      questionPromises.push(
+        prisma.multipleChoiceQuestion.createMany({
+          data: transformedMCQuestions,
+        })
+      );
+    }
+
+    // Save short answer questions if valid
+    if (transformedSAQuestions.length > 0) {
+      questionPromises.push(
+        prisma.shortAnswerQuestion.createMany({
+          data: transformedSAQuestions,
+        })
+      );
+    }
+
+    // Save long answer question if valid
+    if (laq.question) {
+      questionPromises.push(
+        prisma.longAnswerQuestion.create({
+          data: {
+            question: laq.question,
+            articleId: articleId,
+          },
+        })
+      );
+    }
+
+    // Execute all question saves
+    if (questionPromises.length > 0) {
+      await Promise.all(questionPromises);
+    }
+    //console.log("Questions saved successfully");
+
     // Generate new word list
     //console.log("Generating new word list...");
     const wordList = await generateWordList({
       passage: passage,
     });
 
-    // Save new questions and word list
-    //console.log("Saving new questions and word list...");
-    await Promise.all([
-      addUserQuestionsToCollection(
-        userId,
-        articleId,
-        "mc-questions",
-        mcq.questions
-      ),
-      addUserQuestionsToCollection(
-        userId,
-        articleId,
-        "sa-questions",
-        saq.questions
-      ),
-      addUserQuestionsToCollection(userId, articleId, "la-questions", [laq]),
-      addUserWordList(
-        userId,
-        articleId,
-        wordList.word_list,
-        updatedData.updatedAt
-      ),
-    ]);
+    // Delete old audio files before generating new ones
+    //console.log("Deleting old audio files...");
+    await cleanupAudioFiles(articleId, userId);
 
-    // Generate new audio only (not images)
+    // Generate new audio first (to get consistent sentence splitting)
     //console.log("Generating new audio...");
-    await Promise.all([
-      generateAudio({
-        passage: passage,
-        articleId: articleId,
-        isUserGenerated: true,
-        userId: userId,
-      }),
-      generateAudioForWord({
-        wordList: wordList.word_list,
-        articleId: articleId,
-        isUserGenerated: true,
-        userId: userId,
-      }),
-    ]);
+    const sentences = await generateAudio({
+      passage: passage,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
+
+    // Generate translations using the sentences from audio generation
+    //console.log("Generating translations...");
+    let translatedSummary, translatedPassage;
+    try {
+      // Extract just the sentence text from the audio results
+      const sentenceTexts = sentences.map((s) => s.sentences);
+
+      [translatedSummary, translatedPassage] = await Promise.all([
+        generateTranslatedSummary({
+          summary: summary,
+        }),
+        generateTranslatedPassageFromSentences({
+          sentences: sentenceTexts,
+        }),
+      ]);
+      //console.log("Translations generated successfully");
+    } catch (translationError) {
+      console.error("Translation failed after all retries:", translationError);
+      // For update operations, we'll throw the error but won't delete the article
+      // since it's an existing article being updated
+      throw new Error(
+        `Translation failed: ${translationError instanceof Error ? translationError.message : "Unknown translation error"}`
+      );
+    }
+
+    // Generate word audio separately since it returns data
+    const wordsWithTimePoints = await generateAudioForWord({
+      wordList: wordList.word_list,
+      articleId: articleId,
+      isUserGenerated: true,
+      userId: userId,
+    });
+
+    // Update article with translations and word data
+    const updatedArticle = await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        translatedSummary: translatedSummary,
+        translatedPassage: translatedPassage,
+      },
+    });
 
     //console.log("Article update completed successfully");
 
     return NextResponse.json({
       message: "Article updated successfully",
-      articleId: articleId,
-      ...updatedData,
+      article: {
+        id: articleId,
+        type: existingArticle.type,
+        genre: existingArticle.genre,
+        subgenre: existingArticle.subGenre,
+        title: title,
+        summary: summary,
+        passage: passage,
+        image_description: imageDesc,
+        cefr_level: calculatedCefrLevel,
+        ra_level: raLevel,
+        average_rating: existingArticle.rating,
+        audioUrl: `${articleId}.mp3`,
+        audioUrlWords: `${articleId}.mp3`,
+        created_at: existingArticle.createdAt.toISOString(),
+        updated_at: updatedArticle.updatedAt.toISOString(),
+        timepoints: updatedArticle.sentences || [],
+        translatedPassage: translatedPassage,
+        translatedSummary: translatedSummary,
+        read_count: 0,
+        isPublic: existingArticle.isPublic,
+        words: wordsWithTimePoints,
+      },
     });
   } catch (error) {
     console.error("Error updating article:", error);
@@ -1277,54 +1473,27 @@ async function cleanupAudioFiles(articleId: string, userId?: string) {
       "artifacts.reading-advantage.appspot.com"
     );
 
-    // Audio file paths only (not images)
-    const basePaths = [
-      // Regular audio paths
-      `tts/${articleId}`,
-      // User-generated audio paths (if userId provided)
-      ...(userId
-        ? [
-            `users/${userId}/tts/${articleId}`,
-          ]
-        : []),
+    // Audio file paths for articles
+    const audioFiles = [
+      `tts/${articleId}.mp3`,
+      `audios-words/${articleId}.mp3`,
     ];
 
-    const audioExtensions = [".mp3"];
-
-    for (const basePath of basePaths) {
-      for (const ext of audioExtensions) {
-        try {
-          const filePath = basePath + ext;
-          const file = bucket.file(filePath);
-          const [exists] = await file.exists();
-          if (exists) {
-            await file.delete();
-            //console.log(`Deleted audio file: ${filePath}`);
-          }
-        } catch (fileError) {
-          // File might not exist, continue
-          //console.log(`Could not delete audio file: ${basePath}${ext}`);
-        }
-      }
-
-      // Also try to delete audio directories
+    for (const filePath of audioFiles) {
       try {
-        const [files] = await bucket.getFiles({ prefix: `${basePath}/` });
-        if (files.length > 0) {
-          // Filter to only delete audio files
-          const audioFiles = files.filter(file => file.name.endsWith('.mp3'));
-          if (audioFiles.length > 0) {
-            const deletePromises = audioFiles.map((file) => file.delete());
-            await Promise.all(deletePromises);
-            //console.log(
-            //  `Deleted ${audioFiles.length} audio files in directory: ${basePath}/`
-            //);
-          }
+        const file = bucket.file(filePath);
+        const [exists] = await file.exists();
+        if (exists) {
+          await file.delete();
+          //console.log(`Deleted audio file: ${filePath}`);
         }
-      } catch (dirError) {
-        //console.log(`Could not delete audio directory: ${basePath}/`);
+      } catch (fileError) {
+        // File might not exist, continue
+        //console.log(`Could not delete audio file: ${filePath}`);
       }
     }
+
+    //console.log("Audio files cleanup completed");
   } catch (storageError) {
     console.error("Error cleaning up audio files:", storageError);
   }
@@ -1390,40 +1559,34 @@ async function cleanupStorageFiles(articleId: string, userId?: string) {
   }
 }
 
-async function cleanupFailedGeneration(userId: string, articleId: string) {
+async function cleanupFailedPrismaGeneration(articleId: string) {
   try {
     //console.log(`Cleaning up failed generation for article: ${articleId}`);
 
-    // 1. Delete article document and all subcollections from Firestore
-    const articleRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("generated-articles")
-      .doc(articleId);
+    // Delete article and all related records from database using Prisma
+    await prisma.$transaction(async (tx) => {
+      // Delete questions first (due to foreign key constraints)
+      await tx.multipleChoiceQuestion.deleteMany({
+        where: { articleId },
+      });
 
-    // Delete subcollections
-    const subcollections = [
-      "mc-questions",
-      "sa-questions",
-      "la-questions",
-      "word-list",
-    ];
+      await tx.shortAnswerQuestion.deleteMany({
+        where: { articleId },
+      });
 
-    for (const subcollectionName of subcollections) {
-      const subcollectionRef = articleRef.collection(subcollectionName);
-      const snapshot = await subcollectionRef.get();
+      await tx.longAnswerQuestion.deleteMany({
+        where: { articleId },
+      });
 
-      const deletePromises = snapshot.docs.map((doc) => doc.ref.delete());
-      await Promise.all(deletePromises);
+      // Delete the article itself
+      await tx.article.delete({
+        where: { id: articleId },
+      });
+    });
 
-      //console.log(`Deleted ${subcollectionName} subcollection`);
-    }
+    //console.log("Deleted article and questions from database");
 
-    // Delete the main article document
-    await articleRef.delete();
-    //console.log("Deleted article document");
-
-    // 2. Delete files from Cloud Storage bucket
+    // Delete files from Cloud Storage bucket
     await cleanupStorageFiles(articleId);
 
     //console.log("Cleanup completed successfully");
@@ -1431,43 +1594,4 @@ async function cleanupFailedGeneration(userId: string, articleId: string) {
     console.error("Error during cleanup:", cleanupError);
     // Log cleanup error but don't throw to avoid masking original error
   }
-}
-
-async function addUserQuestionsToCollection(
-  userId: string,
-  articleId: string,
-  collectionName: string,
-  questions: any[]
-) {
-  const collectionRef = db
-    .collection("users")
-    .doc(userId)
-    .collection("generated-articles")
-    .doc(articleId)
-    .collection(collectionName);
-
-  const promises = questions.map((question) => collectionRef.add(question));
-  await Promise.all(promises);
-}
-
-async function addUserWordList(
-  userId: string,
-  articleId: string,
-  wordList: any[],
-  createdAt: string
-) {
-  const wordListRef = db
-    .collection("users")
-    .doc(userId)
-    .collection("generated-articles")
-    .doc(articleId)
-    .collection("word-list")
-    .doc(articleId);
-
-  await wordListRef.set({
-    word_list: wordList,
-    articleId,
-    id: articleId,
-    created_at: createdAt,
-  });
 }

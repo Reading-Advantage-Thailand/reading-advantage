@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/configs/firestore-config";
+import { prisma } from "@/lib/prisma";
 import { Article } from "@/components/models/article-model";
-import { QuizStatus } from "@/components/models/questions-model";
 import { ExtendedNextRequest } from "./auth-controller";
-import { startAt, endAt } from "@firebase/firestore";
+import { QuizStatus } from "@prisma/client";
 import { z } from "zod";
-import firebase from "firebase-admin";
+import { splitTextIntoSentences } from "@/lib/utils";
+import { Translate } from "@google-cloud/translate/build/src/v2";
+import { generateObject } from "ai";
+import { openai, openaiModel } from "@/utils/openai";
+
+// Import genre data
+const typeGenreData = require("../../data/type-genre.json");
+const genresFiction = typeGenreData.fiction || [];
+const genresNonfiction = typeGenreData.nonfiction || [];
 
 // GET article by id
 // GET /api/articles/[id]
@@ -67,39 +74,32 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       );
     }
 
-    let data = db
-      .collection("new-articles")
-      .where("ra_level", ">=", Number(level) - 1)
-      .where("ra_level", "<=", Number(level) + 1)
-      .orderBy("created_at", "desc")
-      .offset((page - 1) * limit)
-      .limit(limit);
-
-    //let typeResult = db.collection("article-selection").doc(level);
-
-    // if (type) {
-    //   typeResult = typeResult.collection("types").doc(type);
-    // }
-    // if (genre) {
-    //   typeResult = typeResult.collection("genres").doc(genre);
-    // }
+    const normalizeGenreDoc = (doc: any) => {
+      // Accept either { Name, Subgenres } or { name, subgenres }
+      const name = doc.Name ?? doc.name ?? "";
+      const subgenres = doc.Subgenres ?? doc.subgenres ?? [];
+      return { Name: name, Subgenres: subgenres };
+    };
 
     const fetchGenres = async (type: string, genre?: string | null) => {
-      const collectionName =
-        type === "fiction" ? "genres-fiction" : "genres-nonfiction";
-      const collectionRef = db.collection(collectionName);
-
-      const querySnapshot = await collectionRef.get();
-      const allGenres = querySnapshot.docs.map((doc) => doc.data());
+      const genreData = type === "fiction" ? genresFiction : genresNonfiction;
+      const rawGenres = genreData.Genres || [];
+      const allGenres = rawGenres.map(normalizeGenreDoc);
 
       if (genre) {
-        const genreData = allGenres.find((data) => data.name === genre);
-        if (genreData) {
-          return genreData.subgenres;
+        // Try to find by label (Name) or by a slug/value form
+        const genreItem = allGenres.find((data: any) => {
+          if (data.Name === genre) return true;
+          const slug = nameToValue(data.Name);
+          if (slug === genre) return true;
+          return false;
+        });
+        if (genreItem) {
+          return genreItem.Subgenres || [];
         }
       }
 
-      return allGenres.map((data) => data.name);
+      return allGenres.map((data: any) => data.Name);
     };
 
     if (!type) {
@@ -110,133 +110,128 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       selectionType = await fetchGenres(type, genre);
     }
 
-    let query = db
-      .collection("new-articles")
-      .where("ra_level", ">=", Number(level) - 1)
-      .where("ra_level", "<=", Number(level) + 1);
+    // Build Prisma query conditions
+    const whereConditions: any = {
+      isPublic: true,
+    };
 
+    // Add type/genre/subgenre filters if specified
     if (type) {
-      query = query.where("type", "==", type);
+      whereConditions.type = type;
     }
     if (genre) {
-      query = query.where("genre", "==", genre);
+      whereConditions.genre = genre;
     }
     if (subgenre) {
-      query = query.where("subgenre", "==", subgenre);
+      whereConditions.subGenre = subgenre;
     }
 
-    query = query
-      .orderBy("created_at", "desc")
-      .offset((page - 1) * limit)
-      .limit(limit);
+    // First try to find articles within user's level range (±1)
+    let articles = await prisma.article.findMany({
+      where: {
+        ...whereConditions,
+        raLevel: {
+          gte: Number(level) - 1,
+          lte: Number(level) + 1,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        type: true,
+        genre: true,
+        subGenre: true,
+        title: true,
+        summary: true,
+        cefrLevel: true,
+        raLevel: true,
+        rating: true,
+        createdAt: true,
+        authorId: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
 
-    // if (type === "fiction") {
-    //   const test = await db.collection("genres-fiction").get();
-    //   console.log(test.docs.map((doc) => doc.data()));
-    //   const testd1 = test.docs.map((doc) => doc.data().name);
-    //   if (genre) {
-    //     const testd2 = test.docs
-    //       .map((doc) => doc.data())
-    //       .filter((data) => data.name === genre)
-    //       .map((data) => data.subgenres)[0];
-    //     selectionType = testd2;
-    //   }
-    // } else if (type === "nonfiction") {
-    //   const test = await db.collection("genres-nonfiction").get();
-    //   const testd1 = test.docs.map((doc) => doc.data().name);
-    //   selectionType = testd1;
-    //   if (genre) {
-    //     const testd2 = test.docs
-    //       .map((doc) => doc.data())
-    //       .filter((data) => data.name === genre)
-    //       .map((data) => data.subgenres)[0];
-    //     selectionType = testd2;
-    //   }
-    // }
+    if (articles.length === 0) {
+      articles = await prisma.article.findMany({
+        where: whereConditions,
+        orderBy: [
+          {
+            createdAt: "desc",
+          },
+        ],
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          id: true,
+          type: true,
+          genre: true,
+          subGenre: true,
+          title: true,
+          summary: true,
+          cefrLevel: true,
+          raLevel: true,
+          rating: true,
+          createdAt: true,
+          authorId: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+    }
 
-    const fetchArticles = async (query: any) => {
-      const snapshot = await query.get();
+    const articleIds = articles.map((article) => article.id);
+    const userActivities = await prisma.userActivity.findMany({
+      where: {
+        userId: userId,
+        targetId: { in: articleIds },
+        activityType: "ARTICLE_READ",
+      },
+    });
 
-      //random article
-      // const getDoc = snapshot.docs.sort(() => 0.5 - Math.random()).slice(0, 10);
+    const readArticleIds = new Set(
+      userActivities.map((activity) => activity.targetId)
+    );
+    const completedArticleIds = new Set(
+      userActivities
+        .filter((activity) => activity.completed)
+        .map((activity) => activity.targetId)
+    );
 
-      const results = [];
-
-      for (const doc of snapshot.docs) {
-        const articleRecord = await db
-          .collection("users")
-          .doc(userId)
-          .collection("article-records")
-          .doc(doc.id)
-          .get();
-
-        const mcqSnapshot = await db
-          .collection("users")
-          .doc(userId)
-          .collection("article-records")
-          .doc(doc.id)
-          .collection("mcq-records")
-          .get();
-
-        const hasFiveMcqs = mcqSnapshot.size === 5;
-
-        const saqSnapshot = await db
-          .collection("users")
-          .doc(userId)
-          .collection("article-records")
-          .doc(doc.id)
-          .collection("saq-records")
-          .get();
-
-        const laqSnapshot = await db
-          .collection("users")
-          .doc(userId)
-          .collection("article-records")
-          .doc(doc.id)
-          .collection("laq-records")
-          .get();
-
-        const saqExists = !saqSnapshot.empty;
-        const laqExists = !laqSnapshot.empty;
-
-        if (articleRecord.exists) {
-          const data = { ...doc.data(), is_read: true };
-
-          if (hasFiveMcqs && saqExists && laqExists) {
-            data.is_completed = true;
-          }
-
-          results.push(data);
-        } else {
-          results.push(doc.data());
-        }
-      }
-
-      return results;
-    };
-
-    const getArticles = async ({ subgenre, genre, type, level }: any) => {
-      let query = data;
-
-      if (subgenre) {
-        query = query.where("subgenre", "==", subgenre.replace(/_/g, " "));
-      }
-      if (genre) {
-        query = query.where("genre", "==", genre.replace(/_/g, " "));
-      }
-      if (type) {
-        query = query.where("type", "==", type.replace(/_/g, " "));
-      }
-
-      return await fetchArticles(query);
-    };
-
-    results = await getArticles({ subgenre, genre, type, level });
-
-    // const snapType = await typeResult.get();
-    // selectionType = Object.entries(snapType.data() as any).map(
-    //   ([key, value]) => key
-    // );
+    // Format results to match the expected structure
+    results = articles.map((article) => ({
+      id: article.id,
+      type: article.type,
+      genre: article.genre,
+      subgenre: article.subGenre,
+      title: article.title,
+      summary: article.summary,
+      cefr_level: article.cefrLevel,
+      ra_level: article.raLevel?.toString(),
+      average_rating: article.rating || 0,
+      created_at: article.createdAt,
+      is_read: readArticleIds.has(article.id),
+      is_completed: completedArticleIds.has(article.id),
+      is_approved: true,
+      authorId: article.authorId,
+      author: {
+        id: article.author?.id || null,
+        name: article.author?.name || null,
+      },
+    }));
 
     return NextResponse.json({
       params: {
@@ -251,7 +246,7 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       selectionType,
     });
   } catch (err) {
-    console.log("Error getting documents", err);
+    console.error("Error getting documents", err);
     return NextResponse.json(
       {
         message: "[getSearchArticles] Internal server error",
@@ -272,10 +267,10 @@ export async function getArticles(req: ExtendedNextRequest) {
     const type = searchParams.get("type");
     const genre = searchParams.get("genre");
     const level = searchParams.get("level");
-    const page = Number(searchParams.get("page"));
+    const page = Number(searchParams.get("page")) || 1;
     const limitPerPage = 10;
 
-    const convertlevleToArray = (value: string | null) => {
+    const convertLevelToArray = (value: string | null) => {
       if (!value) return [];
       return value
         .split(",")
@@ -284,77 +279,71 @@ export async function getArticles(req: ExtendedNextRequest) {
         .map((item) => Number(item));
     };
 
-    const convertgenreToString = (value: string | null) => {
+    const convertGenreToString = (value: string | null) => {
       return value ? value.replace(/\+/g, " ") : "";
     };
 
     // Validate the date parameter
     const validDate = date === "asc" || date === "desc" ? date : "desc";
 
-    let query = db.collection("new-articles");
+    // Build where conditions
+    const whereConditions: any = {
+      isPublic: true,
+    };
 
-    if (type)
-      query = query.where(
-        "type",
-        "==",
-        type
-      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
-    if (genre)
-      query = query.where(
-        "genre",
-        "==",
-        convertgenreToString(genre)
-      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
-    if (level)
-      query = query.where(
-        "ra_level",
-        "in",
-        convertlevleToArray(level)
-      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
-    if (rating)
-      query = query
-        .where("average_rating", "<=", Number(rating))
-        .where(
-          "average_rating",
-          ">=",
-          Number(rating)
-        ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
-
-    if (title) {
-      const searchTermLower = title.toLowerCase();
-
-      // Split the search term into words
-      const searchWords = searchTermLower.split(/\s+/);
-      // console.log("searchWords in fetchArticles:", searchWords);
-
-      if (searchWords.length > 0) {
-        //Partial text search for the entire search term to match the title
-        (query = query.orderBy(
-          "title"
-        ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>),
-          startAt(title),
-          endAt(title + "\uf8ff");
+    if (type) {
+      whereConditions.type = type;
+    }
+    if (genre) {
+      whereConditions.genre = convertGenreToString(genre);
+    }
+    if (level) {
+      const levelArray = convertLevelToArray(level);
+      if (levelArray.length > 0) {
+        whereConditions.raLevel = { in: levelArray };
       }
     }
+    if (rating) {
+      whereConditions.rating = {
+        gte: Number(rating),
+        lte: Number(rating),
+      };
+    }
+    if (title) {
+      whereConditions.title = {
+        contains: title,
+        mode: "insensitive",
+      };
+    }
 
-    //const articles = data.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
-    // const snapshot = await query.limit(10 + 1).get();
-
-    const snapshot = await query
-      .orderBy("created_at", validDate)
-      .offset((page - 1) * limitPerPage)
-      .limit(limitPerPage)
-      .get();
-
-    const articles = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const articles = await prisma.article.findMany({
+      where: whereConditions,
+      orderBy: {
+        createdAt: validDate === "asc" ? "asc" : "desc",
+      },
+      skip: (page - 1) * limitPerPage,
+      take: limitPerPage,
+      select: {
+        id: true,
+        type: true,
+        genre: true,
+        subGenre: true,
+        title: true,
+        summary: true,
+        passage: true,
+        imageDescription: true,
+        cefrLevel: true,
+        raLevel: true,
+        rating: true,
+        audioUrl: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
     return NextResponse.json(articles, { status: 200 });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json(
       { message: "Internal server error", error: error },
       { status: 500 }
@@ -367,10 +356,19 @@ export async function getArticleById(
   { params: { article_id } }: RequestContext
 ) {
   try {
-    const resp = await db.collection("new-articles").doc(article_id).get();
+    const userId = req.session?.user.id as string;
 
-    // Check if user has read the article
-    if (!resp.exists) {
+    // Get article from Prisma
+    const article = await prisma.article.findUnique({
+      where: { id: article_id },
+      include: {
+        multipleChoiceQuestions: true,
+        shortAnswerQuestions: true,
+        longAnswerQuestions: true,
+      },
+    });
+
+    if (!article) {
       return NextResponse.json(
         { message: "Article not found" },
         { status: 404 }
@@ -378,83 +376,99 @@ export async function getArticleById(
     }
 
     // Check if user has read the article
-    const record = await db
-      .collection("users")
-      .doc(req.session?.user.id as string)
-      .collection("article-records")
-      .doc(article_id)
-      .get();
+    const existingActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId: userId,
+          activityType: "ARTICLE_READ",
+          targetId: article_id,
+        },
+      },
+    });
 
-    if (!record.exists) {
-      await db
-        .collection("users")
-        .doc(req.session?.user.id as string)
-        .collection("article-records")
-        .doc(article_id)
-        .set({
-          id: article_id,
-          rated: 0,
-          scores: 0,
-          title: resp.data()?.title,
-          status: QuizStatus.READ,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          level: req.session?.user.level,
-        });
+    if (!existingActivity) {
+      // Create user activity record
+      await prisma.userActivity.create({
+        data: {
+          userId: userId,
+          activityType: "ARTICLE_READ",
+          targetId: article_id,
+          completed: false,
+          details: {
+            articleTitle: article.title,
+            level: req.session?.user.level,
+          },
+        },
+      });
     }
 
-    const article = resp.data() as Article;
-
+    // Validate article data
     if (
       !article ||
       !article.summary ||
-      !article.image_description ||
+      !article.imageDescription ||
       !article.passage ||
-      !article.created_at ||
-      (article.average_rating !== 0 && !article.average_rating) ||
-      !article.timepoints ||
+      !article.createdAt ||
+      (article.rating !== 0 && !article.rating) ||
       !article.type ||
       !article.title ||
-      !article.cefr_level ||
-      !article.ra_level ||
-      !article.subgenre ||
+      !article.cefrLevel ||
+      !article.raLevel ||
+      !article.subGenre ||
       !article.genre ||
-      !article.id ||
-      (article.read_count !== 0 && !article.read_count)
+      !article.id
     ) {
       return NextResponse.json(
         {
           message: "Article fields are not correct",
           invalids: {
             summary: !article.summary,
-            image_description: !article.image_description,
+            image_description: !article.imageDescription,
             passage: !article.passage,
-            created_at: !article.created_at,
-            average_rating:
-              !article.average_rating && article.average_rating !== 0,
-            timepoints: !article.timepoints,
+            created_at: !article.createdAt,
+            average_rating: !article.rating && article.rating !== 0,
             type: !article.type,
             title: !article.title,
-            cefr_level: !article.cefr_level,
-            ra_level: !article.ra_level,
-            subgenre: !article.subgenre,
+            cefr_level: !article.cefrLevel,
+            ra_level: !article.raLevel,
+            subgenre: !article.subGenre,
             genre: !article.genre,
             id: !article.id,
-            read_count: article.read_count !== 0 && !article.read_count,
           },
         },
         { status: 400 }
       );
     }
 
+    // Format article to match expected structure
+    const formattedArticle = {
+      id: article.id,
+      type: article.type,
+      genre: article.genre,
+      subgenre: article.subGenre,
+      title: article.title,
+      summary: article.summary,
+      passage: article.passage,
+      image_description: article.imageDescription,
+      cefr_level: article.cefrLevel,
+      ra_level: article.raLevel,
+      average_rating: article.rating || 0,
+      audio_url: article.audioUrl,
+      created_at: article.createdAt,
+      timepoints: article.sentences || {},
+      translatedPassage: article.translatedPassage,
+      translatedSummary: article.translatedSummary,
+      read_count: 0, // This field might need to be calculated differently
+    };
+
     return NextResponse.json(
       {
-        article,
+        article: formattedArticle,
       },
       { status: 200 }
     );
   } catch (err) {
-    console.log("Error getting documents", err);
+    console.error("Error getting documents", err);
     return NextResponse.json(
       { message: "[getArticle] Internal server error", error: err },
       { status: 500 }
@@ -467,70 +481,28 @@ export async function deleteArticle(
   { params: { article_id } }: RequestContext
 ) {
   try {
-    const articlesRef = db.collection("new-articles");
-    //    const articlesRef = db.collection('test-collection');
-    const articleToDelete = await articlesRef.doc(article_id).get();
-
-    const mcSubcollection = await articleToDelete.ref
-      .collection("mc-questions")
-      .get();
-    mcSubcollection.docs.forEach((doc) => {
-      doc.ref
-        .delete()
-        .then(() => console.log(`Deleted doc: ${doc.id} from mc-questions`));
+    // Check if article exists
+    const article = await prisma.article.findUnique({
+      where: { id: article_id },
     });
 
-    const saSubcollection = await articleToDelete.ref
-      .collection("sa-questions")
-      .get();
-    saSubcollection.docs.forEach((doc) => {
-      doc.ref
-        .delete()
-        .then(() => console.log(`Deleted doc: ${doc.id} from sa-questions`));
+    if (!article) {
+      return NextResponse.json(
+        { message: "No such article found" },
+        { status: 404 }
+      );
+    }
+
+    // Delete the article and all related data (Prisma cascade delete will handle related questions)
+    await prisma.article.delete({
+      where: { id: article_id },
     });
 
-    const laSubcollection = await articleToDelete.ref
-      .collection("la-questions")
-      .get();
-    laSubcollection.docs.forEach((doc) => {
-      doc.ref
-        .delete()
-        .then(() => console.log(`Deleted doc: ${doc.id} from la-questions`));
-    });
-
-    // if (userId && userRole.includes("SYSTEM")) {
-    //   if (!articleToDelete.exists) {
-    //     return new Response(
-    //       JSON.stringify({ message: "No such article found" }),
-    //       { status: 404 }
-    //     );
-    //   } else {
-    //     await articlesRef.doc(articleId).delete();
-    //     console.log("Document successfully deleted");
-    //     return new Response(JSON.stringify({ message: "Article deleted" }), {
-    //       status: 200,
-    //     });
-    //   }
-    // }
-
-    // if (!userRole.includes("SYSTEM")) {
-    //   return new Response(
-    //     JSON.stringify({
-    //       message: "Unauthorized",
-    //     }),
-    //     { status: 403 }
-    //   );
-    // }
-
-    return NextResponse.json(
-      {
-        message: "Article Deleted",
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Article deleted" }, { status: 200 });
   } catch (error) {
+    console.error("Error deleting article", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Internal server error", error: error },
       { status: 500 }
     );
   }
@@ -588,107 +560,108 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
       searchTermParam,
     } = validatedParams;
 
-    // console.log("==============FetchArticles()================");
-    // console.log("lastDocId in fetchArticles:", lastDocId);
-    // console.log("typeParam in fetchArticles:", typeParam);
-    // console.log("genreParam in fetchArticles:", genreParam);
-    // console.log("subgenreParam in fetchArticles:", subgenreParam);
-    // console.log("levelParam in fetchArticles:", levelParam);
-    // console.log("searchTermParam in fetchArticles:", searchTermParam);
+    const whereConditions: any = {
+      isPublic: true, // Only select articles that are public
+    };
 
-    let query = db.collection("new-articles");
-
-    if (typeParam)
-      query = query.where(
-        "type",
-        "==",
-        typeParam
-      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
-    if (genreParam)
-      query = query.where(
-        "genre",
-        "==",
-        genreParam
-      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
-    if (subgenreParam)
-      query = query.where(
-        "subgenre",
-        "==",
-        subgenreParam
-      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
-    if (levelParam)
-      query = query.where(
-        "ra_level",
-        "==",
-        levelParam
-      ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
-
+    if (typeParam) {
+      whereConditions.type = typeParam;
+    }
+    if (genreParam) {
+      whereConditions.genre = genreParam;
+    }
+    if (subgenreParam) {
+      whereConditions.subGenre = subgenreParam;
+    }
+    if (levelParam) {
+      whereConditions.raLevel = levelParam;
+    }
     if (searchTermParam) {
-      const searchTermLower = searchTermParam.toLowerCase();
-
-      // Split the search term into words
-      const searchWords = searchTermLower.split(/\s+/);
-      // console.log("searchWords in fetchArticles:", searchWords);
-
-      if (searchWords.length > 0) {
-        //Partial text search for the entire search term to match the title
-        (query = query.orderBy(
-          "title"
-        ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>),
-          startAt(searchTermParam),
-          endAt(searchTermParam + "\uf8ff");
-      }
+      whereConditions.title = {
+        contains: searchTermParam,
+        mode: "insensitive",
+      };
     }
 
-    // query = query.orderBy(
-    //   "created_at",
-    //   "desc"
-    // ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
+    // Handle cursor-based pagination
+    const cursorConditions = lastDocId ? { id: { gt: lastDocId } } : {};
 
-    // Assume processedDocIds is a Set that keeps track of all processed lastDocIds
-    if (lastDocId) {
-      const lastDocRef = db.collection("new-articles").doc(lastDocId);
-      const lastDocSnapshot = await lastDocRef.get();
-      if (lastDocSnapshot.exists) {
-        query = query.startAfter(
-          lastDocSnapshot
-        ) as firebase.firestore.CollectionReference<firebase.firestore.DocumentData>;
-      }
-    }
-
-    const snapshot = await query.limit(pageSize + 1).get();
-
-    let articles = snapshot.docs.slice(0, pageSize).map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    const hasMore = snapshot.docs.length > pageSize;
-    const lastDocument = snapshot.docs[pageSize - 1];
-
-    const userArticleRefs = articles.map((article) =>
-      db
-        .collection("users")
-        .doc(userId)
-        .collection("article-records")
-        .doc(article.id)
-    );
-
-    const userArticles = await Promise.all(
-      userArticleRefs.map((ref) => ref.get())
-    );
-
-    const results = articles.map((article, index) => {
-      const userArticle = userArticles[index].data();
-      return userArticle && userArticle.id === article.id
-        ? { ...article, is_approved: true }
-        : article;
+    const articles = await prisma.article.findMany({
+      where: {
+        ...whereConditions,
+        ...cursorConditions,
+      },
+      orderBy: {
+        id: "asc", // Use ID for consistent cursor pagination
+      },
+      take: pageSize + 1, // Take one more to check if there are more results
+      select: {
+        id: true,
+        type: true,
+        genre: true,
+        subGenre: true,
+        title: true,
+        summary: true,
+        passage: true,
+        imageDescription: true,
+        cefrLevel: true,
+        raLevel: true,
+        rating: true,
+        audioUrl: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
+
+    const hasMore = articles.length > pageSize;
+    const paginatedArticles = articles.slice(0, pageSize);
+
+    // Check user activities for read status
+    const articleIds = paginatedArticles.map((article) => article.id);
+    const userActivities = await prisma.userActivity.findMany({
+      where: {
+        userId: userId,
+        targetId: { in: articleIds },
+        activityType: "ARTICLE_READ",
+      },
+    });
+
+    const readArticleIds = new Set(
+      userActivities.map((activity) => activity.targetId)
+    );
+    const completedArticleIds = new Set(
+      userActivities
+        .filter((activity) => activity.completed)
+        .map((activity) => activity.targetId)
+    );
+
+    const results = paginatedArticles.map((article) => ({
+      id: article.id,
+      type: article.type,
+      genre: article.genre,
+      subgenre: article.subGenre,
+      title: article.title,
+      summary: article.summary,
+      passage: article.passage,
+      image_description: article.imageDescription,
+      cefr_level: article.cefrLevel,
+      ra_level: article.raLevel,
+      average_rating: article.rating || 0,
+      audio_url: article.audioUrl,
+      created_at: article.createdAt,
+      updated_at: article.updatedAt,
+      is_read: readArticleIds.has(article.id),
+      is_completed: completedArticleIds.has(article.id),
+      is_approved: true,
+    }));
 
     return {
       passages: results,
       hasMore,
-      lastDocId: lastDocument ? lastDocument.id : null,
+      lastDocId:
+        paginatedArticles.length > 0
+          ? paginatedArticles[paginatedArticles.length - 1].id
+          : null,
     };
   }
 
@@ -714,13 +687,6 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
       lastDocId,
       searchTermParam,
     };
-    // console.log("==============GET()================");
-    // console.log("lastDocId in GET:", lastDocId);
-    // console.log("typeParam in GET:", typeParam);
-    // console.log("genreParam in GET:", genreParam);
-    // console.log("subgenreParam in GET:", subgenreParam);
-    // console.log("levelParam in GET:", levelParam);
-    // console.log("searchTermParam in GET:", searchTermParam);
 
     const data = await fetchArticles(params);
 
@@ -741,49 +707,8 @@ export async function updateArticlesByTypeGenre(
   req: Request
 ): Promise<Response> {
   try {
-    //console.log("Fetching articles from 'new-articles' collection...");
-    const articlesRef = db.collection("new-articles");
-    const snapshot = await articlesRef.get();
-
-    const genreCounts: Record<string, GenreCount> = {};
-
-    snapshot.forEach((doc) => {
-      const data = doc.data() as Article;
-      //console.log("Processing document:", data);
-      const { genre, type } = data;
-      if (!genre || !type) return;
-
-      if (!genreCounts[genre]) {
-        genreCounts[genre] = { genre };
-      }
-
-      if (type.toLowerCase() === "fiction") {
-        genreCounts[genre].fiction = (genreCounts[genre].fiction || 0) + 1;
-      } else {
-        genreCounts[genre].nonFiction =
-          (genreCounts[genre].nonFiction || 0) + 1;
-      }
-    });
-
-    const resultData = Object.values(genreCounts);
-    //console.log("Aggregated genre counts:", resultData);
-
-    //console.log("Deleting old data from 'Articles-by-Type-and-Genre'...");
-    const summaryRef = db.collection("articles-by-type-and-genre");
-    const oldData = await summaryRef.get();
-    const batch = db.batch();
-    oldData.forEach((doc) => batch.delete(doc.ref));
-    await batch.commit();
-    //console.log("Old data deleted.");
-
-    //console.log("Updating new aggregated data...");
-    const newBatch = db.batch();
-    resultData.forEach((data) => {
-      const docRef = summaryRef.doc();
-      newBatch.set(docRef, data);
-    });
-    await newBatch.commit();
-    //console.log("New data successfully updated.");
+    // This function is kept for compatibility but with Prisma,
+    // we can calculate genre counts on-demand instead of pre-computing them
 
     return NextResponse.json(
       { message: "Updated successfully" },
@@ -803,17 +728,40 @@ export async function updateArticlesByTypeGenre(
 
 export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
   try {
-    //console.log("Fetching all data from 'Articles-by-Type-and-Genre'...");
-    const summaryRef = db.collection("articles-by-type-and-genre");
-    const snapshot = await summaryRef.get();
+    // Calculate genre counts on-demand using Prisma
+    const genreCounts = await prisma.article.groupBy({
+      by: ["genre", "type"],
+      _count: {
+        _all: true,
+      },
+      where: {
+        genre: { not: null },
+        type: { not: null },
+      },
+    });
 
-    const articles = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    //console.log("Fetched articles:", articles);
+    // Transform the results to match the expected format
+    const genreCountsMap: Record<string, GenreCount> = {};
 
-    return NextResponse.json(articles, { status: 200 });
+    genreCounts.forEach((item) => {
+      const genre = item.genre!;
+      const type = item.type!;
+      const count = item._count._all;
+
+      if (!genreCountsMap[genre]) {
+        genreCountsMap[genre] = { genre };
+      }
+
+      if (type.toLowerCase() === "fiction") {
+        genreCountsMap[genre].fiction = count;
+      } else {
+        genreCountsMap[genre].nonFiction = count;
+      }
+    });
+
+    const resultData = Object.values(genreCountsMap);
+
+    return NextResponse.json(resultData, { status: 200 });
   } catch (error: unknown) {
     console.error("Error fetching articles summary:", error);
     return NextResponse.json(
@@ -828,31 +776,35 @@ export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
 
 export const getGenres = async (req: Request): Promise<Response> => {
   try {
-    // Fetch fiction genres
-    const fictionSnapshot = await db.collection("genres-fiction").get();
-    const fictionGenres: GenreResponse[] = [];
-
-    fictionSnapshot.forEach((doc) => {
-      const data = doc.data() as GenreDocument;
-      fictionGenres.push({
-        value: nameToValue(data.name),
-        label: data.name,
-        subgenres: data.subgenres || [],
-      });
+    // Normalize and fetch fiction genres from JSON data
+    const rawFiction = genresFiction.Genres || [];
+    const fictionGenres: GenreResponse[] = rawFiction.map((genreData: any) => {
+      const normalized = {
+        Name: genreData.Name ?? genreData.name ?? "",
+        Subgenres: genreData.Subgenres ?? genreData.subgenres ?? [],
+      };
+      return {
+        value: nameToValue(normalized.Name),
+        label: normalized.Name,
+        subgenres: normalized.Subgenres || [],
+      };
     });
 
-    // Fetch nonfiction genres
-    const nonfictionSnapshot = await db.collection("genres-nonfiction").get();
-    const nonfictionGenres: GenreResponse[] = [];
-
-    nonfictionSnapshot.forEach((doc) => {
-      const data = doc.data() as GenreDocument;
-      nonfictionGenres.push({
-        value: nameToValue(data.name),
-        label: data.name,
-        subgenres: data.subgenres || [],
-      });
-    });
+    // Normalize and fetch nonfiction genres from JSON data
+    const rawNonfiction = genresNonfiction.Genres || [];
+    const nonfictionGenres: GenreResponse[] = rawNonfiction.map(
+      (genreData: any) => {
+        const normalized = {
+          Name: genreData.Name ?? genreData.name ?? "",
+          Subgenres: genreData.Subgenres ?? genreData.subgenres ?? [],
+        };
+        return {
+          value: nameToValue(normalized.Name),
+          label: normalized.Name,
+          subgenres: normalized.Subgenres || [],
+        };
+      }
+    );
 
     // Sort genres alphabetically by label
     fictionGenres.sort((a, b) => a.label.localeCompare(b.label));
@@ -866,9 +818,197 @@ export const getGenres = async (req: Request): Promise<Response> => {
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Error fetching genres:", error);
-    return NextResponse.json({
-      error: "Failed to fetch genres",
-      message: error instanceof Error ? error.message : "Unknown error",
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Failed to fetch genres",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+};
+
+export enum LanguageType {
+  TH = "th",
+  EN = "en",
+  CN = "cn",
+  TW = "tw",
+  VI = "vi",
+}
+
+async function translatePassageWithGoogle(
+  sentences: string[],
+  targetLanguage: string
+): Promise<string[]> {
+  const translate = new Translate({
+    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  });
+
+  const translatedSentences: string[] = [];
+
+  for (const sentence of sentences) {
+    if (sentence.trim()) {
+      const [translation] = await translate.translate(sentence, {
+        to: getGoogleTranslateCode(targetLanguage),
+      });
+      translatedSentences.push(translation);
+    } else {
+      translatedSentences.push(sentence);
+    }
+  }
+
+  return translatedSentences;
+}
+
+async function translatePassageWithGPT(sentences: string[]): Promise<string[]> {
+  const translatedSentences: string[] = [];
+
+  for (const sentence of sentences) {
+    if (sentence.trim()) {
+      const { object } = await generateObject({
+        model: openai(openaiModel),
+        schema: z.object({
+          translated_text: z.string(),
+        }),
+        prompt: `Translate the following text to English: "${sentence}"`,
+      });
+      translatedSentences.push(object.translated_text);
+    } else {
+      translatedSentences.push(sentence);
+    }
+  }
+
+  return translatedSentences;
+}
+
+function getGoogleTranslateCode(languageType: string): string {
+  switch (languageType) {
+    case "cn":
+      return "zh-CN";
+    case "tw":
+      return "zh-TW";
+    case "th":
+      return "th";
+    case "vi":
+      return "vi";
+    default:
+      return languageType;
+  }
+}
+
+// POST translate article summary
+// POST /api/v1/articles/[article_id]/translate
+interface TranslateRequestContext {
+  params: {
+    article_id: string;
+  };
+}
+
+export const translateArticleSummary = async (
+  request: NextRequest,
+  { params: { article_id } }: TranslateRequestContext
+) => {
+  try {
+    const { targetLanguage } = await request.json();
+
+    if (!Object.values(LanguageType).includes(targetLanguage)) {
+      return NextResponse.json(
+        {
+          message: "Invalid target language",
+        },
+        { status: 400 }
+      );
+    }
+
+    const article = await prisma.article.findUnique({
+      where: { id: article_id },
+      select: {
+        id: true,
+        summary: true,
+        translatedSummary: true,
+      },
+    });
+
+    if (!article) {
+      return NextResponse.json(
+        {
+          message: "Article not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (!article.summary) {
+      return NextResponse.json(
+        {
+          message: "Article summary not found",
+        },
+        { status: 404 }
+      );
+    }
+
+    const existingTranslations = article.translatedSummary as Record<
+      string,
+      string[]
+    > | null;
+
+    if (existingTranslations && existingTranslations[targetLanguage]) {
+      return NextResponse.json({
+        message: "article already translated",
+        translated_sentences: existingTranslations[targetLanguage],
+      });
+    }
+
+    const sentences = splitTextIntoSentences(article.summary);
+    let translatedSentences: string[] = [];
+
+    try {
+      if (targetLanguage === LanguageType.EN) {
+        translatedSentences = await translatePassageWithGPT(sentences);
+      } else {
+        translatedSentences = await translatePassageWithGoogle(
+          sentences,
+          targetLanguage
+        );
+      }
+
+      const updatedTranslations = {
+        ...(existingTranslations || {}),
+        [targetLanguage]: translatedSentences,
+      };
+
+      await prisma.article.update({
+        where: { id: article_id },
+        data: {
+          translatedSummary: updatedTranslations,
+        },
+      });
+
+      return NextResponse.json({
+        message: "translation successful",
+        translated_sentences: translatedSentences,
+      });
+    } catch (translationError) {
+      console.error("Translation error:", translationError);
+      return NextResponse.json(
+        {
+          message: "Translation failed",
+          error:
+            translationError instanceof Error
+              ? translationError.message
+              : "Unknown error",
+        },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error("API error:", error);
+    return NextResponse.json(
+      {
+        message: "Internal server error",
+      },
+      { status: 500 }
+    );
   }
 };

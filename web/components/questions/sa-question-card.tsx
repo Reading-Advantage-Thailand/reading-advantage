@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, { use, useContext, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -36,8 +36,9 @@ import {
   ActivityStatus,
   ActivityType,
 } from "../models/user-activity-log-model";
-import { title } from "process";
 import { levelCalculation } from "@/lib/utils";
+import { useCurrentLocale } from "@/locales/client";
+import { useArticleCompletion } from "@/lib/use-article-completion";
 
 type Props = {
   userId: string;
@@ -87,6 +88,8 @@ export default function SAQuestionCard({
     state: QuestionState.LOADING,
   });
 
+  const { checkAndNotifyCompletion } = useArticleCompletion();
+
   useEffect(() => {
     fetch(`/api/v1/articles/${articleId}/questions/sa`)
       .then((res) => res.json())
@@ -99,10 +102,21 @@ export default function SAQuestionCard({
         console.error("error: ", error);
         setState(QuestionState.ERROR);
       });
-  }, [state, articleId]);
+  }, [articleId]);
 
   const handleCompleted = () => {
-    setState(QuestionState.LOADING);
+    // Re-fetch data to get updated state
+    fetch(`/api/v1/articles/${articleId}/questions/sa`)
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+        setState(data.state);
+        useQuestionStore.setState({ saQuestion: data });
+      })
+      .catch((error) => {
+        console.error("error: ", error);
+        setState(QuestionState.ERROR);
+      });
   };
 
   useEffect(() => {
@@ -110,6 +124,20 @@ export default function SAQuestionCard({
       onCompleteChange?.(true);
     }
   }, [state, onCompleteChange, page]);
+
+  useEffect(() => {
+    if (state === QuestionState.COMPLETED && page === "article") {
+      const checkCompletion = async () => {
+        try {
+          await checkAndNotifyCompletion(userId, articleId);
+        } catch (error) {
+          console.error("Error checking article completion:", error);
+        }
+      };
+
+      checkCompletion();
+    }
+  }, [state, userId, articleId, page, checkAndNotifyCompletion]);
 
   switch (state) {
     case QuestionState.LOADING:
@@ -157,6 +185,10 @@ function QuestionCardComplete({
   page: "article" | "lesson";
 }) {
   const t = useScopedI18n("components.saq");
+  const question = resp.result?.question || "";
+  const suggestedAnswer = resp.suggested_answer || "";
+  const userAnswer = resp.answer || "";
+
   return (
     <>
       {page === "article" && (
@@ -167,14 +199,28 @@ function QuestionCardComplete({
             </CardTitle>
             <CardDescription>
               {t("descriptionSuccess")}
-              <p className="font-bold text-lg mt-4">{t("question")}</p>
-              <p>{resp.result.question}</p>
-              <p className="font-bold text-lg mt-4">{t("suggestedAnswer")}</p>
-              <p>{resp.suggested_answer}</p>
-              <p className="font-bold text-lg mt-4">{t("yourAnswer")}</p>
-              <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
-                {resp.answer}
-              </p>
+              {question && (
+                <>
+                  <p className="font-bold text-lg mt-4">{t("question")}</p>
+                  <p>{question}</p>
+                </>
+              )}
+              {suggestedAnswer && (
+                <>
+                  <p className="font-bold text-lg mt-4">
+                    {t("suggestedAnswer")}
+                  </p>
+                  <p>{suggestedAnswer}</p>
+                </>
+              )}
+              {userAnswer && (
+                <>
+                  <p className="font-bold text-lg mt-4">{t("yourAnswer")}</p>
+                  <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
+                    {userAnswer}
+                  </p>
+                </>
+              )}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -189,14 +235,26 @@ function QuestionCardComplete({
             <CardDescription className="text-green-500 dark:text-green-400 inline font-bold mt-2">
               {t("descriptionSuccess")}
             </CardDescription>
-            <p className="font-bold text-lg mt-2">{t("question")}</p>
-            <p>{resp.result.question}</p>
-            <p className="font-bold text-lg mt-2">{t("suggestedAnswer")}</p>
-            <p>{resp.suggested_answer}</p>
-            <p className="font-bold text-lg mt-2">{t("yourAnswer")}</p>
-            <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
-              {resp.answer}
-            </p>
+            {question && (
+              <>
+                <p className="font-bold text-lg mt-2">{t("question")}</p>
+                <p>{question}</p>
+              </>
+            )}
+            {suggestedAnswer && (
+              <>
+                <p className="font-bold text-lg mt-2">{t("suggestedAnswer")}</p>
+                <p>{suggestedAnswer}</p>
+              </>
+            )}
+            {userAnswer && (
+              <>
+                <p className="font-bold text-lg mt-2">{t("yourAnswer")}</p>
+                <p className="text-green-500 dark:text-green-400 inline font-bold mt-2">
+                  {userAnswer}
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -354,6 +412,7 @@ function SAQuestion({
   });
   const [wordCount, setWordCount] = React.useState<number>(0);
   const router = useRouter();
+  const currentLocale = useCurrentLocale();
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = event.target.value;
@@ -363,61 +422,68 @@ function SAQuestion({
   async function onSubmitted(data: FormData) {
     setIsLoading(true);
     setPaused(true);
-    fetch(`/api/v1/articles/${articleId}/questions/sa/${resp.result.id}`, {
-      method: "POST",
-      body: JSON.stringify({
-        answer: data.answer,
-        timeRecorded: timer,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+
+    try {
+      const submitResponse = await fetch(
+        `/api/v1/articles/${articleId}/questions/sa/${resp.result.id}`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            answer: data.answer,
+            timeRecorded: timer,
+          }),
+        }
+      );
+
+      const submitData = await submitResponse.json();
+      setData(submitData);
+    } catch (error) {
+      console.error("Error getting feedback:", error);
+      const submitResponse = await fetch(
+        `/api/v1/articles/${articleId}/questions/sa/${resp.result.id}`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            answer: data.answer,
+            timeRecorded: timer,
+          }),
+        }
+      );
+
+      const submitData = await submitResponse.json();
+      setData(submitData);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function onRating() {
     setIsLoading(true);
-    fetch(`/api/v1/articles/${articleId}/questions/sa/${resp.result.id}/rate`, {
-      method: "POST",
-      body: JSON.stringify({
-        rating,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data) {
-          toast({
-            title: tf("toast.success"),
-            imgSrc: true,
-            description: `Congratulations!, You received ${rating} XP for completing this activity.`,
-          });
+
+    try {
+      await fetch(
+        `/api/v1/articles/${articleId}/questions/sa/${resp.result.id}/rate`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            rating,
+          }),
         }
-        handleCompleted();
-      })
-      .finally(() => {
-        setIsLoading(false);
+      );
+
+      toast({
+        title: tf("toast.success"),
+        imgSrc: true,
+        description: `Congratulations!, You received ${rating} XP for completing this activity.`,
       });
-    await fetch(`/api/v1/users/${userId}/activitylog`, {
-      method: "POST",
-      body: JSON.stringify({
-        articleId: articleId,
-        activityType: ActivityType.SA_Question,
-        activityStatus: ActivityStatus.Completed,
-        timeTaken: timer,
-        xpEarned: rating,
-        details: {
-          data,
-          title: articleTitle,
-          level: articleLevel,
-          cefr_level: levelCalculation(rating).cefrLevel,
-        },
-      }),
-    });
-    router.refresh();
+
+      handleCompleted();
+      router.refresh();
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
   return (
     <CardContent>
@@ -489,7 +555,6 @@ function SAQuestion({
                 <div className="flex items-center justify-center">
                   <Rating
                     sx={{
-                      // change unselected color
                       "& .MuiRating-iconEmpty": {
                         color: "#f6a904",
                       },
@@ -561,7 +626,6 @@ function SAQuestion({
                   <div className="flex items-center justify-center">
                     <Rating
                       sx={{
-                        // change unselected color
                         "& .MuiRating-iconEmpty": {
                           color: "#f6a904",
                         },
