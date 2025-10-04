@@ -50,8 +50,11 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   const [currentSentence, setCurrentSentence] = useState(0);
   const [readingSpeed, setReadingSpeed] = useState("1");
   const [highlightMode, setHighlightMode] = useState(true);
-  const [showTranslation, setShowTranslation] = useState(true);
+  const [showTranslation, setShowTranslation] = useState(false);
   const [selectedSentence, setSelectedSentence] = useState<number | null>(null);
+  const [translatedSentences, setTranslatedSentences] = useState<string[]>([]);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationError, setTranslationError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isAudioLoaded, setIsAudioLoaded] = useState(false);
   const sentenceRefs = useRef<{ [key: number]: HTMLElement | null }>({});
@@ -71,8 +74,61 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
 
   // Get translation for specific sentence
   const getTranslation = (sentenceIndex: number): string => {
+    if (translatedSentences.length > 0 && translatedSentences[sentenceIndex]) {
+      return translatedSentences[sentenceIndex];
+    }
     const translations = translatedPassage[locale] || [];
     return translations[sentenceIndex] || t("translationNotAvailablePhase5");
+  };
+
+  // Fetch translations from API
+  const fetchTranslations = async () => {
+    if (translatedSentences.length > 0) return; // Already fetched
+
+    setIsTranslating(true);
+    setTranslationError(null);
+
+    try {
+      const response = await fetch(`/api/v1/assistant/translate/${articleId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "passage",
+          targetLanguage: locale,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch translations");
+      }
+
+      const data = await response.json();
+      setTranslatedSentences(data.translated_sentences || []);
+    } catch (error) {
+      console.error("Translation error:", error);
+      setTranslationError("Failed to load translations");
+      // Fallback to existing translations in article data
+      const translations = translatedPassage[locale] || [];
+      setTranslatedSentences(translations);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  // Handle translation toggle
+  const handleTranslationToggle = () => {
+    const newShowTranslation = !showTranslation;
+    setShowTranslation(newShowTranslation);
+    
+    if (newShowTranslation && translatedSentences.length === 0) {
+      fetchTranslations();
+    }
+    
+    if (!newShowTranslation) {
+      setSelectedSentence(null);
+    }
   };
 
   useEffect(() => {
@@ -336,16 +392,21 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
           <Button
             variant={showTranslation ? "default" : "outline"}
             size="sm"
-            onClick={() => {
-              setShowTranslation(!showTranslation);
-              if (!showTranslation) {
-                setSelectedSentence(null);
-              }
-            }}
+            onClick={handleTranslationToggle}
+            disabled={isTranslating}
             className={showTranslation ? "bg-blue-500 hover:bg-blue-600" : ""}
           >
-            {showTranslation ? "🌐" : "🌍"} {t("translation")}{" "}
-            {showTranslation ? t("on") : t("off")}
+            {isTranslating ? (
+              <>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2" />
+                Loading...
+              </>
+            ) : (
+              <>
+                {showTranslation ? "🌐" : "🌍"} {t("translation")}{" "}
+                {showTranslation ? t("on") : t("off")}
+              </>
+            )}
           </Button>
         </div>
       </div>

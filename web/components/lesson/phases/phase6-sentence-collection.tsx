@@ -77,6 +77,9 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
   const [selectedForTranslation, setSelectedForTranslation] = useState<
     number | null
   >(null);
+  const [translatedSentences, setTranslatedSentences] = useState<string[]>([]);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationError, setTranslationError] = useState<string | null>(null);
   const sentenceRefs = useRef<{ [key: number]: HTMLElement | null }>({});
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const [isLongPressing, setIsLongPressing] = useState(false);
@@ -166,8 +169,61 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
   }, [userId, articleId, sentences.length]);
 
   const getTranslation = (sentenceIndex: number): string => {
+    if (translatedSentences.length > 0 && translatedSentences[sentenceIndex]) {
+      return translatedSentences[sentenceIndex];
+    }
     const translations = translatedPassage[locale] || [];
     return translations[sentenceIndex] || t("translationNotAvailable");
+  };
+
+  // Fetch translations from API
+  const fetchTranslations = async () => {
+    if (translatedSentences.length > 0) return; // Already fetched
+
+    setIsTranslating(true);
+    setTranslationError(null);
+
+    try {
+      const response = await fetch(`/api/v1/assistant/translate/${articleId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "passage",
+          targetLanguage: locale,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch translations");
+      }
+
+      const data = await response.json();
+      setTranslatedSentences(data.translated_sentences || []);
+    } catch (error) {
+      console.error("Translation error:", error);
+      setTranslationError("Failed to load translations");
+      // Fallback to existing translations in article data
+      const translations = translatedPassage[locale] || [];
+      setTranslatedSentences(translations);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  // Handle translation toggle
+  const handleTranslationToggle = () => {
+    const newShowTranslation = !showTranslation;
+    setShowTranslation(newShowTranslation);
+    
+    if (newShowTranslation && translatedSentences.length === 0) {
+      fetchTranslations();
+    }
+    
+    if (!newShowTranslation) {
+      setSelectedForTranslation(null);
+    }
   };
 
   // Update form and completion status when selection changes
@@ -466,16 +522,21 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
           <Button
             variant={showTranslation ? "default" : "outline"}
             size="sm"
-            onClick={() => {
-              setShowTranslation(!showTranslation);
-              if (!showTranslation) {
-                setSelectedForTranslation(null);
-              }
-            }}
+            onClick={handleTranslationToggle}
+            disabled={isTranslating}
             className={showTranslation ? "bg-blue-500 hover:bg-blue-600" : ""}
           >
-            {showTranslation ? "🌐" : "🌍"} Translation{" "}
-            {showTranslation ? t("translationOn") : t("translationOff")}
+            {isTranslating ? (
+              <>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2" />
+                Loading...
+              </>
+            ) : (
+              <>
+                {showTranslation ? "🌐" : "🌍"} Translation{" "}
+                {showTranslation ? t("translationOn") : t("translationOff")}
+              </>
+            )}
           </Button>
         </div>
 

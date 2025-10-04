@@ -116,25 +116,41 @@ export async function translate(
         translated_sentences: existingTranslations[targetLanguage],
       });
     }
-    if (!article.sentences) {
+
+    // Extract sentences from article.sentences JSON field
+    let sentences: string[] = [];
+
+    if (article.sentences) {
+      if (Array.isArray(article.sentences)) {
+        // The sentences field contains an array of objects with 'sentences' property
+        // Example: [{"file":"...","index":0,"sentences":"People like to travel.",...}, ...]
+        sentences = (article.sentences as any[])
+          .map((item: any) => {
+            // Each item might have a 'sentences' property (note: it's called 'sentences' but contains a single sentence)
+            if (item && typeof item === "object" && item.sentences) {
+              return typeof item.sentences === "string" ? item.sentences : "";
+            }
+            // Fallback: if item is a string itself
+            if (typeof item === "string") {
+              return item;
+            }
+            return "";
+          })
+          .filter((s: string) => s.trim().length > 0);
+      }
+    }
+
+    console.log(
+      `Extracted ${sentences.length} sentences from article.sentences field`
+    );
+
+    if (sentences.length === 0) {
       return NextResponse.json(
-        { message: "Sentences not found" },
+        { message: "No sentences found in article" },
         { status: 404 }
       );
     }
-    let sentences: string[] = [];
-    if (Array.isArray(article.sentences)) {
-      sentences = (article.sentences as any[]).flatMap((s: any) => {
-        if (typeof s === "string") return [s];
-        if (Array.isArray(s)) return s;
-        if (s && typeof s === "object" && s.sentences) {
-          return Array.isArray(s.sentences) ? s.sentences : [s.sentences];
-        }
-        return [];
-      });
-    } else {
-      sentences = [];
-    }
+
     try {
       const temp = await translatePassageWithGPT(sentences, targetLanguage);
       const translatedSentences =
@@ -250,36 +266,74 @@ async function translatePassageWithGPT(
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const passageText = sentences.join(" ");
+      // For large number of sentences, translate in batches to improve accuracy
+      const batchSize = 20;
+      const batches: string[][] = [];
 
-      const userPrompt = `Translate the following passage into ${targetLanguage}. The passage has been pre-split into ${sentences.length} sentences. Return each sentence as a separate array element. Passage: ${passageText}`;
-
-      const schema = z.object({
-        translations: z
-          .array(z.string())
-          .describe(`${targetLanguage} translation of each sentence`),
-      });
-
-      const { object: response } = await generateObject({
-        model: google(googleModel),
-        schema,
-        system: `You are a professional translator. Translate the given passage sentence by sentence accurately while maintaining the original meaning and tone. The passage has been pre-split into exactly ${sentences.length} sentences. Return exactly ${sentences.length} translated sentences in the specified language array, maintaining the same sentence structure as the original.`,
-        prompt: userPrompt,
-      });
-
-      // Ensure the response array matches the input sentence count
-      const expectedLength = sentences.length;
-      if (response.translations.length !== expectedLength) {
-        throw new Error("Mismatch in translated sentences length");
+      for (let i = 0; i < sentences.length; i += batchSize) {
+        batches.push(sentences.slice(i, i + batchSize));
       }
 
-      const translations = response.translations;
+      const allTranslations: string[] = [];
+
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex];
+
+        // Create a numbered list of sentences for better GPT tracking
+        const numberedSentences = batch
+          .map((s, i) => `${i + 1}. ${s}`)
+          .join("\n");
+
+        const userPrompt = `Translate the following ${batch.length} numbered sentences into ${targetLanguage}. 
+Return EXACTLY ${batch.length} translations in the same order, one translation per sentence.
+
+Sentences:
+${numberedSentences}`;
+
+        const schema = z.object({
+          translations: z
+            .array(z.string())
+            .length(batch.length)
+            .describe(
+              `Exactly ${batch.length} ${targetLanguage} translations, one per sentence`
+            ),
+        });
+
+        const { object: response } = await generateObject({
+          model: google(googleModel),
+          schema,
+          system: `You are a professional translator. You will receive ${batch.length} numbered sentences.
+Your task: Translate each sentence into ${targetLanguage} and return EXACTLY ${batch.length} translations in order.
+Rules:
+- Maintain exact sentence count: ${batch.length} in, ${batch.length} out
+- Preserve sentence structure - do NOT merge or split sentences
+- Keep the same order as input
+- Each translation should correspond 1-to-1 with each input sentence`,
+          prompt: userPrompt,
+        });
+
+        // Ensure the response array matches the batch sentence count
+        if (response.translations.length !== batch.length) {
+          throw new Error(
+            `Mismatch in batch ${batchIndex + 1}: expected ${batch.length} translations, got ${response.translations.length}`
+          );
+        }
+
+        allTranslations.push(...response.translations);
+      }
+
+      // Final validation
+      if (allTranslations.length !== sentences.length) {
+        throw new Error(
+          `Total mismatch: expected ${sentences.length} translations, got ${allTranslations.length}`
+        );
+      }
 
       const result: Record<string, string[]> = {
         en: sentences,
       };
 
-      result[targetLanguage] = translations;
+      result[targetLanguage] = allTranslations;
 
       return result;
     } catch (error) {
