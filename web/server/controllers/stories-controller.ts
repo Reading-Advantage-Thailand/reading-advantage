@@ -193,9 +193,10 @@ export async function getAllStories(req: ExtendedNextRequest) {
     const userLevel = req.session?.user.level as number;
 
     // Get available genres from JSON data (normalize both legacy and new shapes)
-    // We import the fiction genres file which contains the available genre labels.
-    const genresFiction = require("../../../data/genres-fiction.json");
-    const rawGenres = genresFiction.Genres || [];
+    // We import the fiction genres from type-genre.json which contains the available genre labels.
+    const typeGenreData = require("../../data/type-genre.json");
+    const genresFiction = typeGenreData.fiction || [];
+    const rawGenres = genresFiction;
     const selectionGenres = rawGenres.map((g: any) => g.Name ?? g.name ?? "").filter(Boolean);
 
     if (storyId) {
