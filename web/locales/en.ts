@@ -19,9 +19,11 @@ export default {
       orContinueWith: "Or continue with",
       google: "Google",
       databaseMigrationRequired: "Database Migration Required",
-      migrationDescription: "Your account needs to be migrated to the new system. Please set a new secure password to continue.",
+      migrationDescription:
+        "Your account needs to be migrated to the new system. Please set a new secure password to continue.",
       newPassword: "New Password",
-      newPasswordPlaceholder: "Enter a strong password (min 8 chars, letters & numbers)",
+      newPasswordPlaceholder:
+        "Enter a strong password (min 8 chars, letters & numbers)",
       passwordMinLength: "Password must be at least 8 characters long",
       passwordMustContainLetter: "Password must contain at least one letter",
       passwordMustContainNumber: "Password must contain at least one number",
@@ -328,7 +330,8 @@ export default {
         phase14Title: "Lesson Summary",
         phase14Description: "Summary of this lesson",
         // Phase 14 Lesson Summary keys
-        fantasticWork: "🎊 Fantastic work! You've completed the lesson successfully. Here's your achievement summary!",
+        fantasticWork:
+          "🎊 Fantastic work! You've completed the lesson successfully. Here's your achievement summary!",
         timeSpent: "Time Spent",
         wordsSaved: "Words Saved",
         sentences: "Sentences",
@@ -391,7 +394,8 @@ export default {
         // Additional keys for lesson components
         interactiveReadingExperience: "Interactive Reading Experience",
         learningMode: "Learning Mode",
-        beginReadingJourney: "Begin your interactive reading journey with this article",
+        beginReadingJourney:
+          "Begin your interactive reading journey with this article",
         articleSummary: "Article Summary",
         learningObjectives: "Learning Objectives",
         understandMainIdeas: "Understand the main ideas and themes",
@@ -407,7 +411,8 @@ export default {
         // SAQ component keys
         title: "Short Answer Questions",
         descriptionFailure: "Failed to load question: {error}",
-        descriptionSuccess: "Answer the following short answer questions about the article",
+        descriptionSuccess:
+          "Answer the following short answer questions about the article",
         question: "Question",
         yourAnswer: "Your Answer",
         suggestedAnswer: "Suggested Answer",
@@ -418,9 +423,11 @@ export default {
         rateButton: "Rate Answer",
         // Additional SAQ component keys
         answerPlaceholder: "Type your thoughtful answer here...",
-        answerDescription: "Write a detailed response to demonstrate your understanding",
+        answerDescription:
+          "Write a detailed response to demonstrate your understanding",
         rateLearningExperience: "Rate your learning experience",
-        congratulationsXpEarned: "Congratulations! You received {rating} XP for completing this activity.",
+        congratulationsXpEarned:
+          "Congratulations! You received {rating} XP for completing this activity.",
         answerRequired: "Answer is required",
         answerTooLong: "Answer must be less than 1000 characters",
         // Phase 3 First Reading keys
@@ -435,28 +442,40 @@ export default {
         sentenceProgress: "Sentence {current} of {total}",
         percentComplete: "% complete",
         firstReadingTips: "📚 First Reading Tips",
-        readEntireArticle: "Read through the entire article to get the general idea",
-        clickStartReading: "Click \"Start Reading\" to hear the article read aloud",
-        clickSentenceJump: "Click on any sentence to jump to that part of the audio",
+        readEntireArticle:
+          "Read through the entire article to get the general idea",
+        clickStartReading:
+          'Click "Start Reading" to hear the article read aloud',
+        clickSentenceJump:
+          "Click on any sentence to jump to that part of the audio",
         useHighlightMode: "Use highlight mode to follow along with the audio",
-        listenCompleteAudio: "Listen to the complete audio to proceed to the next phase",
-        readingCompleted: "✅ Reading 100% completed! Your progress has been saved. You can now proceed to the next phase.",
-        listenToUnlock: "🎧 Listen to the complete audio to unlock the next phase.",
-        progressAutoSaved: "💾 Your reading progress is automatically saved and will be remembered when you return.",
+        listenCompleteAudio:
+          "Listen to the complete audio to proceed to the next phase",
+        readingCompleted:
+          "✅ Reading 100% completed! Your progress has been saved. You can now proceed to the next phase.",
+        listenToUnlock:
+          "🎧 Listen to the complete audio to unlock the next phase.",
+        progressAutoSaved:
+          "💾 Your reading progress is automatically saved and will be remembered when you return.",
         // Phase 5 Deep Reading keys
         translationNotAvailablePhase5: "Translation not available",
         translation: "Translation",
-        clickSentenceTranslation: "Click on any sentence to see its translation",
+        clickSentenceTranslation:
+          "Click on any sentence to see its translation",
         deepReadingTips: "📚 Deep Reading Tips",
-        readEntireArticleDeep: "Read through the entire article to get the general idea",
-        clickStartReadingDeep: "Click \"Start Reading\" to hear the article read aloud",
-        useHighlightModeDeep: "Use highlight mode to follow along with the audio",
+        readEntireArticleDeep:
+          "Read through the entire article to get the general idea",
+        clickStartReadingDeep:
+          'Click "Start Reading" to hear the article read aloud',
+        useHighlightModeDeep:
+          "Use highlight mode to follow along with the audio",
         // Phase 12 Sentence Activities keys
         loadingActivities: "Loading activities...",
         completed: "(Completed)",
         review: "Review",
         // Phase 4 Vocabulary Collection keys
-        selectVocabularyDescription: "Select vocabulary words you'd like to add to your personal collection for future study",
+        selectVocabularyDescription:
+          "Select vocabulary words you'd like to add to your personal collection for future study",
         vocabularyCollectionProgress: "Vocabulary Collection Progress",
         saved: "saved",
         needSaveAtLeast5Words: "need to save at least 5 words to proceed",
@@ -466,13 +485,18 @@ export default {
         selectWordsToSave: "Select words to save",
         saveWordsCount: "Save {count} Words",
         saveWordsCountWithSaved: "Save {count} Words ({saved} already saved)",
-        greatSavedWordsMessage: "Great! You have {count} words saved. You can now proceed to the next phase or select additional words if you'd like.",
-        needAtLeast5WordsMessage: "You need to save at least 5 words total to proceed to the next phase. Currently saved: {count} words.",
+        greatSavedWordsMessage:
+          "Great! You have {count} words saved. You can now proceed to the next phase or select additional words if you'd like.",
+        needAtLeast5WordsMessage:
+          "You need to save at least 5 words total to proceed to the next phase. Currently saved: {count} words.",
         collectionTips: "💡 Collection Tips",
         chooseNewWords: "Choose words that are new or challenging for you",
-        wordsAddedToFlashcards: "Selected words will be added to your flashcard collection",
-        reviewWordsLater: "You can review these words later in practice sessions",
-        greenCheckmarkWords: "Words with green checkmarks are already saved to your collection",
+        wordsAddedToFlashcards:
+          "Selected words will be added to your flashcard collection",
+        reviewWordsLater:
+          "You can review these words later in practice sessions",
+        greenCheckmarkWords:
+          "Words with green checkmarks are already saved to your collection",
         definitionNotAvailable: "Definition not available",
         // Toast messages
         somethingWentWrong: "Something went wrong.",
@@ -480,45 +504,64 @@ export default {
         success: "Success!",
         error: "Error",
         failedToSaveVocabulary: "Failed to save vocabulary",
-        wordsAddedToCollection: "{count} words added to your vocabulary collection",
+        wordsAddedToCollection:
+          "{count} words added to your vocabulary collection",
         // Phase 6 Sentence Collection keys
         loadingSentenceCollection: "Loading your sentence collection...",
         collectionStatus: "Collection Status",
-        phaseCompletedSavedSentences: "Phase completed! You have saved {count} sentences to your collection",
-        sentencesSelectedClickAdd: "{count} sentences selected - click \"Add to Collection\" to save them",
-        mustSaveAtLeast5Sentences: "⚠️ You must save at least 5 sentences to proceed to the next phase",
-        availableSentencesSelected: "{selected} of {available} available sentences selected",
-        selectAndSaveAtLeast5: "Select and save at least 5 sentences to proceed",
-        sentencesSavedNeedMore: "{saved} sentences saved - need {needed} more to proceed",
-        sentencesAlreadyInCollection: "{count} sentences already in your collection",
+        phaseCompletedSavedSentences:
+          "Phase completed! You have saved {count} sentences to your collection",
+        sentencesSelectedClickAdd:
+          '{count} sentences selected - click "Add to Collection" to save them',
+        mustSaveAtLeast5Sentences:
+          "⚠️ You must save at least 5 sentences to proceed to the next phase",
+        availableSentencesSelected:
+          "{selected} of {available} available sentences selected",
+        selectAndSaveAtLeast5:
+          "Select and save at least 5 sentences to proceed",
+        sentencesSavedNeedMore:
+          "{saved} sentences saved - need {needed} more to proceed",
+        sentencesAlreadyInCollection:
+          "{count} sentences already in your collection",
         translationOn: "ON",
         translationOff: "OFF",
-        greatSavedSentencesMessage: "🎉 Great! You have successfully saved {count} sentences to your collection. You can now proceed to the next phase!",
-        clickSentencesToAdd: "📖 Click on sentences to add them to your collection. Selected sentences will be marked with a bookmark icon.",
-        desktopRightClick: "💬 Desktop: Right-click to see translations. Mobile: Long-press (hold) for translations.",
+        greatSavedSentencesMessage:
+          "🎉 Great! You have successfully saved {count} sentences to your collection. You can now proceed to the next phase!",
+        clickSentencesToAdd:
+          "📖 Click on sentences to add them to your collection. Selected sentences will be marked with a bookmark icon.",
+        desktopRightClick:
+          "💬 Desktop: Right-click to see translations. Mobile: Long-press (hold) for translations.",
         simple: "Simple",
         medium: "Medium",
         complex: "Complex",
         alreadyInCollection: "Already in your collection",
         clickToSelect: "Click to select",
         clickToDeselect: "Click to deselect",
-        rightClickOrLongPress: "Right-click (desktop) or long-press (mobile) for translation",
+        rightClickOrLongPress:
+          "Right-click (desktop) or long-press (mobile) for translation",
         phaseCompleted: "Phase Completed!",
-        sentencesSavedToCollection: "{count} sentences saved to your collection",
+        sentencesSavedToCollection:
+          "{count} sentences saved to your collection",
         addSentencesToCollection: "Add {count} Sentences to Collection",
         sentenceCollectionGuide: "📖 Sentence Collection Guide",
-        simpleSentencesDesc: "Good for practicing basic structure and common vocabulary",
+        simpleSentencesDesc:
+          "Good for practicing basic structure and common vocabulary",
         mediumSentencesDesc: "Help develop understanding of complex ideas",
-        complexSentencesDesc: "Challenge your comprehension and analytical skills",
+        complexSentencesDesc:
+          "Challenge your comprehension and analytical skills",
         howToSelect: "How to select",
         howToSelectDesc: "Click on sentences to bookmark them.",
-        useTranslationFeature: "Use translation feature - right-click (desktop) or long-press (mobile) to understand difficult sentences before selecting.",
+        useTranslationFeature:
+          "Use translation feature - right-click (desktop) or long-press (mobile) to understand difficult sentences before selecting.",
         alreadyCollected: "Already collected",
-        alreadyCollectedDesc: "Sentences with lock icons are already in your collection and cannot be selected again.",
+        alreadyCollectedDesc:
+          "Sentences with lock icons are already in your collection and cannot be selected again.",
         // Toast messages for Phase 6
         insufficientSentences: "Insufficient Sentences",
-        selectAtLeast5Sentences: "Please select at least 5 sentences to continue",
-        sentencesAddedToCollection: "{count} sentences added to your collection",
+        selectAtLeast5Sentences:
+          "Please select at least 5 sentences to continue",
+        sentencesAddedToCollection:
+          "{count} sentences added to your collection",
         failedToSaveSentences: "Failed to save sentences",
         // MCQ component keys
         multipleChoiceQuiz: "Multiple Choice Quiz",
@@ -529,13 +572,15 @@ export default {
         nextQuestion: "Next Question",
         finishQuiz: "Finish Quiz",
         quizCompleted: "🎉 Quiz Completed! 🎉",
-        quizCompletedDescription: "Congratulations! You've finished the multiple choice quiz.",
+        quizCompletedDescription:
+          "Congratulations! You've finished the multiple choice quiz.",
         correctAnswers: "Correct Answers",
         accuracy: "Accuracy",
         mcqXpEarned: "XP Earned",
         totalTime: "Total Time",
         quizScore: "Quiz Score: {correct}/{total}",
-        greatJobXpEarned: "Great job! You got {correct}/{total} correct and earned {xp} XP.",
+        greatJobXpEarned:
+          "Great job! You got {correct}/{total} correct and earned {xp} XP.",
       },
       assignmentPage: {
         overdue: "Overdue",
@@ -767,7 +812,8 @@ export default {
         classroomsCount: "Classrooms ({classroomsCount})",
         loading: "Loading...",
         noAssignmentsFound: "No teacher assignments found.",
-        assignmentsSelected: "{selectedCount} of {totalCount} assignment(s) selected.",
+        assignmentsSelected:
+          "{selectedCount} of {totalCount} assignment(s) selected.",
         previous: "Previous",
         next: "Next",
       },
@@ -891,7 +937,9 @@ export default {
       articleChoose: "Please choose the {article} you want to read",
       articleChooseDescription:
         "Your level is {level} and here are the {article}s that you can choose.",
+      back: "< Back",
     },
+
     // use this for article selection page
     article: {
       type: "type",
@@ -1373,20 +1421,24 @@ export default {
     loadingSentenceFlashcards: "Loading Sentence Flashcards...",
     prepareFlashcards: "Please wait while we prepare your flashcards.",
     noCardsToPractice: "No Cards to Practice",
-    noCardsDescription: "Great job! You have no sentence cards that need practice at this time.",
+    noCardsDescription:
+      "Great job! You have no sentence cards that need practice at this time.",
     somethingWentWrong: "Something went wrong",
     failedToLoadFlashcards: "Failed to load flashcards. Please try again.",
     noCardAvailable: "No Card Available",
     noCardsToStudy: "There are no cards to study at this time.",
-    thinkAboutMeaning: "Think about the meaning of this sentence, then reveal the answer.",
+    thinkAboutMeaning:
+      "Think about the meaning of this sentence, then reveal the answer.",
     showTranslation: "Show Translation",
     correct: "Correct",
     incorrect: "Incorrect",
     total: "Total",
     accuracy: "Accuracy",
     congratulations: "Congratulations!",
-    completedSentenceFlashcardSession: "You've completed your sentence flashcard session!",
-    greatJobImprovingUnderstanding: "Great job on improving your understanding!",
+    completedSentenceFlashcardSession:
+      "You've completed your sentence flashcard session!",
+    greatJobImprovingUnderstanding:
+      "Great job on improving your understanding!",
     xpEarned: "XP Earned",
     timeTaken: "Time Taken",
     sentenceFlashcards: "Sentence Flashcards",
@@ -1407,22 +1459,26 @@ export default {
     progressFraction: "Progress: {{current}} / {{total}}",
     matchWordsWithDefinitions: "Match the words with their definitions",
     needMoreWords: "Need More Words",
-    needMoreWordsDescription: "You need to collect at least 5 words in Phase 2 to practice matching.",
+    needMoreWordsDescription:
+      "You need to collect at least 5 words in Phase 2 to practice matching.",
     alreadyCompleted: "Already Completed!",
     alreadyCompletedDescription: "You have already completed this activity!",
     perfectScore: "Perfect Score!",
     matchedAllWords: "You've matched all words correctly!",
     sentenceMatchingPractice: "Sentence Matching Practice",
-    matchSentencesWithTranslations: "Match the sentences with their translations",
+    matchSentencesWithTranslations:
+      "Match the sentences with their translations",
     needMoreSentences: "Need More Sentences",
-    needMoreSentencesDescription: "You need to collect at least 5 sentences in Phase 6 to practice matching.",
+    needMoreSentencesDescription:
+      "You need to collect at least 5 sentences in Phase 6 to practice matching.",
     matchedAllSentences: "You've matched all sentences correctly!",
     wordOrderingPractice: "Word Ordering Practice",
     tryToSortThisSentence: "Try to Sort This Sentence",
     clickWordsToFormSentence: "Click words below to form the correct sentence",
     translation: "Translation:",
     yourSentence: "Your sentence:",
-    clickWordsToAdd: "Click words to add them to your sentence ({{remaining}} remaining)",
+    clickWordsToAdd:
+      "Click words to add them to your sentence ({{remaining}} remaining)",
     perfectCorrectWordOrder: "Perfect! Correct word order! 🎉",
     notQuiteRightRearrangeWords: "Not quite right. Try rearranging the words",
     correctOrder: "Correct order:",
@@ -1433,31 +1489,38 @@ export default {
     nextSentence: "Next Sentence",
     finishPractice: "Finish Practice",
     amazingWork: "Amazing Work!",
-    completedWordOrderingChallenges: "You completed {{count}} word ordering challenges",
+    completedWordOrderingChallenges:
+      "You completed {{count}} word ordering challenges",
     previouslyCompleted: "Previously completed",
     correctAnswers: "Correct Answers",
     loadingNextChallenge: "Loading next challenge...",
     needMoreSentencesWordOrdering: "Need More Sentences",
-    needMoreSentencesWordOrderingDescription: "You need to collect at least 5 sentences in Phase 6 to practice word ordering.",
+    needMoreSentencesWordOrderingDescription:
+      "You need to collect at least 5 sentences in Phase 6 to practice word ordering.",
     orderTheSentences: "Order the Sentences",
     arrangeFiveSentences: "Arrange these 5 sentences in chronological order",
     readyToStart: "Ready to Start?",
-    arrangeSentencesChronologicalOrder: "Arrange sentences in the correct chronological order",
+    arrangeSentencesChronologicalOrder:
+      "Arrange sentences in the correct chronological order",
     sentenceGroups: "Sentence Groups",
     readyToOrder: "Ready to order",
     dragAndDrop: "Drag & Drop",
     easyInteraction: "Easy interaction",
     estimatedTime: "~5 min",
     instructions: "Instructions",
-    dragDropInstructions: "Drag and drop sentences to arrange them in chronological order",
+    dragDropInstructions:
+      "Drag and drop sentences to arrange them in chronological order",
     useHintFeatures: "Use hint features if you need help",
-    completeAllSentenceGroups: "Complete all sentence groups to finish this phase",
+    completeAllSentenceGroups:
+      "Complete all sentence groups to finish this phase",
     startGame: "Start Game!",
     noSentencesAvailable: "No sentences available",
-    unableToLoadSentences: "Unable to load sentences for this article. Please try again.",
+    unableToLoadSentences:
+      "Unable to load sentences for this article. Please try again.",
     outstanding: "Outstanding!",
     correctSentenceOrder: "You got the correct sentence order!",
-    notQuiteRightSentenceOrder: "The sentences are not in the right order. Try again!",
+    notQuiteRightSentenceOrder:
+      "The sentences are not in the right order. Try again!",
     playAgain: "Play Again",
     shuffleAgain: "Shuffle Again",
     nextSentenceOrder: "Next Sentence Order",

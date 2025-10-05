@@ -1,4 +1,5 @@
-"use client";SelectStory
+"use client";
+SelectStory;
 import React from "react";
 import {
   Card,
@@ -54,7 +55,6 @@ export default function SelectStory({ user }: Props) {
 
   const selectedGenre = searchParams.get("genre");
   const selectedSubgenre = searchParams.get("subgenre");
-
   function getArticleCategory() {
     if (!selectedGenre && !selectedSubgenre) return "genre";
     if (selectedGenre && !selectedSubgenre) return "subGenre";
@@ -92,12 +92,16 @@ export default function SelectStory({ user }: Props) {
       try {
         setLoading(true);
         const params = new URLSearchParams(window.location.search);
+
+        // Always set type to fiction for stories
+        if (!params.has("type")) {
+          params.set("type", "fiction");
+        }
+
         params.set("page", page.toString());
         params.set("limit", "8");
 
-        //console.log("Fetching stories with params:", params.toString());
         const response = await fetchStories(params.toString());
-        //console.log("API Response:", response);
 
         if (page === 1) {
           setArticleShowcaseData(response.results);
@@ -109,7 +113,14 @@ export default function SelectStory({ user }: Props) {
             setSubgenres(uniqueSubgenres);
           }
         } else {
-          setArticleShowcaseData((prev) => [...prev, ...response.results]);
+          // Filter out duplicates when appending new results
+          setArticleShowcaseData((prev) => {
+            const existingIds = new Set(prev.map((article) => article.id));
+            const newArticles = response.results.filter(
+              (article: articleShowcaseType) => !existingIds.has(article.id)
+            );
+            return [...prev, ...newArticles];
+          });
         }
 
         setTotalPages(response.totalPages);
@@ -169,6 +180,16 @@ export default function SelectStory({ user }: Props) {
         ) : selectedGenre && !selectedSubgenre ? (
           <>
             <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.delete("genre");
+                  router.push("?" + params.toString());
+                }}
+                disabled={loading}
+              >
+                {t("back")}
+              </Button>
               {subgenres.map((subgenre) => (
                 <Button
                   key={subgenre}
@@ -203,27 +224,43 @@ export default function SelectStory({ user }: Props) {
             )}
           </>
         ) : selectedGenre && selectedSubgenre ? (
-          articleShowcaseData.length > 0 ? (
-            <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
-              {articleShowcaseData.map((article, index) => {
-                const isLastArticle = index === articleShowcaseData.length - 1;
-                return (
-                  <StoryShowcaseCard
-                    ref={isLastArticle ? lastArticleRef : null}
-                    key={article.id}
-                    story={article}
-                    userId={user.id}
-                  />
-                );
-              })}
+          <>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.delete("subgenre");
+                  router.push("?" + params.toString());
+                }}
+                disabled={loading}
+              >
+                ← Back
+              </Button>
             </div>
-          ) : (
-            <div className="flex justify-center items-center w-full mt-4">
-              <p className="text-gray-500 text-lg">
-                There are no articles in this category.
-              </p>
-            </div>
-          )
+            {articleShowcaseData.length > 0 ? (
+              <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
+                {articleShowcaseData.map((article, index) => {
+                  const isLastArticle =
+                    index === articleShowcaseData.length - 1;
+                  return (
+                    <StoryShowcaseCard
+                      ref={isLastArticle ? lastArticleRef : null}
+                      key={article.id}
+                      story={article}
+                      userId={user.id}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex justify-center items-center w-full mt-4">
+                <p className="text-gray-500 text-lg">
+                  There are no articles in this category.
+                </p>
+              </div>
+            )}
+          </>
         ) : (
           <>
             <div className="flex flex-wrap gap-2">

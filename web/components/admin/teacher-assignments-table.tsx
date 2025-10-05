@@ -723,7 +723,7 @@ function TeacherAssignmentsTable({
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <ScrollArea className="h-[600px] w-full">
+            <ScrollArea className="h-full w-full">
               <Table className="min-w-[800px]">
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (

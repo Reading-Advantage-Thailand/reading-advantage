@@ -856,6 +856,7 @@ export default {
       articleChoose: "請選擇您想閱讀的 {article}",
       articleChooseDescription:
         "您的級別是 {level}，這裡是您可以選擇的 {article}。",
+        back: "< 返回",
     },
     article: {
       type: "文章類型",

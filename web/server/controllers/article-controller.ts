@@ -83,7 +83,10 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
 
     const fetchGenres = async (type: string, genre?: string | null) => {
       const genreData = type === "fiction" ? genresFiction : genresNonfiction;
-      const rawGenres = genreData.Genres || [];
+      // genreData is already an array, no need to access .Genres
+      const rawGenres = Array.isArray(genreData)
+        ? genreData
+        : genreData.Genres || [];
       const allGenres = rawGenres.map(normalizeGenreDoc);
 
       if (genre) {
@@ -99,7 +102,8 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
         }
       }
 
-      return allGenres.map((data: any) => data.Name);
+      const genreNames = allGenres.map((data: any) => data.Name);
+      return genreNames;
     };
 
     if (!type) {
