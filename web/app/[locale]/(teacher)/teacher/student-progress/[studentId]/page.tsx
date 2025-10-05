@@ -33,7 +33,7 @@ export default async function ProgressPage({
       getStudentData(params.studentId),
     ]);
 
-    const activityData = activityResponse.results;
+    const activityData = activityResponse.activityLogs;
     const studentData = studentResponse.data;
 
     return (

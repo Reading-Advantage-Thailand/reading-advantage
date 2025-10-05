@@ -913,6 +913,7 @@ export default {
       articleChoose: "Hãy chọn bài viết {article} bạn muốn đọc",
       articleChooseDescription:
         "Trình độ của bạn là {level} và đây là các bài viết {article} bạn có thể chọn.",
+      back: "< Quay lại",
     },
     // Sử dụng cho trang chọn bài viết
     article: {

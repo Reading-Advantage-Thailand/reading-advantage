@@ -896,6 +896,7 @@ export default {
       articleChoose: "กรุณาเลือก {article} ที่คุณต้องการอ่าน",
       articleChooseDescription:
         "ระดับของคุณคือ {level} และนี่คือ {article} ที่คุณสามารถเลือกได้",
+        back: "< ย้อนกลับ",
     },
     // use this for article selection page
     article: {

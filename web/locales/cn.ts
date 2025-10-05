@@ -17,7 +17,8 @@ export default {
       orContinueWith: "或继续使用",
       google: "Google",
       databaseMigrationRequired: "需要数据库迁移",
-      migrationDescription: "您的账户需要迁移到新系统。请设置一个新的安全密码以继续。",
+      migrationDescription:
+        "您的账户需要迁移到新系统。请设置一个新的安全密码以继续。",
       newPassword: "新密码",
       newPasswordPlaceholder: "输入强密码（最少8个字符，包含字母和数字）",
       passwordMinLength: "密码必须至少8个字符长",
@@ -397,11 +398,12 @@ export default {
         percentComplete: "% 完成",
         firstReadingTips: "📚 初次阅读提示",
         readEntireArticle: "通读整篇文章以了解大意",
-        clickStartReading: "点击\"开始阅读\"聆听文章朗读",
+        clickStartReading: '点击"开始阅读"聆听文章朗读',
         clickSentenceJump: "点击任意句子跳转到音频的相应部分",
         useHighlightMode: "使用高亮模式跟随音频",
         listenCompleteAudio: "聆听完整音频以进入下一阶段",
-        readingCompleted: "✅ 阅读100%完成！您的进度已保存。现在可以进入下一阶段。",
+        readingCompleted:
+          "✅ 阅读100%完成！您的进度已保存。现在可以进入下一阶段。",
         listenToUnlock: "🎧 聆听完整音频以解锁下一阶段。",
         progressAutoSaved: "💾 您的阅读进度会自动保存，并在您返回时恢复。",
         // Phase 5 Deep Reading keys
@@ -410,14 +412,15 @@ export default {
         clickSentenceTranslation: "点击任意句子查看翻译",
         deepReadingTips: "📚 深度阅读提示",
         readEntireArticleDeep: "通读整篇文章以了解大意",
-        clickStartReadingDeep: "点击\"开始阅读\"聆听文章朗读",
+        clickStartReadingDeep: '点击"开始阅读"聆听文章朗读',
         useHighlightModeDeep: "使用高亮模式跟随音频",
         // Phase 12 Sentence Activities keys
         loadingActivities: "正在加载活动...",
         completed: "(已完成)",
         review: "复习",
         // Phase 4 Vocabulary Collection keys
-        selectVocabularyDescription: "选择您想要添加到个人收藏中的词汇单词以供将来学习",
+        selectVocabularyDescription:
+          "选择您想要添加到个人收藏中的词汇单词以供将来学习",
         vocabularyCollectionProgress: "词汇收集进度",
         saved: "已保存",
         needSaveAtLeast5Words: "需要至少保存5个单词才能继续",
@@ -427,8 +430,10 @@ export default {
         selectWordsToSave: "选择要保存的单词",
         saveWordsCount: "保存 {count} 个单词",
         saveWordsCountWithSaved: "保存 {count} 个单词（{saved} 已保存）",
-        greatSavedWordsMessage: "太好了！您已保存 {count} 个单词。现在可以进入下一阶段或选择更多单词。",
-        needAtLeast5WordsMessage: "您需要总共保存至少5个单词才能进入下一阶段。目前已保存：{count} 个单词。",
+        greatSavedWordsMessage:
+          "太好了！您已保存 {count} 个单词。现在可以进入下一阶段或选择更多单词。",
+        needAtLeast5WordsMessage:
+          "您需要总共保存至少5个单词才能进入下一阶段。目前已保存：{count} 个单词。",
         collectionTips: "💡 收集提示",
         chooseNewWords: "选择对您来说新的或具有挑战性的单词",
         wordsAddedToFlashcards: "选定的单词将被添加到您的单词卡收藏中",
@@ -445,17 +450,23 @@ export default {
         // Phase 6 Sentence Collection keys
         loadingSentenceCollection: "正在加载您的句子收藏...",
         collectionStatus: "收集状态",
-        phaseCompletedSavedSentences: "阶段完成！您已保存 {count} 个句子到您的收藏中",
-        sentencesSelectedClickAdd: "已选择 {count} 个句子 - 点击\"添加到收藏\"保存它们",
+        phaseCompletedSavedSentences:
+          "阶段完成！您已保存 {count} 个句子到您的收藏中",
+        sentencesSelectedClickAdd:
+          '已选择 {count} 个句子 - 点击"添加到收藏"保存它们',
         mustSaveAtLeast5Sentences: "⚠️ 您必须至少保存5个句子才能进入下一阶段",
-        availableSentencesSelected: "已选择 {selected} / {available} 个可用句子",
+        availableSentencesSelected:
+          "已选择 {selected} / {available} 个可用句子",
         selectAndSaveAtLeast5: "选择并保存至少5个句子以继续",
-        sentencesSavedNeedMore: "已保存 {saved} 个句子 - 需要 {needed} 个更多句子才能继续",
+        sentencesSavedNeedMore:
+          "已保存 {saved} 个句子 - 需要 {needed} 个更多句子才能继续",
         sentencesAlreadyInCollection: "{count} 个句子已在您的收藏中",
         translationOn: "开启",
         translationOff: "关闭",
-        greatSavedSentencesMessage: "🎉 太好了！您已成功保存 {count} 个句子到您的收藏中。现在可以进入下一阶段了！",
-        clickSentencesToAdd: "📖 点击句子将它们添加到您的收藏中。选定的句子将用书签图标标记。",
+        greatSavedSentencesMessage:
+          "🎉 太好了！您已成功保存 {count} 个句子到您的收藏中。现在可以进入下一阶段了！",
+        clickSentencesToAdd:
+          "📖 点击句子将它们添加到您的收藏中。选定的句子将用书签图标标记。",
         desktopRightClick: "💬 桌面：右键查看翻译。移动设备：长按查看翻译。",
         simple: "简单",
         medium: "中等",
@@ -473,7 +484,8 @@ export default {
         complexSentencesDesc: "挑战您的理解力和分析技能",
         howToSelect: "如何选择",
         howToSelectDesc: "点击句子为它们添加书签。",
-        useTranslationFeature: "使用翻译功能 - 右键（桌面）或长按（移动设备）在选择前理解困难句子。",
+        useTranslationFeature:
+          "使用翻译功能 - 右键（桌面）或长按（移动设备）在选择前理解困难句子。",
         alreadyCollected: "已收集",
         alreadyCollectedDesc: "带有锁图标的句子已在您的收藏中，无法再次选择。",
         // Toast messages for Phase 6
@@ -496,7 +508,8 @@ export default {
         mcqXpEarned: "获得经验值",
         totalTime: "总用时",
         quizScore: "测验分数：{correct}/{total}",
-        greatJobXpEarned: "太棒了！您答对了 {correct}/{total} 题，获得 {xp} 经验值。",
+        greatJobXpEarned:
+          "太棒了！您答对了 {correct}/{total} 题，获得 {xp} 经验值。",
       },
       assignmentPage: {
         overdue: "已逾期",
@@ -842,6 +855,7 @@ export default {
       articleChoose: "请选择您想阅读的 {article}",
       articleChooseDescription:
         "您的级别是 {level}，这里是您可以选择的 {article}。",
+      back: "< 返回",
     },
     article: {
       type: "文章类型",
@@ -1350,7 +1364,8 @@ export default {
     sentenceMatchingPractice: "句子匹配练习",
     matchSentencesWithTranslations: "将句子与其翻译匹配",
     needMoreSentences: "需要更多句子",
-    needMoreSentencesDescription: "您需要在第6阶段收集至少5个句子来进行匹配练习。",
+    needMoreSentencesDescription:
+      "您需要在第6阶段收集至少5个句子来进行匹配练习。",
     matchedAllSentences: "您正确匹配了所有句子！",
     wordOrderingPractice: "单词排序练习",
     tryToSortThisSentence: "尝试排序这个句子",
@@ -1373,7 +1388,8 @@ export default {
     correctAnswers: "正确答案",
     loadingNextChallenge: "正在加载下一个挑战...",
     needMoreSentencesWordOrdering: "需要更多句子",
-    needMoreSentencesWordOrderingDescription: "您需要在第6阶段收集至少5个句子来进行单词排序练习。",
+    needMoreSentencesWordOrderingDescription:
+      "您需要在第6阶段收集至少5个句子来进行单词排序练习。",
     orderTheSentences: "排序句子",
     arrangeFiveSentences: "按时间顺序排列这5个句子",
     readyToStart: "准备开始？",

@@ -29,7 +29,6 @@ async function fetchArticles(params: string) {
   );
 
   const data = await response.json();
-  //console.log("API Response:", response);
   return data;
 }
 
@@ -52,7 +51,6 @@ export default function Select({ user }: Props) {
   const selectedType = searchParams.get("type");
   const selectedGenre = searchParams.get("genre");
   const selectedSubgenre = searchParams.get("subgenre");
-
   function getArticleType() {
     if (!selectedType && !selectedGenre && !selectedSubgenre) return "type";
     if (selectedType && !selectedGenre && !selectedSubgenre) return "genre";
@@ -62,7 +60,6 @@ export default function Select({ user }: Props) {
 
   async function handleButtonClick(value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    //console.log(params.toString());
     if (!selectedType && !selectedGenre && !selectedSubgenre) {
       params.set("type", value);
     }
@@ -88,15 +85,22 @@ export default function Select({ user }: Props) {
       params.set("limit", "10");
 
       const response = await fetchArticles(params.toString());
-      //console.log("API Response:", response);
 
       if (response.results.length === 0 && page === 1) {
         router.push("?");
       }
 
-      setArticleShowcaseData((prev) =>
-        page === 1 ? response.results : [...prev, ...response.results]
-      );
+      setArticleShowcaseData((prev) => {
+        if (page === 1) {
+          return response.results;
+        }
+        // Filter out duplicates when appending new results
+        const existingIds = new Set(prev.map((article) => article.id));
+        const newArticles = response.results.filter(
+          (article: articleShowcaseType) => !existingIds.has(article.id)
+        );
+        return [...prev, ...newArticles];
+      });
 
       setArticleTypesData(response.selectionType);
       setLoading(false);
@@ -143,30 +147,39 @@ export default function Select({ user }: Props) {
               <Skeleton key={index} className="h-80 w-full" />
             ))}
           </div>
-        ) : selectedType && selectedGenre && selectedSubgenre ? (
-          <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
-            {articleShowcaseData.map((article, index) => (
-              <ArticleShowcaseCard
-                key={index}
-                article={article}
-                userId={user.id}
-              />
-            ))}
-          </div>
         ) : (
           <>
             <div className="flex flex-wrap gap-2">
-              {articleTypesData.map((type, index) => {
-                return (
-                  <Button
-                    key={index}
-                    onClick={() => handleButtonClick(type)}
-                    disabled={loading}
-                  >
-                    {tf(type)}
-                  </Button>
-                );
-              })}
+              {(selectedType || selectedGenre || selectedSubgenre) && (
+                <Button
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    if (selectedSubgenre) {
+                      params.delete("subgenre");
+                    } else if (selectedGenre) {
+                      params.delete("genre");
+                    } else if (selectedType) {
+                      params.delete("type");
+                    }
+                    router.push("?" + params.toString());
+                  }}
+                  disabled={loading}
+                >
+                  {t("back")}
+                </Button>
+              )}
+              {!selectedSubgenre &&
+                articleTypesData.map((type, index) => {
+                  return (
+                    <Button
+                      key={index}
+                      onClick={() => handleButtonClick(type)}
+                      disabled={loading}
+                    >
+                      {tf(type)}
+                    </Button>
+                  );
+                })}
             </div>
             <div className="grid sm:grid-cols-2 grid-flow-row gap-4 mt-4">
               {articleShowcaseData.map((article, index) => {
