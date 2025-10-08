@@ -27,7 +27,7 @@ const cefrToNumber: Record<string, number> = {
   C2: 18,
 };
 
-export async function getAdminDashboard() {
+export async function getAdminDashboard(req: NextRequest) {
   try {
     const user = await getCurrentUser();
 
@@ -38,8 +38,19 @@ export async function getAdminDashboard() {
       );
     }
 
+    // Get licenseId from query params (for SYSTEM role) or use user's license (for ADMIN role)
+    const { searchParams } = new URL(req.url);
+    const requestedLicenseId = searchParams.get("licenseId");
+
+    let targetLicenseId = user.license_id;
+
+    // If user is SYSTEM and provided a licenseId, use that instead
+    if (user.role === Role.SYSTEM && requestedLicenseId) {
+      targetLicenseId = requestedLicenseId;
+    }
+
     const license = await prisma.license.findUnique({
-      where: { id: user.license_id },
+      where: { id: targetLicenseId },
       include: {
         licenseUsers: {
           include: {
@@ -52,7 +63,7 @@ export async function getAdminDashboard() {
     if (!license) {
       return NextResponse.json(
         { message: "License not found" },
-        { status: 401 }
+        { status: 404 }
       );
     }
 
@@ -121,37 +132,37 @@ export async function getAdminDashboard() {
 
     // Get article data for activities that reference articles
     const articleIds = new Set<string>();
-    userActivities.forEach(activity => {
+    userActivities.forEach((activity) => {
       // Only get article IDs from ARTICLE_READ and ARTICLE_RATING activities
-      if ((activity.activityType === 'ARTICLE_READ' || 
-           activity.activityType === 'ARTICLE_RATING') && 
-          activity.targetId) {
+      if (
+        (activity.activityType === "ARTICLE_READ" ||
+          activity.activityType === "ARTICLE_RATING") &&
+        activity.targetId
+      ) {
         articleIds.add(activity.targetId);
       }
     });
 
-    console.log(`Admin dashboard - Found ${articleIds.size} unique article IDs to fetch`);
-
     // Fetch article data for CEFR levels
     const articles = await prisma.article.findMany({
       where: {
-        id: { in: Array.from(articleIds) }
+        id: { in: Array.from(articleIds) },
       },
       select: {
         id: true,
         cefrLevel: true,
         title: true,
         raLevel: true,
-      }
+      },
     });
 
-    console.log(`Admin dashboard - Retrieved ${articles.length} articles with CEFR levels`);
-
-    const articleMap = new Map(articles.map(article => [article.id, article]));
+    const articleMap = new Map(
+      articles.map((article) => [article.id, article])
+    );
 
     const filteredActivityLog = userActivities.map((activity) => {
       let details: any = activity.details || {};
-      
+
       // Add CEFR level to details if this activity references an article
       const article = articleMap.get(activity.targetId);
       if (article) {
@@ -176,8 +187,9 @@ export async function getAdminDashboard() {
     });
 
     // Count how many activities have CEFR levels
-    const activitiesWithCEFR = filteredActivityLog.filter(a => a.details?.cefr_level).length;
-    console.log(`Admin dashboard - Total activities: ${filteredActivityLog.length}, With CEFR level: ${activitiesWithCEFR}`);
+    const activitiesWithCEFR = filteredActivityLog.filter(
+      (a) => a.details?.cefr_level
+    ).length;
 
     const licenseData = [
       {
