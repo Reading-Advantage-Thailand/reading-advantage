@@ -166,14 +166,46 @@ export async function getClassroom(req: ExtendedNextRequest) {
 
     let classrooms: any[] = [];
 
+    // Get licenseId from query params (for SYSTEM role to filter by specific license)
+    const { searchParams } = new URL(req.url);
+    const requestedLicenseId = searchParams.get("licenseId");
+
     // Handle different user roles
     if (user.role === "SYSTEM") {
-      // SYSTEM role: show all classrooms
+      // SYSTEM role: show classrooms filtered by license if provided
+      let targetLicenseId = requestedLicenseId;
+      let userIds: string[] = [];
+
+      if (targetLicenseId) {
+        // Get all users with the specified license
+        const usersWithLicense = await prisma.user.findMany({
+          where: {
+            OR: [
+              { licenseId: targetLicenseId },
+              {
+                licenseOnUsers: {
+                  some: {
+                    licenseId: targetLicenseId,
+                  },
+                },
+              },
+            ],
+          },
+          select: { id: true },
+        });
+        userIds = usersWithLicense.map((u) => u.id);
+      }
+
       const allClassrooms = await prisma.classroom.findMany({
         where: {
           archived: {
             not: true,
           },
+          ...(userIds.length > 0 && {
+            teacherId: {
+              in: userIds,
+            },
+          }),
         },
         include: {
           students: {
@@ -227,12 +259,8 @@ export async function getClassroom(req: ExtendedNextRequest) {
       }));
     } else if (user.role === "ADMIN") {
       // ADMIN role: show all classrooms of the same license
-      const adminUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { licenseId: true },
-      });
 
-      if (!adminUser?.licenseId) {
+      if (!user.license_id) {
         return NextResponse.json(
           { error: "Admin license not found" },
           { status: 404 }
@@ -243,20 +271,35 @@ export async function getClassroom(req: ExtendedNextRequest) {
       const usersWithSameLicense = await prisma.user.findMany({
         where: {
           OR: [
-            { licenseId: adminUser.licenseId },
+            { licenseId: user.license_id },
             {
               licenseOnUsers: {
                 some: {
-                  licenseId: adminUser.licenseId,
+                  licenseId: user.license_id,
                 },
               },
             },
           ],
         },
-        select: { id: true },
+        select: { id: true, name: true, email: true },
       });
 
       const userIds = usersWithSameLicense.map((u) => u.id);
+
+      // First, check all classrooms without archived filter
+      const allClassroomsForLicense = await prisma.classroom.findMany({
+        where: {
+          teacherId: {
+            in: userIds,
+          },
+        },
+        select: {
+          id: true,
+          classroomName: true,
+          archived: true,
+          teacherId: true,
+        },
+      });
 
       // Get classrooms where teacher is in the same license
       const licenseClassrooms = await prisma.classroom.findMany({
@@ -264,9 +307,10 @@ export async function getClassroom(req: ExtendedNextRequest) {
           teacherId: {
             in: userIds,
           },
-          archived: {
-            not: true,
-          },
+          // Show all classrooms including archived ones for ADMIN
+          // archived: {
+          //   not: true,
+          // },
         },
         include: {
           students: {
@@ -973,8 +1017,8 @@ export async function createdClassroom(req: ExtendedNextRequest) {
 
       // Use raw SQL to create classroom with new schema
       const classroomResult = await prisma.$queryRaw`
-        INSERT INTO classrooms (id, classroom_name, created_by, class_code, archived, grade, "createdAt", "updatedAt")
-        VALUES (gen_random_uuid(), ${data.classroomName || data.name || ""}, ${user.id}, ${classCode}, false, ${data.grade ? parseInt(data.grade) : null}, ${data.creationTime ? new Date(data.creationTime) : new Date()}, NOW())
+        INSERT INTO classrooms (id, classroom_name, teacher_id, created_by, class_code, archived, grade, "createdAt", "updatedAt")
+        VALUES (gen_random_uuid(), ${data.classroomName || data.name || ""}, ${user.id}, ${user.id}, ${classCode}, false, ${data.grade ? parseInt(data.grade) : null}, ${data.creationTime ? new Date(data.creationTime) : new Date()}, NOW())
         RETURNING *
       `;
 

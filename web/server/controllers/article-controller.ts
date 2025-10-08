@@ -10,9 +10,10 @@ import { generateObject } from "ai";
 import { openai, openaiModel } from "@/utils/openai";
 
 // Import genre data
-const typeGenreData = require("../../data/type-genre.json");
-const genresFiction = typeGenreData.fiction || [];
-const genresNonfiction = typeGenreData.nonfiction || [];
+import genreData from "@/data/type-genre.json";
+
+const genresFiction = { Genres: genreData.fiction };
+const genresNonfiction = { Genres: genreData.nonfiction };
 
 // GET article by id
 // GET /api/articles/[id]
@@ -83,10 +84,7 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
 
     const fetchGenres = async (type: string, genre?: string | null) => {
       const genreData = type === "fiction" ? genresFiction : genresNonfiction;
-      // genreData is already an array, no need to access .Genres
-      const rawGenres = Array.isArray(genreData)
-        ? genreData
-        : genreData.Genres || [];
+      const rawGenres = genreData.Genres || [];
       const allGenres = rawGenres.map(normalizeGenreDoc);
 
       if (genre) {
@@ -102,8 +100,7 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
         }
       }
 
-      const genreNames = allGenres.map((data: any) => data.Name);
-      return genreNames;
+      return allGenres.map((data: any) => data.Name);
     };
 
     if (!type) {

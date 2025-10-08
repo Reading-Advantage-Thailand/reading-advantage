@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
 import { deleteStoryAndImages } from "@/utils/deleteStories";
 import { QuizStatus, ActivityType } from "@prisma/client";
+import genreData from "@/data/type-genre.json";
 
 interface RequestContext {
   params: {
@@ -193,13 +194,10 @@ export async function getAllStories(req: ExtendedNextRequest) {
     const userLevel = req.session?.user.level as number;
 
     // Get available genres from JSON data (normalize both legacy and new shapes)
-    // We import the fiction genres from type-genre.json which contains the available genre labels.
-    const typeGenreData = require("../../data/type-genre.json");
-    const genresFiction = typeGenreData.fiction || [];
-    const rawGenres = genresFiction;
-    const selectionGenres = rawGenres
-      .map((g: any) => g.Name ?? g.name ?? "")
-      .filter(Boolean);
+    // We import the fiction genres file which contains the available genre labels.
+    const genresFiction = { Genres: genreData.fiction };
+    const rawGenres = genresFiction.Genres || [];
+    const selectionGenres = rawGenres.map((g: any) => g.Name ?? g.name ?? "").filter(Boolean);
 
     if (storyId) {
       const story = await prisma.story.findUnique({
@@ -244,14 +242,7 @@ export async function getAllStories(req: ExtendedNextRequest) {
     if (genre) whereClause.genre = genre;
     if (subgenre) whereClause.subgenre = subgenre;
 
-    // Add level filter directly to the query
-    whereClause.OR = [
-      { raLevel: { lte: 3 } },
-      { raLevel: { lte: userLevel } },
-      { raLevel: null },
-    ];
-
-    // Get total count with level filter
+    // Get total count
     const totalCount = await prisma.story.count({ where: whereClause });
 
     // Get stories with pagination
@@ -265,82 +256,89 @@ export async function getAllStories(req: ExtendedNextRequest) {
       take: limit,
     });
 
-    // Add completion status (no more filtering here!)
+    // Filter by user level and add completion status
     const availableStories = await Promise.all(
-      stories.map(async (story) => {
-        const chapterCount = story.chapters.length;
+      stories
+        .filter(
+          (story) =>
+            (story.raLevel ?? 0) <= 3 || (story.raLevel ?? 0) <= userLevel
+        )
+        .map(async (story) => {
+          const chapterCount = story.chapters.length;
 
-        // Check if story is read (STORIES_READ activity exists)
-        const storyReadActivity = await prisma.userActivity.findFirst({
-          where: {
-            userId,
-            activityType: ActivityType.STORIES_READ,
-            targetId: story.id,
-          },
-        });
-        const isRead = !!storyReadActivity;
-
-        // Check completion status for each chapter
-        const completedChapters = await Promise.all(
-          story.chapters.map(async (chapter) => {
-            const mcqCount = await prisma.userActivity.count({
-              where: {
-                userId,
-                activityType: ActivityType.MC_QUESTION,
-                targetId: {
-                  startsWith: `${story.id}_${chapter.chapterNumber}_mcq_`,
-                },
-                completed: true,
-              },
-            });
-
-            const saqCount = await prisma.userActivity.count({
-              where: {
-                userId,
-                activityType: ActivityType.SA_QUESTION,
-                targetId: `${story.id}_${chapter.chapterNumber}`,
-                completed: true,
-              },
-            });
-
-            const laqCount = await prisma.userActivity.count({
-              where: {
-                userId,
-                activityType: ActivityType.LA_QUESTION,
-                targetId: `${story.id}_${chapter.chapterNumber}`,
-                completed: true,
-              },
-            });
-
-            return mcqCount >= 5 && saqCount >= 1 && laqCount >= 1;
-          })
-        );
-
-        const isComplete =
-          completedChapters.filter(Boolean).length === chapterCount;
-
-        // Update STORIES_READ to completed if all chapters are completed
-        if (isComplete && storyReadActivity && !storyReadActivity.completed) {
-          await prisma.userActivity.update({
-            where: { id: storyReadActivity.id },
-            data: { completed: true },
+          // Check if story is read (STORIES_READ activity exists)
+          const storyReadActivity = await prisma.userActivity.findFirst({
+            where: {
+              userId,
+              activityType: ActivityType.STORIES_READ,
+              targetId: story.id,
+            },
           });
-        }
+          const isRead = !!storyReadActivity;
 
-        return {
-          ...story,
-          is_read: isRead,
-          is_completed: isComplete,
-        };
-      })
+          // Check completion status for each chapter
+          const completedChapters = await Promise.all(
+            story.chapters.map(async (chapter) => {
+              const mcqCount = await prisma.userActivity.count({
+                where: {
+                  userId,
+                  activityType: ActivityType.MC_QUESTION,
+                  targetId: {
+                    startsWith: `${story.id}_${chapter.chapterNumber}_mcq_`,
+                  },
+                  completed: true,
+                },
+              });
+
+              const saqCount = await prisma.userActivity.count({
+                where: {
+                  userId,
+                  activityType: ActivityType.SA_QUESTION,
+                  targetId: `${story.id}_${chapter.chapterNumber}`,
+                  completed: true,
+                },
+              });
+
+              const laqCount = await prisma.userActivity.count({
+                where: {
+                  userId,
+                  activityType: ActivityType.LA_QUESTION,
+                  targetId: `${story.id}_${chapter.chapterNumber}`,
+                  completed: true,
+                },
+              });
+
+              return mcqCount >= 5 && saqCount >= 1 && laqCount >= 1;
+            })
+          );
+
+          const isComplete =
+            completedChapters.filter(Boolean).length === chapterCount;
+
+          // Update STORIES_READ to completed if all chapters are completed
+          if (isComplete && storyReadActivity && !storyReadActivity.completed) {
+            await prisma.userActivity.update({
+              where: { id: storyReadActivity.id },
+              data: { completed: true },
+            });
+          }
+
+          return {
+            ...story,
+            is_read: isRead,
+            is_completed: isComplete,
+          };
+        })
     );
+
+    const totalAvailableStories = availableStories.length;
 
     return NextResponse.json({
       params: { genre, subgenre, page, limit },
       results: availableStories,
       selectionGenres,
-      total: totalCount,
-      totalPages: Math.ceil(totalCount / limit),
+      total: totalAvailableStories,
+      totalPages: Math.ceil(totalAvailableStories / limit),
     });
   } catch (error) {
     console.error("Error getting stories", error);
