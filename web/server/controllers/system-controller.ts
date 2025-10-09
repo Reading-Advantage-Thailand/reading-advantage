@@ -210,3 +210,76 @@ export async function getSchoolXpData(req: NextRequest) {
     );
   }
 }
+
+export async function refreshMaterializedViews(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+
+    // Only SYSTEM admins can refresh materialized views
+    if (!user || user.role !== Role.SYSTEM) {
+      return NextResponse.json(
+        { message: "Unauthorized. SYSTEM role required." },
+        { status: 401 }
+      );
+    }
+
+    const MATERIALIZED_VIEWS = [
+      'mv_student_velocity',
+      'mv_assignment_funnel',
+      'mv_srs_health',
+      'mv_genre_engagement',
+      'mv_activity_heatmap',
+      'mv_cefr_ra_alignment',
+      'mv_daily_activity_rollups',
+    ];
+
+    const results: { view: string; status: string; error?: string }[] = [];
+    const startTime = Date.now();
+
+    for (const viewName of MATERIALIZED_VIEWS) {
+      try {
+        // Try CONCURRENTLY first (allows reads during refresh)
+        await prisma.$executeRawUnsafe(`REFRESH MATERIALIZED VIEW CONCURRENTLY ${viewName}`);
+        results.push({ view: viewName, status: 'success (concurrent)' });
+      } catch (error: any) {
+        // Fall back to regular refresh if CONCURRENTLY fails
+        try {
+          await prisma.$executeRawUnsafe(`REFRESH MATERIALIZED VIEW ${viewName}`);
+          results.push({ view: viewName, status: 'success' });
+        } catch (fallbackError: any) {
+          results.push({
+            view: viewName,
+            status: 'failed',
+            error: fallbackError?.message || String(fallbackError),
+          });
+        }
+      }
+    }
+
+    const duration = Date.now() - startTime;
+    const successCount = results.filter((r) => r.status.includes('success')).length;
+    const failedCount = results.filter((r) => r.status === 'failed').length;
+
+    return NextResponse.json({
+      message: 'Materialized views refresh completed',
+      summary: {
+        total: MATERIALIZED_VIEWS.length,
+        success: successCount,
+        failed: failedCount,
+        duration: `${duration}ms`,
+      },
+      results,
+      refreshedAt: new Date().toISOString(),
+      refreshedBy: {
+        id: user.id,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Error refreshing materialized views:", error);
+    return NextResponse.json(
+      { message: "Internal server error", error: String(error) },
+      { status: 500 }
+    );
+  }
+}
