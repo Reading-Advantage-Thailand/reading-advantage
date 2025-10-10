@@ -1,13 +1,12 @@
 /**
- * Automated refresh endpoint for Cloud Scheduler/Trigger
+ * Manual refresh endpoint for system administrators
  * 
- * This endpoint uses restrictAccessKey for authentication (no user login required)
- * Designed to be called by Google Cloud Scheduler every 15 minutes
+ * This endpoint requires SYSTEM role authentication
+ * Used for manual/on-demand refresh of materialized views
  */
 
-import { refreshMaterializedViewsAutomated } from "@/server/controllers/system-controller";
+import { refreshMaterializedViews } from "@/server/controllers/system-controller";
 import { NextRequest, NextResponse } from "next/server";
-import { restrictAccessKey } from "@/server/controllers/auth-controller";
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 
@@ -17,11 +16,10 @@ interface ExtendedNextRequest {
 
 const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
 
-// Middleware - only access key required (for Cloud Scheduler)
+// Middleware - requires authenticated SYSTEM user
 router.use(logRequest);
-router.use(restrictAccessKey);
 
-router.post(refreshMaterializedViewsAutomated);
+router.post(refreshMaterializedViews);
 
 export async function POST(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);
