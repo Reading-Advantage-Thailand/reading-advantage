@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
+import { requireRole } from "@/server/middleware/guards";
+import { buildSchoolFilter } from "@/server/utils/authorization";
 
 export async function getSystemLicenses(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-
-    if (!user || user.role !== Role.SYSTEM) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // Use the new guard system
+    const authResult = await requireRole([Role.SYSTEM])(req);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { user } = authResult;
 
     // Get all licenses with their users
     const licenses = await prisma.license.findMany({
@@ -97,11 +99,12 @@ export async function getSystemLicenses(req: NextRequest) {
 
 export async function getSchoolXpData(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-
-    if (!user || user.role !== Role.SYSTEM) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // Use the new guard system
+    const authResult = await requireRole([Role.SYSTEM])(req);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { user } = authResult;
 
     const { searchParams } = new URL(req.url);
     const dateFrom = searchParams.get("dateFrom");
@@ -213,15 +216,12 @@ export async function getSchoolXpData(req: NextRequest) {
 
 export async function refreshMaterializedViews(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-
-    // Only SYSTEM admins can refresh materialized views
-    if (!user || user.role !== Role.SYSTEM) {
-      return NextResponse.json(
-        { message: "Unauthorized. SYSTEM role required." },
-        { status: 401 }
-      );
+    // Use the new guard system - only SYSTEM admins can refresh materialized views
+    const authResult = await requireRole([Role.SYSTEM])(req);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { user } = authResult;
 
     const MATERIALIZED_VIEWS = [
       'mv_student_velocity',

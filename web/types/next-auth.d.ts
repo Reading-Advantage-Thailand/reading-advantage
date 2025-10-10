@@ -18,6 +18,10 @@ declare module "next-auth/jwt" {
     license_id?: string;
     license_level: LicenseType | "EXPIRED";
     onborda: boolean;
+    // School and classroom scope for RBAC
+    school_id?: string;
+    teacher_class_ids?: string[];
+    student_class_ids?: string[];
   }
 }
 
@@ -38,6 +42,10 @@ declare module "next-auth" {
       license_id?: string;
       license_level: LicenseType | "EXPIRED";
       onborda: boolean;
+      // School and classroom scope for RBAC
+      school_id?: string;
+      teacher_class_ids?: string[];
+      student_class_ids?: string[];
     };
   }
 
@@ -56,5 +64,9 @@ declare module "next-auth" {
     license_id?: string;
     license_level: LicenseType | "EXPIRED";
     onborda: boolean;
+    // School and classroom scope for RBAC
+    school_id?: string;
+    teacher_class_ids?: string[];
+    student_class_ids?: string[];
   }
 }

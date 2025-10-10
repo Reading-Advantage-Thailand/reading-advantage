@@ -55,11 +55,23 @@ export async function getCurrentUser() {
         expiredDate: true,
         licenseId: true,
         onborda: true,
+        schoolId: true,
         licenseOnUsers: {
           select: {
             licenseId: true,
           },
           take: 1,
+        },
+        // Fetch classroom associations for RBAC
+        teacherClassrooms: {
+          select: {
+            classroomId: true,
+          },
+        },
+        studentClassrooms: {
+          select: {
+            classroomId: true,
+          },
         },
       },
     });
@@ -79,6 +91,10 @@ export async function getCurrentUser() {
       user.expiredDate
     );
 
+    // Extract classroom IDs for scope-based authorization
+    const teacherClassIds = user.teacherClassrooms.map((tc) => tc.classroomId);
+    const studentClassIds = user.studentClassrooms.map((sc) => sc.classroomId);
+
     return {
       id: user.id,
       email: user.email!,
@@ -94,6 +110,10 @@ export async function getCurrentUser() {
       license_id: activeLicenseId ?? "",
       license_level: licenseLevel,
       onborda: user.onborda ?? false,
+      // School and classroom scope for RBAC
+      school_id: user.schoolId ?? undefined,
+      teacher_class_ids: teacherClassIds.length > 0 ? teacherClassIds : undefined,
+      student_class_ids: studentClassIds.length > 0 ? studentClassIds : undefined,
     };
   } catch (error) {
     console.error("Error fetching current user:", error);
