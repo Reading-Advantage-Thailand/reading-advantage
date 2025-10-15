@@ -2,7 +2,7 @@
 import { createEdgeRouter } from "next-connect";
 import { logRequest } from "@/server/middleware";
 import { protect } from "@/server/controllers/auth-controller";
-import { getVelocityMetrics } from "@/server/controllers/metrics-extended-controller";
+import { getVelocityMetrics } from "@/server/controllers/velocity-controller";
 
 interface RequestContext {
   params?: unknown;

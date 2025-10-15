@@ -108,7 +108,7 @@ async function checkMatviewExists(viewName: string): Promise<boolean> {
 }
 
 /**
- * Get student velocity metrics with fallback
+ * Get student velocity metrics with fallback (Enhanced for Phase 2.1)
  */
 export async function getStudentVelocity(
   userId: string,
@@ -137,45 +137,74 @@ export async function getStudentVelocity(
           email: true,
           name: true,
           schoolId: true,
+          xp: true,
+          level: true,
+          cefrLevel: true,
         },
       });
 
       if (!user) return null;
 
-      const [last7d, last30d, allTime, lastActivity] = await Promise.all([
-        prisma.lessonRecord.count({
-          where: {
-            userId,
-            createdAt: { gte: sevenDaysAgo },
-          },
-        }),
-        prisma.lessonRecord.count({
-          where: {
-            userId,
-            createdAt: { gte: thirtyDaysAgo },
-          },
-        }),
-        prisma.lessonRecord.count({
-          where: { userId },
-        }),
-        prisma.lessonRecord.findFirst({
-          where: { userId },
-          orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
-        }),
-      ]);
+      // Get XP logs for time windows
+      const xpLogs = await prisma.xPLog.findMany({
+        where: {
+          userId,
+          createdAt: { gte: thirtyDaysAgo },
+        },
+        select: {
+          xpEarned: true,
+          createdAt: true,
+        },
+      });
+
+      const xpLast7d = xpLogs
+        .filter(log => log.createdAt >= sevenDaysAgo)
+        .reduce((sum, log) => sum + log.xpEarned, 0);
+
+      const xpLast30d = xpLogs.reduce((sum, log) => sum + log.xpEarned, 0);
+
+      const activeDays7d = new Set(
+        xpLogs
+          .filter(log => log.createdAt >= sevenDaysAgo)
+          .map(log => log.createdAt.toISOString().split('T')[0])
+      ).size;
+
+      const activeDays30d = new Set(
+        xpLogs.map(log => log.createdAt.toISOString().split('T')[0])
+      ).size;
+
+      const lastActivity = xpLogs.length > 0
+        ? xpLogs.reduce((latest, log) => 
+            log.createdAt > latest ? log.createdAt : latest,
+            xpLogs[0].createdAt
+          )
+        : null;
+
+      // Calculate XP to next level (simplified)
+      const levelThresholds = [0, 5000, 11000, 18000, 26000, 35000, 45000, 56000, 68000, 81000, 95000, 110000, 126000, 143000, 161000, 180000, 200000, 221000, 243000];
+      const nextLevelXp = levelThresholds[user.level + 1] || 243000;
+      const xpToNextLevel = Math.max(0, nextLevelXp - user.xp);
 
       return [{
         user_id: user.id,
         email: user.email,
         display_name: user.name,
         school_id: user.schoolId,
-        articles_last_7d: last7d,
-        avg_per_day_7d: (last7d / 7).toFixed(2),
-        articles_last_30d: last30d,
-        avg_per_day_30d: (last30d / 30).toFixed(2),
-        articles_all_time: allTime,
-        last_activity_at: lastActivity?.createdAt,
+        current_xp: user.xp,
+        current_level: user.level,
+        cefr_level: user.cefrLevel,
+        xp_last_7d: xpLast7d,
+        active_days_7d: activeDays7d,
+        xp_per_active_day_7d: activeDays7d > 0 ? (xpLast7d / activeDays7d).toFixed(2) : 0,
+        xp_per_calendar_day_7d: (xpLast7d / 7).toFixed(2),
+        xp_last_30d: xpLast30d,
+        active_days_30d: activeDays30d,
+        xp_per_active_day_30d: activeDays30d > 0 ? (xpLast30d / activeDays30d).toFixed(2) : 0,
+        xp_per_calendar_day_30d: (xpLast30d / 30).toFixed(2),
+        xp_to_next_level: xpToNextLevel,
+        next_level_xp: nextLevelXp,
+        last_activity_at: lastActivity,
+        is_low_signal: activeDays30d < 3 || (xpLast30d / activeDays30d) < 0.5,
       }];
     },
     options
