@@ -3,6 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
 import { getCurrentUser } from "@/lib/session";
 import { Role } from "@prisma/client";
+import { 
+  AdminAlertsResponse, 
+  Alert, 
+  AdminOverviewResponse,
+  AdminSegmentsResponse,
+  SchoolSegment 
+} from "@/types/dashboard";
 
 // Map CEFR levels to numerical values
 const cefrToNumber: Record<string, number> = {
@@ -228,6 +235,465 @@ export async function getAdminDashboard(req: NextRequest) {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
+    );
+  }
+}
+
+/**
+ * Get admin alerts
+ * @param req - Next request
+ * @returns Admin alerts response
+ */
+export async function getAdminAlerts(req: NextRequest) {
+  const startTime = Date.now();
+
+  try {
+    const alerts: Alert[] = [];
+
+    // Get all schools to check for issues
+    const schools = await prisma.school.findMany({
+      include: {
+        users: {
+          select: {
+            id: true,
+            role: true,
+            userActivities: {
+              select: {
+                createdAt: true,
+              },
+              take: 1,
+              orderBy: {
+                createdAt: 'desc',
+              },
+            },
+          },
+        },
+        licenses: {
+          select: {
+            id: true,
+            maxUsers: true,
+            expiresAt: true,
+            licenseUsers: true,
+          },
+        },
+      },
+    });
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const sevenDaysFromNow = new Date(now);
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+    // Check each school for potential issues
+    schools.forEach((school) => {
+      const students = school.users.filter((u) => u.role === Role.STUDENT);
+      const activeStudents = students.filter((u) =>
+        u.userActivities.some((a) => new Date(a.createdAt) >= thirtyDaysAgo)
+      );
+
+      // Alert: Low student activity
+      if (students.length > 0) {
+        const activeRate = (activeStudents.length / students.length) * 100;
+        if (activeRate < 30) {
+          alerts.push({
+            id: `low-activity-${school.id}`,
+            type: 'warning',
+            severity: activeRate < 10 ? 'high' : 'medium',
+            title: 'Low Student Activity',
+            message: `Only ${Math.round(activeRate)}% of students in ${school.name} were active in the last 30 days.`,
+            schoolId: school.id,
+            schoolName: school.name,
+            createdAt: new Date().toISOString(),
+            acknowledged: false,
+          });
+        }
+      }
+
+      // Alert: Expiring licenses
+      school.licenses.forEach((license) => {
+        const expiryDate = license.expiresAt;
+        if (expiryDate && new Date(expiryDate) <= sevenDaysFromNow) {
+          const daysUntilExpiry = Math.ceil(
+            (new Date(expiryDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          
+          alerts.push({
+            id: `expiring-license-${license.id}`,
+            type: 'warning',
+            severity: daysUntilExpiry <= 3 ? 'critical' : 'high',
+            title: 'License Expiring Soon',
+            message: `A license for ${school.name} expires in ${daysUntilExpiry} day(s).`,
+            schoolId: school.id,
+            schoolName: school.name,
+            createdAt: new Date().toISOString(),
+            acknowledged: false,
+          });
+        }
+      });
+
+      // Alert: License capacity issues
+      const licensesUsed = school.licenses.reduce(
+        (sum, lic) => sum + (lic.licenseUsers?.length || 0),
+        0
+      );
+      const totalSeats = school.licenses.reduce(
+        (sum, lic) => sum + (lic.maxUsers || 0),
+        0
+      );
+
+      if (totalSeats > 0 && licensesUsed >= totalSeats * 0.9) {
+        alerts.push({
+          id: `license-capacity-${school.id}`,
+          type: 'warning',
+          severity: licensesUsed >= totalSeats ? 'critical' : 'high',
+          title: 'License Capacity Warning',
+          message: `${school.name} is using ${licensesUsed} of ${totalSeats} available license seats (${Math.round((licensesUsed / totalSeats) * 100)}%).`,
+          schoolId: school.id,
+          schoolName: school.name,
+          createdAt: new Date().toISOString(),
+          acknowledged: false,
+        });
+      }
+    });
+
+    // Sort alerts by severity
+    const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+    alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+
+    const response: AdminAlertsResponse = {
+      alerts,
+      summary: {
+        total: alerts.length,
+        critical: alerts.filter((a) => a.severity === 'critical').length,
+        unacknowledged: alerts.filter((a) => !a.acknowledged).length,
+      },
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+
+    const duration = Date.now() - startTime;
+
+    console.log(`[Controller] getAdminAlerts - ${duration}ms - ${alerts.length} alerts`);
+
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
+        'X-Response-Time': `${duration}ms`,
+      },
+    });
+  } catch (error) {
+    console.error('[Controller] getAdminAlerts - Error:', error);
+
+    return NextResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to fetch alerts',
+        details: error instanceof Error ? { error: error.message } : {},
+      },
+      {
+        status: 500,
+        headers: {
+          'X-Response-Time': `${Date.now() - startTime}ms`,
+        },
+      }
+    );
+  }
+}
+
+/**
+ * Get admin overview
+ * @param req - Next request
+ * @returns Admin overview response
+ */
+export async function getAdminOverview(req: NextRequest) {
+  const startTime = Date.now();
+
+  try {
+    // Get query parameters
+    const { searchParams } = new URL(req.url);
+    const timeframe = searchParams.get('timeframe') || '30d';
+
+    // Calculate date range
+    const now = new Date();
+    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - daysAgo);
+
+    // Get summary data (parallel queries)
+    const [
+      totalSchools,
+      totalStudents,
+      totalTeachers,
+      activeUsers,
+      totalReadingSessions,
+      averageReadingLevel,
+      newUsersToday,
+      activeUsersToday,
+      readingSessionsToday,
+    ] = await Promise.all([
+      // Total schools
+      prisma.school.count(),
+
+      // Total students
+      prisma.user.count({
+        where: { role: Role.STUDENT },
+      }),
+
+      // Total teachers
+      prisma.user.count({
+        where: { role: { in: [Role.TEACHER, Role.ADMIN] } },
+      }),
+
+      // Active users in timeframe
+      prisma.user.count({
+        where: {
+          userActivities: {
+            some: {
+              createdAt: {
+                gte: startDate,
+              },
+            },
+          },
+        },
+      }),
+
+      // Total reading sessions
+      prisma.lessonRecord.count({
+        where: {
+          createdAt: {
+            gte: startDate,
+          },
+        },
+      }),
+
+      // Average reading level
+      prisma.user.aggregate({
+        where: { role: Role.STUDENT },
+        _avg: { level: true },
+      }),
+
+      // New users today
+      prisma.user.count({
+        where: {
+          createdAt: {
+            gte: new Date(now.setHours(0, 0, 0, 0)),
+          },
+        },
+      }),
+
+      // Active users today
+      prisma.user.count({
+        where: {
+          userActivities: {
+            some: {
+              createdAt: {
+                gte: new Date(now.setHours(0, 0, 0, 0)),
+              },
+            },
+          },
+        },
+      }),
+
+      // Reading sessions today
+      prisma.lessonRecord.count({
+        where: {
+          createdAt: {
+            gte: new Date(now.setHours(0, 0, 0, 0)),
+          },
+        },
+      }),
+    ]);
+
+    const response: AdminOverviewResponse = {
+      summary: {
+        totalSchools,
+        totalStudents,
+        totalTeachers,
+        activeUsers30d: activeUsers,
+        totalReadingSessions,
+        averageReadingLevel: Math.round((averageReadingLevel._avg.level || 0) * 10) / 10,
+      },
+      recentActivity: {
+        newUsersToday,
+        activeUsersToday,
+        readingSessionsToday,
+      },
+      systemHealth: {
+        status: 'healthy',
+        lastChecked: new Date().toISOString(),
+      },
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+
+    const duration = Date.now() - startTime;
+
+    console.log(`[Controller] getAdminOverview - ${duration}ms`);
+
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
+        'X-Response-Time': `${duration}ms`,
+      },
+    });
+  } catch (error) {
+    console.error('[Controller] getAdminOverview - Error:', error);
+
+    return NextResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to fetch admin overview',
+        details: error instanceof Error ? { error: error.message } : {},
+      },
+      {
+        status: 500,
+        headers: {
+          'X-Response-Time': `${Date.now() - startTime}ms`,
+        },
+      }
+    );
+  }
+}
+
+/**
+ * Get school segments
+ * @param req - Next request
+ * @returns School segments response
+ */
+export async function getSchoolSegments(req: NextRequest) {
+  const startTime = Date.now();
+
+  try {
+    // Get all schools with their statistics
+    const schools = await prisma.school.findMany({
+      include: {
+        users: {
+          select: {
+            id: true,
+            role: true,
+            level: true,
+            xp: true,
+            userActivities: {
+              select: {
+                createdAt: true,
+              },
+              take: 1,
+              orderBy: {
+                createdAt: 'desc',
+              },
+            },
+          },
+        },
+        licenses: {
+          include: {
+            licenseUsers: true,
+          },
+        },
+      },
+    });
+
+    // Calculate 30 days ago
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Process schools into segments
+    const segments: SchoolSegment[] = schools.map((school) => {
+      const students = school.users.filter((u) => u.role === Role.STUDENT);
+      const teachers = school.users.filter((u) => 
+        u.role === Role.TEACHER || u.role === Role.ADMIN
+      );
+
+      // Count active users (had activity in last 30 days)
+      const activeUsers = school.users.filter((u) =>
+        u.userActivities.some((a) => new Date(a.createdAt) >= thirtyDaysAgo)
+      ).length;
+
+      const totalUsers = school.users.length;
+      const activeRate = totalUsers > 0 
+        ? Math.round((activeUsers / totalUsers) * 100) 
+        : 0;
+
+      // Calculate average level
+      const avgLevel = students.length > 0
+        ? students.reduce((sum, s) => sum + s.level, 0) / students.length
+        : 0;
+
+      // Calculate total XP
+      const totalXp = students.reduce((sum, s) => sum + s.xp, 0);
+
+      // Calculate licenses
+      const licensesUsed = school.licenses.reduce(
+        (sum, lic) => sum + (lic.licenseUsers?.length || 0),
+        0
+      );
+      const licensesTotal = school.licenses.reduce(
+        (sum, lic) => sum + (lic.maxUsers || 0),
+        0
+      );
+
+      return {
+        schoolId: school.id,
+        schoolName: school.name,
+        studentCount: students.length,
+        teacherCount: teachers.length,
+        activeRate,
+        averageLevel: Math.round(avgLevel * 10) / 10,
+        totalXp,
+        licensesUsed,
+        licensesTotal,
+      };
+    });
+
+    // Calculate summary statistics
+    const summary = {
+      totalSchools: segments.length,
+      averageActiveRate: segments.length > 0
+        ? Math.round(
+            segments.reduce((sum, s) => sum + s.activeRate, 0) / segments.length
+          )
+        : 0,
+      totalLicensesUsed: segments.reduce((sum, s) => sum + s.licensesUsed, 0),
+    };
+
+    const response: AdminSegmentsResponse = {
+      segments,
+      summary,
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+
+    const duration = Date.now() - startTime;
+
+    console.log(`[Controller] getSchoolSegments - ${duration}ms - ${segments.length} schools`);
+
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
+        'X-Response-Time': `${duration}ms`,
+      },
+    });
+  } catch (error) {
+    console.error('[Controller] getSchoolSegments - Error:', error);
+
+    return NextResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to fetch school segments',
+        details: error instanceof Error ? { error: error.message } : {},
+      },
+      {
+        status: 500,
+        headers: {
+          'X-Response-Time': `${Date.now() - startTime}ms`,
+        },
+      }
     );
   }
 }
