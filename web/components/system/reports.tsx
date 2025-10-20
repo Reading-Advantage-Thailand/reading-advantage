@@ -47,6 +47,8 @@ import {
   School,
   Eye,
   MoreHorizontal,
+  Copy,
+  Check,
 } from "lucide-react";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import {
@@ -125,6 +127,9 @@ function SystemReports({}: SystemReportsProps) {
   const [selectedPeriod, setSelectedPeriod] = React.useState<string>("all");
   const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
   const [isChartLoading, setIsChartLoading] = React.useState(false);
+  const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
+  const [selectedSchool, setSelectedSchool] = React.useState<LicenseData | null>(null);
+  const [detailOpen, setDetailOpen] = React.useState(false);
   const t = useScopedI18n("components.articleRecordsTable");
   React.useEffect(() => {
     setIsClient(true);
@@ -299,125 +304,61 @@ function SystemReports({}: SystemReportsProps) {
 
   const formatDate = (date: string | Date) => {
     const dateObj = typeof date === "string" ? new Date(date) : date;
-    return dateObj.toLocaleDateString("th-TH");
+    // Use ISO format to avoid hydration mismatch between server and client
+    return dateObj.toLocaleDateString("th-TH", {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'Asia/Bangkok'
+    });
   };
 
   const ActionsCell = ({ school }: { school: LicenseData }) => {
-    const [detailOpen, setDetailOpen] = React.useState(false);
     const router = useRouter();
 
     const handleViewReports = () => {
       router.push(`/system/reports/${school.id}`);
     };
 
-    return (
-      <>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setDetailOpen(true)}>
-              <Eye className="mr-2 h-4 w-4" />
-              Detail
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleViewReports} className="cursor-pointer">
-              <BookOpen className="mr-2 h-4 w-4" />
-              Reports
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+    const handleViewDetail = () => {
+      setSelectedSchool(school);
+      setDetailOpen(true);
+    };
 
-        {/* Detail Dialog */}
-        <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-semibold">
-                School Details
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground">
-                  School Name
-                </h4>
-                <p className="text-base font-medium">{school.schoolName}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground">
-                  License Key
-                </h4>
-                <p className="text-sm font-mono bg-muted p-2 rounded">
-                  {school.key}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground">
-                  Total XP
-                </h4>
-                <p className="text-lg font-semibold text-blue-600">
-                  {formatXP(school.totalXp || 0)}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground">
-                  Current Users
-                </h4>
-                <p className="text-base">{school.currentUsers}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground">
-                  Max Users
-                </h4>
-                <p className="text-base">{school.maxUsers}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground">
-                  License Type
-                </h4>
-                <Badge variant="outline">{school.licenseType}</Badge>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground">
-                  Created Date
-                </h4>
-                <p className="text-base">{formatDate(school.createdAt)}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground">
-                  Expires At
-                </h4>
-                <p className="text-base">
-                  {school.expiresAt ? (
-                    <span
-                      className={
-                        new Date(school.expiresAt) < new Date()
-                          ? "text-red-600 font-semibold"
-                          : ""
-                      }
-                    >
-                      {formatDate(school.expiresAt)}
-                    </span>
-                  ) : (
-                    "Never"
-                  )}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground">
-                  Status
-                </h4>
-                <Badge variant={school.isActive ? "default" : "secondary"}>
-                  {school.isActive ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </>
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="ghost" 
+            className="h-8 w-8 p-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewDetail();
+            }}
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            Detail
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewReports();
+            }} 
+            className="cursor-pointer"
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            Reports
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
   };
 
@@ -442,11 +383,41 @@ function SystemReports({}: SystemReportsProps) {
     {
       accessorKey: "key",
       header: "License Key",
-      cell: ({ row }) => (
-        <div className="font-mono text-sm hidden sm:block">
-          {row.getValue("key")}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const fullKey = row.getValue("key") as string;
+        const truncatedKey = fullKey.substring(0, 10) + "...";
+        const isCopied = copiedKey === fullKey;
+
+        const handleCopy = async (e: React.MouseEvent) => {
+          e.stopPropagation();
+          try {
+            await navigator.clipboard.writeText(fullKey);
+            setCopiedKey(fullKey);
+            setTimeout(() => setCopiedKey(null), 2000);
+          } catch (err) {
+            console.error("Failed to copy:", err);
+          }
+        };
+
+        return (
+          <div className="font-mono text-sm hidden sm:flex items-center gap-2">
+            <span>{truncatedKey}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={handleCopy}
+              title="Copy license key"
+            >
+              {isCopied ? (
+                <Check className="h-4 w-4 text-green-600" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        );
+      },
     },
     {
       accessorKey: "totalXp",
@@ -575,11 +546,7 @@ function SystemReports({}: SystemReportsProps) {
     },
   });
 
-  if (!isClient) {
-    return null;
-  }
-
-  if (isLoading) {
+  if (isLoading || !isClient) {
     return <SystemReportsSkeleton />;
   }
 
@@ -591,12 +558,13 @@ function SystemReports({}: SystemReportsProps) {
   ).length;
 
   return (
-    <div className="container mx-auto py-6 px-4">
-      <Header heading="System Reports" />
-      <CardDescription className="text-muted-foreground mt-2 ml-2">
-        View comprehensive system analytics including school performance,
-        license usage, and XP statistics across all registered schools.
-      </CardDescription>
+    <>
+      <div className="container mx-auto py-6 px-4">
+        <Header heading="System Reports" />
+        <CardDescription className="text-muted-foreground mt-2 ml-2">
+          View comprehensive system analytics including school performance,
+          license usage, and XP statistics across all registered schools.
+        </CardDescription>
 
       {/* Summary Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
@@ -865,7 +833,125 @@ function SystemReports({}: SystemReportsProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+
+      {/* Detail Dialog - Outside table */}
+      <Dialog open={detailOpen} onOpenChange={(open) => {
+        setDetailOpen(open);
+        if (!open) {
+          setSelectedSchool(null);
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              School Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedSchool && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  School Name
+                </h4>
+                <p className="text-base font-medium">{selectedSchool.schoolName}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  License Key
+                </h4>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-mono bg-muted p-2 rounded flex-1 break-all">
+                    {selectedSchool.key}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        await navigator.clipboard.writeText(selectedSchool.key);
+                        setCopiedKey(selectedSchool.key);
+                        setTimeout(() => setCopiedKey(null), 2000);
+                      } catch (err) {
+                        console.error("Failed to copy:", err);
+                      }
+                    }}
+                    title="Copy license key"
+                  >
+                    {copiedKey === selectedSchool.key ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Total XP
+                </h4>
+                <p className="text-lg font-semibold text-blue-600">
+                  {formatXP(selectedSchool.totalXp || 0)}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Current Users
+                </h4>
+                <p className="text-base">{selectedSchool.currentUsers}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Max Users
+                </h4>
+                <p className="text-base">{selectedSchool.maxUsers}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  License Type
+                </h4>
+                <Badge variant="outline">{selectedSchool.licenseType}</Badge>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Created Date
+                </h4>
+                <p className="text-base">{formatDate(selectedSchool.createdAt)}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Expires At
+                </h4>
+                <p className="text-base">
+                  {selectedSchool.expiresAt ? (
+                    <span
+                      className={
+                        new Date(selectedSchool.expiresAt) < new Date()
+                          ? "text-red-600 font-semibold"
+                          : ""
+                      }
+                    >
+                      {formatDate(selectedSchool.expiresAt)}
+                    </span>
+                  ) : (
+                    "Never"
+                  )}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground">
+                  Status
+                </h4>
+                <Badge variant={selectedSchool.isActive ? "default" : "secondary"}>
+                  {selectedSchool.isActive ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
