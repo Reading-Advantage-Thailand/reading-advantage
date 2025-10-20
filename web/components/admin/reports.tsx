@@ -303,17 +303,17 @@ function AdminReports({ classes }: AdminReportsProps) {
         );
       },
       cell: ({ row }) => {
-        if (!isClient) {
-          return <div className="text-sm">Loading...</div>;
+        try {
+          const date = new Date(row.getValue("createdAt") as string);
+          const formattedDate = format(date, "MMM dd, yyyy");
+          return (
+            <div className="text-sm">
+              {formattedDate}
+            </div>
+          );
+        } catch (error) {
+          return <div className="text-sm">-</div>;
         }
-        
-        const date = new Date(row.getValue("createdAt") as string);
-        const formattedDate = format(date, "MMM dd, yyyy");
-        return (
-          <div className="text-sm">
-            {formattedDate}
-          </div>
-        );
       },
     },
     {
