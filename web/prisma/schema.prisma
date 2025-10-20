@@ -10,6 +10,7 @@ datasource db {
 model User {
   id                  String               @id @default(cuid())
   licenseId           String?              @map("license_id")
+  schoolId            String?              @map("school_id")
   name                String?
   email               String               @unique
   password            String?
@@ -41,6 +42,7 @@ model User {
   storyRecords        StoryRecord[]
   userSentenceRecords UserSentenceRecord[]
   userWordRecords     UserWordRecord[]
+  school              School?              @relation(fields: [schoolId], references: [id])
 
   @@map("users")
 }
@@ -193,6 +195,7 @@ model LongAnswerQuestion {
 model Classroom {
   id               String             @id @default(cuid())
   teacherId        String?            @map("teacher_id")
+  schoolId         String?            @map("school_id")
   classCode        String?            @unique @map("class_code") @db.VarChar
   codeExpiresAt    DateTime?          @map("code_expires_at")
   archived         Boolean?
@@ -207,6 +210,7 @@ model Classroom {
   creator          User?              @relation("CreatedClassrooms", fields: [createdBy], references: [id])
   teacher          User?              @relation("TeacherClassrooms", fields: [teacherId], references: [id])
   storyAssignments StoryAssignment[]
+  school           School?            @relation(fields: [schoolId], references: [id])
 
   @@map("classrooms")
 }
@@ -247,8 +251,11 @@ model License {
   maxUsers     Int             @default(1)
   ownerUserId  String?         @map("owner_user_id")
   schoolName   String
+  schoolId     String?         @map("school_id")
+  featureFlags Json            @default("{}") @map("feature_flags")
   licenseUsers LicenseOnUser[]
   owner        User?           @relation("OwnedLicenses", fields: [ownerUserId], references: [id])
+  school       School?         @relation(fields: [schoolId], references: [id])
 
   @@map("licenses")
 }
@@ -264,34 +271,71 @@ model LicenseOnUser {
   @@map("license_on_users")
 }
 
+model School {
+  id         String      @id @default(cuid())
+  name       String
+  district   String?
+  province   String?
+  country    String      @default("Thailand")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  licenses   License[]
+  users      User[]
+  classrooms Classroom[]
+
+  @@map("schools")
+}
+
+model RACEFRMapping {
+  id        String   @id @default(cuid())
+  raLevel   Int      @unique @map("ra_level")
+  cefrLevel String   @map("cefr_level")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ra_cefr_mappings")
+}
+
+model GenreAdjacency {
+  id            String   @id @default(cuid())
+  primaryGenre  String   @map("primary_genre")
+  adjacentGenre String   @map("adjacent_genre")
+  weight        Float    @default(1.0)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([primaryGenre, adjacentGenre])
+  @@map("genre_adjacencies")
+}
+
 model Assignment {
-  id                    String                  @id @default(cuid())
-  classroomId           String                  @map("classroom_id")
-  articleId             String                  @map("article_id")
-  title                 String?                 @db.VarChar
-  description           String?
-  dueDate               DateTime?               @map("due_date")
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @default(now()) @updatedAt
-  article               Article                 @relation(fields: [articleId], references: [id])
-  classroom             Classroom               @relation(fields: [classroomId], references: [id])
-  studentAssignments    StudentAssignment[]
+  id                 String              @id @default(cuid())
+  classroomId        String              @map("classroom_id")
+  articleId          String              @map("article_id")
+  title              String?             @db.VarChar
+  description        String?
+  dueDate            DateTime?           @map("due_date")
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @default(now()) @updatedAt
+  article            Article             @relation(fields: [articleId], references: [id])
+  classroom          Classroom           @relation(fields: [classroomId], references: [id])
+  studentAssignments StudentAssignment[]
 
   @@map("assignments")
 }
 
 model StudentAssignment {
-  id            String      @id @default(cuid())
-  assignmentId  String      @map("assignment_id")
-  studentId     String      @map("student_id")
-  status        Status      @default(NOT_STARTED)
-  startedAt     DateTime?   @map("started_at")
-  completedAt   DateTime?   @map("completed_at")
-  score         Int?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  assignment    Assignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  student       User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  assignmentId String     @map("assignment_id")
+  studentId    String     @map("student_id")
+  status       Status     @default(NOT_STARTED)
+  startedAt    DateTime?  @map("started_at")
+  completedAt  DateTime?  @map("completed_at")
+  score        Int?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student      User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([assignmentId, studentId])
   @@map("student_assignments")

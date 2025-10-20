@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as z from "zod";
 import { getAllLicenses } from "./license-controller";
 import { getCurrentUser } from "@/lib/session";
+import { Role, Status } from "@prisma/client";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -2084,6 +2085,500 @@ export async function getClassroomTeachers(
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
+    );
+  }
+}
+
+/**
+ * Get classroom overview
+ * @param req - Extended Next request with session
+ * @param classroomId - Classroom ID
+ * @returns Classroom overview response
+ */
+export async function getClassroomOverview(req: ExtendedNextRequest, classroomId: string) {
+  const startTime = Date.now();
+
+  try {
+    const session = req.session;
+    if (!session) {
+      return NextResponse.json(
+        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id;
+    const userRole = session.user.role;
+
+    // Get classroom with details
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+      include: {
+        school: true,
+        students: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                level: true,
+                xp: true,
+                userActivities: {
+                  select: {
+                    createdAt: true,
+                    activityType: true,
+                    timer: true,
+                  },
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                },
+                lessonRecords: {
+                  select: {
+                    createdAt: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        assignments: {
+          include: {
+            studentAssignments: {
+              select: {
+                id: true,
+                status: true,
+                score: true,
+              },
+            },
+          },
+        },
+        teachers: {
+          select: {
+            teacherId: true,
+          },
+        },
+      },
+    }) as any;
+
+    if (!classroom) {
+      return NextResponse.json(
+        { code: 'NOT_FOUND', message: 'Classroom not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check access rights
+    const isTeacher = classroom.teachers.some((t: any) => t.teacherId === userId);
+    const isAdmin = userRole === Role.ADMIN || userRole === Role.SYSTEM;
+
+    if (!isTeacher && !isAdmin) {
+      return NextResponse.json(
+        { code: 'FORBIDDEN', message: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
+    // Calculate date ranges
+    const now = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Get all students
+    const students = classroom.students.map((cs: any) => cs.student);
+
+    // Count active students
+    const activeStudents7d = students.filter((s: any) =>
+      s.userActivities.some((a: any) => new Date(a.createdAt) >= sevenDaysAgo)
+    ).length;
+
+    const activeStudents30d = students.filter((s: any) =>
+      s.userActivities.some((a: any) => new Date(a.createdAt) >= thirtyDaysAgo)
+    ).length;
+
+    // Calculate average level
+    const avgLevel = students.length > 0
+      ? students.reduce((sum: number, s: any) => sum + s.level, 0) / students.length
+      : 0;
+
+    // Calculate total XP earned
+    const totalXpEarned = students.reduce((sum: number, s: any) => sum + s.xp, 0);
+
+    // Count assignments
+    const assignmentsActive = classroom.assignments.filter((a: any) => {
+      const hasIncomplete = a.studentAssignments.some(
+        (sa: any) => sa.status !== Status.COMPLETED
+      );
+      return hasIncomplete;
+    }).length;
+
+    const assignmentsCompleted = classroom.assignments.filter((a: any) => {
+      const allCompleted = a.studentAssignments.every(
+        (sa: any) => sa.status === Status.COMPLETED
+      );
+      return allCompleted && a.studentAssignments.length > 0;
+    }).length;
+
+    // Calculate performance metrics
+    const allScores = classroom.assignments.flatMap((a: any) =>
+      a.studentAssignments
+        .filter((sa: any) => sa.score !== null)
+        .map((sa: any) => sa.score!)
+    );
+
+    const averageAccuracy = allScores.length > 0
+      ? allScores.reduce((sum: number, score: number) => sum + score, 0) / allScores.length
+      : 0;
+
+    // Calculate average reading time (in minutes)
+    const readingTimes = students.flatMap((s: any) =>
+      s.userActivities
+        .filter((a: any) => a.timer !== null)
+        .map((a: any) => a.timer!)
+    );
+
+    const averageReadingTime = readingTimes.length > 0
+      ? readingTimes.reduce((sum: number, time: number) => sum + time, 0) / readingTimes.length / 60 // Convert to minutes
+      : 0;
+
+    // Count books completed (lesson records)
+    const booksCompleted = students.reduce((total: number, s: any) => {
+      return total + s.lessonRecords.length;
+    }, 0);
+
+    const response = {
+      class: {
+        id: classroom.id,
+        name: classroom.classroomName || 'Unnamed Class',
+        classCode: classroom.classCode || '',
+        schoolId: classroom.schoolId || undefined,
+        schoolName: classroom.school?.name || undefined,
+        createdAt: classroom.createdAt.toISOString(),
+      },
+      summary: {
+        totalStudents: students.length,
+        activeStudents7d,
+        activeStudents30d,
+        averageLevel: Math.round(avgLevel * 10) / 10,
+        totalXpEarned,
+        assignmentsActive,
+        assignmentsCompleted,
+      },
+      performance: {
+        averageAccuracy: Math.round(averageAccuracy * 100) / 100,
+        averageReadingTime: Math.round(averageReadingTime * 10) / 10,
+        booksCompleted,
+      },
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+
+    const duration = Date.now() - startTime;
+
+    console.log(`[Controller] getClassroomOverview - ${duration}ms - classroomId: ${classroomId}`);
+
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
+        'X-Response-Time': `${duration}ms`,
+      },
+    });
+  } catch (error) {
+    console.error('[Controller] getClassroomOverview - Error:', error);
+
+    return NextResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to fetch class overview',
+        details: error instanceof Error ? { error: error.message } : {},
+      },
+      {
+        status: 500,
+        headers: {
+          'X-Response-Time': `${Date.now() - startTime}ms`,
+        },
+      }
+    );
+  }
+}
+
+/**
+ * Helper function to convert students to CSV
+ */
+function convertStudentsToCSV(students: any[]): string {
+  const headers = [
+    'Student ID',
+    'Name',
+    'Email',
+    'Level',
+    'CEFR Level',
+    'XP',
+    'Last Active',
+    'Assignments Completed',
+    'Assignments Pending',
+    'Reading Sessions',
+    'Average Accuracy (%)',
+    'Joined At',
+  ];
+
+  const rows = students.map((s) => [
+    s.id,
+    s.name,
+    s.email,
+    s.level.toString(),
+    s.cefrLevel,
+    s.xp.toString(),
+    s.lastActive || 'Never',
+    s.assignmentsCompleted.toString(),
+    s.assignmentsPending.toString(),
+    s.readingSessions.toString(),
+    (s.averageAccuracy * 100).toFixed(2),
+    s.joinedAt,
+  ]);
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((row) =>
+      row.map((cell) => {
+        // Escape cells that contain commas or quotes
+        if (cell.includes(',') || cell.includes('"')) {
+          return `"${cell.replace(/"/g, '""')}"`;
+        }
+        return cell;
+      }).join(',')
+    ),
+  ].join('\n');
+
+  return csvContent;
+}
+
+/**
+ * Get classroom students
+ * @param req - Extended Next request with session
+ * @param classroomId - Classroom ID
+ * @returns Classroom students response
+ */
+export async function getClassroomStudents(req: ExtendedNextRequest, classroomId: string) {
+  const startTime = Date.now();
+
+  try {
+    const session = req.session;
+    if (!session) {
+      return NextResponse.json(
+        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id;
+    const userRole = session.user.role;
+
+    // Check for CSV export format
+    const { searchParams } = new URL(req.url);
+    const format = searchParams.get('format');
+
+    // Get classroom with students
+    const classroom = await prisma.classroom.findUnique({
+      where: { id: classroomId },
+      include: {
+        teachers: {
+          select: {
+            teacherId: true,
+          },
+        },
+        students: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                level: true,
+                cefrLevel: true,
+                xp: true,
+                userActivities: {
+                  select: {
+                    createdAt: true,
+                  },
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                  take: 1,
+                },
+                lessonRecords: {
+                  select: {
+                    id: true,
+                  },
+                },
+                studentAssignments: {
+                  select: {
+                    id: true,
+                    status: true,
+                    score: true,
+                    assignment: {
+                      select: {
+                        classroomId: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }) as any;
+
+    if (!classroom) {
+      return NextResponse.json(
+        { code: 'NOT_FOUND', message: 'Classroom not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check access rights
+    const isTeacher = classroom.teachers.some((t: any) => t.teacherId === userId);
+    const isAdmin = userRole === Role.ADMIN || userRole === Role.SYSTEM;
+
+    if (!isTeacher && !isAdmin) {
+      return NextResponse.json(
+        { code: 'FORBIDDEN', message: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
+    // Calculate date ranges
+    const now = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Process students data
+    const students = classroom.students.map((cs: any) => {
+      const student = cs.student;
+
+      // Filter assignments for this classroom only
+      const classroomAssignments = student.studentAssignments.filter(
+        (sa: any) => sa.assignment?.classroomId === classroomId
+      );
+
+      // Count completed vs pending assignments
+      const assignmentsCompleted = classroomAssignments.filter(
+        (sa: any) => sa.status === Status.COMPLETED
+      ).length;
+
+      const assignmentsPending = classroomAssignments.filter(
+        (sa: any) => sa.status !== Status.COMPLETED
+      ).length;
+
+      // Calculate average accuracy
+      const scores = classroomAssignments
+        .filter((sa: any) => sa.score !== null)
+        .map((sa: any) => sa.score);
+
+      const averageAccuracy = scores.length > 0
+        ? scores.reduce((sum: number, score: number) => sum + score, 0) / scores.length
+        : 0;
+
+      // Get last active date
+      const lastActive = student.userActivities.length > 0
+        ? student.userActivities[0].createdAt.toISOString()
+        : undefined;
+
+      return {
+        id: student.id,
+        name: student.name || 'Unknown',
+        email: student.email,
+        level: student.level,
+        cefrLevel: student.cefrLevel,
+        xp: student.xp,
+        lastActive,
+        assignmentsCompleted,
+        assignmentsPending,
+        readingSessions: student.lessonRecords.length,
+        averageAccuracy,
+        joinedAt: cs.createdAt.toISOString(),
+      };
+    });
+
+    // Sort by name
+    students.sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+    // Calculate summary statistics
+    const active7d = students.filter((s: any) => {
+      if (!s.lastActive) return false;
+      return new Date(s.lastActive) >= sevenDaysAgo;
+    }).length;
+
+    const active30d = students.filter((s: any) => {
+      if (!s.lastActive) return false;
+      return new Date(s.lastActive) >= thirtyDaysAgo;
+    }).length;
+
+    const averageLevel = students.length > 0
+      ? students.reduce((sum: number, s: any) => sum + s.level, 0) / students.length
+      : 0;
+
+    // If CSV format is requested, return CSV
+    if (format === 'csv') {
+      const csv = convertStudentsToCSV(students);
+      const duration = Date.now() - startTime;
+
+      console.log(`[Controller] getClassroomStudents - ${duration}ms - CSV export - ${students.length} students`);
+
+      return new NextResponse(csv, {
+        headers: {
+          'Content-Type': 'text/csv',
+          'Content-Disposition': `attachment; filename="class-${classroomId}-students-${new Date().toISOString().split('T')[0]}.csv"`,
+          'X-Response-Time': `${duration}ms`,
+        },
+      });
+    }
+
+    // Otherwise, return JSON
+    const response = {
+      students,
+      summary: {
+        total: students.length,
+        active7d,
+        active30d,
+        averageLevel: Math.round(averageLevel * 10) / 10,
+      },
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+
+    const duration = Date.now() - startTime;
+
+    console.log(`[Controller] getClassroomStudents - ${duration}ms - classroomId: ${classroomId} - ${students.length} students`);
+
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
+        'X-Response-Time': `${duration}ms`,
+      },
+    });
+  } catch (error) {
+    console.error('[Controller] getClassroomStudents - Error:', error);
+
+    return NextResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to fetch class students',
+        details: error instanceof Error ? { error: error.message } : {},
+      },
+      {
+        status: 500,
+        headers: {
+          'X-Response-Time': `${Date.now() - startTime}ms`,
+        },
+      }
     );
   }
 }

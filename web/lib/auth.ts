@@ -24,6 +24,18 @@ export const authOptions: NextAuthOptions = {
 
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
+            include: {
+              teacherClassrooms: {
+                select: {
+                  classroomId: true,
+                },
+              },
+              studentClassrooms: {
+                select: {
+                  classroomId: true,
+                },
+              },
+            },
           });
 
           if (!user) {
@@ -57,6 +69,9 @@ export const authOptions: NextAuthOptions = {
               ? "BASIC" as const
               : "EXPIRED" as const;
 
+          const teacherClassIds = user.teacherClassrooms.map((tc) => tc.classroomId);
+          const studentClassIds = user.studentClassrooms.map((sc) => sc.classroomId);
+
           const returnUser = {
             id: user.id,
             email: user.email,
@@ -72,6 +87,9 @@ export const authOptions: NextAuthOptions = {
             license_id: user.licenseId ?? "",
             onborda: user.onborda ?? false,
             license_level: licenseLevel,
+            school_id: user.schoolId ?? undefined,
+            teacher_class_ids: teacherClassIds.length > 0 ? teacherClassIds : undefined,
+            student_class_ids: studentClassIds.length > 0 ? studentClassIds : undefined,
           };
 
           return returnUser;
@@ -120,6 +138,9 @@ export const authOptions: NextAuthOptions = {
         token.license_id = user.license_id;
         token.onborda = user.onborda;
         token.license_level = user.license_level;
+        token.school_id = user.school_id;
+        token.teacher_class_ids = user.teacher_class_ids;
+        token.student_class_ids = user.student_class_ids;
       }
       return token;
     },
@@ -139,6 +160,9 @@ export const authOptions: NextAuthOptions = {
         session.user.license_id = token.license_id;
         session.user.onborda = token.onborda;
         session.user.license_level = token.license_level;
+        session.user.school_id = token.school_id;
+        session.user.teacher_class_ids = token.teacher_class_ids;
+        session.user.student_class_ids = token.student_class_ids;
       }
       return session;
     },

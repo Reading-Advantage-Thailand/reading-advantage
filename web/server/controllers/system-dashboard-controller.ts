@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
+import { requireRole } from "@/server/middleware/guards";
 
 export async function getSystemDashboard(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-
-    if (!user || user.role !== Role.SYSTEM) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
+    // Use the new guard system
+    const authResult = await requireRole([Role.SYSTEM])(req);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { user } = authResult;
 
     const { searchParams } = new URL(req.url);
     const startDate = searchParams.get("startDate");

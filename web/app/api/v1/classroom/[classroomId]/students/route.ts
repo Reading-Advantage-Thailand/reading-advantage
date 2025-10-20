@@ -1,0 +1,31 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createEdgeRouter } from "next-connect";
+import { logRequest } from "@/server/middleware";
+import { protect, ExtendedNextRequest } from "@/server/controllers/auth-controller";
+import { getClassroomStudents } from "@/server/controllers/classroom-controller";
+
+interface RequestContext {
+  params: {
+    classroomId: string;
+  };
+}
+
+const router = createEdgeRouter<NextRequest, RequestContext>();
+
+// Middleware
+router.use(logRequest);
+router.use(protect);
+
+// GET /api/v1/classroom/[classroomId]/students
+router.get(async (req: ExtendedNextRequest, ctx: RequestContext) => {
+  return getClassroomStudents(req, ctx.params.classroomId);
+});
+
+export async function GET(request: NextRequest, ctx: RequestContext) {
+  const result = await router.run(request, ctx);
+  if (result instanceof NextResponse) {
+    return result;
+  }
+  throw new Error("Expected a NextResponse from router.run");
+}
+
