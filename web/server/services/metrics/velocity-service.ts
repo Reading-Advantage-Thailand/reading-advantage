@@ -96,6 +96,25 @@ export interface SchoolVelocityMetrics {
   isLowSignal: boolean;
 }
 
+export interface SystemVelocityMetrics {
+  totalStudents: number;
+  totalSchools: number;
+  totalClasses: number;
+  
+  totalXp7d: number;
+  activeStudents7d: number;
+  avgXpPerStudent7d: number;
+  xpPerDay7d: number;
+  
+  totalXp30d: number;
+  activeStudents30d: number;
+  avgXpPerStudent30d: number;
+  xpPerDay30d: number;
+  
+  avgEngagementRate30d: number;
+  lastActivityAt: Date | null;
+}
+
 interface DailyXpLog {
   date: Date;
   xpEarned: number;
@@ -452,6 +471,72 @@ export async function getBulkStudentVelocity(
   return Promise.all(
     matviewData.map(data => getStudentVelocity(data.user_id, true))
   ).then(results => results.filter((r): r is VelocityMetrics => r !== null));
+}
+
+/**
+ * Get system-wide velocity metrics (aggregated across all schools)
+ */
+export async function getSystemVelocity(): Promise<SystemVelocityMetrics | null> {
+  // Get aggregated data from school-level view
+  const systemData = await prisma.$queryRawUnsafe<any[]>(`
+    SELECT 
+      COUNT(DISTINCT s.school_id) as total_schools,
+      SUM(s.total_students) as total_students,
+      
+      SUM(s.total_xp_7d) as total_xp_7d,
+      SUM(s.active_students_7d) as active_students_7d,
+      CASE 
+        WHEN SUM(s.total_students) > 0 
+        THEN ROUND(SUM(s.total_xp_7d)::numeric / SUM(s.total_students), 2)
+        ELSE 0 
+      END as avg_xp_per_student_7d,
+      ROUND(SUM(s.total_xp_7d)::numeric / 7, 2) as xp_per_day_7d,
+      
+      SUM(s.total_xp_30d) as total_xp_30d,
+      SUM(s.active_students_30d) as active_students_30d,
+      CASE 
+        WHEN SUM(s.total_students) > 0 
+        THEN ROUND(SUM(s.total_xp_30d)::numeric / SUM(s.total_students), 2)
+        ELSE 0 
+      END as avg_xp_per_student_30d,
+      ROUND(SUM(s.total_xp_30d)::numeric / 30, 2) as xp_per_day_30d,
+      
+      AVG(s.engagement_rate_30d) as avg_engagement_rate_30d,
+      MAX(s.last_activity_at) as last_activity_at
+    FROM mv_school_velocity s
+  `);
+  
+  // Get total classes from class velocity view
+  const classData = await prisma.$queryRawUnsafe<any[]>(`
+    SELECT COUNT(DISTINCT classroom_id) as total_classes
+    FROM mv_class_velocity
+  `);
+  
+  if (!systemData || systemData.length === 0) {
+    return null;
+  }
+  
+  const data = systemData[0];
+  const totalClasses = classData?.[0]?.total_classes || 0;
+  
+  return {
+    totalSchools: Number(data.total_schools) || 0,
+    totalClasses: Number(totalClasses) || 0,
+    totalStudents: Number(data.total_students) || 0,
+    
+    totalXp7d: Number(data.total_xp_7d) || 0,
+    activeStudents7d: Number(data.active_students_7d) || 0,
+    avgXpPerStudent7d: Number(data.avg_xp_per_student_7d) || 0,
+    xpPerDay7d: Number(data.xp_per_day_7d) || 0,
+    
+    totalXp30d: Number(data.total_xp_30d) || 0,
+    activeStudents30d: Number(data.active_students_30d) || 0,
+    avgXpPerStudent30d: Number(data.avg_xp_per_student_30d) || 0,
+    xpPerDay30d: Number(data.xp_per_day_30d) || 0,
+    
+    avgEngagementRate30d: Number(data.avg_engagement_rate_30d) || 0,
+    lastActivityAt: data.last_activity_at,
+  };
 }
 
 /**

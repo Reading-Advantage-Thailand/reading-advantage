@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | null };
+// PrismaClient is attached to the `global` object in development to prevent
+// exhausting your database connection limit.
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 // Check if DATABASE_URL is a placeholder (used during build)
 const isPlaceholder = process.env.DATABASE_URL?.includes("placeholder");
@@ -119,7 +121,8 @@ export const prisma: PrismaClient =
       // This ensures proper decoding of URL-encoded passwords
       log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
       // Cloud SQL connection pooling configuration
-      // Helps prevent connection exhaustion in serverless environments
+      // Note: Connection pool settings should be added to DATABASE_URL instead
+      // Example: postgresql://user:pass@host:5432/db?connection_limit=5&pool_timeout=10
     });
   })();
 

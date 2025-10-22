@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import "@/styles/globals.css";
 import { Pie, PieChart } from "recharts";
 import {
   Card,
