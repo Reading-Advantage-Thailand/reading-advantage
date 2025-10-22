@@ -230,7 +230,7 @@ const MATERIALIZED_VIEWS = [
   // Level 2: Class-level metrics (depend on students)
   { name: 'mv_assignment_funnel', level: 2 },
   { name: 'mv_class_velocity', level: 2 },
-  { name: 'mv_cefr_ra_alignment', level: 2 },
+  { name: 'mv_alignment_metrics', level: 2 },
   
   // Level 2.5: Assignment funnel rollups (depend on mv_assignment_funnel and mv_class_velocity)
   { name: 'mv_class_assignment_funnel', level: 2.5 },

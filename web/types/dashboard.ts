@@ -413,13 +413,52 @@ export interface AssignmentFunnelResponse {
   cache: CacheMetadata;
 }
 
+export interface AlignmentBuckets {
+  below: number;
+  aligned: number;
+  above: number;
+  unknown: number;
+}
+
+export interface AlignmentSample {
+  articleId: string;
+  title: string;
+  articleRaLevel: number;
+  articleCefrLevel?: string;
+  studentRaLevel?: number;
+  levelDiff?: number;
+  readAt: string;
+  assignmentId?: string;
+  genre?: string;
+}
+
 export interface AlignmentData {
+  // Legacy support
   levelDistribution: Record<string, number>; // level -> student count
   cefrDistribution: Record<string, number>; // CEFR level -> student count
   recommendations: {
     studentsAboveLevel: number;
     studentsBelowLevel: number;
     studentsOnLevel: number;
+  };
+  
+  // Enhanced alignment metrics
+  buckets: {
+    counts: AlignmentBuckets;
+    percentages: AlignmentBuckets;
+  };
+  samples?: {
+    below?: AlignmentSample[];
+    aligned?: AlignmentSample[];
+    above?: AlignmentSample[];
+  };
+  misalignmentIndicators: {
+    highRiskStudents: number; // Students with >70% misaligned content
+    assignmentOverrides: number; // Count of assignments with overrides
+    contentGaps: {
+      belowThreshold: number; // Articles significantly below student level
+      aboveThreshold: number; // Articles significantly above student level
+    };
   };
 }
 
@@ -429,6 +468,8 @@ export interface MetricsAlignmentResponse {
     totalStudents: number;
     averageLevel: number;
     modalLevel: number; // most common level
+    totalReadings: number;
+    alignmentScore: number; // Overall alignment health score (0-100)
   };
   cache: CacheMetadata;
 }
