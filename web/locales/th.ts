@@ -2089,4 +2089,90 @@ export default {
       "Renaissance Adventure": "การผจญภัยในยุคฟื้นฟูศิลปวิทยา",
     },
   },
+
+  genreEngagement: {
+    genres: {
+      "Fiction": "นิยาย",
+      "Non-Fiction": "สารคดี",
+      "Fantasy": "แฟนตาซี",
+      "Science Fiction": "นิยายวิทยาศาสตร์",
+      "Mystery": "ลึกลับ",
+      "Adventure": "ผจญภัย",
+      "Biography": "ชีวประวัติ",
+      "History": "ประวัติศาสตร์",
+      "Romance": "โรแมนติก",
+      "Thriller": "ระทึกขวัญ",
+      "Horror": "สยองขวัญ",
+      "Drama": "ละคร",
+      "Comedy": "ตลก",
+      "Travel": "การเดินทาง",
+      "Health": "สุขภาพ",
+      "Technology": "เทคโนโลยี",
+      "Sports": "กีฬา",
+      "Art": "ศิลปะ",
+      "Music": "ดนตรี",
+      "Poetry": "บทกวี",
+      "Unknown": "ไม่ทราบประเภท"
+    },
+    
+    recommendations: {
+      rationale: {
+        high_engagement_similar: "การอ่าน{sourceGenre}ที่หลากหลายแนะนำให้คุณลอง{targetGenre}",
+        underexplored_adjacent: "จากการอ่าน{sourceGenre}ของคุณ ลองสำรวจ{targetGenre}เพื่อความหลากหลาย",
+        level_appropriate_new: "{targetGenre}เหมาะกับระดับการอ่านของคุณ - ค้นพบสิ่งใหม่!"
+      },
+      
+      types: {
+        high_engagement_similar: "คล้ายกับที่คุณชอบ",
+        underexplored_adjacent: "ขยายความหลากหลายในการอ่าน",
+        level_appropriate_new: "เหมาะสำหรับระดับของคุณ"
+      },
+      
+      labels: {
+        recommendedForYou: "แนะนำสำหรับคุณ",
+        exploreGenres: "สำรวจประเภทใหม่",
+        basedOnReading: "ตามการอ่านของคุณ",
+        perfectLevel: "เหมาะสำหรับระดับของคุณ",
+        confidenceHigh: "แนะนำอย่างยิ่ง",
+        confidenceMedium: "เหมาะสมดี",
+        confidenceLow: "น่าสำรวจ"
+      }
+    },
+    
+    metrics: {
+      totalReads: "การอ่านทั้งหมด",
+      recentActivity: "กิจกรรมล่าสุด",
+      quizCompletions: "ทำแบบทดสอบเสร็จ",
+      xpEarned: "XP ที่ได้รับ",
+      engagementScore: "คะแนนการมีส่วนร่วม",
+      lastRead: "อ่านล่าสุด",
+      averageLevel: "ระดับเฉลี่ย",
+      activeDays: "วันที่ใช้งาน",
+      readingStreak: "สเตรคการอ่าน",
+      cefrLevel: "ระดับ CEFR",
+      
+      timeframes: {
+        "7d": "7 วันที่ผ่านมา",
+        "30d": "30 วันที่ผ่านมา",
+        "90d": "3 เดือนที่ผ่านมา",
+        "6m": "6 เดือนที่ผ่านมา"
+      },
+      
+      scopes: {
+        student: "มุมมองนักเรียน",
+        class: "มุมมองห้องเรียน",
+        school: "มุมมองโรงเรียน"
+      }
+    },
+    
+    insights: {
+      topGenre: "ประเภทยอดนิยมของคุณคือ {genre}",
+      diverseReader: "คุณชอบอ่านหลากหลายใน {count} ประเภท",
+      focusedReader: "คุณชอบอ่านเฉพาะใน {genre}",
+      newRecommendation: "ลอง {genre} - คล้ายกับ {sourceGenre}",
+      levelProgression: "คุณพร้อมสำหรับเนื้อหา {genre} ที่ท้าทายขึ้น",
+      consistentEngagement: "การอ่าน {genre} อย่างต่อเนื่องใน {timeframe}",
+      recentInterest: "ความสนใจที่เพิ่มขึ้นใน {genre} เดือนนี้"
+    }
+  },
 } as const;

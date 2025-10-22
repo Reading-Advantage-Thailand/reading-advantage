@@ -2117,4 +2117,97 @@ export default {
       "Renaissance Adventure": "Cuộc phiêu lưu thời Phục hưng",
     },
   },
+
+  genreEngagement: {
+    genres: {
+      "Fiction": "Tiểu thuyết",
+      "Non-Fiction": "Phi tiểu thuyết",
+      "Fantasy": "Thần thoại",
+      "Science Fiction": "Khoa học viễn tưởng",
+      "Mystery": "Bí ẩn",
+      "Adventure": "Phiêu lưu",
+      "Biography": "Tiểu sử",
+      "History": "Lịch sử",
+      "Romance": "Lãng mạn",
+      "Thriller": "Rùng rợn",
+      "Horror": "Kinh dị",
+      "Drama": "Kịch",
+      "Comedy": "Hài kịch",
+      "Travel": "Du lịch",
+      "Health": "Sức khỏe",
+      "Technology": "Công nghệ",
+      "Sports": "Thể thao",
+      "Art": "Nghệ thuật",
+      "Music": "Âm nhạc",
+      "Poetry": "Thơ ca",
+      "Unknown": "Không xác định"
+    },
+    
+    recommendations: {
+      rationale: {
+        high_engagement_similar: "Dựa trên sự tham gia cao của bạn với {sourceGenre}, chúng tôi khuyên bạn thử {targetGenre}",
+        underexplored_adjacent: "Dựa trên thói quen đọc {sourceGenre} của bạn, hãy khám phá {targetGenre} để tăng tính đa dạng",
+        level_appropriate_new: "{targetGenre} phù hợp với trình độ đọc của bạn - khám phá nội dung mới!"
+      },
+      
+      types: {
+        high_engagement_similar: "Tương tự như sở thích của bạn",
+        underexplored_adjacent: "Mở rộng tính đa dạng đọc",
+        level_appropriate_new: "Phù hợp với trình độ của bạn"
+      },
+      
+      labels: {
+        recommendedForYou: "Được đề xuất cho bạn",
+        exploreGenres: "Khám phá thể loại mới",
+        basedOnReading: "Dựa trên việc đọc của bạn",
+        perfectLevel: "Phù hợp với trình độ của bạn",
+        confidenceHigh: "Rất khuyến nghị",
+        confidenceMedium: "Phù hợp tốt",
+        confidenceLow: "Đáng khám phá"
+      }
+    },
+    
+    metrics: {
+      totalEngagement: "Tổng mức tham gia",
+      recentActivity: "Hoạt động gần đây",
+      readingStreak: "Chuỗi đọc liên tục",
+      favoriteGenres: "Thể loại yêu thích",
+      recommendations: "Đề xuất",
+      engagementScore: "Điểm tham gia",
+      readingProgress: "Tiến độ đọc",
+      timeSpent: "Thời gian dành",
+      articlesRead: "Bài viết đã đọc",
+      averageScore: "Điểm trung bình",
+      totalReads: "Tổng lượt đọc",
+      quizCompletions: "Hoàn thành bài kiểm tra",
+      xpEarned: "XP kiếm được",
+      lastRead: "Đọc lần cuối",
+      averageLevel: "Mức độ trung bình",
+      activeDays: "Ngày hoạt động",
+      cefrLevel: "Cấp độ CEFR",
+      
+      timeframes: {
+        "7d": "7 ngày qua",
+        "30d": "30 ngày qua",
+        "90d": "3 tháng qua",
+        "6m": "6 tháng qua"
+      },
+      
+      scopes: {
+        student: "Góc nhìn học sinh",
+        class: "Góc nhìn lớp học",
+        school: "Góc nhìn trường học"
+      }
+    },
+    
+    insights: {
+      topGenre: "Thể loại hàng đầu của bạn là {genre}",
+      diverseReader: "Bạn thích đọc đa dạng qua {count} thể loại",
+      focusedReader: "Bạn thích tập trung đọc {genre}",
+      newRecommendation: "Thử {genre} - tương tự như {sourceGenre}",
+      levelProgression: "Bạn đã sẵn sàng cho nội dung {genre} thử thách hơn",
+      consistentEngagement: "Đọc {genre} ổn định trong {timeframe}",
+      recentInterest: "Sự quan tâm ngày càng tăng đối với {genre} tháng này"
+    }
+  },
 } as const;

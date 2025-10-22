@@ -2020,4 +2020,97 @@ export default {
       "Renaissance Adventure": "文艺复兴冒险",
     },
   },
+
+  genreEngagement: {
+    genres: {
+      "Fiction": "小说",
+      "Non-Fiction": "非小说",
+      "Fantasy": "奇幻",
+      "Science Fiction": "科幻小说",
+      "Mystery": "悬疑",
+      "Adventure": "冒险",
+      "Biography": "传记",
+      "History": "历史",
+      "Romance": "浪漫",
+      "Thriller": "惊悚",
+      "Horror": "恐怖",
+      "Drama": "戏剧",
+      "Comedy": "喜剧",
+      "Travel": "旅行",
+      "Health": "健康",
+      "Technology": "科技",
+      "Sports": "体育",
+      "Art": "艺术",
+      "Music": "音乐",
+      "Poetry": "诗歌",
+      "Unknown": "未知类型"
+    },
+    
+    recommendations: {
+      rationale: {
+        high_engagement_similar: "基于您对{sourceGenre}的高度参与，建议您尝试{targetGenre}",
+        underexplored_adjacent: "根据您的{sourceGenre}阅读习惯，探索{targetGenre}以增加多样性",
+        level_appropriate_new: "{targetGenre}适合您的阅读水平 - 发现新内容！"
+      },
+      
+      types: {
+        high_engagement_similar: "与您的喜好相似",
+        underexplored_adjacent: "扩展您的阅读多样性",
+        level_appropriate_new: "适合您的水平"
+      },
+      
+      labels: {
+        recommendedForYou: "为您推荐",
+        exploreGenres: "探索新类型",
+        basedOnReading: "基于您的阅读",
+        perfectLevel: "适合您的水平",
+        confidenceHigh: "强烈推荐",
+        confidenceMedium: "良好匹配",
+        confidenceLow: "值得探索"
+      }
+    },
+    
+    metrics: {
+      totalEngagement: "总参与度",
+      recentActivity: "近期活动",
+      readingStreak: "连续阅读",
+      favoriteGenres: "喜爱类型",
+      recommendations: "推荐内容",
+      engagementScore: "参与评分",
+      readingProgress: "阅读进度",
+      timeSpent: "花费时间",
+      articlesRead: "已读文章",
+      averageScore: "平均分数",
+      totalReads: "总阅读量",
+      quizCompletions: "测验完成",
+      xpEarned: "获得XP",
+      lastRead: "最后阅读",
+      averageLevel: "平均水平",
+      activeDays: "活跃天数",
+      cefrLevel: "CEFR级别",
+      
+      timeframes: {
+        "7d": "过去7天",
+        "30d": "过去30天",
+        "90d": "过去3个月",
+        "6m": "过去6个月"
+      },
+      
+      scopes: {
+        student: "学生视图",
+        class: "班级视图",
+        school: "学校视图"
+      }
+    },
+    
+    insights: {
+      topGenre: "您最喜欢的类型是{genre}",
+      diverseReader: "您喜欢阅读{count}种不同类型",
+      focusedReader: "您专注于阅读{genre}",
+      newRecommendation: "尝试{genre} - 与{sourceGenre}相似",
+      levelProgression: "您已准备好阅读更具挑战性的{genre}内容",
+      consistentEngagement: "在{timeframe}内持续阅读{genre}",
+      recentInterest: "本月对{genre}的兴趣日益增长"
+    }
+  },
 } as const;

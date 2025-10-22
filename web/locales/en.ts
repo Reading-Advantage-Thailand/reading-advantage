@@ -2139,4 +2139,90 @@ export default {
       "Renaissance Adventure": "Renaissance Adventure",
     },
   },
+
+  genreEngagement: {
+    genres: {
+      "Fiction": "Fiction",
+      "Non-Fiction": "Non-Fiction",
+      "Fantasy": "Fantasy",
+      "Science Fiction": "Science Fiction",
+      "Mystery": "Mystery",
+      "Adventure": "Adventure",
+      "Biography": "Biography",
+      "History": "History",
+      "Romance": "Romance",
+      "Thriller": "Thriller",
+      "Horror": "Horror",
+      "Drama": "Drama",
+      "Comedy": "Comedy",
+      "Travel": "Travel",
+      "Health": "Health",
+      "Technology": "Technology",
+      "Sports": "Sports",
+      "Art": "Art",
+      "Music": "Music",
+      "Poetry": "Poetry",
+      "Unknown": "Unknown"
+    },
+    
+    recommendations: {
+      rationale: {
+        high_engagement_similar: "Strong {sourceGenre} engagement suggests you might enjoy {targetGenre}",
+        underexplored_adjacent: "Based on your {sourceGenre} reading, explore {targetGenre} for variety",
+        level_appropriate_new: "{targetGenre} matches your reading level - discover something new!"
+      },
+      
+      types: {
+        high_engagement_similar: "Similar to your favorites",
+        underexplored_adjacent: "Expand your reading variety",
+        level_appropriate_new: "Perfect for your level"
+      },
+      
+      labels: {
+        recommendedForYou: "Recommended for You",
+        exploreGenres: "Explore New Genres",
+        basedOnReading: "Based on Your Reading",
+        perfectLevel: "Perfect for Your Level",
+        confidenceHigh: "Highly Recommended",
+        confidenceMedium: "Good Match",
+        confidenceLow: "Worth Exploring"
+      }
+    },
+    
+    metrics: {
+      totalReads: "Total Reads",
+      recentActivity: "Recent Activity",
+      quizCompletions: "Quiz Completions", 
+      xpEarned: "XP Earned",
+      engagementScore: "Engagement Score",
+      lastRead: "Last Read",
+      averageLevel: "Average Level",
+      activeDays: "Active Days",
+      readingStreak: "Reading Streak",
+      cefrLevel: "CEFR Level",
+      
+      timeframes: {
+        "7d": "Last 7 days",
+        "30d": "Last 30 days", 
+        "90d": "Last 3 months",
+        "6m": "Last 6 months"
+      },
+      
+      scopes: {
+        student: "Student View",
+        class: "Class View", 
+        school: "School View"
+      }
+    },
+    
+    insights: {
+      topGenre: "Your top genre is {genre}",
+      diverseReader: "You enjoy diverse reading across {count} genres",
+      focusedReader: "You prefer focused reading in {genre}",
+      newRecommendation: "Try {genre} - it's similar to {sourceGenre}",
+      levelProgression: "You're ready for more challenging {genre} content",
+      consistentEngagement: "Steady {genre} reading over {timeframe}",
+      recentInterest: "Growing interest in {genre} this month"
+    }
+  },
 } as const;
