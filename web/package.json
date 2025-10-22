@@ -19,7 +19,7 @@
     "db:seed:medium": "SEED_SIZE=medium prisma db seed",
     "db:seed:large": "SEED_SIZE=large prisma db seed",
     "backfill:schools": "ts-node scripts/backfill-schools.ts",
-    "backfill:schools:dry": "DRY_RUN=true VERBOSE=true ts-node scripts/backfill-schools.ts",
+    "backfill:schools:dry": "DRY_RUN=true VERBOSE=true ts-node scripts/backfill-schools.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
