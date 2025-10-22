@@ -2,7 +2,7 @@
 import { createEdgeRouter } from "next-connect";
 import { logRequest } from "@/server/middleware";
 import { protect } from "@/server/controllers/auth-controller";
-import { getAssignmentMetrics } from "@/server/controllers/metrics-controller";
+import { getAssignmentMetrics } from "@/server/controllers/assignment-controller";
 
 interface RequestContext {
   params?: unknown;

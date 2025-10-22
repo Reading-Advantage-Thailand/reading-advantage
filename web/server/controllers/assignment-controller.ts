@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
 import { Status } from "@prisma/client";
+import { AssignmentMetrics, MetricsAssignmentsResponse } from "@/types/dashboard";
 
 interface StudentAssignment {
   id: string;
@@ -710,6 +711,158 @@ export async function deleteAssignment(req: ExtendedNextRequest) {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
+    );
+  }
+}
+
+/**
+ * Get assignment metrics
+ * @param req - Extended Next request with session
+ * @returns Assignment metrics response
+ */
+export async function getAssignmentMetrics(req: ExtendedNextRequest) {
+  const startTime = Date.now();
+
+  try {
+    const session = req.session;
+    if (!session) {
+      return NextResponse.json(
+        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const timeframe = searchParams.get('timeframe') || '30d';
+    const schoolId = searchParams.get('schoolId');
+    const classId = searchParams.get('classId');
+
+    const now = new Date();
+    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - daysAgo);
+
+    const whereClause: any = {
+      createdAt: {
+        gte: startDate,
+      },
+    };
+
+    if (classId) {
+      whereClause.classroomId = classId;
+    } else if (schoolId) {
+      whereClause.classroom = {
+        schoolId,
+      };
+    }
+
+    const assignments = await prisma.assignment.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        title: true,
+        dueDate: true,
+        createdAt: true,
+        studentAssignments: {
+          select: {
+            id: true,
+            status: true,
+            score: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const assignmentMetrics: AssignmentMetrics[] = assignments.map((assignment) => {
+      const total = assignment.studentAssignments.length;
+      const completed = assignment.studentAssignments.filter(
+        (sa) => sa.status === Status.COMPLETED
+      ).length;
+      const inProgress = assignment.studentAssignments.filter(
+        (sa) => sa.status === Status.IN_PROGRESS
+      ).length;
+      const notStarted = assignment.studentAssignments.filter(
+        (sa) => sa.status === Status.NOT_STARTED
+      ).length;
+
+      const scores = assignment.studentAssignments
+        .filter((sa) => sa.score !== null)
+        .map((sa) => sa.score!);
+
+      const averageScore = scores.length > 0
+        ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+        : 0;
+
+      const completionRate = total > 0 ? (completed / total) * 100 : 0;
+
+      return {
+        assignmentId: assignment.id,
+        title: assignment.title || 'Untitled Assignment',
+        dueDate: assignment.dueDate?.toISOString(),
+        assigned: total,
+        completed,
+        inProgress,
+        notStarted,
+        averageScore: Math.round(averageScore * 100) / 100,
+        completionRate: Math.round(completionRate * 10) / 10,
+      };
+    });
+
+    const totalAssignments = assignmentMetrics.length;
+    const averageCompletionRate = totalAssignments > 0
+      ? assignmentMetrics.reduce((sum, a) => sum + a.completionRate, 0) / totalAssignments
+      : 0;
+
+    const allScores = assignmentMetrics
+      .filter((a) => a.averageScore > 0)
+      .map((a) => a.averageScore);
+
+    const averageScore = allScores.length > 0
+      ? allScores.reduce((sum, score) => sum + score, 0) / allScores.length
+      : 0;
+
+    const response: MetricsAssignmentsResponse = {
+      timeframe,
+      assignments: assignmentMetrics,
+      summary: {
+        totalAssignments,
+        averageCompletionRate: Math.round(averageCompletionRate * 10) / 10,
+        averageScore: Math.round(averageScore * 100) / 100,
+      },
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+
+    const duration = Date.now() - startTime;
+
+    console.log(`[Controller] getAssignmentMetrics - ${duration}ms - ${assignmentMetrics.length} assignments`);
+
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
+        'X-Response-Time': `${duration}ms`,
+      },
+    });
+  } catch (error) {
+    console.error('[Controller] getAssignmentMetrics - Error:', error);
+
+    return NextResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to fetch assignment metrics',
+        details: error instanceof Error ? { error: error.message } : {},
+      },
+      {
+        status: 500,
+        headers: {
+          'X-Response-Time': `${Date.now() - startTime}ms`,
+        },
+      }
     );
   }
 }

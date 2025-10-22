@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createEdgeRouter } from "next-connect";
 import { logRequest } from "@/server/middleware";
 import { protect } from "@/server/controllers/auth-controller";
-import { getAlignmentMetrics } from "@/server/controllers/metrics-controller";
+import { getAlignmentMetrics } from "@/server/controllers/enhanced-alignment-controller";
 
 interface RequestContext {
   params?: unknown;

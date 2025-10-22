@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { ActivityType } from "@prisma/client";
+import { ExtendedNextRequest } from "./auth-controller";
+import { ActivityDataPoint, MetricsActivityResponse } from "@/types/dashboard";
 
 // Types for activity creation
 interface CreateActivityData {
@@ -10,6 +12,190 @@ interface CreateActivityData {
   targetId: string;
   completed?: boolean;
   details?: any;
+}
+
+/**
+ * Get activity metrics
+ * @param req - Extended Next request with session
+ * @returns Activity metrics response
+ */
+export async function getActivityMetrics(req: ExtendedNextRequest) {
+  const startTime = Date.now();
+
+  try {
+    const session = req.session;
+    if (!session) {
+      return NextResponse.json(
+        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const timeframe = searchParams.get('timeframe') || '30d';
+    const schoolId = searchParams.get('schoolId');
+    const classId = searchParams.get('classId');
+
+    // Calculate date range
+    const now = new Date();
+    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - daysAgo);
+
+    // Build where clause based on filters
+    const whereClause: any = {
+      createdAt: {
+        gte: startDate,
+      },
+    };
+
+    if (schoolId) {
+      whereClause.schoolId = schoolId;
+    }
+
+    // Get daily activity data
+    const activities = await prisma.userActivity.findMany({
+      where: whereClause,
+      select: {
+        userId: true,
+        createdAt: true,
+        timer: true,
+        user: {
+          select: {
+            createdAt: true,
+            studentClassrooms: classId
+              ? {
+                  where: {
+                    classroomId: classId,
+                  },
+                  select: {
+                    id: true,
+                  },
+                }
+              : undefined,
+          },
+        },
+      },
+    }) as any;
+
+    // Filter by class if specified
+    const filteredActivities = classId
+      ? activities.filter((a: any) => a.user.studentClassrooms?.length > 0)
+      : activities;
+
+    // Group by date
+    const dateMap = new Map<string, {
+      activeUsers: Set<string>;
+      newUsers: Set<string>;
+      sessions: number;
+      totalTime: number;
+    }>();
+
+    // Initialize all dates in range
+    for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+      const dateKey = d.toISOString().split('T')[0];
+      dateMap.set(dateKey, {
+        activeUsers: new Set(),
+        newUsers: new Set(),
+        sessions: 0,
+        totalTime: 0,
+      });
+    }
+
+    // Process activities
+    filteredActivities.forEach((activity: any) => {
+      const dateKey = new Date(activity.createdAt).toISOString().split('T')[0];
+      const data = dateMap.get(dateKey);
+
+      if (data) {
+        data.activeUsers.add(activity.userId);
+        data.sessions += 1;
+        if (activity.timer) {
+          data.totalTime += activity.timer;
+        }
+
+        // Check if user is new (created on this day)
+        const userCreatedDate = new Date(activity.user.createdAt).toISOString().split('T')[0];
+        if (userCreatedDate === dateKey) {
+          data.newUsers.add(activity.userId);
+        }
+      }
+    });
+
+    // Convert to response format
+    const dataPoints: ActivityDataPoint[] = Array.from(dateMap.entries())
+      .map(([date, data]) => ({
+        date,
+        activeUsers: data.activeUsers.size,
+        newUsers: data.newUsers.size,
+        readingSessions: data.sessions,
+        averageSessionLength: data.sessions > 0
+          ? Math.round((data.totalTime / data.sessions / 60) * 10) / 10
+          : 0,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Calculate summary
+    const totalActiveUsers = new Set(
+      filteredActivities.map((a: any) => a.userId)
+    ).size;
+
+    const totalSessions = filteredActivities.length;
+
+    const totalTime = filteredActivities
+      .filter((a: any) => a.timer)
+      .reduce((sum: number, a: any) => sum + a.timer, 0);
+
+    const averageSessionLength = totalSessions > 0
+      ? Math.round((totalTime / totalSessions / 60) * 10) / 10
+      : 0;
+
+    const peakDay = dataPoints.reduce((peak, current) =>
+      current.activeUsers > peak.activeUsers ? current : peak
+    , dataPoints[0] || { date: '', activeUsers: 0, newUsers: 0, readingSessions: 0, averageSessionLength: 0 }).date;
+
+    const response: MetricsActivityResponse = {
+      timeframe,
+      dataPoints,
+      summary: {
+        totalActiveUsers,
+        totalSessions,
+        averageSessionLength,
+        peakDay,
+      },
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+
+    const duration = Date.now() - startTime;
+
+    console.log(`[Controller] getActivityMetrics - ${duration}ms - ${dataPoints.length} data points`);
+
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
+        'X-Response-Time': `${duration}ms`,
+      },
+    });
+  } catch (error) {
+    console.error('[Controller] getActivityMetrics - Error:', error);
+
+    return NextResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to fetch activity metrics',
+        details: error instanceof Error ? { error: error.message } : {},
+      },
+      {
+        status: 500,
+        headers: {
+          'X-Response-Time': `${Date.now() - startTime}ms`,
+        },
+      }
+    );
+  }
 }
 
 // GET user activity logs
