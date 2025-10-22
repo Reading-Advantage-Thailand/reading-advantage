@@ -382,7 +382,11 @@ export async function checkMatviewsHealth(): Promise<{
 }> {
   const viewNames = [
     'mv_student_velocity',
+    'mv_class_velocity',
+    'mv_school_velocity',
     'mv_assignment_funnel',
+    'mv_class_assignment_funnel',
+    'mv_school_assignment_funnel',
     'mv_srs_health',
     'mv_genre_engagement',
     'mv_activity_heatmap',

@@ -297,6 +297,122 @@ export interface MetricsAssignmentsResponse {
   cache: CacheMetadata;
 }
 
+// ============================================================================
+// Assignment Funnel Analytics Types (Phase 2.2)
+// ============================================================================
+
+export interface AssignmentFunnelMetrics {
+  assignmentId: string;
+  title: string;
+  dueDate?: string;
+  assignedAt: string;
+  
+  // Funnel data
+  totalStudents: number;
+  notStarted: number;
+  inProgress: number;
+  completed: number;
+  overdue: number;
+  
+  // Percentages
+  startedPct: number;
+  completedPct: number;
+  overduePct: number;
+  
+  // Timing
+  medianCompletionHours: number | null;
+  p80CompletionHours: number | null;
+  eta80PctDays: number | null;
+  
+  // Risk assessment
+  isAtRisk: boolean;
+  riskFactors: string[];
+  
+  // Performance
+  avgScore: number | null;
+  
+  // Context
+  classVelocity: number;
+  classEngagement: number;
+  predictionConfidence: 'low' | 'medium' | 'high';
+}
+
+export interface ClassAssignmentFunnelMetrics {
+  classroomId: string;
+  schoolId: string;
+  classroomName: string;
+  grade: number | null;
+  
+  totalAssignments: number;
+  highCompletionAssignments: number;
+  atRiskAssignments: number;
+  staleAssignments: number;
+  
+  overallCompletionRate: number;
+  avgMedianCompletionHours: number | null;
+  avgEtaDays: number | null;
+  classAvgScore: number | null;
+  
+  classVelocity: number;
+  classEngagement: number;
+  isLowSignal: boolean;
+}
+
+export interface SchoolAssignmentFunnelMetrics {
+  schoolId: string;
+  totalClasses: number;
+  totalAssignments: number;
+  
+  schoolCompletionRate: number;
+  schoolAvgCompletionHours: number | null;
+  schoolP80EtaDays: number | null;
+  
+  atRiskAssignments: number;
+  staleAssignments: number;
+  classesWithAtRiskAssignments: number;
+}
+
+export interface AtRiskStudent {
+  studentId: string;
+  displayName: string;
+  assignmentId: string;
+  assignmentTitle: string;
+  status: string;
+  daysSinceAssigned: number;
+  daysOverdue: number | null;
+  riskScore: number;
+}
+
+export interface AssignmentFunnelResponse {
+  scope: 'assignment' | 'class' | 'school';
+  timeframe: string;
+  
+  // Individual assignment data (when scope=assignment)
+  assignment?: AssignmentFunnelMetrics;
+  
+  // Class-level data (when scope=class)
+  classMetrics?: ClassAssignmentFunnelMetrics;
+  
+  // School-level data (when scope=school)
+  schoolMetrics?: SchoolAssignmentFunnelMetrics;
+  
+  // Assignment list (for class/school scope)
+  assignments?: AssignmentFunnelMetrics[];
+  
+  // Drill-down data
+  atRiskStudents?: AtRiskStudent[];
+  
+  // Summary
+  summary: {
+    totalAssignments: number;
+    overallCompletionRate: number;
+    atRiskCount: number;
+    avgCompletionTime: number | null;
+  };
+  
+  cache: CacheMetadata;
+}
+
 export interface AlignmentData {
   levelDistribution: Record<string, number>; // level -> student count
   cefrDistribution: Record<string, number>; // CEFR level -> student count
