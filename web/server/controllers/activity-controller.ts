@@ -4,6 +4,74 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { ActivityType } from "@prisma/client";
 import { ExtendedNextRequest } from "./auth-controller";
 import { ActivityDataPoint, MetricsActivityResponse } from "@/types/dashboard";
+import { getCachedMetrics } from "@/lib/cache/metrics";
+
+// Enhanced types for activity heatmap
+interface ActivityHeatmapBucket {
+  date: string;
+  hour: number;
+  dayOfWeek: number;
+  activityType: string;
+  activityCount: number;
+  completedCount: number;
+  uniqueStudents: number;
+  totalDurationMinutes: number;
+  avgDurationMinutes: number;
+}
+
+interface ActivityHeatmapResponse {
+  scope: 'student' | 'class' | 'school';
+  entityId: string;
+  timeframe: string;
+  granularity: 'hour' | 'day';
+  timezone: string;
+  activityTypes: string[];
+  buckets: ActivityHeatmapBucket[];
+  metadata: {
+    totalActivities: number;
+    uniqueStudents: number;
+    dateRange: {
+      start: string;
+      end: string;
+    };
+    availableActivityTypes: string[];
+  };
+  cache: {
+    cached: boolean;
+    generatedAt: string;
+  };
+}
+
+// Timeline data types
+interface TimelineEvent {
+  id: string;
+  type: 'assignment' | 'srs' | 'reading' | 'practice';
+  title: string;
+  description?: string;
+  timestamp: string;
+  duration?: number;
+  metadata?: Record<string, any>;
+}
+
+interface TimelineResponse {
+  scope: 'student';
+  entityId: string;
+  timeframe: string;
+  timezone: string;
+  events: TimelineEvent[];
+  metadata: {
+    totalEvents: number;
+    eventTypes: Record<string, number>;
+    dateRange: {
+      start: string;
+      end: string;
+    };
+  };
+  cache: {
+    cached: boolean;
+    generatedAt: string;
+  };
+}
 
 // Types for activity creation
 interface CreateActivityData {
@@ -15,11 +83,494 @@ interface CreateActivityData {
 }
 
 /**
- * Get activity metrics
+ * Get activity metrics with enhanced heatmap support
+ * 
+ * Query Parameters:
+ * - scope: 'student' | 'class' | 'school' (default: based on user role)
+ * - entityId: specific student/class/school ID (default: current user context)
+ * - timeframe: '7d' | '30d' | '90d' | '6m' (default: '30d')
+ * - granularity: 'hour' | 'day' (default: 'day')
+ * - activityTypes: comma-separated list of activity types to filter
+ * - format: 'heatmap' | 'timeline' | 'summary' (default: 'summary')
+ * 
  * @param req - Extended Next request with session
  * @returns Activity metrics response
  */
 export async function getActivityMetrics(req: ExtendedNextRequest) {
+  const startTime = Date.now();
+
+  try {
+    const session = req.session;
+    if (!session) {
+      return NextResponse.json(
+        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const format = searchParams.get('format') || 'summary';
+    
+    // Route to specific handlers based on format
+    if (format === 'heatmap') {
+      return getActivityHeatmap(req);
+    } else if (format === 'timeline') {
+      return getActivityTimeline(req);
+    }
+    
+    // Fallback to original summary format for backward compatibility
+    return getActivitySummary(req);
+  } catch (error) {
+    console.error('[Controller] getActivityMetrics - Error:', error);
+
+    return NextResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Failed to fetch activity metrics',
+        details: error instanceof Error ? { error: error.message } : {},
+      },
+      {
+        status: 500,
+        headers: {
+          'X-Response-Time': `${Date.now() - startTime}ms`,
+        },
+      }
+    );
+  }
+}
+
+/**
+ * Get activity heatmap data from materialized views
+ */
+async function getActivityHeatmap(req: ExtendedNextRequest): Promise<NextResponse<ActivityHeatmapResponse>> {
+  const startTime = Date.now();
+  const session = req.session!;
+  const { searchParams } = new URL(req.url);
+  
+  // Parse parameters
+  const scope = (searchParams.get('scope') as 'student' | 'class' | 'school') || 
+    (session.user.role === 'STUDENT' ? 'student' : 
+     session.user.role === 'TEACHER' ? 'class' : 'school');
+  const entityId = searchParams.get('entityId') || session.user.id;
+  const timeframe = searchParams.get('timeframe') || '30d';
+  const granularity = (searchParams.get('granularity') as 'hour' | 'day') || 'day';
+  const activityTypesFilter = searchParams.get('activityTypes')?.split(',').filter(Boolean) || [];
+  
+  // Calculate date range
+  const now = new Date();
+  const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : timeframe === '6m' ? 180 : 30;
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - daysAgo);
+  
+  const cacheKey = `activity-heatmap:${scope}:${entityId}:${timeframe}:${granularity}:${activityTypesFilter.join(',')}`;
+  
+  const fetchHeatmapData = async () => {
+    let whereConditions = [`ah.activity_date >= $1`];
+    const params: any[] = [startDate.toISOString().split('T')[0]];
+    let paramIndex = 2;
+    
+    // Build scope-specific where conditions
+    if (scope === 'student') {
+      whereConditions.push(`ah.user_id = $${paramIndex}`);
+      params.push(entityId);
+      paramIndex++;
+    } else if (scope === 'class') {
+      // For class scope, use the class heatmap view
+      whereConditions.push(`cah.classroom_id = $${paramIndex}`);
+      params.push(entityId);
+      paramIndex++;
+    } else if (scope === 'school') {
+      whereConditions.push(`ah.school_id = $${paramIndex}`);
+      params.push(entityId);
+      paramIndex++;
+    }
+    
+    // Add activity type filter
+    if (activityTypesFilter.length > 0) {
+      whereConditions.push(`ah.activity_type = ANY($${paramIndex})`);
+      params.push(activityTypesFilter);
+      paramIndex++;
+    }
+    
+    let query: string;
+    
+    if (scope === 'class') {
+      // Use class aggregated view for better performance
+      if (granularity === 'hour') {
+        query = `
+          SELECT 
+            cah.activity_date::text as date,
+            cah.hour_of_day as hour,
+            cah.day_of_week as day_of_week,
+            cah.activity_type,
+            cah.total_activities as activity_count,
+            cah.total_completed as completed_count,
+            cah.unique_students,
+            ROUND((cah.total_duration_seconds / 60.0)::numeric, 2) as total_duration_minutes,
+            ROUND((cah.avg_duration_seconds / 60.0)::numeric, 2) as avg_duration_minutes,
+            cah.timezone
+          FROM mv_class_activity_heatmap cah
+          WHERE ${whereConditions.join(' AND ')}
+          ORDER BY cah.activity_date, cah.hour_of_day, cah.activity_type
+        `;
+      } else {
+        query = `
+          SELECT 
+            cah.activity_date::text as date,
+            0 as hour,
+            cah.day_of_week as day_of_week,
+            cah.activity_type,
+            SUM(cah.total_activities) as activity_count,
+            SUM(cah.total_completed) as completed_count,
+            COUNT(DISTINCT cah.unique_students) as unique_students,
+            ROUND((SUM(cah.total_duration_seconds) / 60.0)::numeric, 2) as total_duration_minutes,
+            ROUND((AVG(cah.avg_duration_seconds) / 60.0)::numeric, 2) as avg_duration_minutes,
+            MAX(cah.timezone) as timezone
+          FROM mv_class_activity_heatmap cah
+          WHERE ${whereConditions.join(' AND ')}
+          GROUP BY cah.activity_date, cah.day_of_week, cah.activity_type
+          ORDER BY cah.activity_date, cah.activity_type
+        `;
+        // Remove classroom condition from student query for day aggregation
+        whereConditions = whereConditions.filter(condition => !condition.includes('cah.classroom_id'));
+        params.splice(-1, 1); // Remove entityId param
+      }
+    } else {
+      // Use student view for student and school scopes
+      if (granularity === 'hour') {
+        query = `
+          SELECT 
+            ah.activity_date::text as date,
+            ah.hour_of_day as hour,
+            ah.day_of_week as day_of_week,
+            ah.activity_type,
+            ${scope === 'student' ? 'ah.activity_count' : 'SUM(ah.activity_count)'} as activity_count,
+            ${scope === 'student' ? 'ah.completed_count' : 'SUM(ah.completed_count)'} as completed_count,
+            ${scope === 'student' ? '1' : 'COUNT(DISTINCT ah.user_id)'} as unique_students,
+            ROUND((${scope === 'student' ? 'ah.total_duration_seconds' : 'SUM(ah.total_duration_seconds)'} / 60.0)::numeric, 2) as total_duration_minutes,
+            ROUND((${scope === 'student' ? 'ah.avg_duration_seconds' : 'AVG(ah.avg_duration_seconds)'} / 60.0)::numeric, 2) as avg_duration_minutes,
+            MAX(ah.timezone) as timezone
+          FROM mv_activity_heatmap ah
+          WHERE ${whereConditions.join(' AND ')}
+          ${scope === 'school' ? 'GROUP BY ah.activity_date, ah.hour_of_day, ah.day_of_week, ah.activity_type' : ''}
+          ORDER BY ah.activity_date, ah.hour_of_day, ah.activity_type
+        `;
+      } else {
+        query = `
+          SELECT 
+            ah.activity_date::text as date,
+            0 as hour,
+            ah.day_of_week as day_of_week,
+            ah.activity_type,
+            ${scope === 'student' ? 'SUM(ah.activity_count)' : 'SUM(ah.activity_count)'} as activity_count,
+            ${scope === 'student' ? 'SUM(ah.completed_count)' : 'SUM(ah.completed_count)'} as completed_count,
+            ${scope === 'student' ? '1' : 'COUNT(DISTINCT ah.user_id)'} as unique_students,
+            ROUND((SUM(ah.total_duration_seconds) / 60.0)::numeric, 2) as total_duration_minutes,
+            ROUND((AVG(ah.avg_duration_seconds) / 60.0)::numeric, 2) as avg_duration_minutes,
+            MAX(ah.timezone) as timezone
+          FROM mv_activity_heatmap ah
+          WHERE ${whereConditions.join(' AND ')}
+          GROUP BY ah.activity_date, ah.day_of_week, ah.activity_type
+          ORDER BY ah.activity_date, ah.activity_type
+        `;
+      }
+    }
+    
+    const buckets = await prisma.$queryRawUnsafe(query, ...params) as Array<{
+      date: string;
+      hour: number;
+      day_of_week: number;
+      activity_type: string;
+      activity_count: number;
+      completed_count: number;
+      unique_students: number;
+      total_duration_minutes: number;
+      avg_duration_minutes: number;
+      timezone: string;
+    }>;
+    
+    // Get available activity types for metadata
+    const availableTypesQuery = scope === 'class' ?
+      'SELECT DISTINCT activity_type FROM mv_class_activity_heatmap WHERE classroom_id = $1' :
+      'SELECT DISTINCT activity_type FROM mv_activity_heatmap WHERE school_id = $1';
+      
+    const availableTypes = await prisma.$queryRawUnsafe(
+      availableTypesQuery, 
+      entityId
+    ) as Array<{ activity_type: string }>;
+    
+    // Calculate summary metadata
+    const totalActivities = buckets.reduce((sum, bucket) => sum + Number(bucket.activity_count), 0);
+    const uniqueStudents = Math.max(...buckets.map(bucket => Number(bucket.unique_students)), 0);
+    const timezone = buckets[0]?.timezone || 'UTC';
+    
+    return {
+      scope,
+      entityId,
+      timeframe,
+      granularity,
+      timezone,
+      activityTypes: activityTypesFilter,
+      buckets: buckets.map(bucket => ({
+        date: bucket.date,
+        hour: Number(bucket.hour),
+        dayOfWeek: Number(bucket.day_of_week),
+        activityType: bucket.activity_type,
+        activityCount: Number(bucket.activity_count),
+        completedCount: Number(bucket.completed_count),
+        uniqueStudents: Number(bucket.unique_students),
+        totalDurationMinutes: Number(bucket.total_duration_minutes),
+        avgDurationMinutes: Number(bucket.avg_duration_minutes),
+      })),
+      metadata: {
+        totalActivities,
+        uniqueStudents,
+        dateRange: {
+          start: startDate.toISOString().split('T')[0],
+          end: now.toISOString().split('T')[0],
+        },
+        availableActivityTypes: availableTypes.map(t => t.activity_type),
+      },
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+  };
+  
+  // Use caching for performance
+  const data = await getCachedMetrics(cacheKey, fetchHeatmapData, {
+    ttl: 300000, // 5 minutes in milliseconds
+    staleTime: 60000, // 1 minute stale time
+  });
+  
+  const duration = Date.now() - startTime;
+  
+  console.log(`[Controller] getActivityHeatmap - ${duration}ms - ${data.buckets.length} buckets`);
+  
+  return NextResponse.json(data, {
+    headers: {
+      'Cache-Control': 'private, max-age=300, stale-while-revalidate=900',
+      'X-Response-Time': `${duration}ms`,
+    },
+  });
+}
+
+/**
+ * Get activity timeline data for student dashboard
+ */
+async function getActivityTimeline(req: ExtendedNextRequest): Promise<NextResponse> {
+  const startTime = Date.now();
+  const session = req.session!;
+  const { searchParams } = new URL(req.url);
+  
+  // Timeline is student-specific only
+  const scope = 'student' as const;
+  const entityId = searchParams.get('entityId') || session.user.id;
+  const timeframe = searchParams.get('timeframe') || '30d';
+  
+  // Ensure user can access this student's data
+  if (session.user.role === 'STUDENT' && entityId !== session.user.id) {
+    return NextResponse.json(
+      { code: 'FORBIDDEN', message: 'Cannot access other student data' },
+      { status: 403 }
+    );
+  }
+  
+  // Calculate date range
+  const now = new Date();
+  const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - daysAgo);
+  
+  const cacheKey = `activity-timeline:${entityId}:${timeframe}`;
+  
+  const fetchTimelineData = async (): Promise<TimelineResponse> => {
+    // Get assignments (due dates and completion)
+    const assignments = await prisma.studentAssignment.findMany({
+      where: {
+        studentId: entityId,
+        createdAt: {
+          gte: startDate,
+        },
+      },
+      include: {
+        assignment: {
+          include: {
+            article: {
+              select: {
+                title: true,
+                cefrLevel: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    
+    // Get SRS practice sessions - using correct field names
+    const srsEvents = await prisma.userSentenceRecord.findMany({
+      where: {
+        userId: entityId,
+        updatedAt: {
+          gte: startDate,
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      take: 100,
+    });
+    
+    // Get reading sessions from lesson records
+    const readingSessions = await prisma.lessonRecord.findMany({
+      where: {
+        userId: entityId,
+        createdAt: {
+          gte: startDate,
+        },
+      },
+      include: {
+        article: {
+          select: {
+            title: true,
+            cefrLevel: true,
+            genre: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    
+    // For now, use UTC timezone since it's not in the schema yet
+    const timezone = 'UTC';
+    
+    // Convert to timeline events
+    const events: TimelineEvent[] = [];
+    
+    // Add assignment events
+    assignments.forEach(assignment => {
+      events.push({
+        id: `assignment-${assignment.id}`,
+        type: 'assignment',
+        title: `Assignment: ${assignment.assignment.article?.title || 'Article'}`,
+        description: `Assigned reading (${assignment.assignment.article?.cefrLevel || 'Unknown level'})`,
+        timestamp: assignment.createdAt.toISOString(),
+        metadata: {
+          status: assignment.status,
+          articleId: assignment.assignment.articleId,
+          completedAt: assignment.completedAt?.toISOString(),
+        },
+      });
+    });
+    
+    // Add SRS events - using correct field names
+    srsEvents.forEach(srsEvent => {
+      events.push({
+        id: `srs-${srsEvent.id}`,
+        type: 'srs',
+        title: 'SRS Practice',
+        description: `Practiced sentence: "${srsEvent.sentence.substring(0, 50)}..."`,
+        timestamp: srsEvent.updatedAt.toISOString(),
+        metadata: {
+          state: srsEvent.state,
+          sentence: srsEvent.sentence,
+        },
+      });
+    });
+    
+    // Add reading sessions
+    readingSessions.forEach(session => {
+      const phases = [
+        session.phase1, session.phase2, session.phase3, session.phase4,
+        session.phase5, session.phase6, session.phase7, session.phase8,
+        session.phase9, session.phase10, session.phase11, session.phase12,
+        session.phase13, session.phase14
+      ];
+      
+      let totalTime = 0;
+      phases.forEach(phase => {
+        if (phase && typeof phase === 'object') {
+          const phaseData = phase as any;
+          if (typeof phaseData.elapsedTime === 'number') {
+            totalTime += phaseData.elapsedTime;
+          }
+        }
+      });
+      
+      events.push({
+        id: `reading-${session.id}`,
+        type: 'reading',
+        title: `Read: ${session.article?.title || 'Article'}`,
+        description: `Reading session (${session.article?.genre || 'Unknown genre'})`,
+        timestamp: session.createdAt.toISOString(),
+        duration: totalTime > 0 ? totalTime / 1000 : undefined, // Convert to seconds
+        metadata: {
+          articleId: session.articleId,
+          cefrLevel: session.article?.cefrLevel,
+          genre: session.article?.genre,
+          completed: (session.phase14 as any)?.status === 2,
+        },
+      });
+    });
+    
+    // Sort by timestamp (newest first)
+    events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    
+    // Calculate metadata
+    const eventTypes = events.reduce((types, event) => {
+      types[event.type] = (types[event.type] || 0) + 1;
+      return types;
+    }, {} as Record<string, number>);
+    
+    return {
+      scope,
+      entityId,
+      timeframe,
+      timezone,
+      events,
+      metadata: {
+        totalEvents: events.length,
+        eventTypes,
+        dateRange: {
+          start: startDate.toISOString().split('T')[0],
+          end: now.toISOString().split('T')[0],
+        },
+      },
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+  };
+  
+  // Use caching for performance
+  const data = await getCachedMetrics(cacheKey, fetchTimelineData, {
+    ttl: 180000, // 3 minutes in milliseconds
+    staleTime: 60000, // 1 minute stale time
+  });
+  
+  const duration = Date.now() - startTime;
+  
+  console.log(`[Controller] getActivityTimeline - ${duration}ms - ${data.events.length} events`);
+  
+  return NextResponse.json(data, {
+    headers: {
+      'Cache-Control': 'private, max-age=180, stale-while-revalidate=600',
+      'X-Response-Time': `${duration}ms`,
+    },
+  });
+}
+
+/**
+ * Original activity summary implementation for backward compatibility
+ */
+async function getActivitySummary(req: ExtendedNextRequest) {
   const startTime = Date.now();
 
   try {
