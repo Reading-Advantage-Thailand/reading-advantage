@@ -205,7 +205,7 @@ export default function SystemDashboardClient() {
 
             {/* Main Dashboard Tabs */}
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger
                   value="overview"
                   className="flex items-center gap-2"
@@ -227,139 +227,200 @@ export default function SystemDashboardClient() {
                   <Brain className="h-4 w-4" />
                   AI Insights
                 </TabsTrigger>
-                <TabsTrigger value="admin" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Admin
-                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-6 mt-6">
-                <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-                  <Card>
-                    <CardContent className="mt-6">
-                      <ModernLicenseUsage />
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="mt-6">
-                      <ModernActiveUsers page="system" dateRange={dateRange} />
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Quick Stats Cards - Display dynamic data */}
+                {/* Key Metrics Stats - Redesigned */}
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                  <Card>
+                  <Card className="border-l-4 border-l-primary hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
                         Total Schools
                       </CardTitle>
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Settings className="h-4 w-4 text-primary" />
+                      </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">
+                      <div className="text-3xl font-bold text-primary">
                         {dashboardData?.overview?.totalSchools || "0"}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Active schools
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Active institutions
                       </p>
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-400 hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Total Articles
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        {dashboardData?.overview?.totalArticles?.toLocaleString() ||
-                          "0"}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Available content
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Completion Rate
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        {dashboardData?.activity?.completionRate || "0%"}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Articles completed
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
                         Total Users
                       </CardTitle>
+                      <div className="h-8 w-8 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center">
+                        <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">
+                      <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                         {(
                           (dashboardData?.overview?.totalStudents || 0) +
                           (dashboardData?.overview?.totalTeachers || 0)
                         ).toLocaleString()}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Students & Teachers
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {dashboardData?.overview?.totalStudents?.toLocaleString() ||
+                          "0"}{" "}
+                        students,{" "}
+                        {dashboardData?.overview?.totalTeachers?.toLocaleString() ||
+                          "0"}{" "}
+                        teachers
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-violet-500 dark:border-l-violet-400 hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Total Articles
+                      </CardTitle>
+                      <div className="h-8 w-8 rounded-full bg-violet-500/10 dark:bg-violet-400/10 flex items-center justify-center">
+                        <BarChart3 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-violet-600 dark:text-violet-400">
+                        {dashboardData?.overview?.totalArticles?.toLocaleString() ||
+                          "0"}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Available content library
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-amber-500 dark:border-l-amber-400 hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Completion Rate
+                      </CardTitle>
+                      <div className="h-8 w-8 rounded-full bg-amber-500/10 dark:bg-amber-400/10 flex items-center justify-center">
+                        <Brain className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                        {dashboardData?.activity?.completionRate || "0%"}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Articles completed successfully
                       </p>
                     </CardContent>
                   </Card>
                 </div>
-              </TabsContent>
 
-              <TabsContent value="activity" className="space-y-6 mt-6">
-                <ActivityCharts />
-              </TabsContent>
-
-              <TabsContent value="insights" className="space-y-6 mt-6">
-                <AIInsights />
-              </TabsContent>
-
-              <TabsContent value="admin" className="space-y-6 mt-6">
+                {/* Usage Analytics */}
                 <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-                  <Card>
+                  <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <CardTitle>System Health</CardTitle>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <BarChart3 className="h-4 w-4 text-primary" />
+                        </div>
+                        License Usage
+                      </CardTitle>
                       <CardDescription>
-                        Monitor system performance and health metrics
+                        Monitor license allocation and usage across schools
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ModernLicenseUsage />
+                    </CardContent>
+                  </Card>
+
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center">
+                          <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        Active Users
+                      </CardTitle>
+                      <CardDescription>
+                        Real-time user activity and engagement metrics
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ModernActiveUsers page="system" dateRange={dateRange} />
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* System Health & Recent Activity */}
+                <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center">
+                          <Settings className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        System Health
+                      </CardTitle>
+                      <CardDescription>
+                        Real-time system performance and health metrics
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm">Database Performance</span>
-                          <Badge variant="default">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/5 dark:bg-emerald-400/5 border border-emerald-500/20 dark:border-emerald-400/20">
+                          <div className="flex items-center gap-3">
+                            <div className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+                            <span className="text-sm font-medium">
+                              Database Performance
+                            </span>
+                          </div>
+                          <Badge
+                            variant="default"
+                            className="bg-emerald-600 dark:bg-emerald-500"
+                          >
                             {dashboardData?.health?.database || "Excellent"}
                           </Badge>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm">API Response Time</span>
-                          <Badge variant="default">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20">
+                          <div className="flex items-center gap-3">
+                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                            <span className="text-sm font-medium">
+                              API Response Time
+                            </span>
+                          </div>
+                          <Badge variant="default" className="bg-primary">
                             {dashboardData?.health?.apiResponse || "Good"}
                           </Badge>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm">Error Rate</span>
-                          <Badge variant="default">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-violet-500/5 dark:bg-violet-400/5 border border-violet-500/20 dark:border-violet-400/20">
+                          <div className="flex items-center gap-3">
+                            <div className="h-2 w-2 rounded-full bg-violet-500 dark:bg-violet-400 animate-pulse" />
+                            <span className="text-sm font-medium">
+                              Error Rate
+                            </span>
+                          </div>
+                          <Badge
+                            variant="default"
+                            className="bg-violet-600 dark:bg-violet-500"
+                          >
                             {dashboardData?.health?.errorRate || "Low"}
                           </Badge>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm">Uptime</span>
-                          <Badge variant="default">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/5 dark:bg-amber-400/5 border border-amber-500/20 dark:border-amber-400/20">
+                          <div className="flex items-center gap-3">
+                            <div className="h-2 w-2 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse" />
+                            <span className="text-sm font-medium">
+                              System Uptime
+                            </span>
+                          </div>
+                          <Badge
+                            variant="default"
+                            className="bg-amber-600 dark:bg-amber-500"
+                          >
                             {dashboardData?.health?.uptime || "99.9%"}
                           </Badge>
                         </div>
@@ -367,43 +428,69 @@ export default function SystemDashboardClient() {
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <CardTitle>Recent Actions</CardTitle>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Activity className="h-4 w-4 text-primary" />
+                        </div>
+                        Recent Activity
+                      </CardTitle>
                       <CardDescription>
-                        Latest administrative actions and changes
+                        Latest administrative actions and system changes
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 rounded-full bg-green-500" />
-                          <div className="flex-1">
-                            <p className="text-sm">
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-emerald-500/5 dark:hover:bg-emerald-400/5 transition-colors border border-transparent hover:border-emerald-500/20 dark:hover:border-emerald-400/20">
+                          <div className="flex-shrink-0 mt-1">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">
                               New school license activated
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground mt-1">
                               2 hours ago
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 rounded-full bg-blue-500" />
-                          <div className="flex-1">
-                            <p className="text-sm">Content library updated</p>
-                            <p className="text-xs text-muted-foreground">
+                        <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-primary/5 transition-colors border border-transparent hover:border-primary/20">
+                          <div className="flex-shrink-0 mt-1">
+                            <div className="w-2 h-2 rounded-full bg-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">
+                              Content library updated
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
                               4 hours ago
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 rounded-full bg-orange-500" />
-                          <div className="flex-1">
-                            <p className="text-sm">
+                        <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-amber-500/5 dark:hover:bg-amber-400/5 transition-colors border border-transparent hover:border-amber-500/20 dark:hover:border-amber-400/20">
+                          <div className="flex-shrink-0 mt-1">
+                            <div className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">
                               System maintenance completed
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground mt-1">
                               1 day ago
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-violet-500/5 dark:hover:bg-violet-400/5 transition-colors border border-transparent hover:border-violet-500/20 dark:hover:border-violet-400/20">
+                          <div className="flex-shrink-0 mt-1">
+                            <div className="w-2 h-2 rounded-full bg-violet-500 dark:bg-violet-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">
+                              Reading sessions milestone reached
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              2 days ago
                             </p>
                           </div>
                         </div>
@@ -411,6 +498,14 @@ export default function SystemDashboardClient() {
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="activity" className="space-y-6 mt-6">
+                <ActivityCharts dateRange={dateRange} />
+              </TabsContent>
+
+              <TabsContent value="insights" className="space-y-6 mt-6">
+                <AIInsights />
               </TabsContent>
             </Tabs>
           </div>

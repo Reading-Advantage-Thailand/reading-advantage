@@ -28,6 +28,7 @@ import {
 
 interface ActivityHeatmapProps {
   className?: string;
+  dateRange?: string;
 }
 
 interface ActivityData {
@@ -60,7 +61,10 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function ActivityCharts({ className }: ActivityHeatmapProps) {
+export default function ActivityCharts({
+  className,
+  dateRange = "30d",
+}: ActivityHeatmapProps) {
   const [heatmapData, setHeatmapData] = useState<ActivityData[]>([]);
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
@@ -70,100 +74,246 @@ export default function ActivityCharts({ className }: ActivityHeatmapProps) {
     try {
       setLoading(true);
 
-      // Fetch activity data
-      const activityRes = await fetch("/api/v1/metrics/activity");
-      const activityData = await activityRes.json();
+      // Add timestamp to prevent caching
+      const timestamp = Date.now();
 
-      // Generate mock heatmap data (in real app, this would come from API)
-      const mockHeatmapData: ActivityData[] = [];
-      const today = new Date();
+      // Map dateRange to appropriate timeframe for API
+      const getHeatmapTimeframe = () => {
+        switch (dateRange) {
+          case "7d":
+            return "7d";
+          case "30d":
+            return "30d";
+          case "90d":
+            return "90d";
+          case "all":
+            return "all"; // Request all historical data
+          default:
+            return "30d";
+        }
+      };
 
-      // Generate data for the past year (371 days to fill the grid)
-      for (let i = 0; i < 371; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - (370 - i)); // Start from 370 days ago to today
+      const getTimelineTimeframe = () => {
+        switch (dateRange) {
+          case "7d":
+            return "7d";
+          case "30d":
+            return "30d";
+          case "90d":
+            return "90d";
+          case "all":
+            return "all"; // Request all historical data
+          default:
+            return "30d";
+        }
+      };
 
-        // Simulate more realistic activity patterns
-        const dayOfWeek = date.getDay();
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        const baseActivity = isWeekend ? 5 : 15; // Lower activity on weekends
+      const heatmapTimeframe = getHeatmapTimeframe();
+      const timelineTimeframe = getTimelineTimeframe();
 
-        const value = Math.max(
-          0,
-          Math.floor(Math.random() * baseActivity) +
-            Math.floor(Math.random() * 10)
+      // Fetch heatmap data from API
+      const heatmapRes = await fetch(
+        `/api/v1/metrics/activity?format=heatmap&timeframe=${heatmapTimeframe}&granularity=day&_t=${timestamp}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+
+      // Fetch timeline data from API
+      const timelineRes = await fetch(
+        `/api/v1/metrics/activity?format=timeline&timeframe=${timelineTimeframe}&_t=${timestamp}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+
+      let heatmapData: any = { buckets: [], metadata: {} };
+      let timelineData: any = { events: [] };
+
+      // Handle heatmap response
+      if (heatmapRes.ok) {
+        heatmapData = await heatmapRes.json();
+      } else {
+        console.error(
+          "❌ Failed to fetch heatmap data:",
+          heatmapRes.status,
+          await heatmapRes.text()
         );
+      }
+
+      // Handle timeline response
+      if (timelineRes.ok) {
+        timelineData = await timelineRes.json();
+      } else {
+        console.error(
+          "❌ Failed to fetch timeline data:",
+          timelineRes.status,
+          await timelineRes.text()
+        );
+      }
+
+      // Process heatmap data
+      const processedHeatmapData: ActivityData[] = [];
+      const activityByDate = new Map<string, number>();
+
+      // Aggregate activity counts by date
+      if (heatmapData.buckets && Array.isArray(heatmapData.buckets)) {
+        heatmapData.buckets.forEach((bucket: any) => {
+          const existing = activityByDate.get(bucket.date) || 0;
+          activityByDate.set(
+            bucket.date,
+            existing + (bucket.activityCount || 0)
+          );
+        });
+      } else {
+        console.warn("⚠️ No buckets array in heatmap data");
+      }
+
+      // Determine number of days to show based on dateRange
+      const getHeatmapDays = () => {
+        switch (dateRange) {
+          case "7d":
+            return 7;
+          case "30d":
+            return 30;
+          case "90d":
+            return 90;
+          case "all":
+            return 365; // Show full year for all time
+          default:
+            return 30;
+        }
+      };
+
+      const heatmapDays = getHeatmapDays();
+
+      // Fill in dates for the selected period
+      const today = new Date();
+      for (let i = 0; i < heatmapDays; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - (heatmapDays - 1 - i));
+        const dateString = date.toISOString().split("T")[0];
+        const value = activityByDate.get(dateString) || 0;
+
+        // Determine activity level based on actual data
         let level: ActivityData["level"] = "low";
         if (value === 0) level = "low";
-        else if (value <= 5) level = "low";
-        else if (value <= 10) level = "medium";
-        else if (value <= 15) level = "high";
-        else level = "very-high";
+        else if (value <= 3)
+          level = "medium"; // 1-3 activities: light green
+        else if (value <= 7)
+          level = "high"; // 4-7 activities: medium green
+        else level = "very-high"; // 8+ activities: dark green
 
-        mockHeatmapData.push({
-          date: date.toISOString().split("T")[0],
+        processedHeatmapData.push({
+          date: dateString,
           value,
           level,
         });
       }
 
-      // Generate mock timeline events
-      const mockTimelineEvents: TimelineEvent[] = [
-        {
-          id: "1",
-          title: "Reading Session Completed",
-          description: 'User completed "The Science of Learning"',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-          type: "reading",
-          user: "Alice Johnson",
-        },
-        {
-          id: "2",
-          title: "Practice Exercise",
-          description: "Vocabulary practice session",
-          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-          type: "practice",
-          user: "Bob Smith",
-        },
-        {
-          id: "3",
-          title: "Assessment Completed",
-          description: "Level test passed with 85% score",
-          timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-          type: "assessment",
-          user: "Carol Davis",
-        },
-        {
-          id: "4",
-          title: "Achievement Unlocked",
-          description: "Reading Streak: 7 days",
-          timestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-          type: "achievement",
-          user: "David Wilson",
-        },
-      ];
+      // Process timeline events
+      const processedTimelineEvents: TimelineEvent[] = [];
+      if (timelineData.events && Array.isArray(timelineData.events)) {
+        timelineData.events.slice(0, 10).forEach((event: any) => {
+          let eventType: TimelineEvent["type"] = "reading";
+          let title = event.title || "Activity";
+          let description = event.description || "";
 
-      // Generate chart data for analytics
-      const mockChartData = [];
-      for (let i = 29; i >= 0; i--) {
+          // Map event types
+          if (event.type === "assignment") {
+            eventType = "assessment";
+            title = event.title;
+          } else if (event.type === "srs") {
+            eventType = "practice";
+            title = "SRS Practice Session";
+          } else if (event.type === "reading") {
+            eventType = "reading";
+          } else if (event.type === "practice") {
+            eventType = "practice";
+          }
+
+          processedTimelineEvents.push({
+            id: event.id,
+            title,
+            description,
+            timestamp: event.timestamp,
+            type: eventType,
+          });
+        });
+      }
+
+      // Generate chart data from heatmap buckets based on selected date range
+      const chartDataMap = new Map<
+        string,
+        { activity: number; sessions: number }
+      >();
+
+      if (heatmapData.buckets && Array.isArray(heatmapData.buckets)) {
+        heatmapData.buckets.forEach((bucket: any) => {
+          const existing = chartDataMap.get(bucket.date) || {
+            activity: 0,
+            sessions: 0,
+          };
+
+          existing.activity += bucket.activityCount || 0;
+          existing.sessions += bucket.activityCount || 0;
+
+          chartDataMap.set(bucket.date, existing);
+        });
+      }
+
+      // Create chart data based on selected date range
+      const getChartDays = () => {
+        switch (dateRange) {
+          case "7d":
+            return 7;
+          case "30d":
+            return 30;
+          case "90d":
+            return 90;
+          case "all":
+            return 365; // Show last year for all time
+          default:
+            return 30;
+        }
+      };
+
+      const chartDays = getChartDays();
+      const processedChartData = [];
+      for (let i = chartDays - 1; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
-        mockChartData.push({
+        const dateString = date.toISOString().split("T")[0];
+        const data = chartDataMap.get(dateString);
+
+        processedChartData.push({
           date: date.toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
           }),
-          activity: Math.floor(Math.random() * 100) + 20,
-          users: Math.floor(Math.random() * 50) + 10,
-          sessions: Math.floor(Math.random() * 200) + 50,
+          activity: data?.activity || 0,
+          users: heatmapData.metadata?.uniqueStudents || 0,
+          sessions: data?.sessions || 0,
         });
       }
 
-      setHeatmapData(mockHeatmapData);
-      setTimelineEvents(mockTimelineEvents);
-      setChartData(mockChartData);
+      setHeatmapData(processedHeatmapData);
+      setTimelineEvents(processedTimelineEvents);
+      setChartData(processedChartData);
     } catch (error) {
-      console.error("Error fetching activity data:", error);
+      console.error("❌ Error fetching activity data:", error);
+      // Set empty data on error
+      setHeatmapData([]);
+      setTimelineEvents([]);
+      setChartData([]);
     } finally {
       setLoading(false);
     }
@@ -171,7 +321,7 @@ export default function ActivityCharts({ className }: ActivityHeatmapProps) {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [dateRange]);
 
   const getHeatmapColor = (level: ActivityData["level"]) => {
     switch (level) {
@@ -248,6 +398,19 @@ export default function ActivityCharts({ className }: ActivityHeatmapProps) {
         <h2 className="text-2xl font-bold tracking-tight">Activity Overview</h2>
         <p className="text-muted-foreground">
           Monitor user activities, engagement patterns, and real-time events
+          {dateRange && (
+            <span className="ml-2 text-sm">
+              (showing{" "}
+              {dateRange === "7d"
+                ? "last 7 days"
+                : dateRange === "30d"
+                  ? "last 30 days"
+                  : dateRange === "90d"
+                    ? "last 3 months"
+                    : "all time"}
+              )
+            </span>
+          )}
         </p>
       </div>
 
@@ -259,75 +422,193 @@ export default function ActivityCharts({ className }: ActivityHeatmapProps) {
             Activity Heatmap
           </CardTitle>
           <CardDescription>
-            Daily activity levels over the past year
+            Daily activity levels
+            {dateRange === "7d" && " over the past 7 days"}
+            {dateRange === "30d" && " over the past 30 days"}
+            {dateRange === "90d" && " over the past 3 months"}
+            {dateRange === "all" && " over the past year"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* Heatmap Grid */}
             <div className="w-full overflow-x-auto">
-              <div className="flex flex-col gap-1 min-w-max">
-                {/* Create 7 rows for days of week */}
-                {Array.from({ length: 7 }).map((_, dayOfWeek) => (
-                  <div key={dayOfWeek} className="flex gap-1 items-center">
-                    <div className="w-8 text-xs text-muted-foreground">
-                      {
-                        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
-                          dayOfWeek
-                        ]
-                      }
-                    </div>
-                    <div className="flex gap-1">
-                      {Array.from({ length: 53 }).map((_, weekIndex) => {
-                        const dayIndex = weekIndex * 7 + dayOfWeek;
-                        const day = heatmapData[dayIndex];
+              {(() => {
+                const totalDays = heatmapData.length;
+                const weeksToShow = Math.ceil(totalDays / 7);
 
-                        if (!day) {
-                          return <div key={weekIndex} className="w-3 h-3" />;
-                        }
+                // Use horizontal layout for short periods (≤90 days)
+                if (totalDays <= 90) {
+                  // Horizontal layout - single row
+                  const getCellSize = () => {
+                    if (totalDays <= 7) return "h-16 flex-1 min-w-[60px]"; // 7 days: very tall, flexible width
+                    if (totalDays <= 30) return "h-12 flex-1 min-w-[20px]"; // 30 days: tall, flexible
+                    return "h-10 w-3"; // 31-90 days: medium height, fixed width
+                  };
 
-                        return (
+                  const cellSize = getCellSize();
+                  const gapSize = totalDays <= 30 ? "gap-1.5" : "gap-1";
+
+                  return (
+                    <div className="space-y-3">
+                      {/* Single horizontal row */}
+                      <div className={`flex ${gapSize} items-end`}>
+                        {heatmapData.map((day, index) => (
                           <div
-                            key={weekIndex}
-                            className={`w-3 h-3 rounded-sm ${getHeatmapColor(day.level)} cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all`}
+                            key={index}
+                            className={`${cellSize} rounded-sm ${getHeatmapColor(day.level)} cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all relative group`}
                             title={`${day.date}: ${day.value} activities`}
-                          />
-                        );
-                      })}
+                          >
+                            {totalDays <= 7 && (
+                              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground whitespace-nowrap">
+                                {new Date(day.date).toLocaleDateString(
+                                  "en-US",
+                                  { weekday: "short" }
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Date labels for longer periods */}
+                      {totalDays > 7 && (
+                        <div className="flex justify-between text-xs text-muted-foreground px-1">
+                          <span>
+                            {heatmapData[0]?.date
+                              ? new Date(
+                                  heatmapData[0].date
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                })
+                              : ""}
+                          </span>
+                          <span>
+                            {heatmapData[heatmapData.length - 1]?.date
+                              ? new Date(
+                                  heatmapData[heatmapData.length - 1].date
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                })
+                              : ""}
+                          </span>
+                        </div>
+                      )}
                     </div>
+                  );
+                }
+
+                // Grid layout for longer periods (>90 days)
+                const getCellSize = () => {
+                  if (weeksToShow <= 14) return "w-4 h-4"; // 91-98 days: medium
+                  return "w-3 h-3"; // 99+ days: small
+                };
+
+                const cellSize = getCellSize();
+                const gapSize = "gap-1";
+
+                return (
+                  <div className="flex flex-col gap-1 min-w-max">
+                    {/* Create 7 rows for days of week */}
+                    {Array.from({ length: 7 }).map((_, dayOfWeek) => (
+                      <div
+                        key={dayOfWeek}
+                        className={`flex ${gapSize} items-center`}
+                      >
+                        <div className="w-8 text-xs text-muted-foreground">
+                          {
+                            ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+                              dayOfWeek
+                            ]
+                          }
+                        </div>
+                        <div className={`flex ${gapSize}`}>
+                          {Array.from({ length: weeksToShow }).map(
+                            (_, weekIndex) => {
+                              const dayIndex = weekIndex * 7 + dayOfWeek;
+                              const day = heatmapData[dayIndex];
+
+                              if (!day) {
+                                return (
+                                  <div key={weekIndex} className={cellSize} />
+                                );
+                              }
+
+                              return (
+                                <div
+                                  key={weekIndex}
+                                  className={`${cellSize} rounded-sm ${getHeatmapColor(day.level)} cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all`}
+                                  title={`${day.date}: ${day.value} activities`}
+                                />
+                              );
+                            }
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
             </div>
 
-            {/* Month labels */}
-            <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              {[
-                "Jan",
-                "Feb",
-                "Mar",
-                "Apr",
-                "May",
-                "Jun",
-                "Jul",
-                "Aug",
-                "Sep",
-                "Oct",
-                "Nov",
-                "Dec",
-              ].map((month, index) => (
-                <span key={index}>{month}</span>
-              ))}
-            </div>
+            {/* Month labels - Dynamic based on date range */}
+            {heatmapData.length > 90 && (
+              <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                {(() => {
+                  const firstDate = heatmapData[0]?.date
+                    ? new Date(heatmapData[0].date)
+                    : new Date();
+                  const lastDate = heatmapData[heatmapData.length - 1]?.date
+                    ? new Date(heatmapData[heatmapData.length - 1].date)
+                    : new Date();
+
+                  const months = [];
+                  const currentMonth = new Date(firstDate);
+
+                  while (currentMonth <= lastDate) {
+                    months.push(
+                      currentMonth.toLocaleDateString("en-US", {
+                        month: "short",
+                      })
+                    );
+                    currentMonth.setMonth(currentMonth.getMonth() + 1);
+                  }
+
+                  return months.map((month, index) => (
+                    <span key={index}>{month}</span>
+                  ));
+                })()}
+              </div>
+            )}
 
             {/* Legend */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>Less</span>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-700" />
-                <div className="w-3 h-3 rounded-sm bg-green-300" />
-                <div className="w-3 h-3 rounded-sm bg-green-500" />
-                <div className="w-3 h-3 rounded-sm bg-green-600" />
+                {(() => {
+                  const totalDays = heatmapData.length;
+                  // Adjust legend size based on layout
+                  const legendSize = totalDays <= 30 ? "w-4 h-4" : "w-3 h-3";
+
+                  return (
+                    <>
+                      <div
+                        className={`${legendSize} rounded-sm bg-gray-200 dark:bg-gray-700`}
+                      />
+                      <div
+                        className={`${legendSize} rounded-sm bg-green-300`}
+                      />
+                      <div
+                        className={`${legendSize} rounded-sm bg-green-500`}
+                      />
+                      <div
+                        className={`${legendSize} rounded-sm bg-green-600`}
+                      />
+                    </>
+                  );
+                })()}
               </div>
               <span>More</span>
             </div>
@@ -341,7 +622,7 @@ export default function ActivityCharts({ className }: ActivityHeatmapProps) {
           <CardHeader>
             <CardTitle>Daily Activity Trend</CardTitle>
             <CardDescription>
-              Activity levels over the past 30 days
+              Activity levels over the selected period
             </CardDescription>
           </CardHeader>
           <CardContent>

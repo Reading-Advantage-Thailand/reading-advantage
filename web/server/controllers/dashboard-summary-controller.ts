@@ -28,6 +28,7 @@ interface DashboardSummaryResponse {
     sessionsGrowth: number;
     usersGrowth: number;
     sessionTimeGrowth: number;
+    velocityGrowth: number;
     alignmentGrowth: number;
   };
   cache: {
@@ -106,6 +107,9 @@ export async function getDashboardSummary(req: ExtendedNextRequest) {
           avg_xp_7d: number;
           avg_xp_30d: number;
         }>;
+        velocityPrevious: Array<{
+          avg_xp_previous: number;
+        }>;
       }>({
         activity: {
           query: `
@@ -154,25 +158,60 @@ export async function getDashboardSummary(req: ExtendedNextRequest) {
           `,
           params: [currentPeriodStart],
         },
+        // IMPORTANT: Velocity must include ALL students (even inactive ones)
+        // to avoid inflated growth percentages when comparing periods
+        // with different numbers of active students.
         velocity: {
           query: `
-            WITH student_xp AS (
+            WITH all_students AS (
+              SELECT id FROM users WHERE role = 'STUDENT'
+            ),
+            student_xp_7d AS (
               SELECT 
-                user_id,
-                COALESCE(SUM(CASE WHEN "createdAt" >= $1 THEN xp_earned ELSE 0 END), 0) as xp_7d,
-                COALESCE(SUM(CASE WHEN "createdAt" >= $2 THEN xp_earned ELSE 0 END), 0) as xp_30d,
-                COUNT(DISTINCT CASE WHEN "createdAt" >= $1 THEN DATE("createdAt") END) as active_days_7d,
-                COUNT(DISTINCT CASE WHEN "createdAt" >= $2 THEN DATE("createdAt") END) as active_days_30d
-              FROM "XPLogs"
-              WHERE "createdAt" >= $2
-              GROUP BY user_id
+                s.id,
+                COALESCE(SUM(x.xp_earned), 0) as xp_7d
+              FROM all_students s
+              LEFT JOIN "XPLogs" x ON s.id = x.user_id 
+                AND x."createdAt" >= $2
+              GROUP BY s.id
+            ),
+            student_xp_30d AS (
+              SELECT 
+                s.id,
+                COALESCE(SUM(x.xp_earned), 0) as xp_30d
+              FROM all_students s
+              LEFT JOIN "XPLogs" x ON s.id = x.user_id 
+                AND x."createdAt" >= $1
+              GROUP BY s.id
             )
             SELECT 
-              COALESCE(AVG(CASE WHEN active_days_7d > 0 THEN xp_7d / NULLIF(active_days_7d, 0) END), 0)::numeric as avg_xp_7d,
-              COALESCE(AVG(CASE WHEN active_days_30d > 0 THEN xp_30d / NULLIF(active_days_30d, 0) END), 0)::numeric as avg_xp_30d
+              COALESCE(AVG(x7.xp_7d), 0)::numeric as avg_xp_7d,
+              COALESCE(AVG(x30.xp_30d), 0)::numeric as avg_xp_30d
+            FROM student_xp_7d x7
+            INNER JOIN student_xp_30d x30 ON x7.id = x30.id
+          `,
+          params: [currentPeriodStart, sevenDaysAgo],
+        },
+        velocityPrevious: {
+          query: `
+            WITH all_students AS (
+              SELECT id FROM users WHERE role = 'STUDENT'
+            ),
+            student_xp AS (
+              SELECT 
+                s.id as user_id,
+                COALESCE(SUM(x.xp_earned), 0) as total_xp
+              FROM all_students s
+              LEFT JOIN "XPLogs" x ON s.id = x.user_id 
+                AND x."createdAt" >= $1 
+                AND x."createdAt" < $2
+              GROUP BY s.id
+            )
+            SELECT 
+              COALESCE(AVG(total_xp), 0)::numeric as avg_xp_previous
             FROM student_xp
           `,
-          params: [sevenDaysAgo, currentPeriodStart],
+          params: [previousPeriodStart, previousPeriodEnd],
         },
       });
 
@@ -197,6 +236,10 @@ export async function getDashboardSummary(req: ExtendedNextRequest) {
       const velocityData = batchResults.velocity[0] || {
         avg_xp_7d: 0,
         avg_xp_30d: 0,
+      };
+
+      const velocityPreviousData = batchResults.velocityPrevious[0] || {
+        avg_xp_previous: 0,
       };
 
       // Calculate alignment score
@@ -225,6 +268,10 @@ export async function getDashboardSummary(req: ExtendedNextRequest) {
         sessionTimeGrowth: calculateGrowth(
           Number(activityData.avg_session_length),
           Number(activityPreviousData.avg_session_length)
+        ),
+        velocityGrowth: calculateGrowth(
+          Number(velocityData.avg_xp_30d),
+          Number(velocityPreviousData.avg_xp_previous)
         ),
         alignmentGrowth: 0, // Alignment is aggregated data, trend not applicable
       };

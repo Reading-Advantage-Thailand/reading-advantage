@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Users, 
-  TrendingUp, 
+import {
+  Users,
+  TrendingUp,
   TrendingDown,
   Calendar,
-  Activity
+  Activity,
 } from "lucide-react";
 import {
   ChartContainer,
@@ -50,73 +50,87 @@ const chartConfig = {
   },
 };
 
-export default function ModernActiveUsers({ page = "system", licenseId, dateRange = "7d" }: ModernActiveUsersProps) {
+export default function ModernActiveUsers({
+  page = "system",
+  licenseId,
+  dateRange = "7d",
+}: ModernActiveUsersProps) {
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [todayUsers, setTodayUsers] = useState<ActiveUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [trend, setTrend] = useState<{ value: number; direction: 'up' | 'down' } | null>(null);
+  const [trend, setTrend] = useState<{
+    value: number;
+    direction: "up" | "down";
+  } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch chart data with caching and dateRange parameter
-        const chartRes = await fetch(`/api/v1/activity/active-users?dateRange=${dateRange}`, {
-          next: { revalidate: 300 } // Cache for 5 minutes
-        });
+        const chartRes = await fetch(
+          `/api/v1/activity/active-users?dateRange=${dateRange}`,
+          {
+            next: { revalidate: 300 }, // Cache for 5 minutes
+          }
+        );
         if (chartRes.ok) {
           const chartData = await chartRes.json();
           let dataToUse = chartData.total || [];
-          
+
           // Filter data based on time range
           let days: number;
-          if (dateRange === '7d') {
+          if (dateRange === "7d") {
             days = 7;
-          } else if (dateRange === '30d') {
+          } else if (dateRange === "30d") {
             days = 30;
-          } else if (dateRange === '90d') {
+          } else if (dateRange === "90d") {
             days = 90;
-          } else if (dateRange === 'all') {
+          } else if (dateRange === "all") {
             // For 'all time', use all available data
             days = dataToUse.length > 0 ? dataToUse.length : 365;
           } else {
             days = 30; // default
           }
-          
+
           // For 'all time', use data as-is if available, otherwise fill missing dates
-          const filteredData = dateRange === 'all' && dataToUse.length > 0 
-            ? dataToUse 
-            : fillMissingDates(dataToUse, days);
+          const filteredData =
+            dateRange === "all" && dataToUse.length > 0
+              ? dataToUse
+              : fillMissingDates(dataToUse, days);
           setChartData(filteredData);
-          
+
           // Calculate trend
           if (filteredData.length >= 2) {
-            const latest = filteredData[filteredData.length - 1]?.noOfUsers || 0;
-            const previous = filteredData[filteredData.length - 2]?.noOfUsers || 0;
+            const latest =
+              filteredData[filteredData.length - 1]?.noOfUsers || 0;
+            const previous =
+              filteredData[filteredData.length - 2]?.noOfUsers || 0;
             if (previous > 0) {
               const change = ((latest - previous) / previous) * 100;
               setTrend({
                 value: Math.abs(change),
-                direction: change >= 0 ? 'up' : 'down'
+                direction: change >= 0 ? "up" : "down",
               });
             }
           }
         }
-        
+
         // Fetch today's users with caching
-        const dailyRes = await fetch('/api/v1/activity/daily-active-users', {
-          next: { revalidate: 300 } // Cache for 5 minutes
+        const dailyRes = await fetch("/api/v1/activity/daily-active-users", {
+          next: { revalidate: 300 }, // Cache for 5 minutes
         });
         if (dailyRes.ok) {
           const dailyData = await dailyRes.json();
-          const today = new Date().toISOString().split('T')[0];
-          const todayData = dailyData.total?.find((item: DailyUserData) => item.date === today);
+          const today = new Date().toISOString().split("T")[0];
+          const todayData = dailyData.total?.find(
+            (item: DailyUserData) => item.date === today
+          );
           setTodayUsers(todayData?.users || []);
         }
-        
       } catch (error) {
-        console.error('Error fetching active users data:', error);
+        console.error("Error fetching active users data:", error);
         // Set fallback data
         setChartData([]);
         setTodayUsers([]);
@@ -131,12 +145,12 @@ export default function ModernActiveUsers({ page = "system", licenseId, dateRang
   const fillMissingDates = (data: ChartData[], days: number): ChartData[] => {
     const now = new Date();
     const filledData: ChartData[] = [];
-    const dataMap = new Map(data.map(item => [item.date, item.noOfUsers]));
+    const dataMap = new Map(data.map((item) => [item.date, item.noOfUsers]));
 
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(now.getDate() - i);
-      const dateString = date.toISOString().split('T')[0];
+      const dateString = date.toISOString().split("T")[0];
 
       filledData.push({
         date: dateString,
@@ -147,7 +161,10 @@ export default function ModernActiveUsers({ page = "system", licenseId, dateRang
     return filledData;
   };
 
-  const totalActiveUsers = chartData.reduce((sum, item) => sum + item.noOfUsers, 0);
+  const totalActiveUsers = chartData.reduce(
+    (sum, item) => sum + item.noOfUsers,
+    0
+  );
   const todayActiveUsers = todayUsers.length;
 
   if (loading) {
@@ -177,7 +194,7 @@ export default function ModernActiveUsers({ page = "system", licenseId, dateRang
               <Skeleton className="h-10 w-10 rounded-full" />
             </div>
           </div>
-          
+
           <div className="p-4 rounded-lg border bg-card">
             <div className="flex items-center justify-between">
               <div className="space-y-2">
@@ -206,16 +223,6 @@ export default function ModernActiveUsers({ page = "system", licenseId, dateRang
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-lg">Active Users</h3>
-          <p className="text-sm text-muted-foreground">
-            User activity and engagement metrics
-          </p>
-        </div>
-      </div>
-
       {/* Key metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-4 rounded-lg border bg-card">
@@ -229,25 +236,34 @@ export default function ModernActiveUsers({ page = "system", licenseId, dateRang
             </div>
           </div>
         </div>
-        
+
         <div className="p-4 rounded-lg border bg-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">
-                {dateRange === '7d' ? '7 Days Avg' : 
-                 dateRange === '30d' ? '30 Days Avg' : 
-                 dateRange === '90d' ? '90 Days Avg' : 
-                 'All Time Avg'}
+                {dateRange === "7d"
+                  ? "7 Days Avg"
+                  : dateRange === "30d"
+                    ? "30 Days Avg"
+                    : dateRange === "90d"
+                      ? "90 Days Avg"
+                      : "All Time Avg"}
               </p>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-bold">
-                  {chartData.length > 0 ? Math.round(totalActiveUsers / chartData.length) : 0}
+                  {chartData.length > 0
+                    ? Math.round(totalActiveUsers / chartData.length)
+                    : 0}
                 </p>
                 {trend && (
-                  <div className={`flex items-center gap-1 text-sm ${
-                    trend.direction === 'up' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {trend.direction === 'up' ? (
+                  <div
+                    className={`flex items-center gap-1 text-sm ${
+                      trend.direction === "up"
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {trend.direction === "up" ? (
                       <TrendingUp className="h-3 w-3" />
                     ) : (
                       <TrendingDown className="h-3 w-3" />
@@ -270,53 +286,53 @@ export default function ModernActiveUsers({ page = "system", licenseId, dateRang
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">Activity Trend</span>
         </div>
-          <ChartContainer config={chartConfig} className="h-48 w-full">
-            <AreaChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis 
-                dataKey="date"
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return date.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  });
-                }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis axisLine={false} tickLine={false} />
-              <ChartTooltip 
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="rounded-lg border bg-background p-3 shadow-md">
-                        <p className="font-medium">
-                          {new Date(label).toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                        <p className="text-sm text-primary">
-                          Active Users: {payload[0].value}
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="noOfUsers"
-                stroke="hsl(var(--primary))"
-                fill="hsl(var(--primary))"
-                fillOpacity={0.1}
-                strokeWidth={2}
-              />
-            </AreaChart>
-          </ChartContainer>
+        <ChartContainer config={chartConfig} className="h-48 w-full">
+          <AreaChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tickFormatter={(value) => {
+                const date = new Date(value);
+                return date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                });
+              }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis axisLine={false} tickLine={false} />
+            <ChartTooltip
+              content={({ active, payload, label }) => {
+                if (active && payload && payload.length) {
+                  return (
+                    <div className="rounded-lg border bg-background p-3 shadow-md">
+                      <p className="font-medium">
+                        {new Date(label).toLocaleDateString("en-US", {
+                          weekday: "long",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                      <p className="text-sm text-primary">
+                        Active Users: {payload[0].value}
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            <Area
+              type="monotone"
+              dataKey="noOfUsers"
+              stroke="hsl(var(--primary))"
+              fill="hsl(var(--primary))"
+              fillOpacity={0.1}
+              strokeWidth={2}
+            />
+          </AreaChart>
+        </ChartContainer>
       </div>
     </div>
   );

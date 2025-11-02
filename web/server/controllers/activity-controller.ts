@@ -157,7 +157,25 @@ async function getActivityHeatmap(
       : session.user.role === "TEACHER"
         ? "class"
         : "school");
-  const entityId = searchParams.get("entityId") || session.user.id;
+
+  // Determine entityId based on scope and params
+  let entityId = searchParams.get("entityId");
+
+  if (!entityId) {
+    if (scope === "student") {
+      entityId = session.user.id;
+    } else if (scope === "school") {
+      // For school scope, use user's schoolId if available
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { schoolId: true },
+      });
+      entityId = user?.schoolId || session.user.id;
+    } else {
+      entityId = session.user.id;
+    }
+  }
+
   const timeframe = searchParams.get("timeframe") || "30d";
   const granularity =
     (searchParams.get("granularity") as "hour" | "day") || "day";
@@ -169,191 +187,207 @@ async function getActivityHeatmap(
   const daysAgo =
     timeframe === "7d"
       ? 7
-      : timeframe === "90d"
-        ? 90
-        : timeframe === "6m"
-          ? 180
-          : 30;
+      : timeframe === "30d"
+        ? 30
+        : timeframe === "90d"
+          ? 90
+          : timeframe === "6m"
+            ? 180
+            : timeframe === "1y"
+              ? 365
+              : timeframe === "all"
+                ? 3650 // 10 years for "all time"
+                : 30; // default to 30 days
   const startDate = new Date(now);
   startDate.setDate(startDate.getDate() - daysAgo);
 
   const cacheKey = `activity-heatmap:${scope}:${entityId}:${timeframe}:${granularity}:${activityTypesFilter.join(",")}`;
 
   const fetchHeatmapData = async () => {
-    let whereConditions = [`ah.activity_date >= $1`];
-    const params: any[] = [startDate.toISOString().split("T")[0]];
-    let paramIndex = 2;
+    // Build where clause for Prisma query
+    const whereClause: any = {
+      createdAt: {
+        gte: startDate,
+      },
+    };
 
-    // Build scope-specific where conditions
+    // Scope-specific filters
     if (scope === "student") {
-      whereConditions.push(`ah.user_id = $${paramIndex}`);
-      params.push(entityId);
-      paramIndex++;
-    } else if (scope === "class") {
-      // For class scope, use the class heatmap view
-      whereConditions.push(`cah.classroom_id = $${paramIndex}`);
-      params.push(entityId);
-      paramIndex++;
+      whereClause.userId = entityId;
     } else if (scope === "school") {
-      whereConditions.push(`ah.school_id = $${paramIndex}`);
-      params.push(entityId);
-      paramIndex++;
-    }
+      // Get users from the school
+      const schoolUsers = await prisma.user.findMany({
+        where: { schoolId: entityId },
+        select: { id: true },
+      });
 
-    // Add activity type filter
-    if (activityTypesFilter.length > 0) {
-      whereConditions.push(`ah.activity_type = ANY($${paramIndex})`);
-      params.push(activityTypesFilter);
-      paramIndex++;
-    }
-
-    let query: string;
-
-    if (scope === "class") {
-      // Use class aggregated view for better performance
-      if (granularity === "hour") {
-        query = `
-          SELECT 
-            cah.activity_date::text as date,
-            cah.hour_of_day as hour,
-            cah.day_of_week as day_of_week,
-            cah.activity_type,
-            cah.total_activities as activity_count,
-            cah.total_completed as completed_count,
-            cah.unique_students,
-            ROUND((cah.total_duration_seconds / 60.0)::numeric, 2) as total_duration_minutes,
-            ROUND((cah.avg_duration_seconds / 60.0)::numeric, 2) as avg_duration_minutes,
-            cah.timezone
-          FROM mv_class_activity_heatmap cah
-          WHERE ${whereConditions.join(" AND ")}
-          ORDER BY cah.activity_date, cah.hour_of_day, cah.activity_type
-        `;
-      } else {
-        query = `
-          SELECT 
-            cah.activity_date::text as date,
-            0 as hour,
-            cah.day_of_week as day_of_week,
-            cah.activity_type,
-            SUM(cah.total_activities) as activity_count,
-            SUM(cah.total_completed) as completed_count,
-            COUNT(DISTINCT cah.unique_students) as unique_students,
-            ROUND((SUM(cah.total_duration_seconds) / 60.0)::numeric, 2) as total_duration_minutes,
-            ROUND((AVG(cah.avg_duration_seconds) / 60.0)::numeric, 2) as avg_duration_minutes,
-            MAX(cah.timezone) as timezone
-          FROM mv_class_activity_heatmap cah
-          WHERE ${whereConditions.join(" AND ")}
-          GROUP BY cah.activity_date, cah.day_of_week, cah.activity_type
-          ORDER BY cah.activity_date, cah.activity_type
-        `;
-        // Remove classroom condition from student query for day aggregation
-        whereConditions = whereConditions.filter(
-          (condition) => !condition.includes("cah.classroom_id")
+      if (schoolUsers.length === 0) {
+        console.warn(
+          `[Activity Heatmap] No users found for school: ${entityId}`
         );
-        params.splice(-1, 1); // Remove entityId param
+        // Return empty response
+        return {
+          scope,
+          entityId,
+          timeframe,
+          granularity,
+          timezone: "UTC",
+          activityTypes: activityTypesFilter,
+          buckets: [],
+          metadata: {
+            totalActivities: 0,
+            uniqueStudents: 0,
+            dateRange: {
+              start: startDate.toISOString().split("T")[0],
+              end: now.toISOString().split("T")[0],
+            },
+            availableActivityTypes: [],
+          },
+          cache: {
+            cached: false,
+            generatedAt: new Date().toISOString(),
+          },
+        };
       }
-    } else {
-      // Use student view for student and school scopes
-      if (granularity === "hour") {
-        query = `
-          SELECT 
-            ah.activity_date::text as date,
-            ah.hour_of_day as hour,
-            ah.day_of_week as day_of_week,
-            ah.activity_type,
-            ${scope === "student" ? "ah.activity_count" : "SUM(ah.activity_count)"} as activity_count,
-            ${scope === "student" ? "ah.completed_count" : "SUM(ah.completed_count)"} as completed_count,
-            ${scope === "student" ? "1" : "COUNT(DISTINCT ah.user_id)"} as unique_students,
-            ROUND((${scope === "student" ? "ah.total_duration_seconds" : "SUM(ah.total_duration_seconds)"} / 60.0)::numeric, 2) as total_duration_minutes,
-            ROUND((${scope === "student" ? "ah.avg_duration_seconds" : "AVG(ah.avg_duration_seconds)"} / 60.0)::numeric, 2) as avg_duration_minutes,
-            MAX(ah.timezone) as timezone
-          FROM mv_activity_heatmap ah
-          WHERE ${whereConditions.join(" AND ")}
-          ${scope === "school" ? "GROUP BY ah.activity_date, ah.hour_of_day, ah.day_of_week, ah.activity_type" : ""}
-          ORDER BY ah.activity_date, ah.hour_of_day, ah.activity_type
-        `;
-      } else {
-        query = `
-          SELECT 
-            ah.activity_date::text as date,
-            0 as hour,
-            ah.day_of_week as day_of_week,
-            ah.activity_type,
-            ${scope === "student" ? "SUM(ah.activity_count)" : "SUM(ah.activity_count)"} as activity_count,
-            ${scope === "student" ? "SUM(ah.completed_count)" : "SUM(ah.completed_count)"} as completed_count,
-            ${scope === "student" ? "1" : "COUNT(DISTINCT ah.user_id)"} as unique_students,
-            ROUND((SUM(ah.total_duration_seconds) / 60.0)::numeric, 2) as total_duration_minutes,
-            ROUND((AVG(ah.avg_duration_seconds) / 60.0)::numeric, 2) as avg_duration_minutes,
-            MAX(ah.timezone) as timezone
-          FROM mv_activity_heatmap ah
-          WHERE ${whereConditions.join(" AND ")}
-          GROUP BY ah.activity_date, ah.day_of_week, ah.activity_type
-          ORDER BY ah.activity_date, ah.activity_type
-        `;
-      }
+
+      whereClause.userId = {
+        in: schoolUsers.map((u) => u.id),
+      };
     }
 
-    const buckets = (await prisma.$queryRawUnsafe(query, ...params)) as Array<{
-      date: string;
-      hour: number;
-      day_of_week: number;
-      activity_type: string;
-      activity_count: number;
-      completed_count: number;
-      unique_students: number;
-      total_duration_minutes: number;
-      avg_duration_minutes: number;
-      timezone: string;
-    }>;
+    // Activity type filter
+    if (activityTypesFilter.length > 0) {
+      whereClause.activityType = {
+        in: activityTypesFilter as ActivityType[],
+      };
+    }
+
+    // Fetch activities from UserActivity table
+    const activities = await prisma.userActivity.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        userId: true,
+        activityType: true,
+        completed: true,
+        timer: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    // Process activities into buckets by date
+    const bucketMap = new Map<
+      string,
+      {
+        date: string;
+        hour: number;
+        dayOfWeek: number;
+        activityType: string;
+        activityCount: number;
+        completedCount: number;
+        uniqueStudents: Set<string>;
+        totalDurationMinutes: number;
+      }
+    >();
+
+    activities.forEach((activity) => {
+      const date = activity.createdAt.toISOString().split("T")[0];
+      const hour = granularity === "hour" ? activity.createdAt.getHours() : 0;
+      const dayOfWeek = activity.createdAt.getDay();
+      const key = `${date}-${hour}-${activity.activityType}`;
+
+      if (!bucketMap.has(key)) {
+        bucketMap.set(key, {
+          date,
+          hour,
+          dayOfWeek,
+          activityType: activity.activityType,
+          activityCount: 0,
+          completedCount: 0,
+          uniqueStudents: new Set(),
+          totalDurationMinutes: 0,
+        });
+      }
+
+      const bucket = bucketMap.get(key)!;
+      bucket.activityCount++;
+      if (activity.completed) bucket.completedCount++;
+      bucket.uniqueStudents.add(activity.userId);
+      if (activity.timer) bucket.totalDurationMinutes += activity.timer / 60;
+    });
+
+    // Convert map to array
+    const buckets = Array.from(bucketMap.values()).map((bucket) => ({
+      date: bucket.date,
+      hour: bucket.hour,
+      dayOfWeek: bucket.dayOfWeek,
+      activityType: bucket.activityType,
+      activityCount: bucket.activityCount,
+      completedCount: bucket.completedCount,
+      uniqueStudents: bucket.uniqueStudents.size,
+      totalDurationMinutes: Math.round(bucket.totalDurationMinutes * 100) / 100,
+      avgDurationMinutes:
+        bucket.activityCount > 0
+          ? Math.round(
+              (bucket.totalDurationMinutes / bucket.activityCount) * 100
+            ) / 100
+          : 0,
+    }));
 
     // Get available activity types for metadata
-    const availableTypesQuery =
-      scope === "class"
-        ? "SELECT DISTINCT activity_type FROM mv_class_activity_heatmap WHERE classroom_id = $1"
-        : "SELECT DISTINCT activity_type FROM mv_activity_heatmap WHERE school_id = $1";
-
-    const availableTypes = (await prisma.$queryRawUnsafe(
-      availableTypesQuery,
-      entityId
-    )) as Array<{ activity_type: string }>;
+    const availableTypes = await prisma.userActivity.findMany({
+      where:
+        scope === "student"
+          ? { userId: entityId }
+          : scope === "school"
+            ? { userId: { in: (whereClause.userId as any).in } }
+            : {},
+      select: {
+        activityType: true,
+      },
+      distinct: ["activityType"],
+    });
 
     // Calculate summary metadata
     const totalActivities = buckets.reduce(
-      (sum, bucket) => sum + Number(bucket.activity_count),
+      (sum, bucket) => sum + bucket.activityCount,
       0
     );
-    const uniqueStudents = Math.max(
-      ...buckets.map((bucket) => Number(bucket.unique_students)),
-      0
-    );
-    const timezone = buckets[0]?.timezone || "UTC";
+    const allUniqueStudents = new Set<string>();
+    buckets.forEach((bucket) => {
+      // We need to re-count from activities since we lost the Set
+      activities.forEach((activity) => {
+        const date = activity.createdAt.toISOString().split("T")[0];
+        const hour = granularity === "hour" ? activity.createdAt.getHours() : 0;
+        if (
+          bucket.date === date &&
+          bucket.hour === hour &&
+          bucket.activityType === activity.activityType
+        ) {
+          allUniqueStudents.add(activity.userId);
+        }
+      });
+    });
 
     return {
       scope,
       entityId,
       timeframe,
       granularity,
-      timezone,
+      timezone: "UTC",
       activityTypes: activityTypesFilter,
-      buckets: buckets.map((bucket) => ({
-        date: bucket.date,
-        hour: Number(bucket.hour),
-        dayOfWeek: Number(bucket.day_of_week),
-        activityType: bucket.activity_type,
-        activityCount: Number(bucket.activity_count),
-        completedCount: Number(bucket.completed_count),
-        uniqueStudents: Number(bucket.unique_students),
-        totalDurationMinutes: Number(bucket.total_duration_minutes),
-        avgDurationMinutes: Number(bucket.avg_duration_minutes),
-      })),
+      buckets,
       metadata: {
         totalActivities,
-        uniqueStudents,
+        uniqueStudents: allUniqueStudents.size,
         dateRange: {
           start: startDate.toISOString().split("T")[0],
           end: now.toISOString().split("T")[0],
         },
-        availableActivityTypes: availableTypes.map((t) => t.activity_type),
+        availableActivityTypes: availableTypes.map((t) => t.activityType),
       },
       cache: {
         cached: false,
@@ -403,7 +437,18 @@ async function getActivityTimeline(
 
   // Calculate date range
   const now = new Date();
-  const daysAgo = timeframe === "7d" ? 7 : timeframe === "90d" ? 90 : 30;
+  const daysAgo =
+    timeframe === "7d"
+      ? 7
+      : timeframe === "30d"
+        ? 30
+        : timeframe === "90d"
+          ? 90
+          : timeframe === "1y"
+            ? 365
+            : timeframe === "all"
+              ? 3650 // 10 years for "all time"
+              : 30; // default to 30 days
   const startDate = new Date(now);
   startDate.setDate(startDate.getDate() - daysAgo);
 
