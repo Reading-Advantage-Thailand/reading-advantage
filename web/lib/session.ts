@@ -81,14 +81,27 @@ export async function getCurrentUser() {
     }
 
     const currentDate = new Date();
-    const isExpired = user.expiredDate ? user.expiredDate < currentDate : false;
-
+    
     const activeLicenseId = user.licenseOnUsers[0]?.licenseId || user.licenseId;
+
+    // Get the actual license expiration date if user has a license
+    let effectiveExpirationDate = user.expiredDate;
+    if (activeLicenseId) {
+      const activeLicense = await prisma.license.findUnique({
+        where: { id: activeLicenseId },
+        select: { expiresAt: true },
+      });
+      if (activeLicense?.expiresAt) {
+        effectiveExpirationDate = activeLicense.expiresAt;
+      }
+    }
+
+    const isExpired = effectiveExpirationDate ? effectiveExpirationDate < currentDate : false;
 
     const licenseLevel = await getUserLicenseLevel(
       session.user.id,
       activeLicenseId,
-      user.expiredDate
+      effectiveExpirationDate
     );
 
     // Extract classroom IDs for scope-based authorization
@@ -105,7 +118,7 @@ export async function getCurrentUser() {
       picture: user.image ?? "",
       xp: user.xp,
       cefr_level: user.cefrLevel ?? "",
-      expired_date: user.expiredDate?.toISOString() ?? "",
+      expired_date: effectiveExpirationDate?.toISOString() ?? "",
       expired: isExpired,
       license_id: activeLicenseId ?? "",
       license_level: licenseLevel,

@@ -45,45 +45,76 @@ export function CompactActivityHeatmap({
       try {
         setLoading(true);
 
-        // Generate mock data for the last 90 days
+        const params = new URLSearchParams();
+        if (licenseId) params.append('licenseId', licenseId);
+
+        // Fetch activity data from dashboard API
+        const response = await fetch(`/api/v1/admin/dashboard?${params}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch activity data');
+        }
+
+        const result = await response.json();
+        
+        // Process activity log to create heatmap data
+        const activityLog = result.data.filteredActivityLog || [];
+        
+        // Generate data for the last 90 days
         const days = 90;
         const today = new Date();
-        const mockData: ActivityData[] = [];
+        const activityData: ActivityData[] = [];
+        
+        // Count activities per day
+        const activityByDate = new Map<string, number>();
+        
+        activityLog.forEach((activity: any) => {
+          const date = new Date(activity.timestamp).toISOString().split("T")[0];
+          activityByDate.set(date, (activityByDate.get(date) || 0) + 1);
+        });
+        
+        // Find max activity for normalization
+        const maxCount = Math.max(...Array.from(activityByDate.values()), 1);
 
         for (let i = days - 1; i >= 0; i--) {
           const date = new Date(today);
           date.setDate(date.getDate() - i);
+          const dateStr = date.toISOString().split("T")[0];
+          
+          const count = activityByDate.get(dateStr) || 0;
 
-          // Generate random activity count with some patterns
-          const dayOfWeek = date.getDay();
-          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-          const baseActivity = isWeekend ? 20 : 80;
-          const variance = Math.random() * 40;
-          const count = Math.floor(baseActivity + variance);
-
-          // Map count to intensity level (0-4)
+          // Map count to intensity level (0-4) based on thresholds
+          // 0 = no activity (gray)
+          // 1 = 1-9 activities (light green)
+          // 2 = 10-29 activities (medium green)
+          // 3 = 30-49 activities (dark green)
+          // 4 = 50+ activities (darkest green)
           let level = 0;
-          if (count > 100) level = 4;
-          else if (count > 75) level = 3;
-          else if (count > 50) level = 2;
-          else if (count > 25) level = 1;
+          
+          if (count >= 50) level = 4;
+          else if (count >= 30) level = 3;
+          else if (count >= 10) level = 2;
+          else if (count >= 1) level = 1;
 
-          mockData.push({
-            date: date.toISOString().split("T")[0],
+          activityData.push({
+            date: dateStr,
             count,
             level,
           });
         }
 
-        setData(mockData);
+        setData(activityData);
 
         // Calculate stats
-        const total = mockData.reduce((sum, d) => sum + d.count, 0);
-        const peak = Math.max(...mockData.map((d) => d.count));
-        const average = Math.round(total / mockData.length);
+        const total = activityData.reduce((sum, d) => sum + d.count, 0);
+        const peak = Math.max(...activityData.map((d) => d.count));
+        const average = activityData.length > 0 ? Math.round(total / activityData.length) : 0;
         setStats({ total, peak, average });
       } catch (error) {
         console.error("Error fetching activity data:", error);
+        // Fallback to empty data on error
+        setData([]);
+        setStats({ total: 0, peak: 0, average: 0 });
       } finally {
         setLoading(false);
       }
@@ -97,13 +128,13 @@ export function CompactActivityHeatmap({
       case 0:
         return "bg-muted hover:bg-muted/80";
       case 1:
-        return "bg-green-200 dark:bg-green-900/40 hover:bg-green-300 dark:hover:bg-green-900/60";
+        return "bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50";
       case 2:
-        return "bg-green-400 dark:bg-green-700/60 hover:bg-green-500 dark:hover:bg-green-700/80";
+        return "bg-green-300 dark:bg-green-700/60 hover:bg-green-400 dark:hover:bg-green-700/80";
       case 3:
-        return "bg-green-600 dark:bg-green-600/80 hover:bg-green-700 dark:hover:bg-green-600";
+        return "bg-green-500 dark:bg-green-600/80 hover:bg-green-600 dark:hover:bg-green-600";
       case 4:
-        return "bg-green-800 dark:bg-green-500 hover:bg-green-900 dark:hover:bg-green-400";
+        return "bg-green-700 dark:bg-green-500 hover:bg-green-800 dark:hover:bg-green-400";
       default:
         return "bg-muted";
     }

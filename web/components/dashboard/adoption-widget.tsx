@@ -52,37 +52,153 @@ export function AdoptionWidget({
       const params = new URLSearchParams({ timeframe });
       if (licenseId) params.append('licenseId', licenseId);
 
-      const response = await fetch(`/api/v1/admin/segments?${params}`);
+      // Fetch dashboard data to get actual user distribution
+      const response = await fetch(`/api/v1/admin/dashboard?${params}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch adoption data');
       }
 
       const result = await response.json();
+      const userData = result.data.userData || [];
       
-      // Transform segment data into adoption levels
-      // This is a simplified version - actual implementation would need more detailed API
-      const mockData: AdoptionData = {
-        byGrade: [
-          { level: 'Grade 1-3', cefrLevel: 'A1', studentCount: 45, activeCount: 38, activeRate: 84, averageXp: 1250 },
-          { level: 'Grade 4-6', cefrLevel: 'A2', studentCount: 52, activeCount: 44, activeRate: 85, averageXp: 2100 },
-          { level: 'Grade 7-9', cefrLevel: 'B1', studentCount: 48, activeCount: 39, activeRate: 81, averageXp: 3200 },
-          { level: 'Grade 10-12', cefrLevel: 'B2', studentCount: 35, activeCount: 28, activeRate: 80, averageXp: 4500 },
-        ],
-        byCEFR: [
-          { level: 'A1', cefrLevel: 'A1', studentCount: 42, activeCount: 35, activeRate: 83, averageXp: 1100 },
-          { level: 'A2', cefrLevel: 'A2', studentCount: 58, activeCount: 49, activeRate: 84, averageXp: 2250 },
-          { level: 'B1', cefrLevel: 'B1', studentCount: 51, activeCount: 43, activeRate: 84, averageXp: 3400 },
-          { level: 'B2', cefrLevel: 'B2', studentCount: 29, activeCount: 24, activeRate: 83, averageXp: 4800 },
-        ],
+      // Get activity log to determine active users
+      const activityLog = result.data.filteredActivityLog || [];
+      
+      // Calculate date range based on timeframe
+      const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - daysAgo);
+      
+      // Get set of active user IDs
+      const activeUserIds = new Set(
+        activityLog
+          .filter((log: any) => new Date(log.timestamp) >= startDate)
+          .map((log: any) => log.userId)
+      );
+      
+      // Group students by CEFR level
+      const cefrGroups = new Map<string, { students: any[], active: number }>();
+      const cefrLevels = ['A0-', 'A0', 'A0+', 'A1', 'A1+', 'A2-', 'A2', 'A2+', 'B1-', 'B1', 'B1+', 'B2-', 'B2', 'B2+', 'C1-', 'C1', 'C1+', 'C2-', 'C2'];
+      
+      // Initialize groups
+      cefrLevels.forEach(level => {
+        cefrGroups.set(level, { students: [], active: 0 });
+      });
+      
+      // Filter students only and group by CEFR level
+      const students = userData.filter((user: any) => user.role === 'STUDENT');
+      
+      students.forEach((student: any) => {
+        const cefrLevel = student.cefr_level || 'A1';
+        if (!cefrGroups.has(cefrLevel)) {
+          cefrGroups.set(cefrLevel, { students: [], active: 0 });
+        }
+        
+        const group = cefrGroups.get(cefrLevel)!;
+        group.students.push(student);
+        
+        if (activeUserIds.has(student.id)) {
+          group.active++;
+        }
+      });
+      
+      // Calculate XP averages per level
+      const levelXpMap = new Map<string, number>();
+      cefrGroups.forEach((group, level) => {
+        if (group.students.length > 0) {
+          const avgXp = group.students.reduce((sum, s) => sum + (s.xp || 0), 0) / group.students.length;
+          levelXpMap.set(level, Math.round(avgXp));
+        }
+      });
+      
+      // Create CEFR adoption data (group similar levels together)
+      const cefrMainLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+      const byCEFR: AdoptionByLevel[] = cefrMainLevels.map(mainLevel => {
+        // Include variations like A1-, A1, A1+
+        const relatedLevels = cefrLevels.filter(l => l.startsWith(mainLevel.charAt(0)) && l.includes(mainLevel.charAt(1)));
+        
+        let totalStudents = 0;
+        let totalActive = 0;
+        let totalXp = 0;
+        let studentCount = 0;
+        
+        relatedLevels.forEach(level => {
+          const group = cefrGroups.get(level);
+          if (group) {
+            totalStudents += group.students.length;
+            totalActive += group.active;
+            group.students.forEach(s => {
+              totalXp += s.xp || 0;
+              studentCount++;
+            });
+          }
+        });
+        
+        const averageXp = studentCount > 0 ? Math.round(totalXp / studentCount) : 0;
+        const activeRate = totalStudents > 0 ? Math.round((totalActive / totalStudents) * 100) : 0;
+        
+        return {
+          level: mainLevel,
+          cefrLevel: mainLevel,
+          studentCount: totalStudents,
+          activeCount: totalActive,
+          activeRate,
+          averageXp,
+        };
+      }).filter(level => level.studentCount > 0); // Only show levels with students
+      
+      // Create grade-based distribution (estimate based on level)
+      const gradeLevels = [
+        { name: 'Grade 1-3', cefrRange: ['A0-', 'A0', 'A0+', 'A1'] },
+        { name: 'Grade 4-6', cefrRange: ['A1+', 'A2-', 'A2'] },
+        { name: 'Grade 7-9', cefrRange: ['A2+', 'B1-', 'B1'] },
+        { name: 'Grade 10-12', cefrRange: ['B1+', 'B2-', 'B2', 'B2+', 'C1-', 'C1', 'C1+', 'C2-', 'C2'] },
+      ];
+      
+      const byGrade: AdoptionByLevel[] = gradeLevels.map(grade => {
+        let totalStudents = 0;
+        let totalActive = 0;
+        let totalXp = 0;
+        let studentCount = 0;
+        
+        grade.cefrRange.forEach(level => {
+          const group = cefrGroups.get(level);
+          if (group) {
+            totalStudents += group.students.length;
+            totalActive += group.active;
+            group.students.forEach(s => {
+              totalXp += s.xp || 0;
+              studentCount++;
+            });
+          }
+        });
+        
+        const averageXp = studentCount > 0 ? Math.round(totalXp / studentCount) : 0;
+        const activeRate = totalStudents > 0 ? Math.round((totalActive / totalStudents) * 100) : 0;
+        const mainCefr = grade.cefrRange[Math.floor(grade.cefrRange.length / 2)] || 'A1';
+        
+        return {
+          level: grade.name,
+          cefrLevel: mainCefr,
+          studentCount: totalStudents,
+          activeCount: totalActive,
+          activeRate,
+          averageXp,
+        };
+      }).filter(level => level.studentCount > 0); // Only show grades with students
+
+      const adoptionData: AdoptionData = {
+        byGrade,
+        byCEFR,
         summary: {
-          totalStudents: 180,
-          activeStudents: 151,
-          overallActiveRate: 84,
+          totalStudents: students.length,
+          activeStudents: activeUserIds.size,
+          overallActiveRate: students.length > 0 ? Math.round((activeUserIds.size / students.length) * 100) : 0,
         },
       };
 
-      setData(mockData);
+      setData(adoptionData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load adoption data');
     } finally {
@@ -95,6 +211,19 @@ export function AdoptionWidget({
   }, [licenseId, timeframe]);
 
   const currentData = viewMode === 'grade' ? data?.byGrade : data?.byCEFR;
+
+  // Get timeframe label
+  const getTimeframeLabel = (tf: string) => {
+    switch (tf) {
+      case "7d":
+        return "7 days";
+      case "90d":
+        return "90 days";
+      case "30d":
+      default:
+        return "30 days";
+    }
+  };
 
   return (
     <WidgetShell
@@ -175,7 +304,7 @@ export function AdoptionWidget({
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {data.summary.activeStudents} of {data.summary.totalStudents} students active in last {timeframe}
+              {data.summary.activeStudents} of {data.summary.totalStudents} students active in last {getTimeframeLabel(timeframe)}
             </p>
           </div>
         )}

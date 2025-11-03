@@ -50,7 +50,9 @@ export interface AdminOverviewResponse {
     totalSchools: number;
     totalStudents: number;
     totalTeachers: number;
+    activeTeachers: number;
     activeUsers30d: number;
+    activeClassrooms: number;
     totalReadingSessions: number;
     averageReadingLevel: number;
   };
@@ -111,7 +113,38 @@ export interface AdminAlertsResponse {
 }
 
 // ============================================================================
-// Teacher Dashboard Types
+// Teacher Effectiveness Types
+// ============================================================================
+
+export interface TeacherMetric {
+  teacherId: string;
+  teacherName: string;
+  email: string;
+  studentCount: number;
+  activeStudents: number;
+  engagementRate: number;
+  classroomCount: number;
+  classrooms: {
+    id: string;
+    name: string;
+    studentCount: number;
+    activeCount: number;
+  }[];
+}
+
+export interface TeacherEffectivenessResponse {
+  teachers: TeacherMetric[];
+  summary: {
+    totalTeachers: number;
+    averageEngagement: number;
+    totalStudents: number;
+    totalActiveStudents: number;
+  };
+  cache: CacheMetadata;
+}
+
+// ============================================================================
+// AI Summary Types
 // ============================================================================
 
 export interface TeacherOverviewResponse {

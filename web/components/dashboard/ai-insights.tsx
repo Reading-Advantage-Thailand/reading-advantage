@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AIInsight } from "@/types/dashboard";
 import { 
   Brain, 
   TrendingUp, 
@@ -18,18 +19,6 @@ import {
   ArrowRight,
   Sparkles
 } from "lucide-react";
-
-interface AIInsight {
-  id: string;
-  type: 'trend' | 'anomaly' | 'recommendation' | 'prediction';
-  title: string;
-  description: string;
-  impact: 'high' | 'medium' | 'low';
-  confidence: number;
-  actionable: boolean;
-  category: string;
-  data?: any;
-}
 
 interface SmartSuggestion {
   id: string;
@@ -57,7 +46,7 @@ export default function AIInsights({ className }: AIInsightsProps) {
         setLoading(true);
         setError(null);
 
-        // Fetch AI summary data
+        // Fetch AI summary data from the API
         const response = await fetch('/api/v1/ai/summary');
         
         if (!response.ok) {
@@ -66,104 +55,34 @@ export default function AIInsights({ className }: AIInsightsProps) {
 
         const data = await response.json();
 
-        // Mock insights and suggestions if API doesn't return them
-        const mockInsights: AIInsight[] = [
-          {
-            id: '1',
-            type: 'trend',
-            title: 'Reading Engagement Spike',
-            description: 'User engagement has increased by 34% over the past week, particularly in science articles.',
-            impact: 'high',
-            confidence: 89,
-            actionable: true,
-            category: 'engagement',
-            data: { change: '+34%', timeframe: '7 days' }
-          },
-          {
-            id: '2',
-            type: 'anomaly',
-            title: 'Unusual Drop in Completion Rates',
-            description: 'Articles in Level B2 showing 23% lower completion rates than usual. This may indicate content difficulty issues.',
-            impact: 'medium',
-            confidence: 76,
-            actionable: true,
+        // Use insights from API response
+        setInsights(data.insights || []);
+        
+        // Generate smart suggestions based on insights
+        // In a production system, this would also come from the AI service
+        const generatedSuggestions: SmartSuggestion[] = data.insights
+          .filter((insight: AIInsight) => insight.type === 'recommendation')
+          .slice(0, 3)
+          .map((insight: AIInsight, idx: number) => ({
+            id: `suggestion-${idx}`,
+            title: insight.title,
+            description: insight.description,
+            priority: insight.priority,
             category: 'performance',
-            data: { change: '-23%', level: 'B2' }
-          },
-          {
-            id: '3',
-            type: 'recommendation',
-            title: 'Optimize Content Mix',
-            description: 'Based on user preferences, increasing fiction content by 15% could improve overall engagement.',
-            impact: 'medium',
-            confidence: 82,
-            actionable: true,
-            category: 'content',
-            data: { recommendedIncrease: '15%', contentType: 'fiction' }
-          },
-          {
-            id: '4',
-            type: 'prediction',
-            title: 'Peak Usage Forecast',
-            description: 'Predicted 45% increase in activity during upcoming school holidays. Consider scaling resources.',
-            impact: 'high',
-            confidence: 91,
-            actionable: true,
-            category: 'infrastructure',
-            data: { predictedIncrease: '45%', timeframe: 'school holidays' }
-          }
-        ];
+            estimatedImpact: 'Data-driven improvement',
+            actions: [
+              'Review the recommendation',
+              'Discuss with your team',
+              'Implement the suggested changes',
+              'Monitor the results'
+            ]
+          }));
 
-        const mockSuggestions: SmartSuggestion[] = [
-          {
-            id: '1',
-            title: 'Implement Reading Streaks',
-            description: 'Add a reading streak feature to boost daily engagement and retention.',
-            priority: 'high',
-            category: 'engagement',
-            estimatedImpact: '+25% daily active users',
-            actions: [
-              'Design streak visualization UI',
-              'Implement streak tracking logic',
-              'Add streak rewards system',
-              'A/B test the feature'
-            ]
-          },
-          {
-            id: '2',
-            title: 'Personalized Reading Paths',
-            description: 'Create AI-curated reading paths based on user interests and performance.',
-            priority: 'medium',
-            category: 'user-experience',
-            estimatedImpact: '+18% completion rate',
-            actions: [
-              'Analyze user reading patterns',
-              'Build recommendation algorithm',
-              'Create path visualization',
-              'Test with pilot users'
-            ]
-          },
-          {
-            id: '3',
-            title: 'Performance Dashboard for Teachers',
-            description: 'Provide teachers with detailed analytics on student progress and areas for improvement.',
-            priority: 'high',
-            category: 'performance',
-            estimatedImpact: '+30% teacher satisfaction',
-            actions: [
-              'Survey teacher requirements',
-              'Design analytics interface',
-              'Implement data aggregation',
-              'Provide training materials'
-            ]
-          }
-        ];
-
-        setInsights(data.insights || mockInsights);
-        setSuggestions(data.suggestions || mockSuggestions);
-      } catch (error) {
-        console.error('Error fetching AI insights:', error);
-        setError('Failed to load AI insights. Please try again later.');
+        setSuggestions(generatedSuggestions);
+      } catch (err) {
+        console.error('Error fetching AI insights:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load AI insights');
+        // Don't set empty data on error, keep previous data if available
       } finally {
         setLoading(false);
       }
@@ -175,9 +94,9 @@ export default function AIInsights({ className }: AIInsightsProps) {
   const getInsightIcon = (type: AIInsight['type']) => {
     switch (type) {
       case 'trend': return TrendingUp;
-      case 'anomaly': return AlertTriangle;
+      case 'alert': return AlertTriangle;
       case 'recommendation': return Lightbulb;
-      case 'prediction': return Target;
+      case 'achievement': return Target;
       default: return Brain;
     }
   };
@@ -185,9 +104,9 @@ export default function AIInsights({ className }: AIInsightsProps) {
   const getInsightColor = (type: AIInsight['type']) => {
     switch (type) {
       case 'trend': return 'text-green-600';
-      case 'anomaly': return 'text-orange-600';
+      case 'alert': return 'text-orange-600';
       case 'recommendation': return 'text-blue-600';
-      case 'prediction': return 'text-purple-600';
+      case 'achievement': return 'text-purple-600';
       default: return 'text-gray-600';
     }
   };
@@ -284,27 +203,25 @@ export default function AIInsights({ className }: AIInsightsProps) {
                       {insight.description}
                     </p>
                     
-                    {/* Footer: Type, Impact, Action */}
+                    {/* Footer: Type, Priority */}
                     <div className="flex items-center gap-2 pt-1">
                       <Badge variant="outline" className="text-xs capitalize">
                         {insight.type}
                       </Badge>
                       <Badge 
-                        className={`text-xs ${getPriorityColor(insight.impact)}`}
+                        className={`text-xs ${getPriorityColor(insight.priority)}`}
                         variant="secondary"
                       >
-                        {insight.impact}
+                        {insight.priority}
                       </Badge>
-                      {insight.actionable && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-6 px-2 text-xs ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          Review
-                          <ArrowRight className="h-3 w-3 ml-1" />
-                        </Button>
-                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 px-2 text-xs ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        Review
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
                     </div>
                   </div>
                 </div>

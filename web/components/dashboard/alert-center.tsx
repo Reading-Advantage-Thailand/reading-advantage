@@ -13,8 +13,17 @@ import {
   CheckCircle2,
   Bell,
   Clock,
+  X,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AlertCenterProps {
   licenseId?: string;
@@ -35,6 +44,8 @@ export function AlertCenter({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'critical' | 'unacknowledged'>('unacknowledged');
+  const [showAllDialog, setShowAllDialog] = useState(false);
+  const [dialogFilter, setDialogFilter] = useState<'all' | 'critical' | 'unacknowledged'>('all');
 
   const fetchAlerts = async () => {
     try {
@@ -131,7 +142,23 @@ export function AlertCenter({
   const criticalCount = alerts.filter(a => a.severity === 'critical').length;
   const unacknowledgedCount = alerts.filter(a => !a.acknowledged).length;
 
+  const handleViewAll = () => {
+    setShowAllDialog(true);
+    onViewAll?.();
+  };
+
+  const getDialogFilteredAlerts = () => {
+    return alerts.filter((alert) => {
+      if (dialogFilter === 'critical') return alert.severity === 'critical';
+      if (dialogFilter === 'unacknowledged') return !alert.acknowledged;
+      return true;
+    });
+  };
+
+  const dialogFilteredAlerts = getDialogFilteredAlerts();
+
   return (
+    <>
     <WidgetShell
       title="Alert Center"
       description={`${unacknowledgedCount} unacknowledged alerts`}
@@ -142,7 +169,7 @@ export function AlertCenter({
       emptyMessage="No alerts at this time"
       emptyIcon={CheckCircle2}
       onRefresh={fetchAlerts}
-      onViewAll={onViewAll}
+      onViewAll={handleViewAll}
       viewAllLabel="View All Alerts"
       className={className}
       headerAction={
@@ -243,5 +270,154 @@ export function AlertCenter({
         })}
       </div>
     </WidgetShell>
+
+    {/* View All Alerts Dialog */}
+    <Dialog open={showAllDialog} onOpenChange={setShowAllDialog}>
+      <DialogContent className="max-w-4xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            All Alerts
+          </DialogTitle>
+          <DialogDescription>
+            {alerts.length} total alerts • {unacknowledgedCount} unacknowledged • {criticalCount} critical
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Filter Buttons */}
+        <div className="flex gap-2 border-b pb-3">
+          <Button
+            variant={dialogFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setDialogFilter('all')}
+          >
+            All ({alerts.length})
+          </Button>
+          <Button
+            variant={dialogFilter === 'unacknowledged' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setDialogFilter('unacknowledged')}
+          >
+            Unread ({unacknowledgedCount})
+          </Button>
+          <Button
+            variant={dialogFilter === 'critical' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setDialogFilter('critical')}
+          >
+            Critical ({criticalCount})
+          </Button>
+        </div>
+
+        {/* Alerts List */}
+        <ScrollArea className="h-[500px] pr-4">
+          <div className="space-y-3">
+            {dialogFilteredAlerts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <CheckCircle2 className="h-12 w-12 text-muted-foreground mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  No alerts in this category
+                </p>
+              </div>
+            ) : (
+              dialogFilteredAlerts.map((alert) => {
+                const SeverityIcon = getSeverityIcon(alert.severity);
+                
+                return (
+                  <div
+                    key={alert.id}
+                    className={cn(
+                      "p-4 rounded-lg border transition-all hover:shadow-md",
+                      getSeverityColor(alert.severity),
+                      alert.acknowledged && "opacity-60"
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <SeverityIcon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-sm">
+                                {alert.title}
+                              </h4>
+                              <Badge 
+                                variant="outline" 
+                                className={cn(
+                                  "text-xs",
+                                  alert.severity === 'critical' && "border-red-500 text-red-700 dark:text-red-400",
+                                  alert.severity === 'high' && "border-orange-500 text-orange-700 dark:text-orange-400"
+                                )}
+                              >
+                                {alert.severity}
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                {getTypeLabel(alert.type)}
+                              </Badge>
+                              {alert.acknowledged && (
+                                <Badge variant="outline" className="text-xs">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  Read
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm mb-3">
+                          {alert.message}
+                        </p>
+                        
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            {alert.schoolName && (
+                              <span className="font-medium text-foreground">
+                                {alert.schoolName}
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}
+                            </span>
+                          </div>
+                          <div className="flex gap-2">
+                            {!alert.acknowledged && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAcknowledge(alert.id, e);
+                                }}
+                              >
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Mark as Read
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                onAlertClick?.(alert);
+                                setShowAllDialog(false);
+                              }}
+                            >
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

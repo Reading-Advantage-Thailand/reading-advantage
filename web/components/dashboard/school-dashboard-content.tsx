@@ -57,14 +57,32 @@ export function SchoolDashboardContent({
   );
   const [overview, setOverview] = useState(initialOverview);
 
-  const handleLicenseChange = useCallback((licenseId: string) => {
+  const handleLicenseChange = useCallback(async (licenseId: string) => {
     setSelectedLicenseId(licenseId);
     trackEvent("dashboard.license_changed", { licenseId });
-    // Refresh overview data for new license
-    // This would need to be implemented with proper API call
-  }, [trackEvent]);
+    
+    // Fetch new overview data for the selected license
+    try {
+      const response = await fetch(
+        `/api/v1/admin/overview?licenseId=${licenseId}&timeframe=${timeframe}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
 
-  const handleTimeframeChange = useCallback((newTimeframe: string) => {
+      if (response.ok) {
+        const newOverview: AdminOverviewResponse = await response.json();
+        setOverview(newOverview);
+      } else {
+        console.error("Failed to fetch overview data:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching overview data:", error);
+    }
+  }, [trackEvent, timeframe]);
+
+  const handleTimeframeChange = useCallback(async (newTimeframe: string) => {
     setTimeframe(newTimeframe);
     
     // Update URL with new timeframe
@@ -73,6 +91,26 @@ export function SchoolDashboardContent({
     router.push(`?${params.toString()}`, { scroll: false });
 
     trackEvent("dashboard.timeframe_changed", { timeframe: newTimeframe });
+
+    // Fetch new data with the selected timeframe
+    try {
+      const response = await fetch(
+        `/api/v1/admin/overview?timeframe=${newTimeframe}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+
+      if (response.ok) {
+        const newOverview: AdminOverviewResponse = await response.json();
+        setOverview(newOverview);
+      } else {
+        console.error("Failed to fetch overview data:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching overview data:", error);
+    }
   }, [router, searchParams, trackEvent]);
 
   const handleDrillDownToTeacher = useCallback((teacherId: string) => {
@@ -119,27 +157,27 @@ export function SchoolDashboardContent({
 
   const handleViewAllAlerts = useCallback(() => {
     trackEvent("dashboard.view_all_clicked", { widget: "alerts" });
-    router.push("/admin/alerts");
-  }, [router, trackEvent]);
+    // Don't redirect - let AlertCenter handle the dialog internally
+  }, [trackEvent]);
 
   const handleWidgetView = useCallback((widgetName: string) => {
     trackEvent("dashboard.widget_viewed", { widget: widgetName });
   }, [trackEvent]);
 
-  // Calculate projected level-ups (mock calculation)
-  const projectedLevelUps = Math.round(
-    overview.summary.activeUsers30d * 0.15 // Assume 15% will level up
-  );
-
-  // Calculate SRS backlog (mock - would need real data)
-  const srsBacklog = 0; // This would come from SRS API
-
-  // Calculate accuracy split (mock - would need real data)
-  const accuracySplit = {
-    high: 65, // >80%
-    medium: 25, // 60-80%
-    low: 10, // <60%
+  // Get timeframe label for descriptions
+  const getTimeframeLabel = (tf: string) => {
+    switch (tf) {
+      case "7d":
+        return "In last 7 days";
+      case "90d":
+        return "In last 90 days";
+      case "30d":
+      default:
+        return "In last 30 days";
+    }
   };
+
+  const timeframeLabel = getTimeframeLabel(timeframe);
 
   return (
     <div className="space-y-6">
@@ -177,36 +215,26 @@ export function SchoolDashboardContent({
         <KPICard
           title="Active Students"
           value={overview.summary.activeUsers30d}
-          description="In last 30 days"
+          description={timeframeLabel}
           icon={Users}
           tooltip="Students with at least one activity in the selected timeframe"
           dataSource="User Activity Logs"
-          trend={{
-            value: 12,
-            direction: "up",
-            label: "vs previous period",
-          }}
         />
         <KPICard
           title="Active Teachers"
-          value={overview.summary.totalTeachers}
-          description="Teaching staff"
+          value={overview.summary.activeTeachers}
+          description={`${overview.summary.totalTeachers} total`}
           icon={GraduationCap}
-          tooltip="Total number of teachers and admins"
-          dataSource="User Roles"
+          tooltip="Teachers and admins with activity in the selected timeframe"
+          dataSource="User Activity Logs"
         />
         <KPICard
-          title="Classes with Activity"
-          value={Math.round(overview.summary.totalStudents / 25)}
-          description="Active classrooms"
+          title="Active Classrooms"
+          value={overview.summary.activeClassrooms}
+          description="With student activity"
           icon={BookOpen}
-          tooltip="Classes with student activity in timeframe"
+          tooltip="Classrooms with at least one active student in the selected timeframe"
           dataSource="Classroom Activity"
-          trend={{
-            value: 5,
-            direction: "up",
-            label: "new this month",
-          }}
         />
         <KPICard
           title="Reading Sessions"
@@ -215,45 +243,35 @@ export function SchoolDashboardContent({
           icon={Activity}
           tooltip="Total reading sessions completed"
           dataSource="Lesson Records"
-          trend={{
-            value: 18,
-            direction: "up",
-            label: "vs last period",
-          }}
         />
       </div>
 
       {/* Secondary KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <KPICard
-          title="Accuracy Distribution"
-          value={`${accuracySplit.high}% High`}
-          description={`${accuracySplit.medium}% Med, ${accuracySplit.low}% Low`}
+          title="Total XP Earned"
+          value={overview.recentActivity.readingSessionsToday.toLocaleString()}
+          description="Sessions today"
           icon={Target}
-          tooltip="Student accuracy levels: High (>80%), Medium (60-80%), Low (<60%)"
-          dataSource="Velocity Metrics"
-          status={accuracySplit.low > 15 ? "warning" : "success"}
+          tooltip="Reading sessions completed today"
+          dataSource="Lesson Records"
         />
         <KPICard
-          title="Projected Level-Ups"
-          value={projectedLevelUps}
-          description="Next 30 days"
+          title="New Users"
+          value={overview.recentActivity.newUsersToday}
+          description="Joined today"
           icon={TrendingUp}
-          tooltip="Estimated students who will advance a level"
-          dataSource="Progress Tracking"
-          trend={{
-            value: 8,
-            direction: "up",
-          }}
+          tooltip="New users who joined today"
+          dataSource="User Registration"
         />
         <KPICard
-          title="SRS Backlog"
-          value={srsBacklog}
-          description="Cards due for review"
+          title="System Health"
+          value={overview.systemHealth.status === 'healthy' ? '✓' : '⚠'}
+          description={overview.systemHealth.status.charAt(0).toUpperCase() + overview.systemHealth.status.slice(1)}
           icon={Zap}
-          tooltip="Spaced Repetition System cards pending review"
-          dataSource="SRS Health Metrics"
-          status={srsBacklog > 100 ? "warning" : "success"}
+          tooltip="Overall system health status"
+          dataSource="System Monitoring"
+          status={overview.systemHealth.status === 'healthy' ? "success" : "warning"}
         />
       </div>
 
