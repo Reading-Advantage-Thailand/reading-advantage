@@ -157,7 +157,7 @@ class DashboardTelemetryService {
   }
 
   // Heatmap interactions
-  public heatmapView(properties: Omit<HeatmapInteraction['properties'], 'interactionType'>): void {
+  public heatmapView = (properties: Omit<HeatmapInteraction['properties'], 'interactionType'>): void => {
     this.track({
       event: 'activity_heatmap.view',
       category: 'heatmap',
@@ -168,7 +168,7 @@ class DashboardTelemetryService {
     });
   }
 
-  public heatmapBucketHover(properties: Omit<HeatmapInteraction['properties'], 'interactionType'>): void {
+  public heatmapBucketHover = (properties: Omit<HeatmapInteraction['properties'], 'interactionType'>): void => {
     this.track({
       event: 'activity_heatmap.bucket_hovered',
       category: 'heatmap',
@@ -179,7 +179,7 @@ class DashboardTelemetryService {
     });
   }
 
-  public heatmapBucketClick(properties: Omit<HeatmapInteraction['properties'], 'interactionType'>): void {
+  public heatmapBucketClick = (properties: Omit<HeatmapInteraction['properties'], 'interactionType'>): void => {
     this.track({
       event: 'activity_heatmap.bucket_clicked',
       category: 'heatmap',
@@ -190,7 +190,7 @@ class DashboardTelemetryService {
     });
   }
 
-  public heatmapFilterChange(properties: Omit<HeatmapInteraction['properties'], 'interactionType'>): void {
+  public heatmapFilterChange = (properties: Omit<HeatmapInteraction['properties'], 'interactionType'>): void => {
     this.track({
       event: 'activity_heatmap.filter_changed',
       category: 'heatmap',
@@ -202,7 +202,7 @@ class DashboardTelemetryService {
   }
 
   // Timeline interactions
-  public timelineView(properties: Omit<TimelineInteraction['properties'], 'interactionType'>): void {
+  public timelineView = (properties: Omit<TimelineInteraction['properties'], 'interactionType'>): void => {
     this.track({
       event: 'activity_timeline.view',
       category: 'timeline',
@@ -213,7 +213,7 @@ class DashboardTelemetryService {
     });
   }
 
-  public timelineEventClick(properties: Omit<TimelineInteraction['properties'], 'interactionType'>): void {
+  public timelineEventClick = (properties: Omit<TimelineInteraction['properties'], 'interactionType'>): void => {
     this.track({
       event: 'activity_timeline.event_clicked',
       category: 'timeline',
@@ -224,7 +224,7 @@ class DashboardTelemetryService {
     });
   }
 
-  public timelineFilterChange(properties: Omit<TimelineInteraction['properties'], 'interactionType'>): void {
+  public timelineFilterChange = (properties: Omit<TimelineInteraction['properties'], 'interactionType'>): void => {
     this.track({
       event: 'activity_timeline.filter_changed',
       category: 'timeline',
@@ -235,7 +235,7 @@ class DashboardTelemetryService {
     });
   }
 
-  public timelineScroll(properties: Omit<TimelineInteraction['properties'], 'interactionType'>): void {
+  public timelineScroll = (properties: Omit<TimelineInteraction['properties'], 'interactionType'>): void => {
     this.track({
       event: 'activity_timeline.scrolled',
       category: 'timeline',
@@ -247,7 +247,7 @@ class DashboardTelemetryService {
   }
 
   // Navigation tracking
-  public dashboardNavigation(properties: DashboardNavigation['properties']): void {
+  public dashboardNavigation = (properties: DashboardNavigation['properties']): void => {
     this.track({
       event: 'dashboard.navigation',
       category: 'navigation',
@@ -256,7 +256,7 @@ class DashboardTelemetryService {
   }
 
   // Performance tracking
-  public componentLoadTime(component: string, loadTime: number, properties: Record<string, any> = {}): void {
+  public componentLoadTime = (component: string, loadTime: number, properties: Record<string, any> = {}): void => {
     this.track({
       event: 'dashboard.component_load_time',
       category: 'dashboard',
@@ -269,7 +269,7 @@ class DashboardTelemetryService {
   }
 
   // Error tracking
-  public trackError(error: Error, context: Record<string, any> = {}): void {
+  public trackError = (error: Error, context: Record<string, any> = {}): void => {
     this.track({
       event: 'dashboard.error',
       category: 'dashboard',
@@ -278,6 +278,15 @@ class DashboardTelemetryService {
         stack: error.stack,
         context,
       },
+    });
+  }
+
+  // Generic event tracking
+  public trackEvent = (event: string, properties: Record<string, any> = {}): void => {
+    this.track({
+      event,
+      category: 'dashboard',
+      properties,
     });
   }
 

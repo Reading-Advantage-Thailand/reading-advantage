@@ -244,8 +244,8 @@ export default function AIInsights({ className }: AIInsightsProps) {
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* AI Insights */}
+    <div className={`grid gap-6 lg:grid-cols-2 ${className}`}>
+      {/* AI Insights - Redesigned with compact cards */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -253,42 +253,55 @@ export default function AIInsights({ className }: AIInsightsProps) {
             AI Insights
           </CardTitle>
           <CardDescription>
-            Intelligent analysis of your platform data and trends
+            Intelligent analysis powered by machine learning
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="grid gap-3">
             {insights.map((insight) => {
               const Icon = getInsightIcon(insight.type);
               return (
                 <div
                   key={insight.id}
-                  className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="group relative flex items-start gap-3 p-3 border rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer"
                 >
-                  <Icon className={`h-5 w-5 mt-0.5 ${getInsightColor(insight.type)}`} />
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium">{insight.title}</h4>
-                      <Badge variant="outline" className="text-xs">
-                        {insight.type}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {insight.confidence}% confidence
+                  {/* Icon with colored background */}
+                  <div className={`p-2 rounded-lg ${getInsightColor(insight.type).replace('text-', 'bg-').replace('-600', '-100')} dark:bg-opacity-20`}>
+                    <Icon className={`h-4 w-4 ${getInsightColor(insight.type)}`} />
+                  </div>
+                  
+                  <div className="flex-1 min-w-0 space-y-1">
+                    {/* Title and badges */}
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="font-medium text-sm leading-tight">{insight.title}</h4>
+                      <Badge variant="secondary" className="text-xs shrink-0">
+                        {insight.confidence}%
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    
+                    {/* Description */}
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       {insight.description}
                     </p>
-                    <div className="flex items-center gap-2">
+                    
+                    {/* Footer: Type, Impact, Action */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {insight.type}
+                      </Badge>
                       <Badge 
                         className={`text-xs ${getPriorityColor(insight.impact)}`}
                         variant="secondary"
                       >
-                        {insight.impact} impact
+                        {insight.impact}
                       </Badge>
                       {insight.actionable && (
-                        <Button variant="outline" size="sm">
-                          Take Action
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 px-2 text-xs ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          Review
                           <ArrowRight className="h-3 w-3 ml-1" />
                         </Button>
                       )}
@@ -301,7 +314,7 @@ export default function AIInsights({ className }: AIInsightsProps) {
         </CardContent>
       </Card>
 
-      {/* Smart Suggestions */}
+      {/* Smart Suggestions - Redesigned with compact layout */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -309,57 +322,66 @@ export default function AIInsights({ className }: AIInsightsProps) {
             Smart Suggestions
           </CardTitle>
           <CardDescription>
-            AI-powered recommendations to improve your platform
+            Actionable recommendations to optimize your platform
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {suggestions.map((suggestion) => {
               const CategoryIcon = getCategoryIcon(suggestion.category);
               return (
                 <div
                   key={suggestion.id}
-                  className="p-4 border rounded-lg space-y-3"
+                  className="group border rounded-lg p-3 space-y-2 hover:shadow-md transition-all duration-200"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <CategoryIcon className="h-4 w-4 text-muted-foreground" />
-                      <h4 className="font-medium">{suggestion.title}</h4>
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <CategoryIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <h4 className="font-medium text-sm truncate">{suggestion.title}</h4>
                     </div>
                     <Badge 
-                      className={`text-xs ${getPriorityColor(suggestion.priority)}`}
+                      className={`text-xs shrink-0 ${getPriorityColor(suggestion.priority)}`}
                       variant="secondary"
                     >
-                      {suggestion.priority} priority
+                      {suggestion.priority}
                     </Badge>
                   </div>
                   
-                  <p className="text-sm text-muted-foreground">
+                  {/* Description */}
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     {suggestion.description}
                   </p>
                   
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="font-medium">Estimated Impact:</span>
-                    <span className="text-green-600">{suggestion.estimatedImpact}</span>
+                  {/* Impact */}
+                  <div className="flex items-center gap-2 text-xs">
+                    <Target className="h-3 w-3 text-green-600" />
+                    <span className="text-muted-foreground">Impact:</span>
+                    <span className="text-green-600 font-medium">{suggestion.estimatedImpact}</span>
                   </div>
                   
-                  <div className="space-y-2">
-                    <span className="text-sm font-medium">Action Items:</span>
-                    <ul className="text-sm text-muted-foreground space-y-1">
+                  {/* Action Items - Collapsible on small screens */}
+                  <details className="group/details">
+                    <summary className="text-xs font-medium cursor-pointer list-none flex items-center gap-1 text-muted-foreground hover:text-foreground">
+                      <ArrowRight className="h-3 w-3 transition-transform group-open/details:rotate-90" />
+                      {suggestion.actions.length} Action Items
+                    </summary>
+                    <ul className="mt-2 space-y-1 pl-4">
                       {suggestion.actions.map((action, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
-                          {action}
+                        <li key={index} className="flex items-start gap-2 text-xs text-muted-foreground">
+                          <div className="w-1 h-1 rounded-full bg-muted-foreground mt-1.5 shrink-0" />
+                          <span>{action}</span>
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </details>
                   
-                  <div className="flex gap-2 pt-2">
-                    <Button variant="default" size="sm">
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="default" size="sm" className="h-7 text-xs flex-1">
                       Implement
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="h-7 text-xs flex-1">
                       Learn More
                     </Button>
                   </div>
