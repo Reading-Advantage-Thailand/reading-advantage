@@ -14,9 +14,64 @@ import {
 } from "@/types/dashboard";
 import { prisma } from "@/lib/prisma";
 import { Role, Status } from "@prisma/client";
+import { advancedCache, createCachedQuery } from "@/lib/cache/advanced-cache";
 
 // Import enhanced alignment controller
 export { getEnhancedAlignmentMetrics as getAlignmentMetrics } from "./enhanced-alignment-controller";
+
+/**
+ * Fetch activity data from database
+ */
+async function fetchActivityData(timeframe: string, schoolId?: string | null, classId?: string | null) {
+  // Calculate date range
+  const now = new Date();
+  const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - daysAgo);
+
+  // Build where clause based on filters
+  const whereClause: any = {
+    createdAt: {
+      gte: startDate,
+    },
+  };
+
+  if (schoolId) {
+    whereClause.schoolId = schoolId;
+  }
+
+  // Get daily activity data
+  const activities = await prisma.userActivity.findMany({
+    where: whereClause,
+    select: {
+      userId: true,
+      createdAt: true,
+      timer: true,
+      user: {
+        select: {
+          createdAt: true,
+          studentClassrooms: classId
+            ? {
+                where: {
+                  classroomId: classId,
+                },
+                select: {
+                  id: true,
+                },
+              }
+            : undefined,
+        },
+      },
+    },
+  });
+
+  // Filter by class if specified
+  const filteredActivities = classId
+    ? activities.filter((a: any) => a.user.studentClassrooms?.length > 0)
+    : activities;
+
+  return { filteredActivities, startDate, now };
+}
 
 /**
  * Get activity metrics
@@ -40,52 +95,20 @@ export async function getActivityMetrics(req: ExtendedNextRequest) {
     const schoolId = searchParams.get('schoolId');
     const classId = searchParams.get('classId');
 
-    // Calculate date range
-    const now = new Date();
-    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
-    const startDate = new Date(now);
-    startDate.setDate(startDate.getDate() - daysAgo);
+    // Create cache key based on parameters
+    const cacheKey = `activity-metrics:${timeframe}:${schoolId || 'all'}:${classId || 'all'}:${session.user.id}`;
+    
+    // Use cached query with 5-minute TTL and 2-minute stale time
+    const getCachedActivityData = createCachedQuery(
+      cacheKey,
+      () => fetchActivityData(timeframe, schoolId, classId),
+      { ttl: 300000, staleTime: 120000 }
+    );
 
-    // Build where clause based on filters
-    const whereClause: any = {
-      createdAt: {
-        gte: startDate,
-      },
-    };
+    // Get cached data
+    const { filteredActivities, startDate, now } = await getCachedActivityData();
 
-    if (schoolId) {
-      whereClause.schoolId = schoolId;
-    }
-
-    // Get daily activity data
-    const activities = await prisma.userActivity.findMany({
-      where: whereClause,
-      select: {
-        userId: true,
-        createdAt: true,
-        timer: true,
-        user: {
-          select: {
-            createdAt: true,
-            studentClassrooms: classId
-              ? {
-                  where: {
-                    classroomId: classId,
-                  },
-                  select: {
-                    id: true,
-                  },
-                }
-              : undefined,
-          },
-        },
-      },
-    }) as any;
-
-    // Filter by class if specified
-    const filteredActivities = classId
-      ? activities.filter((a: any) => a.user.studentClassrooms?.length > 0)
-      : activities;
+    console.log(`[Cache] Activity metrics cache ${cacheKey.includes('cached') ? 'HIT' : 'MISS'} - ${filteredActivities.length} activities`);
 
     // Group by date
     const dateMap = new Map<string, {

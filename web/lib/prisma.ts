@@ -120,9 +120,13 @@ export const prisma: PrismaClient =
       // Don't override datasources - let Prisma read DATABASE_URL from .env
       // This ensures proper decoding of URL-encoded passwords
       log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-      // Cloud SQL connection pooling configuration
-      // Note: Connection pool settings should be added to DATABASE_URL instead
-      // Example: postgresql://user:pass@host:5432/db?connection_limit=5&pool_timeout=10
+      // Connection pool configuration for serverless environments
+      datasources: {
+        db: {
+          url: getDatabaseUrl() + (getDatabaseUrl().includes('?') ? '&' : '?') + 
+               'connection_limit=10&pool_timeout=20&connect_timeout=30'
+        }
+      }
     });
   })();
 

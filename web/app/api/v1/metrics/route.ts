@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { createEdgeRouter } from "next-connect";
 import { logRequest } from "@/server/middleware";
 import { protect } from "@/server/controllers/auth-controller";
+import { initializeDbOptimization } from "@/lib/db-optimization-init";
 
 interface RequestContext {
   params?: unknown;
+}
+
+// Initialize optimization systems on first API call
+let optimizationInitialized = false;
+async function ensureOptimizationSystems() {
+  if (!optimizationInitialized) {
+    await initializeDbOptimization();
+    optimizationInitialized = true;
+  }
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -15,6 +25,9 @@ router.use(protect);
 
 // GET /api/v1/metrics - Aggregate metrics endpoint
 router.get(async (req: NextRequest) => {
+  // Ensure optimization systems are running
+  await ensureOptimizationSystems();
+  
   try {
     const url = new URL(req.url);
     const dateRange = url.searchParams.get("dateRange") || "30d";
@@ -62,7 +75,10 @@ router.get(async (req: NextRequest) => {
       { endpoint: 'srs', params: '', optional: true }
     ];
 
-    const promises = endpoints.map(async (item) => {
+    // Sequential fetching to prevent connection pool exhaustion
+    const results = [];
+    
+    for (const item of endpoints) {
       const { endpoint, params: extraParams, optional = false } = item;
       
       try {
@@ -72,11 +88,11 @@ router.get(async (req: NextRequest) => {
         
         if (response.ok) {
           const data = await response.json();
-          return { [endpoint]: data };
+          results.push({ [endpoint]: data });
         } else {
           console.warn(`Failed to fetch ${endpoint} metrics:`, response.status, response.statusText);
           if (optional) {
-            return { [endpoint]: null };
+            results.push({ [endpoint]: null });
           } else {
             throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
           }
@@ -84,14 +100,17 @@ router.get(async (req: NextRequest) => {
       } catch (error) {
         console.warn(`Error fetching ${endpoint} metrics:`, error);
         if (optional) {
-          return { [endpoint]: null };
+          results.push({ [endpoint]: null });
         } else {
-          return { [endpoint]: { error: String(error) } };
+          results.push({ [endpoint]: { error: String(error) } });
         }
       }
-    });
-
-    const results = await Promise.all(promises);
+      
+      // Small delay to further reduce connection pressure
+      if (endpoints.indexOf(item) < endpoints.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
     
     // Combine all results into a single object
     const combinedData = results.reduce((acc, result) => {

@@ -8,7 +8,13 @@
  * - Observability hooks for monitoring
  */
 
-import { getPostgresListener, MetricsUpdatePayload } from "./postgres-listener";
+// Remove postgres listener dependency for build compatibility
+export interface MetricsUpdatePayload {
+  views: string[];
+  timestamp: string;
+  success: number;
+  failed: number;
+}
 
 export interface CacheEntry<T> {
   data: T;

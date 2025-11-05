@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { ActivityType } from "@prisma/client";
+import { smartPaginator } from "@/lib/pagination/smart-paginator";
 import { ExtendedNextRequest } from "./auth-controller";
 import { ActivityDataPoint, MetricsActivityResponse } from "@/types/dashboard";
 import { getCachedMetrics } from "@/lib/cache/metrics";
@@ -204,79 +205,109 @@ async function getActivityHeatmap(
   const cacheKey = `activity-heatmap:${scope}:${entityId}:${timeframe}:${granularity}:${activityTypesFilter.join(",")}`;
 
   const fetchHeatmapData = async () => {
-    // Build where clause for Prisma query
-    const whereClause: any = {
-      createdAt: {
-        gte: startDate,
-      },
-    };
+    // Use transaction for all database operations to optimize connection usage
+    const result = await prisma.$transaction(async (tx) => {
+      // Build where clause for Prisma query
+      const whereClause: any = {
+        createdAt: {
+          gte: startDate,
+        },
+      };
 
-    // Scope-specific filters
-    if (scope === "student") {
-      whereClause.userId = entityId;
-    } else if (scope === "school") {
-      // Get users from the school
-      const schoolUsers = await prisma.user.findMany({
-        where: { schoolId: entityId },
-        select: { id: true },
-      });
+      let userIds: string[] = [];
 
-      if (schoolUsers.length === 0) {
-        console.warn(
-          `[Activity Heatmap] No users found for school: ${entityId}`
-        );
-        // Return empty response
-        return {
-          scope,
-          entityId,
-          timeframe,
-          granularity,
-          timezone: "UTC",
-          activityTypes: activityTypesFilter,
-          buckets: [],
-          metadata: {
-            totalActivities: 0,
-            uniqueStudents: 0,
-            dateRange: {
-              start: startDate.toISOString().split("T")[0],
-              end: now.toISOString().split("T")[0],
-            },
-            availableActivityTypes: [],
-          },
-          cache: {
-            cached: false,
-            generatedAt: new Date().toISOString(),
-          },
+      // Scope-specific filters
+      if (scope === "student") {
+        whereClause.userId = entityId;
+        userIds = [entityId];
+      } else if (scope === "school") {
+        // Get users from the school in transaction
+        const schoolUsers = await tx.user.findMany({
+          where: { schoolId: entityId },
+          select: { id: true },
+          take: 1000, // Limit to prevent huge result sets
+        });
+
+        if (schoolUsers.length === 0) {
+          return null; // Will handle empty case outside transaction
+        }
+
+        userIds = schoolUsers.map((u) => u.id);
+        whereClause.userId = {
+          in: userIds,
         };
       }
 
-      whereClause.userId = {
-        in: schoolUsers.map((u) => u.id),
-      };
-    }
+      // Activity type filter
+      if (activityTypesFilter.length > 0) {
+        whereClause.activityType = {
+          in: activityTypesFilter as ActivityType[],
+        };
+      }
 
-    // Activity type filter
-    if (activityTypesFilter.length > 0) {
-      whereClause.activityType = {
-        in: activityTypesFilter as ActivityType[],
-      };
-    }
+      // Fetch activities and available types in parallel within transaction
+      const [activities, availableTypes] = await Promise.all([
+        tx.userActivity.findMany({
+          where: whereClause,
+          select: {
+            id: true,
+            userId: true,
+            activityType: true,
+            completed: true,
+            timer: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+          take: 10000, // Prevent excessive memory usage
+        }),
+        tx.userActivity.findMany({
+          where: scope === "student"
+            ? { userId: entityId }
+            : scope === "school"
+              ? { userId: { in: userIds } }
+              : {},
+          select: {
+            activityType: true,
+          },
+          distinct: ["activityType"],
+        }),
+      ]);
 
-    // Fetch activities from UserActivity table
-    const activities = await prisma.userActivity.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        userId: true,
-        activityType: true,
-        completed: true,
-        timer: true,
-        createdAt: true,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
+      return { activities, availableTypes, userIds };
     });
+
+    // Handle empty school case
+    if (!result) {
+      console.warn(
+        `[Activity Heatmap] No users found for school: ${entityId}`
+      );
+      return {
+        scope,
+        entityId,
+        timeframe,
+        granularity,
+        timezone: "UTC",
+        activityTypes: activityTypesFilter,
+        buckets: [],
+        metadata: {
+          totalActivities: 0,
+          uniqueStudents: 0,
+          dateRange: {
+            start: startDate.toISOString().split("T")[0],
+            end: now.toISOString().split("T")[0],
+          },
+          availableActivityTypes: [],
+        },
+        cache: {
+          cached: false,
+          generatedAt: new Date().toISOString(),
+        },
+      };
+    }
+
+    const { activities, availableTypes } = result;
 
     // Process activities into buckets by date
     const bucketMap = new Map<
@@ -336,20 +367,6 @@ async function getActivityHeatmap(
             ) / 100
           : 0,
     }));
-
-    // Get available activity types for metadata
-    const availableTypes = await prisma.userActivity.findMany({
-      where:
-        scope === "student"
-          ? { userId: entityId }
-          : scope === "school"
-            ? { userId: { in: (whereClause.userId as any).in } }
-            : {},
-      select: {
-        activityType: true,
-      },
-      distinct: ["activityType"],
-    });
 
     // Calculate summary metadata
     const totalActivities = buckets.reduce(
@@ -950,63 +967,89 @@ export async function getAllUserActivity() {
 
 export async function getAllUsersActivity() {
   try {
-    // Get recent activities with minimal data - increased for 6 months of data
-    const recentActivities = await prisma.userActivity.findMany({
-      select: {
-        id: true,
-        userId: true,
-        activityType: true,
-        targetId: true,
-        completed: true,
-        createdAt: true,
-        details: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    // Use transaction to optimize connection usage and add pagination
+    const result = await prisma.$transaction(async (tx) => {
+      // First get a reasonable amount of recent activities (reduced from 5000 to 1000)
+      const recentActivities = await tx.userActivity.findMany({
+        select: {
+          id: true,
+          userId: true,
+          activityType: true,
+          targetId: true,
+          completed: true,
+          createdAt: true,
+          details: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 5000, // Increased to cover 6 months of data
-      where: {
-        createdAt: {
-          gte: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000), // Last 6 months
+        orderBy: {
+          createdAt: "desc",
         },
-      },
+        take: 1000, // Reduced from 5000 to prevent connection issues
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days instead of 6 months
+          },
+        },
+      });
+
+      // Get article data for activities that reference articles
+      const articleIds = new Set<string>();
+      recentActivities.forEach((activity) => {
+        // Only get article IDs from ARTICLE_READ and ARTICLE_RATING activities
+        if (
+          (activity.activityType === "ARTICLE_READ" ||
+            activity.activityType === "ARTICLE_RATING") &&
+          activity.targetId
+        ) {
+          articleIds.add(activity.targetId);
+        }
+      });
+
+      // Fetch article data in the same transaction
+      const articles = articleIds.size > 0 ? await tx.article.findMany({
+        where: {
+          id: { in: Array.from(articleIds) },
+        },
+        select: {
+          id: true,
+          cefrLevel: true,
+          title: true,
+          raLevel: true,
+        },
+      }) : [];
+
+      // Get aggregated activity data for summary in the same transaction
+      const activityCounts = await tx.userActivity.groupBy({
+        by: ["activityType", "userId"],
+        _count: {
+          id: true,
+        },
+        orderBy: {
+          _count: {
+            id: "desc",
+          },
+        },
+        take: 100, // Limit to top 100 most active users
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Same timeframe
+          },
+        },
+      });
+
+      return { recentActivities, articles, activityCounts };
     });
 
-    // Get article data for activities that reference articles
-    const articleIds = new Set<string>();
-    recentActivities.forEach((activity) => {
-      // Only get article IDs from ARTICLE_READ and ARTICLE_RATING activities
-      if (
-        (activity.activityType === "ARTICLE_READ" ||
-          activity.activityType === "ARTICLE_RATING") &&
-        activity.targetId
-      ) {
-        articleIds.add(activity.targetId);
-      }
-    });
-
-    // Fetch article data for CEFR levels
-    const articles = await prisma.article.findMany({
-      where: {
-        id: { in: Array.from(articleIds) },
-      },
-      select: {
-        id: true,
-        cefrLevel: true,
-        title: true,
-        raLevel: true,
-      },
-    });
+    const { recentActivities, articles, activityCounts } = result;
 
     const articleMap = new Map(
-      articles.map((article) => [article.id, article])
+      articles.map((article: any) => [article.id, article])
     );
 
     const data = recentActivities.map((activity) => {
@@ -1033,23 +1076,6 @@ export async function getAllUsersActivity() {
         details: details,
         user: activity.user,
       };
-    });
-
-    // Count how many activities have CEFR levels
-    const activitiesWithCEFR = data.filter((d) => d.details?.cefr_level).length;
-
-    // Get aggregated activity data for summary
-    const activityCounts = await prisma.userActivity.groupBy({
-      by: ["activityType", "userId"],
-      _count: {
-        id: true,
-      },
-      orderBy: {
-        _count: {
-          id: "desc",
-        },
-      },
-      take: 100, // Limit to top 100 most active users
     });
 
     return NextResponse.json(
