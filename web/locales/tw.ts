@@ -597,6 +597,83 @@ export default {
           creationFailed: "建立作業失敗，請重試",
         },
       },
+      dashboardPage: {
+        title: "教師控制台",
+        description: "監控您的班級、追蹤學生進度並獲得AI驅動的見解",
+        kpis: {
+          totalClasses: "總班級數",
+          totalStudents: "總學生數",
+          activeStudents: "活躍學生",
+          averageLevel: "平均水平",
+          weeklyXP: "每週經驗值",
+          accuracy: "準確率",
+          readingVelocity: "閱讀速度",
+          onTrack: "進度正常",
+          activeToday: "今日活躍",
+          completedToday: "今日完成",
+          pending: "待處理的作業",
+          managingClasses: "管理 {count} 個班級",
+          acrossAllClasses: "所有班級",
+          activeOf: "{active}/{total} 活躍（30天）",
+          classAverageLevel: "班級平均CEFR水平",
+          averageReadingLevel: "所有學生的平均閱讀水平",
+          xpEarnedThisWeek: "本週獲得的經驗值",
+          averageQuizAccuracy: "平均測驗準確率",
+          booksPerWeek: "每週閱讀書籍",
+          studentsMeetingGoals: "達成目標的學生",
+          studentsActiveToday: "今日活躍學生",
+          assignmentsCompletedToday: "今日完成的作業",
+          assignmentsPending: "有未完成作業的任務",
+          engagementRate: "參與率",
+        },
+        classOverview: {
+          title: "班級概覽",
+          description: "管理和監控您的所有教室",
+          hideArchived: "隱藏已歸檔",
+          showArchived: "顯示已歸檔",
+          exportCSV: "匯出CSV",
+          searchPlaceholder: "按班級名稱或代碼搜尋...",
+          className: "班級名稱",
+          code: "代碼",
+          students: "學生",
+          active7d: "活躍（7天）",
+          avgLevel: "平均水平",
+          totalXP: "總經驗值",
+          trend: "趨勢",
+          status: "狀態",
+          actions: "操作",
+          viewDetails: "檢視詳情",
+          viewReports: "檢視報告",
+          assignments: "作業",
+          archived: "已歸檔",
+          active: "活躍",
+          noClassesFound: "未找到班級",
+          noClassesMatchingSearch: "未找到符合搜尋條件的班級",
+          showing: "顯示 {count}/{total} 個班級",
+          totalStudents: "總學生數：{count}",
+        },
+        aiBrief: {
+          title: "AI教師簡報",
+          description: "AI驅動的見解和建議",
+          updatedAt: "更新於 {time}",
+          keyInsights: "關鍵見解（{count}）",
+          evidence: "證據：",
+          actionable: "可操作",
+          noInsights: "目前沒有特定見解",
+          aiInsightsWillAppear: "AI見解將顯示在此處",
+          priority: {
+            low: "低",
+            medium: "中",
+            high: "高",
+          },
+        },
+        lastUpdated: "最後更新：{time}",
+        error: {
+          title: "錯誤",
+          message: "無法載入控制台資料",
+          retry: "重試",
+        },
+      },
     },
     admin: {
       generate: [
@@ -803,7 +880,8 @@ export default {
             activeStudents: "{count} 位活躍學生",
             avgXp: "平均XP {xp}",
             overallAdoption: "整體採用率",
-            activeInTimeframe: "最近 {timeframe} 中 {active} / {total} 學生活躍",
+            activeInTimeframe:
+              "最近 {timeframe} 中 {active} / {total} 學生活躍",
             emptyMessage: "沒有學生數據",
           },
           alerts: {
@@ -901,8 +979,10 @@ export default {
       classRoster: "班級名單",
       passages: "段落",
       assignments: "作業",
+      dashboard: "控制台",
     },
     sidebarTeacherNav: {
+      dashboard: "控制台",
       myClasses: "我的課程",
       myStudents: "我的學生",
       classRoster: "班級名單",
@@ -966,7 +1046,7 @@ export default {
       articleChoose: "請選擇您想閱讀的 {article}",
       articleChooseDescription:
         "您的級別是 {level}，這裡是您可以選擇的 {article}。",
-        back: "< 返回",
+      back: "< 返回",
     },
     article: {
       type: "文章類型",
@@ -2136,42 +2216,44 @@ export default {
 
   genreEngagement: {
     genres: {
-      "Fiction": "小說",
+      Fiction: "小說",
       "Non-Fiction": "非小說",
-      "Fantasy": "奇幻",
+      Fantasy: "奇幻",
       "Science Fiction": "科幻小說",
-      "Mystery": "懸疑",
-      "Adventure": "冒險",
-      "Biography": "傳記",
-      "History": "歷史",
-      "Romance": "浪漫",
-      "Thriller": "驚悚",
-      "Horror": "恐怖",
-      "Drama": "戲劇",
-      "Comedy": "喜劇",
-      "Travel": "旅行",
-      "Health": "健康",
-      "Technology": "科技",
-      "Sports": "體育",
-      "Art": "藝術",
-      "Music": "音樂",
-      "Poetry": "詩歌",
-      "Unknown": "未知類型"
+      Mystery: "懸疑",
+      Adventure: "冒險",
+      Biography: "傳記",
+      History: "歷史",
+      Romance: "浪漫",
+      Thriller: "驚悚",
+      Horror: "恐怖",
+      Drama: "戲劇",
+      Comedy: "喜劇",
+      Travel: "旅行",
+      Health: "健康",
+      Technology: "科技",
+      Sports: "體育",
+      Art: "藝術",
+      Music: "音樂",
+      Poetry: "詩歌",
+      Unknown: "未知類型",
     },
-    
+
     recommendations: {
       rationale: {
-        high_engagement_similar: "基於您對{sourceGenre}的高度參與，建議您嘗試{targetGenre}",
-        underexplored_adjacent: "根據您的{sourceGenre}閱讀習慣，探索{targetGenre}以增加多樣性",
-        level_appropriate_new: "{targetGenre}適合您的閱讀水平 - 發現新內容！"
+        high_engagement_similar:
+          "基於您對{sourceGenre}的高度參與，建議您嘗試{targetGenre}",
+        underexplored_adjacent:
+          "根據您的{sourceGenre}閱讀習慣，探索{targetGenre}以增加多樣性",
+        level_appropriate_new: "{targetGenre}適合您的閱讀水平 - 發現新內容！",
       },
-      
+
       types: {
         high_engagement_similar: "與您的喜好相似",
         underexplored_adjacent: "擴展您的閱讀多樣性",
-        level_appropriate_new: "適合您的水平"
+        level_appropriate_new: "適合您的水平",
       },
-      
+
       labels: {
         recommendedForYou: "為您推薦",
         exploreGenres: "探索新類型",
@@ -2179,10 +2261,10 @@ export default {
         perfectLevel: "適合您的水平",
         confidenceHigh: "強烈推薦",
         confidenceMedium: "良好匹配",
-        confidenceLow: "值得探索"
-      }
+        confidenceLow: "值得探索",
+      },
     },
-    
+
     metrics: {
       totalEngagement: "總參與度",
       recentActivity: "近期活動",
@@ -2201,21 +2283,21 @@ export default {
       averageLevel: "平均水平",
       activeDays: "活躍天數",
       cefrLevel: "CEFR級別",
-      
+
       timeframes: {
         "7d": "過去7天",
         "30d": "過去30天",
         "90d": "過去3個月",
-        "6m": "過去6個月"
+        "6m": "過去6個月",
       },
-      
+
       scopes: {
         student: "學生視圖",
         class: "班級視圖",
-        school: "學校視圖"
-      }
+        school: "學校視圖",
+      },
     },
-    
+
     insights: {
       topGenre: "您最喜歡的類型是{genre}",
       diverseReader: "您喜歡閱讀{count}種不同類型",
@@ -2223,7 +2305,7 @@ export default {
       newRecommendation: "嘗試{genre} - 與{sourceGenre}相似",
       levelProgression: "您已準備好閱讀更具挑戰性的{genre}內容",
       consistentEngagement: "在{timeframe}內持續閱讀{genre}",
-      recentInterest: "本月對{genre}的興趣日益增長"
-    }
+      recentInterest: "本月對{genre}的興趣日益增長",
+    },
   },
 } as const;

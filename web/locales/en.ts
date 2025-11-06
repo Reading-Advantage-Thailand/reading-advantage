@@ -670,6 +670,86 @@ export default {
           creationFailed: "Failed to create assignment. Please try again",
         },
       },
+      dashboardPage: {
+        title: "Teacher Dashboard",
+        description:
+          "Monitor your classes, track student progress, and get AI-powered insights",
+        kpis: {
+          totalClasses: "Total Classes",
+          totalStudents: "Total Students",
+          activeStudents: "Active Students",
+          averageLevel: "Average Level",
+          weeklyXP: "Weekly XP",
+          accuracy: "Accuracy",
+          readingVelocity: "Reading Velocity",
+          onTrack: "On Track",
+          activeToday: "Active Today",
+          completedToday: "Completed Today",
+          pending: "Pending Assignments",
+          managingClasses:
+            "Managing {count} {count, plural, one {class} other {classes}}",
+          acrossAllClasses: "Across all classes",
+          activeOf: "{active} of {total} active (30d)",
+          classAverageLevel: "Class average CEFR level",
+          averageReadingLevel: "Average reading level across all students",
+          xpEarnedThisWeek: "XP earned this week",
+          averageQuizAccuracy: "Average quiz accuracy",
+          booksPerWeek: "Books per week",
+          studentsMeetingGoals: "Students meeting goals",
+          studentsActiveToday: "Students active today",
+          assignmentsCompletedToday: "Assignments completed today",
+          assignmentsPending: "Assignments with incomplete work",
+          engagementRate: "Engagement rate",
+        },
+        classOverview: {
+          title: "Class Overview",
+          description: "Manage and monitor all your classrooms",
+          hideArchived: "Hide Archived",
+          showArchived: "Show Archived",
+          exportCSV: "Export CSV",
+          searchPlaceholder: "Search by class name or code...",
+          className: "Class Name",
+          code: "Code",
+          students: "Students",
+          active7d: "Active (7d)",
+          avgLevel: "Avg Level",
+          totalXP: "Total XP",
+          trend: "Trend",
+          status: "Status",
+          actions: "Actions",
+          viewDetails: "View Details",
+          viewReports: "View Reports",
+          assignments: "Assignments",
+          archived: "Archived",
+          active: "Active",
+          noClassesFound: "No classes found",
+          noClassesMatchingSearch: "No classes found matching your search",
+          showing:
+            "Showing {count} of {total} {total, plural, one {class} other {classes}}",
+          totalStudents: "Total Students: {count}",
+        },
+        aiBrief: {
+          title: "AI Teacher Brief",
+          description: "AI-powered insights and recommendations",
+          updatedAt: "Updated {time}",
+          keyInsights: "Key Insights ({count})",
+          evidence: "Evidence:",
+          actionable: "Actionable",
+          noInsights: "No specific insights at this time",
+          aiInsightsWillAppear: "AI insights will appear here",
+          priority: {
+            low: "low",
+            medium: "medium",
+            high: "high",
+          },
+        },
+        lastUpdated: "Last updated: {time}",
+        error: {
+          title: "Error",
+          message: "Failed to load dashboard data",
+          retry: "Retry",
+        },
+      },
     },
     admin: {
       generate: [
@@ -829,7 +909,8 @@ export default {
           activeStudents: {
             title: "Active Students",
             description: "In last {days} days",
-            tooltip: "Students with at least one activity in the selected timeframe",
+            tooltip:
+              "Students with at least one activity in the selected timeframe",
             dataSource: "User Activity Logs",
           },
           activeTeachers: {
@@ -855,7 +936,8 @@ export default {
             high: "High",
             medium: "Med",
             low: "Low",
-            tooltip: "Student accuracy levels: High (>80%), Medium (60-80%), Low (<60%)",
+            tooltip:
+              "Student accuracy levels: High (>80%), Medium (60-80%), Low (<60%)",
             dataSource: "Velocity Metrics",
           },
           projectedLevelUps: {
@@ -882,7 +964,8 @@ export default {
             activeStudents: "{count} active students",
             avgXp: "{xp} avg XP",
             overallAdoption: "Overall Adoption",
-            activeInTimeframe: "{active} of {total} students active in last {timeframe}",
+            activeInTimeframe:
+              "{active} of {total} students active in last {timeframe}",
             emptyMessage: "No student data available",
           },
           alerts: {
@@ -981,8 +1064,10 @@ export default {
       classRoster: "Class Roster",
       passages: "Passages",
       assignments: "Assignments",
+      dashboard: "Dashboard",
     },
     sidebarTeacherNav: {
+      dashboard: "Dashboard",
       myClasses: "My Classes",
       myStudents: "My Students",
       classRoster: "Class Roster",
@@ -2252,42 +2337,45 @@ export default {
 
   genreEngagement: {
     genres: {
-      "Fiction": "Fiction",
+      Fiction: "Fiction",
       "Non-Fiction": "Non-Fiction",
-      "Fantasy": "Fantasy",
+      Fantasy: "Fantasy",
       "Science Fiction": "Science Fiction",
-      "Mystery": "Mystery",
-      "Adventure": "Adventure",
-      "Biography": "Biography",
-      "History": "History",
-      "Romance": "Romance",
-      "Thriller": "Thriller",
-      "Horror": "Horror",
-      "Drama": "Drama",
-      "Comedy": "Comedy",
-      "Travel": "Travel",
-      "Health": "Health",
-      "Technology": "Technology",
-      "Sports": "Sports",
-      "Art": "Art",
-      "Music": "Music",
-      "Poetry": "Poetry",
-      "Unknown": "Unknown"
+      Mystery: "Mystery",
+      Adventure: "Adventure",
+      Biography: "Biography",
+      History: "History",
+      Romance: "Romance",
+      Thriller: "Thriller",
+      Horror: "Horror",
+      Drama: "Drama",
+      Comedy: "Comedy",
+      Travel: "Travel",
+      Health: "Health",
+      Technology: "Technology",
+      Sports: "Sports",
+      Art: "Art",
+      Music: "Music",
+      Poetry: "Poetry",
+      Unknown: "Unknown",
     },
-    
+
     recommendations: {
       rationale: {
-        high_engagement_similar: "Strong {sourceGenre} engagement suggests you might enjoy {targetGenre}",
-        underexplored_adjacent: "Based on your {sourceGenre} reading, explore {targetGenre} for variety",
-        level_appropriate_new: "{targetGenre} matches your reading level - discover something new!"
+        high_engagement_similar:
+          "Strong {sourceGenre} engagement suggests you might enjoy {targetGenre}",
+        underexplored_adjacent:
+          "Based on your {sourceGenre} reading, explore {targetGenre} for variety",
+        level_appropriate_new:
+          "{targetGenre} matches your reading level - discover something new!",
       },
-      
+
       types: {
         high_engagement_similar: "Similar to your favorites",
         underexplored_adjacent: "Expand your reading variety",
-        level_appropriate_new: "Perfect for your level"
+        level_appropriate_new: "Perfect for your level",
       },
-      
+
       labels: {
         recommendedForYou: "Recommended for You",
         exploreGenres: "Explore New Genres",
@@ -2295,14 +2383,14 @@ export default {
         perfectLevel: "Perfect for Your Level",
         confidenceHigh: "Highly Recommended",
         confidenceMedium: "Good Match",
-        confidenceLow: "Worth Exploring"
-      }
+        confidenceLow: "Worth Exploring",
+      },
     },
-    
+
     metrics: {
       totalReads: "Total Reads",
       recentActivity: "Recent Activity",
-      quizCompletions: "Quiz Completions", 
+      quizCompletions: "Quiz Completions",
       xpEarned: "XP Earned",
       engagementScore: "Engagement Score",
       lastRead: "Last Read",
@@ -2310,21 +2398,21 @@ export default {
       activeDays: "Active Days",
       readingStreak: "Reading Streak",
       cefrLevel: "CEFR Level",
-      
+
       timeframes: {
         "7d": "Last 7 days",
-        "30d": "Last 30 days", 
+        "30d": "Last 30 days",
         "90d": "Last 3 months",
-        "6m": "Last 6 months"
+        "6m": "Last 6 months",
       },
-      
+
       scopes: {
         student: "Student View",
-        class: "Class View", 
-        school: "School View"
-      }
+        class: "Class View",
+        school: "School View",
+      },
     },
-    
+
     insights: {
       topGenre: "Your top genre is {genre}",
       diverseReader: "You enjoy diverse reading across {count} genres",
@@ -2332,7 +2420,7 @@ export default {
       newRecommendation: "Try {genre} - it's similar to {sourceGenre}",
       levelProgression: "You're ready for more challenging {genre} content",
       consistentEngagement: "Steady {genre} reading over {timeframe}",
-      recentInterest: "Growing interest in {genre} this month"
-    }
+      recentInterest: "Growing interest in {genre} this month",
+    },
   },
 } as const;

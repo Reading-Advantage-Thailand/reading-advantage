@@ -632,6 +632,84 @@ export default {
           creationFailed: "ไม่สามารถสร้างงานที่มอบหมายได้ กรุณาลองใหม่อีกครั้ง",
         },
       },
+      dashboardPage: {
+        title: "แดชบอร์ดครู",
+        description:
+          "ติดตามชั้นเรียน ความก้าวหน้าของนักเรียน และรับข้อมูลเชิงลึกจาก AI",
+        kpis: {
+          totalClasses: "ชั้นเรียนทั้งหมด",
+          totalStudents: "นักเรียนทั้งหมด",
+          activeStudents: "นักเรียนที่ใช้งาน",
+          averageLevel: "ระดับเฉลี่ย",
+          weeklyXP: "XP รายสัปดาห์",
+          accuracy: "ความแม่นยำ",
+          readingVelocity: "ความเร็วในการอ่าน",
+          onTrack: "อยู่ในเป้าหมาย",
+          activeToday: "ใช้งานวันนี้",
+          completedToday: "เสร็จสิ้นวันนี้",
+          pending: "งานที่รอดำเนินการ",
+          managingClasses: "กำลังดูแล {count} ชั้นเรียน",
+          acrossAllClasses: "ทุกชั้นเรียน",
+          activeOf: "{active} จาก {total} ใช้งาน (30 วัน)",
+          classAverageLevel: "ระดับ CEFR เฉลี่ยของชั้นเรียน",
+          averageReadingLevel: "ระดับการอ่านเฉลี่ยของนักเรียนทั้งหมด",
+          xpEarnedThisWeek: "XP ที่ได้รับในสัปดาห์นี้",
+          averageQuizAccuracy: "ความแม่นยำของแบบทดสอบเฉลี่ย",
+          booksPerWeek: "หนังสือต่อสัปดาห์",
+          studentsMeetingGoals: "นักเรียนที่บรรลุเป้าหมาย",
+          studentsActiveToday: "นักเรียนที่ใช้งานวันนี้",
+          assignmentsCompletedToday: "งานที่เสร็จสิ้นวันนี้",
+          assignmentsPending: "งานที่ยังมีนักเรียนค้างส่ง",
+          engagementRate: "อัตราการมีส่วนร่วม",
+        },
+        classOverview: {
+          title: "ภาพรวมชั้นเรียน",
+          description: "จัดการและติดตามชั้นเรียนทั้งหมดของคุณ",
+          hideArchived: "ซ่อนที่เก็บถาวร",
+          showArchived: "แสดงที่เก็บถาวร",
+          exportCSV: "ส่งออก CSV",
+          searchPlaceholder: "ค้นหาด้วยชื่อหรือรหัสชั้นเรียน...",
+          className: "ชื่อชั้นเรียน",
+          code: "รหัส",
+          students: "นักเรียน",
+          active7d: "ใช้งาน (7 วัน)",
+          avgLevel: "ระดับเฉลี่ย",
+          totalXP: "XP รวม",
+          trend: "แนวโน้ม",
+          status: "สถานะ",
+          actions: "การดำเนินการ",
+          viewDetails: "ดูรายละเอียด",
+          viewReports: "ดูรายงาน",
+          assignments: "งานที่มอบหมาย",
+          archived: "เก็บถาวร",
+          active: "ใช้งานอยู่",
+          noClassesFound: "ไม่พบชั้นเรียน",
+          noClassesMatchingSearch: "ไม่พบชั้นเรียนที่ตรงกับการค้นหา",
+          showing: "แสดง {count} จาก {total} ชั้นเรียน",
+          totalStudents: "นักเรียนทั้งหมด: {count}",
+        },
+        aiBrief: {
+          title: "สรุปจาก AI สำหรับครู",
+          description: "ข้อมูลเชิงลึกและคำแนะนำจาก AI",
+          updatedAt: "อัปเดต {time}",
+          keyInsights: "ข้อมูลเชิงลึกสำคัญ ({count})",
+          evidence: "หลักฐาน:",
+          actionable: "สามารถดำเนินการได้",
+          noInsights: "ไม่มีข้อมูลเชิงลึกเฉพาะในขณะนี้",
+          aiInsightsWillAppear: "ข้อมูลเชิงลึกจาก AI จะปรากฏที่นี่",
+          priority: {
+            low: "ต่ำ",
+            medium: "ปานกลาง",
+            high: "สูง",
+          },
+        },
+        lastUpdated: "อัปเดตล่าสุด: {time}",
+        error: {
+          title: "เกิดข้อผิดพลาด",
+          message: "ไม่สามารถโหลดข้อมูลแดชบอร์ดได้",
+          retry: "ลองใหม่",
+        },
+      },
     },
     admin: {
       generate: [
@@ -788,7 +866,8 @@ export default {
           activeStudents: {
             title: "นักเรียนที่ใช้งาน",
             description: "ใน {days} วันที่ผ่านมา",
-            tooltip: "นักเรียนที่มีกิจกรรมอย่างน้อยหนึ่งครั้งในช่วงเวลาที่เลือก",
+            tooltip:
+              "นักเรียนที่มีกิจกรรมอย่างน้อยหนึ่งครั้งในช่วงเวลาที่เลือก",
             dataSource: "บันทึกกิจกรรมของผู้ใช้",
           },
           activeTeachers: {
@@ -814,7 +893,8 @@ export default {
             high: "สูง",
             medium: "กลาง",
             low: "ต่ำ",
-            tooltip: "ระดับความแม่นยำของนักเรียน: สูง (>80%), กลาง (60-80%), ต่ำ (<60%)",
+            tooltip:
+              "ระดับความแม่นยำของนักเรียน: สูง (>80%), กลาง (60-80%), ต่ำ (<60%)",
             dataSource: "ตัวชี้วัดความเร็ว",
           },
           projectedLevelUps: {
@@ -841,7 +921,8 @@ export default {
             activeStudents: "{count} นักเรียนที่ใช้งาน",
             avgXp: "XP เฉลี่ย {xp}",
             overallAdoption: "การยอมรับโดยรวม",
-            activeInTimeframe: "{active} จาก {total} นักเรียนใช้งานใน {timeframe} ที่ผ่านมา",
+            activeInTimeframe:
+              "{active} จาก {total} นักเรียนใช้งานใน {timeframe} ที่ผ่านมา",
             emptyMessage: "ไม่มีข้อมูลนักเรียน",
           },
           alerts: {
@@ -939,8 +1020,10 @@ export default {
       classRoster: "บัญชีรายชื่อนักเรียน",
       passages: "บทความ",
       assignments: "งานที่มอบหมาย",
+      dashboard: "แดชบอร์ด",
     },
     sidebarTeacherNav: {
+      dashboard: "แดชบอร์ด",
       myClasses: "ชั้นเรียนของฉัน",
       myStudents: "นักเรียนของฉัน",
       classRoster: "บัญชีรายชื่อนักเรียน",
@@ -1006,7 +1089,7 @@ export default {
       articleChoose: "กรุณาเลือก {article} ที่คุณต้องการอ่าน",
       articleChooseDescription:
         "ระดับของคุณคือ {level} และนี่คือ {article} ที่คุณสามารถเลือกได้",
-        back: "< ย้อนกลับ",
+      back: "< ย้อนกลับ",
     },
     // use this for article selection page
     article: {
@@ -2202,42 +2285,45 @@ export default {
 
   genreEngagement: {
     genres: {
-      "Fiction": "นิยาย",
+      Fiction: "นิยาย",
       "Non-Fiction": "สารคดี",
-      "Fantasy": "แฟนตาซี",
+      Fantasy: "แฟนตาซี",
       "Science Fiction": "นิยายวิทยาศาสตร์",
-      "Mystery": "ลึกลับ",
-      "Adventure": "ผจญภัย",
-      "Biography": "ชีวประวัติ",
-      "History": "ประวัติศาสตร์",
-      "Romance": "โรแมนติก",
-      "Thriller": "ระทึกขวัญ",
-      "Horror": "สยองขวัญ",
-      "Drama": "ละคร",
-      "Comedy": "ตลก",
-      "Travel": "การเดินทาง",
-      "Health": "สุขภาพ",
-      "Technology": "เทคโนโลยี",
-      "Sports": "กีฬา",
-      "Art": "ศิลปะ",
-      "Music": "ดนตรี",
-      "Poetry": "บทกวี",
-      "Unknown": "ไม่ทราบประเภท"
+      Mystery: "ลึกลับ",
+      Adventure: "ผจญภัย",
+      Biography: "ชีวประวัติ",
+      History: "ประวัติศาสตร์",
+      Romance: "โรแมนติก",
+      Thriller: "ระทึกขวัญ",
+      Horror: "สยองขวัญ",
+      Drama: "ละคร",
+      Comedy: "ตลก",
+      Travel: "การเดินทาง",
+      Health: "สุขภาพ",
+      Technology: "เทคโนโลยี",
+      Sports: "กีฬา",
+      Art: "ศิลปะ",
+      Music: "ดนตรี",
+      Poetry: "บทกวี",
+      Unknown: "ไม่ทราบประเภท",
     },
-    
+
     recommendations: {
       rationale: {
-        high_engagement_similar: "การอ่าน{sourceGenre}ที่หลากหลายแนะนำให้คุณลอง{targetGenre}",
-        underexplored_adjacent: "จากการอ่าน{sourceGenre}ของคุณ ลองสำรวจ{targetGenre}เพื่อความหลากหลาย",
-        level_appropriate_new: "{targetGenre}เหมาะกับระดับการอ่านของคุณ - ค้นพบสิ่งใหม่!"
+        high_engagement_similar:
+          "การอ่าน{sourceGenre}ที่หลากหลายแนะนำให้คุณลอง{targetGenre}",
+        underexplored_adjacent:
+          "จากการอ่าน{sourceGenre}ของคุณ ลองสำรวจ{targetGenre}เพื่อความหลากหลาย",
+        level_appropriate_new:
+          "{targetGenre}เหมาะกับระดับการอ่านของคุณ - ค้นพบสิ่งใหม่!",
       },
-      
+
       types: {
         high_engagement_similar: "คล้ายกับที่คุณชอบ",
         underexplored_adjacent: "ขยายความหลากหลายในการอ่าน",
-        level_appropriate_new: "เหมาะสำหรับระดับของคุณ"
+        level_appropriate_new: "เหมาะสำหรับระดับของคุณ",
       },
-      
+
       labels: {
         recommendedForYou: "แนะนำสำหรับคุณ",
         exploreGenres: "สำรวจประเภทใหม่",
@@ -2245,10 +2331,10 @@ export default {
         perfectLevel: "เหมาะสำหรับระดับของคุณ",
         confidenceHigh: "แนะนำอย่างยิ่ง",
         confidenceMedium: "เหมาะสมดี",
-        confidenceLow: "น่าสำรวจ"
-      }
+        confidenceLow: "น่าสำรวจ",
+      },
     },
-    
+
     metrics: {
       totalReads: "การอ่านทั้งหมด",
       recentActivity: "กิจกรรมล่าสุด",
@@ -2260,21 +2346,21 @@ export default {
       activeDays: "วันที่ใช้งาน",
       readingStreak: "สเตรคการอ่าน",
       cefrLevel: "ระดับ CEFR",
-      
+
       timeframes: {
         "7d": "7 วันที่ผ่านมา",
         "30d": "30 วันที่ผ่านมา",
         "90d": "3 เดือนที่ผ่านมา",
-        "6m": "6 เดือนที่ผ่านมา"
+        "6m": "6 เดือนที่ผ่านมา",
       },
-      
+
       scopes: {
         student: "มุมมองนักเรียน",
         class: "มุมมองห้องเรียน",
-        school: "มุมมองโรงเรียน"
-      }
+        school: "มุมมองโรงเรียน",
+      },
     },
-    
+
     insights: {
       topGenre: "ประเภทยอดนิยมของคุณคือ {genre}",
       diverseReader: "คุณชอบอ่านหลากหลายใน {count} ประเภท",
@@ -2282,7 +2368,7 @@ export default {
       newRecommendation: "ลอง {genre} - คล้ายกับ {sourceGenre}",
       levelProgression: "คุณพร้อมสำหรับเนื้อหา {genre} ที่ท้าทายขึ้น",
       consistentEngagement: "การอ่าน {genre} อย่างต่อเนื่องใน {timeframe}",
-      recentInterest: "ความสนใจที่เพิ่มขึ้นใน {genre} เดือนนี้"
-    }
+      recentInterest: "ความสนใจที่เพิ่มขึ้นใน {genre} เดือนนี้",
+    },
   },
 } as const;

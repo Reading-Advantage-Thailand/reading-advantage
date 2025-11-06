@@ -646,6 +646,84 @@ export default {
           creationFailed: "Tạo bài tập thất bại. Vui lòng thử lại",
         },
       },
+      dashboardPage: {
+        title: "Bảng Điều Khiển Giáo Viên",
+        description:
+          "Giám sát lớp học, theo dõi tiến độ học sinh và nhận thông tin chi tiết từ AI",
+        kpis: {
+          totalClasses: "Tổng Số Lớp",
+          totalStudents: "Tổng Số Học Sinh",
+          activeStudents: "Học Sinh Hoạt Động",
+          averageLevel: "Trình Độ Trung Bình",
+          weeklyXP: "XP Hàng Tuần",
+          accuracy: "Độ Chính Xác",
+          readingVelocity: "Tốc Độ Đọc",
+          onTrack: "Đúng Tiến Độ",
+          activeToday: "Hoạt Động Hôm Nay",
+          completedToday: "Hoàn Thành Hôm Nay",
+          pending: "Bài Tập Đang Chờ",
+          managingClasses: "Đang quản lý {count} lớp",
+          acrossAllClasses: "Trên tất cả các lớp",
+          activeOf: "{active}/{total} hoạt động (30 ngày)",
+          classAverageLevel: "Trình độ CEFR trung bình của lớp",
+          averageReadingLevel: "Trình độ đọc trung bình của tất cả học sinh",
+          xpEarnedThisWeek: "XP kiếm được trong tuần này",
+          averageQuizAccuracy: "Độ chính xác bài kiểm tra trung bình",
+          booksPerWeek: "Sách mỗi tuần",
+          studentsMeetingGoals: "Học sinh đạt mục tiêu",
+          studentsActiveToday: "Học sinh hoạt động hôm nay",
+          assignmentsCompletedToday: "Bài tập hoàn thành hôm nay",
+          assignmentsPending: "Bài tập còn học sinh chưa hoàn thành",
+          engagementRate: "Tỷ lệ tham gia",
+        },
+        classOverview: {
+          title: "Tổng Quan Lớp Học",
+          description: "Quản lý và giám sát tất cả lớp học của bạn",
+          hideArchived: "Ẩn Đã Lưu Trữ",
+          showArchived: "Hiện Đã Lưu Trữ",
+          exportCSV: "Xuất CSV",
+          searchPlaceholder: "Tìm kiếm theo tên hoặc mã lớp...",
+          className: "Tên Lớp",
+          code: "Mã",
+          students: "Học Sinh",
+          active7d: "Hoạt động (7 ngày)",
+          avgLevel: "Mức TB",
+          totalXP: "Tổng XP",
+          trend: "Xu Hướng",
+          status: "Trạng Thái",
+          actions: "Hành Động",
+          viewDetails: "Xem Chi Tiết",
+          viewReports: "Xem Báo Cáo",
+          assignments: "Bài Tập",
+          archived: "Đã Lưu Trữ",
+          active: "Hoạt Động",
+          noClassesFound: "Không tìm thấy lớp học",
+          noClassesMatchingSearch: "Không tìm thấy lớp học phù hợp",
+          showing: "Hiển thị {count}/{total} lớp",
+          totalStudents: "Tổng số học sinh: {count}",
+        },
+        aiBrief: {
+          title: "Tóm Tắt AI Cho Giáo Viên",
+          description: "Thông tin chi tiết và đề xuất từ AI",
+          updatedAt: "Cập nhật {time}",
+          keyInsights: "Thông Tin Chính ({count})",
+          evidence: "Bằng chứng:",
+          actionable: "Có thể thực hiện",
+          noInsights: "Hiện không có thông tin chi tiết cụ thể",
+          aiInsightsWillAppear: "Thông tin từ AI sẽ xuất hiện ở đây",
+          priority: {
+            low: "thấp",
+            medium: "trung bình",
+            high: "cao",
+          },
+        },
+        lastUpdated: "Cập nhật lần cuối: {time}",
+        error: {
+          title: "Lỗi",
+          message: "Không thể tải dữ liệu bảng điều khiển",
+          retry: "Thử Lại",
+        },
+      },
     },
     admin: {
       generate: [
@@ -803,7 +881,8 @@ export default {
           activeStudents: {
             title: "Học sinh hoạt động",
             description: "Trong {days} ngày qua",
-            tooltip: "Học sinh có ít nhất một hoạt động trong khoảng thời gian được chọn",
+            tooltip:
+              "Học sinh có ít nhất một hoạt động trong khoảng thời gian được chọn",
             dataSource: "Nhật ký hoạt động người dùng",
           },
           activeTeachers: {
@@ -829,7 +908,8 @@ export default {
             high: "Cao",
             medium: "Trung bình",
             low: "Thấp",
-            tooltip: "Mức độ chính xác của học sinh: Cao (>80%), Trung bình (60-80%), Thấp (<60%)",
+            tooltip:
+              "Mức độ chính xác của học sinh: Cao (>80%), Trung bình (60-80%), Thấp (<60%)",
             dataSource: "Chỉ số tốc độ",
           },
           projectedLevelUps: {
@@ -856,7 +936,8 @@ export default {
             activeStudents: "{count} học sinh hoạt động",
             avgXp: "Trung bình {xp} XP",
             overallAdoption: "Tỷ lệ sử dụng chung",
-            activeInTimeframe: "{active} / {total} học sinh hoạt động trong {timeframe} qua",
+            activeInTimeframe:
+              "{active} / {total} học sinh hoạt động trong {timeframe} qua",
             emptyMessage: "Không có dữ liệu học sinh",
           },
           alerts: {
@@ -954,8 +1035,10 @@ export default {
       classRoster: "Danh sách lớp",
       passages: "Những đoạn văn",
       assignments: "Bài tập",
+      dashboard: "Bảng Điều Khiển",
     },
     sidebarTeacherNav: {
+      dashboard: "Bảng Điều Khiển",
       myClasses: "Lớp học của tôi",
       myStudents: "học sinh của tôi",
       classRoster: "Danh sách lớp",
@@ -2230,42 +2313,45 @@ export default {
 
   genreEngagement: {
     genres: {
-      "Fiction": "Tiểu thuyết",
+      Fiction: "Tiểu thuyết",
       "Non-Fiction": "Phi tiểu thuyết",
-      "Fantasy": "Thần thoại",
+      Fantasy: "Thần thoại",
       "Science Fiction": "Khoa học viễn tưởng",
-      "Mystery": "Bí ẩn",
-      "Adventure": "Phiêu lưu",
-      "Biography": "Tiểu sử",
-      "History": "Lịch sử",
-      "Romance": "Lãng mạn",
-      "Thriller": "Rùng rợn",
-      "Horror": "Kinh dị",
-      "Drama": "Kịch",
-      "Comedy": "Hài kịch",
-      "Travel": "Du lịch",
-      "Health": "Sức khỏe",
-      "Technology": "Công nghệ",
-      "Sports": "Thể thao",
-      "Art": "Nghệ thuật",
-      "Music": "Âm nhạc",
-      "Poetry": "Thơ ca",
-      "Unknown": "Không xác định"
+      Mystery: "Bí ẩn",
+      Adventure: "Phiêu lưu",
+      Biography: "Tiểu sử",
+      History: "Lịch sử",
+      Romance: "Lãng mạn",
+      Thriller: "Rùng rợn",
+      Horror: "Kinh dị",
+      Drama: "Kịch",
+      Comedy: "Hài kịch",
+      Travel: "Du lịch",
+      Health: "Sức khỏe",
+      Technology: "Công nghệ",
+      Sports: "Thể thao",
+      Art: "Nghệ thuật",
+      Music: "Âm nhạc",
+      Poetry: "Thơ ca",
+      Unknown: "Không xác định",
     },
-    
+
     recommendations: {
       rationale: {
-        high_engagement_similar: "Dựa trên sự tham gia cao của bạn với {sourceGenre}, chúng tôi khuyên bạn thử {targetGenre}",
-        underexplored_adjacent: "Dựa trên thói quen đọc {sourceGenre} của bạn, hãy khám phá {targetGenre} để tăng tính đa dạng",
-        level_appropriate_new: "{targetGenre} phù hợp với trình độ đọc của bạn - khám phá nội dung mới!"
+        high_engagement_similar:
+          "Dựa trên sự tham gia cao của bạn với {sourceGenre}, chúng tôi khuyên bạn thử {targetGenre}",
+        underexplored_adjacent:
+          "Dựa trên thói quen đọc {sourceGenre} của bạn, hãy khám phá {targetGenre} để tăng tính đa dạng",
+        level_appropriate_new:
+          "{targetGenre} phù hợp với trình độ đọc của bạn - khám phá nội dung mới!",
       },
-      
+
       types: {
         high_engagement_similar: "Tương tự như sở thích của bạn",
         underexplored_adjacent: "Mở rộng tính đa dạng đọc",
-        level_appropriate_new: "Phù hợp với trình độ của bạn"
+        level_appropriate_new: "Phù hợp với trình độ của bạn",
       },
-      
+
       labels: {
         recommendedForYou: "Được đề xuất cho bạn",
         exploreGenres: "Khám phá thể loại mới",
@@ -2273,10 +2359,10 @@ export default {
         perfectLevel: "Phù hợp với trình độ của bạn",
         confidenceHigh: "Rất khuyến nghị",
         confidenceMedium: "Phù hợp tốt",
-        confidenceLow: "Đáng khám phá"
-      }
+        confidenceLow: "Đáng khám phá",
+      },
     },
-    
+
     metrics: {
       totalEngagement: "Tổng mức tham gia",
       recentActivity: "Hoạt động gần đây",
@@ -2295,21 +2381,21 @@ export default {
       averageLevel: "Mức độ trung bình",
       activeDays: "Ngày hoạt động",
       cefrLevel: "Cấp độ CEFR",
-      
+
       timeframes: {
         "7d": "7 ngày qua",
         "30d": "30 ngày qua",
         "90d": "3 tháng qua",
-        "6m": "6 tháng qua"
+        "6m": "6 tháng qua",
       },
-      
+
       scopes: {
         student: "Góc nhìn học sinh",
         class: "Góc nhìn lớp học",
-        school: "Góc nhìn trường học"
-      }
+        school: "Góc nhìn trường học",
+      },
     },
-    
+
     insights: {
       topGenre: "Thể loại hàng đầu của bạn là {genre}",
       diverseReader: "Bạn thích đọc đa dạng qua {count} thể loại",
@@ -2317,7 +2403,7 @@ export default {
       newRecommendation: "Thử {genre} - tương tự như {sourceGenre}",
       levelProgression: "Bạn đã sẵn sàng cho nội dung {genre} thử thách hơn",
       consistentEngagement: "Đọc {genre} ổn định trong {timeframe}",
-      recentInterest: "Sự quan tâm ngày càng tăng đối với {genre} tháng này"
-    }
+      recentInterest: "Sự quan tâm ngày càng tăng đối với {genre} tháng này",
+    },
   },
 } as const;

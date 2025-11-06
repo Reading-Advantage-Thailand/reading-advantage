@@ -597,6 +597,83 @@ export default {
           creationFailed: "创建作业失败，请重试",
         },
       },
+      dashboardPage: {
+        title: "教师控制台",
+        description: "监控您的班级、追踪学生进度并获得AI驱动的见解",
+        kpis: {
+          totalClasses: "总班级数",
+          totalStudents: "总学生数",
+          activeStudents: "活跃学生",
+          averageLevel: "平均水平",
+          weeklyXP: "每周经验值",
+          accuracy: "准确率",
+          readingVelocity: "阅读速度",
+          onTrack: "进度正常",
+          activeToday: "今日活跃",
+          completedToday: "今日完成",
+          pending: "待处理的作业",
+          managingClasses: "管理 {count} 个班级",
+          acrossAllClasses: "所有班级",
+          activeOf: "{active}/{total} 活跃（30天）",
+          classAverageLevel: "班级平均CEFR水平",
+          averageReadingLevel: "所有学生的平均阅读水平",
+          xpEarnedThisWeek: "本周获得的经验值",
+          averageQuizAccuracy: "平均测验准确率",
+          booksPerWeek: "每周阅读书籍",
+          studentsMeetingGoals: "达成目标的学生",
+          studentsActiveToday: "今日活跃学生",
+          assignmentsCompletedToday: "今日完成的作业",
+          assignmentsPending: "有未完成作业的任务",
+          engagementRate: "参与率",
+        },
+        classOverview: {
+          title: "班级概览",
+          description: "管理和监控您的所有教室",
+          hideArchived: "隐藏已归档",
+          showArchived: "显示已归档",
+          exportCSV: "导出CSV",
+          searchPlaceholder: "按班级名称或代码搜索...",
+          className: "班级名称",
+          code: "代码",
+          students: "学生",
+          active7d: "活跃（7天）",
+          avgLevel: "平均水平",
+          totalXP: "总经验值",
+          trend: "趋势",
+          status: "状态",
+          actions: "操作",
+          viewDetails: "查看详情",
+          viewReports: "查看报告",
+          assignments: "作业",
+          archived: "已归档",
+          active: "活跃",
+          noClassesFound: "未找到班级",
+          noClassesMatchingSearch: "未找到符合搜索条件的班级",
+          showing: "显示 {count}/{total} 个班级",
+          totalStudents: "总学生数：{count}",
+        },
+        aiBrief: {
+          title: "AI教师简报",
+          description: "AI驱动的见解和建议",
+          updatedAt: "更新于 {time}",
+          keyInsights: "关键见解（{count}）",
+          evidence: "证据：",
+          actionable: "可操作",
+          noInsights: "目前没有特定见解",
+          aiInsightsWillAppear: "AI见解将显示在此处",
+          priority: {
+            low: "低",
+            medium: "中",
+            high: "高",
+          },
+        },
+        lastUpdated: "最后更新：{time}",
+        error: {
+          title: "错误",
+          message: "无法加载控制台数据",
+          retry: "重试",
+        },
+      },
     },
     admin: {
       generate: [
@@ -802,7 +879,8 @@ export default {
             activeStudents: "{count} 位活跃学生",
             avgXp: "平均XP {xp}",
             overallAdoption: "整体采用率",
-            activeInTimeframe: "最近 {timeframe} 中 {active} / {total} 学生活跃",
+            activeInTimeframe:
+              "最近 {timeframe} 中 {active} / {total} 学生活跃",
             emptyMessage: "没有学生数据",
           },
           alerts: {
@@ -900,8 +978,10 @@ export default {
       classRoster: "班级名单",
       passages: "段落",
       assignments: "作业",
+      dashboard: "控制台",
     },
     sidebarTeacherNav: {
+      dashboard: "控制台",
       myClasses: "我的课程",
       myStudents: "我的学生",
       classRoster: "班级名单",
@@ -2133,42 +2213,44 @@ export default {
 
   genreEngagement: {
     genres: {
-      "Fiction": "小说",
+      Fiction: "小说",
       "Non-Fiction": "非小说",
-      "Fantasy": "奇幻",
+      Fantasy: "奇幻",
       "Science Fiction": "科幻小说",
-      "Mystery": "悬疑",
-      "Adventure": "冒险",
-      "Biography": "传记",
-      "History": "历史",
-      "Romance": "浪漫",
-      "Thriller": "惊悚",
-      "Horror": "恐怖",
-      "Drama": "戏剧",
-      "Comedy": "喜剧",
-      "Travel": "旅行",
-      "Health": "健康",
-      "Technology": "科技",
-      "Sports": "体育",
-      "Art": "艺术",
-      "Music": "音乐",
-      "Poetry": "诗歌",
-      "Unknown": "未知类型"
+      Mystery: "悬疑",
+      Adventure: "冒险",
+      Biography: "传记",
+      History: "历史",
+      Romance: "浪漫",
+      Thriller: "惊悚",
+      Horror: "恐怖",
+      Drama: "戏剧",
+      Comedy: "喜剧",
+      Travel: "旅行",
+      Health: "健康",
+      Technology: "科技",
+      Sports: "体育",
+      Art: "艺术",
+      Music: "音乐",
+      Poetry: "诗歌",
+      Unknown: "未知类型",
     },
-    
+
     recommendations: {
       rationale: {
-        high_engagement_similar: "基于您对{sourceGenre}的高度参与，建议您尝试{targetGenre}",
-        underexplored_adjacent: "根据您的{sourceGenre}阅读习惯，探索{targetGenre}以增加多样性",
-        level_appropriate_new: "{targetGenre}适合您的阅读水平 - 发现新内容！"
+        high_engagement_similar:
+          "基于您对{sourceGenre}的高度参与，建议您尝试{targetGenre}",
+        underexplored_adjacent:
+          "根据您的{sourceGenre}阅读习惯，探索{targetGenre}以增加多样性",
+        level_appropriate_new: "{targetGenre}适合您的阅读水平 - 发现新内容！",
       },
-      
+
       types: {
         high_engagement_similar: "与您的喜好相似",
         underexplored_adjacent: "扩展您的阅读多样性",
-        level_appropriate_new: "适合您的水平"
+        level_appropriate_new: "适合您的水平",
       },
-      
+
       labels: {
         recommendedForYou: "为您推荐",
         exploreGenres: "探索新类型",
@@ -2176,10 +2258,10 @@ export default {
         perfectLevel: "适合您的水平",
         confidenceHigh: "强烈推荐",
         confidenceMedium: "良好匹配",
-        confidenceLow: "值得探索"
-      }
+        confidenceLow: "值得探索",
+      },
     },
-    
+
     metrics: {
       totalEngagement: "总参与度",
       recentActivity: "近期活动",
@@ -2198,21 +2280,21 @@ export default {
       averageLevel: "平均水平",
       activeDays: "活跃天数",
       cefrLevel: "CEFR级别",
-      
+
       timeframes: {
         "7d": "过去7天",
         "30d": "过去30天",
         "90d": "过去3个月",
-        "6m": "过去6个月"
+        "6m": "过去6个月",
       },
-      
+
       scopes: {
         student: "学生视图",
         class: "班级视图",
-        school: "学校视图"
-      }
+        school: "学校视图",
+      },
     },
-    
+
     insights: {
       topGenre: "您最喜欢的类型是{genre}",
       diverseReader: "您喜欢阅读{count}种不同类型",
@@ -2220,7 +2302,7 @@ export default {
       newRecommendation: "尝试{genre} - 与{sourceGenre}相似",
       levelProgression: "您已准备好阅读更具挑战性的{genre}内容",
       consistentEngagement: "在{timeframe}内持续阅读{genre}",
-      recentInterest: "本月对{genre}的兴趣日益增长"
-    }
+      recentInterest: "本月对{genre}的兴趣日益增长",
+    },
   },
 } as const;
