@@ -97,7 +97,7 @@ export function ClassVelocityTable({ classroomId }: ClassVelocityTableProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Students haven't completed any articles in the last {data.timeframe === '7d' ? '7' : data.timeframe === '30d' ? '30' : data.timeframe === '90d' ? '90' : '365'} days
+            Students haven&apos;t completed any articles in the last {data.timeframe === '7d' ? '7' : data.timeframe === '30d' ? '30' : data.timeframe === '90d' ? '90' : '365'} days
           </p>
         </CardContent>
       </Card>

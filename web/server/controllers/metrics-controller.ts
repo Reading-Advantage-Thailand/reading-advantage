@@ -270,6 +270,7 @@ export async function getAssignmentMetrics(req: ExtendedNextRequest) {
       where: whereClause,
       select: {
         id: true,
+        articleId: true,
         title: true,
         dueDate: true,
         createdAt: true,
@@ -310,6 +311,7 @@ export async function getAssignmentMetrics(req: ExtendedNextRequest) {
 
       return {
         assignmentId: assignment.id,
+        articleId: assignment.articleId,
         title: assignment.title || 'Untitled Assignment',
         dueDate: assignment.dueDate?.toISOString(),
         assigned: total,
