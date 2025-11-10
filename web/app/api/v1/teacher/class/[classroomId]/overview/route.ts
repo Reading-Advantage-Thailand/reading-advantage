@@ -1,11 +1,20 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+/**
+ * Class Overview API
+ * GET /api/v1/teacher/class/[classroomId]/overview
+ * 
+ * Returns comprehensive KPIs and summary metrics for a specific class
+ */
+
+import { NextRequest, NextResponse } from "next/server";
 import { createEdgeRouter } from "next-connect";
 import { logRequest } from "@/server/middleware";
 import { protect } from "@/server/controllers/auth-controller";
-import { getVelocityMetrics } from "@/server/controllers/metrics-extended-controller";
+import { getClassOverview } from "@/server/controllers/class-dashboard-controller";
 
 interface RequestContext {
-  params?: unknown;
+  params: {
+    classroomId: string;
+  };
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -14,8 +23,8 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 router.use(logRequest);
 router.use(protect);
 
-// GET /api/v1/metrics/velocity
-router.get(getVelocityMetrics);
+// GET /api/v1/teacher/class/[classroomId]/overview
+router.get(getClassOverview);
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
@@ -24,3 +33,4 @@ export async function GET(request: NextRequest, ctx: RequestContext) {
   }
   throw new Error("Expected a NextResponse from router.run");
 }
+

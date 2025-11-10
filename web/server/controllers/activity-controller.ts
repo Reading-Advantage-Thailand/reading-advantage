@@ -192,13 +192,17 @@ async function getActivityHeatmap(
         ? 30
         : timeframe === "90d"
           ? 90
-          : timeframe === "6m"
-            ? 180
-            : timeframe === "1y"
-              ? 365
-              : timeframe === "all"
-                ? 3650 // 10 years for "all time"
-                : 30; // default to 30 days
+          : timeframe === "120d"
+            ? 120
+            : timeframe === "6m"
+              ? 180
+              : timeframe === "365d"
+                ? 365
+                : timeframe === "1y"
+                  ? 365
+                  : timeframe === "all"
+                    ? 3650 // 10 years for "all time"
+                    : 30; // default to 30 days
   const startDate = new Date(now);
   startDate.setDate(startDate.getDate() - daysAgo);
 
@@ -461,11 +465,15 @@ async function getActivityTimeline(
         ? 30
         : timeframe === "90d"
           ? 90
-          : timeframe === "1y"
-            ? 365
-            : timeframe === "all"
-              ? 3650 // 10 years for "all time"
-              : 30; // default to 30 days
+          : timeframe === "120d"
+            ? 120
+            : timeframe === "365d"
+              ? 365
+              : timeframe === "1y"
+                ? 365
+                : timeframe === "all"
+                  ? 3650 // 10 years for "all time"
+                  : 30; // default to 30 days
   const startDate = new Date(now);
   startDate.setDate(startDate.getDate() - daysAgo);
 
@@ -689,7 +697,7 @@ async function getActivitySummary(req: ExtendedNextRequest) {
 
     // Calculate date range
     const now = new Date();
-    const daysAgo = timeframe === "7d" ? 7 : timeframe === "90d" ? 90 : 30;
+    const daysAgo = timeframe === "7d" ? 7 : timeframe === "30d" ? 30 : timeframe === "90d" ? 90 : timeframe === "120d" ? 120 : timeframe === "365d" ? 365 : 30;
     const startDate = new Date(now);
     startDate.setDate(startDate.getDate() - daysAgo);
 
@@ -746,14 +754,16 @@ async function getActivitySummary(req: ExtendedNextRequest) {
     >();
 
     // Initialize all dates in range
-    for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
-      const dateKey = d.toISOString().split("T")[0];
+    const currentDate = new Date(startDate);
+    while (currentDate <= now) {
+      const dateKey = currentDate.toISOString().split("T")[0];
       dateMap.set(dateKey, {
         activeUsers: new Set(),
         newUsers: new Set(),
         sessions: 0,
         totalTime: 0,
       });
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     // Process activities

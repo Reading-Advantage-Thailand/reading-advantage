@@ -309,6 +309,7 @@ export interface MetricsVelocityResponse {
 
 export interface AssignmentMetrics {
   assignmentId: string;
+  articleId: string;
   title: string;
   dueDate?: string;
   assigned: number;
@@ -568,6 +569,35 @@ export interface MetricsGenresResponse {
     diversity: number; // 0-1 scale
   };
   cache: CacheMetadata;
+}
+
+// ============================================================================
+// Class Accuracy Metrics Types
+// ============================================================================
+
+export interface StudentAccuracy {
+  studentId: string;
+  studentName: string;
+  level: number;
+  cefrLevel: string;
+  mcqAccuracy: number;
+  mcqAttempts: number;
+  openEndedAccuracy: number;
+  openEndedAttempts: number;
+  overallAccuracy: number;
+  totalAttempts: number;
+}
+
+export interface ClassAccuracyResponse {
+  students: StudentAccuracy[];
+  classAverages: {
+    mcqAccuracy: number;
+    openEndedAccuracy: number;
+    overallAccuracy: number;
+    totalAttempts: number;
+    activeStudents: number;
+  };
+  timeframe: string;
 }
 
 // ============================================================================

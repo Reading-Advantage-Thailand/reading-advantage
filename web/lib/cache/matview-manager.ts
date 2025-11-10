@@ -11,60 +11,74 @@ interface ViewRefreshConfig {
   refreshInterval: number; // minutes
   refreshCondition?: () => Promise<boolean>;
   dependencies?: string[]; // other tables this view depends on
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
   concurrentRefresh: boolean;
 }
 
 class MaterializedViewManager {
   private refreshConfigs: ViewRefreshConfig[] = [
     {
-      viewName: 'mv_activity_heatmap',
+      viewName: "mv_activity_heatmap",
       refreshInterval: 5, // Every 5 minutes
-      priority: 'high',
+      priority: "high",
       concurrentRefresh: true,
-      dependencies: ['UserActivity'],
+      dependencies: ["UserActivity"],
     },
     {
-      viewName: 'mv_student_velocity',
+      viewName: "mv_student_velocity",
       refreshInterval: 15, // Every 15 minutes
-      priority: 'high',
+      priority: "high",
       concurrentRefresh: true,
-      dependencies: ['UserActivity', 'LessonRecord'],
+      dependencies: ["UserActivity", "LessonRecord"],
     },
     {
-      viewName: 'mv_assignment_funnel',
+      viewName: "mv_class_velocity",
+      refreshInterval: 15, // Every 15 minutes
+      priority: "high",
+      concurrentRefresh: true,
+      dependencies: ["mv_student_velocity"],
+    },
+    {
+      viewName: "mv_school_velocity",
+      refreshInterval: 20, // Every 20 minutes
+      priority: "high",
+      concurrentRefresh: true,
+      dependencies: ["mv_class_velocity"],
+    },
+    {
+      viewName: "mv_assignment_funnel",
       refreshInterval: 10, // Every 10 minutes
-      priority: 'medium',
+      priority: "medium",
       concurrentRefresh: true,
-      dependencies: ['StudentAssignment'],
+      dependencies: ["StudentAssignment"],
     },
     {
-      viewName: 'mv_srs_health',
+      viewName: "mv_srs_health",
       refreshInterval: 30, // Every 30 minutes
-      priority: 'medium',
-      concurrentRefresh: false,
-      dependencies: ['UserWordRecord', 'UserSentenceRecord'],
+      priority: "medium",
+      concurrentRefresh: true,
+      dependencies: ["UserWordRecord", "UserSentenceRecord"],
     },
     {
-      viewName: 'mv_genre_engagement',
+      viewName: "mv_genre_engagement",
       refreshInterval: 60, // Every hour
-      priority: 'low',
-      concurrentRefresh: false,
-      dependencies: ['UserActivity', 'Article'],
+      priority: "medium",
+      concurrentRefresh: true,
+      dependencies: ["UserActivity", "Article"],
     },
     {
-      viewName: 'mv_alignment_metrics',
+      viewName: "mv_alignment_metrics",
       refreshInterval: 120, // Every 2 hours
-      priority: 'low',
-      concurrentRefresh: false,
-      dependencies: ['LessonRecord', 'Article'],
+      priority: "low",
+      concurrentRefresh: true,
+      dependencies: ["LessonRecord", "Article"],
     },
     {
-      viewName: 'mv_daily_activity_rollups',
+      viewName: "mv_daily_activity_rollups",
       refreshInterval: 60, // Every hour
-      priority: 'medium',
-      concurrentRefresh: false,
-      dependencies: ['UserActivity'],
+      priority: "medium",
+      concurrentRefresh: true,
+      dependencies: ["UserActivity"],
     },
   ];
 
@@ -76,14 +90,12 @@ class MaterializedViewManager {
    * Start the materialized view refresh scheduler
    */
   startScheduler(): void {
-    console.log('[MatView] Starting materialized view refresh scheduler');
-    
     // Initial health check
     this.checkViewHealth();
-    
+
     // Schedule regular refreshes
     this.scheduleRefreshes();
-    
+
     // Monitor for trigger conditions
     this.setupTriggerMonitoring();
   }
@@ -92,33 +104,36 @@ class MaterializedViewManager {
    * Check health of all materialized views
    */
   async checkViewHealth(): Promise<void> {
-    console.log('[MatView] Checking materialized view health');
-    
     try {
       const healthChecks = await Promise.all(
         this.refreshConfigs.map(async (config) => {
           try {
-            const result = await prisma.$queryRawUnsafe<Array<{ row_count: bigint }>>(
-              `SELECT count(*) as row_count FROM ${config.viewName}`
-            );
-            
+            const result = await prisma.$queryRawUnsafe<
+              Array<{ row_count: bigint }>
+            >(`SELECT count(*) as row_count FROM ${config.viewName}`);
+
             const rowCount = Number(result[0]?.row_count || 0);
             const isHealthy = rowCount > 0;
-            
+
             if (!isHealthy) {
-              console.warn(`[MatView] ${config.viewName} appears unhealthy (${rowCount} rows)`);
-              this.queueRefresh(config.viewName, 'health_check');
+              console.warn(
+                `[MatView] ${config.viewName} appears unhealthy (${rowCount} rows)`
+              );
+              this.queueRefresh(config.viewName, "health_check");
             }
-            
+
             return {
               viewName: config.viewName,
               healthy: isHealthy,
               rowCount,
             };
           } catch (error) {
-            console.error(`[MatView] Health check failed for ${config.viewName}:`, error);
-            this.queueRefresh(config.viewName, 'health_check_error');
-            
+            console.error(
+              `[MatView] Health check failed for ${config.viewName}:`,
+              error
+            );
+            this.queueRefresh(config.viewName, "health_check_error");
+
             return {
               viewName: config.viewName,
               healthy: false,
@@ -127,15 +142,16 @@ class MaterializedViewManager {
           }
         })
       );
-      
-      const unhealthyViews = healthChecks.filter(h => !h.healthy);
+
+      const unhealthyViews = healthChecks.filter((h) => !h.healthy);
       if (unhealthyViews.length > 0) {
-        console.warn(`[MatView] Found ${unhealthyViews.length} unhealthy views:`, 
-          unhealthyViews.map(v => v.viewName));
+        console.warn(
+          `[MatView] Found ${unhealthyViews.length} unhealthy views:`,
+          unhealthyViews.map((v) => v.viewName)
+        );
       }
-      
     } catch (error) {
-      console.error('[MatView] Health check failed:', error);
+      console.error("[MatView] Health check failed:", error);
     }
   }
 
@@ -145,14 +161,12 @@ class MaterializedViewManager {
   private scheduleRefreshes(): void {
     this.refreshConfigs.forEach((config) => {
       const intervalMs = config.refreshInterval * 60 * 1000;
-      
+
       setInterval(async () => {
         if (this.shouldRefresh(config)) {
-          await this.queueRefresh(config.viewName, 'scheduled');
+          await this.queueRefresh(config.viewName, "scheduled");
         }
       }, intervalMs);
-      
-      console.log(`[MatView] Scheduled ${config.viewName} refresh every ${config.refreshInterval} minutes`);
     });
   }
 
@@ -161,27 +175,31 @@ class MaterializedViewManager {
    */
   private setupTriggerMonitoring(): void {
     // Monitor for significant activity spikes that should trigger immediate refresh
-    setInterval(async () => {
-      try {
-        const recentActivityCount = await prisma.userActivity.count({
-          where: {
-            createdAt: {
-              gte: new Date(Date.now() - 5 * 60 * 1000), // Last 5 minutes
+    setInterval(
+      async () => {
+        try {
+          const recentActivityCount = await prisma.userActivity.count({
+            where: {
+              createdAt: {
+                gte: new Date(Date.now() - 5 * 60 * 1000), // Last 5 minutes
+              },
             },
-          },
-        });
+          });
 
-        // If more than 100 activities in last 5 minutes, refresh activity-related views
-        if (recentActivityCount > 100) {
-          console.log(`[MatView] High activity detected (${recentActivityCount} activities), triggering refresh`);
-          
-          await this.queueRefresh('mv_activity_heatmap', 'activity_spike');
-          await this.queueRefresh('mv_daily_activity_rollups', 'activity_spike');
+          // If more than 100 activities in last 5 minutes, refresh activity-related views
+          if (recentActivityCount > 100) {
+            await this.queueRefresh("mv_activity_heatmap", "activity_spike");
+            await this.queueRefresh(
+              "mv_daily_activity_rollups",
+              "activity_spike"
+            );
+          }
+        } catch (error) {
+          console.error("[MatView] Trigger monitoring error:", error);
         }
-      } catch (error) {
-        console.error('[MatView] Trigger monitoring error:', error);
-      }
-    }, 5 * 60 * 1000); // Check every 5 minutes
+      },
+      5 * 60 * 1000
+    ); // Check every 5 minutes
   }
 
   /**
@@ -191,17 +209,17 @@ class MaterializedViewManager {
     const lastRefresh = this.lastRefreshTimes.get(config.viewName) || 0;
     const timeSinceLastRefresh = Date.now() - lastRefresh;
     const refreshIntervalMs = config.refreshInterval * 60 * 1000;
-    
+
     // Don't refresh if already refreshing
     if (this.isRefreshing.has(config.viewName)) {
       return false;
     }
-    
+
     // Check if enough time has passed
     if (timeSinceLastRefresh < refreshIntervalMs) {
       return false;
     }
-    
+
     return true;
   }
 
@@ -210,18 +228,15 @@ class MaterializedViewManager {
    */
   async queueRefresh(viewName: string, reason: string): Promise<void> {
     if (this.isRefreshing.has(viewName)) {
-      console.log(`[MatView] ${viewName} already refreshing, skipping`);
       return;
     }
 
-    const config = this.refreshConfigs.find(c => c.viewName === viewName);
+    const config = this.refreshConfigs.find((c) => c.viewName === viewName);
     if (!config) {
       console.warn(`[MatView] No config found for ${viewName}`);
       return;
     }
 
-    console.log(`[MatView] Queueing ${viewName} for refresh (reason: ${reason})`);
-    
     // Add to queue if not concurrent, otherwise refresh immediately
     if (config.concurrentRefresh) {
       this.refreshView(viewName, config);
@@ -242,10 +257,10 @@ class MaterializedViewManager {
     }
 
     const viewName = this.refreshQueue.shift()!;
-    const config = this.refreshConfigs.find(c => c.viewName === viewName)!;
-    
+    const config = this.refreshConfigs.find((c) => c.viewName === viewName)!;
+
     await this.refreshView(viewName, config);
-    
+
     // Process next item after a short delay
     if (this.refreshQueue.length > 0) {
       setTimeout(() => this.processRefreshQueue(), 1000);
@@ -255,7 +270,10 @@ class MaterializedViewManager {
   /**
    * Refresh a specific materialized view
    */
-  private async refreshView(viewName: string, config: ViewRefreshConfig): Promise<void> {
+  private async refreshView(
+    viewName: string,
+    config: ViewRefreshConfig
+  ): Promise<void> {
     if (this.isRefreshing.has(viewName)) {
       return;
     }
@@ -264,17 +282,14 @@ class MaterializedViewManager {
     const startTime = Date.now();
 
     try {
-      console.log(`[MatView] Refreshing ${viewName} (priority: ${config.priority})`);
-      
       // Try concurrent refresh first (if supported)
       try {
-        await prisma.$executeRawUnsafe(`REFRESH MATERIALIZED VIEW CONCURRENTLY ${viewName}`);
-        console.log(`[MatView] ✅ Concurrent refresh completed for ${viewName}`);
+        await prisma.$executeRawUnsafe(
+          `REFRESH MATERIALIZED VIEW CONCURRENTLY ${viewName}`
+        );
       } catch (error) {
         // Fall back to regular refresh
-        console.log(`[MatView] Concurrent refresh failed, falling back to regular refresh for ${viewName}`);
         await prisma.$executeRawUnsafe(`REFRESH MATERIALIZED VIEW ${viewName}`);
-        console.log(`[MatView] ✅ Regular refresh completed for ${viewName}`);
       }
 
       // Update last refresh time
@@ -282,14 +297,12 @@ class MaterializedViewManager {
 
       // Invalidate related cache entries
       if (config.dependencies) {
-        config.dependencies.forEach(dep => {
+        config.dependencies.forEach((dep) => {
           advancedCache.invalidate(new RegExp(dep.toLowerCase()));
         });
       }
 
       const duration = Date.now() - startTime;
-      console.log(`[MatView] ${viewName} refreshed in ${duration}ms`);
-
     } catch (error) {
       console.error(`[MatView] Failed to refresh ${viewName}:`, error);
     } finally {
@@ -301,8 +314,6 @@ class MaterializedViewManager {
    * Force refresh all materialized views
    */
   async forceRefreshAll(): Promise<void> {
-    console.log('[MatView] Force refreshing all materialized views');
-    
     // Sort by priority (high first)
     const priorityOrder = { high: 0, medium: 1, low: 2 };
     const sortedConfigs = [...this.refreshConfigs].sort(
@@ -310,10 +321,10 @@ class MaterializedViewManager {
     );
 
     for (const config of sortedConfigs) {
-      await this.queueRefresh(config.viewName, 'force_refresh');
-      
+      await this.queueRefresh(config.viewName, "force_refresh");
+
       // Small delay between refreshes to prevent overwhelming the database
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
 
@@ -344,8 +355,7 @@ export const matViewManager = new MaterializedViewManager();
 export async function initializeMaterializedViews(): Promise<void> {
   try {
     matViewManager.startScheduler();
-    console.log('[MatView] Materialized view manager initialized');
   } catch (error) {
-    console.error('[MatView] Failed to initialize:', error);
+    console.error("[MatView] Failed to initialize:", error);
   }
 }

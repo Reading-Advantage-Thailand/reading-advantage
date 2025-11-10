@@ -222,29 +222,29 @@ export async function getSchoolXpData(req: NextRequest) {
  */
 const MATERIALIZED_VIEWS = [
   // Level 1: Student-level metrics
-  { name: 'mv_student_velocity', level: 1 },
-  { name: 'mv_srs_health', level: 1 },
-  { name: 'mv_genre_engagement', level: 1 },
-  { name: 'mv_activity_heatmap', level: 1 },
-  
+  { name: "mv_student_velocity", level: 1 },
+  { name: "mv_srs_health", level: 1 },
+  { name: "mv_genre_engagement", level: 1 },
+  { name: "mv_activity_heatmap", level: 1 },
+
   // Level 2: Class-level metrics (depend on students)
-  { name: 'mv_assignment_funnel', level: 2 },
-  { name: 'mv_class_velocity', level: 2 },
-  { name: 'mv_alignment_metrics', level: 2 },
-  
-  // Level 2.5: Assignment funnel rollups (depend on mv_assignment_funnel and mv_class_velocity)
-  { name: 'mv_class_assignment_funnel', level: 2.5 },
-  { name: 'mv_school_assignment_funnel', level: 2.5 },
-  
+  { name: "mv_assignment_funnel", level: 2 },
+  { name: "mv_class_velocity", level: 2 },
+  { name: "mv_alignment_metrics", level: 2 },
+
   // Level 3: School-level rollups
-  { name: 'mv_school_velocity', level: 3 },
-  { name: 'mv_daily_activity_rollups', level: 3 },
+  { name: "mv_school_velocity", level: 3 },
+  { name: "mv_daily_activity_rollups", level: 3 },
+
+  // Additional aggregation views
+  { name: "mv_class_assignment_funnel", level: 3 },
+  { name: "mv_school_assignment_funnel", level: 3 },
 ] as const;
 
 interface RefreshResult {
   view: string;
   level: number;
-  status: 'success' | 'success_concurrent' | 'failed';
+  status: "success" | "success_concurrent" | "failed";
   duration: number;
   error?: string;
 }
@@ -267,17 +267,18 @@ async function notifyMetricsUpdate(
       success: metadata.success,
       failed: metadata.failed,
     });
-    
+
     // Send NOTIFY to trigger cache invalidation
     // Escape single quotes in payload
     const escapedPayload = payload.replace(/'/g, "''");
     await prisma.$executeRawUnsafe(
       `NOTIFY metrics_update, '${escapedPayload}'`
     );
-    
-    console.log('[NOTIFY] Sent metrics_update:', payload);
   } catch (error: any) {
-    console.error('[NOTIFY] Failed to send metrics_update notification:', error.message);
+    console.error(
+      "[NOTIFY] Failed to send metrics_update notification:",
+      error.message
+    );
   }
 }
 
@@ -289,48 +290,46 @@ async function refreshView(
   level: number
 ): Promise<RefreshResult> {
   const startTime = Date.now();
-  
+
   try {
     // Try CONCURRENTLY first (allows reads during refresh)
     await prisma.$executeRawUnsafe(
       `REFRESH MATERIALIZED VIEW CONCURRENTLY ${viewName}`
     );
-    
+
     const duration = Date.now() - startTime;
-    console.log(`[REFRESH] ✓ ${viewName} (CONCURRENTLY) - ${duration}ms`);
-    
+
     return {
       view: viewName,
       level,
-      status: 'success_concurrent',
+      status: "success_concurrent",
       duration,
     };
   } catch (error: any) {
-    console.warn(`[REFRESH] CONCURRENTLY failed for ${viewName}, trying regular refresh`);
-    
+    console.warn(
+      `[REFRESH] CONCURRENTLY failed for ${viewName}, trying regular refresh`
+    );
+
     // Fall back to regular refresh if CONCURRENTLY fails
     try {
-      await prisma.$executeRawUnsafe(
-        `REFRESH MATERIALIZED VIEW ${viewName}`
-      );
-      
+      await prisma.$executeRawUnsafe(`REFRESH MATERIALIZED VIEW ${viewName}`);
+
       const duration = Date.now() - startTime;
-      console.log(`[REFRESH] ✓ ${viewName} (regular) - ${duration}ms`);
-      
+
       return {
         view: viewName,
         level,
-        status: 'success',
+        status: "success",
         duration,
       };
     } catch (fallbackError: any) {
       const duration = Date.now() - startTime;
       console.error(`[REFRESH] ✗ ${viewName} failed:`, fallbackError.message);
-      
+
       return {
         view: viewName,
         level,
-        status: 'failed',
+        status: "failed",
         duration,
         error: fallbackError.message || String(fallbackError),
       };
@@ -340,7 +339,7 @@ async function refreshView(
 
 export async function refreshMaterializedViews(req: NextRequest) {
   const requestStartTime = Date.now();
-  
+
   try {
     // Use the new guard system - only SYSTEM admins can refresh materialized views
     const authResult = await requireRole([Role.SYSTEM])(req);
@@ -349,51 +348,51 @@ export async function refreshMaterializedViews(req: NextRequest) {
     }
     const { user } = authResult;
 
-    console.log(`[REFRESH] Starting materialized view refresh (user: ${user.email})`);
-
     const results: RefreshResult[] = [];
-    
+
     // Group views by level for better observability
-    const viewsByLevel = MATERIALIZED_VIEWS.reduce((acc, view) => {
-      if (!acc[view.level]) acc[view.level] = [];
-      acc[view.level].push(view);
-      return acc;
-    }, {} as Record<number, typeof MATERIALIZED_VIEWS[number][]>);
-    
+    const viewsByLevel = MATERIALIZED_VIEWS.reduce(
+      (acc, view) => {
+        if (!acc[view.level]) acc[view.level] = [];
+        acc[view.level].push(view);
+        return acc;
+      },
+      {} as Record<number, (typeof MATERIALIZED_VIEWS)[number][]>
+    );
+
     // Refresh each level in order
     for (const level of [1, 2, 3]) {
       const views = viewsByLevel[level] || [];
       if (views.length === 0) continue;
-      
-      console.log(`[REFRESH] Level ${level}: Refreshing ${views.length} views in parallel`);
+
       const levelStartTime = Date.now();
-      
+
       // Refresh views at the same level in parallel
       const levelResults = await Promise.all(
-        views.map(view => refreshView(view.name, view.level))
+        views.map((view) => refreshView(view.name, view.level))
       );
-      
+
       const levelDuration = Date.now() - levelStartTime;
-      const levelSuccess = levelResults.filter(r => r.status !== 'failed').length;
-      const levelFailed = levelResults.filter(r => r.status === 'failed').length;
-      
-      console.log(
-        `[REFRESH] Level ${level} complete: ${levelSuccess} success, ${levelFailed} failed (${levelDuration}ms)`
-      );
-      
+      const levelSuccess = levelResults.filter(
+        (r) => r.status !== "failed"
+      ).length;
+      const levelFailed = levelResults.filter(
+        (r) => r.status === "failed"
+      ).length;
+
       results.push(...levelResults);
     }
 
     const duration = Date.now() - requestStartTime;
-    const successCount = results.filter((r) => r.status !== 'failed').length;
-    const failedCount = results.filter((r) => r.status === 'failed').length;
+    const successCount = results.filter((r) => r.status !== "failed").length;
+    const failedCount = results.filter((r) => r.status === "failed").length;
     const refreshedAt = new Date().toISOString();
 
     // Send notification for cache invalidation
     const successfulViews = results
-      .filter(r => r.status !== 'failed')
-      .map(r => r.view);
-    
+      .filter((r) => r.status !== "failed")
+      .map((r) => r.view);
+
     if (successfulViews.length > 0) {
       await notifyMetricsUpdate(successfulViews, {
         timestamp: refreshedAt,
@@ -402,12 +401,8 @@ export async function refreshMaterializedViews(req: NextRequest) {
       });
     }
 
-    console.log(
-      `[REFRESH] Complete: ${successCount}/${MATERIALIZED_VIEWS.length} success (${duration}ms)`
-    );
-
     return NextResponse.json({
-      message: 'Materialized views refresh completed',
+      message: "Materialized views refresh completed",
       summary: {
         total: MATERIALIZED_VIEWS.length,
         success: successCount,
@@ -425,8 +420,8 @@ export async function refreshMaterializedViews(req: NextRequest) {
     const duration = Date.now() - requestStartTime;
     console.error("[REFRESH] Error refreshing materialized views:", error);
     return NextResponse.json(
-      { 
-        message: "Internal server error", 
+      {
+        message: "Internal server error",
         error: String(error),
         duration: `${duration}ms`,
       },
@@ -437,60 +432,61 @@ export async function refreshMaterializedViews(req: NextRequest) {
 
 /**
  * Refresh materialized views (automated via Cloud Scheduler)
- * 
+ *
  * This version does NOT require user authentication - uses access key only
  * Designed to be called by Google Cloud Scheduler
  */
 export async function refreshMaterializedViewsAutomated(req: NextRequest) {
   const requestStartTime = Date.now();
-  
+
   try {
     // No user authentication - this is called by Cloud Scheduler with access key
-    console.log('[REFRESH] Starting automated materialized view refresh');
 
     const results: RefreshResult[] = [];
-    
+
     // Group views by level for better observability
-    const viewsByLevel = MATERIALIZED_VIEWS.reduce((acc, view) => {
-      if (!acc[view.level]) acc[view.level] = [];
-      acc[view.level].push(view);
-      return acc;
-    }, {} as Record<number, typeof MATERIALIZED_VIEWS[number][]>);
-    
+    const viewsByLevel = MATERIALIZED_VIEWS.reduce(
+      (acc, view) => {
+        if (!acc[view.level]) acc[view.level] = [];
+        acc[view.level].push(view);
+        return acc;
+      },
+      {} as Record<number, (typeof MATERIALIZED_VIEWS)[number][]>
+    );
+
     // Refresh each level in order
     for (const level of [1, 2, 3]) {
       const views = viewsByLevel[level] || [];
       if (views.length === 0) continue;
-      
-      console.log(`[REFRESH] Level ${level}: Refreshing ${views.length} views in parallel`);
+
       const levelStartTime = Date.now();
-      
+
       // Refresh views at the same level in parallel
       const levelResults = await Promise.all(
-        views.map(view => refreshView(view.name, view.level))
+        views.map((view) => refreshView(view.name, view.level))
       );
-      
+
       const levelDuration = Date.now() - levelStartTime;
-      const levelSuccess = levelResults.filter(r => r.status !== 'failed').length;
-      const levelFailed = levelResults.filter(r => r.status === 'failed').length;
-      
-      console.log(
-        `[REFRESH] Level ${level} complete: ${levelSuccess} success, ${levelFailed} failed (${levelDuration}ms)`
-      );
-      
+      const levelSuccess = levelResults.filter(
+        (r) => r.status !== "failed"
+      ).length;
+      const levelFailed = levelResults.filter(
+        (r) => r.status === "failed"
+      ).length;
+
       results.push(...levelResults);
     }
 
     const duration = Date.now() - requestStartTime;
-    const successCount = results.filter((r) => r.status !== 'failed').length;
-    const failedCount = results.filter((r) => r.status === 'failed').length;
+    const successCount = results.filter((r) => r.status !== "failed").length;
+    const failedCount = results.filter((r) => r.status === "failed").length;
     const refreshedAt = new Date().toISOString();
 
     // Send notification for cache invalidation
     const successfulViews = results
-      .filter(r => r.status !== 'failed')
-      .map(r => r.view);
-    
+      .filter((r) => r.status !== "failed")
+      .map((r) => r.view);
+
     if (successfulViews.length > 0) {
       await notifyMetricsUpdate(successfulViews, {
         timestamp: refreshedAt,
@@ -499,12 +495,8 @@ export async function refreshMaterializedViewsAutomated(req: NextRequest) {
       });
     }
 
-    console.log(
-      `[REFRESH] Automated refresh complete: ${successCount}/${MATERIALIZED_VIEWS.length} success (${duration}ms)`
-    );
-
     return NextResponse.json({
-      message: 'Materialized views refresh completed (automated)',
+      message: "Materialized views refresh completed (automated)",
       summary: {
         total: MATERIALIZED_VIEWS.length,
         success: successCount,
@@ -513,14 +505,14 @@ export async function refreshMaterializedViewsAutomated(req: NextRequest) {
       },
       results,
       refreshedAt,
-      refreshedBy: 'Cloud Scheduler',
+      refreshedBy: "Cloud Scheduler",
     });
   } catch (error) {
     const duration = Date.now() - requestStartTime;
     console.error("[REFRESH] Error in automated refresh:", error);
     return NextResponse.json(
-      { 
-        message: "Internal server error", 
+      {
+        message: "Internal server error",
         error: String(error),
         duration: `${duration}ms`,
       },
@@ -528,4 +520,3 @@ export async function refreshMaterializedViewsAutomated(req: NextRequest) {
     );
   }
 }
-

@@ -9,30 +9,43 @@
  * Usage:
  *   npm run refresh-genre-metrics
  *   npx tsx scripts/refresh-genre-metrics.ts
+ *   npx tsx scripts/refresh-genre-metrics.ts --rebuild  # Force rebuild from scratch
  */
 
 import { prisma } from '../lib/prisma';
 
-async function refreshGenreMetrics() {
+async function refreshGenreMetrics(rebuild: boolean = false) {
   console.log('🔄 Starting genre engagement metrics refresh...');
   
   const startTime = Date.now();
   
   try {
-    // Refresh main genre engagement metrics view
-    console.log('📊 Refreshing mv_genre_engagement_metrics...');
-    await prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW CONCURRENTLY mv_genre_engagement_metrics');
-    
-    // Refresh class-level aggregations
-    console.log('🎓 Refreshing mv_class_genre_engagement...');
-    await prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW CONCURRENTLY mv_class_genre_engagement');
-    
-    // Refresh school-level aggregations
-    console.log('🏫 Refreshing mv_school_genre_engagement...');
-    await prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW CONCURRENTLY mv_school_genre_engagement');
+    if (rebuild) {
+      console.log('🔨 Rebuilding views from scratch...\n');
+      
+      // Import the fix script logic
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      await execPromise('npx tsx scripts/fix-genre-engagement-xp.ts');
+      console.log('✅ Views rebuilt successfully');
+    } else {
+      // Refresh main genre engagement metrics view (without CONCURRENTLY since we don't have unique index)
+      console.log('📊 Refreshing mv_genre_engagement_metrics...');
+      await prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW mv_genre_engagement_metrics');
+      
+      // Refresh class-level aggregations
+      console.log('🎓 Refreshing mv_class_genre_engagement...');
+      await prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW mv_class_genre_engagement');
+      
+      // Refresh school-level aggregations
+      console.log('🏫 Refreshing mv_school_genre_engagement...');
+      await prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW mv_school_genre_engagement');
+    }
     
     const duration = Date.now() - startTime;
-    console.log(`✅ Genre engagement metrics refreshed successfully in ${duration}ms`);
+    console.log(`\n✅ Genre engagement metrics refreshed successfully in ${duration}ms`);
     
     // Get some basic stats
     const studentMetrics = await prisma.$queryRaw<Array<{ count: number }>>`
@@ -47,7 +60,7 @@ async function refreshGenreMetrics() {
       SELECT COUNT(*) as count FROM mv_school_genre_engagement
     `;
     
-    console.log(`📈 Metrics generated:`);
+    console.log(`\n📈 Metrics generated:`);
     console.log(`   - Student-genre combinations: ${studentMetrics[0]?.count || 0}`);
     console.log(`   - Class-genre combinations: ${classMetrics[0]?.count || 0}`);
     console.log(`   - School-genre combinations: ${schoolMetrics[0]?.count || 0}`);
@@ -217,9 +230,12 @@ async function main() {
   console.log('🚀 Genre Engagement Metrics Refresh Script');
   console.log('============================================\n');
   
+  // Check for rebuild flag
+  const rebuild = process.argv.includes('--rebuild');
+  
   try {
     // Refresh materialized views
-    await refreshGenreMetrics();
+    await refreshGenreMetrics(rebuild);
     console.log('');
     
     // Validate data integrity

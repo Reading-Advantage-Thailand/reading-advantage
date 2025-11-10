@@ -117,13 +117,15 @@ GROUP BY
   st.timezone;
 
 -- Indexes for efficient querying
+-- UNIQUE index required for CONCURRENTLY refresh
+CREATE UNIQUE INDEX mv_activity_heatmap_unique_idx ON mv_activity_heatmap(user_id, activity_date, hour_of_day, activity_type);
+
 CREATE INDEX mv_activity_heatmap_user_id_idx ON mv_activity_heatmap(user_id);
 CREATE INDEX mv_activity_heatmap_school_id_idx ON mv_activity_heatmap(school_id);
 CREATE INDEX mv_activity_heatmap_date_idx ON mv_activity_heatmap(activity_date);
 CREATE INDEX mv_activity_heatmap_hour_idx ON mv_activity_heatmap(hour_of_day);
 CREATE INDEX mv_activity_heatmap_dow_idx ON mv_activity_heatmap(day_of_week);
 CREATE INDEX mv_activity_heatmap_activity_type_idx ON mv_activity_heatmap(activity_type);
-CREATE INDEX mv_activity_heatmap_composite_idx ON mv_activity_heatmap(user_id, activity_date, hour_of_day);
 CREATE INDEX mv_activity_heatmap_school_date_idx ON mv_activity_heatmap(school_id, activity_date);
 
 -- Create aggregated class-level view for performance

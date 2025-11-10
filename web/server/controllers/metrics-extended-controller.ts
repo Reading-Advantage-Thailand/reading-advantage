@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { ExtendedNextRequest } from "./auth-controller";
-import { 
+import {
   MetricsGenresResponse,
   GenreMetrics,
   MetricsSRSResponse,
   SRSMetrics,
   MetricsVelocityResponse,
-  VelocityDataPoint
+  VelocityDataPoint,
 } from "@/types/dashboard";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
@@ -23,18 +23,25 @@ export async function getGenreMetrics(req: ExtendedNextRequest) {
     const session = req.session;
     if (!session) {
       return NextResponse.json(
-        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { code: "UNAUTHORIZED", message: "Not authenticated" },
         { status: 401 }
       );
     }
 
     const { searchParams } = new URL(req.url);
-    const timeframe = searchParams.get('timeframe') || '30d';
-    const schoolId = searchParams.get('schoolId');
-    const classId = searchParams.get('classId');
+    const timeframe = searchParams.get("timeframe") || "365d";
+    const schoolId = searchParams.get("schoolId");
+    const classId = searchParams.get("classId");
 
     const now = new Date();
-    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+    const daysAgo =
+      timeframe === "7d"
+        ? 7
+        : timeframe === "30d"
+          ? 30
+          : timeframe === "90d"
+            ? 90
+            : 365;
     const startDate = new Date(now);
     startDate.setDate(startDate.getDate() - daysAgo);
 
@@ -50,7 +57,7 @@ export async function getGenreMetrics(req: ExtendedNextRequest) {
       };
     }
 
-    const lessonRecords = await prisma.lessonRecord.findMany({
+    const lessonRecords = (await prisma.lessonRecord.findMany({
       where: whereClause,
       select: {
         id: true,
@@ -77,22 +84,25 @@ export async function getGenreMetrics(req: ExtendedNextRequest) {
           },
         },
       },
-    }) as any;
+    })) as any;
 
     const filteredRecords = classId
       ? lessonRecords.filter((lr: any) => lr.user.studentClassrooms?.length > 0)
       : lessonRecords;
 
-    const genreMap = new Map<string, {
-      count: number;
-      totalLevel: number;
-      totalXp: number;
-      userSet: Set<string>;
-    }>();
+    const genreMap = new Map<
+      string,
+      {
+        count: number;
+        totalLevel: number;
+        totalXp: number;
+        userSet: Set<string>;
+      }
+    >();
 
     filteredRecords.forEach((record: any) => {
-      const genre = record.article?.genre || 'Unknown';
-      
+      const genre = record.article?.genre || "Unknown";
+
       if (!genreMap.has(genre)) {
         genreMap.set(genre, {
           count: 0,
@@ -115,12 +125,14 @@ export async function getGenreMetrics(req: ExtendedNextRequest) {
       .map(([genre, data]) => ({
         genre,
         count: data.count,
-        percentage: totalReads > 0
-          ? Math.round((data.count / totalReads) * 100 * 10) / 10
-          : 0,
-        averageLevel: data.count > 0
-          ? Math.round((data.totalLevel / data.count) * 10) / 10
-          : 0,
+        percentage:
+          totalReads > 0
+            ? Math.round((data.count / totalReads) * 100 * 10) / 10
+            : 0,
+        averageLevel:
+          data.count > 0
+            ? Math.round((data.totalLevel / data.count) * 10) / 10
+            : 0,
         totalXp: data.totalXp,
       }))
       .sort((a, b) => b.count - a.count);
@@ -142,7 +154,7 @@ export async function getGenreMetrics(req: ExtendedNextRequest) {
       genres,
       summary: {
         totalGenres: genres.length,
-        mostPopular: genres.length > 0 ? genres[0].genre : 'N/A',
+        mostPopular: genres.length > 0 ? genres[0].genre : "N/A",
         diversity: Math.round(diversity * 100) / 100,
       },
       cache: {
@@ -153,27 +165,25 @@ export async function getGenreMetrics(req: ExtendedNextRequest) {
 
     const duration = Date.now() - startTime;
 
-    console.log(`[Controller] getGenreMetrics - ${duration}ms - ${genres.length} genres`);
-
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
-        'X-Response-Time': `${duration}ms`,
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=240",
+        "X-Response-Time": `${duration}ms`,
       },
     });
   } catch (error) {
-    console.error('[Controller] getGenreMetrics - Error:', error);
+    console.error("[Controller] getGenreMetrics - Error:", error);
 
     return NextResponse.json(
       {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch genre metrics',
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch genre metrics",
         details: error instanceof Error ? { error: error.message } : {},
       },
       {
         status: 500,
         headers: {
-          'X-Response-Time': `${Date.now() - startTime}ms`,
+          "X-Response-Time": `${Date.now() - startTime}ms`,
         },
       }
     );
@@ -187,7 +197,7 @@ export async function getGenreMetrics(req: ExtendedNextRequest) {
  */
 export async function getSRSMetrics(req: ExtendedNextRequest) {
   // Delegate to the enhanced SRS health controller
-  const { getSRSHealthMetrics } = await import('./srs-health-controller');
+  const { getSRSHealthMetrics } = await import("./srs-health-controller");
   return getSRSHealthMetrics(req);
 }
 
@@ -203,18 +213,25 @@ export async function getVelocityMetrics(req: ExtendedNextRequest) {
     const session = req.session;
     if (!session) {
       return NextResponse.json(
-        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { code: "UNAUTHORIZED", message: "Not authenticated" },
         { status: 401 }
       );
     }
 
     const { searchParams } = new URL(req.url);
-    const timeframe = searchParams.get('timeframe') || '30d';
-    const schoolId = searchParams.get('schoolId');
-    const classId = searchParams.get('classId');
+    const timeframe = searchParams.get("timeframe") || "365d";
+    const schoolId = searchParams.get("schoolId");
+    const classId = searchParams.get("classId");
 
     const now = new Date();
-    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+    const daysAgo =
+      timeframe === "7d"
+        ? 7
+        : timeframe === "30d"
+          ? 30
+          : timeframe === "90d"
+            ? 90
+            : 365;
     const startDate = new Date(now);
     startDate.setDate(startDate.getDate() - daysAgo);
 
@@ -230,7 +247,7 @@ export async function getVelocityMetrics(req: ExtendedNextRequest) {
       };
     }
 
-    const lessonRecords = await prisma.lessonRecord.findMany({
+    const lessonRecords = (await prisma.lessonRecord.findMany({
       where: whereClause,
       select: {
         createdAt: true,
@@ -257,22 +274,25 @@ export async function getVelocityMetrics(req: ExtendedNextRequest) {
           },
         },
       },
-    }) as any;
+    })) as any;
 
     const filteredRecords = classId
       ? lessonRecords.filter((lr: any) => lr.user.studentClassrooms?.length > 0)
       : lessonRecords;
 
-    const dateMap = new Map<string, {
-      articlesRead: number;
-      wordsRead: number;
-      timeSpent: number;
-      totalLevel: number;
-      count: number;
-    }>();
+    const dateMap = new Map<
+      string,
+      {
+        articlesRead: number;
+        wordsRead: number;
+        timeSpent: number;
+        totalLevel: number;
+        count: number;
+      }
+    >();
 
     for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
-      const dateKey = d.toISOString().split('T')[0];
+      const dateKey = d.toISOString().split("T")[0];
       dateMap.set(dateKey, {
         articlesRead: 0,
         wordsRead: 0,
@@ -283,12 +303,12 @@ export async function getVelocityMetrics(req: ExtendedNextRequest) {
     }
 
     filteredRecords.forEach((record: any) => {
-      const dateKey = new Date(record.createdAt).toISOString().split('T')[0];
+      const dateKey = new Date(record.createdAt).toISOString().split("T")[0];
       const data = dateMap.get(dateKey);
 
       if (data) {
         data.articlesRead += 1;
-        
+
         if (record.article?.passage) {
           const wordCount = record.article.passage.split(/\s+/).length;
           data.wordsRead += wordCount;
@@ -306,9 +326,10 @@ export async function getVelocityMetrics(req: ExtendedNextRequest) {
         articlesRead: data.articlesRead,
         wordsRead: data.wordsRead,
         timeSpent: data.timeSpent,
-        averageLevel: data.count > 0 
-          ? Math.round((data.totalLevel / data.count) * 10) / 10 
-          : 0,
+        averageLevel:
+          data.count > 0
+            ? Math.round((data.totalLevel / data.count) * 10) / 10
+            : 0,
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
@@ -321,17 +342,21 @@ export async function getVelocityMetrics(req: ExtendedNextRequest) {
     const firstHalf = dataPoints.slice(0, midPoint);
     const secondHalf = dataPoints.slice(midPoint);
 
-    const firstHalfAvg = firstHalf.length > 0
-      ? firstHalf.reduce((sum, dp) => sum + dp.articlesRead, 0) / firstHalf.length
-      : 0;
+    const firstHalfAvg =
+      firstHalf.length > 0
+        ? firstHalf.reduce((sum, dp) => sum + dp.articlesRead, 0) /
+          firstHalf.length
+        : 0;
 
-    const secondHalfAvg = secondHalf.length > 0
-      ? secondHalf.reduce((sum, dp) => sum + dp.articlesRead, 0) / secondHalf.length
-      : 0;
+    const secondHalfAvg =
+      secondHalf.length > 0
+        ? secondHalf.reduce((sum, dp) => sum + dp.articlesRead, 0) /
+          secondHalf.length
+        : 0;
 
-    let trend: 'up' | 'down' | 'stable' = 'stable';
-    if (secondHalfAvg > firstHalfAvg * 1.1) trend = 'up';
-    else if (secondHalfAvg < firstHalfAvg * 0.9) trend = 'down';
+    let trend: "up" | "down" | "stable" = "stable";
+    if (secondHalfAvg > firstHalfAvg * 1.1) trend = "up";
+    else if (secondHalfAvg < firstHalfAvg * 0.9) trend = "down";
 
     const response: MetricsVelocityResponse = {
       timeframe,
@@ -351,27 +376,25 @@ export async function getVelocityMetrics(req: ExtendedNextRequest) {
 
     const duration = Date.now() - startTime;
 
-    console.log(`[Controller] getVelocityMetrics - ${duration}ms - ${dataPoints.length} data points`);
-
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
-        'X-Response-Time': `${duration}ms`,
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=240",
+        "X-Response-Time": `${duration}ms`,
       },
     });
   } catch (error) {
-    console.error('[Controller] getVelocityMetrics - Error:', error);
+    console.error("[Controller] getVelocityMetrics - Error:", error);
 
     return NextResponse.json(
       {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch velocity metrics',
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch velocity metrics",
         details: error instanceof Error ? { error: error.message } : {},
       },
       {
         status: 500,
         headers: {
-          'X-Response-Time': `${Date.now() - startTime}ms`,
+          "X-Response-Time": `${Date.now() - startTime}ms`,
         },
       }
     );
