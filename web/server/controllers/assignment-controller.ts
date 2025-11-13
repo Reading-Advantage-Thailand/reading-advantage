@@ -9,6 +9,7 @@ import {
 
 interface StudentAssignment {
   id: string;
+  assignmentId?: string;
   classroomId: string;
   articleId: string;
   title: string | null;
@@ -605,9 +606,7 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
         },
       },
       orderBy: {
-        assignment: {
-          dueDate: "asc",
-        },
+        createdAt: "desc",
       },
       skip: (page - 1) * limit,
       take: limit,
@@ -616,6 +615,7 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
     const formattedAssignments: StudentAssignment[] = studentAssignments.map(
       (sa) => ({
         id: sa.id,
+        assignmentId: sa.assignment.id,
         classroomId: sa.assignment.classroomId,
         articleId: sa.assignment.articleId,
         title: sa.assignment.title,

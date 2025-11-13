@@ -37,6 +37,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
+import { AssignmentNotificationBadge } from "@/components/student/assignment-notification-badge";
 
 interface AssignmentProps {
   userId: string;
@@ -44,6 +45,7 @@ interface AssignmentProps {
 
 type Assignment = {
   id: string;
+  assignmentId?: string;
   classroomId: string;
   articleId: string;
   title: string;
@@ -91,6 +93,9 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [dueDateFilter, setDueDateFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [notifiedAssignmentIds, setNotifiedAssignmentIds] = useState<
+    Set<string>
+  >(new Set());
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
     totalPages: 1,
@@ -204,9 +209,16 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
       cell: ({ row }) => {
         const title: string = row.getValue("title");
         const description = row.original.description;
+        const assignmentId = row.original.assignmentId || row.original.id;
         return (
           <div className="ml-4">
-            <div className="font-medium">{title}</div>
+            <div className="font-medium flex items-center">
+              {title}
+              <AssignmentNotificationBadge
+                assignmentId={assignmentId}
+                notifiedAssignmentIds={notifiedAssignmentIds}
+              />
+            </div>
           </div>
         );
       },
@@ -477,11 +489,32 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
         dueDateFilter,
         debouncedSearchQuery
       );
+      // Fetch notifications once
+      await fetchNotifications();
       setLoading(false);
     };
 
     fetchData();
   }, [userId, currentPage, statusFilter, dueDateFilter, debouncedSearchQuery]);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch(
+        `/api/v1/assignment-notifications?studentId=${userId}`
+      );
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data) {
+          const notifiedIds = new Set<string>(
+            result.data.map((n: any) => n.assignmentId as string)
+          );
+          setNotifiedAssignmentIds(notifiedIds);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);

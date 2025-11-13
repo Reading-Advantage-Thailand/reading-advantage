@@ -182,8 +182,8 @@ export function ClassDetailDashboard({
         </TabsContent>
 
         <TabsContent value="students" className="space-y-4">
-          <ClassAccuracyMetrics classroomId={classroomId} />
           <ClassBatchActions classroomId={classroomId} />
+          <ClassAccuracyMetrics classroomId={classroomId} />
         </TabsContent>
 
         <TabsContent value="alignment" className="space-y-4">
