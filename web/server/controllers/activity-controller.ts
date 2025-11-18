@@ -419,15 +419,15 @@ async function getActivityHeatmap(
 
   // Use caching for performance
   const data = await getCachedMetrics(cacheKey, fetchHeatmapData, {
-    ttl: 300000, // 5 minutes in milliseconds
-    staleTime: 60000, // 1 minute stale time
+    ttl: 30000, // 30 seconds in milliseconds
+    staleTime: 15000, // 15 seconds stale time
   });
 
   const duration = Date.now() - startTime;
 
   return NextResponse.json(data, {
     headers: {
-      "Cache-Control": "private, max-age=300, stale-while-revalidate=900",
+      "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
       "X-Response-Time": `${duration}ms`,
     },
   });

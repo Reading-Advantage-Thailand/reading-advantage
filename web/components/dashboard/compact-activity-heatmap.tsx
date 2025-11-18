@@ -132,6 +132,11 @@ export function CompactActivityHeatmap({
     };
 
     fetchData();
+
+    // Auto-refresh every 60 seconds for real-time updates
+    const refreshInterval = setInterval(fetchData, 60000);
+
+    return () => clearInterval(refreshInterval);
   }, [entityId, timeframe]);
 
   const getColorClass = (level: number) => {
