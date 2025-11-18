@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,12 @@ import {
   BookOpen,
   Zap,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  X,
+  Check,
+  RefreshCw
 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SmartSuggestion {
   id: string;
@@ -32,64 +36,158 @@ interface SmartSuggestion {
 
 interface AIInsightsProps {
   className?: string;
+  scope?: 'student' | 'teacher' | 'classroom' | 'license' | 'system';
+  contextId?: string; // userId, classroomId, or licenseId
 }
 
-export default function AIInsights({ className }: AIInsightsProps) {
+export default function AIInsights({ className, scope, contextId }: AIInsightsProps) {
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [suggestions, setSuggestions] = useState<SmartSuggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const fetchAIData = useCallback(async (forceRefresh = false) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (scope) params.append('kind', scope);
+      if (contextId) {
+        if (scope === 'classroom') params.append('classroomId', contextId);
+        else if (scope === 'license') params.append('licenseId', contextId);
+        else params.append('userId', contextId);
+      }
+      if (forceRefresh) params.append('refresh', 'true');
+
+      // Fetch AI summary data from the API
+      const response = await fetch(`/api/v1/ai/summary?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch AI insights');
+      }
+
+      const data = await response.json();
+
+      // Use insights from API response
+      setInsights(data.insights || []);
+      
+      // Generate smart suggestions based on insights with scope-aware action items
+      const getActionItems = (scope?: string) => {
+        if (scope === 'student') {
+          return [
+            'Review your progress',
+            'Set personal goals',
+            'Practice regularly',
+            'Track your improvement'
+          ];
+        } else if (scope === 'teacher') {
+          return [
+            'Review class performance',
+            'Adjust teaching strategies',
+            'Provide targeted support',
+            'Monitor student progress'
+          ];
+        } else if (scope === 'license' || scope === 'system') {
+          return [
+            'Review the metrics',
+            'Plan strategic actions',
+            'Allocate resources effectively',
+            'Monitor implementation'
+          ];
+        }
+        return [
+          'Review the recommendation',
+          'Plan next steps',
+          'Take action',
+          'Monitor results'
+        ];
+      };
+
+      const generatedSuggestions: SmartSuggestion[] = data.insights
+        .filter((insight: AIInsight) => insight.type === 'recommendation')
+        .slice(0, 3)
+        .map((insight: AIInsight, idx: number) => ({
+          id: `suggestion-${idx}`,
+          title: insight.title,
+          description: insight.description,
+          priority: insight.priority,
+          category: 'performance',
+          estimatedImpact: 'Data-driven improvement',
+          actions: getActionItems(scope)
+        }));
+
+      setSuggestions(generatedSuggestions);
+    } catch (err) {
+      console.error('Error fetching AI insights:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load AI insights');
+    } finally {
+      setLoading(false);
+    }
+  }, [scope, contextId]); // Add dependencies
 
   useEffect(() => {
-    const fetchAIData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch AI summary data from the API
-        const response = await fetch('/api/v1/ai/summary');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch AI insights');
-        }
-
-        const data = await response.json();
-
-        // Use insights from API response
-        setInsights(data.insights || []);
-        
-        // Generate smart suggestions based on insights
-        // In a production system, this would also come from the AI service
-        const generatedSuggestions: SmartSuggestion[] = data.insights
-          .filter((insight: AIInsight) => insight.type === 'recommendation')
-          .slice(0, 3)
-          .map((insight: AIInsight, idx: number) => ({
-            id: `suggestion-${idx}`,
-            title: insight.title,
-            description: insight.description,
-            priority: insight.priority,
-            category: 'performance',
-            estimatedImpact: 'Data-driven improvement',
-            actions: [
-              'Review the recommendation',
-              'Discuss with your team',
-              'Implement the suggested changes',
-              'Monitor the results'
-            ]
-          }));
-
-        setSuggestions(generatedSuggestions);
-      } catch (err) {
-        console.error('Error fetching AI insights:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load AI insights');
-        // Don't set empty data on error, keep previous data if available
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAIData();
-  }, []);
+  }, [fetchAIData]); // Depend on fetchAIData
+
+  const handleDismiss = async (insightId: string) => {
+    try {
+      const response = await fetch('/api/v1/ai/insights/dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ insightId }),
+      });
+
+      if (!response.ok) throw new Error('Failed to dismiss insight');
+
+      // Remove from UI
+      setInsights(insights.filter(i => i.id !== insightId));
+      
+      toast({
+        title: "Insight dismissed",
+        description: "This insight has been hidden from your view.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to dismiss insight. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMarkAction = async (insightId: string) => {
+    try {
+      const response = await fetch('/api/v1/ai/insights/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ insightId }),
+      });
+
+      if (!response.ok) throw new Error('Failed to mark action');
+
+      toast({
+        title: "Action recorded",
+        description: "Thank you for acting on this insight!",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to record action. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRefresh = async () => {
+    await fetchAIData(true);
+    toast({
+      title: "Insights refreshed",
+      description: "AI insights have been regenerated with latest data.",
+    });
+  };
 
   const getInsightIcon = (type: AIInsight['type']) => {
     switch (type) {
@@ -167,22 +265,37 @@ export default function AIInsights({ className }: AIInsightsProps) {
       {/* AI Insights - Redesigned with compact cards */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-purple-600" />
-            AI Insights
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-purple-600" />
+              <CardTitle>AI Insights</CardTitle>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
           <CardDescription>
-            Intelligent analysis powered by machine learning
+            Intelligent analysis powered by real AI
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3">
+            {insights.length === 0 && !loading && (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No insights available yet. Keep using the platform to generate personalized recommendations.
+              </p>
+            )}
             {insights.map((insight) => {
               const Icon = getInsightIcon(insight.type);
               return (
                 <div
                   key={insight.id}
-                  className="group relative flex items-start gap-3 p-3 border rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer"
+                  className="group relative flex items-start gap-3 p-3 border rounded-lg hover:shadow-md transition-all duration-200"
                 >
                   {/* Icon with colored background */}
                   <div className={`p-2 rounded-lg ${getInsightColor(insight.type).replace('text-', 'bg-').replace('-600', '-100')} dark:bg-opacity-20`}>
@@ -194,7 +307,7 @@ export default function AIInsights({ className }: AIInsightsProps) {
                     <div className="flex items-start justify-between gap-2">
                       <h4 className="font-medium text-sm leading-tight">{insight.title}</h4>
                       <Badge variant="secondary" className="text-xs shrink-0">
-                        {insight.confidence}%
+                        {Math.round(insight.confidence * 100)}%
                       </Badge>
                     </div>
                     
@@ -203,8 +316,8 @@ export default function AIInsights({ className }: AIInsightsProps) {
                       {insight.description}
                     </p>
                     
-                    {/* Footer: Type, Priority */}
-                    <div className="flex items-center gap-2 pt-1">
+                    {/* Footer: Type, Priority, Actions */}
+                    <div className="flex items-center gap-2 pt-1 flex-wrap">
                       <Badge variant="outline" className="text-xs capitalize">
                         {insight.type}
                       </Badge>
@@ -214,14 +327,25 @@ export default function AIInsights({ className }: AIInsightsProps) {
                       >
                         {insight.priority}
                       </Badge>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-6 px-2 text-xs ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        Review
-                        <ArrowRight className="h-3 w-3 ml-1" />
-                      </Button>
+                      <div className="ml-auto flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => handleMarkAction(insight.id)}
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          Done
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => handleDismiss(insight.id)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -244,6 +368,11 @@ export default function AIInsights({ className }: AIInsightsProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
+            {suggestions.length === 0 && !loading && (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Complete more activities to receive personalized suggestions.
+              </p>
+            )}
             {suggestions.map((suggestion) => {
               const CategoryIcon = getCategoryIcon(suggestion.category);
               return (
@@ -292,16 +421,6 @@ export default function AIInsights({ className }: AIInsightsProps) {
                       ))}
                     </ul>
                   </details>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="default" size="sm" className="h-7 text-xs flex-1">
-                      Implement
-                    </Button>
-                    <Button variant="outline" size="sm" className="h-7 text-xs flex-1">
-                      Learn More
-                    </Button>
-                  </div>
                 </div>
               );
             })}

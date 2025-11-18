@@ -69,9 +69,9 @@ SELECT
   
   -- Combined totals
   (COUNT(DISTINCT uwr.id) + COUNT(DISTINCT usr.id)) AS total_cards,
-  (COUNT(DISTINCT CASE WHEN uwr.due <= NOW() THEN uwr.id END + 
+  (COUNT(DISTINCT CASE WHEN uwr.due <= NOW() THEN uwr.id END) + 
    COUNT(DISTINCT CASE WHEN usr.due <= NOW() THEN usr.id END)) AS total_due_for_review,
-  (COUNT(DISTINCT CASE WHEN uwr.due < NOW() - INTERVAL '1 day' THEN uwr.id END + 
+  (COUNT(DISTINCT CASE WHEN uwr.due < NOW() - INTERVAL '1 day' THEN uwr.id END) + 
    COUNT(DISTINCT CASE WHEN usr.due < NOW() - INTERVAL '1 day' THEN usr.id END)) AS total_overdue_count,
   
   -- Lapse and repetition metrics
@@ -87,7 +87,7 @@ SELECT
   
   -- Performance percentages
   ROUND(
-    100.0 * (COUNT(DISTINCT CASE WHEN uwr.state >= 2 THEN uwr.id END + 
+    100.0 * (COUNT(DISTINCT CASE WHEN uwr.state >= 2 THEN uwr.id END) + 
              COUNT(DISTINCT CASE WHEN usr.state >= 2 THEN usr.id END)) / 
     NULLIF(COUNT(DISTINCT uwr.id) + COUNT(DISTINCT usr.id), 0),
     1
@@ -95,14 +95,14 @@ SELECT
   
   -- Overload detection flags
   CASE 
-    WHEN (COUNT(DISTINCT CASE WHEN uwr.due <= NOW() THEN uwr.id END + 
+    WHEN (COUNT(DISTINCT CASE WHEN uwr.due <= NOW() THEN uwr.id END) + 
           COUNT(DISTINCT CASE WHEN usr.due <= NOW() THEN usr.id END)) > 50 
     THEN true
     ELSE false
   END AS is_overloaded,
   
   CASE 
-    WHEN (COUNT(DISTINCT CASE WHEN uwr.due < NOW() - INTERVAL '3 days' THEN uwr.id END + 
+    WHEN (COUNT(DISTINCT CASE WHEN uwr.due < NOW() - INTERVAL '3 days' THEN uwr.id END) + 
           COUNT(DISTINCT CASE WHEN usr.due < NOW() - INTERVAL '3 days' THEN usr.id END)) > 20 
     THEN true
     ELSE false
@@ -116,7 +116,7 @@ SELECT
   
   -- Recommended daily sessions
   LEAST(GREATEST(
-    CEIL((COUNT(DISTINCT CASE WHEN uwr.due <= NOW() THEN uwr.id END + 
+    CEIL((COUNT(DISTINCT CASE WHEN uwr.due <= NOW() THEN uwr.id END) + 
           COUNT(DISTINCT CASE WHEN usr.due <= NOW() THEN usr.id END)) / 20.0),
     1
   ), 5) AS recommended_daily_sessions,
@@ -224,7 +224,7 @@ SELECT
   NOW() AS last_updated
 
 FROM classrooms c
-JOIN classroom_students cs ON c.id = cs.classroom_id
+JOIN "classroomStudents" cs ON c.id = cs.classroom_id
 LEFT JOIN mv_srs_health h ON cs.student_id = h.user_id
 GROUP BY c.id, c.classroom_name, c.grade, c.school_id;
 

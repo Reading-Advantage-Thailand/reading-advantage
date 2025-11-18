@@ -158,21 +158,21 @@ GROUP BY user_id, classroom_id, school_id, genre, cefr_bucket
 HAVING COUNT(*) >= 3; -- Minimum activity threshold
 
 -- Create indexes for efficient querying
-CREATE INDEX CONCURRENTLY idx_genre_engagement_user_genre 
+CREATE INDEX idx_genre_engagement_user_genre 
 ON mv_genre_engagement_metrics (user_id, genre);
 
-CREATE INDEX CONCURRENTLY idx_genre_engagement_classroom_genre 
+CREATE INDEX idx_genre_engagement_classroom_genre 
 ON mv_genre_engagement_metrics (classroom_id, genre) 
 WHERE classroom_id IS NOT NULL;
 
-CREATE INDEX CONCURRENTLY idx_genre_engagement_school_genre 
+CREATE INDEX idx_genre_engagement_school_genre 
 ON mv_genre_engagement_metrics (school_id, genre) 
 WHERE school_id IS NOT NULL;
 
-CREATE INDEX CONCURRENTLY idx_genre_engagement_cefr_genre 
+CREATE INDEX idx_genre_engagement_cefr_genre 
 ON mv_genre_engagement_metrics (cefr_bucket, genre);
 
-CREATE INDEX CONCURRENTLY idx_genre_engagement_weighted_score 
+CREATE INDEX idx_genre_engagement_weighted_score 
 ON mv_genre_engagement_metrics (weighted_engagement_score DESC);
 
 -- Aggregated class-level view
@@ -209,10 +209,10 @@ WHERE classroom_id IS NOT NULL
 GROUP BY classroom_id, school_id, genre, cefr_bucket
 HAVING COUNT(DISTINCT user_id) >= 2; -- At least 2 students
 
-CREATE INDEX CONCURRENTLY idx_class_genre_engagement_classroom 
+CREATE INDEX idx_class_genre_engagement_classroom 
 ON mv_class_genre_engagement (classroom_id, avg_engagement_score DESC);
 
-CREATE INDEX CONCURRENTLY idx_class_genre_engagement_school 
+CREATE INDEX idx_class_genre_engagement_school 
 ON mv_class_genre_engagement (school_id, genre);
 
 -- Aggregated school-level view  
@@ -241,5 +241,5 @@ WHERE school_id IS NOT NULL
 GROUP BY school_id, genre, cefr_bucket
 HAVING COUNT(DISTINCT user_id) >= 5; -- At least 5 students
 
-CREATE INDEX CONCURRENTLY idx_school_genre_engagement_school 
+CREATE INDEX idx_school_genre_engagement_school 
 ON mv_school_genre_engagement (school_id, avg_engagement_score DESC);

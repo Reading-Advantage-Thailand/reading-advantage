@@ -81,7 +81,7 @@ export default function StudentDashboardContent({
             `/api/v1/metrics/genres?studentId=${userId}&timeframe=30d&enhanced=true&includeRecommendations=true`
           ),
           fetch(`/api/v1/metrics/srs?studentId=${userId}&includeDetails=true`),
-          fetch(`/api/v1/ai/summary?userId=${userId}`),
+          fetch(`/api/v1/ai/summary?userId=${userId}&kind=student`),
           fetch(
             `/api/v1/metrics/activity?entityId=${userId}&scope=student&format=timeline&timeframe=30d`
           ),

@@ -652,6 +652,29 @@ enum RecurringPeriod {
   MONTHLY
 }
 
+enum AIInsightType {
+  TREND
+  ALERT
+  RECOMMENDATION
+  ACHIEVEMENT
+  WARNING
+}
+
+enum AIInsightScope {
+  STUDENT
+  TEACHER
+  CLASSROOM
+  LICENSE
+  SYSTEM
+}
+
+enum AIInsightPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 model AssignmentNotification {
   id           String     @id @default(cuid())
   teacherId    String     @map("teacher_id")
@@ -668,6 +691,54 @@ model AssignmentNotification {
   @@index([studentId, isNoticed])
   @@index([teacherId])
   @@map("assignment_notifications")
+}
+
+model AIInsight {
+  id           String          @id @default(cuid())
+  type         AIInsightType   @map("insight_type")
+  scope        AIInsightScope  @map("scope")
+  priority     AIInsightPriority @default(MEDIUM)
+  title        String
+  description  String          @db.Text
+  confidence   Float           @default(0.0)  // 0.0 to 1.0
+  data         Json?           // Additional structured data
+  
+  // Context references
+  userId       String?         @map("user_id")
+  classroomId  String?         @map("classroom_id")
+  licenseId    String?         @map("license_id")
+  
+  // Metadata
+  generatedBy  String          @default("ai") @map("generated_by") // 'ai' or 'system'
+  modelVersion String?         @map("model_version") // Track AI model used
+  dismissed    Boolean         @default(false)
+  dismissedAt  DateTime?       @map("dismissed_at")
+  actionTaken  Boolean         @default(false) @map("action_taken")
+  
+  // Timestamps
+  validUntil   DateTime?       @map("valid_until")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  @@index([userId, dismissed, validUntil])
+  @@index([classroomId, dismissed, validUntil])
+  @@index([licenseId, dismissed, validUntil])
+  @@index([scope, priority, createdAt])
+  @@map("ai_insights")
+}
+
+model AIInsightCache {
+  id          String   @id @default(cuid())
+  cacheKey    String   @unique @map("cache_key") // e.g., "student:{userId}", "teacher:{userId}", "license:{id}"
+  scope       AIInsightScope
+  insights    Json     // Cached insights array
+  metrics     Json?    // Cached metrics used for generation
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([scope, expiresAt])
+  @@map("ai_insight_cache")
 }
 
 model LearningGoal {

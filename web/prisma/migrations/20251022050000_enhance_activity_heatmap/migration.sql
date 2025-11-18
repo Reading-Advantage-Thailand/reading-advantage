@@ -64,10 +64,10 @@ WITH activity_union AS (
     AND ua."createdAt" >= NOW() - INTERVAL '6 months'
 ),
 school_timezones AS (
-  -- Get school timezones with fallback to UTC
+  -- All schools use UTC timezone
   SELECT DISTINCT
     s.id as school_id,
-    COALESCE(s.timezone, 'UTC') as timezone
+    'UTC' as timezone
   FROM schools s
   
   UNION ALL
@@ -147,7 +147,7 @@ SELECT
   MIN(ah.first_activity_at) as first_activity_at,
   MAX(ah.last_activity_at) as last_activity_at
 FROM mv_activity_heatmap ah
-JOIN classroom_students cs ON ah.user_id = cs.student_id
+JOIN "classroomStudents" cs ON ah.user_id = cs.student_id
 JOIN classrooms c ON cs.classroom_id = c.id
 GROUP BY 
   cs.classroom_id,

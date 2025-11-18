@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { TeacherOverviewKPIs } from "./teacher-overview-kpis";
 import { ClassSummaryTable, ClassSummaryData } from "./class-summary-table";
-import { AITeacherBrief, AIInsight } from "./ai-teacher-brief";
+import AIInsights from "./ai-insights";
 import { useDashboardTelemetry } from "./telemetry-tracker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, RefreshCw } from "lucide-react";
@@ -20,14 +20,15 @@ export function TeacherDashboardContent({
   const t = useScopedI18n("pages.teacher.dashboardPage") as any;
   const [overviewData, setOverviewData] = useState<any>(null);
   const [classesData, setClassesData] = useState<ClassSummaryData[]>([]);
-  const [aiInsights, setAiInsights] = useState<{
-    summary?: string;
-    insights?: AIInsight[];
-    generatedAt?: string;
-  }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Setup telemetry
   const telemetry = useDashboardTelemetry();
@@ -87,59 +88,13 @@ export function TeacherDashboardContent({
   }, []);
 
   // Fetch AI insights
-  const fetchAIInsights = useCallback(async () => {
-    try {
-      const response = await fetch("/api/v1/ai/summary?kind=teacher");
-      if (!response.ok) {
-        // AI insights are optional, don't throw error
-        console.warn("AI insights not available");
-        return null;
-      }
-      const data = await response.json();
-
-      // Transform the AI insights to match component expectations
-      setAiInsights({
-        summary: undefined, // API doesn't return a text summary yet
-        insights: data.insights?.map((insight: any) => ({
-          id: insight.id,
-          type:
-            insight.type === "alert"
-              ? "risk"
-              : insight.type === "achievement"
-                ? "success"
-                : insight.type === "recommendation"
-                  ? "warning"
-                  : "info",
-          title: insight.title,
-          message: insight.description,
-          evidence: insight.data
-            ? [
-                `Confidence: ${Math.round(insight.confidence * 100)}%`,
-                ...Object.entries(insight.data).map(
-                  ([key, value]) => `${key}: ${value}`
-                ),
-              ]
-            : undefined,
-          actionable: insight.type === "recommendation",
-          priority: insight.priority,
-        })),
-        generatedAt: data.summary?.lastGenerated || data.cache?.generatedAt,
-      });
-      return data;
-    } catch (err) {
-      console.error("Error fetching AI insights:", err);
-      // Don't throw - AI insights are optional
-      return null;
-    }
-  }, []);
-
   // Initial data fetch
   const fetchAllData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      await Promise.all([fetchOverview(), fetchClasses(), fetchAIInsights()]);
+      await Promise.all([fetchOverview(), fetchClasses()]);
       setLastUpdate(new Date());
     } catch (err) {
       setError(
@@ -148,7 +103,7 @@ export function TeacherDashboardContent({
     } finally {
       setLoading(false);
     }
-  }, [fetchOverview, fetchClasses, fetchAIInsights]);
+  }, [fetchOverview, fetchClasses]);
 
   // Initial load
   useEffect(() => {
@@ -176,8 +131,6 @@ export function TeacherDashboardContent({
               setOverviewData((prev: any) => ({ ...prev, ...data.payload }));
             } else if (data.type === "class_update") {
               fetchClasses();
-            } else if (data.type === "ai_update") {
-              setAiInsights(data.payload);
             }
 
             setLastUpdate(new Date());
@@ -223,11 +176,6 @@ export function TeacherDashboardContent({
     await fetchAllData();
   };
 
-  // Handle AI refresh
-  const handleAIRefresh = async () => {
-    await fetchAIInsights();
-  };
-
   if (error) {
     return (
       <Alert variant="destructive">
@@ -269,21 +217,15 @@ export function TeacherDashboardContent({
           <ClassSummaryTable classes={classesData} loading={loading} />
         </div>
 
-        {/* AI Teacher Brief - Takes 1/3 width on large screens */}
+        {/* AI Insights for all teacher's classes */}
         <div>
-          <AITeacherBrief
-            summary={aiInsights.summary}
-            insights={aiInsights.insights}
-            generatedAt={aiInsights.generatedAt}
-            loading={loading}
-            onRefresh={handleAIRefresh}
-          />
+          <AIInsights scope="teacher" contextId={userId} />
         </div>
       </div>
 
       {/* Last Update Timestamp */}
       <div className="text-xs text-muted-foreground text-right">
-        {t("lastUpdated")}: {lastUpdate.toLocaleTimeString()}
+        {t("lastUpdated")}: {mounted ? lastUpdate.toLocaleTimeString() : '--:--:--'}
       </div>
     </>
   );

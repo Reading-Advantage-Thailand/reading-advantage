@@ -505,7 +505,7 @@ export default function SystemDashboardClient() {
               </TabsContent>
 
               <TabsContent value="insights" className="space-y-6 mt-6">
-                <AIInsights />
+                <AIInsights scope="system" />
               </TabsContent>
             </Tabs>
           </div>

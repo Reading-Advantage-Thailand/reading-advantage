@@ -18,7 +18,7 @@ import { ClassVelocityTable } from "./class-velocity-table";
 import { ClassActivityHeatmap } from "./class-activity-heatmap";
 import { ClassGenreEngagement } from "./class-genre-engagement";
 import { ClassAccuracyMetrics } from "./class-accuracy-metrics";
-import { AITeacherBrief } from "./ai-teacher-brief";
+import AIInsights from "./ai-insights";
 import { ClassBatchActions } from "./class-batch-actions";
 import {
   ArrowLeft,
@@ -128,8 +128,8 @@ export function ClassDetailDashboard({
       {/* KPI Strip */}
       <ClassDashboardKPIs classroomId={classroomId} />
 
-      {/* AI Teacher Brief */}
-      <AITeacherBrief />
+      {/* AI Insights for this classroom */}
+      <AIInsights scope="classroom" contextId={classroomId} />
 
       {/* Main Content Tabs */}
       <Tabs

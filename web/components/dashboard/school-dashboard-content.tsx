@@ -305,7 +305,11 @@ export function SchoolDashboardContent({
 
         {/* AI Insights and Smart Suggestions - Full Width Container */}
         <div className="lg:col-span-2">
-          <AIInsights />
+          <AIInsights 
+            key={selectedLicenseId} 
+            scope="license" 
+            contextId={selectedLicenseId} 
+          />
         </div>
       </div>
     </div>
