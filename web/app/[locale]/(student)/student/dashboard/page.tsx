@@ -6,10 +6,10 @@ import { getScopedI18n } from "@/locales/server";
 import { Skeleton } from "@/components/ui/skeleton";
 import StudentDashboardContent from "@/components/dashboard/student-dashboard-content";
 
-export default async function ReportsPage() {
+export default async function StudentDashboardPage() {
   const t = await getScopedI18n("pages.student.reportpage");
   const user = await getCurrentUser();
-  
+
   if (!user) {
     return redirect("/auth/signin");
   }
@@ -19,16 +19,16 @@ export default async function ReportsPage() {
       <Header heading={t("title")} />
       <div className="space-y-6">
         <Suspense fallback={<DashboardSkeleton />}>
-          <StudentDashboardContent 
-            userId={user.id} 
+          <StudentDashboardContent
+            userId={user.id}
             user={{
               id: user.id,
-              name: user.name || null,
+              name: user.display_name,
               email: user.email,
               level: user.level,
               cefr_level: user.cefr_level,
               xp: user.xp,
-            }} 
+            }}
           />
         </Suspense>
       </div>

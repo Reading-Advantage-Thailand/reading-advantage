@@ -26,14 +26,14 @@ interface ActivityData {
 }
 
 interface CompactActivityHeatmapProps {
-  licenseId?: string;
+  entityId: string;
   timeframe?: string;
   className?: string;
 }
 
 export function CompactActivityHeatmap({
-  licenseId,
-  timeframe = "30d",
+  entityId,
+  timeframe = "90d",
   className,
 }: CompactActivityHeatmapProps) {
   const [data, setData] = useState<ActivityData[]>([]);
@@ -45,70 +45,81 @@ export function CompactActivityHeatmap({
       try {
         setLoading(true);
 
-        const params = new URLSearchParams();
-        if (licenseId) params.append('licenseId', licenseId);
-
-        // Fetch activity data from dashboard API
-        const response = await fetch(`/api/v1/admin/dashboard?${params}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch activity data');
-        }
-
-        const result = await response.json();
-        
-        // Process activity log to create heatmap data
-        const activityLog = result.data.filteredActivityLog || [];
-        
-        // Generate data for the last 90 days
+        // Step 1: Generate all 90 days with zero activity (dark/gray squares) FIRST
         const days = 90;
         const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day
+
+        // Create array with ALL days in the range, from oldest to newest
         const activityData: ActivityData[] = [];
-        
-        // Count activities per day
-        const activityByDate = new Map<string, number>();
-        
-        activityLog.forEach((activity: any) => {
-          const date = new Date(activity.timestamp).toISOString().split("T")[0];
-          activityByDate.set(date, (activityByDate.get(date) || 0) + 1);
-        });
-        
-        // Find max activity for normalization
-        const maxCount = Math.max(...Array.from(activityByDate.values()), 1);
 
         for (let i = days - 1; i >= 0; i--) {
           const date = new Date(today);
           date.setDate(date.getDate() - i);
           const dateStr = date.toISOString().split("T")[0];
-          
-          const count = activityByDate.get(dateStr) || 0;
 
-          // Map count to intensity level (0-4) based on thresholds
-          // 0 = no activity (gray)
-          // 1 = 1-9 activities (light green)
-          // 2 = 10-29 activities (medium green)
-          // 3 = 30-49 activities (dark green)
-          // 4 = 50+ activities (darkest green)
-          let level = 0;
-          
-          if (count >= 50) level = 4;
-          else if (count >= 30) level = 3;
-          else if (count >= 10) level = 2;
-          else if (count >= 1) level = 1;
-
+          // Initialize all days with zero activity (level 0 = gray/dark)
           activityData.push({
             date: dateStr,
-            count,
-            level,
+            count: 0,
+            level: 0,
           });
         }
+
+        // Step 2: Fetch activity data from API
+        const response = await fetch(
+          `/api/v1/metrics/activity?entityId=${entityId}&scope=student&format=heatmap&timeframe=${timeframe}&granularity=day`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch activity data");
+        }
+
+        const result = await response.json();
+
+        // Step 3: Map API data onto the generated days
+        const buckets = result.buckets || [];
+
+        // Aggregate all activity counts by date (sum all activity types per day)
+        const apiDataMap = new Map<string, number>();
+        buckets.forEach((bucket: any) => {
+          const currentCount = apiDataMap.get(bucket.date) || 0;
+          apiDataMap.set(
+            bucket.date,
+            currentCount + (bucket.activityCount || 0)
+          );
+        });
+
+        // Step 4: Update the pre-generated days with API data
+        activityData.forEach((item) => {
+          const count = apiDataMap.get(item.date);
+
+          // If this date has data from API, update it
+          if (count !== undefined) {
+            item.count = count;
+
+            // Map count to intensity level (0-4) based on thresholds
+            // 0 = no activity (gray/dark)
+            // 1 = 1-2 activities (light green)
+            // 2 = 3-5 activities (medium green)
+            // 3 = 6-9 activities (dark green)
+            // 4 = 10+ activities (darkest green)
+            if (count >= 10) item.level = 4;
+            else if (count >= 6) item.level = 3;
+            else if (count >= 3) item.level = 2;
+            else if (count >= 1) item.level = 1;
+            else item.level = 0;
+          }
+          // If no data from API, keep it as level 0 (gray/dark)
+        });
 
         setData(activityData);
 
         // Calculate stats
         const total = activityData.reduce((sum, d) => sum + d.count, 0);
         const peak = Math.max(...activityData.map((d) => d.count));
-        const average = activityData.length > 0 ? Math.round(total / activityData.length) : 0;
+        const average =
+          activityData.length > 0 ? Math.round(total / activityData.length) : 0;
         setStats({ total, peak, average });
       } catch (error) {
         console.error("Error fetching activity data:", error);
@@ -121,7 +132,7 @@ export function CompactActivityHeatmap({
     };
 
     fetchData();
-  }, [licenseId, timeframe]);
+  }, [entityId, timeframe]);
 
   const getColorClass = (level: number) => {
     switch (level) {
@@ -146,20 +157,59 @@ export function CompactActivityHeatmap({
   };
 
   const getMonthLabels = () => {
-    const labels: { month: string; position: number }[] = [];
+    const labels: { month: string; weekIndex: number }[] = [];
     let lastMonth = "";
 
     data.forEach((item, index) => {
       const date = new Date(item.date);
       const month = date.toLocaleDateString("en-US", { month: "short" });
+      const weekIndex = Math.floor(index / 7);
 
-      if (month !== lastMonth && (index === 0 || index % 7 === 0)) {
-        labels.push({ month, position: index });
+      // Add label at the start of each new month, aligned to the week column
+      if (month !== lastMonth) {
+        labels.push({ month, weekIndex });
         lastMonth = month;
       }
     });
 
     return labels;
+  };
+
+  // Organize data into weeks for proper grid layout
+  const organizeDataByWeeks = () => {
+    if (data.length === 0) return [];
+
+    const weeks: ActivityData[][] = [];
+    const firstDate = new Date(data[0].date);
+    const firstDayOfWeek = firstDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+    // Create first week with proper offset
+    let currentWeek: ActivityData[] = [];
+    let dataIndex = 0;
+
+    // Calculate total weeks needed
+    const totalDays = data.length;
+    const totalWeeks = Math.ceil(totalDays / 7);
+
+    for (let weekIndex = 0; weekIndex < totalWeeks; weekIndex++) {
+      currentWeek = [];
+      for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+        if (dataIndex < data.length) {
+          currentWeek.push(data[dataIndex]);
+          dataIndex++;
+        } else {
+          // Add empty placeholder for incomplete weeks
+          currentWeek.push({
+            date: "",
+            count: 0,
+            level: 0,
+          });
+        }
+      }
+      weeks.push(currentWeek);
+    }
+
+    return weeks;
   };
 
   if (loading) {
@@ -177,7 +227,7 @@ export function CompactActivityHeatmap({
   }
 
   const monthLabels = getMonthLabels();
-  const weeks = Math.ceil(data.length / 7);
+  const weeks = organizeDataByWeeks();
 
   return (
     <Card className={className}>
@@ -230,13 +280,15 @@ export function CompactActivityHeatmap({
         {/* Heatmap - Full width */}
         <div className="space-y-3">
           {/* Month labels */}
-          <div className="relative h-4">
-            <div className="flex text-xs text-muted-foreground font-medium">
+          <div className="relative h-4 ml-12">
+            <div className="flex text-xs text-muted-foreground font-medium gap-1">
               {monthLabels.map((label, index) => (
                 <div
                   key={index}
-                  className="absolute"
-                  style={{ left: `${(label.position / data.length) * 100}%` }}
+                  className="absolute whitespace-nowrap"
+                  style={{
+                    left: `${(label.weekIndex / weeks.length) * 100}%`,
+                  }}
                 >
                   {label.month}
                 </div>
@@ -250,21 +302,25 @@ export function CompactActivityHeatmap({
               <div className="inline-flex gap-1 min-w-full">
                 {/* Day labels */}
                 <div className="flex flex-col gap-1 mr-2 text-xs text-muted-foreground justify-around py-1">
+                  <span>Sun</span>
                   <span>Mon</span>
+                  <span>Tue</span>
                   <span>Wed</span>
+                  <span>Thu</span>
                   <span>Fri</span>
+                  <span>Sat</span>
                 </div>
 
                 {/* Grid by weeks (columns) */}
                 <div className="flex gap-1 flex-1">
-                  {Array.from({ length: weeks }).map((_, weekIndex) => (
+                  {weeks.map((week, weekIndex) => (
                     <div key={weekIndex} className="flex flex-col gap-1">
-                      {Array.from({ length: 7 }).map((_, dayIndex) => {
-                        const dataIndex = weekIndex * 7 + dayIndex;
-                        if (dataIndex >= data.length)
+                      {week.map((item, dayIndex) => {
+                        // Empty placeholder
+                        if (!item.date) {
                           return <div key={dayIndex} className="w-3 h-3" />;
+                        }
 
-                        const item = data[dataIndex];
                         return (
                           <Tooltip key={dayIndex}>
                             <TooltipTrigger asChild>
@@ -324,7 +380,7 @@ export function CompactActivityHeatmap({
               Top Activity Dates
             </h4>
             <div className="space-y-2">
-              {data
+              {[...data]
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 3)
                 .map((item, index) => (

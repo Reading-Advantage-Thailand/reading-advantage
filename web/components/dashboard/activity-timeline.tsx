@@ -119,30 +119,30 @@ function useActivityTimeline(
 const EVENT_CONFIG = {
   assignment: {
     icon: ClipboardCheck,
-    color: 'bg-blue-500',
-    lightColor: 'bg-blue-100',
-    textColor: 'text-blue-700',
+    color: 'bg-blue-500 dark:bg-blue-600',
+    lightColor: 'bg-blue-100 dark:bg-blue-950/30',
+    textColor: 'text-blue-700 dark:text-blue-400',
     label: 'Assignment',
   },
   srs: {
     icon: Brain,
-    color: 'bg-purple-500',
-    lightColor: 'bg-purple-100',
-    textColor: 'text-purple-700',
+    color: 'bg-purple-500 dark:bg-purple-600',
+    lightColor: 'bg-purple-100 dark:bg-purple-950/30',
+    textColor: 'text-purple-700 dark:text-purple-400',
     label: 'SRS Practice',
   },
   reading: {
     icon: BookOpen,
-    color: 'bg-green-500',
-    lightColor: 'bg-green-100',
-    textColor: 'text-green-700',
+    color: 'bg-green-500 dark:bg-green-600',
+    lightColor: 'bg-green-100 dark:bg-green-950/30',
+    textColor: 'text-green-700 dark:text-green-400',
     label: 'Reading Session',
   },
   practice: {
     icon: Target,
-    color: 'bg-orange-500',
-    lightColor: 'bg-orange-100',
-    textColor: 'text-orange-700',
+    color: 'bg-orange-500 dark:bg-orange-600',
+    lightColor: 'bg-orange-100 dark:bg-orange-950/30',
+    textColor: 'text-orange-700 dark:text-orange-400',
     label: 'Practice',
   },
 };
@@ -173,14 +173,15 @@ function TimelineEventCard({
     <div className="relative">
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute left-4 top-10 bottom-0 w-0.5 bg-gray-200" />
+        <div className="absolute left-4 top-10 bottom-0 w-0.5 bg-border" />
       )}
       
       <div 
         className={cn(
           "flex gap-4 p-4 rounded-lg border transition-colors",
-          onClick && "cursor-pointer hover:bg-gray-50",
-          config.lightColor
+          onClick && "cursor-pointer hover:bg-accent/50",
+          config.lightColor,
+          "dark:bg-card"
         )}
         onClick={() => onClick?.(event)}
         role={onClick ? "button" : undefined}
@@ -205,13 +206,13 @@ function TimelineEventCard({
                 {event.title}
               </h4>
               {event.description && (
-                <p className="text-gray-600 text-xs mt-1 line-clamp-2">
+                <p className="text-muted-foreground text-xs mt-1 line-clamp-2">
                   {event.description}
                 </p>
               )}
             </div>
             
-            <div className="flex flex-col items-end gap-1 text-xs text-gray-500">
+            <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
               <time>
                 {eventDate.toLocaleDateString()} {eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </time>
@@ -412,10 +413,10 @@ export default function ActivityTimeline({
             {[1, 2, 3].map(i => (
               <div key={i} className="animate-pulse">
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                  <div className="w-8 h-8 bg-muted rounded-full"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-muted rounded w-1/2"></div>
                   </div>
                 </div>
               </div>
@@ -434,7 +435,7 @@ export default function ActivityTimeline({
           <CardTitle>Activity Timeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-red-500 py-8">
+          <div className="text-center text-destructive py-8">
             <AlertCircle className="w-8 h-8 mx-auto mb-2" />
             <p>Error loading timeline</p>
             <p className="text-sm">{error}</p>
@@ -452,7 +453,7 @@ export default function ActivityTimeline({
           <CardTitle>Activity Timeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-gray-500 py-8">
+          <div className="text-center text-muted-foreground py-8">
             <Calendar className="w-8 h-8 mx-auto mb-2" />
             <p>No activities found</p>
             <p className="text-sm">Activities will appear here as you use the platform</p>
@@ -528,7 +529,7 @@ export default function ActivityTimeline({
       <CardContent>
         {/* Stats */}
         {showStats && (
-          <div className="grid grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-muted/50 rounded-lg">
             {Object.entries(data.metadata.eventTypes).map(([eventType, count]) => {
               const config = EVENT_CONFIG[eventType as keyof typeof EVENT_CONFIG];
               if (!config) return null;
@@ -541,7 +542,7 @@ export default function ActivityTimeline({
                     <Icon className="w-4 h-4 text-white" />
                   </div>
                   <div className="font-medium text-sm">{count}</div>
-                  <div className="text-xs text-gray-500">{config.label}</div>
+                  <div className="text-xs text-muted-foreground">{config.label}</div>
                 </div>
               );
             })}
@@ -560,8 +561,8 @@ export default function ActivityTimeline({
           <div className="space-y-6">
             {groupedEvents.map(([date, events]) => (
               <div key={date}>
-                <div className="sticky top-0 bg-white py-2 mb-4">
-                  <h3 className="font-medium text-sm text-gray-700 border-b pb-1">
+                <div className="sticky top-0 bg-background py-2 mb-4 z-10">
+                  <h3 className="font-medium text-sm text-foreground border-b pb-1">
                     {new Date(date).toLocaleDateString(undefined, { 
                       weekday: 'long', 
                       year: 'numeric', 

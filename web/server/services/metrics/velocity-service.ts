@@ -150,12 +150,12 @@ async function calculateEMA(userId: string, days: number = 30): Promise<number> 
   
   const dailyLogs = await prisma.$queryRaw<DailyXpLog[]>`
     SELECT 
-      DATE(created_at) as date,
+      DATE("createdAt") as date,
       SUM(xp_earned) as "xpEarned"
     FROM "XPLogs"
     WHERE user_id = ${userId}
-      AND created_at >= ${startDate}
-    GROUP BY DATE(created_at)
+      AND "createdAt" >= ${startDate}
+    GROUP BY DATE("createdAt")
     ORDER BY date ASC
   `;
   
@@ -180,12 +180,12 @@ async function calculateStdDev(userId: string, days: number = 30): Promise<numbe
   
   const dailyLogs = await prisma.$queryRaw<DailyXpLog[]>`
     SELECT 
-      DATE(created_at) as date,
+      DATE("createdAt") as date,
       SUM(xp_earned) as "xpEarned"
     FROM "XPLogs"
     WHERE user_id = ${userId}
-      AND created_at >= ${startDate}
-    GROUP BY DATE(created_at)
+      AND "createdAt" >= ${startDate}
+    GROUP BY DATE("createdAt")
   `;
   
   if (dailyLogs.length < 2) return 0;

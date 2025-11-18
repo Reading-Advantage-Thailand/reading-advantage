@@ -10,6 +10,8 @@ import {
 } from "@/types/dashboard";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
+import { getStudentVelocity } from "@/server/services/metrics/velocity-service";
+import { getStudentSRSHealth } from "@/server/services/metrics/srs-health-service";
 
 /**
  * Get genre metrics
@@ -220,8 +222,40 @@ export async function getVelocityMetrics(req: ExtendedNextRequest) {
 
     const { searchParams } = new URL(req.url);
     const timeframe = searchParams.get("timeframe") || "365d";
+    const studentId = searchParams.get("studentId");
     const schoolId = searchParams.get("schoolId");
     const classId = searchParams.get("classId");
+
+    // If studentId is provided, return student-scoped metrics
+    if (studentId) {
+      const studentMetrics = await getStudentVelocity(studentId, true);
+      
+      if (!studentMetrics) {
+        return NextResponse.json(
+          { code: "NOT_FOUND", message: "Student velocity metrics not found" },
+          { status: 404 }
+        );
+      }
+
+      const duration = Date.now() - startTime;
+
+      return NextResponse.json(
+        {
+          scope: "student",
+          student: studentMetrics,
+          cache: {
+            cached: false,
+            generatedAt: new Date().toISOString(),
+          },
+        },
+        {
+          headers: {
+            "Cache-Control": "private, max-age=60, stale-while-revalidate=240",
+            "X-Response-Time": `${duration}ms`,
+          },
+        }
+      );
+    }
 
     const now = new Date();
     const daysAgo =

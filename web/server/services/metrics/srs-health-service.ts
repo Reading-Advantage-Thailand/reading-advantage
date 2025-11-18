@@ -449,25 +449,27 @@ function generateSuggestedActions(
   
   // Critical backlog - highest priority
   if (healthData.has_critical_backlog) {
+    const overdueCount = Number(healthData.total_overdue_count);
     actions.push({
       type: 'review_flashcards',
       priority: 'critical',
       title: 'Clear Critical Backlog',
-      description: `You have ${healthData.total_overdue_count} overdue cards. Focus on reviewing these first.`,
-      estimatedMinutes: Math.min(healthData.total_overdue_count * 0.5, 30),
-      targetCount: Number(healthData.total_overdue_count),
+      description: `You have ${overdueCount} overdue cards. Focus on reviewing these first.`,
+      estimatedMinutes: Math.min(overdueCount * 0.5, 30),
+      targetCount: overdueCount,
     });
   }
   
   // Overloaded with due cards
   if (healthData.is_overloaded && !healthData.has_critical_backlog) {
+    const dueCount = Number(healthData.total_due_for_review);
     actions.push({
       type: 'review_flashcards',
       priority: 'high',
       title: 'Catch Up on Reviews',
-      description: `You have ${healthData.total_due_for_review} cards due for review. Consider multiple short sessions.`,
+      description: `You have ${dueCount} cards due for review. Consider multiple short sessions.`,
       estimatedMinutes: 25,
-      targetCount: Math.min(Number(healthData.total_due_for_review), 25),
+      targetCount: Math.min(dueCount, 25),
     });
     
     actions.push({
@@ -491,12 +493,13 @@ function generateSuggestedActions(
   
   // Inactive student
   if (healthData.is_inactive) {
-    if (Number(healthData.days_since_last_practice) > 14) {
+    const daysSincePractice = Number(healthData.days_since_last_practice);
+    if (daysSincePractice > 14) {
       actions.push({
         type: 'teacher_intervention',
         priority: 'high',
         title: 'Teacher Check-in Recommended',
-        description: `Student inactive for ${Math.round(healthData.days_since_last_practice)} days. Personal encouragement may help.`,
+        description: `Student inactive for ${Math.round(daysSincePractice)} days. Personal encouragement may help.`,
       });
     } else {
       actions.push({
