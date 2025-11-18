@@ -26,21 +26,6 @@ export function XPVelocityWidget({
   loading = false,
   onRefresh,
 }: XPVelocityWidgetProps) {
-  if (!data && !loading) {
-    return (
-      <WidgetShell
-        title="XP Velocity"
-        description="Track your learning pace"
-        icon={TrendingUp}
-        isEmpty
-        emptyMessage="No activity data available"
-        onRefresh={onRefresh}
-      >
-        <div />
-      </WidgetShell>
-    );
-  }
-
   const chartData = React.useMemo(() => {
     if (!data) return [];
     return [
@@ -68,6 +53,21 @@ export function XPVelocityWidget({
     if (data.xpPerCalendarDay7d < data.xpPerCalendarDay30d) return "down";
     return "neutral";
   };
+
+  if (!data && !loading) {
+    return (
+      <WidgetShell
+        title="XP Velocity"
+        description="Track your learning pace"
+        icon={TrendingUp}
+        isEmpty
+        emptyMessage="No activity data available"
+        onRefresh={onRefresh}
+      >
+        <div />
+      </WidgetShell>
+    );
+  }
 
   return (
     <WidgetShell

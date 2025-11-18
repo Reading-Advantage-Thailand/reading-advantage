@@ -299,7 +299,7 @@ export function SchoolDashboardContent({
         />
 
         <CompactActivityHeatmap 
-          licenseId={selectedLicenseId}
+          entityId={selectedLicenseId}
           timeframe={timeframe}
         />
 
