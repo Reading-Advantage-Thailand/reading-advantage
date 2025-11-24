@@ -52,10 +52,24 @@ interface DashboardData {
   };
   health?: {
     database?: string;
+    databaseResponseTime?: string;
     apiResponse?: string;
+    apiResponseTime?: string;
     errorRate?: string;
     uptime?: string;
+    lastChecked?: string;
   };
+  recentActivities?: Array<{
+    id: string;
+    type: string;
+    userId: string;
+    userName: string | null;
+    userRole: string;
+    targetId: string;
+    completed: boolean;
+    timestamp: string;
+    details?: any;
+  }>;
   genres?: any;
   assignments?: any;
   dateRange?: string;
@@ -73,6 +87,58 @@ export default function SystemDashboardClient() {
     null
   );
   const [loading, setLoading] = useState(true);
+
+  // Helper function to get badge color based on status
+  const getHealthBadgeClass = (status: string) => {
+    const statusLower = status?.toLowerCase() || "";
+    if (statusLower.includes("excellent") || statusLower.includes("fast")) {
+      return "bg-emerald-600 dark:bg-emerald-500";
+    } else if (statusLower.includes("good")) {
+      return "bg-primary";
+    } else if (statusLower.includes("slow") || statusLower.includes("medium")) {
+      return "bg-amber-600 dark:bg-amber-500";
+    } else if (statusLower.includes("error") || statusLower.includes("high")) {
+      return "bg-red-600 dark:bg-red-500";
+    } else if (statusLower.includes("low")) {
+      return "bg-emerald-600 dark:bg-emerald-500";
+    }
+    return "bg-gray-500 dark:bg-gray-400";
+  };
+
+  // Helper function to format activity type
+  const formatActivityType = (type: string) => {
+    return type
+      .split('_')
+      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  // Helper function to format timestamp to relative time
+  const formatRelativeTime = (timestamp: string) => {
+    const now = new Date();
+    const activityTime = new Date(timestamp);
+    const diffMs = now.getTime() - activityTime.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  };
+
+  // Helper function to get activity color
+  const getActivityColor = (type: string, index: number) => {
+    const colors = [
+      'emerald',
+      'blue',
+      'amber',
+      'violet',
+      'rose'
+    ];
+    return colors[index % colors.length];
+  };
 
   const fetchMetrics = useCallback(async () => {
     setLoading(true);
@@ -207,7 +273,7 @@ export default function SystemDashboardClient() {
 
             {/* Main Dashboard Tabs */}
             <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger
                   value="overview"
                   className="flex items-center gap-2"
@@ -237,7 +303,7 @@ export default function SystemDashboardClient() {
                   <Card className="border-l-4 border-l-primary hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Total Schools
+                        {t("cards.totalSchools.title")}
                       </CardTitle>
                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                         <Settings className="h-4 w-4 text-primary" />
@@ -248,7 +314,7 @@ export default function SystemDashboardClient() {
                         {dashboardData?.overview?.totalSchools || "0"}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Active institutions
+                        {t("cards.totalSchools.desc")}
                       </p>
                     </CardContent>
                   </Card>
@@ -256,7 +322,7 @@ export default function SystemDashboardClient() {
                   <Card className="border-l-4 border-l-emerald-500 dark:border-l-emerald-400 hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Total Users
+                        {t("cards.totalUsers.title")}
                       </CardTitle>
                       <div className="h-8 w-8 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center">
                         <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -270,12 +336,14 @@ export default function SystemDashboardClient() {
                         ).toLocaleString()}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {dashboardData?.overview?.totalStudents?.toLocaleString() ||
-                          "0"}{" "}
-                        students,{" "}
-                        {dashboardData?.overview?.totalTeachers?.toLocaleString() ||
-                          "0"}{" "}
-                        teachers
+                        {t("cards.totalUsers.count", {
+                          students:
+                            dashboardData?.overview?.totalStudents?.toLocaleString() ||
+                            "0",
+                          teachers:
+                            dashboardData?.overview?.totalTeachers?.toLocaleString() ||
+                            "0",
+                        })}
                       </p>
                     </CardContent>
                   </Card>
@@ -283,7 +351,7 @@ export default function SystemDashboardClient() {
                   <Card className="border-l-4 border-l-violet-500 dark:border-l-violet-400 hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Total Articles
+                        {t("cards.totalArticles.title")}
                       </CardTitle>
                       <div className="h-8 w-8 rounded-full bg-violet-500/10 dark:bg-violet-400/10 flex items-center justify-center">
                         <BarChart3 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
@@ -295,7 +363,7 @@ export default function SystemDashboardClient() {
                           "0"}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Available content library
+                        {t("cards.totalArticles.desc")}
                       </p>
                     </CardContent>
                   </Card>
@@ -303,7 +371,7 @@ export default function SystemDashboardClient() {
                   <Card className="border-l-4 border-l-amber-500 dark:border-l-amber-400 hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">
-                        Completion Rate
+                        {t("cards.completionRate.title")}
                       </CardTitle>
                       <div className="h-8 w-8 rounded-full bg-amber-500/10 dark:bg-amber-400/10 flex items-center justify-center">
                         <Brain className="h-4 w-4 text-amber-600 dark:text-amber-400" />
@@ -314,7 +382,7 @@ export default function SystemDashboardClient() {
                         {dashboardData?.activity?.completionRate || "0%"}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Articles completed successfully
+                        {t("cards.completionRate.desc")}
                       </p>
                     </CardContent>
                   </Card>
@@ -328,10 +396,10 @@ export default function SystemDashboardClient() {
                         <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                           <BarChart3 className="h-4 w-4 text-primary" />
                         </div>
-                        License Usage
+                        {t("licenseUsage.title")}
                       </CardTitle>
                       <CardDescription>
-                        Monitor license allocation and usage across schools
+                        {t("licenseUsage.description")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -345,10 +413,10 @@ export default function SystemDashboardClient() {
                         <div className="h-8 w-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center">
                           <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                         </div>
-                        Active Users
+                        {t("activeUsers.title")}
                       </CardTitle>
                       <CardDescription>
-                        Real-time user activity and engagement metrics
+                        {t("activeUsers.description")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -365,10 +433,10 @@ export default function SystemDashboardClient() {
                         <div className="h-8 w-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center">
                           <Settings className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                         </div>
-                        System Health
+                        {t("systemHealth.title")}
                       </CardTitle>
                       <CardDescription>
-                        Real-time system performance and health metrics
+                        {t("systemHealth.description")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -377,55 +445,90 @@ export default function SystemDashboardClient() {
                           <div className="flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                             <span className="text-sm font-medium">
-                              Database Performance
+                              {t("systemHealth.database")}
                             </span>
                           </div>
-                          <Badge
-                            variant="default"
-                            className="bg-emerald-600 dark:bg-emerald-500"
-                          >
-                            {dashboardData?.health?.database || "Excellent"}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant="default"
+                              className={getHealthBadgeClass(
+                                dashboardData?.health?.database || "excellent"
+                              )}
+                            >
+                              {dashboardData?.health?.database ||
+                                t("systemHealth.status.excellent")}
+                            </Badge>
+                            {dashboardData?.health?.databaseResponseTime && (
+                              <span className="text-xs text-muted-foreground">
+                                {dashboardData.health.databaseResponseTime}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20">
                           <div className="flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                             <span className="text-sm font-medium">
-                              API Response Time
+                              {t("systemHealth.apiResponse")}
                             </span>
                           </div>
-                          <Badge variant="default" className="bg-primary">
-                            {dashboardData?.health?.apiResponse || "Good"}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant="default"
+                              className={getHealthBadgeClass(
+                                dashboardData?.health?.apiResponse || "good"
+                              )}
+                            >
+                              {dashboardData?.health?.apiResponse ||
+                                t("systemHealth.status.good")}
+                            </Badge>
+                            {dashboardData?.health?.apiResponseTime && (
+                              <span className="text-xs text-muted-foreground">
+                                {dashboardData.health.apiResponseTime}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center justify-between p-3 rounded-lg bg-violet-500/5 dark:bg-violet-400/5 border border-violet-500/20 dark:border-violet-400/20">
                           <div className="flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-violet-500 dark:bg-violet-400 animate-pulse" />
                             <span className="text-sm font-medium">
-                              Error Rate
+                              {t("systemHealth.errorRate")}
                             </span>
                           </div>
                           <Badge
                             variant="default"
-                            className="bg-violet-600 dark:bg-violet-500"
+                            className={getHealthBadgeClass(
+                              dashboardData?.health?.errorRate || "low"
+                            )}
                           >
-                            {dashboardData?.health?.errorRate || "Low"}
+                            {t("systemHealth.status.low")}
                           </Badge>
                         </div>
                         <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/5 dark:bg-amber-400/5 border border-amber-500/20 dark:border-amber-400/20">
                           <div className="flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse" />
                             <span className="text-sm font-medium">
-                              System Uptime
+                              {t("systemHealth.uptime")}
                             </span>
                           </div>
                           <Badge
                             variant="default"
-                            className="bg-amber-600 dark:bg-amber-500"
+                            className="bg-emerald-600 dark:bg-emerald-500"
                           >
                             {dashboardData?.health?.uptime || "99.9%"}
                           </Badge>
                         </div>
+                        {dashboardData?.health?.lastChecked && (
+                          <div className="pt-2 border-t border-muted">
+                            <p className="text-xs text-muted-foreground text-center">
+                              Last checked:{" "}
+                              {new Date(
+                                dashboardData.health.lastChecked
+                              ).toLocaleString()}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -436,66 +539,50 @@ export default function SystemDashboardClient() {
                         <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                           <Activity className="h-4 w-4 text-primary" />
                         </div>
-                        Recent Activity
+                        {t("recentActivity.title")}
                       </CardTitle>
                       <CardDescription>
-                        Latest administrative actions and system changes
+                        {t("recentActivity.description")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-emerald-500/5 dark:hover:bg-emerald-400/5 transition-colors border border-transparent hover:border-emerald-500/20 dark:hover:border-emerald-400/20">
-                          <div className="flex-shrink-0 mt-1">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">
-                              New school license activated
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              2 hours ago
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-primary/5 transition-colors border border-transparent hover:border-primary/20">
-                          <div className="flex-shrink-0 mt-1">
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">
-                              Content library updated
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              4 hours ago
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-amber-500/5 dark:hover:bg-amber-400/5 transition-colors border border-transparent hover:border-amber-500/20 dark:hover:border-amber-400/20">
-                          <div className="flex-shrink-0 mt-1">
-                            <div className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">
-                              System maintenance completed
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              1 day ago
+                        {dashboardData?.recentActivities && dashboardData.recentActivities.length > 0 ? (
+                          dashboardData.recentActivities.map((activity, index) => {
+                            const color = getActivityColor(activity.type, index);
+                            return (
+                              <div
+                                key={activity.id}
+                                className={`flex items-start gap-4 p-3 rounded-lg hover:bg-${color}-500/5 dark:hover:bg-${color}-400/5 transition-colors border border-transparent hover:border-${color}-500/20 dark:hover:border-${color}-400/20`}
+                              >
+                                <div className="flex-shrink-0 mt-1">
+                                  <div className={`w-2 h-2 rounded-full bg-${color}-500 dark:bg-${color}-400`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium">
+                                    {activity.userName || 'Unknown User'} - {formatActivityType(activity.type)}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {formatRelativeTime(activity.timestamp)}
+                                  </p>
+                                </div>
+                                {activity.completed && (
+                                  <div className="flex-shrink-0">
+                                    <Badge variant="outline" className="text-xs">
+                                      Completed
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="text-center py-8">
+                            <p className="text-sm text-muted-foreground">
+                              No recent activities
                             </p>
                           </div>
-                        </div>
-                        <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-violet-500/5 dark:hover:bg-violet-400/5 transition-colors border border-transparent hover:border-violet-500/20 dark:hover:border-violet-400/20">
-                          <div className="flex-shrink-0 mt-1">
-                            <div className="w-2 h-2 rounded-full bg-violet-500 dark:bg-violet-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">
-                              Reading sessions milestone reached
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              2 days ago
-                            </p>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -514,9 +601,11 @@ export default function SystemDashboardClient() {
         ) : (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-lg text-muted-foreground">No data available</p>
+              <p className="text-lg text-muted-foreground">
+                {t("noData.title")}
+              </p>
               <p className="text-sm text-muted-foreground">
-                Try adjusting your filters or refresh the page
+                {t("noData.description")}
               </p>
             </div>
           </div>

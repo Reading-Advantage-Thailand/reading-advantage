@@ -1823,10 +1823,26 @@ export default {
         description: "Users and sessions comparison",
       },
       timeline: {
-        title: "Recent Activity Timeline",
-        description: "Latest user activities and events",
+        title: "Activity Log",
+        description: "Recent user activities and events",
         empty: "No events found for the selected filters.",
         by: "by {user}",
+        filterByType: "Filter by type",
+        allTypes: "All Types",
+        table: {
+          type: "Type",
+          activity: "Activity",
+          description: "Description",
+          user: "User",
+          time: "Time",
+        },
+        pagination: {
+          showing: "Showing {start}-{end} of {total}",
+          previous: "Previous",
+          next: "Next",
+          page: "Page",
+          of: "of",
+        },
       },
       types: {
         reading: "Reading",

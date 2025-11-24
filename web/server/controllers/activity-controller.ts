@@ -443,13 +443,33 @@ async function getActivityTimeline(
   const session = req.session!;
   const { searchParams } = new URL(req.url);
 
-  // Timeline is student-specific only
-  const scope = "student" as const;
-  const entityId = searchParams.get("entityId") || session.user.id;
+  // Determine scope based on role and parameters
+  const requestedScope = searchParams.get("scope") as "student" | "class" | "school" | null;
+  const scope = requestedScope || 
+    (session.user.role === "STUDENT" ? "student" :
+     session.user.role === "TEACHER" ? "class" : "school");
+  
+  let entityId = searchParams.get("entityId");
+  
+  // Determine entityId based on scope and user context
+  if (!entityId) {
+    if (scope === "student") {
+      entityId = session.user.id;
+    } else if (scope === "school") {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { schoolId: true },
+      });
+      entityId = user?.schoolId || session.user.id;
+    } else {
+      entityId = session.user.id;
+    }
+  }
+  
   const timeframe = searchParams.get("timeframe") || "30d";
 
-  // Ensure user can access this student's data
-  if (session.user.role === "STUDENT" && entityId !== session.user.id) {
+  // Access control
+  if (session.user.role === "STUDENT" && (scope !== "student" || entityId !== session.user.id)) {
     return NextResponse.json(
       { code: "FORBIDDEN", message: "Cannot access other student data" },
       { status: 403 }
@@ -477,13 +497,72 @@ async function getActivityTimeline(
   const startDate = new Date(now);
   startDate.setDate(startDate.getDate() - daysAgo);
 
-  const cacheKey = `activity-timeline:${entityId}:${timeframe}`;
+  const cacheKey = `activity-timeline:${scope}:${entityId}:${timeframe}`;
 
   const fetchTimelineData = async (): Promise<TimelineResponse> => {
+    // Determine which users to query based on scope
+    let userIds: string[] = [];
+    
+    if (scope === "student") {
+      userIds = [entityId];
+    } else if (scope === "school") {
+      // For SYSTEM/ADMIN users without schoolId, get all students
+      if (entityId === session.user.id && !entityId.startsWith('cmgj0')) {
+        // Get all students from all schools
+        const allStudents = await prisma.user.findMany({
+          where: { 
+            role: "STUDENT"
+          },
+          select: { id: true },
+          take: 1000, // Limit to prevent excessive queries
+        });
+        userIds = allStudents.map(u => u.id);
+      } else {
+        // Get students from specific school
+        const schoolUsers = await prisma.user.findMany({
+          where: { 
+            schoolId: entityId,
+            role: "STUDENT"
+          },
+          select: { id: true },
+          take: 1000, // Limit to prevent excessive queries
+        });
+        userIds = schoolUsers.map(u => u.id);
+      }
+    } else if (scope === "class") {
+      const classUsers = await prisma.classroomStudent.findMany({
+        where: { classroomId: entityId },
+        select: { studentId: true },
+      });
+      userIds = classUsers.map(u => u.studentId);
+    }
+    
+    if (userIds.length === 0) {
+      return {
+        scope: scope as any,
+        entityId,
+        timeframe,
+        timezone: "UTC",
+        events: [],
+        metadata: {
+          totalEvents: 0,
+          eventTypes: {},
+          dateRange: {
+            start: startDate.toISOString().split("T")[0],
+            end: now.toISOString().split("T")[0],
+          },
+        },
+        cache: {
+          cached: false,
+          generatedAt: new Date().toISOString(),
+        },
+      };
+    }
+    
     // Get assignments (due dates and completion)
     const assignments = await prisma.studentAssignment.findMany({
       where: {
-        studentId: entityId,
+        studentId: { in: userIds },
         createdAt: {
           gte: startDate,
         },
@@ -499,18 +578,33 @@ async function getActivityTimeline(
             },
           },
         },
+        student: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
       },
+      take: 100, // Limit results
     });
 
     // Get SRS practice sessions - using correct field names
     const srsEvents = await prisma.userSentenceRecord.findMany({
       where: {
-        userId: entityId,
+        userId: { in: userIds },
         updatedAt: {
           gte: startDate,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
         },
       },
       orderBy: {
@@ -522,7 +616,7 @@ async function getActivityTimeline(
     // Get reading sessions from lesson records
     const readingSessions = await prisma.lessonRecord.findMany({
       where: {
-        userId: entityId,
+        userId: { in: userIds },
         createdAt: {
           gte: startDate,
         },
@@ -535,10 +629,17 @@ async function getActivityTimeline(
             genre: true,
           },
         },
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
       },
+      take: 100, // Limit results
     });
 
     // For now, use UTC timezone since it's not in the schema yet
@@ -559,6 +660,8 @@ async function getActivityTimeline(
           status: assignment.status,
           articleId: assignment.assignment.articleId,
           completedAt: assignment.completedAt?.toISOString(),
+          userId: assignment.student.id,
+          username: assignment.student.name,
         },
       });
     });
@@ -574,6 +677,8 @@ async function getActivityTimeline(
         metadata: {
           state: srsEvent.state,
           sentence: srsEvent.sentence,
+          userId: srsEvent.user.id,
+          username: srsEvent.user.name,
         },
       });
     });
@@ -619,6 +724,8 @@ async function getActivityTimeline(
           cefrLevel: session.article?.cefrLevel,
           genre: session.article?.genre,
           completed: (session.phase14 as any)?.status === 2,
+          userId: session.user.id,
+          username: session.user.name,
         },
       });
     });
@@ -639,7 +746,7 @@ async function getActivityTimeline(
     );
 
     return {
-      scope,
+      scope: scope as any,
       entityId,
       timeframe,
       timezone,

@@ -1697,10 +1697,26 @@ export default {
         daily: { title: "每日活动趋势", description: "所选期间的活动水平" },
         engagement: { title: "用户参与", description: "用户与会话对比" },
         timeline: {
-          title: "最近活动时间线",
+          title: "活动日志",
           description: "最新用户活动与事件",
           empty: "未找到符合筛选条件的事件。",
           by: "由 {user}",
+          filterByType: "按类型筛选",
+          allTypes: "所有类型",
+          table: {
+            type: "类型",
+            activity: "活动",
+            description: "描述",
+            user: "用户",
+            time: "时间",
+          },
+          pagination: {
+            showing: "显示 {start}-{end} / {total}",
+            previous: "上一页",
+            next: "下一页",
+            page: "第",
+            of: "页，共",
+          },
         },
         types: {
           reading: "阅读",

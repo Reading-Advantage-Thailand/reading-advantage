@@ -9,7 +9,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 import {
   ChartConfig,
@@ -58,6 +74,11 @@ export default function ActivityCharts({
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Pagination and filter states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const itemsPerPage = 10;
 
   const chartConfig: ChartConfig = {
     activity: { label: t("charts.activity"), color: "hsl(var(--chart-1))" },
@@ -217,7 +238,7 @@ export default function ActivityCharts({
       // Process timeline events
       const processedTimelineEvents: TimelineEvent[] = [];
       if (timelineData.events && Array.isArray(timelineData.events)) {
-        timelineData.events.slice(0, 10).forEach((event: any) => {
+        timelineData.events.forEach((event: any) => {
           let eventType: TimelineEvent["type"] = "reading";
           let title = event.title || t("events.activity");
           let description = event.description || "";
@@ -243,6 +264,7 @@ export default function ActivityCharts({
             description,
             timestamp: event.timestamp,
             type: eventType,
+            user: event.metadata?.username,
           });
         });
       }
@@ -364,6 +386,23 @@ export default function ActivityCharts({
     const diffInDays = Math.floor(diffInHours / 24);
     return t("time.daysAgo", { d: diffInDays });
   };
+
+  // Filter and paginate timeline events
+  const filteredEvents = timelineEvents.filter((event) => {
+    if (typeFilter === "all") return true;
+    return event.type === typeFilter;
+  });
+
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+  const paginatedEvents = filteredEvents.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [typeFilter]);
 
   if (loading) {
     return (
@@ -653,43 +692,125 @@ export default function ActivityCharts({
 
       {/* Timeline - Bottom Section */}
       <Card>
-          <CardHeader>
-            <CardTitle>{t("timeline.title")}</CardTitle>
-            <CardDescription>{t("timeline.description")}</CardDescription>
-          </CardHeader>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle>{t("timeline.title")}</CardTitle>
+              <CardDescription>{t("timeline.description")}</CardDescription>
+            </div>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder={t("timeline.filterByType")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("timeline.allTypes")}</SelectItem>
+                <SelectItem value="reading">{t("types.reading")}</SelectItem>
+                <SelectItem value="practice">{t("types.practice")}</SelectItem>
+                <SelectItem value="assessment">{t("types.assessment")}</SelectItem>
+                <SelectItem value="achievement">{t("types.achievement")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {timelineEvents.map((event, index) => (
-              <div
-                key={event.id}
-                className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="text-2xl">{getEventIcon(event.type)}</div>
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-medium">{event.title}</h4>
-                    <Badge variant="secondary" className="text-xs">
-                      {t(`types.${event.type}`)}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {event.description}
-                  </p>
-                  {event.user && (
-                    <p className="text-xs text-muted-foreground">
-                      {t("timeline.by", { user: event.user })}
-                    </p>
+            {/* Activity Table */}
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">{t("timeline.table.type")}</TableHead>
+                    <TableHead>{t("timeline.table.activity")}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t("timeline.table.description")}</TableHead>
+                    {timelineEvents.some(e => e.user) && (
+                      <TableHead className="hidden lg:table-cell">{t("timeline.table.user")}</TableHead>
+                    )}
+                    <TableHead className="text-right">{t("timeline.table.time")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedEvents.length === 0 ? (
+                    <TableRow>
+                      <TableCell 
+                        colSpan={timelineEvents.some(e => e.user) ? 5 : 4} 
+                        className="text-center py-8 text-muted-foreground"
+                      >
+                        {t("timeline.empty")}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedEvents.map((event) => (
+                      <TableRow key={event.id} className="hover:bg-muted/50">
+                        <TableCell>
+                          <div className="text-2xl">{getEventIcon(event.type)}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <div className="font-medium">{event.title}</div>
+                            <Badge variant="secondary" className="text-xs w-fit">
+                              {t(`types.${event.type}`)}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {event.description}
+                          </p>
+                        </TableCell>
+                        {timelineEvents.some(e => e.user) && (
+                          <TableCell className="hidden lg:table-cell">
+                            <p className="text-sm text-muted-foreground">
+                              {event.user || "-"}
+                            </p>
+                          </TableCell>
+                        )}
+                        <TableCell className="text-right">
+                          <p className="text-sm text-muted-foreground whitespace-nowrap">
+                            {formatRelativeTime(event.timestamp)}
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    ))
                   )}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {formatRelativeTime(event.timestamp)}
-                </div>
-              </div>
-            ))}
+                </TableBody>
+              </Table>
+            </div>
 
-            {timelineEvents.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                {t("timeline.empty")}
+            {/* Pagination */}
+            {filteredEvents.length > itemsPerPage && (
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  {t("timeline.pagination.showing", {
+                    start: (currentPage - 1) * itemsPerPage + 1,
+                    end: Math.min(currentPage * itemsPerPage, filteredEvents.length),
+                    total: filteredEvents.length,
+                  })}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    {t("timeline.pagination.previous")}
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm">
+                      {t("timeline.pagination.page")} {currentPage} {t("timeline.pagination.of")} {totalPages}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    {t("timeline.pagination.next")}
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </div>

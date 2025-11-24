@@ -1797,10 +1797,26 @@ export default {
         description: "การเปรียบเทียบผู้ใช้และเซสชัน",
       },
       timeline: {
-        title: "ไทม์ไลน์กิจกรรมล่าสุด",
+        title: "บันทึกกิจกรรม",
         description: "กิจกรรมและเหตุการณ์ของผู้ใช้ล่าสุด",
         empty: "ไม่พบเหตุการณ์ตามตัวกรองที่เลือก",
         by: "โดย {user}",
+        filterByType: "กรองตามประเภท",
+        allTypes: "ทุกประเภท",
+        table: {
+          type: "ประเภท",
+          activity: "กิจกรรม",
+          description: "รายละเอียด",
+          user: "ผู้ใช้",
+          time: "เวลา",
+        },
+        pagination: {
+          showing: "แสดง {start}-{end} จาก {total}",
+          previous: "ก่อนหน้า",
+          next: "ถัดไป",
+          page: "หน้า",
+          of: "จาก",
+        },
       },
       types: {
         reading: "การอ่าน",
