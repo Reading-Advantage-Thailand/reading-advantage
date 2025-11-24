@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { Users, GraduationCap } from "lucide-react";
+import { useScopedI18n } from "@/locales/client";
 
 interface AdoptionByLevel {
   level: string;
@@ -43,6 +44,7 @@ export function AdoptionWidget({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grade' | 'cefr'>('cefr');
+  const t = useScopedI18n("components.adoptionWidget") as any;
 
   const fetchData = async () => {
     try {
@@ -212,28 +214,28 @@ export function AdoptionWidget({
 
   const currentData = viewMode === 'grade' ? data?.byGrade : data?.byCEFR;
 
-  // Get timeframe label
+  // Get timeframe label (localized)
   const getTimeframeLabel = (tf: string) => {
     switch (tf) {
       case "7d":
-        return "7 days";
+        return t("timeframe.7d");
       case "90d":
-        return "90 days";
+        return t("timeframe.90d");
       case "30d":
       default:
-        return "30 days";
+        return t("timeframe.30d");
     }
   };
 
   return (
     <WidgetShell
-      title="Student Adoption by Level"
-      description={`Active students by ${viewMode === 'grade' ? 'grade' : 'CEFR level'}`}
+      title={t("title")}
+      description={t("description", { mode: t(`modes.${viewMode}`) })}
       icon={GraduationCap}
       loading={loading}
       error={error}
       isEmpty={!currentData || currentData.length === 0}
-      emptyMessage="No student data available"
+      emptyMessage={t("empty")}
       onRefresh={fetchData}
       className={className}
       headerAction={
@@ -245,7 +247,7 @@ export function AdoptionWidget({
             )}
             onClick={() => setViewMode('cefr')}
           >
-            CEFR
+            {t("view.cefr")}
           </button>
           <button
             className={cn(
@@ -254,7 +256,7 @@ export function AdoptionWidget({
             )}
             onClick={() => setViewMode('grade')}
           >
-            Grade
+            {t("view.grade")}
           </button>
         </div>
       }
@@ -289,8 +291,8 @@ export function AdoptionWidget({
             </div>
             <Progress value={level.activeRate} className="h-2" />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{level.activeCount} active students</span>
-              <span>{level.averageXp.toLocaleString()} avg XP</span>
+              <span>{t("item.activeStudents", { count: level.activeCount })}</span>
+              <span>{t("item.avgXp", { xp: level.averageXp.toLocaleString() })}</span>
             </div>
           </div>
         ))}
@@ -298,13 +300,17 @@ export function AdoptionWidget({
         {data && (
           <div className="mt-4 pt-4 border-t">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">Overall Adoption</span>
+              <span className="font-medium">{t("summary.title")}</span>
               <span className="text-lg font-bold text-primary">
                 {data.summary.overallActiveRate}%
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {data.summary.activeStudents} of {data.summary.totalStudents} students active in last {getTimeframeLabel(timeframe)}
+              {t("summary.activeInTimeframe", {
+                active: data.summary.activeStudents,
+                total: data.summary.totalStudents,
+                timeframe: getTimeframeLabel(timeframe),
+              })}
             </p>
           </div>
         )}

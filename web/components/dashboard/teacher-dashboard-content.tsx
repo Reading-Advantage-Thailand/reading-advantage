@@ -225,7 +225,9 @@ export function TeacherDashboardContent({
 
       {/* Last Update Timestamp */}
       <div className="text-xs text-muted-foreground text-right">
-        {t("lastUpdated")}: {mounted ? lastUpdate.toLocaleTimeString() : '--:--:--'}
+        {t("lastUpdated", {
+          time: mounted ? lastUpdate.toLocaleTimeString() : "--:--:--",
+        })}
       </div>
     </>
   );

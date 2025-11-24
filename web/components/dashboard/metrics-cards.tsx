@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useScopedI18n } from "@/locales/client";
 import {
   Card,
   CardContent,
@@ -42,6 +43,7 @@ export default function MetricsCards({
   className,
   dateRange = "30d",
 }: MetricsCardsProps) {
+  const t = useScopedI18n("pages.teacher.dashboard.metricsCards");
   const [metrics, setMetrics] = useState<MetricData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,9 +66,9 @@ export default function MetricsCards({
         // Process and format the metrics data
         const processedMetrics: MetricData[] = [
           {
-            title: "Total Sessions",
+            title: t("totalSessions.title"),
             value: summaryData.activity?.totalSessions?.toLocaleString() || "0",
-            description: "Total reading sessions",
+            description: t("totalSessions.description"),
             trend:
               summaryData.trends?.sessionsGrowth !== undefined
                 ? {
@@ -79,10 +81,10 @@ export default function MetricsCards({
             color: "text-blue-600",
           },
           {
-            title: "Active Users",
+            title: t("activeUsers.title"),
             value:
               summaryData.activity?.totalActiveUsers?.toLocaleString() || "0",
-            description: "Users active in period",
+            description: t("activeUsers.description"),
             trend:
               summaryData.trends?.usersGrowth !== undefined
                 ? {
@@ -95,9 +97,9 @@ export default function MetricsCards({
             color: "text-green-600",
           },
           {
-            title: "Reading Sessions",
+            title: t("readingSessions.title"),
             value: summaryData.activity?.totalSessions?.toLocaleString() || "0",
-            description: "Total reading sessions",
+            description: t("readingSessions.description"),
             trend:
               summaryData.trends?.sessionsGrowth !== undefined
                 ? {
@@ -110,20 +112,20 @@ export default function MetricsCards({
             color: "text-purple-600",
           },
           {
-            title: "Alignment Score",
+            title: t("alignmentScore.title"),
             value: summaryData.alignment?.alignmentScore
               ? `${summaryData.alignment.alignmentScore}%`
               : "0%",
-            description: "Content alignment quality",
+            description: t("alignmentScore.description"),
             icon: Target,
             color: "text-orange-600",
           },
           {
-            title: "Learning Velocity",
+            title: t("learningVelocity.title"),
             value: summaryData.velocity?.avgXpPerStudent30d
               ? `${summaryData.velocity.avgXpPerStudent30d.toFixed(0)} XP/student`
               : "N/A",
-            description: `Average XP per student (${dateRange})`,
+            description: t("learningVelocity.description", { dateRange }),
             trend:
               summaryData.trends?.velocityGrowth !== undefined
                 ? {
@@ -136,11 +138,11 @@ export default function MetricsCards({
             color: "text-yellow-600",
           },
           {
-            title: "Avg. Session Time",
+            title: t("avgSessionTime.title"),
             value: summaryData.activity?.averageSessionLength
               ? `${summaryData.activity.averageSessionLength}m`
               : "0m",
-            description: "Average time per session",
+            description: t("avgSessionTime.description"),
             trend:
               summaryData.trends?.sessionTimeGrowth !== undefined
                 ? {
@@ -160,44 +162,44 @@ export default function MetricsCards({
         // Set default metrics if fetch fails
         setMetrics([
           {
-            title: "Total Activity",
+            title: t("totalActivity.title"),
             value: "0",
-            description: "User activities today",
+            description: t("totalActivity.description"),
             icon: Activity,
             color: "text-blue-600",
           },
           {
-            title: "Active Users",
+            title: t("activeUsers.title"),
             value: "0",
-            description: "Users active in last 24h",
+            description: t("activeUsersLast24.description"),
             icon: Users,
             color: "text-green-600",
           },
           {
-            title: "Reading Sessions",
+            title: t("readingSessions.title"),
             value: "0",
-            description: "Articles read today",
+            description: t("readingSessionsToday.description"),
             icon: BookOpen,
             color: "text-purple-600",
           },
           {
-            title: "Alignment Score",
+            title: t("alignmentScore.title"),
             value: "0%",
-            description: "Content alignment quality",
+            description: t("alignmentScore.description"),
             icon: Target,
             color: "text-orange-600",
           },
           {
-            title: "Learning Velocity",
+            title: t("learningVelocity.title"),
             value: "0",
-            description: "Words per minute",
+            description: t("learningVelocityFallback.description"),
             icon: Zap,
             color: "text-yellow-600",
           },
           {
-            title: "Avg. Session Time",
+            title: t("avgSessionTime.title"),
             value: "0m",
-            description: "Time spent per session",
+            description: t("avgSessionTime.description"),
             icon: Clock,
             color: "text-indigo-600",
           },

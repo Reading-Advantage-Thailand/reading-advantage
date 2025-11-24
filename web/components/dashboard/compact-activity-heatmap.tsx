@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useScopedI18n } from "@/locales/client";
 
 interface ActivityData {
   date: string;
@@ -36,6 +37,7 @@ export function CompactActivityHeatmap({
   timeframe = "90d",
   className,
 }: CompactActivityHeatmapProps) {
+  const t = useScopedI18n("pages.student.dashboard.compactHeatmap");
   const [data, setData] = useState<ActivityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, peak: 0, average: 0 });
@@ -239,12 +241,12 @@ export function CompactActivityHeatmap({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Activity className="h-5 w-5" />
-          Activity Heatmap
+          {t("title")}
         </CardTitle>
         <CardDescription className="flex items-center justify-between">
-          <span>Last 90 days</span>
+          <span>{t("lastRange")}</span>
           <Badge variant="secondary" className="text-xs">
-            {stats.total.toLocaleString()} activities
+            {stats.total.toLocaleString()} {t("activities")}
           </Badge>
         </CardDescription>
       </CardHeader>
@@ -256,7 +258,7 @@ export function CompactActivityHeatmap({
               <Activity className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="text-xs text-muted-foreground">{t("stats.total")}</p>
               <p className="text-lg font-bold">
                 {stats.total.toLocaleString()}
               </p>
@@ -267,7 +269,7 @@ export function CompactActivityHeatmap({
               <TrendingUp className="h-4 w-4 text-green-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Peak Day</p>
+              <p className="text-xs text-muted-foreground">{t("stats.peakDay")}</p>
               <p className="text-lg font-bold">{stats.peak}</p>
             </div>
           </div>
@@ -276,7 +278,7 @@ export function CompactActivityHeatmap({
               <TrendingUp className="h-4 w-4 text-purple-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Daily Avg</p>
+              <p className="text-xs text-muted-foreground">{t("stats.dailyAvg")}</p>
               <p className="text-lg font-bold">{stats.average}</p>
             </div>
           </div>
@@ -307,13 +309,13 @@ export function CompactActivityHeatmap({
               <div className="inline-flex gap-1 min-w-full">
                 {/* Day labels */}
                 <div className="flex flex-col gap-1 mr-2 text-xs text-muted-foreground justify-around py-1">
-                  <span>Sun</span>
-                  <span>Mon</span>
-                  <span>Tue</span>
-                  <span>Wed</span>
-                  <span>Thu</span>
-                  <span>Fri</span>
-                  <span>Sat</span>
+                    <span>{t("dow.sun")}</span>
+                    <span>{t("dow.mon")}</span>
+                    <span>{t("dow.tue")}</span>
+                    <span>{t("dow.wed")}</span>
+                    <span>{t("dow.thu")}</span>
+                    <span>{t("dow.fri")}</span>
+                    <span>{t("dow.sat")}</span>
                 </div>
 
                 {/* Grid by weeks (columns) */}
@@ -345,7 +347,7 @@ export function CompactActivityHeatmap({
                                   <span className="font-medium text-foreground">
                                     {item.count}
                                   </span>{" "}
-                                  activities
+                                  {t("activities")}
                                 </p>
                               </div>
                             </TooltipContent>
@@ -362,7 +364,7 @@ export function CompactActivityHeatmap({
           {/* Legend */}
           <div className="flex items-center justify-between pt-2 border-t">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Less</span>
+              <span>{t("legend.less")}</span>
               <div className="flex gap-1">
                 {[0, 1, 2, 3, 4].map((level) => (
                   <div
@@ -371,10 +373,10 @@ export function CompactActivityHeatmap({
                   />
                 ))}
               </div>
-              <span>More</span>
+              <span>{t("legend.more")}</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Hover over squares for details
+              {t("hoverForDetails")}
             </p>
           </div>
 
@@ -382,7 +384,7 @@ export function CompactActivityHeatmap({
           <div className="pt-4 border-t mt-4">
             <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-600" />
-              Top Activity Dates
+              {t("topActivityDates")}
             </h4>
             <div className="space-y-2">
               {[...data]
@@ -402,7 +404,7 @@ export function CompactActivityHeatmap({
                           {formatDate(item.date)}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(item.date).toLocaleDateString("en-US", {
+                          {new Date(item.date).toLocaleDateString(undefined, {
                             weekday: "long",
                           })}
                         </p>

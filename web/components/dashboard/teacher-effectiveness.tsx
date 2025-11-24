@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { WidgetShell } from "./widget-shell";
+import { useScopedI18n } from "@/locales/client";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { GraduationCap, TrendingUp, Users, Award } from "lucide-react";
@@ -49,6 +50,9 @@ export function TeacherEffectiveness({
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherMetrics | null>(
     null
   );
+  const t = useScopedI18n(
+    "pages.admin.dashboard.widgets.teacherEffectiveness"
+  ) as any;
 
   const fetchData = async () => {
     try {
@@ -115,12 +119,16 @@ export function TeacherEffectiveness({
         <div className="bg-background border rounded-lg p-3 shadow-lg">
           <p className="font-semibold mb-2">{data.teacherName}</p>
           <div className="space-y-1 text-sm">
-            <p>Engagement: {data.engagementRate}%</p>
+            <p>{t("tooltip.engagement", { rate: data.engagementRate })}</p>
             <p className="text-muted-foreground">
-              {data.activeStudents}/{data.studentCount} active students
+              {t("tooltip.activeStudents", {
+                active: data.activeStudents,
+                total: data.studentCount,
+              })}
             </p>
             <p className="text-xs text-muted-foreground">
-              {data.classCount} classroom{data.classCount !== 1 ? "s" : ""}
+              {data.classCount}{" "}
+              {t("tooltip.classroom", { count: data.classCount })}
             </p>
           </div>
         </div>
@@ -136,13 +144,13 @@ export function TeacherEffectiveness({
 
   return (
     <WidgetShell
-      title="Teacher Overview"
-      description="Overall student engagement by teacher"
+      title={t("title")}
+      description={t("description")}
       icon={GraduationCap}
       loading={loading}
       error={error}
       isEmpty={teachers.length === 0}
-      emptyMessage="No teacher data available"
+      emptyMessage={t("noData")}
       onRefresh={fetchData}
       className={className}
     >
@@ -198,15 +206,15 @@ export function TeacherEffectiveness({
         <div className="flex items-center justify-center gap-4 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span>≥80% (Excellent)</span>
+            <span>{t("legend.excellent")}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <span>60-79% (Good)</span>
+            <span>{t("legend.good")}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span>&lt;60% (Needs Support)</span>
+            <span>{t("legend.needsSupport")}</span>
           </div>
         </div>
 
@@ -214,7 +222,7 @@ export function TeacherEffectiveness({
         <div className="space-y-2">
           <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Award className="h-4 w-4 text-amber-600" />
-            Top Teacher by Engagement
+            {t("topTeacher")}
           </h4>
           {/* Top 3 Teachers */}
           {sortedTeachers.slice(0, 3).map((teacher, index) => {
@@ -249,15 +257,17 @@ export function TeacherEffectiveness({
                       {teacher.teacherName}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {teacher.activeStudents}/{teacher.studentCount} active •{" "}
-                      {teacher.classCount} classroom
-                      {teacher.classCount !== 1 ? "s" : ""}
+                      {teacher.activeStudents}/{teacher.studentCount}{" "}
+                      {t("activeLabel")} • {teacher.classCount}{" "}
+                      {t("classroomLabel", { count: teacher.classCount })}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-lg">{teacher.engagementRate}%</p>
-                  <p className="text-xs text-muted-foreground">engagement</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("engagement")}
+                  </p>
                 </div>
               </div>
             );

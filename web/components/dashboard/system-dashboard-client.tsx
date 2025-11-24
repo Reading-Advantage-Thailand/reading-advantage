@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useScopedI18n } from "@/locales/client";
 import axios from "axios";
 import MetricsCards from "@/components/dashboard/metrics-cards";
 import ActivityCharts from "@/components/dashboard/activity-charts";
@@ -63,6 +64,7 @@ interface DashboardData {
 }
 
 export default function SystemDashboardClient() {
+  const t = useScopedI18n("pages.system.dashboard.systemClient");
   const [showFilters, setShowFilters] = useState(false);
   const [dateRange, setDateRange] = useState("30d");
   const [metricFilter, setMetricFilter] = useState("all");
@@ -136,10 +138,10 @@ export default function SystemDashboardClient() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="7d">Last 7 days</SelectItem>
-                <SelectItem value="30d">Last 30 days</SelectItem>
-                <SelectItem value="90d">Last 3 months</SelectItem>
-                <SelectItem value="all">All time</SelectItem>
+                <SelectItem value="7d">{t("dateRange.7d")}</SelectItem>
+                <SelectItem value="30d">{t("dateRange.30d")}</SelectItem>
+                <SelectItem value="90d">{t("dateRange.90d")}</SelectItem>
+                <SelectItem value="all">{t("dateRange.all")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -152,7 +154,7 @@ export default function SystemDashboardClient() {
             disabled={!dashboardData}
           >
             <Download className="h-4 w-4 mr-2" />
-            Export
+            {t("export")}
           </Button>
 
           {/* Refresh Button */}
@@ -165,7 +167,7 @@ export default function SystemDashboardClient() {
             <RefreshCw
               className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
             />
-            {refreshing ? "" : ""}
+            {refreshing ? t("refreshing") : t("refresh")}
           </Button>
         </div>
       </div>
@@ -176,7 +178,7 @@ export default function SystemDashboardClient() {
           <div className="flex items-center justify-center h-64">
             <div className="flex items-center gap-2">
               <RefreshCw className="h-5 w-5 animate-spin" />
-              <span>Loading metrics...</span>
+              <span>{t("loading")}</span>
             </div>
           </div>
         ) : dashboardData ? (
@@ -187,7 +189,7 @@ export default function SystemDashboardClient() {
               {dashboardData?.errors && (
                 <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <h4 className="text-sm font-medium text-yellow-800 mb-2">
-                    Some metrics may be unavailable:
+                    {t("metricsUnavailableTitle")}
                   </h4>
                   <ul className="text-xs text-yellow-700 space-y-1">
                     {Object.entries(dashboardData.errors).map(
@@ -205,27 +207,27 @@ export default function SystemDashboardClient() {
 
             {/* Main Dashboard Tabs */}
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger
                   value="overview"
                   className="flex items-center gap-2"
                 >
                   <BarChart3 className="h-4 w-4" />
-                  Overview
+                  {t("tabs.overview")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="activity"
                   className="flex items-center gap-2"
                 >
                   <Activity className="h-4 w-4" />
-                  Activity
+                  {t("tabs.activity")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="insights"
                   className="flex items-center gap-2"
                 >
                   <Brain className="h-4 w-4" />
-                  AI Insights
+                  {t("tabs.insights")}
                 </TabsTrigger>
               </TabsList>
 

@@ -130,15 +130,7 @@ const ACTIVITY_TYPE_COLORS = {
   OTHER: 'bg-gray-500 hover:bg-gray-600',
 };
 
-const ACTIVITY_TYPE_LABELS = {
-  READING: 'Reading',
-  QUESTIONS: 'Questions',
-  FLASHCARDS: 'Flashcards',
-  PRACTICE: 'Practice',
-  ASSESSMENT: 'Assessment',
-  RATING: 'Rating',
-  OTHER: 'Other',
-};
+// Activity type labels will be provided by i18n (mapped below inside component)
 
 // Main component
 export default function EnhancedActivityHeatMap({
@@ -363,7 +355,7 @@ export default function EnhancedActivityHeatMap({
         </CardHeader>
         <CardContent className="flex items-center justify-center py-8">
           <div className="text-center text-red-500">
-            <p>Error loading heatmap</p>
+            <p>{t("errorLoading")}</p>
             <p className="text-sm">{error}</p>
           </div>
         </CardContent>
@@ -379,7 +371,7 @@ export default function EnhancedActivityHeatMap({
             <CardTitle>{t("activityheatmap")}</CardTitle>
             {data && (
               <CardDescription>
-                {data.metadata.totalActivities} activities across {data.metadata.uniqueStudents} {scope === 'student' ? 'sessions' : 'students'}
+                {data.metadata.totalActivities} {t("labels.activities")} {t("labels.across")} {data.metadata.uniqueStudents} {scope === 'student' ? t("labels.sessions") : t("labels.students")}
               </CardDescription>
             )}
           </div>
@@ -391,22 +383,22 @@ export default function EnhancedActivityHeatMap({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="7d">7d</SelectItem>
-                  <SelectItem value="30d">30d</SelectItem>
-                  <SelectItem value="90d">90d</SelectItem>
-                  <SelectItem value="6m">6m</SelectItem>
+                  <SelectItem value="7d">{t("timeframes.7d")}</SelectItem>
+                  <SelectItem value="30d">{t("timeframes.30d")}</SelectItem>
+                  <SelectItem value="90d">{t("timeframes.90d")}</SelectItem>
+                  <SelectItem value="6m">{t("timeframes.6m")}</SelectItem>
                 </SelectContent>
               </Select>
               
               {scope !== 'student' && (
                 <Select value={granularity} onValueChange={handleGranularityChange}>
-                  <SelectTrigger className="w-20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="day">Day</SelectItem>
-                    <SelectItem value="hour">Hour</SelectItem>
-                  </SelectContent>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="day">{t("granularity.day")}</SelectItem>
+                      <SelectItem value="hour">{t("granularity.hour")}</SelectItem>
+                    </SelectContent>
                 </Select>
               )}
             </div>
@@ -427,7 +419,17 @@ export default function EnhancedActivityHeatMap({
                 )}
                 onClick={() => toggleActivityType(activityType)}
               >
-                {ACTIVITY_TYPE_LABELS[activityType as keyof typeof ACTIVITY_TYPE_LABELS] || activityType}
+                {(
+                  {
+                    READING: t("activityTypes.reading"),
+                    QUESTIONS: t("activityTypes.questions"),
+                    FLASHCARDS: t("activityTypes.flashcards"),
+                    PRACTICE: t("activityTypes.practice"),
+                    ASSESSMENT: t("activityTypes.assessment"),
+                    RATING: t("activityTypes.rating"),
+                    OTHER: t("activityTypes.other"),
+                  }[activityType as keyof typeof ACTIVITY_TYPE_COLORS] || activityType
+                )}
               </Badge>
             ))}
             {selectedActivityTypes.length > 0 && (
@@ -437,7 +439,7 @@ export default function EnhancedActivityHeatMap({
                 className="h-6 px-2 text-xs"
                 onClick={() => setSelectedActivityTypes([])}
               >
-                Clear
+                {t("clear")}
               </Button>
             )}
           </div>
@@ -452,7 +454,7 @@ export default function EnhancedActivityHeatMap({
             onKeyDown={handleKeyDown}
             tabIndex={0}
             role="application"
-            aria-label="Activity heatmap. Use arrow keys to navigate, Enter to select."
+            aria-label={t("ariaLabel")}
           >
             <CalendarHeatmap
               variantClassnames={[
@@ -493,9 +495,9 @@ export default function EnhancedActivityHeatMap({
           <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm">
             <div className="font-medium">{new Date(hoveredBucket.date).toLocaleDateString()}</div>
             <div className="text-gray-600">
-              {hoveredBucket.activityCount} activities • {hoveredBucket.completedCount} completed
+              {hoveredBucket.activityCount} {t("labels.activities")} • {hoveredBucket.completedCount} {t("labels.completed")}
               {hoveredBucket.totalDurationMinutes > 0 && (
-                <> • {Math.round(hoveredBucket.totalDurationMinutes)} min</>
+                <> • {Math.round(hoveredBucket.totalDurationMinutes)} {t("labels.minutes")}</>
               )}
             </div>
           </div>
@@ -506,18 +508,18 @@ export default function EnhancedActivityHeatMap({
           <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
             <div>
               <div className="font-medium text-gray-900">{data.metadata.totalActivities}</div>
-              <div className="text-gray-500">Total Activities</div>
+              <div className="text-gray-500">{t("stats.totalActivities")}</div>
             </div>
             <div>
               <div className="font-medium text-gray-900">{processedData.maxActivity}</div>
-              <div className="text-gray-500">Peak Daily</div>
+              <div className="text-gray-500">{t("stats.peakDaily")}</div>
             </div>
           </div>
         )}
         
         {/* Intensity legend */}
         <div className="mt-4 flex items-center justify-center gap-1">
-          <span className="text-xs text-gray-500 mr-2">Less</span>
+          <span className="text-xs text-gray-500 mr-2">{t("legend.less")}</span>
           {[0, 1, 2, 3].map(level => (
             <div
               key={level}
@@ -530,15 +532,18 @@ export default function EnhancedActivityHeatMap({
               )}
             />
           ))}
-          <span className="text-xs text-gray-500 ml-2">More</span>
+          <span className="text-xs text-gray-500 ml-2">{t("legend.more")}</span>
         </div>
         
         {/* Screen reader summary */}
         <div className="sr-only">
-          Activity heatmap showing {data?.metadata.totalActivities} total activities
-          from {data?.metadata.dateRange.start} to {data?.metadata.dateRange.end}.
-          {scope !== 'student' && `Across ${data?.metadata.uniqueStudents} students.`}
-          Peak activity day had {processedData.maxActivity} activities.
+          {t("srSummary", {
+            total: data?.metadata.totalActivities,
+            start: data?.metadata.dateRange.start,
+            end: data?.metadata.dateRange.end,
+            students: data?.metadata.uniqueStudents,
+            peak: processedData.maxActivity,
+          })}
         </div>
       </CardContent>
     </Card>

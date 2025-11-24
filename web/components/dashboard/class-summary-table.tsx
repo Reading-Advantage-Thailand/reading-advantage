@@ -132,13 +132,13 @@ export function ClassSummaryTable({
 
   const handleExportCSV = () => {
     const headers = [
-      "Class Name",
-      "Class Code",
-      "Students",
-      "Active (7d)",
-      "Avg Level",
-      "Total XP",
-      "Status",
+      t("export.headers.className"),
+      t("export.headers.classCode"),
+      t("export.headers.students"),
+      t("export.headers.active7d"),
+      t("export.headers.avgLevel"),
+      t("export.headers.totalXp"),
+      t("export.headers.status"),
     ];
 
     const rows = filteredAndSortedClasses.map((cls) => [
@@ -148,7 +148,7 @@ export function ClassSummaryTable({
       cls.activeStudents7d.toString(),
       cls.averageLevel.toFixed(1),
       cls.totalXp.toString(),
-      cls.archived ? "Archived" : "Active",
+      cls.archived ? t("archived") : t("active"),
     ]);
 
     const csvContent = [

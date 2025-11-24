@@ -122,28 +122,28 @@ const EVENT_CONFIG = {
     color: 'bg-blue-500 dark:bg-blue-600',
     lightColor: 'bg-blue-100 dark:bg-blue-950/30',
     textColor: 'text-blue-700 dark:text-blue-400',
-    label: 'Assignment',
+    label: 'assignment',
   },
   srs: {
     icon: Brain,
     color: 'bg-purple-500 dark:bg-purple-600',
     lightColor: 'bg-purple-100 dark:bg-purple-950/30',
     textColor: 'text-purple-700 dark:text-purple-400',
-    label: 'SRS Practice',
+    label: 'srs',
   },
   reading: {
     icon: BookOpen,
     color: 'bg-green-500 dark:bg-green-600',
     lightColor: 'bg-green-100 dark:bg-green-950/30',
     textColor: 'text-green-700 dark:text-green-400',
-    label: 'Reading Session',
+    label: 'reading',
   },
   practice: {
     icon: Target,
     color: 'bg-orange-500 dark:bg-orange-600',
     lightColor: 'bg-orange-100 dark:bg-orange-950/30',
     textColor: 'text-orange-700 dark:text-orange-400',
-    label: 'Practice',
+    label: 'practice',
   },
 };
 
@@ -151,11 +151,13 @@ const EVENT_CONFIG = {
 function TimelineEventCard({ 
   event, 
   onClick,
-  isLast = false 
+  isLast = false,
+  tc,
 }: { 
   event: TimelineEvent; 
   onClick?: (event: TimelineEvent) => void;
   isLast?: boolean;
+  tc?: any;
 }) {
   const config = EVENT_CONFIG[event.type];
   const Icon = config.icon;
@@ -240,14 +242,14 @@ function TimelineEventCard({
                   ) : (
                     <AlertCircle className="w-3 h-3 mr-1" />
                   )}
-                  {event.metadata.status}
+                  {tc?.(`status.${(event.metadata.status || '').toLowerCase().replace(/[^a-z0-9]+/g,'_')}`) || event.metadata.status}
                 </Badge>
               )}
               
               {event.type === 'reading' && event.metadata.completed && (
                 <Badge variant="default" className="text-xs">
                   <CheckCircle className="w-3 h-3 mr-1" />
-                  Completed
+                  {tc?.("labels.completed")}
                 </Badge>
               )}
               
@@ -280,6 +282,7 @@ export default function ActivityTimeline({
   onEventClick,
 }: ActivityTimelineProps) {
   const t = useScopedI18n("pages.student.reportpage");
+  const tc = useScopedI18n("components.activityTimeline") as any;
   const telemetry = useDashboardTelemetry();
   
   // State for filters
@@ -406,7 +409,7 @@ export default function ActivityTimeline({
     return (
       <Card className={cn("", className)}>
         <CardHeader>
-          <CardTitle>Activity Timeline</CardTitle>
+          <CardTitle>{tc("title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -432,12 +435,12 @@ export default function ActivityTimeline({
     return (
       <Card className={cn("", className)}>
         <CardHeader>
-          <CardTitle>Activity Timeline</CardTitle>
+          <CardTitle>{tc("title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center text-destructive py-8">
             <AlertCircle className="w-8 h-8 mx-auto mb-2" />
-            <p>Error loading timeline</p>
+            <p>{tc("errorLoading")}</p>
             <p className="text-sm">{error}</p>
           </div>
         </CardContent>
@@ -450,13 +453,13 @@ export default function ActivityTimeline({
     return (
       <Card className={cn("", className)}>
         <CardHeader>
-          <CardTitle>Activity Timeline</CardTitle>
+          <CardTitle>{tc("title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center text-muted-foreground py-8">
             <Calendar className="w-8 h-8 mx-auto mb-2" />
-            <p>No activities found</p>
-            <p className="text-sm">Activities will appear here as you use the platform</p>
+            <p>{tc("emptyTitle")}</p>
+            <p className="text-sm">{tc("emptyDescription")}</p>
           </div>
         </CardContent>
       </Card>
@@ -468,12 +471,12 @@ export default function ActivityTimeline({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Activity Timeline
-            </CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                {t("activityTimeline.title")}
+              </CardTitle>
             <CardDescription>
-              {data.metadata.totalEvents} activities from {data.metadata.dateRange.start} to {data.metadata.dateRange.end}
+              {tc("summary", { total: data.metadata.totalEvents, start: data.metadata.dateRange.start, end: data.metadata.dateRange.end })}
             </CardDescription>
           </div>
           
@@ -482,11 +485,11 @@ export default function ActivityTimeline({
               <SelectTrigger className="w-20">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7d">7d</SelectItem>
-                <SelectItem value="30d">30d</SelectItem>
-                <SelectItem value="90d">90d</SelectItem>
-              </SelectContent>
+                  <SelectContent>
+                    <SelectItem value="7d">{tc("timeframe.7d")}</SelectItem>
+                    <SelectItem value="30d">{tc("timeframe.30d")}</SelectItem>
+                    <SelectItem value="90d">{tc("timeframe.90d")}</SelectItem>
+                  </SelectContent>
             </Select>
           )}
         </div>
@@ -508,18 +511,18 @@ export default function ActivityTimeline({
                   )}
                   onClick={() => toggleEventType(eventType)}
                 >
-                  {config.label} ({count})
+                  {(tc as any)(`labels.${config.label}`) || eventType} ({count})
                 </Badge>
               );
             })}
             {selectedEventTypes.length > 0 && (
-              <Button
+                <Button
                 variant="ghost"
                 size="sm"
                 className="h-6 px-2 text-xs"
                 onClick={() => setSelectedEventTypes([])}
               >
-                Clear
+                {tc("clearFilters")}
               </Button>
             )}
           </div>
@@ -542,7 +545,7 @@ export default function ActivityTimeline({
                     <Icon className="w-4 h-4 text-white" />
                   </div>
                   <div className="font-medium text-sm">{count}</div>
-                  <div className="text-xs text-muted-foreground">{config.label}</div>
+                  <div className="text-xs text-muted-foreground">{(tc as any)(`labels.${config.label}`) || eventType}</div>
                 </div>
               );
             })}
@@ -579,6 +582,7 @@ export default function ActivityTimeline({
                       event={event}
                       onClick={handleEventClick}
                       isLast={index === events.length - 1}
+                      tc={tc}
                     />
                   ))}
                 </div>
@@ -589,11 +593,7 @@ export default function ActivityTimeline({
         
         {/* Screen reader summary */}
         <div className="sr-only">
-          Activity timeline showing {data.metadata.totalEvents} events
-          from {data.metadata.dateRange.start} to {data.metadata.dateRange.end}.
-          Events include {Object.entries(data.metadata.eventTypes).map(([type, count]) => 
-            `${count} ${type} events`
-          ).join(', ')}.
+          {tc('srSummaryStart')} {data.metadata.totalEvents} {tc('srSummaryMid')} {data.metadata.dateRange.start} {tc('srSummaryTo')} {data.metadata.dateRange.end}. {Object.entries(data.metadata.eventTypes).map(([type, count]) => `${count} ${tc(`types.${type}`) || type} ${tc('srEventSuffix') || 'events'}`).join(', ')}.
         </div>
       </CardContent>
     </Card>

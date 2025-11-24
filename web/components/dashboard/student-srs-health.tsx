@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Brain, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useScopedI18n } from "@/locales/client";
 
 interface SRSHealthData {
   userId?: string;
@@ -46,6 +47,7 @@ export function SRSHealthCard({
   onRefresh,
   onPracticeClick,
 }: SRSHealthCardProps) {
+  const t = useScopedI18n("pages.student.dashboard.srsHealth");
   const getHealthColor = (status: string) => {
     switch (status) {
       case "healthy":
@@ -77,12 +79,12 @@ export function SRSHealthCard({
 
   return (
     <WidgetShell
-      title="SRS Health"
-      description="Spaced repetition system status"
+      title={t("title")}
+      description={t("description")}
       icon={Brain}
       loading={loading}
       isEmpty={!loading && !data}
-      emptyMessage="No flashcard data available"
+      emptyMessage={t("emptyMessage")}
       onRefresh={onRefresh}
       telemetryId="student.srs_health"
     >
@@ -102,13 +104,13 @@ export function SRSHealthCard({
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   {getHealthIcon(data.healthStatus)}
-                  <span className="font-medium capitalize">
-                    {data.healthStatus}
-                  </span>
+                    <span className="font-medium capitalize">
+                      {t(`status.${data.healthStatus}`) || data.healthStatus}
+                    </span>
                 </div>
-                <Badge className={getHealthColor(data.healthStatus)}>
-                  {data.metrics.dueToday + data.metrics.overdue} due
-                </Badge>
+                  <Badge className={getHealthColor(data.healthStatus)}>
+                    {data.metrics.dueToday + data.metrics.overdue} {t("due")}
+                  </Badge>
               </div>
 
               {/* Metrics Grid */}
@@ -117,14 +119,14 @@ export function SRSHealthCard({
                   <p className="text-2xl font-bold">
                     {data.metrics.totalCards}
                   </p>
-                  <p className="text-xs text-muted-foreground">Total Cards</p>
+                  <p className="text-xs text-muted-foreground">{t("totalCards")}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold">
                     {data.metrics.reviewedToday}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Reviewed Today
+                    {t("reviewedToday")}
                   </p>
                 </div>
               </div>
@@ -132,7 +134,7 @@ export function SRSHealthCard({
               {/* Retention Rate */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Retention Rate</span>
+                  <span className="text-muted-foreground">{t("retentionRate")}</span>
                   <span className="font-medium">
                     {(data.metrics.avgRetentionRate * 100).toFixed(0)}%
                   </span>
@@ -149,7 +151,7 @@ export function SRSHealthCard({
         {/* Quick Actions */}
         {data?.quickActions && data.quickActions.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium">Quick Actions</h4>
+            <h4 className="text-sm font-medium">{t("quickActions")}</h4>
             {data.quickActions.map((action, index) => (
               <Button
                 key={index}
@@ -167,7 +169,7 @@ export function SRSHealthCard({
         {/* Recommendations */}
         {data?.recommendations && data.recommendations.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium">Recommendations</h4>
+            <h4 className="text-sm font-medium">{t("recommendations")}</h4>
             <div className="space-y-2">
               {data.recommendations.slice(0, 2).map((rec, index) => (
                 <Card
@@ -205,7 +207,7 @@ export function SRSHealthCard({
         {data && (data.metrics.dueToday > 0 || data.metrics.overdue > 0) && (
           <Button onClick={onPracticeClick} className="w-full" size="lg">
             <Brain className="mr-2 h-4 w-4" />
-            Practice Now ({data.metrics.dueToday + data.metrics.overdue} cards)
+            {t("practiceNow")} ({data.metrics.dueToday + data.metrics.overdue} {t("cards")})
           </Button>
         )}
       </div>

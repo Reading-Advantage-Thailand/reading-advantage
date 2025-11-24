@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays } from "lucide-react";
+import { useScopedI18n } from "@/locales/client";
 import {
   ChartConfig,
   ChartContainer,
@@ -46,29 +47,23 @@ interface TimelineEvent {
   user?: string;
 }
 
-const chartConfig = {
-  activity: {
-    label: "Activity",
-    color: "hsl(var(--chart-1))",
-  },
-  users: {
-    label: "Users",
-    color: "hsl(var(--chart-2))",
-  },
-  sessions: {
-    label: "Sessions",
-    color: "hsl(var(--chart-3))",
-  },
-} satisfies ChartConfig;
+// chartConfig will be constructed inside the component so labels can be localized
 
 export default function ActivityCharts({
   className,
   dateRange = "30d",
 }: ActivityHeatmapProps) {
+  const t = useScopedI18n("components.activityCharts") as any;
   const [heatmapData, setHeatmapData] = useState<ActivityData[]>([]);
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const chartConfig: ChartConfig = {
+    activity: { label: t("charts.activity"), color: "hsl(var(--chart-1))" },
+    users: { label: t("charts.users"), color: "hsl(var(--chart-2))" },
+    sessions: { label: t("charts.sessions"), color: "hsl(var(--chart-3))" },
+  } as ChartConfig;
 
   const fetchData = async () => {
     try {
@@ -224,20 +219,22 @@ export default function ActivityCharts({
       if (timelineData.events && Array.isArray(timelineData.events)) {
         timelineData.events.slice(0, 10).forEach((event: any) => {
           let eventType: TimelineEvent["type"] = "reading";
-          let title = event.title || "Activity";
+          let title = event.title || t("events.activity");
           let description = event.description || "";
 
           // Map event types
           if (event.type === "assignment") {
             eventType = "assessment";
-            title = event.title;
+            title = event.title || t("events.assignment");
           } else if (event.type === "srs") {
             eventType = "practice";
-            title = "SRS Practice Session";
+            title = event.title || t("events.srsPractice");
           } else if (event.type === "reading") {
             eventType = "reading";
+            title = event.title || t("events.reading");
           } else if (event.type === "practice") {
             eventType = "practice";
+            title = event.title || t("events.practice");
           }
 
           processedTimelineEvents.push({
@@ -360,12 +357,12 @@ export default function ActivityCharts({
       (now.getTime() - time.getTime()) / (1000 * 60)
     );
 
-    if (diffInMinutes < 1) return "Just now";
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1) return t("time.justNow");
+    if (diffInMinutes < 60) return t("time.minutesAgo", { m: diffInMinutes });
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 24) return t("time.hoursAgo", { h: diffInHours });
     const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays}d ago`;
+    return t("time.daysAgo", { d: diffInDays });
   };
 
   if (loading) {
@@ -395,20 +392,12 @@ export default function ActivityCharts({
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Activity Overview</h2>
+        <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
         <p className="text-muted-foreground">
-          Monitor user activities, engagement patterns, and real-time events
+          {t("description")}
           {dateRange && (
-            <span className="ml-2 text-sm">
-              (showing{" "}
-              {dateRange === "7d"
-                ? "last 7 days"
-                : dateRange === "30d"
-                  ? "last 30 days"
-                  : dateRange === "90d"
-                    ? "last 3 months"
-                    : "all time"}
-              )
+            <span className="ml-2 text-sm">(
+              {t(`timeframe.${dateRange}`)})
             </span>
           )}
         </p>
@@ -419,14 +408,14 @@ export default function ActivityCharts({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5" />
-            Activity Heatmap
+            {t("heatmap.title")}
           </CardTitle>
           <CardDescription>
-            Daily activity levels
-            {dateRange === "7d" && " over the past 7 days"}
-            {dateRange === "30d" && " over the past 30 days"}
-            {dateRange === "90d" && " over the past 3 months"}
-            {dateRange === "all" && " over the past year"}
+            {t("heatmap.description")}
+            {dateRange === "7d" && ` ${t("heatmap.range.7d")}`}
+            {dateRange === "30d" && ` ${t("heatmap.range.30d")}`}
+            {dateRange === "90d" && ` ${t("heatmap.range.90d")}`}
+            {dateRange === "all" && ` ${t("heatmap.range.all")}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -585,7 +574,7 @@ export default function ActivityCharts({
 
             {/* Legend */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>Less</span>
+              <span>{t("legend.less")}</span>
               <div className="flex items-center gap-1">
                 {(() => {
                   const totalDays = heatmapData.length;
@@ -610,7 +599,7 @@ export default function ActivityCharts({
                   );
                 })()}
               </div>
-              <span>More</span>
+              <span>{t("legend.more")}</span>
             </div>
           </div>
         </CardContent>
@@ -620,10 +609,8 @@ export default function ActivityCharts({
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Daily Activity Trend</CardTitle>
-            <CardDescription>
-              Activity levels over the selected period
-            </CardDescription>
+            <CardTitle>{t("daily.title")}</CardTitle>
+            <CardDescription>{t("daily.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig}>
@@ -646,8 +633,8 @@ export default function ActivityCharts({
 
         <Card>
           <CardHeader>
-            <CardTitle>User Engagement</CardTitle>
-            <CardDescription>Users and sessions comparison</CardDescription>
+            <CardTitle>{t("engagement.title")}</CardTitle>
+            <CardDescription>{t("engagement.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig}>
@@ -666,10 +653,10 @@ export default function ActivityCharts({
 
       {/* Timeline - Bottom Section */}
       <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity Timeline</CardTitle>
-          <CardDescription>Latest user activities and events</CardDescription>
-        </CardHeader>
+          <CardHeader>
+            <CardTitle>{t("timeline.title")}</CardTitle>
+            <CardDescription>{t("timeline.description")}</CardDescription>
+          </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {timelineEvents.map((event, index) => (
@@ -682,7 +669,7 @@ export default function ActivityCharts({
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium">{event.title}</h4>
                     <Badge variant="secondary" className="text-xs">
-                      {event.type}
+                      {t(`types.${event.type}`)}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -690,7 +677,7 @@ export default function ActivityCharts({
                   </p>
                   {event.user && (
                     <p className="text-xs text-muted-foreground">
-                      by {event.user}
+                      {t("timeline.by", { user: event.user })}
                     </p>
                   )}
                 </div>
@@ -702,7 +689,7 @@ export default function ActivityCharts({
 
             {timelineEvents.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
-                No events found for the selected filters.
+                {t("timeline.empty")}
               </div>
             )}
           </div>

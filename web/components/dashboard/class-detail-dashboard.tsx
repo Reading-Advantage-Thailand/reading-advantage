@@ -32,6 +32,7 @@ import {
   Zap,
   TrendingUp,
 } from "lucide-react";
+import { useScopedI18n } from "@/locales/client";
 
 export interface ClassDetailDashboardProps {
   classroomId: string;
@@ -45,6 +46,7 @@ export function ClassDetailDashboard({
   classCode,
 }: ClassDetailDashboardProps) {
   const router = useRouter();
+  const t = useScopedI18n("pages.teacher.dashboardPage.classDetail") as any;
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -91,7 +93,7 @@ export function ClassDetailDashboard({
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{className}</h1>
             <p className="text-muted-foreground">
-              Class Code: <span className="font-mono">{classCode}</span>
+              {t("classCodePrefix")} <span className="font-mono">{classCode}</span>
             </p>
           </div>
         </div>
@@ -106,11 +108,11 @@ export function ClassDetailDashboard({
             <RefreshCw
               className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
             />
-            Refresh
+            {t("refresh")}
           </Button>
           <Button variant="outline" size="sm" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-2" />
-            Export CSV
+            {t("exportCSV")}
           </Button>
           <Button
             variant="outline"
@@ -120,7 +122,7 @@ export function ClassDetailDashboard({
             }
           >
             <Settings className="h-4 w-4 mr-2" />
-            Settings
+            {t("settings")}
           </Button>
         </div>
       </div>

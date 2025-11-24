@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useScopedI18n } from "@/locales/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricsActivityResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const t = useScopedI18n("components.classActivityHeatmap") as any;
 
   useEffect(() => {
     async function fetchData() {
@@ -60,26 +62,26 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
     );
   }
 
-  if (error) {
+    if (error) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Activity Heatmap</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
           <CardDescription className="text-destructive">{error}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Unable to load activity data</p>
+          <p className="text-sm text-muted-foreground">{t("error")}</p>
         </CardContent>
       </Card>
     );
   }
 
-  if (!data || !data.dataPoints || data.dataPoints.length === 0) {
+    if (!data || !data.dataPoints || data.dataPoints.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Activity Heatmap</CardTitle>
-          <CardDescription>No activity data available</CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("noData")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -114,7 +116,15 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
     return "bg-green-300";
   };
 
-  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekdays = [
+    t("dow.sun"),
+    t("dow.mon"),
+    t("dow.tue"),
+    t("dow.wed"),
+    t("dow.thu"),
+    t("dow.fri"),
+    t("dow.sat"),
+  ];
 
   // Responsive sizes based on expanded state
   const cellSize = expanded ? 'w-3.5 h-3.5' : 'w-3 h-3';
@@ -132,13 +142,13 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
-              Activity Heatmap
+              {t("title")}
               <span className="text-xs font-normal text-muted-foreground">
-                ({expanded ? '365' : '120'} days)
+                ({expanded ? '365' : '120'} {t("days")})
               </span>
             </CardTitle>
             <CardDescription>
-              Student activity over the last {expanded ? '365' : '120'} days
+              {t("description", { days: expanded ? 365 : 120 })}
             </CardDescription>
           </div>
           {!expanded && onSeeDetail && (
@@ -147,7 +157,7 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
               size="sm"
               onClick={onSeeDetail}
             >
-              See detail
+              {t("seeDetail")}
               <ExternalLink className="h-4 w-4 ml-2" />
             </Button>
           )}
@@ -159,18 +169,18 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
           <div className="grid grid-cols-3 gap-3 p-3 bg-muted/30 rounded-lg">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{summary.totalActiveUsers}</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Active Users</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("stats.activeUsers")}</div>
             </div>
             <div className="text-center border-x border-border/50">
               <div className="text-2xl font-bold text-primary">{summary.totalSessions}</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Total Activity</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("stats.totalActivity")}</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-primary">
                 {new Date(summary.peakDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </div>
               <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                Peak Day ({peakSessions})
+                {t("stats.peakDay")} ({peakSessions})
               </div>
             </div>
           </div>
@@ -215,10 +225,10 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
         </div>
 
         {/* Legend */}
-        <div className={`flex items-center justify-between ${fontSize} text-muted-foreground pt-2 px-2`}>
-          <span className="font-medium">Activity Level:</span>
+          <div className={`flex items-center justify-between ${fontSize} text-muted-foreground pt-2 px-2`}>
+          <span className="font-medium">{t("legend.title")}</span>
           <div className="flex items-center gap-2">
-            <span>Less</span>
+            <span>{t("legend.less")}</span>
             <div className={`flex ${legendGap}`}>
               <div className={`${legendSize} rounded bg-slate-100 border border-slate-200 shadow-sm`} />
               <div className={`${legendSize} rounded bg-green-300 shadow-sm`} />
@@ -226,15 +236,15 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
               <div className={`${legendSize} rounded bg-green-500 shadow-sm`} />
               <div className={`${legendSize} rounded bg-green-600 shadow-sm`} />
             </div>
-            <span>More</span>
+            <span>{t("legend.more")}</span>
           </div>
         </div>
 
         {/* Top 5 Most Active Days - for non-expanded view */}
         {!expanded && (
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">
-              Top Active Days
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">
+              {t("topActiveDays")}
             </h4>
             <div className="grid gap-2">
               {dataPoints
@@ -271,7 +281,7 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
                       </div>
                       <div className="text-right">
                         <div className="text-lg font-bold">{day.readingSessions}</div>
-                        <div className="text-[9px] text-muted-foreground uppercase">activities</div>
+                        <div className="text-[9px] text-muted-foreground uppercase">{t("activities")}</div>
                       </div>
                     </div>
                   );
@@ -285,18 +295,18 @@ export function ClassActivityHeatmap({ classroomId, expanded = false, onSeeDetai
           <div className="grid grid-cols-3 gap-4 pt-4 border-t">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{summary.totalActiveUsers}</div>
-              <div className="text-xs text-muted-foreground">Active Users</div>
+              <div className="text-xs text-muted-foreground">{t("stats.activeUsers")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">{summary.totalSessions}</div>
-              <div className="text-xs text-muted-foreground">Total Activity</div>
+              <div className="text-xs text-muted-foreground">{t("stats.totalActivity")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">
                 {new Date(summary.peakDay).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 <span className="text-base ml-1 text-muted-foreground">({peakSessions})</span>
               </div>
-              <div className="text-xs text-muted-foreground">Peak Activity</div>
+              <div className="text-xs text-muted-foreground">{t("stats.peakDay")}</div>
             </div>
           </div>
         )}

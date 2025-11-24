@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useScopedI18n } from "@/locales/client";
 import {
   Card,
   CardContent,
@@ -31,6 +32,7 @@ export function ClassBatchActions({
   const router = useRouter();
   const [showNotificationDialog, setShowNotificationDialog] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const t = useScopedI18n("components.classBatchActions") as any;
 
   const handleExportData = async () => {
     setIsExporting(true);
@@ -45,23 +47,23 @@ export function ClassBatchActions({
       const data = result.students || [];
 
       if (!data || data.length === 0) {
-        alert("ไม่มีข้อมูลนักเรียนให้ export");
+        alert(t("noExportData"));
         return;
       }
 
       // สร้าง CSV
       const headers = [
-        "Name",
-        "Email",
-        "Level",
-        "CEFR Level",
-        "XP",
-        "Reading Sessions",
-        "Assignments Completed",
-        "Assignments Pending",
-        "Average Accuracy (%)",
-        "Last Active",
-        "Joined At",
+        t("csv.name"),
+        t("csv.email"),
+        t("csv.level"),
+        t("csv.cefr"),
+        t("csv.xp"),
+        t("csv.readingSessions"),
+        t("csv.assignmentsCompleted"),
+        t("csv.assignmentsPending"),
+        t("csv.avgAccuracy"),
+        t("csv.lastActive"),
+        t("csv.joinedAt"),
       ];
 
       const csvRows = [headers.join(",")];
@@ -117,42 +119,44 @@ export function ClassBatchActions({
     } catch (error) {
       console.error("Error exporting data:", error);
       alert(
-        `เกิดข้อผิดพลาดในการ export ข้อมูล: ${error instanceof Error ? error.message : "Unknown error"}`
+        t("exportError", {
+          message: error instanceof Error ? error.message : "Unknown error",
+        })
       );
     } finally {
       setIsExporting(false);
     }
   };
 
-  const actions = [
+    const actions = [
     {
       icon: Bell,
-      label: "ส่งแจ้งเตือนการบ้าน",
-      description: "แจ้งเตือนนักเรียนทำการบ้านที่ค้างอยู่",
+      label: t("actions.notify"),
+      description: t("actions.notifyDesc"),
       onClick: () => setShowNotificationDialog(true),
       variant: "default" as const,
       gradient: "from-blue-500 to-blue-600",
     },
     {
       icon: BookOpen,
-      label: "มอบหมายการบ้าน",
-      description: "เลือกบทความให้นักเรียนอ่าน",
+      label: t("actions.assign"),
+      description: t("actions.assignDesc"),
       onClick: () => router.push("/teacher/passages"),
       variant: "default" as const,
       gradient: "from-green-500 to-green-600",
     },
     {
       icon: BarChart3,
-      label: "จัดการนักเรียน",
-      description: "จัดการรายชื่อนักเรียนในห้องเรียน",
+      label: t("actions.manage"),
+      description: t("actions.manageDesc"),
       onClick: () => router.push(`/teacher/class-roster`),
       variant: "default" as const,
       gradient: "from-orange-500 to-orange-600",
     },
     {
       icon: FileSpreadsheet,
-      label: "Export ข้อมูล",
-      description: "ดาวน์โหลดข้อมูลนักเรียนเป็น CSV",
+      label: t("actions.export"),
+      description: t("actions.exportDesc"),
       onClick: handleExportData,
       variant: "default" as const,
       gradient: "from-purple-500 to-purple-600",
@@ -163,13 +167,9 @@ export function ClassBatchActions({
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            การจัดการห้องเรียน
-          </CardTitle>
-          <CardDescription>
-            เครื่องมือสำหรับจัดการและติดตามความก้าวหน้าของนักเรียน
-          </CardDescription>
+          <CardHeader>
+          <CardTitle className="text-2xl font-bold">{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -190,7 +190,7 @@ export function ClassBatchActions({
                     </div>
                     <div className="space-y-1">
                       <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {action.loading ? "กำลังประมวลผล..." : action.label}
+                        {action.loading ? t("processing") : action.label}
                       </h3>
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {action.description}
@@ -206,11 +206,7 @@ export function ClassBatchActions({
           {selectedStudents.length > 0 && (
             <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
               <p className="text-sm text-muted-foreground">
-                เลือกนักเรียนแล้ว{" "}
-                <span className="font-semibold text-primary">
-                  {selectedStudents.length}
-                </span>{" "}
-                คน
+                {t("selectedStudents", { count: selectedStudents.length })}
               </p>
             </div>
           )}

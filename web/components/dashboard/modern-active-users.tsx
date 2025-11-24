@@ -18,6 +18,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useScopedI18n } from "@/locales/client";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 interface ActiveUser {
@@ -43,18 +44,18 @@ interface ModernActiveUsersProps {
   dateRange?: string;
 }
 
-const chartConfig = {
-  noOfUsers: {
-    label: "Active Users",
-    color: "hsl(var(--primary))",
-  },
-};
-
 export default function ModernActiveUsers({
   page = "system",
   licenseId,
   dateRange = "7d",
 }: ModernActiveUsersProps) {
+  const t = useScopedI18n("components.modernActiveUsers");
+  const chartConfig = {
+    noOfUsers: {
+      label: t("labels.activeUsers"),
+      color: "hsl(var(--primary))",
+    },
+  };
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [todayUsers, setTodayUsers] = useState<ActiveUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -228,7 +229,7 @@ export default function ModernActiveUsers({
         <div className="p-4 rounded-lg border bg-card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Today</p>
+              <p className="text-sm text-muted-foreground">{t("today")}</p>
               <p className="text-2xl font-bold">{todayActiveUsers}</p>
             </div>
             <div className="p-2 rounded-full bg-primary/10">
@@ -242,12 +243,12 @@ export default function ModernActiveUsers({
             <div>
               <p className="text-sm text-muted-foreground">
                 {dateRange === "7d"
-                  ? "7 Days Avg"
+                  ? t("avg.7d")
                   : dateRange === "30d"
-                    ? "30 Days Avg"
+                    ? t("avg.30d")
                     : dateRange === "90d"
-                      ? "90 Days Avg"
-                      : "All Time Avg"}
+                      ? t("avg.90d")
+                      : t("avg.allTime")}
               </p>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-bold">
@@ -284,7 +285,7 @@ export default function ModernActiveUsers({
       <div className="p-4 rounded-lg border bg-card">
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Activity Trend</span>
+          <span className="text-sm font-medium">{t("title.activityTrend")}</span>
         </div>
         <ChartContainer config={chartConfig} className="h-48 w-full">
           <AreaChart data={chartData}>
@@ -315,7 +316,7 @@ export default function ModernActiveUsers({
                         })}
                       </p>
                       <p className="text-sm text-primary">
-                        Active Users: {payload[0].value}
+                        {t("tooltip.activeUsers")}: {payload[0].value}
                       </p>
                     </div>
                   );

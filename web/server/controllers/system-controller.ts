@@ -219,8 +219,6 @@ export async function getSchoolXpData(req: NextRequest) {
  * - Level 1: Student-level views (no dependencies)
  * - Level 2: Class-level views (depend on student data)
  * - Level 3: School-level rollups
- * 
- * Note: mv_alignment_metrics is excluded as it may not exist in all environments
  */
 const MATERIALIZED_VIEWS = [
   // Level 1: Student-level metrics (base data, no dependencies)
@@ -229,7 +227,7 @@ const MATERIALIZED_VIEWS = [
   { name: "mv_genre_engagement_metrics", level: 1 },
   { name: "mv_activity_heatmap", level: 1 },
   { name: "mv_assignment_funnel", level: 1 },
-  // { name: "mv_alignment_metrics", level: 1 }, // Temporarily disabled - may not exist
+  { name: "mv_alignment_metrics", level: 1 },
 
   // Level 2: Class-level metrics (aggregate student data)
   { name: "mv_class_velocity", level: 2 },

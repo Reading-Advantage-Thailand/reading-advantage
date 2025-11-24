@@ -7,12 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { MetricsVelocityResponse } from "@/types/dashboard";
+import { useScopedI18n } from "@/locales/client";
 
 interface ClassVelocityTableProps {
   classroomId: string;
 }
 
 export function ClassVelocityTable({ classroomId }: ClassVelocityTableProps) {
+  const tc = useScopedI18n("components.classVelocityTable") as any;
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricsVelocityResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,11 +64,11 @@ export function ClassVelocityTable({ classroomId }: ClassVelocityTableProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Velocity & ETA</CardTitle>
+          <CardTitle>{tc("title")}</CardTitle>
           <CardDescription className="text-destructive">{error}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Unable to load velocity data</p>
+          <p className="text-sm text-muted-foreground">{tc("errorUnableToLoad")}</p>
         </CardContent>
       </Card>
     );
@@ -76,8 +78,8 @@ export function ClassVelocityTable({ classroomId }: ClassVelocityTableProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Velocity & ETA</CardTitle>
-          <CardDescription>No velocity data available</CardDescription>
+          <CardTitle>{tc("title")}</CardTitle>
+          <CardDescription>{tc("noData")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -92,12 +94,12 @@ export function ClassVelocityTable({ classroomId }: ClassVelocityTableProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Velocity & ETA</CardTitle>
-          <CardDescription>No reading activity in the selected timeframe</CardDescription>
+          <CardTitle>{tc("title")}</CardTitle>
+          <CardDescription>{tc("noActivity")}</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Students haven&apos;t completed any articles in the last {data.timeframe === '7d' ? '7' : data.timeframe === '30d' ? '30' : data.timeframe === '90d' ? '90' : '365'} days
+            {tc("noActivityDetails", { days: data.timeframe === '7d' ? '7' : data.timeframe === '30d' ? '30' : data.timeframe === '90d' ? '90' : '365' })}
           </p>
         </CardContent>
       </Card>
@@ -124,14 +126,14 @@ export function ClassVelocityTable({ classroomId }: ClassVelocityTableProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Velocity & ETA</CardTitle>
-        <CardDescription>Reading velocity and progress metrics</CardDescription>
+        <CardTitle>{tc("title")}</CardTitle>
+        <CardDescription>{tc("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 border rounded-lg">
             <div className="text-sm text-muted-foreground">
-              {articlesPerDay >= 1 ? 'Articles/Day' : 'Articles/Month'}
+              {articlesPerDay >= 1 ? tc("labels.articlesPerDay") : tc("labels.articlesPerMonth")}
             </div>
             <div className="text-2xl font-bold">
               {articlesPerDay >= 1 
@@ -146,20 +148,20 @@ export function ClassVelocityTable({ classroomId }: ClassVelocityTableProps) {
             )}
           </div>
           <div className="p-3 border rounded-lg">
-            <div className="text-sm text-muted-foreground">Trend</div>
+            <div className="text-sm text-muted-foreground">{tc("labels.trend")}</div>
             <div className="flex items-center space-x-2">
               {summary.trend === 'up' ? (
                 <>
                   <TrendingUp className="h-5 w-5 text-green-600" />
-                  <span className="text-xl font-bold text-green-600">Up</span>
+                  <span className="text-xl font-bold text-green-600">{tc("trend.up")}</span>
                 </>
               ) : summary.trend === 'down' ? (
                 <>
                   <TrendingDown className="h-5 w-5 text-red-600" />
-                  <span className="text-xl font-bold text-red-600">Down</span>
+                  <span className="text-xl font-bold text-red-600">{tc("trend.down")}</span>
                 </>
               ) : (
-                <span className="text-xl font-bold text-slate-600">Stable</span>
+                <span className="text-xl font-bold text-slate-600">{tc("trend.stable")}</span>
               )}
             </div>
           </div>
@@ -167,16 +169,16 @@ export function ClassVelocityTable({ classroomId }: ClassVelocityTableProps) {
 
         <div className="pt-2 border-t space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Total Articles:</span>
+            <span className="text-muted-foreground">{tc("stats.totalArticles")}</span>
             <span className="font-medium">{summary.totalArticles}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Total Words:</span>
+            <span className="text-muted-foreground">{tc("stats.totalWords")}</span>
             <span className="font-medium">{summary.totalWords.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Total Time:</span>
-            <span className="font-medium">{Math.round(summary.totalTime)} min</span>
+            <span className="text-muted-foreground">{tc("stats.totalTime")}</span>
+            <span className="font-medium">{Math.round(summary.totalTime)} {tc("stats.min")}</span>
           </div>
         </div>
       </CardContent>

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClassOverviewResponse } from "@/types/dashboard";
+import { useScopedI18n } from "@/locales/client";
 
 interface ClassDashboardKPIsProps {
   classroomId: string;
@@ -30,63 +31,49 @@ export function ClassDashboardKPIs({ classroomId }: ClassDashboardKPIsProps) {
   const [data, setData] = useState<ClassOverviewResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const tc = useScopedI18n("components.classDashboardKpis") as any;
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          `/api/v1/teacher/class/${classroomId}/overview`
+        const response = await fetch(
+          `/api/v1/classroom/${classroomId}/overview`,
+          {
+            method: "GET",
+            cache: "no-store",
+          }
         );
 
-        if (!res.ok) {
-          throw new Error(`Failed to fetch class overview: ${res.statusText}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
 
-        const result = await res.json();
+        const result: ClassOverviewResponse = await response.json();
         setData(result);
       } catch (err) {
-        console.error("Error fetching class overview:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load class data"
-        );
+        console.error("Error fetching classroom overview:", err);
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
-    }
+    };
 
-    if (classroomId) {
-      fetchData();
-    }
+    fetchData();
   }, [classroomId]);
 
-  if (error) {
-    return (
-      <Card className="border-destructive">
-        <CardHeader>
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="h-5 w-5 text-destructive" />
-            <CardTitle>Error Loading Class Dashboard</CardTitle>
-          </div>
-          <CardDescription className="text-destructive">
-            {error}
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[...Array(6)].map((_, i) => (
           <Card key={i}>
-            <CardHeader className="space-y-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-8 w-16 mb-2" />
+              <Skeleton className="h-3 w-32" />
             </CardContent>
           </Card>
         ))}
@@ -94,75 +81,80 @@ export function ClassDashboardKPIs({ classroomId }: ClassDashboardKPIsProps) {
     );
   }
 
-  const { summary, performance } = data;
-  const activityRate =
-    summary.totalStudents > 0
-      ? Math.round((summary.activeStudents30d / summary.totalStudents) * 100)
-      : 0;
+  if (error) {
+    return (
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" />
+            {tc("errorTitle")}
+          </CardTitle>
+          <CardDescription>{error}</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (!data || !data.summary) {
+    return null;
+  }
+
+  const { summary } = data;
+  const activityRate = summary.totalStudents > 0 
+    ? Math.round((summary.activeStudents30d / summary.totalStudents) * 100)
+    : 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {/* Total Students */}
       <KPICard
-        title="Total Students"
+        title={tc("totalStudents.title")}
         value={summary.totalStudents}
-        description={`${summary.activeStudents7d} active this week`}
+        description={tc("totalStudents.description", { active: summary.activeStudents7d })}
         icon={Users}
         loading={false}
         status="info"
       />
 
-      {/* Active Students (30d) */}
       <KPICard
-        title="Active Students"
+        title={tc("activeStudents.title")}
         value={summary.activeStudents30d}
-        description={`${activityRate}% activity rate`}
+        description={tc("activeStudents.description", { rate: activityRate })}
         icon={Activity}
         loading={false}
-        status={
-          activityRate >= 70
-            ? "success"
-            : activityRate >= 40
-              ? "warning"
-              : "error"
-        }
+        status={activityRate >= 70 ? "success" : activityRate >= 40 ? "warning" : "error"}
       />
 
-      {/* Average Level */}
       <KPICard
-        title="Average Level"
+        title={tc("avgLevel.title")}
         value={summary.averageLevel.toFixed(1)}
-        description="Class reading level"
+        description={tc("avgLevel.description")}
         icon={Target}
         loading={false}
         status="info"
       />
 
-      {/* Total XP Earned */}
       <KPICard
-        title="Total XP"
+        title={tc("totalXp.title")}
         value={summary.totalXpEarned.toLocaleString()}
-        description="Cumulative class XP"
+        description={tc("totalXp.description")}
         icon={Zap}
         loading={false}
         status="success"
       />
 
-      {/* Active Assignments */}
       <KPICard
-        title="Active Assignments"
+        title={tc("activeAssignments.title")}
         value={summary.assignmentsActive}
-        description="Currently ongoing"
+        description={tc("activeAssignments.description")}
         icon={BookOpen}
         loading={false}
         status="info"
       />
 
-      {/* Completed Assignments */}
       <KPICard
-        title="Completed"
+        title={tc("completed.title")}
         value={summary.assignmentsCompleted}
-        description="Assignment submissions"
+        description={tc("completed.description")}
         icon={TrendingUp}
         loading={false}
         status="success"

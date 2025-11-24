@@ -14,6 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
+import { useScopedI18n } from "@/locales/client";
 
 interface XPVelocityWidgetProps {
   data: VelocityMetrics | null;
@@ -26,23 +27,24 @@ export function XPVelocityWidget({
   loading = false,
   onRefresh,
 }: XPVelocityWidgetProps) {
+  const t = useScopedI18n("pages.student.dashboard.xpVelocity");
   const chartData = React.useMemo(() => {
     if (!data) return [];
     return [
       {
-        period: "Last 7 Days",
+        period: t("period.7d"),
         value: data.xpPerCalendarDay7d,
-        label: "7d avg",
+        label: t("label.7dAvg"),
       },
       {
-        period: "Last 30 Days",
+        period: t("period.30d"),
         value: data.xpPerCalendarDay30d,
-        label: "30d avg",
+        label: t("label.30dAvg"),
       },
       {
-        period: "EMA Velocity",
+        period: t("period.ema"),
         value: data.emaVelocity,
-        label: "Trend",
+        label: t("label.trend"),
       },
     ];
   }, [data]);
@@ -57,11 +59,11 @@ export function XPVelocityWidget({
   if (!data && !loading) {
     return (
       <WidgetShell
-        title="XP Velocity"
-        description="Track your learning pace"
+        title={t("title")}
+        description={t("description")}
         icon={TrendingUp}
         isEmpty
-        emptyMessage="No activity data available"
+        emptyMessage={t("emptyMessage")}
         onRefresh={onRefresh}
       >
         <div />
@@ -71,23 +73,23 @@ export function XPVelocityWidget({
 
   return (
     <WidgetShell
-      title="XP Velocity"
-      description="Your learning pace over time"
+      title={t("title")}
+      description={t("overview")}
       icon={TrendingUp}
       loading={loading}
       onRefresh={onRefresh}
       telemetryId="student.xp_velocity"
     >
-      <div className="space-y-4" role="region" aria-label="XP Velocity Metrics">
+      <div className="space-y-4" role="region" aria-label={t("ariaLabel")}> 
         <div
           className="grid grid-cols-2 gap-4"
           role="group"
-          aria-label="Quick Stats"
+          aria-label={t("quickStats")}
         >
           <KPICard
-            title="7-Day Avg"
+            title={t("kpi.7dayAvg")}
             value={data?.xpPerCalendarDay7d?.toFixed(1) || "0"}
-            description="XP per day"
+            description={t("kpi.xpPerDay")}
             icon={Activity}
             loading={loading}
             trend={{
@@ -96,9 +98,9 @@ export function XPVelocityWidget({
             }}
           />
           <KPICard
-            title="Active Days"
+            title={t("kpi.activeDays")}
             value={data?.activeDays7d || 0}
-            description="Last 7 days"
+            description={t("kpi.last7Days")}
             icon={Clock}
             loading={loading}
           />
@@ -133,7 +135,7 @@ export function XPVelocityWidget({
                                 {payload[0].payload.period}
                               </span>
                               <span className="font-bold text-muted-foreground">
-                                {payload[0].value} XP/day
+                                {payload[0].value} {t("units.xpPerDay")}
                               </span>
                             </div>
                           </div>
@@ -161,9 +163,7 @@ export function XPVelocityWidget({
         </Card>
 
         {data?.isLowSignal && (
-          <p className="text-xs text-muted-foreground">
-            💡 Tip: Complete more activities for better velocity tracking
-          </p>
+          <p className="text-xs text-muted-foreground">{t("tip")}</p>
         )}
       </div>
     </WidgetShell>

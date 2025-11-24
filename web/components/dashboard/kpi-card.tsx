@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useScopedI18n } from "@/locales/client";
 
 export interface KPICardProps {
   title: string;
@@ -50,6 +51,7 @@ export function KPICard({
   className,
   onClick,
 }: KPICardProps) {
+  const t = useScopedI18n("components.kpiCard");
   const getTrendIcon = () => {
     if (!trend) return null;
 
@@ -129,7 +131,7 @@ export function KPICard({
                   {tooltip && <p>{tooltip}</p>}
                   {dataSource && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      Source: {dataSource}
+                      {t("source")}: {dataSource}
                     </p>
                   )}
                 </TooltipContent>

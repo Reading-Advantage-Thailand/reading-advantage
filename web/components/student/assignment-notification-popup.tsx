@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useScopedI18n } from "@/locales/client";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ export function AssignmentNotificationPopup({
   );
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const t = useScopedI18n("components.assignmentNotification" as any) as any;
 
   useEffect(() => {
     fetchNotifications();
@@ -148,10 +150,10 @@ export function AssignmentNotificationPopup({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            แจ้งเตือนการบ้านจากครู
+            {t("title")}
           </DialogTitle>
           <DialogDescription>
-            คุณมีการบ้านที่ครูส่งแจ้งเตือนให้ทำ {notifications.length} รายการ
+            {t("description", { count: notifications.length })}
           </DialogDescription>
         </DialogHeader>
 
@@ -169,10 +171,10 @@ export function AssignmentNotificationPopup({
                     </h3>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <User className="h-3 w-3" />
-                      <span>ครู {notification.teacher.name}</span>
+                      <span>{t("fromTeacher", { name: notification.teacher.name })}</span>
                     </div>
                   </div>
-                  <Badge variant="destructive">ใหม่</Badge>
+                  <Badge variant="destructive">{t("badge.new")}</Badge>
                 </div>
 
                 <p className="text-sm text-muted-foreground">
@@ -183,14 +185,7 @@ export function AssignmentNotificationPopup({
                   <div className="flex items-center gap-1 text-muted-foreground">
                     <Calendar className="h-4 w-4" />
                     <span>
-                      กำหนดส่ง:{" "}
-                      {format(
-                        new Date(notification.assignment.dueDate),
-                        "dd MMM yyyy",
-                        {
-                          locale: th,
-                        }
-                      )}
+                      {t("dueLabel")} {format(new Date(notification.assignment.dueDate), "dd MMM yyyy", { locale: th })}
                     </span>
                   </div>
                   {(() => {
@@ -206,7 +201,7 @@ export function AssignmentNotificationPopup({
                           className="flex items-center gap-1"
                         >
                           <Clock className="h-3 w-3" />
-                          เกินกำหนดแล้ว {Math.abs(daysRemaining)} วัน
+                          {t("due.overdue", { days: Math.abs(daysRemaining) })}
                         </Badge>
                       );
                     } else if (daysRemaining === 0) {
@@ -216,7 +211,7 @@ export function AssignmentNotificationPopup({
                           className="flex items-center gap-1"
                         >
                           <Clock className="h-3 w-3" />
-                          ครบกำหนดวันนี้
+                          {t("due.today")}
                         </Badge>
                       );
                     } else if (daysRemaining === 1) {
@@ -226,7 +221,7 @@ export function AssignmentNotificationPopup({
                           className="flex items-center gap-1"
                         >
                           <Clock className="h-3 w-3" />
-                          เหลือเวลา 1 วัน
+                          {t("due.oneDay")}
                         </Badge>
                       );
                     } else if (daysRemaining <= 3) {
@@ -236,7 +231,7 @@ export function AssignmentNotificationPopup({
                           className="flex items-center gap-1"
                         >
                           <Clock className="h-3 w-3" />
-                          เหลือเวลา {daysRemaining} วัน
+                          {t("due.fewDays", { days: daysRemaining })}
                         </Badge>
                       );
                     } else if (daysRemaining <= 7) {
@@ -246,7 +241,7 @@ export function AssignmentNotificationPopup({
                           className="flex items-center gap-1"
                         >
                           <Clock className="h-3 w-3" />
-                          เหลือเวลา {daysRemaining} วัน
+                          {t("due.severalDays", { days: daysRemaining })}
                         </Badge>
                       );
                     } else {
@@ -256,7 +251,7 @@ export function AssignmentNotificationPopup({
                           className="flex items-center gap-1"
                         >
                           <Clock className="h-3 w-3" />
-                          เหลือเวลา {daysRemaining} วัน
+                          {t("due.days", { days: daysRemaining })}
                         </Badge>
                       );
                     }
@@ -267,13 +262,11 @@ export function AssignmentNotificationPopup({
                   <Button
                     size="sm"
                     variant="default"
-                    onClick={() =>
-                      handleGoToAssignment(notification.assignment.articleId)
-                    }
+                    onClick={() => handleGoToAssignment(notification.assignment.articleId)}
                     disabled={!notification.assignment.articleId}
                   >
                     <BookOpen className="h-3 w-3 mr-1" />
-                    ไปทำการบ้าน
+                    {t("goToAssignment")}
                   </Button>
                   <Button
                     size="sm"
@@ -282,19 +275,13 @@ export function AssignmentNotificationPopup({
                     disabled={loading}
                   >
                     <CheckCircle2 className="h-3 w-3 mr-1" />
-                    รับทราบแล้ว
+                    {t("acknowledge")}
                   </Button>
                 </div>
 
                 <div className="text-xs text-muted-foreground">
-                  ส่งเมื่อ:{" "}
-                  {format(
-                    new Date(notification.createdAt),
-                    "dd MMM yyyy HH:mm",
-                    {
-                      locale: th,
-                    }
-                  )}
+                  {t("createdAt")}{" "}
+                  {format(new Date(notification.createdAt), "dd MMM yyyy HH:mm", { locale: th })}
                 </div>
               </div>
             ))}
@@ -303,11 +290,11 @@ export function AssignmentNotificationPopup({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            ปิด
+            {t("close")}
           </Button>
           <Button onClick={handleAcknowledgeAll} disabled={loading}>
             <CheckCircle2 className="h-4 w-4 mr-2" />
-            รับทราบทั้งหมด
+            {t("acknowledgeAll")}
           </Button>
         </DialogFooter>
       </DialogContent>

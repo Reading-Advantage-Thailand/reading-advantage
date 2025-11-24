@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
 import { ClassDetailDashboard } from "@/components/dashboard/class-detail-dashboard";
+import { getScopedI18n } from "@/locales/server";
 
 export default async function ClassDetailReportsPage({
   params,
@@ -36,13 +37,14 @@ export default async function ClassDetailReportsPage({
       return redirect("/th/teacher/dashboard");
     }
   }
+  const t = await getScopedI18n("pages.teacher.classdetail");
 
   return (
     <div className="container mx-auto p-6">
       <ClassDetailDashboard
         classroomId={params.classroomId}
-        className={classroom.classroomName || "Unnamed Class"}
-        classCode={classroom.classCode || "N/A"}
+        className={classroom.classroomName || t("unnamedClass")}
+        classCode={classroom.classCode || t("na")}
       />
     </div>
   );

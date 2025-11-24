@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Target, TrendingUp, ChevronRight, Plus } from "lucide-react";
+import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
 
 interface Goal {
@@ -24,6 +25,8 @@ interface ActiveGoalsWidgetProps {
 }
 
 export function ActiveGoalsWidget({ userId }: ActiveGoalsWidgetProps) {
+  const t = useScopedI18n("pages.student.dashboard.activeGoals");
+  const tc = useScopedI18n("components.activeGoalsWidget") as any;
   const router = useRouter();
   const [goals, setGoals] = React.useState<Goal[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -53,11 +56,11 @@ export function ActiveGoalsWidget({ userId }: ActiveGoalsWidgetProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Active Goals
+            {tc("title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">Loading...</div>
+          <div className="text-sm text-muted-foreground">{tc("loading")}</div>
         </CardContent>
       </Card>
     );
@@ -69,9 +72,9 @@ export function ActiveGoalsWidget({ userId }: ActiveGoalsWidgetProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Active Goals
+            {tc("title")}
           </CardTitle>
-          <CardDescription>Set goals to track your progress</CardDescription>
+          <CardDescription>{tc("emptyDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
@@ -80,7 +83,7 @@ export function ActiveGoalsWidget({ userId }: ActiveGoalsWidgetProps) {
             variant="outline"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Create Your First Goal
+            {tc("createFirst")}
           </Button>
         </CardContent>
       </Card>
@@ -93,7 +96,7 @@ export function ActiveGoalsWidget({ userId }: ActiveGoalsWidgetProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Active Goals
+            {tc("title")}
           </CardTitle>
           <Button
             variant="ghost"
@@ -104,7 +107,7 @@ export function ActiveGoalsWidget({ userId }: ActiveGoalsWidgetProps) {
             <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </div>
-        <CardDescription>Your top 3 active learning goals</CardDescription>
+          <CardDescription>{tc("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -129,7 +132,7 @@ export function ActiveGoalsWidget({ userId }: ActiveGoalsWidgetProps) {
                   <h4 className="font-medium text-sm">{goal.title}</h4>
                   {goal.priority === "HIGH" && (
                     <Badge variant="destructive" className="text-xs">
-                      High Priority
+                      {tc("highPriority")}
                     </Badge>
                   )}
                 </div>
@@ -146,15 +149,15 @@ export function ActiveGoalsWidget({ userId }: ActiveGoalsWidgetProps) {
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
                       {daysRemaining > 0
-                        ? `${daysRemaining} days left`
+                        ? tc("daysLeft", { count: daysRemaining })
                         : daysRemaining === 0
-                        ? "Due today"
-                        : "Overdue"}
+                        ? tc("dueToday")
+                        : tc("overdue")}
                     </span>
                     {progressPercentage >= 50 && (
                       <span className="flex items-center text-green-600">
                         <TrendingUp className="h-3 w-3 mr-1" />
-                        On track
+                        {tc("onTrack")}
                       </span>
                     )}
                   </div>

@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { MetricsGenresResponse } from "@/types/dashboard";
+import { useScopedI18n } from "@/locales/client";
 
 interface ClassGenreEngagementProps {
   classroomId: string;
 }
 
 export function ClassGenreEngagement({ classroomId }: ClassGenreEngagementProps) {
+  const tc = useScopedI18n("components.classGenreEngagement") as any;
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricsGenresResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -60,11 +62,11 @@ export function ClassGenreEngagement({ classroomId }: ClassGenreEngagementProps)
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Genre Engagement</CardTitle>
+          <CardTitle>{tc("title")}</CardTitle>
           <CardDescription className="text-destructive">{error}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Unable to load genre data</p>
+          <p className="text-sm text-muted-foreground">{tc("errorUnableToLoad")}</p>
         </CardContent>
       </Card>
     );
@@ -74,8 +76,8 @@ export function ClassGenreEngagement({ classroomId }: ClassGenreEngagementProps)
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Genre Engagement</CardTitle>
-          <CardDescription>No genre data available</CardDescription>
+          <CardTitle>{tc("title")}</CardTitle>
+          <CardDescription>{tc("noData")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -87,9 +89,9 @@ export function ClassGenreEngagement({ classroomId }: ClassGenreEngagementProps)
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Genre Engagement</CardTitle>
+        <CardTitle>{tc("title")}</CardTitle>
         <CardDescription>
-          Reading preferences • Most popular: {summary.mostPopular}
+          {tc("description", { mostPopular: summary.mostPopular })}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -98,22 +100,28 @@ export function ClassGenreEngagement({ classroomId }: ClassGenreEngagementProps)
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium">{genre.genre}</span>
               <div className="flex items-center gap-2 text-muted-foreground">
-                <span>{genre.count} books</span>
+                <span>
+                  {genre.count} {tc("labels.books")}
+                </span>
                 <span>•</span>
-                <span>{genre.percentage.toFixed(1)}%</span>
+                <span>{genre.percentage.toFixed(1)}{tc("labels.percentSuffix")}</span>
               </div>
             </div>
             <Progress value={genre.percentage} />
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Avg Level: {genre.averageLevel.toFixed(1)}</span>
-              <span>{genre.totalXp} XP</span>
+              <span>
+                {tc("labels.avgLevel")}: {genre.averageLevel.toFixed(1)}
+              </span>
+              <span>
+                {genre.totalXp} {tc("labels.xp")}
+              </span>
             </div>
           </div>
         ))}
 
         {genres.length > 8 && (
           <div className="pt-2 border-t text-sm text-muted-foreground text-center">
-            +{genres.length - 8} more genres
+            {tc("moreGenres", { count: genres.length - 8 })}
           </div>
         )}
       </CardContent>

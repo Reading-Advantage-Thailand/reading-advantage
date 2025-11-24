@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useScopedI18n } from "@/locales/client";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -32,6 +33,7 @@ export function ClassAssignmentFunnel({
   const [data, setData] = useState<MetricsAssignmentsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'high' | 'atRisk' | 'stale'>('all');
+  const t = useScopedI18n("components.classAssignmentFunnel") as any;
 
   useEffect(() => {
     async function fetchData() {
@@ -79,15 +81,11 @@ export function ClassAssignmentFunnel({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Assignment Funnel</CardTitle>
-          <CardDescription className="text-destructive">
-            {error}
-          </CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription className="text-destructive">{error}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Unable to load assignment data
-          </p>
+          <p className="text-sm text-muted-foreground">{t("error")}</p>
         </CardContent>
       </Card>
     );
@@ -97,8 +95,8 @@ export function ClassAssignmentFunnel({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Assignment Funnel</CardTitle>
-          <CardDescription>No assignment data available</CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("noData")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -136,10 +134,8 @@ export function ClassAssignmentFunnel({
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle>Assignment Funnel</CardTitle>
-            <CardDescription>
-              Completion rates and at-risk assignments
-            </CardDescription>
+            <CardTitle>{t("title")}</CardTitle>
+            <CardDescription>{t("description")}</CardDescription>
           </div>
           {!detailed && onSeeDetail && (
             <Button
@@ -147,7 +143,7 @@ export function ClassAssignmentFunnel({
               size="sm"
               onClick={onSeeDetail}
             >
-              See detail
+              {t("seeDetail")}
               <ExternalLink className="h-4 w-4 ml-2" />
             </Button>
           )}
@@ -155,9 +151,9 @@ export function ClassAssignmentFunnel({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
-            <span className="text-sm font-medium">Overall Completion</span>
+            <span className="text-sm font-medium">{t("overallCompletion")}</span>
           </div>
           <span className="text-2xl font-bold">{completionRate}%</span>
         </div>
@@ -176,7 +172,7 @@ export function ClassAssignmentFunnel({
               <div className="text-2xl font-bold text-green-600">
                 {highCompletionAssignments}
               </div>
-              <div className="text-xs text-muted-foreground">High Completion</div>
+              <div className="text-xs text-muted-foreground">{t("highCompletion")}</div>
             </button>
             <button
               onClick={() => setFilter(filter === 'atRisk' ? 'all' : 'atRisk')}
@@ -189,7 +185,7 @@ export function ClassAssignmentFunnel({
               <div className="text-2xl font-bold text-amber-600">
                 {atRiskAssignments}
               </div>
-              <div className="text-xs text-muted-foreground">At Risk</div>
+              <div className="text-xs text-muted-foreground">{t("atRisk")}</div>
             </button>
             <button
               onClick={() => setFilter(filter === 'stale' ? 'all' : 'stale')}
@@ -202,7 +198,7 @@ export function ClassAssignmentFunnel({
               <div className="text-2xl font-bold text-slate-600">
                 {staleAssignments}
               </div>
-              <div className="text-xs text-muted-foreground">Stale</div>
+              <div className="text-xs text-muted-foreground">{t("stale")}</div>
             </button>
           </div>
         )}
@@ -214,32 +210,32 @@ export function ClassAssignmentFunnel({
               <div className="text-2xl font-bold text-green-600">
                 {highCompletionAssignments}
               </div>
-              <div className="text-xs text-muted-foreground">High Completion</div>
+              <div className="text-xs text-muted-foreground">{t("highCompletion")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-amber-600">
                 {atRiskAssignments}
               </div>
-              <div className="text-xs text-muted-foreground">At Risk</div>
+              <div className="text-xs text-muted-foreground">{t("atRisk")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-slate-600">
                 {staleAssignments}
               </div>
-              <div className="text-xs text-muted-foreground">Stale</div>
+              <div className="text-xs text-muted-foreground">{t("stale")}</div>
             </div>
           </div>
         )}
 
         {detailed && filteredAssignments.length > 0 && (
-          <div className="text-xs text-muted-foreground pb-2">
-            Showing {filteredAssignments.length} assignment{filteredAssignments.length !== 1 ? 's' : ''}
+            <div className="text-xs text-muted-foreground pb-2">
+            {t("showing", { count: filteredAssignments.length })}
             {filter !== 'all' && (
               <button
                 onClick={() => setFilter('all')}
                 className="ml-2 text-blue-600 hover:underline"
               >
-                (Clear filter)
+                ({t("clearFilter")})
               </button>
             )}
           </div>
@@ -293,7 +289,7 @@ export function ClassAssignmentFunnel({
                       </span>
                       {isStale && (
                         <Badge variant="secondary" className="text-xs">
-                          Not started
+                          {t("notStarted")}
                         </Badge>
                       )}
                       {isAtRisk && (
@@ -326,11 +322,10 @@ export function ClassAssignmentFunnel({
         )}
 
         {atRiskAssignments > 0 && filter === 'all' && (
-          <div className="pt-4 border-t flex items-center space-x-2 text-amber-600">
+            <div className="pt-4 border-t flex items-center space-x-2 text-amber-600">
             <AlertCircle className="h-4 w-4" />
             <span className="text-sm">
-              {atRiskAssignments} assignment{atRiskAssignments > 1 ? "s" : ""}{" "}
-              need attention
+              {atRiskAssignments} {atRiskAssignments > 1 ? t("needAttentionPlural") : t("needAttention")}
             </span>
           </div>
         )}

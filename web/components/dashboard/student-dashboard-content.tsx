@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useScopedI18n } from "@/locales/client";
 import { XPVelocityWidget } from "./student-xp-velocity";
 import { ETACard } from "./student-eta-card";
 import { GenreEngagementWidget } from "./student-genre-engagement";
@@ -48,6 +49,7 @@ export default function StudentDashboardContent({
   userId,
   user,
 }: StudentDashboardContentProps) {
+  const t = useScopedI18n("pages.student.dashboard") as any;
   const router = useRouter();
   const { trackEvent } = useDashboardTelemetry();
   const [loading, setLoading] = React.useState(true);
@@ -162,6 +164,24 @@ export default function StudentDashboardContent({
 
   return (
     <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3 mt-6">
+      {/* Page header */}
+      <div className="col-span-3">
+        <Card>
+          <CardHeader className="flex items-center justify-between">
+            <div>
+              <CardTitle>{t("title")}</CardTitle>
+              <CardDescription>{t("description")}</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" onClick={handlePracticeFlashcards}>
+                <Brain className="mr-2 h-4 w-4" />
+                {t("practiceButton")}
+              </Button>
+              <Button onClick={handleSetGoal}>{t("setGoalButton")}</Button>
+            </div>
+          </CardHeader>
+        </Card>
+      </div>
       {/* Left Column - Main Widgets */}
       <div className="flex flex-col gap-4 col-span-2">
         {/* XP Velocity */}

@@ -100,7 +100,7 @@ export function AITeacherBrief({
 
     return (
       <Badge variant={colors[priority]} className="text-xs">
-        {priority}
+        {t(`priority.${priority}`)}
       </Badge>
     );
   };
@@ -156,7 +156,7 @@ export function AITeacherBrief({
           {t("description")}
           {generatedAt && (
             <span className="ml-2 text-xs">
-              • {t("updated")} {new Date(generatedAt).toLocaleTimeString()}
+              • {t("updatedAt", { time: new Date(generatedAt).toLocaleTimeString() })}
             </span>
           )}
         </CardDescription>
@@ -231,9 +231,7 @@ export function AITeacherBrief({
           <div className="text-center py-8 text-muted-foreground">
             <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">
-              {summary
-                ? t("noInsightsAtThisTime")
-                : t("insightsWillAppearHere")}
+              {summary ? t("noInsights") : t("aiInsightsWillAppear")}
             </p>
           </div>
         )}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useScopedI18n } from "@/locales/client";
 import { WidgetShell } from "./widget-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ export function AlertCenter({
   const [filter, setFilter] = useState<'all' | 'critical' | 'unacknowledged'>('unacknowledged');
   const [showAllDialog, setShowAllDialog] = useState(false);
   const [dialogFilter, setDialogFilter] = useState<'all' | 'critical' | 'unacknowledged'>('all');
+  const t = useScopedI18n("components.alertCenter") as any;
 
   const fetchAlerts = async () => {
     try {
@@ -160,17 +162,17 @@ export function AlertCenter({
   return (
     <>
     <WidgetShell
-      title="Alert Center"
-      description={`${unacknowledgedCount} unacknowledged alerts`}
+      title={t("title")}
+      description={`${unacknowledgedCount} ${t("unacknowledged")}`}
       icon={Bell}
       loading={loading}
       error={error}
       isEmpty={filteredAlerts.length === 0}
-      emptyMessage="No alerts at this time"
+      emptyMessage={t("noAlerts")}
       emptyIcon={CheckCircle2}
       onRefresh={fetchAlerts}
       onViewAll={handleViewAll}
-      viewAllLabel="View All Alerts"
+      viewAllLabel={t("viewAll")}
       className={className}
       headerAction={
         <div className="flex gap-1 border rounded-md p-1">
@@ -180,8 +182,8 @@ export function AlertCenter({
               filter === 'unacknowledged' && "bg-primary text-primary-foreground"
             )}
             onClick={() => setFilter('unacknowledged')}
-          >
-            Unread
+            >
+            {t("filter.unread")}
             {unacknowledgedCount > 0 && (
               <span className="ml-1 px-1 rounded-full bg-red-500 text-white text-[10px]">
                 {unacknowledgedCount}
@@ -194,8 +196,8 @@ export function AlertCenter({
               filter === 'critical' && "bg-primary text-primary-foreground"
             )}
             onClick={() => setFilter('critical')}
-          >
-            Critical
+            >
+            {t("filter.critical")}
             {criticalCount > 0 && (
               <span className="ml-1 px-1 rounded-full bg-red-500 text-white text-[10px]">
                 {criticalCount}
@@ -208,8 +210,8 @@ export function AlertCenter({
               filter === 'all' && "bg-primary text-primary-foreground"
             )}
             onClick={() => setFilter('all')}
-          >
-            All
+            >
+            {t("filter.all")}
           </button>
         </div>
       }
@@ -252,14 +254,14 @@ export function AlertCenter({
                         {formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}
                       </span>
                     </div>
-                    {!alert.acknowledged && (
+                      {!alert.acknowledged && (
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-6 text-xs"
                         onClick={(e) => handleAcknowledge(alert.id, e)}
                       >
-                        Mark Read
+                        {t("markRead")}
                       </Button>
                     )}
                   </div>
@@ -273,14 +275,14 @@ export function AlertCenter({
 
     {/* View All Alerts Dialog */}
     <Dialog open={showAllDialog} onOpenChange={setShowAllDialog}>
-      <DialogContent className="max-w-4xl max-h-[80vh]">
+            <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            All Alerts
+            {t("dialog.title")}
           </DialogTitle>
           <DialogDescription>
-            {alerts.length} total alerts • {unacknowledgedCount} unacknowledged • {criticalCount} critical
+            {alerts.length} {t("dialog.total")} • {unacknowledgedCount} {t("unacknowledged")} • {criticalCount} {t("critical")}
           </DialogDescription>
         </DialogHeader>
 
@@ -291,21 +293,21 @@ export function AlertCenter({
             size="sm"
             onClick={() => setDialogFilter('all')}
           >
-            All ({alerts.length})
+            {t("dialog.all")} ({alerts.length})
           </Button>
           <Button
             variant={dialogFilter === 'unacknowledged' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setDialogFilter('unacknowledged')}
           >
-            Unread ({unacknowledgedCount})
+            {t("dialog.unread")} ({unacknowledgedCount})
           </Button>
           <Button
             variant={dialogFilter === 'critical' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setDialogFilter('critical')}
           >
-            Critical ({criticalCount})
+            {t("dialog.critical")} ({criticalCount})
           </Button>
         </div>
 
@@ -316,7 +318,7 @@ export function AlertCenter({
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <CheckCircle2 className="h-12 w-12 text-muted-foreground mb-3" />
                 <p className="text-sm text-muted-foreground">
-                  No alerts in this category
+                  {t("dialog.noAlertsCategory")}
                 </p>
               </div>
             ) : (
@@ -357,7 +359,7 @@ export function AlertCenter({
                               {alert.acknowledged && (
                                 <Badge variant="outline" className="text-xs">
                                   <CheckCircle2 className="h-3 w-3 mr-1" />
-                                  Read
+                                  {t("read")}
                                 </Badge>
                               )}
                             </div>
@@ -392,7 +394,7 @@ export function AlertCenter({
                                 }}
                               >
                                 <CheckCircle2 className="h-3 w-3 mr-1" />
-                                Mark as Read
+                                {t("markRead")}
                               </Button>
                             )}
                             <Button
@@ -404,7 +406,7 @@ export function AlertCenter({
                                 setShowAllDialog(false);
                               }}
                             >
-                              View Details
+                              {t("viewDetails")}
                             </Button>
                           </div>
                         </div>

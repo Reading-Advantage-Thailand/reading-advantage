@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useScopedI18n } from "@/locales/client";
 import {
   Card,
   CardContent,
@@ -31,6 +32,7 @@ export function ClassAccuracyMetrics({
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ClassAccuracyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const t = useScopedI18n("components.classAccuracyMetrics") as any;
 
   useEffect(() => {
     async function fetchData() {
@@ -67,7 +69,7 @@ export function ClassAccuracyMetrics({
     }
   }, [classroomId]);
 
-  if (loading) {
+    if (loading) {
     return (
       <Card>
         <CardHeader>
@@ -84,15 +86,13 @@ export function ClassAccuracyMetrics({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Accuracy by Student & Type</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
           <CardDescription className="text-destructive">
             {error}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Unable to load accuracy data
-          </p>
+          <p className="text-sm text-muted-foreground">{t("errorDescription")}</p>
         </CardContent>
       </Card>
     );
@@ -112,15 +112,14 @@ export function ClassAccuracyMetrics({
   const { students, classAverages } = data;
   const activeStudents = students.filter((s) => s.totalAttempts > 0);
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Accuracy by Student & Type</CardTitle>
-        <CardDescription>
-          Performance breakdown by question type • {activeStudents.length}{" "}
-          active
-        </CardDescription>
-      </CardHeader>
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>
+            {t("descriptionPrefix")} • {activeStudents.length} {t("active")}
+          </CardDescription>
+        </CardHeader>
       <CardContent className="space-y-4">
         {/* Class averages */}
         <div className="grid grid-cols-3 gap-4 p-3 bg-muted/50 rounded-lg text-sm">
@@ -128,19 +127,19 @@ export function ClassAccuracyMetrics({
             <div className="text-lg font-bold">
               {classAverages.mcqAccuracy}%
             </div>
-            <div className="text-xs text-muted-foreground">MCQ Avg</div>
+              <div className="text-xs text-muted-foreground">{t("mcqAvg")}</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold">
               {classAverages.openEndedAccuracy}%
             </div>
-            <div className="text-xs text-muted-foreground">Open-Ended Avg</div>
+              <div className="text-xs text-muted-foreground">{t("openEndedAvg")}</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold">
               {classAverages.overallAccuracy}%
             </div>
-            <div className="text-xs text-muted-foreground">Overall Avg</div>
+              <div className="text-xs text-muted-foreground">{t("overallAvg")}</div>
           </div>
         </div>
 
@@ -149,12 +148,10 @@ export function ClassAccuracyMetrics({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Student</TableHead>
-                <TableHead className="text-right">MCQ</TableHead>
-                <TableHead className="text-right">
-                  Open-Ended (score ≥ 70%)
-                </TableHead>
-                <TableHead className="text-right">Overall</TableHead>
+                <TableHead>{t("headers.student")}</TableHead>
+                <TableHead className="text-right">{t("headers.mcq")}</TableHead>
+                <TableHead className="text-right">{t("headers.openEnded")}</TableHead>
+                <TableHead className="text-right">{t("headers.overall")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -198,7 +195,7 @@ export function ClassAccuracyMetrics({
           </Table>
         ) : (
           <div className="text-center py-8 text-muted-foreground text-sm">
-            No student activity data available
+            {t("noActivity")}
           </div>
         )}
       </CardContent>

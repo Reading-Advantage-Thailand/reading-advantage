@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useScopedI18n } from "@/locales/client";
 import {
   Card,
   CardContent,
@@ -62,6 +63,7 @@ export function WidgetShell({
   telemetryId,
   onView,
 }: WidgetShellProps) {
+  const t = useScopedI18n("components.widgetShell") as any;
   
   // Track widget view for telemetry
   useEffect(() => {
@@ -103,7 +105,7 @@ export function WidgetShell({
                     refreshing && "animate-spin"
                   )}
                 />
-                <span className="sr-only">Refresh</span>
+                <span className="sr-only">{t("refresh")}</span>
               </Button>
             )}
           </div>
@@ -114,9 +116,9 @@ export function WidgetShell({
         {loading ? (
           <WidgetLoadingState />
         ) : error ? (
-          <WidgetErrorState error={error} onRetry={onRefresh} />
+          <WidgetErrorState error={error} onRetry={onRefresh} tryAgainLabel={t("tryAgain")} />
         ) : isEmpty ? (
-          <WidgetEmptyState message={emptyMessage} Icon={EmptyIcon} />
+          <WidgetEmptyState message={emptyMessage || t("noData")} Icon={EmptyIcon} />
         ) : (
           children
         )}
@@ -132,7 +134,7 @@ export function WidgetShell({
                 onClick={onViewAll}
                 className="w-full"
               >
-                {viewAllLabel}
+                {viewAllLabel || t("viewAll")}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             )
@@ -157,9 +159,11 @@ function WidgetLoadingState() {
 function WidgetErrorState({
   error,
   onRetry,
+  tryAgainLabel,
 }: {
   error: string;
   onRetry?: () => void;
+  tryAgainLabel?: string;
 }) {
   return (
     <Alert variant="destructive">
@@ -174,7 +178,7 @@ function WidgetErrorState({
             className="w-fit"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
-            Try Again
+            {tryAgainLabel || "Try Again"}
           </Button>
         )}
       </AlertDescription>

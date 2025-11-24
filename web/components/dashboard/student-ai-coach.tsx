@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, TrendingUp, AlertTriangle, Lightbulb } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useScopedI18n } from "@/locales/client";
 
 interface AIInsight {
   id: string;
@@ -34,6 +35,7 @@ export function AICoachCard({
   loading = false,
   onRefresh,
 }: AICoachCardProps) {
+  const t = useScopedI18n("pages.student.dashboard.aiCoach");
   const getInsightIcon = (type: string) => {
     switch (type) {
       case "trend":
@@ -68,12 +70,12 @@ export function AICoachCard({
 
   return (
     <WidgetShell
-      title="AI Learning Coach"
-      description="Personalized insights based on your data"
+      title={t("title")}
+      description={t("description")}
       icon={Sparkles}
       loading={loading}
       isEmpty={!loading && topInsights.length === 0}
-      emptyMessage="Keep learning to receive AI-powered insights"
+      emptyMessage={t("emptyMessage")}
       onRefresh={onRefresh}
       telemetryId="student.ai_coach"
     >
@@ -82,7 +84,7 @@ export function AICoachCard({
         {metrics && (
           <div className="p-3 rounded-lg bg-muted/50 border border-border">
             <p className="text-xs text-muted-foreground mb-2 text-center">
-              Based on your current metrics:
+              {t("basedOnMetrics")}
             </p>
             <div className="grid grid-cols-2 gap-2 text-xs text-center">
               <div>
@@ -92,7 +94,7 @@ export function AICoachCard({
                 <span className="font-medium">
                   {metrics.velocity.toFixed(1)}
                 </span>{" "}
-                XP/day
+                {t("xpPerDay")}
               </div>
               <div>
                 <span className="font-medium">{metrics.genresRead}</span> genres
@@ -101,7 +103,7 @@ export function AICoachCard({
                 <span className="font-medium">
                   {(metrics.retentionRate * 100).toFixed(0)}%
                 </span>{" "}
-                retention
+                {t("retention")}
               </div>
             </div>
           </div>
@@ -130,10 +132,10 @@ export function AICoachCard({
                         {getInsightIcon(insight.type)}
                       </div>
                       <div className="space-y-1 flex-1">
-                        <h5 className="font-medium text-sm">{insight.title}</h5>
-                        <p className="text-xs text-muted-foreground">
-                          {insight.description}
-                        </p>
+                              <h5 className="font-medium text-sm">{insight.title}</h5>
+                              <p className="text-xs text-muted-foreground">
+                                {insight.description}
+                              </p>
                       </div>
                     </div>
                     <Badge
@@ -146,7 +148,7 @@ export function AICoachCard({
                       }
                       className="text-xs"
                     >
-                      {insight.priority}
+                      {t(`priority.${insight.priority}`) || insight.priority}
                     </Badge>
                   </div>
 
@@ -154,8 +156,8 @@ export function AICoachCard({
                     insight.relatedMetrics.length > 0 && (
                       <div className="flex items-center gap-1 flex-wrap pt-2 border-t">
                         <span className="text-xs text-muted-foreground">
-                          Related:
-                        </span>
+                            {t("related")}
+                          </span>
                         {insight.relatedMetrics.map((metric) => (
                           <Badge
                             key={metric}
@@ -176,7 +178,7 @@ export function AICoachCard({
         {/* AI Coaching Info */}
         <div className="pt-4 border-t">
           <p className="text-xs text-muted-foreground text-center">
-            💡 AI insights refresh every 24 hours based on your latest activity
+            {t("refreshNotice")}
           </p>
         </div>
       </div>

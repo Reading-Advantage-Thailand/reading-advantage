@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useScopedI18n } from "@/locales/client";
 import {
   Card,
   CardContent,
@@ -30,6 +31,7 @@ export function ClassAlignmentMatrix({
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricsAlignmentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const t = useScopedI18n("components.classAlignmentMatrix") as any;
 
   useEffect(() => {
     async function fetchData() {
@@ -78,15 +80,11 @@ export function ClassAlignmentMatrix({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>CEFR ↔ RA Alignment Matrix</CardTitle>
-          <CardDescription className="text-destructive">
-            {error}
-          </CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription className="text-destructive">{error}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Unable to load alignment data
-          </p>
+          <p className="text-sm text-muted-foreground">{t("error")}</p>
         </CardContent>
       </Card>
     );
@@ -96,8 +94,8 @@ export function ClassAlignmentMatrix({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>CEFR ↔ RA Alignment Matrix</CardTitle>
-          <CardDescription>No alignment data available</CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("noData")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -113,14 +111,11 @@ export function ClassAlignmentMatrix({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>CEFR ↔ RA Alignment Matrix</CardTitle>
+        <CardTitle>{t("title")}</CardTitle>
         <CardDescription>
-          Alignment score:{" "}
-          <Badge variant="outline">
-            {Math.round(summary.alignmentScore)}/100
-          </Badge>
+          {t("alignmentScore")} <Badge variant="outline">{Math.round(summary.alignmentScore)}/100</Badge>
           {" • "}
-          {summary.totalStudents} students with reading activity
+          {summary.totalStudents} {t("studentsWithActivity")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -130,7 +125,7 @@ export function ClassAlignmentMatrix({
               {bucketCounts.aligned}
             </div>
             <div className="text-sm font-medium text-muted-foreground">
-              Aligned
+              {t("alignedLabel")}
             </div>
             <div className="text-lg font-semibold text-green-600 mt-1">
               {bucketPercentages.aligned}%
@@ -141,7 +136,7 @@ export function ClassAlignmentMatrix({
               {bucketCounts.above}
             </div>
             <div className="text-sm font-medium text-muted-foreground">
-              Above Level
+              {t("aboveLabel")}
             </div>
             <div className="text-lg font-semibold text-amber-600 mt-1">
               {bucketPercentages.above}%
@@ -152,17 +147,15 @@ export function ClassAlignmentMatrix({
         <div className="pt-2 border-t">
           <div className="text-sm space-y-1">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Average Level:</span>
-              <span className="font-medium">
-                {summary.averageLevel.toFixed(1)}
-              </span>
+              <span className="text-muted-foreground">{t("stats.averageLevel")}</span>
+              <span className="font-medium">{summary.averageLevel.toFixed(1)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Modal Level:</span>
+              <span className="text-muted-foreground">{t("stats.modalLevel")}</span>
               <span className="font-medium">{summary.modalLevel}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Readings:</span>
+              <span className="text-muted-foreground">{t("stats.totalReadings")}</span>
               <span className="font-medium">{summary.totalReadings}</span>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, TrendingUp, Sparkles } from "lucide-react";
 import { GenreMetricsResponse } from "@/server/services/metrics/genre-engagement-service";
 import { Progress } from "@/components/ui/progress";
+import { useScopedI18n } from "@/locales/client";
 
 interface GenreEngagementWidgetProps {
   data: GenreMetricsResponse | null;
@@ -22,24 +23,25 @@ export function GenreEngagementWidget({
   onRefresh,
   onGenreClick,
 }: GenreEngagementWidgetProps) {
+  const t = useScopedI18n("pages.student.dashboard.genreEngagement");
   const topGenres = data?.topGenres?.slice(0, 5) || [];
   const recommendations = data?.recommendations?.slice(0, 3) || [];
 
   return (
     <WidgetShell
-      title="Genre Engagement"
-      description="Your reading preferences and recommendations"
+      title={t("title")}
+      description={t("description")}
       icon={BookOpen}
       loading={loading}
       isEmpty={!loading && topGenres.length === 0}
-      emptyMessage="Start reading to see your genre preferences"
+      emptyMessage={t("emptyMessage")}
       onRefresh={onRefresh}
       telemetryId="student.genre_engagement"
     >
       <div className="space-y-6">
         {/* Top Genres */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium">Your Top Genres</h4>
+          <h4 className="text-sm font-medium">{t("yourTopGenres")}</h4>
           <div className="space-y-3">
             {topGenres.map((genre, index) => (
               <div key={genre.genre} className="space-y-2">
@@ -57,7 +59,7 @@ export function GenreEngagementWidget({
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">
-                      {genre.totalReads} reads
+                      {genre.totalReads} {t("reads")}
                     </span>
                     {genre.cefrBucket && (
                       <Badge variant="outline" className="text-xs">
@@ -78,7 +80,7 @@ export function GenreEngagementWidget({
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <TrendingUp className="h-3 w-3" />
                     <span>
-                      Score: {genre.weightedEngagementScore.toFixed(1)}
+                      {t("score")} {genre.weightedEngagementScore.toFixed(1)}
                     </span>
                   </div>
                 )}
@@ -92,7 +94,7 @@ export function GenreEngagementWidget({
           <div className="space-y-3 pt-4 border-t">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              <h4 className="text-sm font-medium">Recommended for You</h4>
+              <h4 className="text-sm font-medium">{t("recommendedForYou")}</h4>
             </div>
             <div className="space-y-2">
               {recommendations.map((rec) => (
@@ -122,7 +124,7 @@ export function GenreEngagementWidget({
                       {rec.cefrAppropriate && (
                         <div className="flex items-center gap-2 text-xs">
                           <span className="text-muted-foreground">
-                            CEFR Appropriate
+                            {t("cefrAppropriate")}
                           </span>
                           <Badge variant="outline">
                             ✓
@@ -145,19 +147,19 @@ export function GenreEngagementWidget({
                 <p className="text-2xl font-bold">
                   {data.topGenres.length}
                 </p>
-                <p className="text-xs text-muted-foreground">Genres Read</p>
+                <p className="text-xs text-muted-foreground">{t("genresRead")}</p>
               </div>
               <div>
                 <p className="text-2xl font-bold">
                   {data.topGenres.reduce((sum, g) => sum + g.totalReads, 0)}
                 </p>
-                <p className="text-xs text-muted-foreground">Total Reads</p>
+                <p className="text-xs text-muted-foreground">{t("totalReads")}</p>
               </div>
               <div>
                 <p className="text-2xl font-bold">
                   {data.totalEngagementScore.toFixed(0)}
                 </p>
-                <p className="text-xs text-muted-foreground">Total Score</p>
+                <p className="text-xs text-muted-foreground">{t("totalScore")}</p>
               </div>
             </div>
           </div>

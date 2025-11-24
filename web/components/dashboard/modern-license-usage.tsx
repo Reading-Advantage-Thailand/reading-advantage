@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useScopedI18n } from "@/locales/client";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -26,6 +27,7 @@ interface License {
 }
 
 export default function ModernLicenseUsage() {
+  const t = useScopedI18n("components.modernLicenseUsage") as any;
   const [licenses, setLicenses] = useState<License[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -77,9 +79,9 @@ export default function ModernLicenseUsage() {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <School className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="font-medium text-lg mb-2">No Licenses Found</h3>
+        <h3 className="font-medium text-lg mb-2">{t("noLicenses.title")}</h3>
         <p className="text-muted-foreground text-sm">
-          No license data available at the moment.
+          {t("noLicenses.description")}
         </p>
       </div>
     );
@@ -95,9 +97,9 @@ export default function ModernLicenseUsage() {
       {/* Header with navigation */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-lg">License Usage</h3>
+          <h3 className="font-semibold text-lg">{t("title")}</h3>
           <p className="text-sm text-muted-foreground">
-            {licenses.length} school{licenses.length !== 1 ? 's' : ''} total
+            {licenses.length} {t("schools.total", { count: licenses.length })}
           </p>
         </div>
         
@@ -112,7 +114,7 @@ export default function ModernLicenseUsage() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-sm text-muted-foreground px-2">
-              {currentIndex + 1} of {licenses.length}
+              {currentIndex + 1} {t("of")} {licenses.length}
             </span>
             <Button
               variant="outline"
@@ -142,10 +144,10 @@ export default function ModernLicenseUsage() {
         {/* Usage progress */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span>Usage</span>
-            </div>
+              <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span>{t("labels.usage")}</span>
+          </div>
             <span className="font-medium">
               {currentLicense.usedLicenses} / {currentLicense.maxUsers}
             </span>
@@ -159,7 +161,7 @@ export default function ModernLicenseUsage() {
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>0</span>
             <span className={`font-medium ${isNearLimit ? 'text-orange-600' : ''}`}>
-              {usagePercentage.toFixed(1)}% used
+              {usagePercentage.toFixed(1)}% {t("labels.used")}
             </span>
             <span>{currentLicense.maxUsers}</span>
           </div>
@@ -169,7 +171,7 @@ export default function ModernLicenseUsage() {
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">Expires</span>
+            <span className="text-sm">{t("labels.expires")}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">
@@ -190,7 +192,7 @@ export default function ModernLicenseUsage() {
               <div className="flex items-center gap-2 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
                 <AlertCircle className="h-4 w-4 text-orange-600" />
                 <span className="text-sm text-orange-800 dark:text-orange-200">
-                  Usage is above 80%. Consider upgrading soon.
+                  {t("warnings.nearLimit")}
                 </span>
               </div>
             )}
@@ -198,7 +200,7 @@ export default function ModernLicenseUsage() {
               <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
                 <Calendar className="h-4 w-4 text-yellow-600" />
                 <span className="text-sm text-yellow-800 dark:text-yellow-200">
-                  License expires within 30 days.
+                  {t("warnings.expiresSoon")}
                 </span>
               </div>
             )}

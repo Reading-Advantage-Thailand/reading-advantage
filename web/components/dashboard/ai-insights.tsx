@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useScopedI18n } from "@/locales/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ interface AIInsightsProps {
 }
 
 export default function AIInsights({ className, scope, contextId }: AIInsightsProps) {
+  const t = useScopedI18n("components.aiInsights");
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [suggestions, setSuggestions] = useState<SmartSuggestion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -146,13 +148,13 @@ export default function AIInsights({ className, scope, contextId }: AIInsightsPr
       setInsights(insights.filter(i => i.id !== insightId));
       
       toast({
-        title: "Insight dismissed",
-        description: "This insight has been hidden from your view.",
+        title: t("toast.dismiss.title"),
+        description: t("toast.dismiss.description"),
       });
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Failed to dismiss insight. Please try again.",
+        title: t("toast.dismissError.title"),
+        description: t("toast.dismissError.description"),
         variant: "destructive",
       });
     }
@@ -169,13 +171,13 @@ export default function AIInsights({ className, scope, contextId }: AIInsightsPr
       if (!response.ok) throw new Error('Failed to mark action');
 
       toast({
-        title: "Action recorded",
-        description: "Thank you for acting on this insight!",
+        title: t("toast.actionRecorded.title"),
+        description: t("toast.actionRecorded.description"),
       });
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Failed to record action. Please try again.",
+        title: t("toast.actionError.title"),
+        description: t("toast.actionError.description"),
         variant: "destructive",
       });
     }
@@ -184,8 +186,8 @@ export default function AIInsights({ className, scope, contextId }: AIInsightsPr
   const handleRefresh = async () => {
     await fetchAIData(true);
     toast({
-      title: "Insights refreshed",
-      description: "AI insights have been regenerated with latest data.",
+      title: t("toast.refreshed.title"),
+      description: t("toast.refreshed.description"),
     });
   };
 
@@ -268,7 +270,7 @@ export default function AIInsights({ className, scope, contextId }: AIInsightsPr
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="h-5 w-5 text-purple-600" />
-              <CardTitle>AI Insights</CardTitle>
+              <CardTitle>{t("insights.title")}</CardTitle>
             </div>
             <Button
               variant="ghost"
@@ -280,14 +282,14 @@ export default function AIInsights({ className, scope, contextId }: AIInsightsPr
             </Button>
           </div>
           <CardDescription>
-            Intelligent analysis powered by real AI
+            {t("insights.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3">
             {insights.length === 0 && !loading && (
               <p className="text-sm text-muted-foreground text-center py-8">
-                No insights available yet. Keep using the platform to generate personalized recommendations.
+                {t("insights.empty")}
               </p>
             )}
             {insights.map((insight) => {
@@ -335,7 +337,7 @@ export default function AIInsights({ className, scope, contextId }: AIInsightsPr
                           onClick={() => handleMarkAction(insight.id)}
                         >
                           <Check className="h-3 w-3 mr-1" />
-                          Done
+                          {t("actions.done")}
                         </Button>
                         <Button
                           variant="ghost"
@@ -358,19 +360,19 @@ export default function AIInsights({ className, scope, contextId }: AIInsightsPr
       {/* Smart Suggestions - Redesigned with compact layout */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
             <Lightbulb className="h-5 w-5 text-yellow-600" />
-            Smart Suggestions
+            {t("suggestions.title")}
           </CardTitle>
           <CardDescription>
-            Actionable recommendations to optimize your platform
+            {t("suggestions.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {suggestions.length === 0 && !loading && (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Complete more activities to receive personalized suggestions.
+                {t("suggestions.empty")}
               </p>
             )}
             {suggestions.map((suggestion) => {
@@ -402,7 +404,7 @@ export default function AIInsights({ className, scope, contextId }: AIInsightsPr
                   {/* Impact */}
                   <div className="flex items-center gap-2 text-xs">
                     <Target className="h-3 w-3 text-green-600" />
-                    <span className="text-muted-foreground">Impact:</span>
+                    <span className="text-muted-foreground">{t("suggestions.impact")}</span>
                     <span className="text-green-600 font-medium">{suggestion.estimatedImpact}</span>
                   </div>
                   
@@ -410,7 +412,7 @@ export default function AIInsights({ className, scope, contextId }: AIInsightsPr
                   <details className="group/details">
                     <summary className="text-xs font-medium cursor-pointer list-none flex items-center gap-1 text-muted-foreground hover:text-foreground">
                       <ArrowRight className="h-3 w-3 transition-transform group-open/details:rotate-90" />
-                      {suggestion.actions.length} Action Items
+                      {t("suggestions.actionItems", { count: suggestion.actions.length })}
                     </summary>
                     <ul className="mt-2 space-y-1 pl-4">
                       {suggestion.actions.map((action, index) => (
