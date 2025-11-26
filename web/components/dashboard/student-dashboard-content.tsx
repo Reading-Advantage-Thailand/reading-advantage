@@ -151,7 +151,7 @@ export default function StudentDashboardContent({
   }, [fetchDashboardData]);
 
   const handlePracticeFlashcards = () => {
-    router.push("/student/practice");
+    router.push("/student/vocabulary");
   };
 
   const handleSetGoal = () => {
@@ -164,24 +164,6 @@ export default function StudentDashboardContent({
 
   return (
     <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3 mt-6">
-      {/* Page header */}
-      <div className="col-span-3">
-        <Card>
-          <CardHeader className="flex items-center justify-between">
-            <div>
-              <CardTitle>{t("title")}</CardTitle>
-              <CardDescription>{t("description")}</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={handlePracticeFlashcards}>
-                <Brain className="mr-2 h-4 w-4" />
-                {t("practiceButton")}
-              </Button>
-              <Button onClick={handleSetGoal}>{t("setGoalButton")}</Button>
-            </div>
-          </CardHeader>
-        </Card>
-      </div>
       {/* Left Column - Main Widgets */}
       <div className="flex flex-col gap-4 col-span-2">
         {/* XP Velocity */}
@@ -270,7 +252,11 @@ export default function StudentDashboardContent({
         />
 
         {/* Activity Heatmap */}
-        <CompactActivityHeatmap entityId={userId} timeframe="90d" />
+        <CompactActivityHeatmap
+          entityId={userId}
+          scope="student"
+          timeframe="90d"
+        />
       </div>
       <div className="flex flex-col gap-4 col-span-3">
         {/* AI Coach Card */}

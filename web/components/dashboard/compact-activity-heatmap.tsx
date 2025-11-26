@@ -27,15 +27,19 @@ interface ActivityData {
 }
 
 interface CompactActivityHeatmapProps {
-  entityId: string;
+  licenseId?: string;
+  entityId?: string;
   timeframe?: string;
   className?: string;
+  scope?: "student" | "class" | "school" | "license";
 }
 
 export function CompactActivityHeatmap({
+  licenseId,
   entityId,
   timeframe = "90d",
   className,
+  scope,
 }: CompactActivityHeatmapProps) {
   const t = useScopedI18n("pages.student.dashboard.compactHeatmap");
   const [data, setData] = useState<ActivityData[]>([]);
@@ -69,8 +73,11 @@ export function CompactActivityHeatmap({
         }
 
         // Step 2: Fetch activity data from API
+        const idParam = scope === "license" 
+          ? `licenseId=${licenseId}` 
+          : `entityId=${entityId}`;
         const response = await fetch(
-          `/api/v1/metrics/activity?entityId=${entityId}&scope=student&format=heatmap&timeframe=${timeframe}&granularity=day`
+          `/api/v1/metrics/activity?${idParam}&scope=${scope}&format=heatmap&timeframe=${timeframe}&granularity=day`
         );
 
         if (!response.ok) {
@@ -139,7 +146,7 @@ export function CompactActivityHeatmap({
     const refreshInterval = setInterval(fetchData, 60000);
 
     return () => clearInterval(refreshInterval);
-  }, [entityId, timeframe]);
+  }, [licenseId, timeframe]);
 
   const getColorClass = (level: number) => {
     switch (level) {
@@ -258,7 +265,9 @@ export function CompactActivityHeatmap({
               <Activity className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">{t("stats.total")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("stats.total")}
+              </p>
               <p className="text-lg font-bold">
                 {stats.total.toLocaleString()}
               </p>
@@ -269,7 +278,9 @@ export function CompactActivityHeatmap({
               <TrendingUp className="h-4 w-4 text-green-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">{t("stats.peakDay")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("stats.peakDay")}
+              </p>
               <p className="text-lg font-bold">{stats.peak}</p>
             </div>
           </div>
@@ -278,7 +289,9 @@ export function CompactActivityHeatmap({
               <TrendingUp className="h-4 w-4 text-purple-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">{t("stats.dailyAvg")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("stats.dailyAvg")}
+              </p>
               <p className="text-lg font-bold">{stats.average}</p>
             </div>
           </div>
@@ -309,13 +322,13 @@ export function CompactActivityHeatmap({
               <div className="inline-flex gap-1 min-w-full">
                 {/* Day labels */}
                 <div className="flex flex-col gap-1 mr-2 text-xs text-muted-foreground justify-around py-1">
-                    <span>{t("dow.sun")}</span>
-                    <span>{t("dow.mon")}</span>
-                    <span>{t("dow.tue")}</span>
-                    <span>{t("dow.wed")}</span>
-                    <span>{t("dow.thu")}</span>
-                    <span>{t("dow.fri")}</span>
-                    <span>{t("dow.sat")}</span>
+                  <span>{t("dow.sun")}</span>
+                  <span>{t("dow.mon")}</span>
+                  <span>{t("dow.tue")}</span>
+                  <span>{t("dow.wed")}</span>
+                  <span>{t("dow.thu")}</span>
+                  <span>{t("dow.fri")}</span>
+                  <span>{t("dow.sat")}</span>
                 </div>
 
                 {/* Grid by weeks (columns) */}

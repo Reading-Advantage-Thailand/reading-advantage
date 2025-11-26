@@ -21,7 +21,7 @@ interface ActivityHeatmapBucket {
 }
 
 interface ActivityHeatmapResponse {
-  scope: "student" | "class" | "school";
+  scope: "student" | "class" | "school" | "license";
   entityId: string;
   timeframe: string;
   granularity: "hour" | "day";
@@ -152,7 +152,7 @@ async function getActivityHeatmap(
 
   // Parse parameters
   const scope =
-    (searchParams.get("scope") as "student" | "class" | "school") ||
+    (searchParams.get("scope") as "student" | "class" | "school" | "license") ||
     (session.user.role === "STUDENT"
       ? "student"
       : session.user.role === "TEACHER"
@@ -160,7 +160,7 @@ async function getActivityHeatmap(
         : "school");
 
   // Determine entityId based on scope and params
-  let entityId = searchParams.get("entityId");
+  let entityId = searchParams.get("entityId") || searchParams.get("licenseId");
 
   if (!entityId) {
     if (scope === "student") {
@@ -237,6 +237,22 @@ async function getActivityHeatmap(
         }
 
         userIds = schoolUsers.map((u) => u.id);
+        whereClause.userId = {
+          in: userIds,
+        };
+      } else if (scope === "license") {
+        // Get users from the license in transaction
+        const licenseUsers = await tx.licenseOnUser.findMany({
+          where: { licenseId: entityId },
+          select: { userId: true },
+          take: 1000, // Limit to prevent huge result sets
+        });
+
+        if (licenseUsers.length === 0) {
+          return null; // Will handle empty case outside transaction
+        }
+
+        userIds = licenseUsers.map((lu) => lu.userId);
         whereClause.userId = {
           in: userIds,
         };
@@ -444,7 +460,7 @@ async function getActivityTimeline(
   const { searchParams } = new URL(req.url);
 
   // Determine scope based on role and parameters
-  const requestedScope = searchParams.get("scope") as "student" | "class" | "school" | null;
+  const requestedScope = searchParams.get("scope") as "student" | "class" | "school" | "license" | null;
   const scope = requestedScope || 
     (session.user.role === "STUDENT" ? "student" :
      session.user.role === "TEACHER" ? "class" : "school");
@@ -535,6 +551,14 @@ async function getActivityTimeline(
         select: { studentId: true },
       });
       userIds = classUsers.map(u => u.studentId);
+    } else if (scope === "license") {
+      // Get users from the license
+      const licenseUsers = await prisma.licenseOnUser.findMany({
+        where: { licenseId: entityId },
+        select: { userId: true },
+        take: 1000, // Limit to prevent excessive queries
+      });
+      userIds = licenseUsers.map(lu => lu.userId);
     }
     
     if (userIds.length === 0) {

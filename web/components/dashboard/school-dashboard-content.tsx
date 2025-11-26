@@ -332,8 +332,9 @@ export function SchoolDashboardContent({
         />
 
         <CompactActivityHeatmap
-          entityId={selectedLicenseId}
+          licenseId={selectedLicenseId}
           timeframe={timeframe}
+          scope="license"
         />
 
         {/* AI Insights and Smart Suggestions - Full Width Container */}

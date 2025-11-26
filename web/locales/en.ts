@@ -310,11 +310,11 @@ export default {
           overdue: "Overdue",
           onTrack: "On track",
         },
+        title: "Student Dashboard",
+        description: "Overview of your learning progress and recommendations",
+        practiceButton: "Practice Flashcards",
+        setGoalButton: "Set a Goal",
       },
-      title: "Student Dashboard",
-      description: "Overview of your learning progress and recommendations",
-      practiceButton: "Practice Flashcards",
-      setGoalButton: "Set a Goal",
       readPage: {
         //Headings
         articleSelection: "Article Selection",

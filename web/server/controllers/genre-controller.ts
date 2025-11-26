@@ -392,8 +392,8 @@ async function checkEnhancedAuthorization(
             error: "Teacher does not have access to this student",
           };
         }
-      } else if (user.role === "ADMIN") {
-        // System admins can access any student
+      } else if (user.role === "ADMIN" || user.role === "SYSTEM") {
+        // System admins and system users can access any student
       } else {
         return { authorized: false, error: "Insufficient permissions" };
       }
@@ -411,8 +411,8 @@ async function checkEnhancedAuthorization(
             { teachers: { some: { teacherId: user.id } } },
             // Student is in the classroom
             { students: { some: { studentId: user.id } } },
-            // School admin access
-            ...(user.role === "ADMIN" ? [{}] : []),
+            // System admin access
+            ...(user.role === "ADMIN" || user.role === "SYSTEM" ? [{}] : []),
           ],
         },
       });
@@ -424,8 +424,8 @@ async function checkEnhancedAuthorization(
 
     case "school":
       // Check school access
-      if (user.role === "ADMIN") {
-        // System admins can access any school
+      if (user.role === "ADMIN" || user.role === "SYSTEM") {
+        // System admins and system users can access any school
       } else if (user.schoolId === scopeId) {
         // Users can access their own school's data
       } else {

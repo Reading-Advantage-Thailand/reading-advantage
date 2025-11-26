@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import StudentDashboardContent from "@/components/dashboard/student-dashboard-content";
 
 export default async function ReportsPage() {
-  const t = await getScopedI18n("pages.student.reportpage");
+  const t = await getScopedI18n("pages.student.dashboard");
   const user = await getCurrentUser();
   
   if (!user) {
