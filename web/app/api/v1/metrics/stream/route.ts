@@ -6,8 +6,48 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getPostgresListener, MetricsUpdatePayload } from '@/lib/cache/postgres-listener';
 import { getMetricsCacheStats } from '@/lib/cache/metrics';
+
+// Simple in-memory event emitter for metrics updates
+interface MetricsUpdatePayload {
+  views: string[];
+  timestamp: string;
+  success: number;
+  failed: number;
+}
+
+class SimpleMetricsEmitter {
+  private listeners: ((data: MetricsUpdatePayload) => void)[] = [];
+
+  on(event: string, listener: (data: MetricsUpdatePayload) => void) {
+    if (event === 'metrics:update') {
+      this.listeners.push(listener);
+    }
+  }
+
+  off(event: string, listener: (data: MetricsUpdatePayload) => void) {
+    if (event === 'metrics:update') {
+      const index = this.listeners.indexOf(listener);
+      if (index > -1) {
+        this.listeners.splice(index, 1);
+      }
+    }
+  }
+
+  emit(event: string, data: MetricsUpdatePayload) {
+    if (event === 'metrics:update') {
+      this.listeners.forEach(listener => {
+        try {
+          listener(data);
+        } catch (error) {
+          console.error('[SSE] Listener error:', error);
+        }
+      });
+    }
+  }
+}
+
+const metricsEmitter = new SimpleMetricsEmitter();
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,15 +89,12 @@ export async function GET(req: NextRequest) {
         stats: getMetricsCacheStats(),
       });
 
-      // Get PostgreSQL listener
-      const listener = getPostgresListener();
-
       // Handle metrics updates
       const onMetricsUpdate = (payload: MetricsUpdatePayload) => {
         send('metrics:update', payload);
       };
 
-      listener.on('metrics:update', onMetricsUpdate);
+      metricsEmitter.on('metrics:update', onMetricsUpdate);
 
       // Send periodic heartbeat to keep connection alive
       const heartbeat = setInterval(() => {
@@ -73,13 +110,11 @@ export async function GET(req: NextRequest) {
 
       // Cleanup on connection close
       req.signal.addEventListener('abort', () => {
-        listener.off('metrics:update', onMetricsUpdate);
+        metricsEmitter.off('metrics:update', onMetricsUpdate);
         clearInterval(heartbeat);
         controller.close();
-        console.log('[SSE] Client disconnected');
       });
 
-      console.log('[SSE] Client connected');
     },
   });
 

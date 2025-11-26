@@ -382,19 +382,28 @@ export async function checkMatviewsHealth(): Promise<{
 }> {
   const viewNames = [
     'mv_student_velocity',
+    'mv_class_velocity',
+    'mv_school_velocity',
     'mv_assignment_funnel',
+    'mv_class_assignment_funnel',
+    'mv_school_assignment_funnel',
     'mv_srs_health',
     'mv_genre_engagement',
     'mv_activity_heatmap',
-    'mv_cefr_ra_alignment',
+    'mv_alignment_metrics',
     'mv_daily_activity_rollups',
   ];
 
-  const results = await Promise.all(
-    viewNames.map(async (viewName) => {
+  // Use single transaction for all health checks to optimize connections
+  const results = await prisma.$transaction(async (tx) => {
+    const viewChecks = [];
+    
+    for (const viewName of viewNames) {
       try {
+        console.log(`[HEALTH] Checking materialized view: ${viewName}`);
+        
         const [existsResult, statsResult] = await Promise.all([
-          prisma.$queryRawUnsafe<Array<{ exists: boolean }>>(
+          tx.$queryRawUnsafe<Array<{ exists: boolean }>>(
             `
             SELECT EXISTS (
               SELECT 1 FROM pg_matviews
@@ -403,7 +412,7 @@ export async function checkMatviewsHealth(): Promise<{
             `,
             viewName
           ),
-          prisma.$queryRawUnsafe<Array<{ last_refresh: Date | null; row_count: bigint | null }>>(
+          tx.$queryRawUnsafe<Array<{ last_refresh: Date | null; row_count: bigint | null }>>(
             `
             SELECT
               pg_stat_get_last_analyze_time(c.oid) as last_refresh,
@@ -413,30 +422,37 @@ export async function checkMatviewsHealth(): Promise<{
             WHERE c.relname = $1 AND n.nspname = 'public'
             `,
             viewName
-          ),
+          ).catch(() => [{ last_refresh: null, row_count: null }]), // Handle potential table doesn't exist error
         ]);
 
         const exists = existsResult[0]?.exists || false;
         const lastRefresh = statsResult[0]?.last_refresh || null;
         const rowCount = statsResult[0]?.row_count ? Number(statsResult[0].row_count) : null;
 
-        return {
+        viewChecks.push({
           name: viewName,
           exists,
           lastRefresh,
           rowCount,
-        };
+        });
       } catch (error) {
         console.error(`[HEALTH] Error checking ${viewName}:`, error);
-        return {
+        viewChecks.push({
           name: viewName,
           exists: false,
           lastRefresh: null,
           rowCount: null,
-        };
+        });
       }
-    })
-  );
+      
+      // Small delay between checks to prevent overwhelming the connection
+      if (viewNames.indexOf(viewName) < viewNames.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+    }
+    
+    return viewChecks;
+  });
 
   const healthy = results.every((r) => r.exists && r.rowCount !== null);
 

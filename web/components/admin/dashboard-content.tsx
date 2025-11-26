@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useScopedI18n } from "@/locales/client";
 import {
   Card,
   CardContent,
@@ -48,6 +49,7 @@ export default function DashboardContent({
   userRole,
   allLicenses = [],
 }: DashboardContentProps) {
+  const t = useScopedI18n("pages.admin.dashboard") as any;
   const [selectedLicenseId, setSelectedLicenseId] = useState<string>(
     initialData.license[0]?.id || ""
   );
@@ -89,13 +91,13 @@ export default function DashboardContent({
 
       <div className="text-xl sm:text-2xl md:text-3xl font-bold truncate">
         <h1 className="px-2">
-          School : {dashboardData?.license[0]?.school_name}
+          {t("schoolLabel")} {dashboardData?.license[0]?.school_name}
         </h1>
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="text-lg">Loading dashboard data...</div>
+          <div className="text-lg">{t("loading")}</div>
         </div>
       ) : (
         <>
@@ -103,7 +105,7 @@ export default function DashboardContent({
             <Card>
               <CardHeader className="min-h-10">
                 <CardTitle className="text-1xl text-center">
-                  Total Licensed Users
+                  {t("cards.totalLicensedUsers")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -116,7 +118,7 @@ export default function DashboardContent({
             <Card>
               <CardHeader>
                 <CardTitle className="text-1xl text-center">
-                  Average CEFR Level
+                  {t("cards.averageCefrLevel")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -129,12 +131,12 @@ export default function DashboardContent({
             <Card>
               <CardHeader>
                 <CardTitle className="text-1xl font-medium text-center">
-                  Total XP Gained (Last 30 Days)
+                  {t("cards.totalXpGained")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold text-center">
-                  {dashboardData?.xpEarned?.toLocaleString() || 0} XP
+                  {dashboardData?.xpEarned?.toLocaleString() || 0} {t("xpSuffix")}
                 </p>
               </CardContent>
             </Card>
@@ -142,7 +144,7 @@ export default function DashboardContent({
             <Card>
               <CardHeader>
                 <CardTitle className="text-1xl text-center">
-                  Licensed Teachers
+                  {t("cards.licensedTeachers")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -157,7 +159,7 @@ export default function DashboardContent({
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl text-center">
-                  Average Article CEFR Level
+                  {t("cards.averageArticleCefrLevel")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -166,16 +168,14 @@ export default function DashboardContent({
                   <>
                     <LineChartCustom data={dashboardData.filteredActivityLog} />
                     <p className="text-xs text-muted-foreground text-center mt-2">
-                      Based on articles read by users over the last 6 months
+                      {t("articleNote")}
                     </p>
                   </>
                 ) : (
                   <div className="flex items-center justify-center h-[300px] text-muted-foreground">
                     <div className="text-center">
-                      <p className="text-lg font-medium">No data available</p>
-                      <p className="text-sm mt-2">
-                        No article reading activities found
-                      </p>
+                      <p className="text-lg font-medium">{t("noDataTitle")}</p>
+                      <p className="text-sm mt-2">{t("noArticleActivities")}</p>
                     </div>
                   </div>
                 )}

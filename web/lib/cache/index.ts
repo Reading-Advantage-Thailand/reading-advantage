@@ -21,15 +21,13 @@ export type {
   CacheMetrics,
 } from './metrics';
 
-// PostgreSQL LISTEN/NOTIFY
-export {
-  getPostgresListener,
-} from './postgres-listener';
-
-export type {
-  MetricsUpdatePayload,
-  PostgresNotification,
-} from './postgres-listener';
+// Metrics update types (moved inline due to build compatibility)
+export interface MetricsUpdatePayload {
+  views: string[];
+  timestamp: string;
+  success: number;
+  failed: number;
+}
 
 // Fallback queries
 export {

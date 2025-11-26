@@ -1,6 +1,6 @@
 /**
  * Centralized metrics cache with stale-while-revalidate behavior
- * 
+ *
  * This module provides cache helpers for materialized view queries with:
  * - Stale-while-revalidate (SWR) pattern
  * - Automatic invalidation on metrics:update events
@@ -8,7 +8,13 @@
  * - Observability hooks for monitoring
  */
 
-import { getPostgresListener, MetricsUpdatePayload } from './postgres-listener';
+// Remove postgres listener dependency for build compatibility
+export interface MetricsUpdatePayload {
+  views: string[];
+  timestamp: string;
+  success: number;
+  failed: number;
+}
 
 export interface CacheEntry<T> {
   data: T;
@@ -48,10 +54,14 @@ class MetricsCache {
    * Initialize PostgreSQL listener for cache invalidation
    */
   private initializeListener(): void {
-    if (this.listenerInitialized || typeof window !== 'undefined') {
+    if (this.listenerInitialized || typeof window !== "undefined") {
       return;
     }
 
+    // Disable PG-LISTENER temporarily to reduce connection pool usage
+    return;
+
+    /* Commented out to reduce connection pool usage
     try {
       const listener = getPostgresListener();
       
@@ -64,21 +74,20 @@ class MetricsCache {
     } catch (error) {
       console.error('[CACHE] Failed to initialize listener:', error);
     }
+    */
   }
 
   /**
    * Handle metrics update notifications
    */
   private handleMetricsUpdate(payload: MetricsUpdatePayload): void {
-    console.log('[CACHE] Handling metrics update:', payload);
-
     // Invalidate caches for updated views
     for (const viewName of payload.views) {
       this.invalidateByPrefix(viewName);
     }
 
     // Also invalidate aggregated caches
-    this.invalidateByPrefix('metrics:');
+    this.invalidateByPrefix("metrics:");
   }
 
   /**
@@ -117,25 +126,22 @@ class MetricsCache {
     // Cache hit - fresh data
     if (cached && now < cached.staleAt) {
       metrics.hits++;
-      console.log(`[CACHE] HIT (fresh): ${key}`);
       return cached.data;
     }
 
     // Cache hit - stale data (trigger background refresh)
     if (cached && now < cached.timestamp + ttl) {
       metrics.staleHits++;
-      console.log(`[CACHE] HIT (stale): ${key} - refreshing in background`);
-      
+
       // Trigger background refresh (fire-and-forget)
       this.refreshInBackground(key, fetcher, options);
-      
+
       return cached.data;
     }
 
     // Cache miss - fetch fresh data
     metrics.misses++;
-    console.log(`[CACHE] MISS: ${key}`);
-    
+
     return this.fetchAndCache(key, fetcher, options);
   }
 
@@ -147,14 +153,10 @@ class MetricsCache {
     fetcher: () => Promise<T>,
     options: CacheOptions
   ): Promise<T> {
-    const {
-      ttl = 15 * 60 * 1000,
-      staleTime = 5 * 60 * 1000,
-    } = options;
+    const { ttl = 15 * 60 * 1000, staleTime = 5 * 60 * 1000 } = options;
 
     // Check if refresh is already pending
     if (this.pendingRefresh.has(key)) {
-      console.log(`[CACHE] Waiting for pending refresh: ${key}`);
       return this.pendingRefresh.get(key)!;
     }
 
@@ -169,13 +171,12 @@ class MetricsCache {
           staleAt: now + staleTime,
         });
 
-        console.log(`[CACHE] SET: ${key}`);
         return data;
       } catch (error) {
         const metrics = this.getMetricsTracker(key);
         metrics.errors++;
         metrics.lastError = String(error);
-        
+
         console.error(`[CACHE] Error fetching ${key}:`, error);
         throw error;
       } finally {
@@ -213,7 +214,6 @@ class MetricsCache {
       this.cache.delete(key);
       const metrics = this.getMetricsTracker(key);
       metrics.invalidations++;
-      console.log(`[CACHE] INVALIDATE: ${key}`);
     }
   }
 
@@ -230,9 +230,6 @@ class MetricsCache {
         count++;
       }
     }
-    if (count > 0) {
-      console.log(`[CACHE] INVALIDATE (prefix): ${prefix} - ${count} entries`);
-    }
   }
 
   /**
@@ -241,7 +238,6 @@ class MetricsCache {
   clear(): void {
     const count = this.cache.size;
     this.cache.clear();
-    console.log(`[CACHE] CLEAR: ${count} entries`);
   }
 
   /**
@@ -249,13 +245,15 @@ class MetricsCache {
    */
   getCacheMetrics(key?: string): CacheMetrics | Map<string, CacheMetrics> {
     if (key) {
-      return this.metrics.get(key) || {
-        hits: 0,
-        misses: 0,
-        staleHits: 0,
-        invalidations: 0,
-        errors: 0,
-      };
+      return (
+        this.metrics.get(key) || {
+          hits: 0,
+          misses: 0,
+          staleHits: 0,
+          invalidations: 0,
+          errors: 0,
+        }
+      );
     }
     return this.metrics;
   }
@@ -288,9 +286,8 @@ class MetricsCache {
     }
 
     const totalRequests = totalHits + totalMisses + totalStaleHits;
-    const hitRate = totalRequests > 0 
-      ? (totalHits + totalStaleHits) / totalRequests 
-      : 0;
+    const hitRate =
+      totalRequests > 0 ? (totalHits + totalStaleHits) / totalRequests : 0;
 
     return {
       size: this.cache.size,

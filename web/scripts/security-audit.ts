@@ -1,12 +1,12 @@
 /**
  * Security Audit Script
- * 
+ *
  * Scans controller files for potential security gaps:
  * - Missing authorization guards
  * - Direct getCurrentUser() usage without guards
  * - Unscoped database queries
  * - Missing tenant filters
- * 
+ *
  * Usage: npx ts-node scripts/security-audit.ts
  */
 
@@ -66,8 +66,12 @@ class SecurityAuditor {
     this.filesScanned++;
 
     // Check for guard imports
-    const hasGuardImports = content.includes("from \"@/server/middleware/guards\"");
-    const hasAuthHelperImports = content.includes("from \"@/server/utils/authorization\"");
+    const hasGuardImports = content.includes(
+      'from "@/server/middleware/guards"'
+    );
+    const hasAuthHelperImports = content.includes(
+      'from "@/server/utils/authorization"'
+    );
 
     // Check for old-style auth
     const usesGetCurrentUser = content.includes("getCurrentUser()");
@@ -89,7 +93,8 @@ class SecurityAuditor {
           line: lineNumber,
           severity: "high",
           type: "MISSING_GUARD",
-          message: "Using getCurrentUser() without guard. Migrate to requireRole() or requireAuth().",
+          message:
+            "Using getCurrentUser() without guard. Migrate to requireRole() or requireAuth().",
           code: line.trim(),
         });
       }
@@ -105,7 +110,8 @@ class SecurityAuditor {
           line: lineNumber,
           severity: "medium",
           type: "INLINE_ROLE_CHECK",
-          message: "Inline role check detected. Consider using requireRole() guard.",
+          message:
+            "Inline role check detected. Consider using requireRole() guard.",
           code: line.trim(),
         });
       }
@@ -121,7 +127,8 @@ class SecurityAuditor {
           line: lineNumber,
           severity: "high",
           type: "UNSCOPED_QUERY",
-          message: "Unscoped database query. Consider using buildSchoolFilter() or buildClassroomFilter().",
+          message:
+            "Unscoped database query. Consider using buildSchoolFilter() or buildClassroomFilter().",
           code: line.trim(),
         });
       }
@@ -136,13 +143,17 @@ class SecurityAuditor {
       ) {
         // Only flag if this appears to be a multi-tenant query
         const nextLines = lines.slice(index, index + 10).join("\n");
-        if (nextLines.includes("prisma.user") || nextLines.includes("prisma.classroom")) {
+        if (
+          nextLines.includes("prisma.user") ||
+          nextLines.includes("prisma.classroom")
+        ) {
           this.issues.push({
             file: relativePath,
             line: lineNumber,
             severity: "medium",
             type: "MISSING_TENANT_FILTER",
-            message: "Query may need tenant scoping. Consider using buildSchoolFilter().",
+            message:
+              "Query may need tenant scoping. Consider using buildSchoolFilter().",
             code: line.trim(),
           });
         }
@@ -159,7 +170,8 @@ class SecurityAuditor {
             line: lineNumber,
             severity: "low",
             type: "MISSING_STUDENT_GUARD",
-            message: "Direct user ID check. Consider using requireStudentSelf() guard.",
+            message:
+              "Direct user ID check. Consider using requireStudentSelf() guard.",
             code: line.trim(),
           });
         }
@@ -176,7 +188,8 @@ class SecurityAuditor {
           line: lineNumber,
           severity: "high",
           type: "UNPROTECTED_DELETE",
-          message: "DELETE endpoint without visible guard. Ensure authorization is present.",
+          message:
+            "DELETE endpoint without visible guard. Ensure authorization is present.",
           code: line.trim(),
         });
       }
@@ -192,14 +205,16 @@ class SecurityAuditor {
           line: lineNumber,
           severity: "high",
           type: "UNPROTECTED_POST",
-          message: "POST endpoint without visible guard. Ensure authorization is present.",
+          message:
+            "POST endpoint without visible guard. Ensure authorization is present.",
           code: line.trim(),
         });
       }
 
       // Pattern 8: Missing authorization for PATCH/PUT operations
       if (
-        (line.includes("export async function PATCH") || line.includes("export async function PUT")) &&
+        (line.includes("export async function PATCH") ||
+          line.includes("export async function PUT")) &&
         !content.slice(0, content.indexOf(line)).includes("requireRole") &&
         !content.slice(0, content.indexOf(line)).includes("requireAuth")
       ) {
@@ -208,7 +223,8 @@ class SecurityAuditor {
           line: lineNumber,
           severity: "high",
           type: "UNPROTECTED_UPDATE",
-          message: "UPDATE endpoint without visible guard. Ensure authorization is present.",
+          message:
+            "UPDATE endpoint without visible guard. Ensure authorization is present.",
           code: line.trim(),
         });
       }
@@ -221,7 +237,8 @@ class SecurityAuditor {
         line: 1,
         severity: "medium",
         type: "MISSING_GUARD_IMPORT",
-        message: "File uses authentication but doesn't import guards. Consider migrating to guard-based auth.",
+        message:
+          "File uses authentication but doesn't import guards. Consider migrating to guard-based auth.",
       });
     }
   }
@@ -232,14 +249,16 @@ class SecurityAuditor {
   public audit(controllersPath: string): AuditReport {
     const files = this.scanDirectory(controllersPath);
 
-    console.log(`🔍 Scanning ${files.length} controller files...\n`);
-
     files.forEach((file) => {
       this.analyzeFile(file);
     });
 
-    const highSeverity = this.issues.filter((i) => i.severity === "high").length;
-    const mediumSeverity = this.issues.filter((i) => i.severity === "medium").length;
+    const highSeverity = this.issues.filter(
+      (i) => i.severity === "high"
+    ).length;
+    const mediumSeverity = this.issues.filter(
+      (i) => i.severity === "medium"
+    ).length;
     const lowSeverity = this.issues.filter((i) => i.severity === "low").length;
 
     return {
@@ -252,7 +271,10 @@ class SecurityAuditor {
       issues: this.issues.sort((a, b) => {
         // Sort by severity, then by file
         const severityOrder = { high: 0, medium: 1, low: 2 };
-        return severityOrder[a.severity] - severityOrder[b.severity] || a.file.localeCompare(b.file);
+        return (
+          severityOrder[a.severity] - severityOrder[b.severity] ||
+          a.file.localeCompare(b.file)
+        );
       }),
     };
   }
@@ -270,7 +292,9 @@ class SecurityAuditor {
     console.log(`   🔴 High Severity: ${report.highSeverity}`);
     console.log(`   🟡 Medium Severity: ${report.mediumSeverity}`);
     console.log(`   🟢 Low Severity: ${report.lowSeverity}`);
-    console.log("═══════════════════════════════════════════════════════════\n");
+    console.log(
+      "═══════════════════════════════════════════════════════════\n"
+    );
 
     if (report.issues.length === 0) {
       console.log("✅ No security issues found!\n");
@@ -291,7 +315,11 @@ class SecurityAuditor {
       console.log("─".repeat(60));
       issues.forEach((issue) => {
         const severityIcon =
-          issue.severity === "high" ? "🔴" : issue.severity === "medium" ? "🟡" : "🟢";
+          issue.severity === "high"
+            ? "🔴"
+            : issue.severity === "medium"
+              ? "🟡"
+              : "🟢";
         console.log(
           `  ${severityIcon} Line ${issue.line}: [${issue.type}] ${issue.message}`
         );
@@ -301,7 +329,9 @@ class SecurityAuditor {
       });
     });
 
-    console.log("\n═══════════════════════════════════════════════════════════");
+    console.log(
+      "\n═══════════════════════════════════════════════════════════"
+    );
     console.log("                   RECOMMENDATIONS");
     console.log("═══════════════════════════════════════════════════════════");
     console.log("1. Migrate old getCurrentUser() patterns to guard-based auth");

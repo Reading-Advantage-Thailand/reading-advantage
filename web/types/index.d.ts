@@ -256,3 +256,9 @@ export type articleShowcaseType = {
   is_read: boolean;
   is_approved: boolean;
 };
+
+// CSS Module declarations
+declare module "*.css" {
+  const content: { [className: string]: string };
+  export default content;
+}

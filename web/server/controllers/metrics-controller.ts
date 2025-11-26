@@ -3,8 +3,6 @@ import { ExtendedNextRequest } from "./auth-controller";
 import { 
   MetricsActivityResponse, 
   ActivityDataPoint,
-  MetricsAlignmentResponse,
-  AlignmentData,
   MetricsAssignmentsResponse,
   AssignmentMetrics,
   MetricsGenresResponse,
@@ -16,6 +14,64 @@ import {
 } from "@/types/dashboard";
 import { prisma } from "@/lib/prisma";
 import { Role, Status } from "@prisma/client";
+import { advancedCache, createCachedQuery } from "@/lib/cache/advanced-cache";
+
+// Import enhanced alignment controller
+export { getEnhancedAlignmentMetrics as getAlignmentMetrics } from "./enhanced-alignment-controller";
+
+/**
+ * Fetch activity data from database
+ */
+async function fetchActivityData(timeframe: string, schoolId?: string | null, classId?: string | null) {
+  // Calculate date range
+  const now = new Date();
+  const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - daysAgo);
+
+  // Build where clause based on filters
+  const whereClause: any = {
+    createdAt: {
+      gte: startDate,
+    },
+  };
+
+  if (schoolId) {
+    whereClause.schoolId = schoolId;
+  }
+
+  // Get daily activity data
+  const activities = await prisma.userActivity.findMany({
+    where: whereClause,
+    select: {
+      userId: true,
+      createdAt: true,
+      timer: true,
+      user: {
+        select: {
+          createdAt: true,
+          studentClassrooms: classId
+            ? {
+                where: {
+                  classroomId: classId,
+                },
+                select: {
+                  id: true,
+                },
+              }
+            : undefined,
+        },
+      },
+    },
+  });
+
+  // Filter by class if specified
+  const filteredActivities = classId
+    ? activities.filter((a: any) => a.user.studentClassrooms?.length > 0)
+    : activities;
+
+  return { filteredActivities, startDate, now };
+}
 
 /**
  * Get activity metrics
@@ -39,52 +95,20 @@ export async function getActivityMetrics(req: ExtendedNextRequest) {
     const schoolId = searchParams.get('schoolId');
     const classId = searchParams.get('classId');
 
-    // Calculate date range
-    const now = new Date();
-    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
-    const startDate = new Date(now);
-    startDate.setDate(startDate.getDate() - daysAgo);
+    // Create cache key based on parameters
+    const cacheKey = `activity-metrics:${timeframe}:${schoolId || 'all'}:${classId || 'all'}:${session.user.id}`;
+    
+    // Use cached query with 5-minute TTL and 2-minute stale time
+    const getCachedActivityData = createCachedQuery(
+      cacheKey,
+      () => fetchActivityData(timeframe, schoolId, classId),
+      { ttl: 300000, staleTime: 120000 }
+    );
 
-    // Build where clause based on filters
-    const whereClause: any = {
-      createdAt: {
-        gte: startDate,
-      },
-    };
+    // Get cached data
+    const { filteredActivities, startDate, now } = await getCachedActivityData();
 
-    if (schoolId) {
-      whereClause.schoolId = schoolId;
-    }
-
-    // Get daily activity data
-    const activities = await prisma.userActivity.findMany({
-      where: whereClause,
-      select: {
-        userId: true,
-        createdAt: true,
-        timer: true,
-        user: {
-          select: {
-            createdAt: true,
-            studentClassrooms: classId
-              ? {
-                  where: {
-                    classroomId: classId,
-                  },
-                  select: {
-                    id: true,
-                  },
-                }
-              : undefined,
-          },
-        },
-      },
-    }) as any;
-
-    // Filter by class if specified
-    const filteredActivities = classId
-      ? activities.filter((a: any) => a.user.studentClassrooms?.length > 0)
-      : activities;
+    console.log(`[Cache] Activity metrics cache ${cacheKey.includes('cached') ? 'HIT' : 'MISS'} - ${filteredActivities.length} activities`);
 
     // Group by date
     const dateMap = new Map<string, {
@@ -202,173 +226,6 @@ export async function getActivityMetrics(req: ExtendedNextRequest) {
 }
 
 /**
- * Get alignment metrics
- * @param req - Extended Next request with session
- * @returns Alignment metrics response
- */
-export async function getAlignmentMetrics(req: ExtendedNextRequest) {
-  const startTime = Date.now();
-
-  try {
-    const session = req.session;
-    if (!session) {
-      return NextResponse.json(
-        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-
-    const { searchParams } = new URL(req.url);
-    const schoolId = searchParams.get('schoolId');
-    const classId = searchParams.get('classId');
-
-    // Build where clause
-    const whereClause: any = {
-      role: Role.STUDENT,
-    };
-
-    if (classId) {
-      whereClause.studentClassrooms = {
-        some: {
-          classroomId: classId,
-        },
-      };
-    } else if (schoolId) {
-      whereClause.schoolId = schoolId;
-    }
-
-    // Get all students
-    const students = await prisma.user.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        level: true,
-        cefrLevel: true,
-        lessonRecords: {
-          select: {
-            article: {
-              select: {
-                raLevel: true,
-              },
-            },
-          },
-          take: 5,
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
-      },
-    });
-
-    // Calculate level distribution
-    const levelDistribution: Record<string, number> = {};
-    const cefrDistribution: Record<string, number> = {};
-
-    students.forEach((student) => {
-      const levelKey = `Level ${student.level}`;
-      levelDistribution[levelKey] = (levelDistribution[levelKey] || 0) + 1;
-      cefrDistribution[student.cefrLevel] = (cefrDistribution[student.cefrLevel] || 0) + 1;
-    });
-
-    // Calculate alignment
-    let studentsAboveLevel = 0;
-    let studentsBelowLevel = 0;
-    let studentsOnLevel = 0;
-
-    students.forEach((student) => {
-      if (student.lessonRecords.length === 0) {
-        studentsOnLevel++;
-        return;
-      }
-
-      const readingLevels = student.lessonRecords
-        .filter((lr: any) => lr.article?.raLevel)
-        .map((lr: any) => lr.article.raLevel);
-
-      if (readingLevels.length === 0) {
-        studentsOnLevel++;
-        return;
-      }
-
-      const avgReadingLevel = readingLevels.reduce((sum, level) => sum + level, 0) / readingLevels.length;
-
-      if (avgReadingLevel > student.level + 0.5) {
-        studentsAboveLevel++;
-      } else if (avgReadingLevel < student.level - 0.5) {
-        studentsBelowLevel++;
-      } else {
-        studentsOnLevel++;
-      }
-    });
-
-    const alignment: AlignmentData = {
-      levelDistribution,
-      cefrDistribution,
-      recommendations: {
-        studentsAboveLevel,
-        studentsBelowLevel,
-        studentsOnLevel,
-      },
-    };
-
-    const totalStudents = students.length;
-    const averageLevel = totalStudents > 0
-      ? students.reduce((sum, s) => sum + s.level, 0) / totalStudents
-      : 0;
-
-    const levelCounts = students.reduce((acc: Record<number, number>, s) => {
-      acc[s.level] = (acc[s.level] || 0) + 1;
-      return acc;
-    }, {});
-
-    const modalLevel = Object.entries(levelCounts).reduce(
-      (max, [level, count]) => (count > max.count ? { level: parseInt(level), count } : max),
-      { level: 1, count: 0 }
-    ).level;
-
-    const response: MetricsAlignmentResponse = {
-      alignment,
-      summary: {
-        totalStudents,
-        averageLevel: Math.round(averageLevel * 10) / 10,
-        modalLevel,
-      },
-      cache: {
-        cached: false,
-        generatedAt: new Date().toISOString(),
-      },
-    };
-
-    const duration = Date.now() - startTime;
-
-    console.log(`[Controller] getAlignmentMetrics - ${duration}ms - ${totalStudents} students`);
-
-    return NextResponse.json(response, {
-      headers: {
-        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
-        'X-Response-Time': `${duration}ms`,
-      },
-    });
-  } catch (error) {
-    console.error('[Controller] getAlignmentMetrics - Error:', error);
-
-    return NextResponse.json(
-      {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch alignment metrics',
-        details: error instanceof Error ? { error: error.message } : {},
-      },
-      {
-        status: 500,
-        headers: {
-          'X-Response-Time': `${Date.now() - startTime}ms`,
-        },
-      }
-    );
-  }
-}
-
-/**
  * Get assignment metrics
  * @param req - Extended Next request with session
  * @returns Assignment metrics response
@@ -413,6 +270,7 @@ export async function getAssignmentMetrics(req: ExtendedNextRequest) {
       where: whereClause,
       select: {
         id: true,
+        articleId: true,
         title: true,
         dueDate: true,
         createdAt: true,
@@ -453,6 +311,7 @@ export async function getAssignmentMetrics(req: ExtendedNextRequest) {
 
       return {
         assignmentId: assignment.id,
+        articleId: assignment.articleId,
         title: assignment.title || 'Untitled Assignment',
         dueDate: assignment.dueDate?.toISOString(),
         assigned: total,

@@ -4,6 +4,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { PasswordUtils } from "@/lib/password-utils";
+import { LicenseType } from "@prisma/client";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -35,6 +36,18 @@ export const authOptions: NextAuthOptions = {
                   classroomId: true,
                 },
               },
+              licenseOnUsers: {
+                select: {
+                  licenseId: true,
+                  license: {
+                    select: {
+                      expiresAt: true,
+                      licenseType: true,
+                    },
+                  },
+                },
+                take: 1,
+              },
             },
           });
 
@@ -59,15 +72,29 @@ export const authOptions: NextAuthOptions = {
           }
 
           const currentDate = new Date();
-          const isExpired = user.expiredDate
-            ? user.expiredDate < currentDate
+          
+          // Get active license info
+          const activeLicenseId = user.licenseOnUsers[0]?.licenseId || user.licenseId;
+          const activeLicense = user.licenseOnUsers[0]?.license;
+          
+          // Use license expiration date if available, otherwise use user expiration date
+          const effectiveExpirationDate = activeLicense?.expiresAt || user.expiredDate;
+          
+          const isExpired = effectiveExpirationDate
+            ? effectiveExpirationDate < currentDate
             : false;
 
-          const licenseLevel = isExpired 
-            ? "EXPIRED" as const
-            : user.licenseId 
-              ? "BASIC" as const
-              : "EXPIRED" as const;
+          // Determine license level based on active license
+          let licenseLevel: LicenseType | "EXPIRED";
+          if (isExpired) {
+            licenseLevel = "EXPIRED" as const;
+          } else if (activeLicense?.licenseType) {
+            licenseLevel = activeLicense.licenseType;
+          } else if (activeLicenseId) {
+            licenseLevel = "BASIC" as const;
+          } else {
+            licenseLevel = "EXPIRED" as const;
+          }
 
           const teacherClassIds = user.teacherClassrooms.map((tc) => tc.classroomId);
           const studentClassIds = user.studentClassrooms.map((sc) => sc.classroomId);
@@ -82,9 +109,9 @@ export const authOptions: NextAuthOptions = {
             picture: user.image ?? "",
             xp: user.xp,
             cefr_level: user.cefrLevel ?? "",
-            expired_date: user.expiredDate?.toISOString() ?? "",
+            expired_date: effectiveExpirationDate?.toISOString() ?? "",
             expired: isExpired,
-            license_id: user.licenseId ?? "",
+            license_id: activeLicenseId ?? "",
             onborda: user.onborda ?? false,
             license_level: licenseLevel,
             school_id: user.schoolId ?? undefined,

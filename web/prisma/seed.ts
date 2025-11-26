@@ -65,28 +65,101 @@ const RA_CEFR_MAPPINGS = [
 ];
 
 // Genre Adjacency Configuration (similar genres for recommendations)
+// Weights indicate how closely related genres are (0.0 - 1.0)
 const GENRE_ADJACENCIES = [
+  // Fiction and related genres
   { primaryGenre: 'Fiction', adjacentGenre: 'Fantasy', weight: 0.8 },
   { primaryGenre: 'Fiction', adjacentGenre: 'Mystery', weight: 0.7 },
   { primaryGenre: 'Fiction', adjacentGenre: 'Adventure', weight: 0.75 },
+  { primaryGenre: 'Fiction', adjacentGenre: 'Romance', weight: 0.65 },
+  { primaryGenre: 'Fiction', adjacentGenre: 'Drama', weight: 0.8 },
+  
+  // Fantasy connections
   { primaryGenre: 'Fantasy', adjacentGenre: 'Fiction', weight: 0.8 },
   { primaryGenre: 'Fantasy', adjacentGenre: 'Adventure', weight: 0.85 },
+  { primaryGenre: 'Fantasy', adjacentGenre: 'Science Fiction', weight: 0.6 },
+  
+  // Science Fiction relationships
   { primaryGenre: 'Science Fiction', adjacentGenre: 'Fantasy', weight: 0.6 },
   { primaryGenre: 'Science Fiction', adjacentGenre: 'Adventure', weight: 0.7 },
+  { primaryGenre: 'Science Fiction', adjacentGenre: 'Technology', weight: 0.8 },
+  { primaryGenre: 'Science Fiction', adjacentGenre: 'Thriller', weight: 0.65 },
+  
+  // Mystery and Thriller cluster
   { primaryGenre: 'Mystery', adjacentGenre: 'Fiction', weight: 0.7 },
   { primaryGenre: 'Mystery', adjacentGenre: 'Thriller', weight: 0.9 },
+  { primaryGenre: 'Mystery', adjacentGenre: 'Adventure', weight: 0.6 },
+  { primaryGenre: 'Thriller', adjacentGenre: 'Mystery', weight: 0.9 },
+  { primaryGenre: 'Thriller', adjacentGenre: 'Adventure', weight: 0.7 },
+  { primaryGenre: 'Thriller', adjacentGenre: 'Horror', weight: 0.75 },
+  
+  // Non-Fiction cluster
   { primaryGenre: 'Non-Fiction', adjacentGenre: 'Biography', weight: 0.8 },
   { primaryGenre: 'Non-Fiction', adjacentGenre: 'History', weight: 0.75 },
+  { primaryGenre: 'Non-Fiction', adjacentGenre: 'Health', weight: 0.7 },
+  { primaryGenre: 'Non-Fiction', adjacentGenre: 'Technology', weight: 0.65 },
+  { primaryGenre: 'Non-Fiction', adjacentGenre: 'Travel', weight: 0.6 },
+  
+  // Biography connections
   { primaryGenre: 'Biography', adjacentGenre: 'Non-Fiction', weight: 0.8 },
   { primaryGenre: 'Biography', adjacentGenre: 'History', weight: 0.7 },
-  { primaryGenre: 'Adventure', adjacentGenre: 'Fiction', weight: 0.75 },
-  { primaryGenre: 'Adventure', adjacentGenre: 'Fantasy', weight: 0.85 },
+  { primaryGenre: 'Biography', adjacentGenre: 'Sports', weight: 0.5 },
+  
+  // History relationships
   { primaryGenre: 'History', adjacentGenre: 'Non-Fiction', weight: 0.75 },
   { primaryGenre: 'History', adjacentGenre: 'Biography', weight: 0.7 },
+  { primaryGenre: 'History', adjacentGenre: 'Travel', weight: 0.55 },
+  
+  // Adventure connections
+  { primaryGenre: 'Adventure', adjacentGenre: 'Fiction', weight: 0.75 },
+  { primaryGenre: 'Adventure', adjacentGenre: 'Fantasy', weight: 0.85 },
+  { primaryGenre: 'Adventure', adjacentGenre: 'Travel', weight: 0.65 },
+  { primaryGenre: 'Adventure', adjacentGenre: 'Sports', weight: 0.6 },
+  
+  // Romance and Drama
+  { primaryGenre: 'Romance', adjacentGenre: 'Fiction', weight: 0.65 },
+  { primaryGenre: 'Romance', adjacentGenre: 'Drama', weight: 0.8 },
+  { primaryGenre: 'Drama', adjacentGenre: 'Fiction', weight: 0.8 },
+  { primaryGenre: 'Drama', adjacentGenre: 'Romance', weight: 0.8 },
+  
+  // Horror connections
+  { primaryGenre: 'Horror', adjacentGenre: 'Thriller', weight: 0.75 },
+  { primaryGenre: 'Horror', adjacentGenre: 'Fantasy', weight: 0.5 },
+  
+  // Arts and Culture cluster
+  { primaryGenre: 'Art', adjacentGenre: 'History', weight: 0.6 },
+  { primaryGenre: 'Art', adjacentGenre: 'Biography', weight: 0.55 },
+  { primaryGenre: 'Music', adjacentGenre: 'Art', weight: 0.7 },
+  { primaryGenre: 'Music', adjacentGenre: 'Biography', weight: 0.6 },
+  { primaryGenre: 'Poetry', adjacentGenre: 'Art', weight: 0.65 },
+  
+  // Practical topics
+  { primaryGenre: 'Health', adjacentGenre: 'Non-Fiction', weight: 0.7 },
+  { primaryGenre: 'Health', adjacentGenre: 'Biography', weight: 0.5 },
+  { primaryGenre: 'Technology', adjacentGenre: 'Non-Fiction', weight: 0.65 },
+  { primaryGenre: 'Technology', adjacentGenre: 'Science Fiction', weight: 0.8 },
+  
+  // Sports and activities
+  { primaryGenre: 'Sports', adjacentGenre: 'Biography', weight: 0.5 },
+  { primaryGenre: 'Sports', adjacentGenre: 'Adventure', weight: 0.6 },
+  { primaryGenre: 'Sports', adjacentGenre: 'Health', weight: 0.55 },
+  
+  // Travel connections
+  { primaryGenre: 'Travel', adjacentGenre: 'Non-Fiction', weight: 0.6 },
+  { primaryGenre: 'Travel', adjacentGenre: 'Adventure', weight: 0.65 },
+  { primaryGenre: 'Travel', adjacentGenre: 'History', weight: 0.55 },
+  
+  // Comedy relationships
+  { primaryGenre: 'Comedy', adjacentGenre: 'Fiction', weight: 0.6 },
+  { primaryGenre: 'Comedy', adjacentGenre: 'Drama', weight: 0.5 },
 ];
 
-// Sample genres for article generation
-const GENRES = ['Fiction', 'Non-Fiction', 'Fantasy', 'Science Fiction', 'Mystery', 'Adventure', 'Biography', 'History'];
+// Enhanced genre list for article generation
+const GENRES = [
+  'Fiction', 'Non-Fiction', 'Fantasy', 'Science Fiction', 'Mystery', 'Adventure', 
+  'Biography', 'History', 'Romance', 'Thriller', 'Horror', 'Drama', 'Comedy',
+  'Travel', 'Health', 'Technology', 'Sports', 'Art', 'Music', 'Poetry'
+];
 const SUB_GENRES = ['Short Story', 'Essay', 'Novel Excerpt', 'Article', 'Report'];
 
 async function seedRACEFRMappings() {

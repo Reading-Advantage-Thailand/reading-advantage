@@ -8,7 +8,7 @@ const MATERIALIZED_VIEWS = [
   'mv_srs_health',
   'mv_genre_engagement',
   'mv_activity_heatmap',
-  'mv_cefr_ra_alignment',
+  'mv_alignment_metrics',
   'mv_daily_activity_rollups',
 ];
 

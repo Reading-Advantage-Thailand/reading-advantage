@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/carousel";
 import dynamic from "next/dynamic";
 import { License } from "@/server/models/license";
-import "react-circular-progressbar/dist/styles.css";
 
 const GaugeChart = dynamic(() => import("react-gauge-chart"), { ssr: false });
 
@@ -28,7 +27,7 @@ async function fetchLicense() {
   const data = await response.json();
   return data;
 }
-export default async function LicenseUsageChart() {
+export default function LicenseUsageChart() {
   const [licenseData, setLicenseData] = useState<License[]>([]);
 
   const calculatePercentage = (usedLicenses: number, totalLicenses: number) => {

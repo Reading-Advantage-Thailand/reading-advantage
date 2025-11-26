@@ -13,16 +13,16 @@ WITH xp_data AS (
     u.level AS current_level,
     u.cefr_level,
     -- XP aggregations for different time windows
-    SUM(CASE WHEN xpl.created_at >= NOW() - INTERVAL '7 days' THEN xpl.xp_earned ELSE 0 END) AS xp_last_7d,
-    SUM(CASE WHEN xpl.created_at >= NOW() - INTERVAL '30 days' THEN xpl.xp_earned ELSE 0 END) AS xp_last_30d,
+    SUM(CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '7 days' THEN xpl.xp_earned ELSE 0 END) AS xp_last_7d,
+    SUM(CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '30 days' THEN xpl.xp_earned ELSE 0 END) AS xp_last_30d,
     -- Active days count
-    COUNT(DISTINCT CASE WHEN xpl.created_at >= NOW() - INTERVAL '7 days' THEN DATE(xpl.created_at) END) AS active_days_7d,
-    COUNT(DISTINCT CASE WHEN xpl.created_at >= NOW() - INTERVAL '30 days' THEN DATE(xpl.created_at) END) AS active_days_30d,
+    COUNT(DISTINCT CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '7 days' THEN DATE(xpl."createdAt") END) AS active_days_7d,
+    COUNT(DISTINCT CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '30 days' THEN DATE(xpl."createdAt") END) AS active_days_30d,
     -- Last activity
-    MAX(xpl.created_at) AS last_activity_at,
+    MAX(xpl."createdAt") AS last_activity_at,
     -- Article count for context
-    COUNT(DISTINCT CASE WHEN xpl.created_at >= NOW() - INTERVAL '7 days' THEN xpl.id END) AS activities_last_7d,
-    COUNT(DISTINCT CASE WHEN xpl.created_at >= NOW() - INTERVAL '30 days' THEN xpl.id END) AS activities_last_30d
+    COUNT(DISTINCT CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '7 days' THEN xpl.id END) AS activities_last_7d,
+    COUNT(DISTINCT CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '30 days' THEN xpl.id END) AS activities_last_30d
   FROM users u
   LEFT JOIN "XPLogs" xpl ON u.id = xpl.user_id
   WHERE u.role = 'STUDENT'
@@ -106,12 +106,12 @@ WITH student_xp AS (
     c.classroom_name,
     c.grade,
     COUNT(DISTINCT cs.student_id) AS total_students,
-    SUM(CASE WHEN xpl.created_at >= NOW() - INTERVAL '7 days' THEN xpl.xp_earned ELSE 0 END) AS total_xp_7d,
-    SUM(CASE WHEN xpl.created_at >= NOW() - INTERVAL '30 days' THEN xpl.xp_earned ELSE 0 END) AS total_xp_30d,
-    COUNT(DISTINCT CASE WHEN xpl.created_at >= NOW() - INTERVAL '7 days' THEN xpl.user_id END) AS active_students_7d,
-    COUNT(DISTINCT CASE WHEN xpl.created_at >= NOW() - INTERVAL '30 days' THEN xpl.user_id END) AS active_students_30d,
-    MAX(xpl.created_at) AS last_activity_at
-  FROM classroomStudents cs
+    SUM(CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '7 days' THEN xpl.xp_earned ELSE 0 END) AS total_xp_7d,
+    SUM(CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '30 days' THEN xpl.xp_earned ELSE 0 END) AS total_xp_30d,
+    COUNT(DISTINCT CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '7 days' THEN xpl.user_id END) AS active_students_7d,
+    COUNT(DISTINCT CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '30 days' THEN xpl.user_id END) AS active_students_30d,
+    MAX(xpl."createdAt") AS last_activity_at
+  FROM "classroomStudents" cs
   JOIN classrooms c ON cs.classroom_id = c.id
   LEFT JOIN "XPLogs" xpl ON cs.student_id = xpl.user_id
   GROUP BY cs.classroom_id, c.school_id, c.classroom_name, c.grade
@@ -168,11 +168,11 @@ WITH school_xp AS (
     s.id AS school_id,
     s.name AS school_name,
     COUNT(DISTINCT u.id) AS total_students,
-    SUM(CASE WHEN xpl.created_at >= NOW() - INTERVAL '7 days' THEN xpl.xp_earned ELSE 0 END) AS total_xp_7d,
-    SUM(CASE WHEN xpl.created_at >= NOW() - INTERVAL '30 days' THEN xpl.xp_earned ELSE 0 END) AS total_xp_30d,
-    COUNT(DISTINCT CASE WHEN xpl.created_at >= NOW() - INTERVAL '7 days' THEN xpl.user_id END) AS active_students_7d,
-    COUNT(DISTINCT CASE WHEN xpl.created_at >= NOW() - INTERVAL '30 days' THEN xpl.user_id END) AS active_students_30d,
-    MAX(xpl.created_at) AS last_activity_at
+    SUM(CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '7 days' THEN xpl.xp_earned ELSE 0 END) AS total_xp_7d,
+    SUM(CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '30 days' THEN xpl.xp_earned ELSE 0 END) AS total_xp_30d,
+    COUNT(DISTINCT CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '7 days' THEN xpl.user_id END) AS active_students_7d,
+    COUNT(DISTINCT CASE WHEN xpl."createdAt" >= NOW() - INTERVAL '30 days' THEN xpl.user_id END) AS active_students_30d,
+    MAX(xpl."createdAt") AS last_activity_at
   FROM schools s
   LEFT JOIN users u ON s.id = u.school_id AND u.role = 'STUDENT'
   LEFT JOIN "XPLogs" xpl ON u.id = xpl.user_id
