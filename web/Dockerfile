@@ -76,7 +76,7 @@ ENV CLASSROOM_REDIRECT_URI=$CLASSROOM_REDIRECT_URI
 # Set placeholder DATABASE_URL for build time
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
 ENV NEXT_PHASE="phase-production-build"
-ENV NODE_OPTIONS="--max-old-space-size=6144"
+ENV NODE_OPTIONS="--max-old-space-size=16384"
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 

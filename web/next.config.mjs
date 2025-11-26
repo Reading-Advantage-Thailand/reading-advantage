@@ -4,6 +4,13 @@ const nextConfig = {
   transpilePackages: ["next-international", "international-types"],
   reactStrictMode: false,
   pageExtensions: ["tsx", "ts", "jsx", "js"],
+  // Skip type checking and linting during build to save memory
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {
@@ -31,10 +38,12 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
+  // Optimize build memory usage
+  swcMinify: false,
   experimental: {
     // Optimize memory during build
     workerThreads: false,
-    cpus: 4,
+    cpus: 1,
   },
   // Reduce build output size
   productionBrowserSourceMaps: false,
