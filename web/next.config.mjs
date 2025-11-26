@@ -31,6 +31,13 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
+  experimental: {
+    // Optimize memory during build
+    workerThreads: false,
+    cpus: 4,
+  },
+  // Reduce build output size
+  productionBrowserSourceMaps: false,
   async headers() {
     return [
       {

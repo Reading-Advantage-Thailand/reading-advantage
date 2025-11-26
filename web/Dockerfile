@@ -1,4 +1,25 @@
-FROM node:20.18
+# Stage 1: Dependencies
+FROM node:20.18-slim AS deps
+WORKDIR /app
+
+# Install dependencies needed for node-gyp
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install dependencies
+RUN npm ci --only=production --ignore-scripts
+RUN npm install prisma --save-dev
+
+# Stage 2: Builder
+FROM node:20.18-slim AS builder
+WORKDIR /app
 
 ARG SERVICE_ACCOUNT_KEY
 ARG GOOGLE_CLIENT_ID
@@ -52,28 +73,49 @@ ENV CLASSROOM_CLIENT_ID=$CLASSROOM_CLIENT_ID
 ENV CLASSROOM_CLIENT_SECRET=$CLASSROOM_CLIENT_SECRET
 ENV CLASSROOM_REDIRECT_URI=$CLASSROOM_REDIRECT_URI
 
-RUN mkdir -p /usr/src/app
-RUN apt-get update && apt-get install -y ffmpeg
-WORKDIR /usr/src/app
-
-COPY . /usr/src/app/
-
-RUN npm install
-
 # Set placeholder DATABASE_URL for build time
-# This prevents Prisma from trying to connect to a real database during build
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
 ENV NEXT_PHASE="phase-production-build"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install ALL dependencies (including devDependencies for build)
+RUN npm install
 
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build Next.js with placeholder DATABASE_URL
-ENV NODE_OPTIONS=--max-old-space-size=12288
+# Copy source code
+COPY . .
+
+# Build Next.js
 RUN npm run build
 
-# Unset build-time environment variables
-ENV NEXT_PHASE=""
+# Stage 3: Runner
+FROM node:20.18-slim AS runner
+WORKDIR /app
 
-# The real DATABASE_URL will be injected at runtime by Cloud Run
+ENV NODE_ENV=production
+
+# Install ffmpeg in runner
+RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+
+# Copy necessary files from builder
+COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/prisma ./prisma
+
+# Expose port
+EXPOSE 3000
+
+# Start the application
 CMD ["npm", "start"]
