@@ -50,7 +50,9 @@ export interface AdminOverviewResponse {
     totalSchools: number;
     totalStudents: number;
     totalTeachers: number;
+    activeTeachers: number;
     activeUsers30d: number;
+    activeClassrooms: number;
     totalReadingSessions: number;
     averageReadingLevel: number;
   };
@@ -111,7 +113,38 @@ export interface AdminAlertsResponse {
 }
 
 // ============================================================================
-// Teacher Dashboard Types
+// Teacher Effectiveness Types
+// ============================================================================
+
+export interface TeacherMetric {
+  teacherId: string;
+  teacherName: string;
+  email: string;
+  studentCount: number;
+  activeStudents: number;
+  engagementRate: number;
+  classroomCount: number;
+  classrooms: {
+    id: string;
+    name: string;
+    studentCount: number;
+    activeCount: number;
+  }[];
+}
+
+export interface TeacherEffectivenessResponse {
+  teachers: TeacherMetric[];
+  summary: {
+    totalTeachers: number;
+    averageEngagement: number;
+    totalStudents: number;
+    totalActiveStudents: number;
+  };
+  cache: CacheMetadata;
+}
+
+// ============================================================================
+// AI Summary Types
 // ============================================================================
 
 export interface TeacherOverviewResponse {
@@ -276,6 +309,7 @@ export interface MetricsVelocityResponse {
 
 export interface AssignmentMetrics {
   assignmentId: string;
+  articleId: string;
   title: string;
   dueDate?: string;
   assigned: number;
@@ -297,13 +331,168 @@ export interface MetricsAssignmentsResponse {
   cache: CacheMetadata;
 }
 
+// ============================================================================
+// Assignment Funnel Analytics Types (Phase 2.2)
+// ============================================================================
+
+export interface AssignmentFunnelMetrics {
+  assignmentId: string;
+  title: string;
+  dueDate?: string;
+  assignedAt: string;
+  
+  // Funnel data
+  totalStudents: number;
+  notStarted: number;
+  inProgress: number;
+  completed: number;
+  overdue: number;
+  
+  // Percentages
+  startedPct: number;
+  completedPct: number;
+  overduePct: number;
+  
+  // Timing
+  medianCompletionHours: number | null;
+  p80CompletionHours: number | null;
+  eta80PctDays: number | null;
+  
+  // Risk assessment
+  isAtRisk: boolean;
+  riskFactors: string[];
+  
+  // Performance
+  avgScore: number | null;
+  
+  // Context
+  classVelocity: number;
+  classEngagement: number;
+  predictionConfidence: 'low' | 'medium' | 'high';
+}
+
+export interface ClassAssignmentFunnelMetrics {
+  classroomId: string;
+  schoolId: string;
+  classroomName: string;
+  grade: number | null;
+  
+  totalAssignments: number;
+  highCompletionAssignments: number;
+  atRiskAssignments: number;
+  staleAssignments: number;
+  
+  overallCompletionRate: number;
+  avgMedianCompletionHours: number | null;
+  avgEtaDays: number | null;
+  classAvgScore: number | null;
+  
+  classVelocity: number;
+  classEngagement: number;
+  isLowSignal: boolean;
+}
+
+export interface SchoolAssignmentFunnelMetrics {
+  schoolId: string;
+  totalClasses: number;
+  totalAssignments: number;
+  
+  schoolCompletionRate: number;
+  schoolAvgCompletionHours: number | null;
+  schoolP80EtaDays: number | null;
+  
+  atRiskAssignments: number;
+  staleAssignments: number;
+  classesWithAtRiskAssignments: number;
+}
+
+export interface AtRiskStudent {
+  studentId: string;
+  displayName: string;
+  assignmentId: string;
+  assignmentTitle: string;
+  status: string;
+  daysSinceAssigned: number;
+  daysOverdue: number | null;
+  riskScore: number;
+}
+
+export interface AssignmentFunnelResponse {
+  scope: 'assignment' | 'class' | 'school';
+  timeframe: string;
+  
+  // Individual assignment data (when scope=assignment)
+  assignment?: AssignmentFunnelMetrics;
+  
+  // Class-level data (when scope=class)
+  classMetrics?: ClassAssignmentFunnelMetrics;
+  
+  // School-level data (when scope=school)
+  schoolMetrics?: SchoolAssignmentFunnelMetrics;
+  
+  // Assignment list (for class/school scope)
+  assignments?: AssignmentFunnelMetrics[];
+  
+  // Drill-down data
+  atRiskStudents?: AtRiskStudent[];
+  
+  // Summary
+  summary: {
+    totalAssignments: number;
+    overallCompletionRate: number;
+    atRiskCount: number;
+    avgCompletionTime: number | null;
+  };
+  
+  cache: CacheMetadata;
+}
+
+export interface AlignmentBuckets {
+  below: number;
+  aligned: number;
+  above: number;
+  unknown: number;
+}
+
+export interface AlignmentSample {
+  articleId: string;
+  title: string;
+  articleRaLevel: number;
+  articleCefrLevel?: string;
+  studentRaLevel?: number;
+  levelDiff?: number;
+  readAt: string;
+  assignmentId?: string;
+  genre?: string;
+}
+
 export interface AlignmentData {
+  // Legacy support
   levelDistribution: Record<string, number>; // level -> student count
   cefrDistribution: Record<string, number>; // CEFR level -> student count
   recommendations: {
     studentsAboveLevel: number;
     studentsBelowLevel: number;
     studentsOnLevel: number;
+  };
+  
+  // Enhanced alignment metrics
+  buckets: {
+    counts: AlignmentBuckets;
+    percentages: AlignmentBuckets;
+  };
+  samples?: {
+    below?: AlignmentSample[];
+    aligned?: AlignmentSample[];
+    above?: AlignmentSample[];
+  };
+  misalignmentIndicators: {
+    highRiskStudents: number; // Students with >70% misaligned content
+    assignmentOverrides: number; // Count of assignments with overrides
+    contentGaps: {
+      belowThreshold: number; // Articles significantly below student level
+      aboveThreshold: number; // Articles significantly above student level
+    };
   };
 }
 
@@ -313,6 +502,8 @@ export interface MetricsAlignmentResponse {
     totalStudents: number;
     averageLevel: number;
     modalLevel: number; // most common level
+    totalReadings: number;
+    alignmentScore: number; // Overall alignment health score (0-100)
   };
   cache: CacheMetadata;
 }
@@ -378,6 +569,35 @@ export interface MetricsGenresResponse {
     diversity: number; // 0-1 scale
   };
   cache: CacheMetadata;
+}
+
+// ============================================================================
+// Class Accuracy Metrics Types
+// ============================================================================
+
+export interface StudentAccuracy {
+  studentId: string;
+  studentName: string;
+  level: number;
+  cefrLevel: string;
+  mcqAccuracy: number;
+  mcqAttempts: number;
+  openEndedAccuracy: number;
+  openEndedAttempts: number;
+  overallAccuracy: number;
+  totalAttempts: number;
+}
+
+export interface ClassAccuracyResponse {
+  students: StudentAccuracy[];
+  classAverages: {
+    mcqAccuracy: number;
+    openEndedAccuracy: number;
+    overallAccuracy: number;
+    totalAttempts: number;
+    activeStudents: number;
+  };
+  timeframe: string;
 }
 
 // ============================================================================

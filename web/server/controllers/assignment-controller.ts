@@ -2,9 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
 import { Status } from "@prisma/client";
+import {
+  AssignmentMetrics,
+  MetricsAssignmentsResponse,
+} from "@/types/dashboard";
 
 interface StudentAssignment {
   id: string;
+  assignmentId?: string;
   classroomId: string;
   articleId: string;
   title: string | null;
@@ -85,9 +90,14 @@ export async function getAssignments(req: ExtendedNextRequest) {
       const students = assignment.studentAssignments.map((sa) => ({
         id: sa.id,
         studentId: sa.studentId,
-        status: sa.status === Status.NOT_STARTED ? 0 : 
-                sa.status === Status.IN_PROGRESS ? 1 : 
-                sa.status === Status.COMPLETED ? 2 : 0,
+        status:
+          sa.status === Status.NOT_STARTED
+            ? 0
+            : sa.status === Status.IN_PROGRESS
+              ? 1
+              : sa.status === Status.COMPLETED
+                ? 2
+                : 0,
         displayName: sa.student?.name,
       }));
 
@@ -101,8 +111,8 @@ export async function getAssignments(req: ExtendedNextRequest) {
       if (search && search.trim() !== "") {
         const searchLower = search.toLowerCase().trim();
         whereClause.OR = [
-          { title: { contains: searchLower, mode: 'insensitive' } },
-          { description: { contains: searchLower, mode: 'insensitive' } },
+          { title: { contains: searchLower, mode: "insensitive" } },
+          { description: { contains: searchLower, mode: "insensitive" } },
         ];
       }
 
@@ -152,9 +162,14 @@ export async function getAssignments(req: ExtendedNextRequest) {
         students: assignment.studentAssignments.map((sa) => ({
           id: sa.id,
           studentId: sa.studentId,
-          status: sa.status === Status.NOT_STARTED ? 0 : 
-                  sa.status === Status.IN_PROGRESS ? 1 : 
-                  sa.status === Status.COMPLETED ? 2 : 0,
+          status:
+            sa.status === Status.NOT_STARTED
+              ? 0
+              : sa.status === Status.IN_PROGRESS
+                ? 1
+                : sa.status === Status.COMPLETED
+                  ? 2
+                  : 0,
           displayName: sa.student?.name,
         })),
         article: assignment.article,
@@ -202,7 +217,12 @@ export async function postAssignment(req: ExtendedNextRequest) {
       userId,
     } = data;
 
-    if (!classroomId || !articleId || !selectedStudents || !Array.isArray(selectedStudents)) {
+    if (
+      !classroomId ||
+      !articleId ||
+      !selectedStudents ||
+      !Array.isArray(selectedStudents)
+    ) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
@@ -262,7 +282,7 @@ export async function postAssignment(req: ExtendedNextRequest) {
 
     // Get existing student assignments
     const existingStudentIds = new Set(
-      assignment.studentAssignments.map(sa => sa.studentId)
+      assignment.studentAssignments.map((sa) => sa.studentId)
     );
 
     // Filter out students who already have assignments
@@ -284,10 +304,12 @@ export async function postAssignment(req: ExtendedNextRequest) {
       status: Status.NOT_STARTED,
     }));
 
-    const createdStudentAssignments = await prisma.studentAssignment.createMany({
-      data: studentAssignmentsData,
-      skipDuplicates: true,
-    });
+    const createdStudentAssignments = await prisma.studentAssignment.createMany(
+      {
+        data: studentAssignmentsData,
+        skipDuplicates: true,
+      }
+    );
 
     return NextResponse.json(
       {
@@ -317,7 +339,8 @@ export async function updateAssignment(req: ExtendedNextRequest) {
     if (!classroomId || !articleId || !updates) {
       return NextResponse.json(
         {
-          message: "Missing required fields: classroomId, articleId, or updates",
+          message:
+            "Missing required fields: classroomId, articleId, or updates",
         },
         { status: 400 }
       );
@@ -327,7 +350,7 @@ export async function updateAssignment(req: ExtendedNextRequest) {
       // Update metadata for the assignment (not student-specific)
       const allowedMetaFields = ["title", "description", "dueDate"];
       const filteredUpdates: any = {};
-      
+
       for (const key of allowedMetaFields) {
         if (updates.hasOwnProperty(key)) {
           if (key === "dueDate" && updates[key]) {
@@ -354,9 +377,9 @@ export async function updateAssignment(req: ExtendedNextRequest) {
       });
 
       return NextResponse.json(
-        { 
+        {
           message: "Assignment metadata updated successfully",
-          updatedCount: updatedAssignment.count 
+          updatedCount: updatedAssignment.count,
         },
         { status: 200 }
       );
@@ -386,24 +409,31 @@ export async function updateAssignment(req: ExtendedNextRequest) {
 
       // Prepare updates for StudentAssignment
       const studentAssignmentUpdates: any = {};
-      
+
       if (updates.hasOwnProperty("status")) {
         studentAssignmentUpdates.status = updates.status as Status;
-        
+
         // Update timestamps based on status
         if (updates.status === Status.IN_PROGRESS && !updates.startedAt) {
           studentAssignmentUpdates.startedAt = new Date();
-        } else if (updates.status === Status.COMPLETED && !updates.completedAt) {
+        } else if (
+          updates.status === Status.COMPLETED &&
+          !updates.completedAt
+        ) {
           studentAssignmentUpdates.completedAt = new Date();
         }
       }
 
       if (updates.hasOwnProperty("startedAt")) {
-        studentAssignmentUpdates.startedAt = updates.startedAt ? new Date(updates.startedAt) : null;
+        studentAssignmentUpdates.startedAt = updates.startedAt
+          ? new Date(updates.startedAt)
+          : null;
       }
 
       if (updates.hasOwnProperty("completedAt")) {
-        studentAssignmentUpdates.completedAt = updates.completedAt ? new Date(updates.completedAt) : null;
+        studentAssignmentUpdates.completedAt = updates.completedAt
+          ? new Date(updates.completedAt)
+          : null;
       }
 
       if (updates.hasOwnProperty("score")) {
@@ -435,7 +465,7 @@ export async function updateAssignment(req: ExtendedNextRequest) {
       });
 
       return NextResponse.json(
-        { 
+        {
           message: "Student assignment updated successfully",
           studentAssignment: updatedStudentAssignment,
         },
@@ -464,7 +494,7 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
     if (studentId) {
       const userExists = await prisma.user.findUnique({
         where: { id: studentId },
-        select: { id: true, name: true, email: true }
+        select: { id: true, name: true, email: true },
       });
     }
 
@@ -507,8 +537,8 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
     if (search && search.trim() !== "") {
       const searchLower = search.toLowerCase().trim();
       assignmentWhere.OR = [
-        { title: { contains: searchLower, mode: 'insensitive' } },
-        { description: { contains: searchLower, mode: 'insensitive' } },
+        { title: { contains: searchLower, mode: "insensitive" } },
+        { description: { contains: searchLower, mode: "insensitive" } },
       ];
     }
 
@@ -576,29 +606,39 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
         },
       },
       orderBy: {
-        assignment: {
-          dueDate: "asc",
-        },
+        createdAt: "desc",
       },
       skip: (page - 1) * limit,
       take: limit,
     });
 
-    const formattedAssignments: StudentAssignment[] = studentAssignments.map((sa) => ({
-      id: sa.id,
-      classroomId: sa.assignment.classroomId,
-      articleId: sa.assignment.articleId,
-      title: sa.assignment.title,
-      description: sa.assignment.description,
-      dueDate: sa.assignment.dueDate ? sa.assignment.dueDate.toISOString() : "",
-      status: sa.status === Status.NOT_STARTED ? 0 : 
-              sa.status === Status.IN_PROGRESS ? 1 : 
-              sa.status === Status.COMPLETED ? 2 : 0,
-      createdAt: sa.createdAt.toISOString(),
-      userId: sa.studentId,
-      displayName: sa.student?.name || "Unknown User",
-      teacherDisplayName: sa.assignment.classroom?.teachers?.[0]?.teacher?.name || "Unknown Teacher",
-    }));
+    const formattedAssignments: StudentAssignment[] = studentAssignments.map(
+      (sa) => ({
+        id: sa.id,
+        assignmentId: sa.assignment.id,
+        classroomId: sa.assignment.classroomId,
+        articleId: sa.assignment.articleId,
+        title: sa.assignment.title,
+        description: sa.assignment.description,
+        dueDate: sa.assignment.dueDate
+          ? sa.assignment.dueDate.toISOString()
+          : "",
+        status:
+          sa.status === Status.NOT_STARTED
+            ? 0
+            : sa.status === Status.IN_PROGRESS
+              ? 1
+              : sa.status === Status.COMPLETED
+                ? 2
+                : 0,
+        createdAt: sa.createdAt.toISOString(),
+        userId: sa.studentId,
+        displayName: sa.student?.name || "Unknown User",
+        teacherDisplayName:
+          sa.assignment.classroom?.teachers?.[0]?.teacher?.name ||
+          "Unknown Teacher",
+      })
+    );
 
     const totalPages = Math.ceil(totalCount / limit);
     const hasNextPage = page < totalPages;
@@ -667,12 +707,14 @@ export async function deleteAssignment(req: ExtendedNextRequest) {
     }
 
     // Delete student assignments
-    const deletedStudentAssignments = await prisma.studentAssignment.deleteMany({
-      where: {
-        assignmentId: assignment.id,
-        studentId: { in: studentIds },
-      },
-    });
+    const deletedStudentAssignments = await prisma.studentAssignment.deleteMany(
+      {
+        where: {
+          assignmentId: assignment.id,
+          studentId: { in: studentIds },
+        },
+      }
+    );
 
     if (deletedStudentAssignments.count === 0) {
       return NextResponse.json(
@@ -710,6 +752,178 @@ export async function deleteAssignment(req: ExtendedNextRequest) {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
+    );
+  }
+}
+
+/**
+ * Get assignment metrics
+ * @param req - Extended Next request with session
+ * @returns Assignment metrics response
+ */
+export async function getAssignmentMetrics(req: ExtendedNextRequest) {
+  const startTime = Date.now();
+
+  try {
+    const session = req.session;
+    if (!session) {
+      return NextResponse.json(
+        { code: "UNAUTHORIZED", message: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const timeframe = searchParams.get("timeframe") || "30d";
+    const schoolId = searchParams.get("schoolId");
+    const classId = searchParams.get("classId");
+
+    const now = new Date();
+    let daysAgo = 30; // default
+
+    // Parse timeframe
+    if (timeframe === "7d") {
+      daysAgo = 7;
+    } else if (timeframe === "30d") {
+      daysAgo = 30;
+    } else if (timeframe === "90d") {
+      daysAgo = 90;
+    } else if (timeframe === "365d") {
+      daysAgo = 365;
+    } else if (timeframe === "all") {
+      daysAgo = 36500; // ~100 years, effectively all data
+    }
+
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - daysAgo);
+
+    const whereClause: any = {
+      createdAt: {
+        gte: startDate,
+      },
+    };
+
+    if (classId) {
+      whereClause.classroomId = classId;
+    } else if (schoolId) {
+      whereClause.classroom = {
+        schoolId,
+      };
+    }
+
+    const assignments = await prisma.assignment.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        title: true,
+        dueDate: true,
+        createdAt: true,
+        articleId: true,
+        studentAssignments: {
+          select: {
+            id: true,
+            status: true,
+            score: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const assignmentMetrics: AssignmentMetrics[] = assignments.map(
+      (assignment) => {
+        const total = assignment.studentAssignments.length;
+        const completed = assignment.studentAssignments.filter(
+          (sa) => sa.status === Status.COMPLETED
+        ).length;
+        const inProgress = assignment.studentAssignments.filter(
+          (sa) => sa.status === Status.IN_PROGRESS
+        ).length;
+        const notStarted = assignment.studentAssignments.filter(
+          (sa) => sa.status === Status.NOT_STARTED
+        ).length;
+
+        const scores = assignment.studentAssignments
+          .filter((sa) => sa.score !== null)
+          .map((sa) => sa.score!);
+
+        const averageScore =
+          scores.length > 0
+            ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+            : 0;
+
+        const completionRate = total > 0 ? (completed / total) * 100 : 0;
+
+        return {
+          assignmentId: assignment.id,
+          articleId: assignment.articleId,
+          title: assignment.title || "Untitled Assignment",
+          dueDate: assignment.dueDate?.toISOString(),
+          assigned: total,
+          completed,
+          inProgress,
+          notStarted,
+          averageScore: Math.round(averageScore * 100) / 100,
+          completionRate: Math.round(completionRate * 10) / 10,
+        };
+      }
+    );
+
+    const totalAssignments = assignmentMetrics.length;
+    const averageCompletionRate =
+      totalAssignments > 0
+        ? assignmentMetrics.reduce((sum, a) => sum + a.completionRate, 0) /
+          totalAssignments
+        : 0;
+
+    const allScores = assignmentMetrics
+      .filter((a) => a.averageScore > 0)
+      .map((a) => a.averageScore);
+
+    const averageScore =
+      allScores.length > 0
+        ? allScores.reduce((sum, score) => sum + score, 0) / allScores.length
+        : 0;
+
+    const response: MetricsAssignmentsResponse = {
+      timeframe,
+      assignments: assignmentMetrics,
+      summary: {
+        totalAssignments,
+        averageCompletionRate: Math.round(averageCompletionRate * 10) / 10,
+        averageScore: Math.round(averageScore * 100) / 100,
+      },
+      cache: {
+        cached: false,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+
+    const duration = Date.now() - startTime;
+
+    return NextResponse.json(response, {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=240",
+        "X-Response-Time": `${duration}ms`,
+      },
+    });
+  } catch (error) {
+    console.error("[Controller] getAssignmentMetrics - Error:", error);
+
+    return NextResponse.json(
+      {
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch assignment metrics",
+        details: error instanceof Error ? { error: error.message } : {},
+      },
+      {
+        status: 500,
+        headers: {
+          "X-Response-Time": `${Date.now() - startTime}ms`,
+        },
+      }
     );
   }
 }

@@ -3,9 +3,14 @@
  * 
  * This endpoint uses restrictAccessKey for authentication (no user login required)
  * Designed to be called by Google Cloud Scheduler every 15 minutes
+ * 
+ * Refreshes all 27 materialized views across 3 levels:
+ * - Level 1: Student-level metrics (6 views)
+ * - Level 2: Class-level aggregations (5 views)
+ * - Level 3: School-level rollups (5 views)
  */
 
-import { refreshMaterializedViewsAutomated } from "@/server/controllers/system-controller";
+import { refreshMaterializedViewsAutomated, getAutomatedRefreshStatus } from "@/server/controllers/system-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { restrictAccessKey } from "@/server/controllers/auth-controller";
 import { logRequest } from "@/server/middleware";
@@ -21,7 +26,19 @@ const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
 router.use(logRequest);
 router.use(restrictAccessKey);
 
+// GET: Health check and status (for monitoring)
+router.get(getAutomatedRefreshStatus);
+
+// POST: Refresh all materialized views
 router.post(refreshMaterializedViewsAutomated);
+
+export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
+  const result = await router.run(request, ctx);
+  if (result instanceof NextResponse) {
+    return result;
+  }
+  throw new Error("Expected a NextResponse from router.run");
+}
 
 export async function POST(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);

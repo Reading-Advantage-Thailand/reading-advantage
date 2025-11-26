@@ -3,6 +3,7 @@ import { studentPageConfig } from "@/configs/student-page-config";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
+import { AssignmentNotificationPopup } from "@/components/student/assignment-notification-popup";
 
 export default async function SettingsPageLayout({
   children,
@@ -27,6 +28,7 @@ export default async function SettingsPageLayout({
       sidebarNavConfig={studentPageConfig.sidebarNav}
     >
       {children}
+      <AssignmentNotificationPopup userId={user.id} />
     </AppLayout>
   );
 }

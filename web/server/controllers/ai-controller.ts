@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 import { ExtendedNextRequest } from "./auth-controller";
 import { AISummaryResponse, AIInsight } from "@/types/dashboard";
+import {
+  generateStudentInsights,
+  generateTeacherInsights,
+  generateClassroomInsights,
+  generateLicenseInsights,
+  generateSystemInsights,
+  saveInsights,
+  getCachedInsights,
+} from "@/server/services/ai-insight-service";
+import { AIInsightScope, Role } from "@prisma/client";
 
 /**
  * GET /api/v1/ai/summary
- * Generate AI-powered insights and recommendations
+ * Generate AI-powered insights and recommendations using real AI
  */
 export async function getAISummary(req: ExtendedNextRequest) {
   const startTime = Date.now();
@@ -13,112 +23,189 @@ export async function getAISummary(req: ExtendedNextRequest) {
     const session = req.session;
     if (!session) {
       return NextResponse.json(
-        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { code: "UNAUTHORIZED", message: "Not authenticated" },
         { status: 401 }
       );
     }
 
     const { searchParams } = new URL(req.url);
-    const schoolId = searchParams.get('schoolId');
-    const classId = searchParams.get('classId');
+    const userId = searchParams.get("userId") || session.user.id;
+    const classroomId = searchParams.get("classroomId");
+    const licenseId = searchParams.get("licenseId");
+    const kind = searchParams.get("kind"); // 'student', 'teacher', 'classroom', 'license', 'system'
+    const forceRefresh = searchParams.get("refresh") === "true";
 
-    // TODO: Integrate with actual AI service from Phase 4.1
-    // For now, return placeholder insights
-    const insights: AIInsight[] = [
-      {
-        id: 'insight-1',
-        type: 'trend',
-        title: 'Reading Activity Increasing',
-        description: 'Student reading activity has increased by 23% over the past week compared to the previous week.',
-        confidence: 0.89,
-        priority: 'medium',
-        data: {
-          percentageChange: 23,
-          timeframe: '7d',
-        },
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: 'insight-2',
-        type: 'recommendation',
-        title: 'Assign More Advanced Materials',
-        description: '5 students are consistently scoring above 90% on their current level. Consider assigning higher-level content.',
-        confidence: 0.92,
-        priority: 'high',
-        data: {
-          studentCount: 5,
-          averageScore: 0.94,
-        },
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: 'insight-3',
-        type: 'alert',
-        title: 'Engagement Drop Detected',
-        description: '3 students have not been active for more than 7 days. Early intervention recommended.',
-        confidence: 1.0,
-        priority: 'high',
-        data: {
-          studentCount: 3,
-          daysSinceActivity: 7,
-        },
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: 'insight-4',
-        type: 'achievement',
-        title: 'Class Milestone Reached',
-        description: 'The class has collectively read over 1,000 articles this month!',
-        confidence: 1.0,
-        priority: 'medium',
-        data: {
-          articlesRead: 1042,
-          timeframe: '30d',
-        },
-        createdAt: new Date().toISOString(),
-      },
-    ];
+    // Debug logging
+    console.log('[AI Insights] Request params:', {
+      userId,
+      classroomId,
+      licenseId,
+      kind,
+      userRole: session.user.role,
+      forceRefresh
+    });
 
-    // Filter insights based on context if needed
-    // (In production, this would be done by the AI service)
+    let insights: any[] = [];
+    let scope: AIInsightScope;
+
+    // Determine scope based on parameters and user role
+    // Priority: explicit parameters > user role
+    if (classroomId || kind === "classroom") {
+      scope = AIInsightScope.CLASSROOM;
+    } else if (licenseId || kind === "license") {
+      // Explicit license scope - works for both ADMIN and SYSTEM users
+      scope = AIInsightScope.LICENSE;
+    } else if (kind === "teacher") {
+      // Explicit teacher scope - can be used by SYSTEM to view specific teacher
+      scope = AIInsightScope.TEACHER;
+    } else if (kind === "student") {
+      // Explicit student scope
+      scope = AIInsightScope.STUDENT;
+    } else if (kind === "system") {
+      // Explicit system scope - only for SYSTEM users viewing all schools
+      scope = AIInsightScope.SYSTEM;
+    } else if (session.user.role === Role.ADMIN) {
+      // ADMIN role = School administrator, sees only their school
+      scope = AIInsightScope.LICENSE;
+    } else if (session.user.role === Role.SYSTEM) {
+      // SYSTEM role without explicit scope = show system-wide view
+      scope = AIInsightScope.SYSTEM;
+    } else if (session.user.role === Role.TEACHER) {
+      scope = AIInsightScope.TEACHER;
+    } else {
+      scope = AIInsightScope.STUDENT;
+    }
+
+    // Debug logging
+    console.log('[AI Insights] Determined scope:', {
+      scope,
+      contextId: scope === AIInsightScope.LICENSE ? licenseId : 
+                 scope === AIInsightScope.CLASSROOM ? classroomId :
+                 scope === AIInsightScope.TEACHER || scope === AIInsightScope.STUDENT ? userId : 'none'
+    });
+
+    // Try to get cached insights first (unless forced refresh)
+    if (!forceRefresh) {
+      insights = await getCachedInsights(
+        scope,
+        scope === AIInsightScope.STUDENT || scope === AIInsightScope.TEACHER ? userId : undefined,
+        classroomId || undefined,
+        scope === AIInsightScope.LICENSE ? (licenseId || session.user.license_id) : undefined
+      );
+    }
+
+    // If no cached insights or forced refresh, generate new ones
+    if (insights.length === 0 || forceRefresh) {
+      let generatedInsights: any[] = [];
+
+      switch (scope) {
+        case AIInsightScope.STUDENT:
+          generatedInsights = await generateStudentInsights(userId);
+          break;
+        case AIInsightScope.TEACHER:
+          generatedInsights = await generateTeacherInsights(userId);
+          break;
+        case AIInsightScope.CLASSROOM:
+          if (!classroomId) {
+            return NextResponse.json(
+              { code: "BAD_REQUEST", message: "classroomId required for classroom scope" },
+              { status: 400 }
+            );
+          }
+          generatedInsights = await generateClassroomInsights(classroomId);
+          break;
+        case AIInsightScope.LICENSE:
+          // ADMIN sees only their school's license
+          const targetLicenseId = licenseId || session.user.license_id;
+          if (!targetLicenseId) {
+            return NextResponse.json(
+              { code: "BAD_REQUEST", message: "licenseId required for license/admin scope" },
+              { status: 400 }
+            );
+          }
+          generatedInsights = await generateLicenseInsights(targetLicenseId);
+          break;
+        case AIInsightScope.SYSTEM:
+          // SYSTEM sees all schools - generate system-wide insights
+          generatedInsights = await generateSystemInsights();
+          break;
+        default:
+          generatedInsights = [];
+      }
+
+      // Save insights to database
+      if (generatedInsights.length > 0) {
+        await saveInsights(
+          generatedInsights,
+          scope,
+          scope === AIInsightScope.STUDENT || scope === AIInsightScope.TEACHER ? userId : undefined,
+          classroomId || undefined,
+          scope === AIInsightScope.LICENSE ? (licenseId || session.user.license_id) : undefined
+        );
+
+        // Fetch the saved insights
+        insights = await getCachedInsights(
+          scope,
+          scope === AIInsightScope.STUDENT || scope === AIInsightScope.TEACHER ? userId : undefined,
+          classroomId || undefined,
+          scope === AIInsightScope.LICENSE ? (licenseId || session.user.license_id) : undefined
+        );
+      }
+    }
+
+    // Transform to API response format
+    const apiInsights: AIInsight[] = insights.map((insight) => ({
+      id: insight.id,
+      type: insight.type.toLowerCase() as any,
+      title: insight.title,
+      description: insight.description,
+      confidence: insight.confidence,
+      priority: insight.priority.toLowerCase() as any,
+      data: insight.data || {},
+      createdAt: insight.createdAt.toISOString(),
+    }));
 
     const response: AISummaryResponse = {
-      insights,
+      insights: apiInsights,
       summary: {
-        totalInsights: insights.length,
-        highPriority: insights.filter((i) => i.priority === 'high').length,
-        lastGenerated: new Date().toISOString(),
+        totalInsights: apiInsights.length,
+        highPriority: apiInsights.filter(
+          (i) => i.priority === "high"
+        ).length,
+        lastGenerated: insights[0]?.createdAt?.toISOString() || new Date().toISOString(),
       },
-      status: 'ready', // Will be 'generating' or 'stale' when connected to real AI service
+      status: insights.length > 0 ? "ready" : "generating",
       cache: {
-        cached: false,
-        generatedAt: new Date().toISOString(),
+        cached: !forceRefresh && insights.length > 0,
+        generatedAt: insights[0]?.createdAt?.toISOString() || new Date().toISOString(),
       },
     };
 
     const duration = Date.now() - startTime;
 
-    console.log(`[API] /api/ai/summary - ${duration}ms - ${insights.length} insights`);
+    console.log(
+      `[API] /api/ai/summary - ${duration}ms - ${apiInsights.length} insights (${scope})`
+    );
 
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'private, max-age=300, stale-while-revalidate=600', // Longer cache for AI insights
-        'X-Response-Time': `${duration}ms`,
+        "Cache-Control": "private, max-age=300, stale-while-revalidate=600",
+        "X-Response-Time": `${duration}ms`,
       },
     });
   } catch (error) {
-    console.error('[API] /api/ai/summary - Error:', error);
+    console.error("[API] /api/ai/summary - Error:", error);
 
     return NextResponse.json(
       {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch AI summary',
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch AI summary",
         details: error instanceof Error ? { error: error.message } : {},
       },
       {
         status: 500,
         headers: {
-          'X-Response-Time': `${Date.now() - startTime}ms`,
+          "X-Response-Time": `${Date.now() - startTime}ms`,
         },
       }
     );

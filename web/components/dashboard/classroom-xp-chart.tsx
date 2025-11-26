@@ -16,6 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useScopedI18n } from "@/locales/client";
 
 interface ClassRoomXpChartProps {
   licenseId?: string;
@@ -26,6 +27,7 @@ type ViewType = "mostActive" | "leastActive";
 type XpData = { name: string; xp: number };
 
 export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
+  const tc = useScopedI18n("components.classroomXpChart") as any;
   const [timeRange, setTimeRange] = useState<TimeRange>("week");
   const [view, setView] = useState<ViewType>("mostActive");
   const [data, setData] = useState<XpData[]>([]);
@@ -74,19 +76,19 @@ export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
   }, [timeRange, view, licenseId]);
 
   const buttons = [
-    { id: "mostActive" as const, label: "5 Most Active Classrooms" },
-    { id: "leastActive" as const, label: "5 Least Active Classrooms" },
+    { id: "mostActive" as const, label: tc("buttons.mostActive") },
+    { id: "leastActive" as const, label: tc("buttons.leastActive") },
   ];
 
   const timeRanges = [
-    { id: "week" as const, label: "Week" },
-    { id: "month" as const, label: "Month" },
-    { id: "year" as const, label: "Year" },
+    { id: "week" as const, label: tc("timeRanges.week") },
+    { id: "month" as const, label: tc("timeRanges.month") },
+    { id: "year" as const, label: tc("timeRanges.year") },
   ];
 
   const chartConfig = {
     xp: {
-      label: "XP",
+      label: tc("chart.xpLabel"),
       color: "hsl(var(--chart-1))",
     },
   } satisfies ChartConfig;
@@ -95,7 +97,7 @@ export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
     <Card className="col-span-3 p-4 rounded-lg shadow mt-2 mb-4">
       <CardHeader>
         <CardTitle className="text-lg font-bold sm:text-xl md:text-2xl">
-          Classroom Activity (Total XP by Classroom)
+          {tc("title")}
         </CardTitle>
       </CardHeader>
 
@@ -129,11 +131,11 @@ export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
         </div>
 
         {loading ? (
-          <p className="text-center text-gray-500">Loading data...</p>
+          <p className="text-center text-gray-500">{tc("loading")}</p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : data.length === 0 ? (
-          <p className="text-center text-gray-500">No XP data available</p>
+          <p className="text-center text-gray-500">{tc("noData")}</p>
         ) : (
           <ChartContainer config={chartConfig}>
             <BarChart
@@ -147,7 +149,7 @@ export default function ClassRoomXpChart({ licenseId }: ClassRoomXpChartProps) {
               <XAxis
                 type="number"
                 domain={[0, maxXP]}
-                tickFormatter={(value) => `${value.toLocaleString()} XP`}
+                tickFormatter={(value) => `${value.toLocaleString()} ${tc("chart.tickSuffix")}`}
               />
               <YAxis
                 type="category"

@@ -18,8 +18,6 @@ import CustomCard from "@/components/tour/CustomCard";
 import { ThemeWrapper } from "@/components/theme-warpper";
 import AuthRedirectHandler from "@/components/auth-redirect-handler";
 
-import "@/styles/themes.css";
-
 const cabinSketch = localFont({
   src: "../../assets/fonts/CabinSketch-Regular.ttf",
   variable: "--font-cabin-sketch",

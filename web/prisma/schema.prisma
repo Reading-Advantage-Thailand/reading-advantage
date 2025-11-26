@@ -43,6 +43,9 @@ model User {
   userSentenceRecords UserSentenceRecord[]
   userWordRecords     UserWordRecord[]
   school              School?              @relation(fields: [schoolId], references: [id])
+  sentNotifications   AssignmentNotification[] @relation("TeacherNotifications")
+  receivedNotifications AssignmentNotification[] @relation("StudentNotifications")
+  learningGoals       LearningGoal[]
 
   @@map("users")
 }
@@ -309,17 +312,18 @@ model GenreAdjacency {
 }
 
 model Assignment {
-  id                 String              @id @default(cuid())
-  classroomId        String              @map("classroom_id")
-  articleId          String              @map("article_id")
-  title              String?             @db.VarChar
-  description        String?
-  dueDate            DateTime?           @map("due_date")
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @default(now()) @updatedAt
-  article            Article             @relation(fields: [articleId], references: [id])
-  classroom          Classroom           @relation(fields: [classroomId], references: [id])
-  studentAssignments StudentAssignment[]
+  id                     String                   @id @default(cuid())
+  classroomId            String                   @map("classroom_id")
+  articleId              String                   @map("article_id")
+  title                  String?                  @db.VarChar
+  description            String?
+  dueDate                DateTime?                @map("due_date")
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @default(now()) @updatedAt
+  article                Article                  @relation(fields: [articleId], references: [id])
+  classroom              Classroom                @relation(fields: [classroomId], references: [id])
+  studentAssignments     StudentAssignment[]
+  assignmentNotifications AssignmentNotification[]
 
   @@map("assignments")
 }
@@ -614,4 +618,184 @@ enum AnswerStatus {
   UNANSWERED
   CORRECT
   INCORRECT
+}
+
+enum GoalType {
+  XP_TOTAL          // Total XP target
+  XP_DAILY          // Daily XP target
+  XP_WEEKLY         // Weekly XP target
+  ARTICLES_READ     // Number of articles
+  READING_TIME      // Minutes of reading
+  VOCABULARY        // New words learned
+  STREAK            // Daily streak
+  CEFR_LEVEL        // Reach a CEFR level
+  CUSTOM            // User-defined goal
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+  EXPIRED
+}
+
+enum GoalPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum RecurringPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum AIInsightType {
+  TREND
+  ALERT
+  RECOMMENDATION
+  ACHIEVEMENT
+  WARNING
+}
+
+enum AIInsightScope {
+  STUDENT
+  TEACHER
+  CLASSROOM
+  LICENSE
+  SYSTEM
+}
+
+enum AIInsightPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model AssignmentNotification {
+  id           String     @id @default(cuid())
+  teacherId    String     @map("teacher_id")
+  studentId    String     @map("student_id")
+  assignmentId String     @map("assignment_id")
+  isNoticed    Boolean    @default(false) @map("is_noticed")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  teacher      User       @relation("TeacherNotifications", fields: [teacherId], references: [id], onDelete: Cascade)
+  student      User       @relation("StudentNotifications", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, studentId, teacherId])
+  @@index([studentId, isNoticed])
+  @@index([teacherId])
+  @@map("assignment_notifications")
+}
+
+model AIInsight {
+  id           String          @id @default(cuid())
+  type         AIInsightType   @map("insight_type")
+  scope        AIInsightScope  @map("scope")
+  priority     AIInsightPriority @default(MEDIUM)
+  title        String
+  description  String          @db.Text
+  confidence   Float           @default(0.0)  // 0.0 to 1.0
+  data         Json?           // Additional structured data
+  
+  // Context references
+  userId       String?         @map("user_id")
+  classroomId  String?         @map("classroom_id")
+  licenseId    String?         @map("license_id")
+  
+  // Metadata
+  generatedBy  String          @default("ai") @map("generated_by") // 'ai' or 'system'
+  modelVersion String?         @map("model_version") // Track AI model used
+  dismissed    Boolean         @default(false)
+  dismissedAt  DateTime?       @map("dismissed_at")
+  actionTaken  Boolean         @default(false) @map("action_taken")
+  
+  // Timestamps
+  validUntil   DateTime?       @map("valid_until")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  @@index([userId, dismissed, validUntil])
+  @@index([classroomId, dismissed, validUntil])
+  @@index([licenseId, dismissed, validUntil])
+  @@index([scope, priority, createdAt])
+  @@map("ai_insights")
+}
+
+model AIInsightCache {
+  id          String   @id @default(cuid())
+  cacheKey    String   @unique @map("cache_key") // e.g., "student:{userId}", "teacher:{userId}", "license:{id}"
+  scope       AIInsightScope
+  insights    Json     // Cached insights array
+  metrics     Json?    // Cached metrics used for generation
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([scope, expiresAt])
+  @@map("ai_insight_cache")
+}
+
+model LearningGoal {
+  id              String           @id @default(cuid())
+  userId          String           @map("user_id")
+  goalType        GoalType         @map("goal_type")
+  title           String
+  description     String?
+  targetValue     Float            @map("target_value")
+  currentValue    Float            @default(0) @map("current_value")
+  unit            String           // e.g., "articles", "xp", "words", "days"
+  startDate       DateTime         @default(now()) @map("start_date")
+  targetDate      DateTime         @map("target_date")
+  completedAt     DateTime?        @map("completed_at")
+  status          GoalStatus       @default(ACTIVE)
+  priority        GoalPriority     @default(MEDIUM)
+  isRecurring     Boolean          @default(false) @map("is_recurring")
+  recurringPeriod RecurringPeriod? @map("recurring_period")
+  metadata        Json?            // Additional flexible data (e.g., specific genres, CEFR levels)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones      GoalMilestone[]
+  progressLogs    GoalProgressLog[]
+
+  @@index([userId, status])
+  @@index([targetDate])
+  @@map("learning_goals")
+}
+
+model GoalMilestone {
+  id          String    @id @default(cuid())
+  goalId      String    @map("goal_id")
+  title       String
+  description String?
+  targetValue Float     @map("target_value")
+  order       Int       // Sequence order of the milestone
+  achievedAt  DateTime? @map("achieved_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  goal        LearningGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@map("goal_milestones")
+}
+
+model GoalProgressLog {
+  id          String   @id @default(cuid())
+  goalId      String   @map("goal_id")
+  value       Float    // Progress value added
+  previousValue Float  @map("previous_value")
+  newValue    Float    @map("new_value")
+  note        String?
+  activityId  String?  @map("activity_id") // Reference to XPLog or UserActivity
+  activityType ActivityType? @map("activity_type")
+  createdAt   DateTime @default(now()) @map("created_at")
+  goal        LearningGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId, createdAt])
+  @@map("goal_progress_logs")
 }
