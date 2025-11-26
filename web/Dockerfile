@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
+    openssl \  
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
@@ -20,6 +22,11 @@ RUN npm install prisma --save-dev
 # Stage 2: Builder
 FROM node:20.18-slim AS builder
 WORKDIR /app
+
+# -----------------------------------------------------------
+# 1. เพิ่มการติดตั้ง OpenSSL ใน Builder Stage (สำคัญมาก เพราะพังตรงนี้)
+# -----------------------------------------------------------
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
 
 ARG SERVICE_ACCOUNT_KEY
 ARG GOOGLE_CLIENT_ID
@@ -103,8 +110,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install ffmpeg in runner
-RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+# -----------------------------------------------------------
+# 2. เพิ่ม openssl และ ca-certificates ให้ Runner ด้วย (เพื่อให้รันได้จริง)
+# -----------------------------------------------------------
+RUN apt-get update && apt-get install -y ffmpeg openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Copy necessary files from builder
 COPY --from=builder /app/next.config.mjs ./
