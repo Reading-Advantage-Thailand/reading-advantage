@@ -24,10 +24,10 @@ export type LevelTestChatRequest = z.infer<typeof levelTestChatSchema>;
 // Language display names for instruction
 const languageNames: Record<string, string> = {
   en: "English",
-  th: "Thai",
-  cn: "Chinese (Simplified)",
-  tw: "Chinese (Traditional)",
-  vi: "Vietnamese",
+  th: "Thai (ภาษาไทย)",
+  cn: "Chinese Simplified (简体中文)",
+  tw: "Chinese Traditional (繁體中文)",
+  vi: "Vietnamese (Tiếng Việt)",
 };
 
 /**
@@ -43,7 +43,21 @@ function buildSystemMessage(
   
   let languageInstruction = "";
   if (preferredLanguage !== "en") {
-    languageInstruction = `\n\nNote: The user's preferred language is ${languageName}. When explaining concepts or giving feedback, use ${languageName}. But always assess their ENGLISH ability.`;
+    languageInstruction = `\n\n**CRITICAL LANGUAGE INSTRUCTION:** The user's preferred language is ${languageName}.
+
+RULES:
+1. ALWAYS conduct the conversation and ask questions in ENGLISH (this is an English proficiency test)
+2. When providing the final assessment JSON, you MUST write these fields in ${languageName}:
+   - "explanation": Write in ${languageName}
+   - "strengths": Each item in the array MUST be in ${languageName}
+   - "improvements": Each item in the array MUST be in ${languageName}
+   - "nextSteps": Write in ${languageName}
+3. Keep ONLY "level" (A1, B1, etc.) and "sublevel" (+, -) in English
+4. The friendly closing message before JSON can be in ${languageName}
+
+Example for ${languageName} assessment:
+"strengths": ["คำศัพท์ดีสำหรับหัวข้อประจำวัน", "โครงสร้างประโยคชัดเจน"]
+"improvements": ["ฝึกใช้ past tense กับกริยาอปกติ", "ฝึกประโยคเงื่อนไข"]`;
   }
 
   let skipInstruction = "";
