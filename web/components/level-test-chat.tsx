@@ -16,7 +16,15 @@ import Confetti from "react-confetti";
 import { useScopedI18n, useCurrentLocale } from "@/locales/client";
 import { levelCalculation } from "@/lib/utils";
 import { ActivityStatus, ActivityType } from "./models/user-activity-log-model";
-import { Send, Loader2, MessageCircle, Trophy, RefreshCw, SkipForward, AlertTriangle } from "lucide-react";
+import {
+  Send,
+  Loader2,
+  MessageCircle,
+  Trophy,
+  RefreshCw,
+  SkipForward,
+  AlertTriangle,
+} from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
 
 type Props = {
@@ -47,38 +55,38 @@ const MAX_SKIPS_BEFORE_END = 5; // End test early after 5 skips
 const cefrToSystemXp = (level: string, sublevel?: string): number => {
   const cefrXpMap: Record<string, number> = {
     "A1-": 0,
-    "A1": 5000,
+    A1: 5000,
     "A1+": 11000,
     "A2-": 18000,
-    "A2": 26000,
+    A2: 26000,
     "A2+": 35000,
     "B1-": 45000,
-    "B1": 56000,
+    B1: 56000,
     "B1+": 68000,
     "B2-": 81000,
-    "B2": 95000,
+    B2: 95000,
     "B2+": 110000,
     "C1-": 126000,
-    "C1": 143000,
+    C1: 143000,
     "C1+": 161000,
     "C2-": 180000,
-    "C2": 200000,
+    C2: 200000,
     "C2+": 221000,
   };
 
   // Construct CEFR key (e.g., "B1+", "A2-", "B2")
   const cefrKey = `${level}${sublevel || ""}`;
-  
+
   // Try exact match first
   if (cefrXpMap[cefrKey]) {
     return cefrXpMap[cefrKey];
   }
-  
+
   // Try level without sublevel
   if (cefrXpMap[level]) {
     return cefrXpMap[level];
   }
-  
+
   // Default to A1-
   return 0;
 };
@@ -122,7 +130,12 @@ export default function LevelTestChat({ userId }: Props) {
 
     // Only start timer if last message is from bot and test is not finished
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.sender === "bot" && !testFinished && isInitialized && !isLoading) {
+    if (
+      lastMessage?.sender === "bot" &&
+      !testFinished &&
+      isInitialized &&
+      !isLoading
+    ) {
       skipTimerRef.current = setTimeout(() => {
         setShowSkipButton(true);
       }, SKIP_TIMEOUT_MS);
@@ -387,59 +400,6 @@ export default function LevelTestChat({ userId }: Props) {
     }
   };
 
-  const requestAssessment = async () => {
-    const assessmentMessage: Message = {
-      text: "I'm done. Please give me my assessment result.",
-      sender: "user",
-    };
-
-    const newMessages = [...messages, assessmentMessage];
-    setMessages(newMessages);
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("/api/v1/level-test/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: newMessages,
-          isInitial: false,
-          preferredLanguage: currentLocale,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to get assessment");
-      }
-
-      const data = await response.json();
-
-      setMessages([
-        ...newMessages,
-        {
-          text: data.text,
-          sender: "bot",
-        },
-      ]);
-
-      if (data.assessment) {
-        setAssessment(data.assessment);
-        setTestFinished(true);
-      }
-    } catch (error) {
-      console.error("Error getting assessment:", error);
-      toast({
-        title: t("toast.errorTitle"),
-        description: t("toast.assessmentError"),
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const saveAndContinue = async () => {
     if (!assessment) return;
 
@@ -448,8 +408,6 @@ export default function LevelTestChat({ userId }: Props) {
       // Convert AI's CEFR level to system XP
       const systemXp = cefrToSystemXp(assessment.level, assessment.sublevel);
       const calculatedLevel = levelCalculation(systemXp);
-
-      console.log(`Assessment CEFR: ${assessment.level}${assessment.sublevel || ""}, System XP: ${systemXp}, Calculated: ${calculatedLevel.cefrLevel}`);
 
       const updateResult = await fetch(`/api/v1/users/${userId}/activitylog`, {
         method: "POST",
@@ -480,7 +438,7 @@ export default function LevelTestChat({ userId }: Props) {
         router.push("/student/read");
         router.refresh();
       } else {
-        console.log("Update Failed");
+        console.error("Update Failed");
         toast({
           title: t("toast.errorTitle"),
           description: t("toast.errorDescription"),
@@ -522,10 +480,10 @@ export default function LevelTestChat({ userId }: Props) {
                 {assessment.level}
                 {assessment.sublevel || ""}
               </p>
-              <p className="text-lg">
-                {t("yourScore", { xp: systemXp })}
+              <p className="text-lg">{t("yourScore", { xp: systemXp })}</p>
+              <p className="text-sm mt-1">
+                RA Level: {calculatedLevel.raLevel}
               </p>
-              <p className="text-sm mt-1">RA Level: {calculatedLevel.raLevel}</p>
             </div>
 
             <div className="space-y-3">
@@ -561,9 +519,9 @@ export default function LevelTestChat({ userId }: Props) {
               )}
             </div>
 
-            <Button 
-              size="lg" 
-              className="w-full mt-4" 
+            <Button
+              size="lg"
+              className="w-full mt-4"
               onClick={saveAndContinue}
               disabled={isSaving}
             >
@@ -634,7 +592,9 @@ export default function LevelTestChat({ userId }: Props) {
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-600" />
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              {t("skipWarning", { remaining: MAX_SKIPS_BEFORE_END - skipCount })}
+              {t("skipWarning", {
+                remaining: MAX_SKIPS_BEFORE_END - skipCount,
+              })}
             </p>
           </div>
         )}
@@ -642,9 +602,7 @@ export default function LevelTestChat({ userId }: Props) {
         {/* Skip Button - appears after 15 seconds of inactivity */}
         {showSkipButton && !isLoading && (
           <div className="bg-muted/50 border border-dashed rounded-lg p-4 text-center space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <p className="text-sm text-muted-foreground">
-              {t("skipPrompt")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("skipPrompt")}</p>
             <Button
               variant="secondary"
               onClick={handleSkipQuestion}
@@ -672,7 +630,10 @@ export default function LevelTestChat({ userId }: Props) {
             disabled={isLoading}
             className="flex-1"
           />
-          <Button onClick={sendMessage} disabled={isLoading || !inputValue.trim()}>
+          <Button
+            onClick={sendMessage}
+            disabled={isLoading || !inputValue.trim()}
+          >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -696,9 +657,7 @@ export default function LevelTestChat({ userId }: Props) {
           </Button>
         </div>
 
-        <p className="text-xs text-muted-foreground text-center">
-          {t("hint")}
-        </p>
+        <p className="text-xs text-muted-foreground text-center">{t("hint")}</p>
       </CardContent>
     </Card>
   );
