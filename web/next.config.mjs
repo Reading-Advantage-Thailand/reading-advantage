@@ -4,12 +4,11 @@ const nextConfig = {
   transpilePackages: ["next-international", "international-types"],
   reactStrictMode: false,
   pageExtensions: ["tsx", "ts", "jsx", "js"],
-  // Skip type checking and linting during build to save memory
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   images: {
     remotePatterns: [

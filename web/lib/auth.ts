@@ -149,7 +149,7 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -169,6 +169,29 @@ export const authOptions: NextAuthOptions = {
         token.teacher_class_ids = user.teacher_class_ids;
         token.student_class_ids = user.student_class_ids;
       }
+
+      // Always refresh level, xp, and cefr_level from database to ensure latest values
+      // This is important after level test or any XP-earning activity
+      if (token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              level: true,
+              xp: true,
+              cefrLevel: true,
+            },
+          });
+          if (dbUser) {
+            token.level = dbUser.level;
+            token.xp = dbUser.xp;
+            token.cefr_level = dbUser.cefrLevel ?? "";
+          }
+        } catch (error) {
+          console.error("Error refreshing user level from database:", error);
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {

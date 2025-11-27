@@ -2,6 +2,8 @@ import oauth2Client, { SCOPE } from "@/utils/classroom";
 import { cookies } from "next/headers";
 import { NextResponse, NextRequest } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const lastUrl =
