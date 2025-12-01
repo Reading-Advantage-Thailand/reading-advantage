@@ -8,6 +8,8 @@ import { checkMatviewsHealth } from '@/lib/cache/fallback-queries';
 import { requireRole } from '@/server/middleware/guards';
 import { Role } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/v1/metrics/health
  * 
