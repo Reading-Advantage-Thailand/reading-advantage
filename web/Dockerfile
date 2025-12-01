@@ -90,18 +90,20 @@ ENV CLASSROOM_REDIRECT_URI=$CLASSROOM_REDIRECT_URI
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
 ENV NEXT_PHASE="phase-production-build"
 ENV NODE_OPTIONS="--max-old-space-size=16384"
-ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy package files first
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install ALL dependencies (including devDependencies for build)
-RUN npm ci
+# Install ALL dependencies (including devDependencies) - NODE_ENV must not be production here
+RUN npm ci --include=dev
 
-# Install missing dependencies explicitly for build
+# Install missing dependencies explicitly for build (if not in package.json)
 RUN npm install --save-dev @types/lodash eslint
+
+# Set NODE_ENV to production after installing dependencies
+ENV NODE_ENV=production
 
 # Generate Prisma Client
 RUN npx prisma generate
