@@ -1425,6 +1425,24 @@ export default {
     kpiCard: {
       source: "來源",
     },
+    classDashboardKpis: {
+      errorTitle: "載入班級儀表板時發生錯誤",
+      totalStudents: {
+        title: "學生總數",
+        description: "本週 {active} 人活躍",
+      },
+      activeStudents: {
+        title: "活躍學生",
+        description: "{rate}% 活躍率",
+      },
+      avgLevel: { title: "平均等級", description: "班級閱讀等級" },
+      totalXp: { title: "總經驗值", description: "班級累計經驗值" },
+      activeAssignments: {
+        title: "進行中的作業",
+        description: "目前進行中",
+      },
+      completed: { title: "已完成", description: "作業提交數" },
+    },
     alertCenter: {
       title: "Alert Center",
       unacknowledged: "unacknowledged alerts",
