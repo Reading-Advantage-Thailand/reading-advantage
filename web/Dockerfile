@@ -1,39 +1,11 @@
-# Stage 1: Dependencies
-FROM node:20.18-slim AS deps
+# Single-stage Dockerfile (Reverted from multi-stage)
+FROM node:20.18
 WORKDIR /app
 
-# Install dependencies needed for node-gyp
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    openssl \  
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install ffmpeg for audio processing
+RUN apt-get update && apt-get install -y ffmpeg
 
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
-
-# Install dependencies
-RUN npm ci --only=production --ignore-scripts
-RUN npm install prisma --save-dev
-
-# Install @types/lodash for TypeScript type definitions
-RUN npm install --save-dev @types/lodash
-
-# Install ESLint for linting during builds
-RUN npm install --save-dev eslint
-
-# Stage 2: Builder
-FROM node:20.18-slim AS builder
-WORKDIR /app
-
-# -----------------------------------------------------------
-# 1. เพิ่มการติดตั้ง OpenSSL ใน Builder Stage (สำคัญมาก เพราะพังตรงนี้)
-# -----------------------------------------------------------
-RUN apt-get update -y && apt-get install -y openssl ca-certificates
-
+# Build arguments from Cloud Build
 ARG SERVICE_ACCOUNT_KEY
 ARG GOOGLE_CLIENT_ID
 ARG GOOGLE_CLIENT_SECRET
@@ -60,9 +32,11 @@ ARG CLASSROOM_CLIENT_ID
 ARG CLASSROOM_CLIENT_SECRET
 ARG CLASSROOM_REDIRECT_URI
 
+# Set environment variables from build args (baked into image)
 ENV SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY
-ENV GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
-ENV GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
+# Map GOOGLE_CLIENT_ID/SECRET to AUTH_GOOGLE_ID/SECRET (used by NextAuth)
+ENV AUTH_GOOGLE_ID=$GOOGLE_CLIENT_ID
+ENV AUTH_GOOGLE_SECRET=$GOOGLE_CLIENT_SECRET
 ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
 ENV OPENAI_API_KEY=$OPENAI_API_KEY
@@ -86,52 +60,25 @@ ENV CLASSROOM_CLIENT_ID=$CLASSROOM_CLIENT_ID
 ENV CLASSROOM_CLIENT_SECRET=$CLASSROOM_CLIENT_SECRET
 ENV CLASSROOM_REDIRECT_URI=$CLASSROOM_REDIRECT_URI
 
-# Set placeholder DATABASE_URL for build time
+# Placeholder DATABASE_URL for build time (real one set via --set-env-vars at runtime)
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
-ENV NEXT_PHASE="phase-production-build"
-ENV NODE_OPTIONS="--max-old-space-size=16384"
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--max-old-space-size=32768"
 
-# Copy package files first
+# Copy package files
 COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy Prisma schema and generate client
 COPY prisma ./prisma/
-
-# Install ALL dependencies (including devDependencies) - NODE_ENV must not be production here
-RUN npm ci --include=dev
-
-# Install missing dependencies explicitly for build (if not in package.json)
-RUN npm install --save-dev @types/lodash eslint
-
-# Set NODE_ENV to production after installing dependencies
-ENV NODE_ENV=production
-
-# Generate Prisma Client
 RUN npx prisma generate
 
-# Copy source code
+# Copy remaining source code
 COPY . .
 
-# Build Next.js
+# Build Next.js application
 RUN npm run build
-
-# Stage 3: Runner
-FROM node:20.18-slim AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-# -----------------------------------------------------------
-# 2. เพิ่ม openssl และ ca-certificates ให้ Runner ด้วย (เพื่อให้รันได้จริง)
-# -----------------------------------------------------------
-RUN apt-get update && apt-get install -y ffmpeg openssl ca-certificates && rm -rf /var/lib/apt/lists/*
-
-# Copy necessary files from builder
-COPY --from=builder /app/next.config.mjs ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/prisma ./prisma
 
 # Expose port
 EXPOSE 3000
