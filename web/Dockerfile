@@ -19,6 +19,12 @@ COPY prisma ./prisma/
 RUN npm ci --only=production --ignore-scripts
 RUN npm install prisma --save-dev
 
+# Install @types/lodash for TypeScript type definitions
+RUN npm install --save-dev @types/lodash
+
+# Install ESLint for linting during builds
+RUN npm install --save-dev eslint
+
 # Stage 2: Builder
 FROM node:20.18-slim AS builder
 WORKDIR /app
