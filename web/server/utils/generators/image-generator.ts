@@ -2,9 +2,7 @@ import { experimental_generateImage as generateImages } from "ai";
 import uploadToBucket from "@/utils/uploadToBucket";
 import fs from "fs";
 import { IMAGE_URL } from "../../constants";
-import { openai, openaiImages } from "@/utils/openai";
 import { google, googleImages } from "@/utils/google";
-import { json } from "stream/consumers";
 
 interface GenerateImageParams {
   imageDesc: string;
@@ -21,23 +19,15 @@ export async function generateImage(
       //console.log(`Generating image (Attempt ${attempts + 1}/${maxRetries})`);
 
       const { image } = await generateImages({
-        model: openai.image(openaiImages),
-        n: 1,
+        model: google.image(googleImages as any),
         prompt: params.imageDesc,
-        size: "1024x1024",
+        providerOptions: {
+          vertex: {
+            aspectRatio: "1:1",
+            personGeneration: "allow_all",
+          },
+        },
       });
-
-    // const { image } = await generateImages({
-    //   model: google.image(googleImages),
-    //   prompt: params.imageDesc,
-    //   providerOptions: {
-    //     vertex: {
-    //       aspectRatio: "1:1",
-    //       safetySetting: "block_some",
-    //       personGeneration: "allow_all",
-    //     },
-    //   },
-    // });
 
       const base64 = image.base64;
       const base64Image: Buffer = Buffer.from(base64, "base64");

@@ -15,7 +15,7 @@ const router = createEdgeRouter<NextRequest, Context>();
 router.use(logRequest);
 router.use(restrictAccessKey);
 
-// POST /api/articles/generate
+// POST /api/v1/articles/generate
 // BODY: { amountPerGenre: number }
 router.post(generateQueue);
 
