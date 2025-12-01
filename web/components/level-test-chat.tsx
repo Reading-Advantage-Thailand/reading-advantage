@@ -486,7 +486,7 @@ export default function LevelTestChat({ userId }: Props) {
               </p>
             </div>
 
-            <div className="space-y-3">
+            {/*<div className="space-y-3">
               <div>
                 <h4 className="font-semibold text-green-600 mb-1">
                   {t("strengths")}
@@ -517,7 +517,7 @@ export default function LevelTestChat({ userId }: Props) {
                   <p className="text-sm">{assessment.nextSteps}</p>
                 </div>
               )}
-            </div>
+            </div>*/}
 
             <Button
               size="lg"

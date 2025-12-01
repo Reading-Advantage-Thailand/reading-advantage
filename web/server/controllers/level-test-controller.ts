@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ExtendedNextRequest } from "./auth-controller";
 import { z } from "zod";
 import { streamText } from "ai";
-import { openai, openaiModel } from "@/utils/openai";
+import { openai, openaiModel5 } from "@/utils/openai";
 import { promptLevelTestChat } from "@/data/prompt-level-test-chat";
 
 // Schema for level test chat request
@@ -40,7 +40,7 @@ function buildSystemMessage(
   forceAssessment: boolean
 ): string {
   const languageName = languageNames[preferredLanguage] || preferredLanguage;
-  
+
   let languageInstruction = "";
   if (preferredLanguage !== "en") {
     languageInstruction = `\n\n**CRITICAL LANGUAGE INSTRUCTION:** The user's preferred language is ${languageName}.
@@ -111,21 +111,21 @@ export async function handleLevelTestChat(req: ExtendedNextRequest) {
     const body = await req.json();
     const validatedData = levelTestChatSchema.parse(body);
 
-    const { 
-      messages, 
-      isInitial, 
-      preferredLanguage, 
-      skipCount, 
-      forceAssessment 
+    const {
+      messages,
+      isInitial,
+      preferredLanguage,
+      skipCount,
+      forceAssessment,
     } = validatedData;
 
     // Build system message with all context
     const systemMessage = {
       role: "system" as const,
       content: buildSystemMessage(
-        isInitial, 
-        preferredLanguage, 
-        skipCount, 
+        isInitial,
+        preferredLanguage,
+        skipCount,
         forceAssessment
       ),
     };
@@ -138,7 +138,8 @@ export async function handleLevelTestChat(req: ExtendedNextRequest) {
 
     // Send to OpenAI with history
     const { textStream } = await streamText({
-      model: openai(openaiModel),
+      temperature: 1,
+      model: openai(openaiModel5),
       messages: [systemMessage, ...chatMessages],
     });
 
@@ -164,10 +165,7 @@ export async function handleLevelTestChat(req: ExtendedNextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error("Validation Error:", error.errors);
-      return NextResponse.json(
-        { errors: error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ errors: error.errors }, { status: 400 });
     }
 
     console.error("Level Test Chat API Error:", error);
