@@ -93,13 +93,15 @@ ENV NODE_OPTIONS="--max-old-space-size=16384"
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+# Copy package files first
 COPY package*.json ./
 COPY prisma ./prisma/
 
 # Install ALL dependencies (including devDependencies for build)
-RUN npm install
+RUN npm ci
+
+# Install missing dependencies explicitly for build
+RUN npm install --save-dev @types/lodash eslint
 
 # Generate Prisma Client
 RUN npx prisma generate
