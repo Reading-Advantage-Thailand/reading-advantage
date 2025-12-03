@@ -600,6 +600,9 @@ export default {
         },
       },
       lessonPage: {
+        translatingContent: "กำลังแปลเนื้อหา...",
+        translationError: "เกิดข้อผิดพลาดในการแปลเนื้อหา",
+        retry: "ลองใหม่",
         lesson: "บทเรียน",
         startLesson: "เริ่มบทเรียน",
         nextPhase: "ขั้นถัดไป",
@@ -1062,13 +1065,15 @@ export default {
               fullyCompleted: "เสร็จสมบูรณ์",
               allStudentsFinished: "นักเรียนทุกคนเสร็จแล้ว",
               noGoalsFound: "ไม่พบเป้าหมาย",
-              noGoalsDescription: "สร้างเป้าหมายแรกสำหรับชั้นเรียนเพื่อเริ่มต้น",
+              noGoalsDescription:
+                "สร้างเป้าหมายแรกสำหรับชั้นเรียนเพื่อเริ่มต้น",
               noMatchingGoals: "ไม่มีเป้าหมายที่ตรงกับตัวกรองของคุณ",
               createFirstGoal: "สร้างเป้าหมายแรก",
             },
             createDialog: {
               title: "สร้างเป้าหมายสำหรับชั้นเรียนทั้งหมด",
-              description: "เป้าหมายนี้จะถูกตั้งให้กับนักเรียนทุกคนใน {className}",
+              description:
+                "เป้าหมายนี้จะถูกตั้งให้กับนักเรียนทุกคนใน {className}",
               goalType: "ประเภทเป้าหมาย",
               title_label: "หัวข้อ",
               titlePlaceholder: "เช่น เป้าหมายการอ่านรายสัปดาห์",
@@ -1107,7 +1112,8 @@ export default {
               },
               toast: {
                 successTitle: "สร้างเป้าหมายสำเร็จ",
-                successDescription: "สร้างเป้าหมายให้ {count} คนใน {className} แล้ว",
+                successDescription:
+                  "สร้างเป้าหมายให้ {count} คนใน {className} แล้ว",
                 errorTitle: "สร้างเป้าหมายไม่สำเร็จ",
                 errorDescription: "เกิดข้อผิดพลาดขณะสร้างเป้าหมาย",
                 genericError: "สร้างเป้าหมายไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
@@ -1115,7 +1121,8 @@ export default {
             },
             progressDialog: {
               title: "{goalTitle}",
-              description: "ความคืบหน้าของนักเรียนสำหรับเป้าหมายนี้ • เป้าหมาย: {targetValue} {unit}",
+              description:
+                "ความคืบหน้าของนักเรียนสำหรับเป้าหมายนี้ • เป้าหมาย: {targetValue} {unit}",
               stats: {
                 total: "ทั้งหมด",
                 completed: "เสร็จแล้ว",
@@ -1140,15 +1147,18 @@ export default {
               deleteAll: "ลบทั้งหมด",
               confirmDelete: {
                 title: "ลบเป้าหมายสำหรับนักเรียนทุกคน",
-                description: "คุณแน่ใจหรือไม่ว่าต้องการลบเป้าหมายนี้สำหรับนักเรียนทั้งหมด {count} คน? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+                description:
+                  "คุณแน่ใจหรือไม่ว่าต้องการลบเป้าหมายนี้สำหรับนักเรียนทั้งหมด {count} คน? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
                 cancel: "ยกเลิก",
                 confirm: "ลบทั้งหมด",
               },
               toast: {
                 deleteSuccess: "ลบเป้าหมายแล้ว",
-                deleteSuccessDescription: "ลบเป้าหมายสำหรับ {count} คนสำเร็จแล้ว",
+                deleteSuccessDescription:
+                  "ลบเป้าหมายสำหรับ {count} คนสำเร็จแล้ว",
                 deleteError: "เกิดข้อผิดพลาด",
-                deleteErrorDescription: "ลบเป้าหมายบางส่วนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+                deleteErrorDescription:
+                  "ลบเป้าหมายบางส่วนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
               },
               stats: {
                 completed: "เสร็จแล้ว {completed} คน",
@@ -2110,7 +2120,8 @@ export default {
       saving: "กำลังบันทึก...",
       skipPrompt: "ตอบคำถามนี้ไม่ได้หรือเปล่า?",
       skipButton: "ข้ามคำถาม",
-      skipWarning: "คำเตือน: คุณสามารถข้ามคำถามได้อีก {remaining} ครั้งก่อนที่การทดสอบจะสิ้นสุด",
+      skipWarning:
+        "คำเตือน: คุณสามารถข้ามคำถามได้อีก {remaining} ครั้งก่อนที่การทดสอบจะสิ้นสุด",
       skippedMessage: "ข้ามคำถามนี้",
       toast: {
         successUpdate: "สำเร็จ!",

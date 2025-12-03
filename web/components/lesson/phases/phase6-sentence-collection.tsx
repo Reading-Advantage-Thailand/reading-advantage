@@ -313,6 +313,54 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
         return;
       }
 
+      // Check if article has translatedPassage, if not, translate it first
+      let articleTranslations = translatedPassage;
+      
+      // Check if translatedPassage is empty or missing Thai translations
+      const needsTranslation = 
+        !translatedPassage || 
+        Object.keys(translatedPassage).length === 0 ||
+        !translatedPassage.th || 
+        translatedPassage.th.length === 0;
+
+      if (needsTranslation) {
+        try {
+          console.log("No translations found, generating translations for article...");
+          
+          // Call translation API to generate translations for the entire passage
+          const translateResponse = await fetch(
+            `/api/v1/assistant/translate/${articleId}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                type: "passage",
+                targetLanguage: "th", // This will trigger translation for all languages
+              }),
+            }
+          );
+
+          if (translateResponse.ok) {
+            const translateData = await translateResponse.json();
+            console.log("Translation completed successfully");
+            
+            // Fetch the updated article to get the translatedPassage
+            const articleResponse = await fetch(`/api/articles/${articleId}`);
+            if (articleResponse.ok) {
+              const updatedArticle = await articleResponse.json();
+              articleTranslations = (updatedArticle as any).translatedPassage || translatedPassage;
+            }
+          } else {
+            console.warn("Translation API call failed, continuing with empty translations");
+          }
+        } catch (translationError) {
+          console.error("Error translating article:", translationError);
+          // Continue anyway, backend will handle missing translations
+        }
+      }
+
       // Save each sentence individually
       const savePromises = Array.from(selectedSentences).map(
         async (sentenceIndex) => {
@@ -338,10 +386,30 @@ const Phase6SentenceCollection: React.FC<Phase6SentenceCollectionProps> = ({
           const now = new Date();
           const due = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Tomorrow
 
+          // Build translation object from articleTranslations
+          let sentenceTranslation: Record<string, string> = {};
+          if (articleTranslations && Object.keys(articleTranslations).length > 0) {
+            // Map language codes
+            const languageMapping: Record<string, string> = {
+              "zh-CN": "cn",
+              "zh-TW": "tw",
+              th: "th",
+              vi: "vi",
+              en: "en",
+            };
+
+            Object.entries(articleTranslations).forEach(([langCode, translations]) => {
+              const mappedLangCode = languageMapping[langCode] || langCode;
+              if (Array.isArray(translations) && translations[sentenceIndex]) {
+                sentenceTranslation[mappedLangCode] = translations[sentenceIndex];
+              }
+            });
+          }
+
           const sentenceData = {
             articleId,
             sentence: sentence.trim(),
-            translation: {}, // Will be filled by backend from translatedPassage
+            translation: sentenceTranslation, // Use translations from article or empty object
             sn: sentenceIndex,
             timepoint,
             endTimepoint,

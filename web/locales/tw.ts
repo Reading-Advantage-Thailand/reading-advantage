@@ -50,109 +50,109 @@ export default {
           export: "匯出",
           refresh: "重新整理",
           refreshing: "重新整理中...",
-        loading: "正在載入指標...",
-        metricsUnavailableTitle: "某些指標可能無法使用：",
-        tabs: { overview: "總覽", activity: "活動", insights: "AI 洞見" },
-        cards: {
-          totalSchools: { title: "學校總數", desc: "活躍機構" },
-          totalUsers: {
-            title: "使用者總數",
-            count: "{students} 學生, {teachers} 教師",
+          loading: "正在載入指標...",
+          metricsUnavailableTitle: "某些指標可能無法使用：",
+          tabs: { overview: "總覽", activity: "活動", insights: "AI 洞見" },
+          cards: {
+            totalSchools: { title: "學校總數", desc: "活躍機構" },
+            totalUsers: {
+              title: "使用者總數",
+              count: "{students} 學生, {teachers} 教師",
+            },
+            totalArticles: { title: "文章總數", desc: "可用內容庫" },
+            completionRate: { title: "完成率", desc: "文章完成成功" },
           },
-          totalArticles: { title: "文章總數", desc: "可用內容庫" },
-          completionRate: { title: "完成率", desc: "文章完成成功" },
-        },
-        licenseUsage: {
-          title: "授權使用",
-          description: "監控學校的授權分配和使用情況",
-        },
-        activeUsers: {
-          title: "活躍用戶",
-          description: "實時用戶活動和參與度指標",
-        },
-        systemHealth: {
-          title: "系統健康",
-          description: "實時系統效能與健康指標",
-          database: "資料庫效能",
-          apiResponse: "API 回應時間",
-          errorRate: "錯誤率",
-          uptime: "系統運行時間",
-          status: { excellent: "優秀", good: "良好", low: "低" },
-        },
-        recentActivity: {
-          title: "近期活動",
-          description: "最新的管理操作和系統更動",
-          events: {
-            newSchoolLicense: "已啟用新學校授權",
-            contentUpdated: "內容庫已更新",
-            maintenanceCompleted: "系統維護已完成",
-            milestoneReached: "已達成閱讀時段里程碑",
+          licenseUsage: {
+            title: "授權使用",
+            description: "監控學校的授權分配和使用情況",
           },
-        },
-        noData: {
-          title: "無可用資料",
-          description: "請嘗試調整過濾條件或重新整理頁面",
-        },
-        },
-      },
-    school: {
-      dashboard: {
-        title: "學校儀表板",
-        timeframes: {
-          "7d": "7 天",
-          "30d": "30 天",
-          "90d": "90 天",
-        },
-        timeframeDescription: {
-          "7d": "過去7天內",
-          "30d": "過去30天內",
-          "90d": "過去90天內",
-        },
-        kpis: {
-          dataSource: {
-            userActivity: "日誌：用戶活動",
-            classroomActivity: "課堂活動",
-            lessonRecords: "課程記錄",
-            userRegistration: "用戶註冊",
-            systemMonitoring: "系統監控",
-          },
-          activeStudents: {
-            title: "活躍學生",
-            tooltip: "在所選時間範圍內至少有一次活動的學生",
-          },
-          activeTeachers: {
-            title: "活躍教師",
-            description: "{total} 總計",
-            tooltip: "在所選時間範圍內有活動的教師和管理員",
-          },
-          activeClassrooms: {
-            title: "活躍課堂",
-            description: "有學生活動",
-            tooltip: "在所選時間範圍內至少有一名活躍學生的課堂",
-          },
-          readingSessions: {
-            title: "閱讀課程",
-            description: "已完成的課程",
-            tooltip: "已完成的閱讀課程總數",
-          },
-          totalXp: {
-            title: "總 XP",
-            description: "今日課程",
-            tooltip: "今日完成的閱讀課程",
-          },
-          newUsers: {
-            title: "新用戶",
-            description: "今日加入",
-            tooltip: "今日加入的新用戶",
+          activeUsers: {
+            title: "活躍用戶",
+            description: "實時用戶活動和參與度指標",
           },
           systemHealth: {
             title: "系統健康",
-            description: "{status}",
-            tooltip: "整體系統健康狀態",
+            description: "實時系統效能與健康指標",
+            database: "資料庫效能",
+            apiResponse: "API 回應時間",
+            errorRate: "錯誤率",
+            uptime: "系統運行時間",
+            status: { excellent: "優秀", good: "良好", low: "低" },
+          },
+          recentActivity: {
+            title: "近期活動",
+            description: "最新的管理操作和系統更動",
+            events: {
+              newSchoolLicense: "已啟用新學校授權",
+              contentUpdated: "內容庫已更新",
+              maintenanceCompleted: "系統維護已完成",
+              milestoneReached: "已達成閱讀時段里程碑",
+            },
+          },
+          noData: {
+            title: "無可用資料",
+            description: "請嘗試調整過濾條件或重新整理頁面",
           },
         },
       },
-    },
+      school: {
+        dashboard: {
+          title: "學校儀表板",
+          timeframes: {
+            "7d": "7 天",
+            "30d": "30 天",
+            "90d": "90 天",
+          },
+          timeframeDescription: {
+            "7d": "過去7天內",
+            "30d": "過去30天內",
+            "90d": "過去90天內",
+          },
+          kpis: {
+            dataSource: {
+              userActivity: "日誌：用戶活動",
+              classroomActivity: "課堂活動",
+              lessonRecords: "課程記錄",
+              userRegistration: "用戶註冊",
+              systemMonitoring: "系統監控",
+            },
+            activeStudents: {
+              title: "活躍學生",
+              tooltip: "在所選時間範圍內至少有一次活動的學生",
+            },
+            activeTeachers: {
+              title: "活躍教師",
+              description: "{total} 總計",
+              tooltip: "在所選時間範圍內有活動的教師和管理員",
+            },
+            activeClassrooms: {
+              title: "活躍課堂",
+              description: "有學生活動",
+              tooltip: "在所選時間範圍內至少有一名活躍學生的課堂",
+            },
+            readingSessions: {
+              title: "閱讀課程",
+              description: "已完成的課程",
+              tooltip: "已完成的閱讀課程總數",
+            },
+            totalXp: {
+              title: "總 XP",
+              description: "今日課程",
+              tooltip: "今日完成的閱讀課程",
+            },
+            newUsers: {
+              title: "新用戶",
+              description: "今日加入",
+              tooltip: "今日加入的新用戶",
+            },
+            systemHealth: {
+              title: "系統健康",
+              description: "{status}",
+              tooltip: "整體系統健康狀態",
+            },
+          },
+        },
+      },
     },
     student: {
       dashboard: {
@@ -492,7 +492,8 @@ export default {
         },
         errorLoading: "載入熱力圖出錯",
         ariaLabel: "活動熱力圖。使用方向鍵導覽，按 Enter 選擇。",
-        srSummary: "活動熱力圖顯示 {total} 次活動，從 {start} 到 {end}。峰值 {peak}。覆蓋 {students} 名學生。",
+        srSummary:
+          "活動熱力圖顯示 {total} 次活動，從 {start} 到 {end}。峰值 {peak}。覆蓋 {students} 名學生。",
         activityTimeline: {
           title: "活動時間軸",
           errorLoading: "載入活動時間軸失敗",
@@ -564,6 +565,9 @@ export default {
         },
       },
       lessonPage: {
+        translatingContent: "翻譯中...",
+        translationError: "翻譯內容時出錯。",
+        retry: "重試",
         lesson: "課程",
         startLesson: "開始課程",
         nextPhase: "下一階段",
@@ -1049,7 +1053,8 @@ export default {
               },
               toast: {
                 successTitle: "目標建立成功",
-                successDescription: "已為 {className} 中的 {count} 名學生建立目標",
+                successDescription:
+                  "已為 {className} 中的 {count} 名學生建立目標",
                 errorTitle: "建立目標失敗",
                 errorDescription: "建立目標時發生錯誤",
                 genericError: "建立目標失敗，請重試",
@@ -1082,7 +1087,8 @@ export default {
               deleteAll: "全部刪除",
               confirmDelete: {
                 title: "刪除所有學生的目標",
-                description: "您確定要為所有 {count} 名學生刪除此目標嗎？此操作無法復原",
+                description:
+                  "您確定要為所有 {count} 名學生刪除此目標嗎？此操作無法復原",
                 cancel: "取消",
                 confirm: "全部刪除",
               },
@@ -1590,7 +1596,10 @@ export default {
         daysRemaining: "剩餘",
       },
       back: "返回",
-      students: { completedLabel: "已完成的學生", incompleteLabel: "未完成的學生" },
+      students: {
+        completedLabel: "已完成的學生",
+        incompleteLabel: "未完成的學生",
+      },
       selectStudents: "選擇要通知的學生",
       deselectAll: "取消全選",
       selectAll: "全選",
@@ -1636,7 +1645,12 @@ export default {
       mcqAvg: "選擇題平均",
       openEndedAvg: "開放式問答平均",
       overallAvg: "整體平均",
-      headers: { student: "學生", mcq: "選擇題", openEnded: "開放式問答（分數≥70%）", overall: "整體" },
+      headers: {
+        student: "學生",
+        mcq: "選擇題",
+        openEnded: "開放式問答（分數≥70%）",
+        overall: "整體",
+      },
       noActivity: "暫無學生活動資料",
     },
     classActivityHeatmap: {
@@ -1646,11 +1660,23 @@ export default {
       seeDetail: "查看詳情",
       error: "無法載入活動資料",
       noData: "暫無活動資料",
-      stats: { activeUsers: "活躍用戶", totalActivity: "總活動量", peakDay: "高峰日" },
+      stats: {
+        activeUsers: "活躍用戶",
+        totalActivity: "總活動量",
+        peakDay: "高峰日",
+      },
       legend: { title: "活動級別：", less: "較少", more: "較多" },
       topActiveDays: "最活躍日期",
       activities: "次活動",
-      dow: { sun: "日", mon: "一", tue: "二", wed: "三", thu: "四", fri: "五", sat: "六" },
+      dow: {
+        sun: "日",
+        mon: "一",
+        tue: "二",
+        wed: "三",
+        thu: "四",
+        fri: "五",
+        sat: "六",
+      },
     },
     classAlignmentMatrix: {
       title: "CEFR ↔ RA 對齊矩陣",
@@ -1660,7 +1686,11 @@ export default {
       studentsWithActivity: "有閱讀活動的學生",
       alignedLabel: "已對齊",
       aboveLabel: "超出水準",
-      stats: { averageLevel: "平均水準：", modalLevel: "眾數水準：", totalReadings: "總閱讀量：" },
+      stats: {
+        averageLevel: "平均水準：",
+        modalLevel: "眾數水準：",
+        totalReadings: "總閱讀量：",
+      },
     },
     classAssignmentFunnel: {
       title: "作業漏斗",
@@ -1780,19 +1810,29 @@ export default {
     activityCharts: {
       title: "活動概覽",
       description: "監控使用者活動、參與模式與即時事件",
-      timeframe: { "7d": "最近 7 天", "30d": "最近 30 天", "90d": "最近 3 個月", all: "所有時間" },
+      timeframe: {
+        "7d": "最近 7 天",
+        "30d": "最近 30 天",
+        "90d": "最近 3 個月",
+        all: "所有時間",
+      },
       heatmap: {
         title: "活動熱力圖",
         description: "每日活動等級",
-        range: { "7d": "過去 7 天", "30d": "過去 30 天", "90d": "過去 3 個月", all: "過去一年" },
+        range: {
+          "7d": "過去 7 天",
+          "30d": "過去 30 天",
+          "90d": "過去 3 個月",
+          all: "過去一年",
+        },
       },
       legend: { less: "少", more: "多" },
       daily: { title: "每日活動趨勢", description: "所選期間的活動等級" },
       engagement: { title: "使用者參與度", description: "使用者與會話比較" },
-      timeline: { 
-        title: "活動日誌", 
-        description: "最新的使用者活動與事件", 
-        empty: "未找到符合過濾條件的事件。", 
+      timeline: {
+        title: "活動日誌",
+        description: "最新的使用者活動與事件",
+        empty: "未找到符合過濾條件的事件。",
         by: "由 {user}",
         filterByType: "依類型篩選",
         allTypes: "所有類型",
@@ -1811,10 +1851,26 @@ export default {
           of: "頁，共",
         },
       },
-      types: { reading: "閱讀", practice: "練習", assessment: "評估", achievement: "成就" },
-      events: { activity: "活動", srsPractice: "SRS 練習會議", assignment: "作業", reading: "閱讀", practice: "練習" },
+      types: {
+        reading: "閱讀",
+        practice: "練習",
+        assessment: "評估",
+        achievement: "成就",
+      },
+      events: {
+        activity: "活動",
+        srsPractice: "SRS 練習會議",
+        assignment: "作業",
+        reading: "閱讀",
+        practice: "練習",
+      },
       charts: { activity: "活動", users: "使用者", sessions: "會話" },
-      time: { justNow: "剛剛", minutesAgo: "{m} 分鐘前", hoursAgo: "{h} 小時前", daysAgo: "{d} 天前" },
+      time: {
+        justNow: "剛剛",
+        minutesAgo: "{m} 分鐘前",
+        hoursAgo: "{h} 小時前",
+        daysAgo: "{d} 天前",
+      },
     },
     activityTimeline: {
       title: "活動時間軸",
@@ -1822,10 +1878,25 @@ export default {
       emptyTitle: "找不到活動",
       emptyDescription: "所選期間內沒有事件。",
       summary: "{total} 個活動，從 {start} 到 {end}",
-      timeframe: { "7d": "最近 7 天", "30d": "最近 30 天", "90d": "最近 3 個月" },
+      timeframe: {
+        "7d": "最近 7 天",
+        "30d": "最近 30 天",
+        "90d": "最近 3 個月",
+      },
       clearFilters: "清除篩選",
-      labels: { assignment: "作業", srs: "SRS 練習", reading: "閱讀", practice: "練習", completed: "已完成" },
-      types: { assignment: "作業", srs: "SRS", reading: "閱讀", practice: "練習" },
+      labels: {
+        assignment: "作業",
+        srs: "SRS 練習",
+        reading: "閱讀",
+        practice: "練習",
+        completed: "已完成",
+      },
+      types: {
+        assignment: "作業",
+        srs: "SRS",
+        reading: "閱讀",
+        practice: "練習",
+      },
       status: { completed: "已完成", in_progress: "進行中", unknown: "未知" },
       srSummaryStart: "時間軸摘要：",
       srSummaryMid: "在 ... 之間的活動",
@@ -1937,8 +2008,7 @@ export default {
       finishButton: "查看結果",
       hint: "自然地與 AI 聊天。交流幾次後，您將自動收到評估結果。",
       congratulations: "恭喜!",
-      congratulationsDescription:
-        "您的英語水平已通過對話評估完成。",
+      congratulationsDescription: "您的英語水平已通過對話評估完成。",
       yourCefrLevel: "您的 CEFR 等級",
       yourScore: "獲得的 XP: {xp}",
       strengths: "優點",

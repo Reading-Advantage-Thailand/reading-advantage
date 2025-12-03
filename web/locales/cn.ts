@@ -563,6 +563,9 @@ export default {
         },
       },
       lessonPage: {
+        translatingContent: "正在翻译内容",
+        translationError: "翻译内容时出错",
+        retry: "重试",
         lesson: "课程",
         startLesson: "开始课程",
         nextPhase: "下一阶段",
@@ -1047,7 +1050,8 @@ export default {
               },
               toast: {
                 successTitle: "目标创建成功",
-                successDescription: "已为 {className} 中的 {count} 名学生创建目标",
+                successDescription:
+                  "已为 {className} 中的 {count} 名学生创建目标",
                 errorTitle: "创建目标失败",
                 errorDescription: "创建目标时发生错误",
                 genericError: "创建目标失败，请重试",
@@ -1080,7 +1084,8 @@ export default {
               deleteAll: "全部删除",
               confirmDelete: {
                 title: "删除所有学生的目标",
-                description: "您确定要为所有 {count} 名学生删除此目标吗？此操作无法撤消",
+                description:
+                  "您确定要为所有 {count} 名学生删除此目标吗？此操作无法撤消",
                 cancel: "取消",
                 confirm: "全部删除",
               },
@@ -1581,8 +1586,8 @@ export default {
       back: "返回",
       students: {
         completedLabel: "已完成的学生",
-          title: "学生仪表盘数据",
-          description: "您的学习进度和建议概览",
+        title: "学生仪表盘数据",
+        description: "您的学习进度和建议概览",
         incompleteLabel: "未完成的学生",
       },
       selectStudents: "选择要通知的学生",
@@ -1994,8 +1999,7 @@ export default {
         finishButton: "查看结果",
         hint: "自然地与 AI 聊天。交流几次后，您将自动收到评估结果。",
         congratulations: "恭喜!",
-        congratulationsDescription:
-          "您的英语水平已通过对话评估完成。",
+        congratulationsDescription: "您的英语水平已通过对话评估完成。",
         yourCefrLevel: "您的 CEFR 等级",
         yourScore: "获得的 XP: {xp}",
         strengths: "优点",

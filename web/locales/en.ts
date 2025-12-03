@@ -611,6 +611,9 @@ export default {
         },
       },
       lessonPage: {
+        translatingContent: "Translating content...",
+        translationError: "Error translating content",
+        retry: "Retry",
         lesson: "Lesson",
         startLesson: "Start Lesson",
         nextPhase: "Next Phase",
@@ -1096,13 +1099,15 @@ export default {
               fullyCompleted: "Fully Completed",
               allStudentsFinished: "All students finished",
               noGoalsFound: "No goals found",
-              noGoalsDescription: "Create your first goal for the class to get started.",
+              noGoalsDescription:
+                "Create your first goal for the class to get started.",
               noMatchingGoals: "No goals match your current filters.",
               createFirstGoal: "Create First Goal",
             },
             createDialog: {
               title: "Create Goal for Entire Class",
-              description: "This goal will be set for all students in {className}",
+              description:
+                "This goal will be set for all students in {className}",
               goalType: "Goal Type",
               title_label: "Title",
               titlePlaceholder: "e.g., Weekly reading goal",
@@ -1141,7 +1146,8 @@ export default {
               },
               toast: {
                 successTitle: "Goal Created Successfully",
-                successDescription: "Goal created for {count} students in {className}",
+                successDescription:
+                  "Goal created for {count} students in {className}",
                 errorTitle: "Failed to Create Goal",
                 errorDescription: "An error occurred while creating the goal",
                 genericError: "Failed to create goal. Please try again.",
@@ -1149,7 +1155,8 @@ export default {
             },
             progressDialog: {
               title: "{goalTitle}",
-              description: "Student progress for this goal • Target: {targetValue} {unit}",
+              description:
+                "Student progress for this goal • Target: {targetValue} {unit}",
               stats: {
                 total: "Total",
                 completed: "Completed",
@@ -1174,15 +1181,18 @@ export default {
               deleteAll: "Delete All",
               confirmDelete: {
                 title: "Delete Goals for All Students",
-                description: "Are you sure you want to delete this goal for all {count} students? This action cannot be undone.",
+                description:
+                  "Are you sure you want to delete this goal for all {count} students? This action cannot be undone.",
                 cancel: "Cancel",
                 confirm: "Delete All",
               },
               toast: {
                 deleteSuccess: "Goals Deleted",
-                deleteSuccessDescription: "Successfully deleted goal for {count} students",
+                deleteSuccessDescription:
+                  "Successfully deleted goal for {count} students",
                 deleteError: "Error",
-                deleteErrorDescription: "Failed to delete some goals. Please try again.",
+                deleteErrorDescription:
+                  "Failed to delete some goals. Please try again.",
               },
               stats: {
                 completed: "{completed} completed",
@@ -2137,7 +2147,8 @@ export default {
       saving: "Saving...",
       skipPrompt: "Having trouble with this question?",
       skipButton: "Skip Question",
-      skipWarning: "Warning: You can only skip {remaining} more question(s) before the test ends.",
+      skipWarning:
+        "Warning: You can only skip {remaining} more question(s) before the test ends.",
       skippedMessage: "Skipped this question",
       toast: {
         successUpdate: "Success!",
@@ -2149,7 +2160,8 @@ export default {
         assessmentError: "Failed to get assessment. Please try again.",
         skipError: "Failed to skip question. Please try again.",
         tooManySkips: "Too many questions skipped",
-        endingTestEarly: "The test will end early based on your available responses.",
+        endingTestEarly:
+          "The test will end early based on your available responses.",
       },
     },
     progressBarXp: {
