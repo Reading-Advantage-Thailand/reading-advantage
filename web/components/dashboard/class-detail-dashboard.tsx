@@ -20,6 +20,7 @@ import { ClassGenreEngagement } from "./class-genre-engagement";
 import { ClassAccuracyMetrics } from "./class-accuracy-metrics";
 import AIInsights from "./ai-insights";
 import { ClassBatchActions } from "./class-batch-actions";
+import { ClassroomGoalsManagement } from "./classroom-goals/classroom-goals-management";
 import {
   ArrowLeft,
   Download,
@@ -139,7 +140,7 @@ export function ClassDetailDashboard({
         onValueChange={setActiveTab}
         className="space-y-4"
       >
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">
             <BarChart3 className="h-4 w-4 mr-2" />
             Overview
@@ -151,6 +152,10 @@ export function ClassDetailDashboard({
           <TabsTrigger value="students">
             <Users className="h-4 w-4 mr-2" />
             Students
+          </TabsTrigger>
+          <TabsTrigger value="goals">
+            <Target className="h-4 w-4 mr-2" />
+            Goals
           </TabsTrigger>
           <TabsTrigger value="alignment">
             <Target className="h-4 w-4 mr-2" />
@@ -179,13 +184,20 @@ export function ClassDetailDashboard({
           </div>
         </TabsContent>
 
-        <TabsContent value="assignments" className="space-y-4">
-          <ClassAssignmentFunnel classroomId={classroomId} detailed />
-        </TabsContent>
-
         <TabsContent value="students" className="space-y-4">
           <ClassBatchActions classroomId={classroomId} />
           <ClassAccuracyMetrics classroomId={classroomId} />
+        </TabsContent>
+
+        <TabsContent value="goals" className="space-y-4">
+          <ClassroomGoalsManagement 
+            classroomId={classroomId} 
+            className={className}
+          />
+        </TabsContent>
+
+        <TabsContent value="alignment" className="space-y-4">
+          <ClassAlignmentMatrix classroomId={classroomId} />
         </TabsContent>
 
         <TabsContent value="alignment" className="space-y-4">

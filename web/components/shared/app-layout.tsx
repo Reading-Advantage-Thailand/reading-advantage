@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "@/components/switchers/theme-switcher-toggle";
 import { LocaleSwitcher } from "@/components/switchers/locale-switcher";
 import Leaderboard from "@/components/teacher/leaderboard";
+import { SidebarGoalsWidget } from "@/components/shared/sidebar-goals-widget";
 import { headers } from "next/headers";
 import { ThemeCustomizer } from "../theme-customizer";
 
@@ -103,6 +104,9 @@ export default async function AppLayout({
             {user.license_id && !disableLeaderboard ? (
               <Leaderboard data={leaderboard} />
             ) : null}
+            {user.role === "STUDENT" && (
+              <SidebarGoalsWidget userId={user.id} />
+            )}
           </aside>
         )}
         <main className="flex w-full flex-1 flex-col overflow-hidden">
