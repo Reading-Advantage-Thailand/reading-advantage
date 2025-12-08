@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fsrs, generatorParameters, Rating, State } from "ts-fsrs";
 import { splitTextIntoSentences } from "@/lib/utils";
+import { generateTranslatedPassageFromSentences } from "@/server/utils/generators/translation-generator";
 
 interface RequestContext {
   params: {
@@ -530,6 +531,133 @@ export async function getSentencesFlashcard(
         createdAt: "desc",
       },
     });
+
+    // Check if any sentence has empty translation and fix it
+    if (articleId && sentences.length > 0) {
+      const sentencesNeedingTranslation = sentences.filter((sentence) => {
+        const translation = sentence.translation as Record<string, any>;
+        return !translation || Object.keys(translation).length === 0;
+      });
+
+      if (sentencesNeedingTranslation.length > 0) {
+        console.log(`Found ${sentencesNeedingTranslation.length} sentences without translation, fetching article translations...`);
+
+        // Get the article to fetch translatedPassage
+        const article = await prisma.article.findUnique({
+          where: { id: articleId },
+          select: {
+            translatedPassage: true,
+          },
+        });
+
+        if (article?.translatedPassage) {
+          const translatedPassage = article.translatedPassage as Record<
+            string,
+            string[]
+          >;
+
+          // Map language codes
+          const languageMapping: Record<string, string> = {
+            "zh-CN": "cn",
+            "zh-TW": "tw",
+            th: "th",
+            vi: "vi",
+            en: "en",
+          };
+
+          // Update each sentence that needs translation
+          const updatePromises = sentencesNeedingTranslation.map(async (sentence) => {
+            const sentenceTranslation: Record<string, string> = {};
+
+            // Extract translations from translatedPassage based on sentence number (sn)
+            Object.entries(translatedPassage).forEach(([langCode, translations]) => {
+              const mappedLangCode = languageMapping[langCode] || langCode;
+              if (Array.isArray(translations) && translations[sentence.sn]) {
+                sentenceTranslation[mappedLangCode] = translations[sentence.sn];
+              }
+            });
+
+            // Only update if we found translations
+            if (Object.keys(sentenceTranslation).length > 0) {
+              await prisma.userSentenceRecord.update({
+                where: { id: sentence.id },
+                data: { translation: sentenceTranslation },
+              });
+
+              console.log(`Updated translation for sentence ID: ${sentence.id}`);
+              
+              // Update the sentence object in our array
+              sentence.translation = sentenceTranslation as any;
+            } else {
+              // If no translation in translatedPassage, generate it
+              console.log(`No translation in translatedPassage for sentence ${sentence.sn}, generating...`);
+              
+              try {
+                const translatedResult = await generateTranslatedPassageFromSentences({
+                  sentences: [sentence.sentence],
+                });
+
+                const newTranslation = {
+                  cn: translatedResult.cn[0] || sentence.sentence,
+                  en: translatedResult.en[0] || sentence.sentence,
+                  th: translatedResult.th[0] || sentence.sentence,
+                  tw: translatedResult.tw[0] || sentence.sentence,
+                  vi: translatedResult.vi[0] || sentence.sentence,
+                };
+
+                await prisma.userSentenceRecord.update({
+                  where: { id: sentence.id },
+                  data: { translation: newTranslation },
+                });
+
+                console.log(`Generated and saved translation for sentence ID: ${sentence.id}`);
+                
+                // Update the sentence object in our array
+                sentence.translation = newTranslation as any;
+              } catch (translationError) {
+                console.error(`Failed to generate translation for sentence ${sentence.id}:`, translationError);
+              }
+            }
+          });
+
+          await Promise.all(updatePromises);
+          console.log(`Updated ${sentencesNeedingTranslation.length} sentences with translations`);
+        } else {
+          // No translatedPassage in article, generate translations for sentences
+          console.log(`No translatedPassage in article ${articleId}, generating translations for sentences...`);
+          
+          const updatePromises = sentencesNeedingTranslation.map(async (sentence) => {
+            try {
+              const translatedResult = await generateTranslatedPassageFromSentences({
+                sentences: [sentence.sentence],
+              });
+
+              const newTranslation = {
+                cn: translatedResult.cn[0] || sentence.sentence,
+                en: translatedResult.en[0] || sentence.sentence,
+                th: translatedResult.th[0] || sentence.sentence,
+                tw: translatedResult.tw[0] || sentence.sentence,
+                vi: translatedResult.vi[0] || sentence.sentence,
+              };
+
+              await prisma.userSentenceRecord.update({
+                where: { id: sentence.id },
+                data: { translation: newTranslation },
+              });
+
+              console.log(`Generated and saved translation for sentence ID: ${sentence.id}`);
+              
+              // Update the sentence object in our array
+              sentence.translation = newTranslation as any;
+            } catch (translationError) {
+              console.error(`Failed to generate translation for sentence ${sentence.id}:`, translationError);
+            }
+          });
+
+          await Promise.all(updatePromises);
+        }
+      }
+    }
 
     return NextResponse.json({
       message: "User sentence retrieved",
