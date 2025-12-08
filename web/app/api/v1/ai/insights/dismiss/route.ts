@@ -5,7 +5,7 @@ import { protect } from "@/server/controllers/auth-controller";
 import { dismissInsight } from "@/server/controllers/ai-insight-actions-controller";
 
 interface RequestContext {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -15,7 +15,7 @@ router.use(logRequest);
 router.use(protect);
 
 // POST /api/v1/ai/insights/dismiss
-router.post(dismissInsight);
+router.post(dismissInsight) as any;
 
 export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

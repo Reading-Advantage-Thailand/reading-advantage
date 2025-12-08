@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import dayjs from "dayjs";
 import { toast } from "../ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
 import { formatDate, levelCalculation } from "@/lib/utils";
@@ -75,7 +76,7 @@ export default function VocabularyManageTab({ userId }: Props) {
     try {
       const res = await fetch(`/api/v1/users/vocabularies/${userId}`);
       const data = await res.json();
-      const startOfDay = date_scheduler(new Date(), 0, true);
+      const startOfDay = dayjs().startOf('day').toDate();
 
       if (!data || !data.vocabularies || !Array.isArray(data.vocabularies)) {
         console.error("Invalid API response:", data);

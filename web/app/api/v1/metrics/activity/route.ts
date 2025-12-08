@@ -5,7 +5,7 @@ import { protect } from "@/server/controllers/auth-controller";
 import { getActivityMetrics } from "@/server/controllers/activity-controller";
 
 interface RequestContext {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -15,7 +15,7 @@ router.use(logRequest);
 router.use(protect);
 
 // GET /api/v1/metrics/activity
-router.get(getActivityMetrics);
+router.get(getActivityMetrics) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

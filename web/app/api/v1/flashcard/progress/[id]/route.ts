@@ -5,18 +5,18 @@ import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
 export interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
     articleId?: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.put(updateFlashcardProgress);
-router.post(updateFlashcardProgress);
+router.put(updateFlashcardProgress) as any;
+router.post(updateFlashcardProgress) as any;
 
 export async function PUT(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

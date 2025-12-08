@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
   try {
     const { tokens } = await oauth2Client.getToken(code as string);
 
-    cookies().set({
+    const cookieStore = await cookies();
+    cookieStore.set({
       name: "google_access_token",
       value: tokens.access_token || "",
       httpOnly: true,
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
       path: "/",
       maxAge: 3600,
     });
-    cookies().set({
+    cookieStore.set({
       name: "google_refresh_token",
       value: tokens.refresh_token || "",
       httpOnly: true,
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
       maxAge: 30 * 24 * 60 * 60,
     });
 
-    const lastUrl = cookies().get("last_url")?.value || "/teacher/my-classes";
+    const lastUrl = cookieStore.get("last_url")?.value || "/teacher/my-classes";
 
     return NextResponse.redirect(
       new URL(lastUrl, process.env.NEXT_PUBLIC_BASE_URL).toString()

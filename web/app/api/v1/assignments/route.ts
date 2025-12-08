@@ -9,19 +9,23 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
-const router = createEdgeRouter<NextRequest, NextResponse>();
+interface RequestContext {
+  params: Promise<Record<string, never>>;
+}
+
+const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
 //GET /api/v1/assignments?classroomId=abc123&articleId=xyz456
-router.get(getAssignments);
+router.get(getAssignments) as any;
 // POST /api/v1/assignments {request body with classroomId, articleId, title, description, dueDate, selectedStudents, userId}
-router.post(postAssignment);
-router.put(updateAssignment);
-router.delete(deleteAssignment);
+router.post(postAssignment) as any;
+router.put(updateAssignment) as any;
+router.delete(deleteAssignment) as any;
 
 export async function GET(request: NextRequest) {
-  const ctx = NextResponse.next();
+  const ctx: RequestContext = { params: Promise.resolve({}) };
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
@@ -30,7 +34,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const ctx = NextResponse.next();
+  const ctx: RequestContext = { params: Promise.resolve({}) };
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
@@ -39,7 +43,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const ctx = NextResponse.next();
+  const ctx: RequestContext = { params: Promise.resolve({}) };
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
@@ -48,7 +52,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const ctx = NextResponse.next();
+  const ctx: RequestContext = { params: Promise.resolve({}) };
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;

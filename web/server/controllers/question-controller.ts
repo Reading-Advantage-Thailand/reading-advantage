@@ -146,22 +146,23 @@ async function checkAndUpdateArticleCompletion(
 }
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     article_id: string;
-  };
+  }>;
 }
 
 interface SubRequestContext {
-  params: {
+  params: Promise<{
     article_id: string;
     question_id: string;
-  };
+  }>;
 }
 
 export async function getMCQuestions(
   req: ExtendedNextRequest,
-  { params: { article_id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { article_id } = await ctx.params;
   try {
     const userId = req.session?.user.id as string;
 
@@ -409,8 +410,9 @@ export async function getMCQuestions(
 
 export async function getSAQuestion(
   req: ExtendedNextRequest,
-  { params: { article_id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { article_id } = await ctx.params;
   try {
     const userId = req.session?.user.id as string;
 
@@ -521,9 +523,10 @@ export async function getSAQuestion(
 
 export async function answerSAQuestion(
   req: ExtendedNextRequest,
-  { params: { article_id, question_id } }: SubRequestContext
+  ctx: SubRequestContext
 ) {
   try {
+    const { article_id, question_id } = await ctx.params;
     const { answer, timeRecorded } = await req.json();
     const userId = req.session?.user.id as string;
 
@@ -631,8 +634,9 @@ export async function answerSAQuestion(
 
 export async function getLAQuestion(
   req: ExtendedNextRequest,
-  { params: { article_id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { article_id } = await ctx.params;
   try {
     const userId = req.session?.user.id as string;
 
@@ -724,9 +728,10 @@ export async function getLAQuestion(
 
 export async function answerMCQuestion(
   req: ExtendedNextRequest,
-  { params: { article_id, question_id } }: SubRequestContext
+  ctx: SubRequestContext
 ) {
   try {
+    const { article_id, question_id } = await ctx.params;
     const { selectedAnswer, timeRecorded } = await req.json();
     const userId = req.session?.user.id as string;
 
@@ -840,8 +845,9 @@ export async function answerMCQuestion(
 
 export async function retakeMCQuestion(
   req: ExtendedNextRequest,
-  { params: { article_id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { article_id } = await ctx.params;
   try {
     const userId = req.session?.user.id as string;
 
@@ -920,9 +926,10 @@ export async function retakeMCQuestion(
 
 export async function answerLAQuestion(
   req: ExtendedNextRequest,
-  { params: { article_id, question_id } }: SubRequestContext
+  ctx: SubRequestContext
 ) {
   try {
+    const { article_id, question_id } = await ctx.params;
     const { answer, feedback, timeRecorded } = await req.json();
     const userId = req.session?.user.id as string;
 
@@ -1010,9 +1017,10 @@ export async function answerLAQuestion(
 
 export async function getFeedbackLAquestion(
   req: ExtendedNextRequest,
-  { params: { article_id, question_id } }: SubRequestContext
+  ctx: SubRequestContext
 ) {
   try {
+    const { article_id, question_id } = await ctx.params;
     const { answer, preferredLanguage } = await req.json();
 
     const question = await prisma.longAnswerQuestion.findUnique({
@@ -1101,8 +1109,9 @@ export async function getFeedbackLAquestion(
 
 export async function rateArticle(
   req: ExtendedNextRequest,
-  { params: { article_id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { article_id } = await ctx.params;
   try {
     const { rating } = await req.json();
     const userId = req.session?.user.id as string;
@@ -1134,9 +1143,10 @@ export async function rateArticle(
 
 export async function getLAQuestionXP(
   req: ExtendedNextRequest,
-  { params: { article_id, question_id } }: SubRequestContext
+  ctx: SubRequestContext
 ) {
   try {
+    const { article_id, question_id } = await ctx.params;
     const { rating } = await req.json();
     const userId = req.session?.user.id as string;
 
@@ -1217,9 +1227,10 @@ export async function getLAQuestionXP(
 
 export async function rateSAQuestion(
   req: ExtendedNextRequest,
-  { params: { article_id, question_id } }: SubRequestContext
+  ctx: SubRequestContext
 ) {
   try {
+    const { article_id, question_id } = await ctx.params;
     const { rating } = await req.json();
     const userId = req.session?.user.id as string;
 

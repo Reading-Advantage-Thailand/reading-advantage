@@ -5,9 +5,9 @@ import { protect } from "@/server/controllers/auth-controller";
 import { updateGoalProgress } from "@/server/controllers/goals-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -17,7 +17,7 @@ router.use(logRequest);
 router.use(protect);
 
 // POST /api/v1/goals/:id/progress
-router.post(updateGoalProgress);
+router.post(updateGoalProgress) as any;
 
 export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

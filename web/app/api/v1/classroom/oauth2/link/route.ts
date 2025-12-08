@@ -9,7 +9,8 @@ export async function GET(req: NextRequest) {
     const lastUrl =
       req.nextUrl.searchParams.get("redirect") || "/settings/user-profile";
 
-    cookies().set({
+    const cookieStore = await cookies();
+    cookieStore.set({
       name: "last_url",
       value: lastUrl,
       httpOnly: true,

@@ -6,7 +6,7 @@ import { generateStories } from "@/server/utils/generators/stories-generator";
 import { restrictAccessKey } from "@/server/controllers/auth-controller";
 
 export interface Context {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, Context>();
@@ -17,9 +17,9 @@ router.use(restrictAccessKey);
 
 // POST /api/v1/stories/generate
 // BODY: { amountPerGenre: number }
-router.post(generateStories);
+router.post(generateStories) as any;
 
-export async function POST(request: NextRequest, ctx: { params?: unknown }) {
+export async function POST(request: NextRequest, ctx: { params: Promise<Record<string, never>> }) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;

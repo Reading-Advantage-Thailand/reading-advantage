@@ -5,7 +5,7 @@ import { protect } from "@/server/controllers/auth-controller";
 import { initializeDbOptimization } from "@/lib/db-optimization-init";
 
 interface RequestContext {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 // Initialize optimization systems on first API call
@@ -26,7 +26,7 @@ router.use(protect);
 // GET /api/v1/metrics - Aggregate metrics endpoint
 router.get(async (req: NextRequest) => {
   // Ensure optimization systems are running
-  await ensureOptimizationSystems();
+  await ensureOptimizationSystems() as any;
   
   try {
     const url = new URL(req.url);

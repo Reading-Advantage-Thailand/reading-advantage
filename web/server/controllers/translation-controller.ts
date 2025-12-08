@@ -8,9 +8,9 @@ import { openai, openaiModel } from "@/utils/openai";
 import { google, googleModel } from "@/utils/google";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     article_id: string;
-  };
+  }>;
 }
 
 export enum LanguageType {
@@ -27,8 +27,9 @@ export type TranslateResponse = {
 
 export async function translate(
   request: NextRequest,
-  { params: { article_id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { article_id } = await ctx.params;
   const { type, targetLanguage } = await request.json();
 
   if (!Object.values(LanguageType).includes(targetLanguage)) {
@@ -360,10 +361,9 @@ Rules:
 
 export async function translateChapterContent(
   request: NextRequest,
-  {
-    params: { storyId, chapterNumber },
-  }: { params: { storyId: string; chapterNumber: string } }
+  ctx: { params: Promise<{ storyId: string; chapterNumber: string }> }
 ) {
+  const { storyId, chapterNumber } = await ctx.params;
   const { type, targetLanguage } = await request.json();
 
   if (!Object.values(LanguageType).includes(targetLanguage)) {
@@ -540,8 +540,9 @@ export async function translateChapterContent(
 
 export async function translateStorySummary(
   request: NextRequest,
-  { params: { storyId } }: { params: { storyId: string } }
+  ctx: { params: Promise<{ storyId: string }> }
 ) {
+  const { storyId } = await ctx.params;
   const { type, targetLanguage } = await request.json();
   // console.log(`Received request to translate story summary with type: ${type} and targetLanguage: ${targetLanguage}`);
 

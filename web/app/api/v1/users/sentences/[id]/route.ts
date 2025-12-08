@@ -9,17 +9,17 @@ import {
 } from "@/server/controllers/flashcard-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getSentencesFlashcard);
-router.post(postSentendcesFlashcard);
-router.delete(deleteSentencesFlashcard);
+router.get(getSentencesFlashcard) as any;
+router.post(postSentendcesFlashcard) as any;
+router.delete(deleteSentencesFlashcard) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

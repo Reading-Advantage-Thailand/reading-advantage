@@ -7,25 +7,25 @@ import { createEdgeRouter } from "next-connect";
 import { NextRequest, NextResponse } from "next/server";
 import { deleteStories } from "@/server/controllers/stories-controller";
 
-interface ExtendedNextRequest {
-  params: {
+interface RequestContext {
+  params: Promise<{
     storyId: string;
-  };
+  }>;
 }
 
-const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
+const router = createEdgeRouter<NextRequest, RequestContext>();
 
 // Middleware
 router.use(logRequest);
 router.use(protect);
 
 //GET /api/v1/stories
-router.get(getStoryById);
+router.get(getStoryById) as any;
 
 //DELETE /api/v1/stories/:storyId
-router.delete(deleteStories);
+router.delete(deleteStories) as any;
 
-export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
+export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
   throw new Error("Expected a NextResponse from router.run");
 }
 
-export async function DELETE(request: NextRequest, ctx: ExtendedNextRequest) {
+export async function DELETE(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;

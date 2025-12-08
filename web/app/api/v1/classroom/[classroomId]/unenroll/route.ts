@@ -5,9 +5,9 @@ import { protect } from "@/server/controllers/auth-controller";
 import { patchClassroomUnenroll } from "@/server/controllers/classroom-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     classroomId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -16,7 +16,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 router.use(logRequest);
 router.use(protect);
 
-router.patch(patchClassroomUnenroll);
+router.patch(patchClassroomUnenroll) as any;
 
 export async function PATCH(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

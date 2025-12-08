@@ -4,9 +4,9 @@ import db from "@/configs/firestore-config";
 import { prisma } from "@/lib/prisma";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 type User = {
@@ -134,8 +134,9 @@ export async function getAllRankingLeaderboard(req: NextRequest) {
 
 export async function getRankingLeaderboardById(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const now = new Date();
     const currentYear = now.getFullYear();

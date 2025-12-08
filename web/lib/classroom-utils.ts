@@ -5,11 +5,12 @@ import { Role } from "@prisma/client";
 
 async function fetchData(endpoint: string) {
   try {
+    const headersList = await headers();
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${endpoint}`,
       {
         method: "GET",
-        headers: headers(),
+        headers: headersList,
       }
     );
 
@@ -134,11 +135,12 @@ export async function StudentsData({
   // get student role data from database
   async function getAllStudentData() {
     try {
+      const headersList = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/students`,
         {
           method: "GET",
-          headers: headers(),
+          headers: headersList,
         }
       );
 
@@ -152,11 +154,12 @@ export async function StudentsData({
   // get classroom data from database
   async function getAllClassroom() {
     try {
+      const headersList = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/`,
         {
           method: "GET",
-          headers: headers(),
+          headers: headersList,
         }
       );
 
@@ -315,11 +318,12 @@ export async function StudentsData({
 
   async function getUserActivityRecords(userId: string) {
     try {
+      const headersList = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${userId}/activitylog`,
         {
           method: "GET",
-          headers: headers(),
+          headers: headersList,
         }
       );
 
@@ -429,11 +433,12 @@ export async function ClassesData() {
   // get data from database
   async function getAllClassroom() {
     try {
+      const headersList = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom`,
         {
           method: "GET",
-          headers: headers(),
+          headers: headersList,
         }
       );
 
@@ -447,11 +452,12 @@ export async function ClassesData() {
   // get student role data from database
   async function getAllStudentData() {
     try {
+      const headersList = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/students`,
         {
           method: "GET",
-          headers: headers(),
+          headers: headersList,
         }
       );
 
@@ -465,11 +471,12 @@ export async function ClassesData() {
   // get teacher data from database
   async function getAllTeachersData() {
     try {
+      const headersList = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/teachers`,
         {
           method: "GET",
-          headers: headers(),
+          headers: headersList,
         }
       );
 

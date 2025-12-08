@@ -10,9 +10,9 @@ import {
 } from "@/server/controllers/goals-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -22,13 +22,13 @@ router.use(logRequest);
 router.use(protect);
 
 // GET /api/v1/goals/:id
-router.get(getGoalById);
+router.get(getGoalById) as any;
 
 // PATCH /api/v1/goals/:id
-router.patch(updateGoal);
+router.patch(updateGoal) as any;
 
 // DELETE /api/v1/goals/:id
-router.delete(deleteGoal);
+router.delete(deleteGoal) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

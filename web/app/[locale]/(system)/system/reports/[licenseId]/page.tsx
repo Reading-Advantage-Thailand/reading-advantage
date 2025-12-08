@@ -7,8 +7,9 @@ import { Role } from "@prisma/client";
 export default async function SystemSchoolReportsPage({
   params,
 }: {
-  params: { licenseId: string };
+  params: Promise<{ licenseId: string }>;
 }) {
+  const { licenseId } = await params;
   const user = await getCurrentUser();
   
   if (!user) {
@@ -21,7 +22,7 @@ export default async function SystemSchoolReportsPage({
 
   return (
     <div>
-      <SystemSchoolReports licenseId={params.licenseId} />
+      <SystemSchoolReports licenseId={licenseId} />
     </div>
   );
 }

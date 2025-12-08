@@ -5,10 +5,10 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     studentId: string;
     assignmentId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -18,7 +18,7 @@ router.use(protect);
 
 // GET /api/v1/classroom/students/[studentId]/assignment-notifications/check/[assignmentId]
 router.get(async (req: ExtendedNextRequest, ctx: RequestContext) => {
-  return checkStudentAssignmentNotification(req, { params: ctx.params });
+  return checkStudentAssignmentNotification(req, ctx) as any;
 });
 
 export async function GET(request: NextRequest, ctx: RequestContext) {

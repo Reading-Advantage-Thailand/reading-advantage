@@ -8,18 +8,18 @@ import {
 } from "@/server/controllers/stories-question-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     storyId: string;
     chapterNumber: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getStoryMCQuestions);
-router.delete(retakeStoryMCQuestion);
+router.get(getStoryMCQuestions) as any;
+router.delete(retakeStoryMCQuestion) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

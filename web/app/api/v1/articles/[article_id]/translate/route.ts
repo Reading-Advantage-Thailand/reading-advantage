@@ -2,9 +2,9 @@ import { translateArticleSummary } from "@/server/controllers/article-controller
 import { NextRequest, NextResponse } from "next/server";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     article_id: string;
-  };
+  }>;
 }
 
 export async function POST(

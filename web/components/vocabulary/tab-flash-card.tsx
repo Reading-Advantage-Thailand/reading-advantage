@@ -78,7 +78,7 @@ export default function FlashCard({
   const tWordList = useScopedI18n("components.wordList");
   const router = useRouter();
   const controlRef = useRef<any>({});
-  const currentCardFlipRef = useRef<any>();
+  const currentCardFlipRef = useRef<any>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [words, setWords] = useState<Word[]>([]);
@@ -89,7 +89,7 @@ export default function FlashCard({
       const res = await fetch(`/api/v1/users/wordlist/${userId}`);
       const data = await res.json();
 
-      const startOfDay = date_scheduler(new Date(), 0, true);
+      const startOfDay = dayjs().startOf('day').toDate();
       const filteredData = await data?.word
         .filter((record: Word) => {
           const dueDate = new Date(record.due);

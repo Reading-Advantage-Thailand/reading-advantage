@@ -5,7 +5,7 @@ import { protect, ExtendedNextRequest } from "@/server/controllers/auth-controll
 import { getStudentDashboard } from "@/server/controllers/student-dashboard-controller";
 
 interface RequestContext {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -15,7 +15,7 @@ router.use(logRequest);
 router.use(protect);
 
 // GET /api/v1/student/me
-router.get(getStudentDashboard);
+router.get(getStudentDashboard) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

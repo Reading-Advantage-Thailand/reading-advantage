@@ -9,18 +9,18 @@ import {
 } from "@/server/controllers/flashcard-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
     articleId?: string;
-  };
+  }>;
 }
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.post(postSaveWordList);
-router.get(getWordList);
-router.delete(deleteWordlist);
+router.post(postSaveWordList) as any;
+router.get(getWordList) as any;
+router.delete(deleteWordlist) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

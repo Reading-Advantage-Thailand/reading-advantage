@@ -4,15 +4,15 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
-const router = createEdgeRouter<NextRequest, { params?: unknown }>();
+const router = createEdgeRouter<NextRequest, { params: Promise<Record<string, never>> }>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getGenres);
+router.get(getGenres) as any;
 
 export async function GET(
   request: NextRequest,
-  ctx: { params?: unknown }
+  ctx: { params: Promise<Record<string, never>> }
 ): Promise<NextResponse> {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {

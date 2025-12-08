@@ -5,17 +5,17 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getStorySAQuestion } from "@/server/controllers/stories-question-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     storyId: string;
     chapterNumber: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getStorySAQuestion);
+router.get(getStorySAQuestion) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

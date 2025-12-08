@@ -5,16 +5,15 @@ import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     storyId: string;
-    chapterNumber: string;
-  };
+  }>;
 }
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.post(translateStorySummary);
+router.post(translateStorySummary) as any;
 
 export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

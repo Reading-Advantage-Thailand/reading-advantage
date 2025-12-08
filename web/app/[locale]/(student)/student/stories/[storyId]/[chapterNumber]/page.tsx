@@ -22,16 +22,17 @@ async function getStoryChapter(storyId: string, chapterNumber: string) {
 export default async function ArticleQuizPage({
   params,
 }: {
-  params: { storyId: string; chapterNumber: string };
+  params: Promise<{ storyId: string; chapterNumber: string }>;
 }) {
+  const { storyId, chapterNumber } = await params;
   const t = await getScopedI18n("pages.student.storyPage.story");
 
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 
   const chapterResponse = await getStoryChapter(
-    params.storyId,
-    params.chapterNumber
+    storyId,
+    chapterNumber
   );
 
   if (chapterResponse.message)
@@ -44,16 +45,16 @@ export default async function ArticleQuizPage({
       <div className="md:flex md:flex-row md:gap-3 md:mb-5">
         <StoryChapterCard
           story={chapterResponse}
-          storyId={params.storyId}
+          storyId={storyId}
           userId={user.id}
-          chapterNumber={params.chapterNumber}
+          chapterNumber={chapterNumber}
         />
         <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
           <div className="flex justify-evently">
             <StoriesWordList
               chapter={chapterResponse}
-              storyId={params.storyId}
-              chapterNumber={params.chapterNumber}
+              storyId={storyId}
+              chapterNumber={chapterNumber}
               userId={user.id}
             />
           </div>
@@ -67,14 +68,14 @@ export default async function ArticleQuizPage({
           />
           <StorySAQuestionCard
             userId={user.id}
-            storyId={params.storyId}
+            storyId={storyId}
             articleTitle={chapterResponse.chapter.title}
             articleLevel={chapterResponse.ra_Level}
             chapterNumber={chapterResponse.chapterNumber}
           />
           <StoryLAQuestionCard
             userId={user.id}
-            storyId={params.storyId}
+            storyId={storyId}
             userLevel={user.level}
             articleTitle={chapterResponse.chapter.title}
             articleLevel={chapterResponse.ra_Level}

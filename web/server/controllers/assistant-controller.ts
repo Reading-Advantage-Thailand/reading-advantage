@@ -13,10 +13,10 @@ import { openai, openaiModel } from "@/utils/openai";
 import { generateWordList } from "../utils/generators/word-list-generator";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     article_id: string;
     id: string;
-  };
+  }>;
 }
 
 // Define the schema for the request body
@@ -213,8 +213,9 @@ export async function getWordlist(req: ExtendedNextRequest) {
 
 export async function postFlashCard(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const json = await req.json();
 

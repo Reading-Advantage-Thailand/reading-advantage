@@ -52,13 +52,14 @@ export default async function AdminDashboardPage() {
   // Parallel data fetching for optimal performance
   const fetchDashboardData = async () => {
     const startTime = Date.now();
+    const requestHeaders = await headers();
 
     try {
       const [overviewResponse, licensesResponse] = await Promise.all([
         // Fetch overview data
         fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/admin/overview`, {
           method: "GET",
-          headers: headers(),
+          headers: requestHeaders,
           cache: "no-store",
           next: { revalidate: 60 }, // Cache for 60 seconds
         }),
@@ -66,7 +67,7 @@ export default async function AdminDashboardPage() {
         user.role === Role.SYSTEM
           ? fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/licenses`, {
               method: "GET",
-              headers: headers(),
+              headers: requestHeaders,
               cache: "no-store",
               next: { revalidate: 300 }, // Cache for 5 minutes
             })

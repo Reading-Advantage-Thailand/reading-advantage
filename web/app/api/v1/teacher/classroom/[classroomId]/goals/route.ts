@@ -8,9 +8,9 @@ import {
 } from "@/server/controllers/classroom-goals-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     classroomId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -20,10 +20,10 @@ router.use(logRequest);
 router.use(protect);
 
 // GET /api/v1/teacher/classroom/[classroomId]/goals - Get classroom goals
-router.get(getClassroomGoals);
+router.get(getClassroomGoals) as any;
 
 // POST /api/v1/teacher/classroom/[classroomId]/goals - Create classroom goal for student
-router.post(createClassroomGoal);
+router.post(createClassroomGoal) as any;
 
 export async function GET(
   request: NextRequest,

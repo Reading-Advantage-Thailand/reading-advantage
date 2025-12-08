@@ -5,9 +5,7 @@ import { protect } from "@/server/controllers/auth-controller";
 import { getUnenrollClassroom } from "@/server/controllers/classroom-controller";
 
 interface RequestContext {
-  params: {
-    studentId: string;
-  };
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -15,7 +13,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 // Middleware
 router.use(logRequest);
 router.use(protect);
-router.get(getUnenrollClassroom);
+router.get(getUnenrollClassroom) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

@@ -22,7 +22,8 @@ import { cookies } from "next/headers";
 import GoogleClassroomButtonLink from "@/components/googleClassroomButtonLink";
 export default async function UserProfileSettingsPage() {
   const user = await getCurrentUser();
-  const googleActive = cookies().get("google_refresh_token")?.value;
+  const cookieStore = await cookies();
+  const googleActive = cookieStore.get("google_refresh_token")?.value;
 
   // check if user is not logged in and redirect to signin page
   if (!user) {

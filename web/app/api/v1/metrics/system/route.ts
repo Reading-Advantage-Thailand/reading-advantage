@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { getActivityMetrics, getAssignmentMetrics } from "@/server/controllers/metrics-controller";
 
 interface RequestContext {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -112,7 +112,7 @@ router.use(protect);
 router.get(async (req: NextRequest) => {
   try {
     // Require SYSTEM or ADMIN role
-    const authResult = await requireRole([Role.SYSTEM, Role.ADMIN])(req);
+    const authResult = await requireRole([Role.SYSTEM, Role.ADMIN])(req) as any;
     if (authResult instanceof NextResponse) {
       return authResult;
     }

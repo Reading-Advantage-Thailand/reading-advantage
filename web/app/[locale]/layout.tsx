@@ -73,12 +73,13 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({
-  params: { locale },
+  params,
   children,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
   children: ReactNode;
 }) {
+  const { locale } = await params;
   const user = getCurrentUser();
   return (
     <html lang={locale} suppressHydrationWarning={true}>

@@ -21,16 +21,17 @@ async function getStudentData(studentId: string) {
 export default async function ProgressPage({
   params,
 }: {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
 }) {
+  const { studentId } = await params;
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
   const t = await getScopedI18n("pages.teacher.studentProgressPage");
 
   try {
     const [activityResponse, studentResponse] = await Promise.all([
-      getUserActivityData(params.studentId),
-      getStudentData(params.studentId),
+      getUserActivityData(studentId),
+      getStudentData(studentId),
     ]);
 
     const activityData = activityResponse.activityLogs;

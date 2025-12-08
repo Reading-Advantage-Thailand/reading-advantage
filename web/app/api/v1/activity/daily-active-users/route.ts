@@ -5,9 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getDailyActiveUsers } from "@/server/controllers/activity-controller";
 
 export interface RequestContext {
-  params?: {
-    license_id: string;
-  };
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -17,7 +15,7 @@ router.use(logRequest);
 router.use(protect);
 
 // API: GET /api/v1/activity/daily-active-users?licenseId={license_id}
-router.get(getDailyActiveUsers);
+router.get(getDailyActiveUsers) as any;
 
 // Export API Route for Next.js
 export async function GET(request: NextRequest, ctx: RequestContext) {

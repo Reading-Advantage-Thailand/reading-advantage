@@ -10,7 +10,7 @@ import { createEdgeRouter } from "next-connect";
 import { NextRequest } from "next/server";
 
 export interface Context {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, Context>();
@@ -20,8 +20,8 @@ router.use(logRequest);
 router.use(restrictTo(Role.SYSTEM));
 
 // /api/licenses
-router.get(getAllLicenses);
-router.post(createLicenseKey);
+router.get(getAllLicenses) as any;
+router.post(createLicenseKey) as any;
 
 export const GET = (request: NextRequest, ctx: Context) =>
   handleRequest(router, request, ctx);

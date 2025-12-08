@@ -67,7 +67,7 @@ export default function FlashCard({
   );
   const router = useRouter();
   const controlRef = useRef<any>({});
-  const currentCardFlipRef = useRef<any>();
+  const currentCardFlipRef = useRef<any>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [sentences, setSentences] = useState<Sentence[]>([]);
@@ -77,7 +77,7 @@ export default function FlashCard({
       const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
 
-      const startOfDay = date_scheduler(new Date(), 0, true);
+      const startOfDay = dayjs().startOf('day').toDate();
       const filteredData = await data.sentences
         .filter((record: Sentence) => {
           const dueDate = new Date(record.due);

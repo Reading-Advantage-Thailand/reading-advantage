@@ -8,10 +8,10 @@ import {
 } from "@/server/controllers/classroom-goals-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     classroomId: string;
     goalId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -21,10 +21,10 @@ router.use(logRequest);
 router.use(protect);
 
 // PATCH /api/v1/teacher/classroom/[classroomId]/goals/[goalId] - Update goal
-router.patch(updateClassroomGoal);
+router.patch(updateClassroomGoal) as any;
 
 // DELETE /api/v1/teacher/classroom/[classroomId]/goals/[goalId] - Delete goal
-router.delete(deleteClassroomGoal);
+router.delete(deleteClassroomGoal) as any;
 
 export async function PATCH(
   request: NextRequest,

@@ -6,9 +6,10 @@ export async function fetchData(
   { log = false, method = "GET" } = {},
   payLoad?: Record<string, any>
 ) {
+  const headersList = await headers();
   const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}${url}`, {
     method: method,
-    headers: headers(),
+    headers: headersList,
     body: payLoad ? JSON.stringify(payLoad) : undefined,
   });
   const data = await response.json();
