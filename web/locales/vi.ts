@@ -50,122 +50,126 @@ export default {
             all: "Tất cả thời gian",
           },
           export: "Xuất",
-        refresh: "Làm mới",
-        refreshing: "Đang làm mới...",
-        loading: "Đang tải số liệu...",
-        metricsUnavailableTitle: "Một số số liệu có thể không khả dụng:",
-        tabs: {
-          overview: "Tổng quan",
-          activity: "Hoạt động",
-          insights: "AI Insights",
-        },
-        cards: {
-          totalSchools: { title: "Tổng trường", desc: "Cơ sở hoạt động" },
-          totalUsers: {
-            title: "Tổng người dùng",
-            count: "{students} học sinh, {teachers} giáo viên",
+          refresh: "Làm mới",
+          refreshing: "Đang làm mới...",
+          loading: "Đang tải số liệu...",
+          metricsUnavailableTitle: "Một số số liệu có thể không khả dụng:",
+          tabs: {
+            overview: "Tổng quan",
+            activity: "Hoạt động",
+            insights: "AI Insights",
           },
-          totalArticles: {
-            title: "Tổng bài viết",
-            desc: "Thư viện nội dung có sẵn",
+          cards: {
+            totalSchools: { title: "Tổng trường", desc: "Cơ sở hoạt động" },
+            totalUsers: {
+              title: "Tổng người dùng",
+              count: "{students} học sinh, {teachers} giáo viên",
+            },
+            totalArticles: {
+              title: "Tổng bài viết",
+              desc: "Thư viện nội dung có sẵn",
+            },
+            completionRate: {
+              title: "Tỷ lệ hoàn thành",
+              desc: "Bài viết hoàn thành thành công",
+            },
           },
-          completionRate: {
-            title: "Tỷ lệ hoàn thành",
-            desc: "Bài viết hoàn thành thành công",
+          licenseUsage: {
+            title: "Sử dụng giấy phép",
+            description:
+              "Giám sát phân bổ và sử dụng giấy phép trên các trường",
           },
-        },
-        licenseUsage: {
-          title: "Sử dụng giấy phép",
-          description: "Giám sát phân bổ và sử dụng giấy phép trên các trường",
-        },
-        activeUsers: {
-          title: "Người dùng hoạt động",
-          description: "Số liệu hoạt động người dùng theo thời gian thực",
-        },
-        systemHealth: {
-          title: "Tình trạng hệ thống",
-          description:
-            "Số liệu hiệu suất và tình trạng hệ thống theo thời gian thực",
-          database: "Hiệu suất cơ sở dữ liệu",
-          apiResponse: "Thời gian phản hồi API",
-          errorRate: "Tỷ lệ lỗi",
-          uptime: "Thời gian hoạt động hệ thống",
-          status: { excellent: "Tuyệt vời", good: "Tốt", low: "Thấp" },
-        },
-        recentActivity: {
-          title: "Hoạt động gần đây",
-          description: "Các hành động quản trị và thay đổi hệ thống mới nhất",
-          events: {
-            newSchoolLicense: "Kích hoạt giấy phép trường mới",
-            contentUpdated: "Đã cập nhật thư viện nội dung",
-            maintenanceCompleted: "Bảo trì hệ thống hoàn tất",
-            milestoneReached: "Đạt mốc phiên đọc",
-          },
-        },
-        noData: {
-          title: "Không có dữ liệu",
-          description: "Hãy thử điều chỉnh bộ lọc hoặc làm mới trang",
-        },
-        },
-      },
-    school: {
-      dashboard: {
-        title: "Bảng điều khiển trường học",
-        timeframes: {
-          "7d": "7 ngày",
-          "30d": "30 ngày",
-          "90d": "90 ngày",
-        },
-        timeframeDescription: {
-          "7d": "Trong 7 ngày qua",
-          "30d": "Trong 30 ngày qua",
-          "90d": "Trong 90 ngày qua",
-        },
-        kpis: {
-          dataSource: {
-            userActivity: "Nhật ký hoạt động người dùng",
-            classroomActivity: "Hoạt động lớp học",
-            lessonRecords: "Ghi chép bài học",
-            userRegistration: "Đăng ký người dùng",
-            systemMonitoring: "Giám sát hệ thống",
-          },
-          activeStudents: {
-            title: "Học sinh hoạt động",
-            tooltip: "Học sinh có ít nhất một hoạt động trong khoảng thời gian được chọn",
-          },
-          activeTeachers: {
-            title: "Giáo viên hoạt động",
-            description: "{total} tổng",
-            tooltip: "Giáo viên và quản trị viên có hoạt động trong khoảng thời gian được chọn",
-          },
-          activeClassrooms: {
-            title: "Lớp học hoạt động",
-            description: "Có hoạt động của học sinh",
-            tooltip: "Lớp học có ít nhất một học sinh hoạt động trong khoảng thời gian được chọn",
-          },
-          readingSessions: {
-            title: "Phiên đọc",
-            description: "Phiên đã hoàn thành",
-            tooltip: "Tổng số phiên đọc đã hoàn thành",
-          },
-          totalXp: {
-            title: "Tổng XP",
-            description: "Phiên hôm nay",
-            tooltip: "Phiên đọc hoàn thành hôm nay",
-          },
-          newUsers: {
-            title: "Người dùng mới",
-            description: "Tham gia hôm nay",
-            tooltip: "Người dùng mới tham gia hôm nay",
+          activeUsers: {
+            title: "Người dùng hoạt động",
+            description: "Số liệu hoạt động người dùng theo thời gian thực",
           },
           systemHealth: {
             title: "Tình trạng hệ thống",
-            description: "{status}",
-            tooltip: "Tình trạng sức khỏe chung của hệ thống",
+            description:
+              "Số liệu hiệu suất và tình trạng hệ thống theo thời gian thực",
+            database: "Hiệu suất cơ sở dữ liệu",
+            apiResponse: "Thời gian phản hồi API",
+            errorRate: "Tỷ lệ lỗi",
+            uptime: "Thời gian hoạt động hệ thống",
+            status: { excellent: "Tuyệt vời", good: "Tốt", low: "Thấp" },
+          },
+          recentActivity: {
+            title: "Hoạt động gần đây",
+            description: "Các hành động quản trị và thay đổi hệ thống mới nhất",
+            events: {
+              newSchoolLicense: "Kích hoạt giấy phép trường mới",
+              contentUpdated: "Đã cập nhật thư viện nội dung",
+              maintenanceCompleted: "Bảo trì hệ thống hoàn tất",
+              milestoneReached: "Đạt mốc phiên đọc",
+            },
+          },
+          noData: {
+            title: "Không có dữ liệu",
+            description: "Hãy thử điều chỉnh bộ lọc hoặc làm mới trang",
           },
         },
       },
-    },
+      school: {
+        dashboard: {
+          title: "Bảng điều khiển trường học",
+          timeframes: {
+            "7d": "7 ngày",
+            "30d": "30 ngày",
+            "90d": "90 ngày",
+          },
+          timeframeDescription: {
+            "7d": "Trong 7 ngày qua",
+            "30d": "Trong 30 ngày qua",
+            "90d": "Trong 90 ngày qua",
+          },
+          kpis: {
+            dataSource: {
+              userActivity: "Nhật ký hoạt động người dùng",
+              classroomActivity: "Hoạt động lớp học",
+              lessonRecords: "Ghi chép bài học",
+              userRegistration: "Đăng ký người dùng",
+              systemMonitoring: "Giám sát hệ thống",
+            },
+            activeStudents: {
+              title: "Học sinh hoạt động",
+              tooltip:
+                "Học sinh có ít nhất một hoạt động trong khoảng thời gian được chọn",
+            },
+            activeTeachers: {
+              title: "Giáo viên hoạt động",
+              description: "{total} tổng",
+              tooltip:
+                "Giáo viên và quản trị viên có hoạt động trong khoảng thời gian được chọn",
+            },
+            activeClassrooms: {
+              title: "Lớp học hoạt động",
+              description: "Có hoạt động của học sinh",
+              tooltip:
+                "Lớp học có ít nhất một học sinh hoạt động trong khoảng thời gian được chọn",
+            },
+            readingSessions: {
+              title: "Phiên đọc",
+              description: "Phiên đã hoàn thành",
+              tooltip: "Tổng số phiên đọc đã hoàn thành",
+            },
+            totalXp: {
+              title: "Tổng XP",
+              description: "Phiên hôm nay",
+              tooltip: "Phiên đọc hoàn thành hôm nay",
+            },
+            newUsers: {
+              title: "Người dùng mới",
+              description: "Tham gia hôm nay",
+              tooltip: "Người dùng mới tham gia hôm nay",
+            },
+            systemHealth: {
+              title: "Tình trạng hệ thống",
+              description: "{status}",
+              tooltip: "Tình trạng sức khỏe chung của hệ thống",
+            },
+          },
+        },
+      },
     },
     student: {
       dashboard: {
@@ -273,7 +277,11 @@ export default {
           title: "Bản đồ nhiệt hoạt động",
           lastRange: "90 ngày qua",
           activities: "hoạt động",
-          stats: { total: "Tổng", peakDay: "Ngày cao điểm", dailyAvg: "Trung bình/ngày" },
+          stats: {
+            total: "Tổng",
+            peakDay: "Ngày cao điểm",
+            dailyAvg: "Trung bình/ngày",
+          },
           dow: {
             sun: "CN",
             mon: "T2",
@@ -518,8 +526,10 @@ export default {
           more: "Nhiều hơn",
         },
         errorLoading: "Lỗi khi tải bản đồ nhiệt",
-        ariaLabel: "Bản đồ nhiệt hoạt động. Dùng các phím mũi tên để điều hướng, Enter để chọn.",
-        srSummary: "Bản đồ nhiệt hoạt động hiển thị {total} hoạt động từ {start} đến {end}. Đỉnh {peak}. Trên {students} học sinh.",
+        ariaLabel:
+          "Bản đồ nhiệt hoạt động. Dùng các phím mũi tên để điều hướng, Enter để chọn.",
+        srSummary:
+          "Bản đồ nhiệt hoạt động hiển thị {total} hoạt động từ {start} đến {end}. Đỉnh {peak}. Trên {students} học sinh.",
         activityTimeline: {
           title: "Dòng thời gian hoạt động",
           errorLoading: "Không thể tải dòng thời gian hoạt động",
@@ -592,6 +602,9 @@ export default {
         },
       },
       lessonPage: {
+        translatingContent: "Đang dịch nội dung...",
+        translationError: "Đã xảy ra lỗi khi dịch nội dung.",
+        retry: "Thử lại",
         lesson: "Bài học",
         startLesson: "Bắt đầu bài học",
         nextPhase: "Giai đoạn tiếp theo",
@@ -1051,6 +1064,126 @@ export default {
             students: "Học sinh",
             alignment: "Căn chỉnh",
             activity: "Hoạt động",
+            goals: "Mục tiêu",
+          },
+          goals: {
+            management: {
+              title: "Mục tiêu lớp học",
+              addGoalButton: "Thêm mục tiêu cho lớp",
+              searchPlaceholder: "Tìm kiếm mục tiêu...",
+              filterAllStatus: "Tất cả trạng thái",
+              filterAllGoals: "Tất cả mục tiêu",
+              filterActive: "Đang thực hiện",
+              filterFullyCompleted: "Hoàn thành",
+              totalGoals: "Tổng mục tiêu",
+              activeGoals: "Đang thực hiện",
+              fullyCompleted: "Hoàn thành",
+              allStudentsFinished: "Tất cả học sinh đã hoàn thành",
+              noGoalsFound: "Không tìm thấy mục tiêu",
+              noGoalsDescription: "Tạo mục tiêu đầu tiên cho lớp để bắt đầu",
+              noMatchingGoals:
+                "Không có mục tiêu nào phù hợp với bộ lọc hiện tại",
+              createFirstGoal: "Tạo mục tiêu đầu tiên",
+            },
+            createDialog: {
+              title: "Tạo mục tiêu cho toàn lớp",
+              description:
+                "Mục tiêu này sẽ được đặt cho tất cả học sinh trong {className}",
+              goalType: "Loại mục tiêu",
+              title_label: "Tiêu đề",
+              titlePlaceholder: "Ví dụ: Mục tiêu đọc hàng tuần",
+              description_label: "Mô tả (Tùy chọn)",
+              descriptionPlaceholder: "Thêm chi tiết về mục tiêu này...",
+              targetValue: "Giá trị mục tiêu",
+              targetValuePlaceholder: "100",
+              unit: "Đơn vị",
+              targetDate: "Ngày mục tiêu",
+              priority: "Độ ưu tiên",
+              priorityLow: "Thấp",
+              priorityMedium: "Trung bình",
+              priorityHigh: "Cao",
+              cancelButton: "Hủy",
+              createButton: "Tạo mục tiêu cho lớp",
+              creatingButton: "Đang tạo...",
+              goalTypes: {
+                XP_TOTAL: "Tổng XP",
+                XP_DAILY: "XP hàng ngày",
+                XP_WEEKLY: "XP hàng tuần",
+                ARTICLES_READ: "Bài viết đã đọc",
+                READING_TIME: "Thời gian đọc",
+                VOCABULARY: "Từ vựng",
+                STREAK: "Chuỗi đọc",
+                CEFR_LEVEL: "Cấp độ CEFR",
+                CUSTOM: "Mục tiêu tùy chỉnh",
+              },
+              units: {
+                xp: "xp",
+                articles: "bài viết",
+                minutes: "phút",
+                words: "từ",
+                days: "ngày",
+                level: "cấp",
+                units: "đơn vị",
+              },
+              toast: {
+                successTitle: "Tạo mục tiêu thành công",
+                successDescription:
+                  "Đã tạo mục tiêu cho {count} học sinh trong {className}",
+                errorTitle: "Tạo mục tiêu thất bại",
+                errorDescription: "Đã xảy ra lỗi khi tạo mục tiêu",
+                genericError: "Tạo mục tiêu thất bại. Vui lòng thử lại",
+              },
+            },
+            progressDialog: {
+              title: "{goalTitle}",
+              description:
+                "Tiến độ học sinh cho mục tiêu này • Mục tiêu: {targetValue} {unit}",
+              stats: {
+                total: "Tổng số",
+                completed: "Hoàn thành",
+                active: "Đang thực hiện",
+                avgProgress: "Tiến độ trung bình",
+              },
+              table: {
+                student: "Học sinh",
+                progress: "Tiến độ",
+                status: "Trạng thái",
+                currentTarget: "Hiện tại / Mục tiêu",
+                unknown: "Không xác định",
+                completedOn: "Hoàn thành vào {date}",
+              },
+            },
+            card: {
+              priorityHigh: "Ưu tiên cao",
+              priorityMedium: "Ưu tiên trung bình",
+              priorityLow: "Ưu tiên thấp",
+              noDescription: "Không có mô tả",
+              viewDetails: "Xem chi tiết",
+              deleteAll: "Xóa tất cả",
+              confirmDelete: {
+                title: "Xóa mục tiêu cho tất cả học sinh",
+                description:
+                  "Bạn có chắc chắn muốn xóa mục tiêu này cho tất cả {count} học sinh? Hành động này không thể hoàn tác",
+                cancel: "Hủy",
+                confirm: "Xóa tất cả",
+              },
+              toast: {
+                deleteSuccess: "Đã xóa mục tiêu",
+                deleteSuccessDescription:
+                  "Đã xóa thành công mục tiêu cho {count} học sinh",
+                deleteError: "Lỗi",
+                deleteErrorDescription:
+                  "Xóa một số mục tiêu thất bại. Vui lòng thử lại",
+              },
+              stats: {
+                completed: "{completed} hoàn thành",
+                active: "{active} đang thực hiện",
+                students: "{total} học sinh",
+                dueIn: "Còn {days} ngày",
+                dueToday: "Hết hạn hôm nay",
+                overdue: "Quá hạn {days} ngày",
+              },
+            },
           },
         },
         aiBrief: {
@@ -1283,7 +1416,8 @@ export default {
           licensedTeachers: "Giáo viên được cấp phép",
           averageArticleCefrLevel: "Trình độ CEFR trung bình của bài viết",
         },
-        articleNote: "Dựa trên các bài viết người dùng đã đọc trong 6 tháng qua",
+        articleNote:
+          "Dựa trên các bài viết người dùng đã đọc trong 6 tháng qua",
         noDataTitle: "Không có dữ liệu",
         noArticleActivities: "Không tìm thấy hoạt động đọc bài viết",
         xpSuffix: "XP",
@@ -1500,11 +1634,20 @@ export default {
     },
     classDashboardKpis: {
       errorTitle: "Lỗi khi tải Bảng điều khiển lớp",
-      totalStudents: { title: "Tổng số học sinh", description: "{active} học sinh hoạt động tuần này" },
-      activeStudents: { title: "Học sinh hoạt động", description: "{rate}% tỷ lệ hoạt động" },
+      totalStudents: {
+        title: "Tổng số học sinh",
+        description: "{active} học sinh hoạt động tuần này",
+      },
+      activeStudents: {
+        title: "Học sinh hoạt động",
+        description: "{rate}% tỷ lệ hoạt động",
+      },
       avgLevel: { title: "Mức trung bình", description: "Mức đọc của lớp" },
       totalXp: { title: "Tổng XP", description: "XP tích lũy của lớp" },
-      activeAssignments: { title: "Bài tập đang hoạt động", description: "Đang diễn ra" },
+      activeAssignments: {
+        title: "Bài tập đang hoạt động",
+        description: "Đang diễn ra",
+      },
       completed: { title: "Hoàn thành", description: "Bài tập đã nộp" },
     },
     alertCenter: {
@@ -1538,11 +1681,17 @@ export default {
         daysRemaining: "Còn lại",
       },
       back: "Quay lại",
-      students: { completedLabel: "Học sinh đã hoàn thành", incompleteLabel: "Học sinh chưa hoàn thành" },
+      students: {
+        completedLabel: "Học sinh đã hoàn thành",
+        incompleteLabel: "Học sinh chưa hoàn thành",
+      },
       selectStudents: "Chọn học sinh để thông báo",
       deselectAll: "Bỏ chọn tất cả",
       selectAll: "Chọn tất cả",
-      studentStatus: { completed: "Đã hoàn thành", incomplete: "Chưa hoàn thành" },
+      studentStatus: {
+        completed: "Đã hoàn thành",
+        incomplete: "Chưa hoàn thành",
+      },
       history: { empty: "Không có lịch sử thông báo", sentTo: "Đã gửi đến" },
       studentsLabel: "học sinh",
       tabs: { select: "Chọn", history: "Lịch sử" },
@@ -1584,7 +1733,12 @@ export default {
       mcqAvg: "TB trắc nghiệm",
       openEndedAvg: "TB tự luận",
       overallAvg: "TB tổng",
-      headers: { student: "Học sinh", mcq: "Trắc nghiệm", openEnded: "Tự luận (điểm ≥ 70%)", overall: "Tổng" },
+      headers: {
+        student: "Học sinh",
+        mcq: "Trắc nghiệm",
+        openEnded: "Tự luận (điểm ≥ 70%)",
+        overall: "Tổng",
+      },
       noActivity: "Không có dữ liệu hoạt động học sinh",
     },
     classActivityHeatmap: {
@@ -1594,11 +1748,23 @@ export default {
       seeDetail: "Xem chi tiết",
       error: "Không thể tải dữ liệu hoạt động",
       noData: "Không có dữ liệu hoạt động",
-      stats: { activeUsers: "Người dùng hoạt động", totalActivity: "Tổng hoạt động", peakDay: "Ngày cao điểm" },
+      stats: {
+        activeUsers: "Người dùng hoạt động",
+        totalActivity: "Tổng hoạt động",
+        peakDay: "Ngày cao điểm",
+      },
       legend: { title: "Mức hoạt động:", less: "Ít", more: "Nhiều" },
       topActiveDays: "Ngày hoạt động nhiều nhất",
       activities: "hoạt động",
-      dow: { sun: "CN", mon: "T2", tue: "T3", wed: "T4", thu: "T5", fri: "T6", sat: "T7" },
+      dow: {
+        sun: "CN",
+        mon: "T2",
+        tue: "T3",
+        wed: "T4",
+        thu: "T5",
+        fri: "T6",
+        sat: "T7",
+      },
     },
     classAlignmentMatrix: {
       title: "Ma trận CEFR ↔ RA",
@@ -1608,7 +1774,11 @@ export default {
       studentsWithActivity: "học sinh có hoạt động đọc",
       alignedLabel: "Đã căn chỉnh",
       aboveLabel: "Trên mức",
-      stats: { averageLevel: "Mức trung bình:", modalLevel: "Mức phổ biến:", totalReadings: "Tổng bài đọc:" },
+      stats: {
+        averageLevel: "Mức trung bình:",
+        modalLevel: "Mức phổ biến:",
+        totalReadings: "Tổng bài đọc:",
+      },
     },
     classAssignmentFunnel: {
       title: "Phễu bài tập",
@@ -1715,7 +1885,8 @@ export default {
       errorUnableToLoad: "Không thể tải dữ liệu tốc độ",
       noData: "Không có dữ liệu tốc độ",
       noActivity: "Không có hoạt động đọc trong khoảng thời gian đã chọn",
-      noActivityDetails: "Học sinh chưa hoàn thành bài viết nào trong {days} ngày qua",
+      noActivityDetails:
+        "Học sinh chưa hoàn thành bài viết nào trong {days} ngày qua",
       labels: {
         articlesPerDay: "Bài/Ngày",
         articlesPerMonth: "Bài/Tháng",
@@ -1731,20 +1902,37 @@ export default {
     },
     activityCharts: {
       title: "Tổng quan hoạt động",
-      description: "Giám sát hoạt động người dùng, mô hình tương tác và sự kiện thời gian thực",
-      timeframe: { "7d": "7 ngày qua", "30d": "30 ngày qua", "90d": "3 tháng qua", all: "tất cả thời gian" },
+      description:
+        "Giám sát hoạt động người dùng, mô hình tương tác và sự kiện thời gian thực",
+      timeframe: {
+        "7d": "7 ngày qua",
+        "30d": "30 ngày qua",
+        "90d": "3 tháng qua",
+        all: "tất cả thời gian",
+      },
       heatmap: {
         title: "Bản đồ nhiệt hoạt động",
         description: "Mức độ hoạt động hàng ngày",
-        range: { "7d": "trong 7 ngày qua", "30d": "trong 30 ngày qua", "90d": "trong 3 tháng qua", all: "trong năm qua" },
+        range: {
+          "7d": "trong 7 ngày qua",
+          "30d": "trong 30 ngày qua",
+          "90d": "trong 3 tháng qua",
+          all: "trong năm qua",
+        },
       },
       legend: { less: "Ít", more: "Nhiều" },
-      daily: { title: "Xu hướng hoạt động hàng ngày", description: "Mức độ hoạt động trong khoảng thời gian đã chọn" },
-      engagement: { title: "Tương tác người dùng", description: "So sánh người dùng và phiên" },
-      timeline: { 
-        title: "Nhật ký hoạt động", 
-        description: "Hoạt động và sự kiện người dùng mới nhất", 
-        empty: "Không tìm thấy sự kiện cho bộ lọc đã chọn.", 
+      daily: {
+        title: "Xu hướng hoạt động hàng ngày",
+        description: "Mức độ hoạt động trong khoảng thời gian đã chọn",
+      },
+      engagement: {
+        title: "Tương tác người dùng",
+        description: "So sánh người dùng và phiên",
+      },
+      timeline: {
+        title: "Nhật ký hoạt động",
+        description: "Hoạt động và sự kiện người dùng mới nhất",
+        empty: "Không tìm thấy sự kiện cho bộ lọc đã chọn.",
         by: "bởi {user}",
         filterByType: "Lọc theo loại",
         allTypes: "Tất cả loại",
@@ -1763,10 +1951,26 @@ export default {
           of: "của",
         },
       },
-      types: { reading: "Đọc", practice: "Luyện tập", assessment: "Đánh giá", achievement: "Thành tích" },
-      events: { activity: "Hoạt động", srsPractice: "Phiên luyện SRS", assignment: "Bài tập", reading: "Đọc", practice: "Luyện tập" },
+      types: {
+        reading: "Đọc",
+        practice: "Luyện tập",
+        assessment: "Đánh giá",
+        achievement: "Thành tích",
+      },
+      events: {
+        activity: "Hoạt động",
+        srsPractice: "Phiên luyện SRS",
+        assignment: "Bài tập",
+        reading: "Đọc",
+        practice: "Luyện tập",
+      },
       charts: { activity: "Hoạt động", users: "Người dùng", sessions: "Phiên" },
-      time: { justNow: "Vừa xong", minutesAgo: "{m} phút trước", hoursAgo: "{h} giờ trước", daysAgo: "{d} ngày trước" },
+      time: {
+        justNow: "Vừa xong",
+        minutesAgo: "{m} phút trước",
+        hoursAgo: "{h} giờ trước",
+        daysAgo: "{d} ngày trước",
+      },
     },
     activityTimeline: {
       title: "Dòng thời gian hoạt động",
@@ -1774,11 +1978,30 @@ export default {
       emptyTitle: "Không tìm thấy hoạt động",
       emptyDescription: "Không có sự kiện cho khoảng thời gian đã chọn.",
       summary: "{total} hoạt động từ {start} đến {end}",
-      timeframe: { "7d": "7 ngày qua", "30d": "30 ngày qua", "90d": "3 tháng qua" },
+      timeframe: {
+        "7d": "7 ngày qua",
+        "30d": "30 ngày qua",
+        "90d": "3 tháng qua",
+      },
       clearFilters: "Xóa bộ lọc",
-      labels: { assignment: "Bài tập", srs: "Luyện SRS", reading: "Đọc", practice: "Luyện tập", completed: "Hoàn thành" },
-      types: { assignment: "Bài tập", srs: "SRS", reading: "Đọc", practice: "Luyện tập" },
-      status: { completed: "Hoàn thành", in_progress: "Đang tiến hành", unknown: "Không rõ" },
+      labels: {
+        assignment: "Bài tập",
+        srs: "Luyện SRS",
+        reading: "Đọc",
+        practice: "Luyện tập",
+        completed: "Hoàn thành",
+      },
+      types: {
+        assignment: "Bài tập",
+        srs: "SRS",
+        reading: "Đọc",
+        practice: "Luyện tập",
+      },
+      status: {
+        completed: "Hoàn thành",
+        in_progress: "Đang tiến hành",
+        unknown: "Không rõ",
+      },
       srSummaryStart: "Tóm tắt dòng thời gian:",
       srSummaryMid: "hoạt động trong khoảng",
       srSummaryTo: "đến",
@@ -1910,7 +2133,8 @@ export default {
       saving: "Đang lưu...",
       skipPrompt: "Bạn gặp khó khăn với câu hỏi này?",
       skipButton: "Bỏ qua câu hỏi",
-      skipWarning: "Cảnh báo: Bạn chỉ có thể bỏ qua thêm {remaining} câu hỏi trước khi bài kiểm tra kết thúc.",
+      skipWarning:
+        "Cảnh báo: Bạn chỉ có thể bỏ qua thêm {remaining} câu hỏi trước khi bài kiểm tra kết thúc.",
       skippedMessage: "Đã bỏ qua câu hỏi này",
       toast: {
         successUpdate: "Thành công!",
@@ -1922,7 +2146,8 @@ export default {
         assessmentError: "Không thể nhận đánh giá. Vui lòng thử lại.",
         skipError: "Không thể bỏ qua câu hỏi. Vui lòng thử lại.",
         tooManySkips: "Bỏ qua quá nhiều câu hỏi",
-        endingTestEarly: "Bài kiểm tra sẽ kết thúc sớm dựa trên các câu trả lời hiện có.",
+        endingTestEarly:
+          "Bài kiểm tra sẽ kết thúc sớm dựa trên các câu trả lời hiện có.",
       },
     },
     progressBarXp: {

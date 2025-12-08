@@ -37,12 +37,77 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
   const tb = useScopedI18n("pages.student.practicePage");
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationError, setTranslationError] = useState<string | null>(null);
+
+  // Check and ensure translations exist
+  useEffect(() => {
+    const checkAndTranslate = async () => {
+      try {
+        setIsLoading(true);
+        setTranslationError(null);
+
+        // Check if sentences have translations
+        const sentencesResponse = await fetch(
+          `/api/v1/users/sentences/${userId}?articleId=${articleId}`
+        );
+
+        if (sentencesResponse.ok) {
+          const sentencesData = await sentencesResponse.json();
+          const sentences = sentencesData.sentences || [];
+
+          // Check if any sentence is missing translation
+          const missingTranslation = sentences.some(
+            (sentence: any) =>
+              !sentence.translation ||
+              Object.keys(sentence.translation).length === 0 ||
+              !sentence.translation.th
+          );
+
+          if (missingTranslation && sentences.length > 0) {
+            console.log("Missing translations detected, generating translations...");
+            setIsTranslating(true);
+
+            // Call the translation API for the article passage
+            const translateResponse = await fetch(
+              `/api/v1/assistant/translate/${articleId}`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  type: "passage",
+                  targetLanguage: "th", // Start with Thai, the API will handle all languages
+                }),
+              }
+            );
+
+            if (!translateResponse.ok) {
+              const errorData = await translateResponse.json();
+              throw new Error(errorData.message || "Translation failed");
+            }
+
+            console.log("Translation completed successfully");
+            setIsTranslating(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking/translating:", error);
+        setTranslationError(
+          error instanceof Error ? error.message : "Translation failed"
+        );
+        setIsTranslating(false);
+      }
+    };
+
+    checkAndTranslate();
+  }, [userId, articleId]);
 
   // Check for completed activities
   useEffect(() => {
     const checkCompletedActivities = async () => {
       try {
-        setIsLoading(true);
         const response = await fetch(`/api/v1/users/${userId}/activity-data`);
         if (response.ok) {
           const data = await response.json();
@@ -90,8 +155,8 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
 
   // Activity Selection Screen
   if (sentenceActivity === "none") {
-    // Show loading state while checking activities
-    if (isLoading) {
+    // Show loading state while checking activities or translating
+    if (isLoading || isTranslating) {
       return (
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="text-center space-y-4 bg-gradient-to-br from-orange-300 via-amber-300 to-yellow-300 dark:from-orange-950 dark:via-amber-950 dark:to-yellow-950 p-8 rounded-2xl border border-orange-200 dark:border-orange-800">
@@ -102,8 +167,38 @@ const Phase12SentenceActivities: React.FC<Phase12SentenceActivitiesProps> = ({
               {t("phase12Title")}
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              {t("loadingActivities")}
+              {isTranslating ? t("translatingContent") || "กำลังแปลเนื้อหา..." : t("loadingActivities")}
             </p>
+            {isTranslating && (
+              <div className="flex items-center justify-center mt-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 dark:border-orange-400" />
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Show error if translation failed
+    if (translationError) {
+      return (
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="text-center space-y-4 bg-gradient-to-br from-red-300 via-rose-300 to-pink-300 dark:from-red-950 dark:via-rose-950 dark:to-pink-950 p-8 rounded-2xl border border-red-200 dark:border-red-800">
+            <div className="inline-flex items-center justify-center p-3 bg-red-100 dark:bg-red-900 rounded-full mb-4">
+              <Book className="h-8 w-8 text-red-600 dark:text-red-400" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {t("translationError") || "เกิดข้อผิดพลาดในการแปล"}
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              {translationError}
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+            >
+              {t("retry") || "ลองอีกครั้ง"}
+            </Button>
           </div>
         </div>
       );
