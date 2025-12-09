@@ -93,7 +93,6 @@ function calculateAverageCEFRLevel(
   // calendarValue: DateValueType
   lastmonth: number
 ) {
-  
   // ISO date
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - lastmonth);
@@ -103,11 +102,12 @@ function calculateAverageCEFRLevel(
   );
 
   // Check if we have any article read activities with CEFR level
-  const articleReadActivities = recentData.filter(activity => 
-    (activity.activityType === 'ARTICLE_READ' || 
-     activity.activityType === 'ARTICLE_RATING') && 
-    activity.details?.cefr_level && 
-    activity.details.cefr_level in CEFR_LEVEL_MAP
+  const articleReadActivities = recentData.filter(
+    (activity) =>
+      (activity.activityType === "ARTICLE_READ" ||
+        activity.activityType === "ARTICLE_RATING") &&
+      activity.details?.cefr_level &&
+      activity.details.cefr_level in CEFR_LEVEL_MAP
   );
 
   // Initialize structure with 6 months
@@ -120,7 +120,7 @@ function calculateAverageCEFRLevel(
   // If no article read activities, return empty data (null values)
   if (articleReadActivities.length === 0) {
     console.warn("No article read activities found with CEFR levels");
-    return months.map(month => ({
+    return months.map((month) => ({
       month,
       average_cefr_level: null,
       number: null,
@@ -130,7 +130,7 @@ function calculateAverageCEFRLevel(
   // Aggregate actual data into the structure
   articleReadActivities.forEach((item) => {
     const cefrLevel = item.details?.cefr_level;
-    
+
     if (!cefrLevel || !(cefrLevel in CEFR_LEVEL_MAP)) {
       console.warn("Skipping invalid CEFR level:", cefrLevel);
       return;
@@ -146,7 +146,7 @@ function calculateAverageCEFRLevel(
   // Convert the monthly totals to averages and map to CEFR levels
   const result = months.map((month) => {
     const monthData = monthlyCEFR[month];
-    
+
     // If no data for this month, return null
     if (monthData.count === 0) {
       return {
@@ -155,7 +155,7 @@ function calculateAverageCEFRLevel(
         number: null,
       };
     }
-    
+
     const averageNumeric = monthData.total / monthData.count;
     const roundedAverage = Math.round(averageNumeric);
     return {
@@ -164,7 +164,7 @@ function calculateAverageCEFRLevel(
       number: averageNumeric,
     };
   });
-  
+
   return result;
 }
 
@@ -199,7 +199,7 @@ export default function LineChartCustom({ data }: UserActiviryChartProps) {
   const formattedData = calculateAverageCEFRLevel(data, 5);
 
   // Check if we have any actual data
-  const hasData = formattedData.some(item => item.number !== null);
+  const hasData = formattedData.some((item) => item.number !== null);
 
   if (!hasData) {
     return (
@@ -207,7 +207,9 @@ export default function LineChartCustom({ data }: UserActiviryChartProps) {
         <div className="flex items-center justify-center h-[300px] text-muted-foreground">
           <div className="text-center">
             <p className="text-lg font-medium">No data available</p>
-            <p className="text-sm mt-2">No article reading activities found in the last 6 months</p>
+            <p className="text-sm mt-2">
+              No article reading activities found in the last 6 months
+            </p>
           </div>
         </div>
       </CardContent>
@@ -215,11 +217,11 @@ export default function LineChartCustom({ data }: UserActiviryChartProps) {
   }
 
   // Filter out null values for the chart
-  const chartData = formattedData.filter(item => item.number !== null);
+  const chartData = formattedData.filter((item) => item.number !== null);
 
   return (
     <CardContent>
-      <ChartContainer config={chartConfig}>
+      <ChartContainer config={chartConfig} className="h-[250px] w-full">
         <LineChart
           accessibilityLayer
           data={chartData}

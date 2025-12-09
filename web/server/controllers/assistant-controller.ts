@@ -261,6 +261,8 @@ export async function postFlashCard(
         elapsed_days,
         scheduled_days,
         page,
+        word, // Exclude word field - not in UserSentenceRecord schema
+        update_score, // Exclude snake_case version - will map to camelCase
         ...updateData
       } = json;
 
@@ -269,6 +271,7 @@ export async function postFlashCard(
         ...updateData,
         elapsedDays: json.elapsed_days,
         scheduledDays: json.scheduled_days,
+        updateScore: json.update_score, // Map snake_case to camelCase
       };
 
       await prisma.userSentenceRecord.update({

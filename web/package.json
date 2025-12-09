@@ -92,7 +92,7 @@
     "react-tailwindcss-datepicker": "^1.7.2",
     "react-textarea-autosize": "^8.5.3",
     "react-to-print": "^3.0.5",
-    "recharts": "^2.12.7",
+    "recharts": "^3.5.1",
     "resend": "^4.6.0",
     "sentence-tokenizer": "^1.0.1",
     "sharp": "^0.33.5",

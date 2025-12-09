@@ -4,43 +4,57 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
-interface RequestContext {
+// Next.js expects this to match the folder name [articleId]
+interface NextJsContext {
+  params: Promise<{
+    articleId: string;
+  }>;
+}
+
+// The controller expects article_id (snake_case)
+interface ControllerContext {
   params: Promise<{
     article_id: string;
   }>;
 }
-const router = createEdgeRouter<NextRequest, RequestContext>();
+
+const router = createEdgeRouter<NextRequest, ControllerContext>();
 
 router.use(logRequest);
 router.use(protect);
 router.delete(deleteArticle) as any;
 
-export async function GET(request: NextRequest, ctx: RequestContext) {
-  const result = await router.run(request, ctx);
+// Adapter function to transform articleId to article_id
+async function adaptContext(ctx: NextJsContext): Promise<ControllerContext> {
+  const params = await ctx.params;
+  return {
+    params: Promise.resolve({ article_id: params.articleId }),
+  };
+}
+
+export async function GET(request: NextRequest, ctx: NextJsContext) {
+  const adaptedCtx = await adaptContext(ctx);
+  const result = await router.run(request, adaptedCtx);
   if (result instanceof NextResponse) {
     return result;
   }
-  // Handle the case where result is not a NextResponse
-  // You might want to return a default NextResponse or throw an error
   throw new Error("Expected a NextResponse from router.run");
 }
 
-export async function POST(request: NextRequest, ctx: RequestContext) {
-  const result = await router.run(request, ctx);
+export async function POST(request: NextRequest, ctx: NextJsContext) {
+  const adaptedCtx = await adaptContext(ctx);
+  const result = await router.run(request, adaptedCtx);
   if (result instanceof NextResponse) {
     return result;
   }
-  // Handle the case where result is not a NextResponse
-  // You might want to return a default NextResponse or throw an error
   throw new Error("Expected a NextResponse from router.run");
 }
 
-export async function DELETE(request: NextRequest, ctx: RequestContext) {
-  const result = await router.run(request, ctx);
+export async function DELETE(request: NextRequest, ctx: NextJsContext) {
+  const adaptedCtx = await adaptContext(ctx);
+  const result = await router.run(request, adaptedCtx);
   if (result instanceof NextResponse) {
     return result;
   }
-  // Handle the case where result is not a NextResponse
-  // You might want to return a default NextResponse or throw an error
   throw new Error("Expected a NextResponse from router.run");
 }
