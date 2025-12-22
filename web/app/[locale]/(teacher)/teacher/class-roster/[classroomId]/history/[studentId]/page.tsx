@@ -45,15 +45,18 @@ async function getUserArticleRecords(userId: string) {
   }
 }
 
-export default async function StudentHistoryForTeacher(params: {
-  params: { studentId: string; classroomId: string };
+export default async function StudentHistoryForTeacher({
+  params,
+}: {
+  params: Promise<{ studentId: string; classroomId: string }>;
 }) {
+  const { studentId, classroomId } = await params;
   const user = await getCurrentUser();
   const t = await getScopedI18n("pages.student.historyPage");
   if (!user) {
     return redirect("/auth/signin");
   }
-  const res = await getUserArticleRecords(params.params.studentId);
+  const res = await getUserArticleRecords(studentId);
 
   if (res.error) {
     return (
@@ -113,9 +116,10 @@ export default async function StudentHistoryForTeacher(params: {
 
   const StudentsData = async () => {
     try {
+      const requestHeaders = await headers();
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${params.params.studentId}`,
-        { method: "GET", headers: headers() }
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${studentId}`,
+        { method: "GET", headers: requestHeaders }
       );
       if (!res.ok) throw new Error("Failed to fetch student data");
       const fetchdata = await res.json();

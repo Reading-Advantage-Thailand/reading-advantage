@@ -7,10 +7,10 @@ import { ExtendedNextRequest } from "./auth-controller";
  */
 export async function getStudentUnreadNotifications(
   req: ExtendedNextRequest,
-  { params }: { params: { studentId: string } }
+  ctx: { params: Promise<{ studentId: string }> }
 ) {
+  const { studentId } = await ctx.params;
   try {
-    const { studentId } = params;
 
     if (!studentId) {
       return NextResponse.json({ error: "Missing studentId" }, { status: 400 });
@@ -57,10 +57,10 @@ export async function getStudentUnreadNotifications(
  */
 export async function checkStudentAssignmentNotification(
   req: ExtendedNextRequest,
-  { params }: { params: { studentId: string; assignmentId: string } }
+  ctx: { params: Promise<{ studentId: string; assignmentId: string }> }
 ) {
+  const { studentId, assignmentId } = await ctx.params;
   try {
-    const { studentId, assignmentId } = params;
 
     if (!studentId || !assignmentId) {
       return NextResponse.json(
@@ -94,10 +94,10 @@ export async function checkStudentAssignmentNotification(
  */
 export async function acknowledgeNotification(
   req: ExtendedNextRequest,
-  { params }: { params: { studentId: string; notificationId: string } }
+  ctx: { params: Promise<{ studentId: string; notificationId: string }> }
 ) {
+  const { studentId, notificationId } = await ctx.params;
   try {
-    const { studentId, notificationId } = params;
 
     if (!studentId || !notificationId) {
       return NextResponse.json(

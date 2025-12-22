@@ -8,7 +8,7 @@ import {
 } from "@/server/controllers/activity-controller";
 
 export interface RequestContext {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -16,7 +16,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 router.use(logRequest);
 router.use(protect);
 //api/activity
-router.get(getAllUserActivity);
+router.get(getAllUserActivity) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

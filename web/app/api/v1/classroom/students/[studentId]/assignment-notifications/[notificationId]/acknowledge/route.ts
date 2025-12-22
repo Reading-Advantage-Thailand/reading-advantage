@@ -5,10 +5,10 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     studentId: string;
     notificationId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -18,7 +18,7 @@ router.use(protect);
 
 // PATCH /api/v1/classroom/students/[studentId]/assignment-notifications/[notificationId]/acknowledge
 router.patch(async (req: ExtendedNextRequest, ctx: RequestContext) => {
-  return acknowledgeNotification(req, { params: ctx.params });
+  return acknowledgeNotification(req, ctx) as any;
 });
 
 export async function PATCH(request: NextRequest, ctx: RequestContext) {

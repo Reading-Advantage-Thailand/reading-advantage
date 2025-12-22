@@ -1,23 +1,26 @@
 /**
  * Automated refresh endpoint for Cloud Scheduler/Trigger
- * 
+ *
  * This endpoint uses restrictAccessKey for authentication (no user login required)
  * Designed to be called by Google Cloud Scheduler every 15 minutes
- * 
+ *
  * Refreshes all 27 materialized views across 3 levels:
  * - Level 1: Student-level metrics (6 views)
  * - Level 2: Class-level aggregations (5 views)
  * - Level 3: School-level rollups (5 views)
  */
 
-import { refreshMaterializedViewsAutomated, getAutomatedRefreshStatus } from "@/server/controllers/system-controller";
+import {
+  refreshMaterializedViewsAutomated,
+  getAutomatedRefreshStatus,
+} from "@/server/controllers/system-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { restrictAccessKey } from "@/server/controllers/auth-controller";
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 
 interface ExtendedNextRequest {
-  params: Record<string, never>;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
@@ -27,10 +30,10 @@ router.use(logRequest);
 router.use(restrictAccessKey);
 
 // GET: Health check and status (for monitoring)
-router.get(getAutomatedRefreshStatus);
+router.get(getAutomatedRefreshStatus) as any;
 
 // POST: Refresh all materialized views
-router.post(refreshMaterializedViewsAutomated);
+router.post(refreshMaterializedViewsAutomated) as any;
 
 export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);

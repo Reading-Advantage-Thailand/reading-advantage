@@ -14,19 +14,19 @@ import { generateLAQuestion } from "../utils/generators/la-question-generator";
 import { ArticleBaseCefrLevel, ArticleType } from "../models/enum";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     storyId: string;
     chapterNumber: string;
     questionNumber?: string;
-  };
+  }>;
 }
 
 interface SubRequestContext {
-  params: {
+  params: Promise<{
     storyId: string;
     chapterNumber: string;
     questionNumber: string;
-  };
+  }>;
 }
 
 interface Heatmap {
@@ -68,8 +68,9 @@ export interface LARecord {
 
 export async function getStoryMCQuestions(
   req: ExtendedNextRequest,
-  { params: { storyId, chapterNumber } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { storyId, chapterNumber } = await ctx.params;
   try {
     if (!storyId || typeof storyId !== "string") {
       return NextResponse.json({ message: "Invalid storyId" }, { status: 400 });
@@ -355,8 +356,9 @@ export async function getStoryMCQuestions(
 
 export async function getStorySAQuestion(
   req: ExtendedNextRequest,
-  { params: { storyId, chapterNumber } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { storyId, chapterNumber } = await ctx.params;
   try {
     if (!storyId || typeof storyId !== "string") {
       return NextResponse.json({ message: "Invalid storyId" }, { status: 400 });
@@ -536,12 +538,15 @@ export async function getStorySAQuestion(
 
 export async function answerStorySAQuestion(
   req: ExtendedNextRequest,
-  {
-    params: { storyId, chapterNumber, questionNumber },
-  }: {
-    params: { storyId: string; chapterNumber: string; questionNumber: string };
+  ctx: {
+    params: Promise<{
+      storyId: string;
+      chapterNumber: string;
+      questionNumber: string;
+    }>;
   }
 ) {
+  const { storyId, chapterNumber, questionNumber } = await ctx.params;
   try {
     const body = await req.json();
     const { answer, timeRecorded, createActivity = false } = body;
@@ -765,12 +770,16 @@ export async function answerStorySAQuestion(
 export async function answerStoryMCQuestion(
   req: ExtendedNextRequest,
   ctx: {
-    params: { storyId: string; chapterNumber: string; questionNumber: string };
+    params: Promise<{
+      storyId: string;
+      chapterNumber: string;
+      questionNumber: string;
+    }>;
   }
 ) {
+  const { storyId, chapterNumber, questionNumber } = await ctx.params;
   try {
     const { selectedAnswer, timeRecorded } = await req.json();
-    const { storyId, chapterNumber, questionNumber } = ctx.params;
     const userId = req.session?.user.id as string;
 
     if (!userId) {
@@ -1002,12 +1011,15 @@ export async function answerStoryMCQuestion(
 
 export async function rateStory(
   req: ExtendedNextRequest,
-  {
-    params: { storyId, chapterNumber, questionNumber },
-  }: {
-    params: { storyId: string; chapterNumber: string; questionNumber: string };
+  ctx: {
+    params: Promise<{
+      storyId: string;
+      chapterNumber: string;
+      questionNumber: string;
+    }>;
   }
 ) {
+  const { storyId, chapterNumber, questionNumber } = await ctx.params;
   try {
     const { rating } = await req.json();
     const userId = req.session?.user.id as string;
@@ -1077,8 +1089,9 @@ export async function rateStory(
 
 export async function retakeStoryMCQuestion(
   req: ExtendedNextRequest,
-  { params: { storyId, chapterNumber } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { storyId, chapterNumber } = await ctx.params;
   try {
     const userId = req.session?.user.id as string;
 
@@ -1165,8 +1178,9 @@ export async function retakeStoryMCQuestion(
 
 export async function getStoryLAQuestion(
   req: ExtendedNextRequest,
-  { params: { storyId, chapterNumber } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { storyId, chapterNumber } = await ctx.params;
   try {
     if (!storyId || typeof storyId !== "string") {
       return NextResponse.json({ message: "Invalid storyId" }, { status: 400 });
@@ -1290,9 +1304,11 @@ export async function getStoryLAQuestion(
 
 export async function getStoryFeedbackLAquestion(
   req: ExtendedNextRequest,
-  { params: { storyId, chapterNumber, questionNumber } }: SubRequestContext
+  ctx: SubRequestContext
 ) {
   try {
+    const { storyId, chapterNumber, questionNumber } = await ctx.params;
+    
     // Require authenticated user (align with SAQ flow)
     if (!req.session?.user?.id || typeof req.session.user.id !== "string") {
       return NextResponse.json(
@@ -1409,9 +1425,11 @@ export async function getStoryFeedbackLAquestion(
 
 export async function answerStoryLAQuestion(
   req: ExtendedNextRequest,
-  { params: { storyId, chapterNumber, questionNumber } }: SubRequestContext
+  ctx: SubRequestContext
 ) {
   try {
+    const { storyId, chapterNumber, questionNumber } = await ctx.params;
+    
     const {
       answer,
       feedback,
@@ -1695,9 +1713,11 @@ export async function answerStoryLAQuestion(
 
 export async function getStoryLAQuestionXP(
   req: ExtendedNextRequest,
-  { params: { storyId, chapterNumber, questionNumber } }: SubRequestContext
+  ctx: SubRequestContext
 ) {
   try {
+    const { storyId, chapterNumber, questionNumber } = await ctx.params;
+    
     const { rating } = await req.json();
 
     const userId = req.session?.user.id as string;

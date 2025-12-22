@@ -6,9 +6,9 @@ import { handleRequest } from "@/server/utils/handle-request";
 import { protect } from "@/server/controllers/auth-controller";
 
 export interface Context {
-  params: {
+  params: Promise<{
     userId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, Context>();
@@ -18,7 +18,7 @@ router.use(logRequest);
 router.use(protect);
 
 // /api/xp/[userId]
-router.get(getLessonXp);
+router.get(getLessonXp) as any;
 
 export const GET = (request: NextRequest, ctx: Context) =>
   handleRequest(router, request, ctx);

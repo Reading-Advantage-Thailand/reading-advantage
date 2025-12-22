@@ -5,16 +5,16 @@ import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
 interface RequestContext {
-    params: {
+    params: Promise<{
         article_id: string;
-    };
+    }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getSAQuestion);
+router.get(getSAQuestion) as any;
 
 
 

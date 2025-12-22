@@ -6,10 +6,10 @@ import { QuizStatus, ActivityType } from "@prisma/client";
 import genreData from "@/data/type-genre.json";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     storyId: string;
     chapterNumber: string;
-  };
+  }>;
 }
 
 export async function checkChapterCompletion(
@@ -362,9 +362,9 @@ export async function getAllStories(req: ExtendedNextRequest) {
 
 export async function getStoryById(
   req: ExtendedNextRequest,
-  { params }: { params: { storyId: string } }
+  ctx: { params: Promise<{ storyId: string }> }
 ) {
-  const storyId = params.storyId;
+  const { storyId } = await ctx.params;
   const userId = req.session?.user.id as string;
 
   if (!storyId) {
@@ -488,7 +488,7 @@ export async function updateAverageRating(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { storyId, chapterNumber: chapterNumberStr } = ctx.params;
+  const { storyId, chapterNumber: chapterNumberStr } = await ctx.params;
   const chapterNumber = parseInt(chapterNumberStr, 10);
 
   if (!storyId || isNaN(chapterNumber)) {
@@ -580,7 +580,7 @@ export async function getChapter(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { storyId, chapterNumber: chapterNumberStr } = ctx.params;
+  const { storyId, chapterNumber: chapterNumberStr } = await ctx.params;
   const chapterNumber = parseInt(chapterNumberStr, 10);
   const userId = req.session?.user.id as string;
 
@@ -670,8 +670,9 @@ export async function getChapter(
 
 export async function deleteStories(
   req: ExtendedNextRequest,
-  { params: { storyId } }: { params: { storyId: string } }
+  ctx: { params: Promise<{ storyId: string }> }
 ) {
+  const { storyId } = await ctx.params;
   try {
     // Delete from database first
     await prisma.story.delete({

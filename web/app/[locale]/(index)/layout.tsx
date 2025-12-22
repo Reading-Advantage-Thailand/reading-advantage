@@ -8,9 +8,17 @@ import { ReactNode } from "react";
 import ProgressBar from "@/components/progress-bar-xp";
 import { getCurrentUser } from "@/lib/session";
 import { UserAccountNav } from "@/components/user-account-nav";
-import { getScopedI18n } from "@/locales/server";
+import { getScopedI18n, setStaticParamsLocale } from "@/locales/server";
 
-export default async function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({ 
+  children,
+  params 
+}: { 
+  children: ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setStaticParamsLocale(locale);
   const t = await getScopedI18n("components");
   const user = await getCurrentUser();
 

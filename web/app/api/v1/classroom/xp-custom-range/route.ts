@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getClassroomXpCustomRange } from "@/server/controllers/classroom-controller";
 
 export interface RequestContext {
-  params?: Record<string, never>;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -15,7 +15,7 @@ router.use(logRequest);
 router.use(protect);
 
 // API: GET /api/v1/classroom/xp-custom-range?from=2024-01-01&to=2024-12-31&licenseId={license_id}
-router.get(getClassroomXpCustomRange);
+router.get(getClassroomXpCustomRange) as any;
 
 // Export API Route for Next.js
 export async function GET(request: NextRequest, ctx: RequestContext) {

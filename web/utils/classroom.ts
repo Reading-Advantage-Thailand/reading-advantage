@@ -22,11 +22,12 @@ export async function getAuthenticatedClient(refreshToken?: string) {
   });
 
   // Auto-refresh token if expired
-  oauth2Client.on("tokens", (tokens) => {
+  oauth2Client.on("tokens", async (tokens) => {
     if (tokens.refresh_token) {
       console.log("New refresh token received:", tokens.refresh_token);
     }
-    cookies().set({
+    const cookieStore = await cookies();
+    cookieStore.set({
       name: "google_refresh_token",
       value: tokens.refresh_token || "",
       httpOnly: true,

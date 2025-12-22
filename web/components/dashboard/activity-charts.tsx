@@ -27,21 +27,14 @@ import {
 } from "@/components/ui/table";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
+import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CalendarHeatmap } from "@/components/ui/calendar-heatmap";
 
 interface ActivityHeatmapProps {
   className?: string;
@@ -63,8 +56,6 @@ interface TimelineEvent {
   user?: string;
 }
 
-// chartConfig will be constructed inside the component so labels can be localized
-
 export default function ActivityCharts({
   className,
   dateRange = "30d",
@@ -74,20 +65,16 @@ export default function ActivityCharts({
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
   // Pagination and filter states
   const [currentPage, setCurrentPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const itemsPerPage = 10;
-
-  const chartConfig: ChartConfig = {
-    activity: { label: t("charts.activity"), color: "hsl(var(--chart-1))" },
-    users: { label: t("charts.users"), color: "hsl(var(--chart-2))" },
-    sessions: { label: t("charts.sessions"), color: "hsl(var(--chart-3))" },
-  } as ChartConfig;
-
   const fetchData = async () => {
     try {
+      setError(null);
       setLoading(true);
 
       // Add timestamp to prevent caching
@@ -163,6 +150,9 @@ export default function ActivityCharts({
           heatmapRes.status,
           await heatmapRes.text()
         );
+        setError(
+          (prev) => prev || `${heatmapRes.status} ${heatmapRes.statusText}`
+        );
       }
 
       // Handle timeline response
@@ -173,6 +163,9 @@ export default function ActivityCharts({
           "❌ Failed to fetch timeline data:",
           timelineRes.status,
           await timelineRes.text()
+        );
+        setError(
+          (prev) => prev || `${timelineRes.status} ${timelineRes.statusText}`
         );
       }
 
@@ -333,14 +326,37 @@ export default function ActivityCharts({
       setHeatmapData([]);
       setTimelineEvents([]);
       setChartData([]);
+      setError(error instanceof Error ? error.message : "Unknown error");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     fetchData();
   }, [dateRange]);
+
+  const dailyChartConfig = {
+    activity: {
+      label: t("daily.activity") || "Activity",
+      color: "hsl(var(--chart-1))",
+    },
+  } satisfies ChartConfig;
+
+  const engagementChartConfig = {
+    users: {
+      label: t("engagement.users") || "Users",
+      color: "hsl(var(--chart-2))",
+    },
+    sessions: {
+      label: t("engagement.sessions") || "Sessions",
+      color: "hsl(var(--chart-3))",
+    },
+  } satisfies ChartConfig;
 
   const getHeatmapColor = (level: ActivityData["level"]) => {
     switch (level) {
@@ -404,7 +420,7 @@ export default function ActivityCharts({
     setCurrentPage(1);
   }, [typeFilter]);
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card>
@@ -435,11 +451,17 @@ export default function ActivityCharts({
         <p className="text-muted-foreground">
           {t("description")}
           {dateRange && (
-            <span className="ml-2 text-sm">(
-              {t(`timeframe.${dateRange}`)})
+            <span className="ml-2 text-sm">
+              ({t(`timeframe.${dateRange}`)})
             </span>
           )}
         </p>
+        {error && (
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            {t("errors.unableToLoad") || "Unable to load activity data."}{" "}
+            {error}
+          </p>
+        )}
       </div>
 
       {/* Activity Heatmap - Middle Section */}
@@ -458,188 +480,44 @@ export default function ActivityCharts({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {/* Heatmap Grid */}
-            <div className="w-full overflow-x-auto">
-              {(() => {
-                const totalDays = heatmapData.length;
-                const weeksToShow = Math.ceil(totalDays / 7);
-
-                // Use horizontal layout for short periods (≤90 days)
-                if (totalDays <= 90) {
-                  // Horizontal layout - single row
-                  const getCellSize = () => {
-                    if (totalDays <= 7) return "h-16 flex-1 min-w-[60px]"; // 7 days: very tall, flexible width
-                    if (totalDays <= 30) return "h-12 flex-1 min-w-[20px]"; // 30 days: tall, flexible
-                    return "h-10 w-3"; // 31-90 days: medium height, fixed width
-                  };
-
-                  const cellSize = getCellSize();
-                  const gapSize = totalDays <= 30 ? "gap-1.5" : "gap-1";
-
-                  return (
-                    <div className="space-y-3">
-                      {/* Single horizontal row */}
-                      <div className={`flex ${gapSize} items-end`}>
-                        {heatmapData.map((day, index) => (
-                          <div
-                            key={index}
-                            className={`${cellSize} rounded-sm ${getHeatmapColor(day.level)} cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all relative group`}
-                            title={`${day.date}: ${day.value} activities`}
-                          >
-                            {totalDays <= 7 && (
-                              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground whitespace-nowrap">
-                                {new Date(day.date).toLocaleDateString(
-                                  "en-US",
-                                  { weekday: "short" }
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Date labels for longer periods */}
-                      {totalDays > 7 && (
-                        <div className="flex justify-between text-xs text-muted-foreground px-1">
-                          <span>
-                            {heatmapData[0]?.date
-                              ? new Date(
-                                  heatmapData[0].date
-                                ).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                })
-                              : ""}
-                          </span>
-                          <span>
-                            {heatmapData[heatmapData.length - 1]?.date
-                              ? new Date(
-                                  heatmapData[heatmapData.length - 1].date
-                                ).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                })
-                              : ""}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-
-                // Grid layout for longer periods (>90 days)
-                const getCellSize = () => {
-                  if (weeksToShow <= 14) return "w-4 h-4"; // 91-98 days: medium
-                  return "w-3 h-3"; // 99+ days: small
-                };
-
-                const cellSize = getCellSize();
-                const gapSize = "gap-1";
-
-                return (
-                  <div className="flex flex-col gap-1 min-w-max">
-                    {/* Create 7 rows for days of week */}
-                    {Array.from({ length: 7 }).map((_, dayOfWeek) => (
-                      <div
-                        key={dayOfWeek}
-                        className={`flex ${gapSize} items-center`}
-                      >
-                        <div className="w-8 text-xs text-muted-foreground">
-                          {
-                            ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
-                              dayOfWeek
-                            ]
-                          }
-                        </div>
-                        <div className={`flex ${gapSize}`}>
-                          {Array.from({ length: weeksToShow }).map(
-                            (_, weekIndex) => {
-                              const dayIndex = weekIndex * 7 + dayOfWeek;
-                              const day = heatmapData[dayIndex];
-
-                              if (!day) {
-                                return (
-                                  <div key={weekIndex} className={cellSize} />
-                                );
-                              }
-
-                              return (
-                                <div
-                                  key={weekIndex}
-                                  className={`${cellSize} rounded-sm ${getHeatmapColor(day.level)} cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all`}
-                                  title={`${day.date}: ${day.value} activities`}
-                                />
-                              );
-                            }
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
+          <div className="w-full overflow-x-auto flex justify-center py-4">
+            <CalendarHeatmap
+              variantClassnames={[
+                "bg-muted",
+                "bg-green-300",
+                "bg-green-500",
+                "bg-green-600",
+              ]}
+              datesPerVariant={[
+                heatmapData
+                  .filter((d) => d.level === "low")
+                  .map((d) => new Date(d.date)),
+                heatmapData
+                  .filter((d) => d.level === "medium")
+                  .map((d) => new Date(d.date)),
+                heatmapData
+                  .filter((d) => d.level === "high")
+                  .map((d) => new Date(d.date)),
+                heatmapData
+                  .filter((d) => d.level === "very-high")
+                  .map((d) => new Date(d.date)),
+              ]}
+              numberOfMonths={
+                dateRange === "all" ? 12 : dateRange === "90d" ? 3 : 1
+              }
+              className="rounded-md border p-4"
+            />
+          </div>
+          {/* Legend */}
+          <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mt-4">
+            <span>{t("legend.less")}</span>
+            <div className="flex items-center gap-1">
+              <div className="h-4 w-4 rounded-sm bg-muted" />
+              <div className="h-4 w-4 rounded-sm bg-green-300" />
+              <div className="h-4 w-4 rounded-sm bg-green-500" />
+              <div className="h-4 w-4 rounded-sm bg-green-600" />
             </div>
-
-            {/* Month labels - Dynamic based on date range */}
-            {heatmapData.length > 90 && (
-              <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                {(() => {
-                  const firstDate = heatmapData[0]?.date
-                    ? new Date(heatmapData[0].date)
-                    : new Date();
-                  const lastDate = heatmapData[heatmapData.length - 1]?.date
-                    ? new Date(heatmapData[heatmapData.length - 1].date)
-                    : new Date();
-
-                  const months = [];
-                  const currentMonth = new Date(firstDate);
-
-                  while (currentMonth <= lastDate) {
-                    months.push(
-                      currentMonth.toLocaleDateString("en-US", {
-                        month: "short",
-                      })
-                    );
-                    currentMonth.setMonth(currentMonth.getMonth() + 1);
-                  }
-
-                  return months.map((month, index) => (
-                    <span key={index}>{month}</span>
-                  ));
-                })()}
-              </div>
-            )}
-
-            {/* Legend */}
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{t("legend.less")}</span>
-              <div className="flex items-center gap-1">
-                {(() => {
-                  const totalDays = heatmapData.length;
-                  // Adjust legend size based on layout
-                  const legendSize = totalDays <= 30 ? "w-4 h-4" : "w-3 h-3";
-
-                  return (
-                    <>
-                      <div
-                        className={`${legendSize} rounded-sm bg-gray-200 dark:bg-gray-700`}
-                      />
-                      <div
-                        className={`${legendSize} rounded-sm bg-green-300`}
-                      />
-                      <div
-                        className={`${legendSize} rounded-sm bg-green-500`}
-                      />
-                      <div
-                        className={`${legendSize} rounded-sm bg-green-600`}
-                      />
-                    </>
-                  );
-                })()}
-              </div>
-              <span>{t("legend.more")}</span>
-            </div>
+            <span>{t("legend.more")}</span>
           </div>
         </CardContent>
       </Card>
@@ -652,21 +530,41 @@ export default function ActivityCharts({
             <CardDescription>{t("daily.description")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig}>
-              <AreaChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Area
-                  type="monotone"
-                  dataKey="activity"
-                  stroke="var(--color-activity)"
-                  fill="var(--color-activity)"
-                  fillOpacity={0.3}
-                />
-              </AreaChart>
-            </ChartContainer>
+            {chartData.length === 0 ? (
+              <div className="flex h-64 items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+                {error
+                  ? t("errors.unableToLoad") || "Unable to load data."
+                  : t("daily.empty") || "No daily activity for this range."}
+              </div>
+            ) : (
+              <ChartContainer
+                config={dailyChartConfig}
+                className="h-[300px] w-full"
+              >
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                  />
+                  <YAxis tickLine={false} axisLine={false} />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent />}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="activity"
+                    stroke="var(--color-activity)"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ChartContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -676,16 +574,50 @@ export default function ActivityCharts({
             <CardDescription>{t("engagement.description")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="users" fill="var(--color-users)" />
-                <Bar dataKey="sessions" fill="var(--color-sessions)" />
-              </BarChart>
-            </ChartContainer>
+            {chartData.length === 0 ? (
+              <div className="flex h-64 items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+                {error
+                  ? t("errors.unableToLoad") || "Unable to load data."
+                  : t("engagement.empty") ||
+                    "No engagement data for this range."}
+              </div>
+            ) : (
+              <ChartContainer
+                config={engagementChartConfig}
+                className="h-[300px] w-full"
+              >
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                  />
+                  <YAxis tickLine={false} axisLine={false} />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent />}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="users"
+                    stroke="var(--color-users)"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="sessions"
+                    stroke="var(--color-sessions)"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ChartContainer>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -706,8 +638,12 @@ export default function ActivityCharts({
                 <SelectItem value="all">{t("timeline.allTypes")}</SelectItem>
                 <SelectItem value="reading">{t("types.reading")}</SelectItem>
                 <SelectItem value="practice">{t("types.practice")}</SelectItem>
-                <SelectItem value="assessment">{t("types.assessment")}</SelectItem>
-                <SelectItem value="achievement">{t("types.achievement")}</SelectItem>
+                <SelectItem value="assessment">
+                  {t("types.assessment")}
+                </SelectItem>
+                <SelectItem value="achievement">
+                  {t("types.achievement")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -719,20 +655,28 @@ export default function ActivityCharts({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]">{t("timeline.table.type")}</TableHead>
+                    <TableHead className="w-[50px]">
+                      {t("timeline.table.type")}
+                    </TableHead>
                     <TableHead>{t("timeline.table.activity")}</TableHead>
-                    <TableHead className="hidden md:table-cell">{t("timeline.table.description")}</TableHead>
-                    {timelineEvents.some(e => e.user) && (
-                      <TableHead className="hidden lg:table-cell">{t("timeline.table.user")}</TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      {t("timeline.table.description")}
+                    </TableHead>
+                    {timelineEvents.some((e) => e.user) && (
+                      <TableHead className="hidden lg:table-cell">
+                        {t("timeline.table.user")}
+                      </TableHead>
                     )}
-                    <TableHead className="text-right">{t("timeline.table.time")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("timeline.table.time")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedEvents.length === 0 ? (
                     <TableRow>
-                      <TableCell 
-                        colSpan={timelineEvents.some(e => e.user) ? 5 : 4} 
+                      <TableCell
+                        colSpan={timelineEvents.some((e) => e.user) ? 5 : 4}
                         className="text-center py-8 text-muted-foreground"
                       >
                         {t("timeline.empty")}
@@ -742,12 +686,17 @@ export default function ActivityCharts({
                     paginatedEvents.map((event) => (
                       <TableRow key={event.id} className="hover:bg-muted/50">
                         <TableCell>
-                          <div className="text-2xl">{getEventIcon(event.type)}</div>
+                          <div className="text-2xl">
+                            {getEventIcon(event.type)}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-1">
                             <div className="font-medium">{event.title}</div>
-                            <Badge variant="secondary" className="text-xs w-fit">
+                            <Badge
+                              variant="secondary"
+                              className="text-xs w-fit"
+                            >
                               {t(`types.${event.type}`)}
                             </Badge>
                           </div>
@@ -757,7 +706,7 @@ export default function ActivityCharts({
                             {event.description}
                           </p>
                         </TableCell>
-                        {timelineEvents.some(e => e.user) && (
+                        {timelineEvents.some((e) => e.user) && (
                           <TableCell className="hidden lg:table-cell">
                             <p className="text-sm text-muted-foreground">
                               {event.user || "-"}
@@ -782,7 +731,10 @@ export default function ActivityCharts({
                 <p className="text-sm text-muted-foreground">
                   {t("timeline.pagination.showing", {
                     start: (currentPage - 1) * itemsPerPage + 1,
-                    end: Math.min(currentPage * itemsPerPage, filteredEvents.length),
+                    end: Math.min(
+                      currentPage * itemsPerPage,
+                      filteredEvents.length
+                    ),
                     total: filteredEvents.length,
                   })}
                 </p>
@@ -798,13 +750,16 @@ export default function ActivityCharts({
                   </Button>
                   <div className="flex items-center gap-1">
                     <span className="text-sm">
-                      {t("timeline.pagination.page")} {currentPage} {t("timeline.pagination.of")} {totalPages}
+                      {t("timeline.pagination.page")} {currentPage}{" "}
+                      {t("timeline.pagination.of")} {totalPages}
                     </span>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
                     disabled={currentPage === totalPages}
                   >
                     {t("timeline.pagination.next")}

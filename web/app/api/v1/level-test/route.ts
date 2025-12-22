@@ -6,8 +6,13 @@ import { getServerSession } from "next-auth";
 import fs from "fs";
 import path from "path";
 import { ScoreRange } from "@/types/constants";
+import { NextRequest } from "next/server";
 
-export async function GET(req: Request, res: Response) {
+interface RequestContext {
+  params: Promise<Record<string, never>>;
+}
+
+export async function GET(req: NextRequest, ctx: RequestContext) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -27,7 +32,6 @@ export async function GET(req: Request, res: Response) {
 
     const fileContents = fs.readFileSync(filePath, "utf8");
     const dataObject = JSON.parse(fileContents)?.language_placement_test;
-
 
     return new Response(
       JSON.stringify({

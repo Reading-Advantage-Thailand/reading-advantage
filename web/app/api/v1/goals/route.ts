@@ -11,7 +11,7 @@ import {
 } from "@/server/controllers/goals-controller";
 
 interface RequestContext {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -21,10 +21,10 @@ router.use(logRequest);
 router.use(protect);
 
 // GET /api/v1/goals - Get user's goals
-router.get(getUserGoals);
+router.get(getUserGoals) as any;
 
 // POST /api/v1/goals - Create a new goal
-router.post(createGoal);
+router.post(createGoal) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

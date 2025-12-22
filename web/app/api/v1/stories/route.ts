@@ -7,9 +7,7 @@ import { createEdgeRouter } from "next-connect";
 import { NextRequest, NextResponse } from "next/server";
 
 interface ExtendedNextRequest {
-  params: {
-    storyId: string;
-  };
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
@@ -19,7 +17,7 @@ router.use(logRequest);
 router.use(protect);
 
 //GET /api/v1/stories
-router.get(getAllStories);
+router.get(getAllStories) as any;
 
 export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);

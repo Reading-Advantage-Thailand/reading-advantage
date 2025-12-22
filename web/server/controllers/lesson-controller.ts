@@ -3,15 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export interface Context {
-  params: {
+  params: Promise<{
     userId: string;
-  };
+  }>;
 }
 
 export async function getLessonStatus(
   req: NextRequest,
-  { params: { userId } }: Context
+  ctx: Context
 ) {
+  const { userId } = await ctx.params;
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
 
@@ -64,8 +65,9 @@ export async function getLessonStatus(
 
 export async function postLessonStatus(
   req: NextRequest,
-  { params: { userId } }: Context
+  ctx: Context
 ) {
+  const { userId } = await ctx.params;
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
 
@@ -184,8 +186,9 @@ export async function postLessonStatus(
 
 export async function putLessonPhaseStatus(
   req: NextRequest,
-  { params: { userId } }: Context
+  ctx: Context
 ) {
+  const { userId } = await ctx.params;
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
     const { phase, status, elapsedTime } = await req.json();
@@ -283,8 +286,9 @@ export async function putLessonPhaseStatus(
 
 export async function getUserQuizPerformance(
   req: NextRequest,
-  { params: { userId } }: Context
+  ctx: Context
 ) {
+  const { userId } = await ctx.params;
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
 
@@ -372,15 +376,16 @@ export async function getUserQuizPerformance(
 }
 
 interface LessonWordsContext {
-  params: {
+  params: Promise<{
     articleId: string;
-  };
+  }>;
 }
 
 export async function getLessonWords(
   req: NextRequest,
-  { params: { articleId } }: LessonWordsContext
+  ctx: LessonWordsContext
 ) {
+  const { articleId } = await ctx.params;
   try {
     const extReq = req as ExtendedNextRequest;
     const userId = extReq.session?.user?.id;
@@ -458,8 +463,9 @@ export async function getLessonWords(
 
 export async function updateLessonWord(
   req: NextRequest,
-  { params: { wordId } }: { params: { wordId: string } }
+  ctx: { params: Promise<{ wordId: string }> }
 ) {
+  const { wordId } = await ctx.params;
   try {
     const extReq = req as ExtendedNextRequest;
     const userId = extReq.session?.user?.id;
@@ -529,8 +535,9 @@ export async function updateLessonWord(
 
 export async function deleteLessonWord(
   req: NextRequest,
-  { params: { wordId } }: { params: { wordId: string } }
+  ctx: { params: Promise<{ wordId: string }> }
 ) {
+  const { wordId } = await ctx.params;
   try {
     const extReq = req as ExtendedNextRequest;
     const userId = extReq.session?.user?.id;
@@ -579,15 +586,16 @@ export async function deleteLessonWord(
 }
 
 interface LessonSentencesContext {
-  params: {
+  params: Promise<{
     articleId: string;
-  };
+  }>;
 }
 
 export async function getLessonSentences(
   req: NextRequest,
-  { params: { articleId } }: LessonSentencesContext
+  ctx: LessonSentencesContext
 ) {
+  const { articleId } = await ctx.params;
   try {
     const extReq = req as ExtendedNextRequest;
     const userId = extReq.session?.user?.id;
@@ -711,8 +719,9 @@ export async function getLessonSentences(
 
 export async function updateLessonSentence(
   req: NextRequest,
-  { params: { sentenceId } }: { params: { sentenceId: string } }
+  ctx: { params: Promise<{ sentenceId: string }> }
 ) {
+  const { sentenceId } = await ctx.params;
   try {
     const extReq = req as ExtendedNextRequest;
     const userId = extReq.session?.user?.id;
@@ -782,8 +791,9 @@ export async function updateLessonSentence(
 
 export async function deleteLessonSentence(
   req: NextRequest,
-  { params: { sentenceId } }: { params: { sentenceId: string } }
+  ctx: { params: Promise<{ sentenceId: string }> }
 ) {
+  const { sentenceId } = await ctx.params;
   try {
     const extReq = req as ExtendedNextRequest;
     const userId = extReq.session?.user?.id;

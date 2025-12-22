@@ -17,7 +17,7 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 
 interface ExtendedNextRequest {
-  params: Record<string, never>;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
@@ -27,10 +27,10 @@ router.use(logRequest);
 router.use(restrictAccessKey);
 
 // GET: Health check and status (for monitoring)
-router.get(getAIInsightsRefreshStatus);
+router.get(getAIInsightsRefreshStatus) as any;
 
 // POST: Refresh all AI insights
-router.post(refreshAIInsightsAutomated);
+router.post(refreshAIInsightsAutomated) as any;
 
 export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);

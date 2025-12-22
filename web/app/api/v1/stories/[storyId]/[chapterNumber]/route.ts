@@ -5,22 +5,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { getChapter } from "@/server/controllers/stories-controller";
 import { updateAverageRating } from "@/server/controllers/stories-controller";
 
-interface ExtendedNextRequest {
-  params: {
+interface RequestContext {
+  params: Promise<{
     storyId: string;
     chapterNumber: string;
-  };
+  }>;
 }
 
-const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
+const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getChapter);
-router.put(updateAverageRating)
+router.get(getChapter) as any;
+router.put(updateAverageRating) as any
 
-export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
-  const result = await router.run(request, ctx);
+export async function GET(request: NextRequest, ctx: RequestContext) {
+  const result = await router.run(request, ctx) as any;
   if (result instanceof NextResponse) {
     return result;
   }
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
   throw new Error("Expected a NextResponse from router.run");
 }
 
-export async function PUT(request: NextRequest, ctx: ExtendedNextRequest) {
+export async function PUT(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;

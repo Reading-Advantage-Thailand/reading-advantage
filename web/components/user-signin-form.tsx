@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
@@ -182,12 +183,12 @@ export function UserSignInForm({ className, ...props }: UserAuthFormProps) {
             )}
             {t('pages.signInForm.signIn')}
           </Button>
-          <a
+          <Link
             href="/auth/forgot-password"
             className="text-sm text-muted-foreground hover:text-blue-500"
           >
             {t('pages.signInForm.forgotPassword')}
-          </a>
+          </Link>
         </div>
       </form>
       <div className="relative">

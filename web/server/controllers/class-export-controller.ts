@@ -9,9 +9,9 @@ import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     classroomId: string;
-  };
+  }>;
 }
 
 /**
@@ -66,7 +66,7 @@ export async function exportClassData(
   ctx: RequestContext
 ) {
   try {
-    const { classroomId } = ctx.params;
+    const { classroomId } = await ctx.params;
     const session = req.session;
 
     if (!session?.user) {

@@ -5,16 +5,16 @@ import { protect } from "@/server/controllers/auth-controller";
 import { getStudentData } from "@/server/controllers/user-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getStudentData);
+router.get(getStudentData) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

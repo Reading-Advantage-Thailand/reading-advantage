@@ -71,7 +71,7 @@ export default function LessonSentenseFlashCard({
   );
   const router = useRouter();
   const controlRef = useRef<any>({});
-  const currentCardFlipRef = useRef<any>();
+  const currentCardFlipRef = useRef<any>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [sentences, setSentences] = useState<Sentence[]>([]);
@@ -87,7 +87,7 @@ export default function LessonSentenseFlashCard({
       const data = await res.json();
       console.log("Fetched sentences data:", data);
 
-      const startOfDay = date_scheduler(new Date(), 0, true);
+      const startOfDay = dayjs().startOf('day').toDate();
       console.log("Start of day:", startOfDay);
 
       const filteredData = data.sentences

@@ -47,7 +47,8 @@ export const fetchMoreArticles = async (
   const searchTerm = searchTermParam;
 
   try {
-    const headersObject = Object.fromEntries(headers().entries());
+    const headersList = await headers();
+    const headersObject = Object.fromEntries(headersList.entries());
     delete headersObject["content-length"]; // Remove 'content-length' if found
     const queryParams = new URLSearchParams({
       lastDocId: lastDocId || "",

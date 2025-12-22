@@ -18,9 +18,9 @@ const genresNonfiction = { Genres: genreData.nonfiction };
 // GET article by id
 // GET /api/articles/[id]
 interface RequestContext {
-  params: {
+  params: Promise<{
     article_id: string;
-  };
+  }>;
 }
 
 interface GenreCount {
@@ -354,9 +354,10 @@ export async function getArticles(req: ExtendedNextRequest) {
 
 export async function getArticleById(
   req: ExtendedNextRequest,
-  { params: { article_id } }: RequestContext
+  ctx: RequestContext
 ) {
   try {
+    const { article_id } = await ctx.params;
     const userId = req.session?.user.id as string;
 
     // Get article from Prisma
@@ -479,9 +480,10 @@ export async function getArticleById(
 
 export async function deleteArticle(
   req: ExtendedNextRequest,
-  { params: { article_id } }: RequestContext
+  ctx: { params: Promise<{ article_id: string }> }
 ) {
   try {
+    const { article_id } = await ctx.params;
     // Check if article exists
     const article = await prisma.article.findUnique({
       where: { id: article_id },
@@ -901,16 +903,17 @@ function getGoogleTranslateCode(languageType: string): string {
 // POST translate article summary
 // POST /api/v1/articles/[article_id]/translate
 interface TranslateRequestContext {
-  params: {
+  params: Promise<{
     article_id: string;
-  };
+  }>;
 }
 
 export const translateArticleSummary = async (
   request: NextRequest,
-  { params: { article_id } }: TranslateRequestContext
+  ctx: TranslateRequestContext
 ) => {
   try {
+    const { article_id } = await ctx.params;
     const { targetLanguage } = await request.json();
 
     if (!Object.values(LanguageType).includes(targetLanguage)) {

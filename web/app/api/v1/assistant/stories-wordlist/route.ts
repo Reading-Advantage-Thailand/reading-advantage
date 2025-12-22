@@ -2,21 +2,23 @@ import { protect } from "@/server/controllers/auth-controller";
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
-import { getChapterWordlist } from "@/server/controllers/stories-assistant-controller";
 
 interface RequestContext {
-  params: {
-    storyId: string;
-    chapterNumber: string;
-    id: string;
-  };
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.post(getChapterWordlist);
+
+// This base route doesn't handle POST - use /[storyId]/[chapterNumber] instead
+router.post(() => {
+  return NextResponse.json(
+    { message: "Please use /[storyId]/[chapterNumber] endpoint" },
+    { status: 400 }
+  );
+}) as any;
 
 export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

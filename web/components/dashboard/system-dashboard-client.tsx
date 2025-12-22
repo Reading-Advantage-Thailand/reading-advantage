@@ -108,9 +108,9 @@ export default function SystemDashboardClient() {
   // Helper function to format activity type
   const formatActivityType = (type: string) => {
     return type
-      .split('_')
-      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-      .join(' ');
+      .split("_")
+      .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(" ");
   };
 
   // Helper function to format timestamp to relative time
@@ -122,21 +122,17 @@ export default function SystemDashboardClient() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffMins < 1) return "just now";
+    if (diffMins < 60)
+      return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
   };
 
   // Helper function to get activity color
   const getActivityColor = (type: string, index: number) => {
-    const colors = [
-      'emerald',
-      'blue',
-      'amber',
-      'violet',
-      'rose'
-    ];
+    const colors = ["emerald", "blue", "amber", "violet", "rose"];
     return colors[index % colors.length];
   };
 
@@ -547,35 +543,47 @@ export default function SystemDashboardClient() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {dashboardData?.recentActivities && dashboardData.recentActivities.length > 0 ? (
-                          dashboardData.recentActivities.map((activity, index) => {
-                            const color = getActivityColor(activity.type, index);
-                            return (
-                              <div
-                                key={activity.id}
-                                className={`flex items-start gap-4 p-3 rounded-lg hover:bg-${color}-500/5 dark:hover:bg-${color}-400/5 transition-colors border border-transparent hover:border-${color}-500/20 dark:hover:border-${color}-400/20`}
-                              >
-                                <div className="flex-shrink-0 mt-1">
-                                  <div className={`w-2 h-2 rounded-full bg-${color}-500 dark:bg-${color}-400`} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium">
-                                    {activity.userName || 'Unknown User'} - {formatActivityType(activity.type)}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    {formatRelativeTime(activity.timestamp)}
-                                  </p>
-                                </div>
-                                {activity.completed && (
-                                  <div className="flex-shrink-0">
-                                    <Badge variant="outline" className="text-xs">
-                                      Completed
-                                    </Badge>
+                        {dashboardData?.recentActivities &&
+                        dashboardData.recentActivities.length > 0 ? (
+                          dashboardData.recentActivities.map(
+                            (activity, index) => {
+                              const color = getActivityColor(
+                                activity.type,
+                                index
+                              );
+                              return (
+                                <div
+                                  key={activity.id}
+                                  className={`flex items-start gap-4 p-3 rounded-lg hover:bg-${color}-500/5 dark:hover:bg-${color}-400/5 transition-colors border border-transparent hover:border-${color}-500/20 dark:hover:border-${color}-400/20`}
+                                >
+                                  <div className="flex-shrink-0 mt-1">
+                                    <div
+                                      className={`w-2 h-2 rounded-full bg-${color}-500 dark:bg-${color}-400`}
+                                    />
                                   </div>
-                                )}
-                              </div>
-                            );
-                          })
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium">
+                                      {activity.userName || "Unknown User"} -{" "}
+                                      {formatActivityType(activity.type)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {formatRelativeTime(activity.timestamp)}
+                                    </p>
+                                  </div>
+                                  {activity.completed && (
+                                    <div className="flex-shrink-0">
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        Completed
+                                      </Badge>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            }
+                          )
                         ) : (
                           <div className="text-center py-8">
                             <p className="text-sm text-muted-foreground">

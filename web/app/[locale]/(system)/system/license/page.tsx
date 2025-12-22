@@ -21,6 +21,7 @@ import { redirect } from "next/navigation";
 import UnauthorizedPage from "@/components/shared/unauthorized-page";
 
 async function getAllLicenses() {
+  const requestHeaders = await headers();
   const response = await licenseService.licenses.fetchAllDocs(
     {
       select: [
@@ -33,7 +34,7 @@ async function getAllLicenses() {
         "key",
       ],
     },
-    headers()
+    requestHeaders
   );
   return response.data;
 }

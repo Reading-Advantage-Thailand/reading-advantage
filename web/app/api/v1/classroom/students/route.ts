@@ -5,9 +5,7 @@ import { protect } from "@/server/controllers/auth-controller";
 import { getClassroomStudent } from "@/server/controllers/classroom-controller";
 
 interface RequestContext {
-  params: {
-    classroomId: string;
-  };
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -17,7 +15,7 @@ router.use(logRequest);
 router.use(protect);
 // router.use(restrictAccess);
 
-router.get(getClassroomStudent);
+router.get(getClassroomStudent) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

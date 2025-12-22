@@ -5,9 +5,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getUserQuizPerformance } from "@/server/controllers/lesson-controller";
 
 export interface RequestContext {
-  params: {
+  params: Promise<{
     userId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -17,7 +17,7 @@ router.use(logRequest);
 router.use(protect);
 
 // API: GET /api/v1/userId/lesson?articleId=...
-router.get(getUserQuizPerformance);
+router.get(getUserQuizPerformance) as any;
 
 // Export API Route for Next.js
 export async function GET(request: NextRequest, ctx: RequestContext) {

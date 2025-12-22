@@ -9,9 +9,9 @@ import { createEdgeRouter } from "next-connect";
 import { NextRequest } from "next/server";
 
 export interface Context {
-  params?: {
+  params: Promise<{
     articleId?: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, Context>();
@@ -20,7 +20,7 @@ const router = createEdgeRouter<NextRequest, Context>();
 router.use(logRequest);
 router.use(protect);
 
-router.put(updateUserArticle);
+router.put(updateUserArticle) as any;
 
 export const PUT = (request: NextRequest, ctx: Context) =>
   handleRequest(router, request, ctx);

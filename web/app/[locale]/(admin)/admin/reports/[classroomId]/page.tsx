@@ -8,8 +8,9 @@ import { log } from "console";
 export default async function AdminClassroomReportPage({
   params,
 }: {
-  params: { classroomId: string };
+  params: Promise<{ classroomId: string }>;
 }) {
+  const { classroomId } = await params;
   const user = await getCurrentUser();
 
   if (!user) {
@@ -24,11 +25,12 @@ export default async function AdminClassroomReportPage({
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+      const requestHeaders = await headers();
       const res = await fetch(
-        `${baseUrl}/api/v1/classroom/${params.classroomId}`,
+        `${baseUrl}/api/v1/classroom/${classroomId}`,
         {
           method: "GET",
-          headers: headers(),
+          headers: requestHeaders,
           cache: "no-store",
         }
       );
@@ -73,7 +75,7 @@ export default async function AdminClassroomReportPage({
       <AdminClassroomReport
         classroom={data.classroom}
         students={data.students}
-        classroomId={params.classroomId}
+        classroomId={classroomId}
       />
     </div>
   );

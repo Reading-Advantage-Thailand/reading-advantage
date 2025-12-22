@@ -94,7 +94,7 @@ export default function ManageTab({ userId }: Props) {
     try {
       const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
-      const startOfDay = date_scheduler(new Date(), 0, true);
+      const startOfDay = dayjs().startOf('day').toDate();
       // const filteredData = await data.sentences
       //   .filter((record: Sentence) => {
       //     const dueDate = new Date(record.due);

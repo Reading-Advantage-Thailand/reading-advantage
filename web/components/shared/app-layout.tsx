@@ -45,11 +45,12 @@ export default async function AppLayout({
     if (!user.license_id) return [];
     
     try {
+      const headersList = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/ranking/${user.license_id}`,
         { 
           method: "GET", 
-          headers: headers(),
+          headers: headersList,
           cache: 'no-store'
         }
       );

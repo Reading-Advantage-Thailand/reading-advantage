@@ -12,9 +12,9 @@ import { createEdgeRouter } from "next-connect";
 import { NextRequest, NextResponse } from "next/server";
 
 export interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -24,11 +24,11 @@ router.use(logRequest);
 
 // /api/license/[id]
 // GET and DELETE require SYSTEM role
-router.get(restrictTo(Role.SYSTEM), getLicense);
-router.delete(restrictTo(Role.SYSTEM), deleteLicense);
+router.get(restrictTo(Role.SYSTEM) as any, getLicense) as any;
+router.delete(restrictTo(Role.SYSTEM) as any, deleteLicense) as any;
 
 // PATCH (activate license) allows ADMIN, TEACHER, and STUDENT
-router.patch(restrictTo(Role.ADMIN, Role.TEACHER, Role.STUDENT), activateLicense);
+router.patch(restrictTo(Role.ADMIN, Role.TEACHER, Role.STUDENT) as any, activateLicense) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

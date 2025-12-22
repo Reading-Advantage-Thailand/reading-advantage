@@ -14,10 +14,10 @@ import { generateWordList } from "../utils/generators/word-list-generator";
 import { prisma } from "@/lib/prisma";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     storyId: string;
     chapterNumber: string;
-  };
+  }>;
 }
 
 const createChatbotSchema = z.object({
@@ -128,9 +128,10 @@ export async function getFeedbackWritter(res: object) {
 
 export async function getChapterWordlist(
   req: ExtendedNextRequest,
-  { params: { storyId, chapterNumber } }: RequestContext
+  ctx: RequestContext
 ) {
   try {
+    const { storyId, chapterNumber } = await ctx.params;
     console.log(`Starting getChapterWordlist for storyId: ${storyId}, chapterNumber: ${chapterNumber}`);
     const { chapter } = await req.json();
     console.log(`Received chapter data: ${JSON.stringify(chapter)}`);

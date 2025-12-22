@@ -22,11 +22,12 @@ export default async function AdminReportsPage() {
 
   const ClassesData = async () => {
     try {
+      const requestHeaders = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom`,
         { 
           method: "GET", 
-          headers: headers(),
+          headers: requestHeaders,
           cache: 'no-store'
         }
       );
@@ -48,9 +49,10 @@ export default async function AdminReportsPage() {
     }
     
     try {
+      const requestHeaders = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/licenses`,
-        { method: "GET", headers: headers(), cache: 'no-store' }
+        { method: "GET", headers: requestHeaders, cache: 'no-store' }
       );
       const fetchdata = await res.json();
       return fetchdata.data || [];

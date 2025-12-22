@@ -5,17 +5,17 @@ import { protect } from "@/server/controllers/auth-controller";
 import { updateLessonSentence, deleteLessonSentence } from "@/server/controllers/lesson-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     sentenceId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.put(updateLessonSentence);
-router.delete(deleteLessonSentence);
+router.put(updateLessonSentence) as any;
+router.delete(deleteLessonSentence) as any;
 
 export async function PUT(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

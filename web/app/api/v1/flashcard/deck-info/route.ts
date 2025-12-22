@@ -8,7 +8,7 @@ const router = createEdgeRouter<NextRequest, {}>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getFlashcardDeckInfo);
+router.get(getFlashcardDeckInfo) as any;
 
 export async function GET(request: NextRequest) {
   const result = await router.run(request, {});

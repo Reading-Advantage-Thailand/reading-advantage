@@ -13,10 +13,10 @@ import { openai, openaiModel } from "@/utils/openai";
 import { generateWordList } from "../utils/generators/word-list-generator";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     article_id: string;
     id: string;
-  };
+  }>;
 }
 
 // Define the schema for the request body
@@ -213,8 +213,9 @@ export async function getWordlist(req: ExtendedNextRequest) {
 
 export async function postFlashCard(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const json = await req.json();
 
@@ -260,6 +261,8 @@ export async function postFlashCard(
         elapsed_days,
         scheduled_days,
         page,
+        word, // Exclude word field - not in UserSentenceRecord schema
+        update_score, // Exclude snake_case version - will map to camelCase
         ...updateData
       } = json;
 
@@ -268,6 +271,7 @@ export async function postFlashCard(
         ...updateData,
         elapsedDays: json.elapsed_days,
         scheduledDays: json.scheduled_days,
+        updateScore: json.update_score, // Map snake_case to camelCase
       };
 
       await prisma.userSentenceRecord.update({

@@ -1,18 +1,21 @@
 /**
  * Manual refresh endpoint for system administrators
- * 
+ *
  * This endpoint requires SYSTEM role authentication
  * Used for manual/on-demand refresh of materialized views
  */
 
-import { refreshMaterializedViews, getMaterializedViewsStatus } from "@/server/controllers/system-controller";
+import {
+  refreshMaterializedViews,
+  getMaterializedViewsStatus,
+} from "@/server/controllers/system-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { protect } from "@/server/controllers/auth-controller";
 
 interface ExtendedNextRequest {
-  params: Record<string, never>;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
@@ -22,10 +25,10 @@ router.use(logRequest);
 router.use(protect);
 
 // GET: Get status of all materialized views
-router.get(getMaterializedViewsStatus);
+router.get(getMaterializedViewsStatus) as any;
 
 // POST: Refresh all materialized views
-router.post(refreshMaterializedViews);
+router.post(refreshMaterializedViews) as any;
 
 export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);

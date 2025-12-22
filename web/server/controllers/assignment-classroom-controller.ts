@@ -7,10 +7,10 @@ import { ExtendedNextRequest } from "./auth-controller";
  */
 export async function getClassroomAssignments(
   req: ExtendedNextRequest,
-  { params }: { params: { classroomId: string } }
+  ctx: { params: Promise<{ classroomId: string }> }
 ) {
+  const { classroomId } = await ctx.params;
   try {
-    const { classroomId } = params;
 
     if (!classroomId) {
       return NextResponse.json(
@@ -43,10 +43,10 @@ export async function getClassroomAssignments(
  */
 export async function getAssignmentStudents(
   req: ExtendedNextRequest,
-  { params }: { params: { classroomId: string; assignmentId: string } }
+  ctx: { params: Promise<{ classroomId: string; assignmentId: string }> }
 ) {
+  const { classroomId, assignmentId } = await ctx.params;
   try {
-    const { classroomId, assignmentId } = params;
 
     if (!classroomId || !assignmentId) {
       return NextResponse.json(
@@ -108,10 +108,10 @@ export async function getAssignmentStudents(
  */
 export async function sendClassroomAssignmentNotifications(
   req: ExtendedNextRequest,
-  { params }: { params: { classroomId: string } }
+  ctx: { params: Promise<{ classroomId: string }> }
 ) {
+  const { classroomId } = await ctx.params;
   try {
-    const { classroomId } = params;
     const user = req.session?.user;
 
     if (!user?.id) {
@@ -225,10 +225,10 @@ export async function sendClassroomAssignmentNotifications(
  */
 export async function getClassroomNotificationHistory(
   req: ExtendedNextRequest,
-  { params }: { params: { classroomId: string } }
+  ctx: { params: Promise<{ classroomId: string }> }
 ) {
+  const { classroomId } = await ctx.params;
   try {
-    const { classroomId } = params;
 
     if (!classroomId) {
       return NextResponse.json(
