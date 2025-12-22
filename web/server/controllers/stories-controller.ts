@@ -239,9 +239,19 @@ export async function getAllStories(req: ExtendedNextRequest) {
       );
     }
 
-    // Build where clause with user level filter
-    const whereClause: any = {
-      OR: [
+    const date = searchParams.get("date");
+    const rating = searchParams.get("rating");
+
+    const levelParam = searchParams.get("level");
+    const levels = levelParam ? levelParam.split(",") : [];
+
+    // Build where clause
+    let whereClause: any = {};
+
+    if (levels.length > 0) {
+      whereClause.cefrLevel = { in: levels };
+    } else {
+      whereClause.OR = [
         {
           raLevel: {
             gte: userLevel - 3, // >= userLevel - 3
@@ -250,10 +260,11 @@ export async function getAllStories(req: ExtendedNextRequest) {
         },
         { raLevel: { lte: userLevel } },
         { raLevel: null },
-      ],
-    };
+      ];
+    }
     if (genre) whereClause.genre = genre;
     if (subgenre) whereClause.subgenre = subgenre;
+    if (rating) whereClause.averageRating = { gte: parseFloat(rating) };
 
     // Get total count
     const totalCount = await prisma.story.count({ where: whereClause });
@@ -264,7 +275,7 @@ export async function getAllStories(req: ExtendedNextRequest) {
       include: {
         chapters: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: date === "asc" ? "asc" : "desc" },
       skip: (page - 1) * limit,
       take: limit,
     });
