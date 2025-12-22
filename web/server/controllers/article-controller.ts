@@ -442,6 +442,52 @@ export async function getArticleById(
       );
     }
 
+    // Check if article has timepoints but missing sentences field
+    let articleSentences = article.sentences;
+
+    if (article.sentences && Array.isArray(article.sentences)) {
+      const timepoints = article.sentences as any[];
+      // Check if any timepoint is missing the sentences field
+      const hasMissingSentences = timepoints.some((tp) => !tp.sentences);
+
+      if (hasMissingSentences && article.passage) {
+        console.log(
+          `Article ${article_id} has timepoints without sentences field. Regenerating...`
+        );
+
+        try {
+          // Import generateAudio dynamically to avoid circular dependencies
+          const { generateAudio } =
+            await import("@/server/utils/generators/audio-generator");
+
+          // Regenerate audio with sentences
+          const newTimepoints = await generateAudio({
+            passage: article.passage,
+            articleId: article.id,
+          });
+
+          // Update the article with new timepoints
+          await prisma.article.update({
+            where: { id: article_id },
+            data: {
+              sentences: newTimepoints,
+            },
+          });
+
+          articleSentences = newTimepoints;
+          console.log(
+            `Successfully regenerated sentences for article ${article_id}`
+          );
+        } catch (error) {
+          console.error(
+            `Failed to regenerate sentences for article ${article_id}:`,
+            error
+          );
+          // Continue with existing data if regeneration fails
+        }
+      }
+    }
+
     // Format article to match expected structure
     const formattedArticle = {
       id: article.id,
@@ -457,7 +503,7 @@ export async function getArticleById(
       average_rating: article.rating || 0,
       audio_url: article.audioUrl,
       created_at: article.createdAt,
-      timepoints: article.sentences || {},
+      timepoints: articleSentences || {},
       translatedPassage: article.translatedPassage,
       translatedSummary: article.translatedSummary,
       read_count: 0, // This field might need to be calculated differently

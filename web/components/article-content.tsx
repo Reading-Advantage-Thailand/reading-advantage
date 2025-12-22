@@ -84,10 +84,8 @@ export default function ArticleContent({
   userId,
 }: Props) {
   const t = useScopedI18n("components.articleContent");
-  const sentences =
-    article.timepoints && article.timepoints.length > 0
-      ? article.timepoints.map((timepoint) => timepoint.sentences)
-      : splitTextIntoSentences(article.passage, true);
+  // Always split passage into sentences
+  const sentences = splitTextIntoSentences(article.passage, true);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -107,34 +105,40 @@ export default function ArticleContent({
   // Create cache busting key - simpler approach
   const cacheKey = useMemo(() => Date.now(), [article.id]);
 
-  const sentenceList: Sentence[] = useMemo(() =>
-    Array.isArray(article.timepoints) && article.timepoints.length > 0
-      ? article.timepoints.map((timepoint, index) => {
-          const endTime =
-            index < article.timepoints!.length - 1
-              ? article.timepoints![index + 1].timeSeconds - 0.3
-              : timepoint.timeSeconds + 10;
+  const sentenceList: Sentence[] = useMemo(
+    () =>
+      Array.isArray(article.timepoints) && article.timepoints.length > 0
+        ? article.timepoints.map((timepoint, index) => {
+            const endTime =
+              index < article.timepoints!.length - 1
+                ? article.timepoints![index + 1].timeSeconds - 0.3
+                : timepoint.timeSeconds + 10;
 
-          // Generate the correct audio URL with cache busting
-          const audioUrl = timepoint.file
-            ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}?v=${cacheKey}`
-            : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`;
+            // Generate the correct audio URL with cache busting
+            const audioUrl = timepoint.file
+              ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}?v=${cacheKey}`
+              : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`;
 
-          return {
-            sentence: timepoint.sentences,
-            index: timepoint.index,
-            startTime: timepoint.timeSeconds,
-            endTime,
-            audioUrl,
-          };
-        })
-      : sentences.map((sentence, index) => ({
-          sentence,
-          index,
-          startTime: index * 2,
-          endTime: (index + 1) * 2,
-          audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`,
-        })), [article.timepoints, article.id, sentences, cacheKey]);
+            // Use timepoint.sentences if available (new format), otherwise use split sentences (old format)
+            const sentenceText = timepoint.sentences || sentences[index] || "";
+
+            return {
+              sentence: sentenceText,
+              index: index,
+              startTime: timepoint.timeSeconds,
+              endTime,
+              audioUrl,
+            };
+          })
+        : sentences.map((sentence, index) => ({
+            sentence,
+            index,
+            startTime: index * 2,
+            endTime: (index + 1) * 2,
+            audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`,
+          })),
+    [article.timepoints, article.id, sentences, cacheKey]
+  );
 
   const handlePlayPause = async () => {
     if (audioRef.current) {
@@ -213,9 +217,9 @@ export default function ArticleContent({
     );
 
   const renderSentence = (sentence: string, i: number) => {
-    // if (!sentence) {
-    //   return "";
-    // }
+    if (!sentence) {
+      return "";
+    }
 
     return sentence.split("~~").map((line, index, array) => (
       <span
@@ -447,7 +451,7 @@ export default function ArticleContent({
       // Use the URL from sentenceList (already has cache busting)
       audio.src = sentenceList[currentAudioIndex].audioUrl;
       audio.load();
-      
+
       const handleLoadedMetadata = () => {
         audio.currentTime = sentenceList[currentAudioIndex].startTime;
         audio.playbackRate = Number(speed);
