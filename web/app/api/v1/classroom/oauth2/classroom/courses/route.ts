@@ -13,7 +13,8 @@ export async function GET(req: NextRequest) {
     req.nextUrl.searchParams.get("redirect") || "/teacher/my-classes";
 
   if (!accessToken && !refreshToken) {
-    cookies().set({
+    const cookieStore = await cookies();
+    cookieStore.set({
       name: "last_url",
       value: lastUrl,
       httpOnly: true,

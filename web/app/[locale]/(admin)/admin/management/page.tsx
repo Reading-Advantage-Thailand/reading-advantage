@@ -27,9 +27,10 @@ export default async function AdminManagementPage() {
   }
 
   const getManegementData = async () => {
+    const requestHeaders = await headers();
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/admin/dashboard`,
-      { method: "GET", headers: headers() }
+      { method: "GET", headers: requestHeaders }
     );
     const fetchdata = await res.json();
     return fetchdata.data;

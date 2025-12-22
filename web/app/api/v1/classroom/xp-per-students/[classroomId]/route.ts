@@ -5,9 +5,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getClassXpPerStudents } from "@/server/controllers/classroom-controller";
 
 export interface RequestContext {
-  params: {
+  params: Promise<{
     classroomId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -17,7 +17,7 @@ router.use(logRequest);
 router.use(protect);
 
 // API: GET /api/v1/classroom/xp-per-student/classrom_id
-router.get(getClassXpPerStudents);
+router.get(getClassXpPerStudents) as any;
 
 // Export API Route for Next.js
 export async function GET(request: NextRequest, ctx: RequestContext) {

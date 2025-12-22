@@ -184,6 +184,13 @@ export function ClassDetailDashboard({
           </div>
         </TabsContent>
 
+        <TabsContent value="assignments" className="space-y-4">
+          <ClassAssignmentFunnel
+            classroomId={classroomId}
+            detailed={true}
+          />
+        </TabsContent>
+
         <TabsContent value="students" className="space-y-4">
           <ClassBatchActions classroomId={classroomId} />
           <ClassAccuracyMetrics classroomId={classroomId} />
@@ -200,9 +207,6 @@ export function ClassDetailDashboard({
           <ClassAlignmentMatrix classroomId={classroomId} />
         </TabsContent>
 
-        <TabsContent value="alignment" className="space-y-4">
-          <ClassAlignmentMatrix classroomId={classroomId} />
-        </TabsContent>
 
         <TabsContent value="activity" className="space-y-4">
           <ClassActivityHeatmap classroomId={classroomId} expanded />

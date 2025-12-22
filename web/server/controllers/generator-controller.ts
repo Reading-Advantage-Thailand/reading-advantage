@@ -39,9 +39,9 @@ interface GenerateArticleRequest {
 }
 
 interface Context {
-  params?: {
+  params?: Promise<{
     articleId?: string;
-  };
+  }>;
 }
 
 // Helper function to retry Prisma operations
@@ -1158,9 +1158,10 @@ export async function getUserGeneratedArticles(req: NextRequest) {
 
 export async function updateUserArticle(
   req: NextRequest,
-  { params }: Context
+  ctx: Context
 ): Promise<NextResponse> {
   try {
+    const params = ctx.params ? await ctx.params : undefined;
     const articleId = params?.articleId;
 
     if (!articleId) {

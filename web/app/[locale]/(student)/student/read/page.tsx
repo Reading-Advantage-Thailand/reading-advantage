@@ -6,11 +6,13 @@ import React from "react";
 import Select from "@/components/select";
 
 type Props = {
-  params: { articleId: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ articleId: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function ReadPage({ params, searchParams }: Props) {
+  const { articleId } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 

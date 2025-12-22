@@ -8,9 +8,9 @@ import {
 } from "@/server/controllers/classroom-controller";
 
 interface RequestContext {
-  params: {
-    classroomId: string;
-  };
+  params: Promise<{
+    studentId: string;
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -20,8 +20,8 @@ router.use(logRequest);
 router.use(protect);
 // router.use(restrictAccess);
 
-router.get(getStudentClassroom);
-router.patch(updateStudentClassroom);
+router.get(getStudentClassroom) as any;
+router.patch(updateStudentClassroom) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

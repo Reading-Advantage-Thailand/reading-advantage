@@ -5,16 +5,16 @@ import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getRankingLeaderboardById);
+router.get(getRankingLeaderboardById) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

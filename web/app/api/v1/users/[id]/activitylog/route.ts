@@ -9,18 +9,18 @@ import {
 } from "@/server/controllers/user-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getActivityLog);
-router.post(postActivityLog);
-router.put(putActivityLog);
+router.get(getActivityLog) as any;
+router.post(postActivityLog) as any;
+router.put(putActivityLog) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

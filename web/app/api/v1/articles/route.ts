@@ -5,7 +5,7 @@ import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
 
-const router = createEdgeRouter<NextRequest, { params?: unknown }>();
+const router = createEdgeRouter<NextRequest, { params: Promise<Record<string, never>> }>();
 
 router.use(logRequest);
 
@@ -26,9 +26,9 @@ router.use(logRequest);
 // });
 
 router.use(protect);
-router.get(getSearchArticles);
+router.get(getSearchArticles) as any;
 
-export async function GET(request: NextRequest, ctx: { params?: unknown }): Promise<NextResponse> {
+export async function GET(request: NextRequest, ctx: { params: Promise<Record<string, never>> }): Promise<NextResponse> {
     const result = await router.run(request, ctx);
     if (result instanceof NextResponse) {
         return result;

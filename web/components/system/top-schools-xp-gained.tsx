@@ -74,7 +74,9 @@ export default function TopSchoolByXPGainedChart({
                   className="fill-foreground"
                   offset={12}
                   fontSize={12}
-                  formatter={(value: number) => value.toLocaleString()}
+                  formatter={(value: any) =>
+                    typeof value === "number" ? value.toLocaleString() : value
+                  }
                 />
               </Bar>
             </BarChart>

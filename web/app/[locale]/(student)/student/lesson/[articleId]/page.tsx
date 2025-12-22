@@ -21,25 +21,27 @@ async function getArticle(articleId: string) {
 export default async function LessonPage({
   params,
 }: {
-  params: { articleId: string };
+  params: Promise<{ articleId: string }>;
 }) {
+  const { articleId } = await params;
   const t = await getScopedI18n("pages.student.readPage.article");
 
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 
-  const articleResponse = await getArticle(params.articleId);
+  const articleResponse = await getArticle(articleId);
 
   if (articleResponse.message)
     return (
       <CustomError message={articleResponse.message} resp={articleResponse} />
     );
 
+  const requestHeaders = await headers();
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/students/${user.id}`,
     {
       method: "GET",
-      headers: headers(),
+      headers: requestHeaders,
     }
   );
   const data = await response.json();
@@ -51,7 +53,7 @@ export default async function LessonPage({
         <div className="relative">
           <LessonCard
             article={articleResponse.article}
-            articleId={params.articleId}
+            articleId={articleId}
             userId={user.id}
             classroomId={classroomId}
           />

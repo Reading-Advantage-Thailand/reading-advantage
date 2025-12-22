@@ -68,7 +68,7 @@ ENV NODE_OPTIONS="--max-old-space-size=32768"
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/

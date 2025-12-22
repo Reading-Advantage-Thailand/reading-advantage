@@ -8,8 +8,9 @@ import { getScopedI18n } from "@/locales/server";
 export default async function ClassDetailReportsPage({
   params,
 }: {
-  params: { classroomId: string };
+  params: Promise<{ classroomId: string }>;
 }) {
+  const { classroomId } = await params;
   const user = await getCurrentUser();
   if (!user) {
     return redirect("/auth/signin");
@@ -17,7 +18,7 @@ export default async function ClassDetailReportsPage({
 
   // Get classroom data
   const classroom = await prisma.classroom.findUnique({
-    where: { id: params.classroomId },
+    where: { id: classroomId },
   });
 
   if (!classroom) {
@@ -28,7 +29,7 @@ export default async function ClassDetailReportsPage({
   if (user.role !== Role.SYSTEM && user.role !== Role.ADMIN) {
     const classroomTeacher = await prisma.classroomTeacher.findFirst({
       where: {
-        classroomId: params.classroomId,
+        classroomId: classroomId,
         teacherId: user.id,
       },
     });
@@ -42,7 +43,7 @@ export default async function ClassDetailReportsPage({
   return (
     <div className="container mx-auto p-6">
       <ClassDetailDashboard
-        classroomId={params.classroomId}
+        classroomId={classroomId}
         className={classroom.classroomName || t("unnamedClass")}
         classCode={classroom.classCode || t("na")}
       />

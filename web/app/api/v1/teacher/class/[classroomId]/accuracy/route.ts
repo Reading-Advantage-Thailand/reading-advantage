@@ -5,7 +5,7 @@ import { protect } from "@/server/controllers/auth-controller";
 import { getClassAccuracy } from "@/server/controllers/class-accuracy-controller";
 
 interface RequestContext {
-  params?: { classroomId: string };
+  params: Promise<{ classroomId: string }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -13,10 +13,10 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 router.use(logRequest);
 router.use(protect);
 
-router.get(getClassAccuracy);
+router.get(getClassAccuracy) as any;
 
 export async function GET(req: NextRequest, ctx: RequestContext) {
   // Attach params to request for the controller to access
-  (req as any).params = ctx.params;
+  (req as any).params = await ctx.params;
   return router.run(req, ctx) as Promise<Response>;
 }

@@ -6,8 +6,9 @@ import { getScopedI18n } from "@/locales/server";
 export default async function SystemDashboardPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const t = await getScopedI18n("pages.system.dashboard");
 
   return (

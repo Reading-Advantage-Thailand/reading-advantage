@@ -45,16 +45,17 @@ async function getUserLicenseLevel(userId: string): Promise<LicenseType> {
 }
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function getUser(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
   try {
+    const { id } = await ctx.params;
     const user = await prisma.user.findUnique({
       where: { id },
       include: {
@@ -103,9 +104,10 @@ export async function getUser(
 
 export async function updateUser(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
   try {
+    const { id } = await ctx.params;
     const data = await req.json();
 
     const user = await prisma.user.update({
@@ -170,9 +172,10 @@ export async function updateUser(
 
 export async function postActivityLog(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
   try {
+    const { id } = await ctx.params;
     // Data from frontend
     const data = await req.json();
 
@@ -338,9 +341,10 @@ export async function postActivityLog(
 
 export async function putActivityLog(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
   try {
+    const { id } = await ctx.params;
     // Data from frontend
     const data = await req.json();
 
@@ -500,8 +504,9 @@ export async function putActivityLog(
 
 export async function getActivityLog(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -641,8 +646,9 @@ export async function getActivityLog(
 
 export async function getUserRecords(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10");
     const nextPage = req.nextUrl.searchParams.get("nextPage");
@@ -767,8 +773,9 @@ export async function getUserRecords(
 
 export async function getUserHeatmap(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     // Get user activities and group by date for heatmap
     const activities = await prisma.userActivity.findMany({
@@ -917,8 +924,9 @@ export async function updateUserData(req: ExtendedNextRequest) {
 
 export async function getUserActivityData(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -1054,8 +1062,9 @@ export async function getUserActivityData(
 
 export async function getStudentData(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -1112,8 +1121,9 @@ export async function getStudentData(
 
 export async function resetUserProgress(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -1187,8 +1197,9 @@ export async function resetUserProgress(
 
 export async function getUserXpLogs(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const xpLogs = await prisma.xPLog.findMany({
       where: {

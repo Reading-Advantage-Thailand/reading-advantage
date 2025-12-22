@@ -32,8 +32,9 @@ async function getClassroom() {
 export default async function ArticleQuizPage({
   params,
 }: {
-  params: { articleId: string };
+  params: Promise<{ articleId: string }>;
 }) {
+  const { articleId } = await params;
   const t = await getScopedI18n("pages.student.readPage.article");
 
   const user = await getCurrentUser();
@@ -47,7 +48,7 @@ export default async function ArticleQuizPage({
   const isAboveTeacher = (role: string) =>
     role.includes("admin") || role.includes("system");
 
-  const articleResponse = await getArticle(params.articleId);
+  const articleResponse = await getArticle(articleId);
 
   if (articleResponse.message)
     return (
@@ -59,7 +60,7 @@ export default async function ArticleQuizPage({
       <div className="md:flex md:flex-row md:gap-3 md:mb-5">
         <ArticleCard
           article={articleResponse.article}
-          articleId={params.articleId}
+          articleId={articleId}
           userId={user.id}
         />
         <div className="flex flex-col gap-4 mb-40 mt-4 max-w-[400px]">
@@ -67,7 +68,7 @@ export default async function ArticleQuizPage({
             {isAtLeastTeacher(user.role) && (
               <>
                 <PrintArticle
-                  articleId={params.articleId}
+                  articleId={articleId}
                   article={articleResponse.article}
                 />
               </>
@@ -75,26 +76,26 @@ export default async function ArticleQuizPage({
             {isAboveTeacher(user.role) && (
               <ArticleActions
                 article={articleResponse.article}
-                articleId={params.articleId}
+                articleId={articleId}
               />
             )}
 
             {isAtLeastTeacher("teacher") && (
               <AssignDialog
                 article={articleResponse.article}
-                articleId={params.articleId}
+                articleId={articleId}
                 userId={user.id}
               />
             )}
 
             <WordList
               article={articleResponse.article}
-              articleId={params.articleId}
+              articleId={articleId}
               userId={user.id}
             />
             <ArticleLesson
               article={articleResponse.article}
-              articleId={params.articleId}
+              articleId={articleId}
               userId={user.id}
             />
           </div>
@@ -102,7 +103,7 @@ export default async function ArticleQuizPage({
           <div className="max-w-[400px]">
             <MCQuestionCard
               userId={user.id}
-              articleId={params.articleId}
+              articleId={articleId}
               articleTitle={articleResponse.article.title}
               articleLevel={articleResponse.article.ra_level}
               page="article"
@@ -111,7 +112,7 @@ export default async function ArticleQuizPage({
           <div className="max-w-[400px]]">
             <SAQuestionCard
               userId={user.id}
-              articleId={params.articleId}
+              articleId={articleId}
               articleTitle={articleResponse.article.title}
               articleLevel={articleResponse.article.ra_level}
               page="article"
@@ -120,7 +121,7 @@ export default async function ArticleQuizPage({
           <div className="max-w-[400px]">
             <LAQuestionCard
               userId={user.id}
-              articleId={params.articleId}
+              articleId={articleId}
               userLevel={user.level}
               articleTitle={articleResponse.article.title}
               articleLevel={articleResponse.article.ra_level}

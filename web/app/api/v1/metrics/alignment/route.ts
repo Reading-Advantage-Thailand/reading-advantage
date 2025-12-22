@@ -5,7 +5,7 @@ import { protect } from "@/server/controllers/auth-controller";
 import { getAlignmentMetrics } from "@/server/controllers/enhanced-alignment-controller";
 
 interface RequestContext {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -15,7 +15,7 @@ router.use(logRequest);
 router.use(protect);
 
 // GET /api/v1/metrics/alignment
-router.get(getAlignmentMetrics);
+router.get(getAlignmentMetrics) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

@@ -13,13 +13,16 @@ import {
   Calendar,
   Activity,
 } from "lucide-react";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import { useScopedI18n } from "@/locales/client";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  Line,
+  LineChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 interface ActiveUser {
   id: string;
@@ -63,24 +66,30 @@ export default function ModernActiveUsers({
     value: number;
     direction: "up" | "down";
   } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setError(null);
         setLoading(true);
 
-        // Fetch chart data with caching and dateRange parameter
         const chartRes = await fetch(
           `/api/v1/activity/active-users?dateRange=${dateRange}`,
           {
-            next: { revalidate: 300 }, // Cache for 5 minutes
+            cache: "no-store",
           }
         );
+
         if (chartRes.ok) {
           const chartData = await chartRes.json();
           let dataToUse = chartData.total || [];
 
-          // Filter data based on time range
           let days: number;
           if (dateRange === "7d") {
             days = 7;
@@ -95,7 +104,6 @@ export default function ModernActiveUsers({
             days = 30; // default
           }
 
-          // For 'all time', use data as-is if available, otherwise fill missing dates
           const filteredData =
             dateRange === "all" && dataToUse.length > 0
               ? dataToUse
@@ -116,11 +124,15 @@ export default function ModernActiveUsers({
               });
             }
           }
+        } else {
+          const message = `${chartRes.status} ${chartRes.statusText}`;
+          console.error("Active users chart request failed:", message);
+          setError(message);
         }
 
         // Fetch today's users with caching
         const dailyRes = await fetch("/api/v1/activity/daily-active-users", {
-          next: { revalidate: 300 }, // Cache for 5 minutes
+          cache: "no-store",
         });
         if (dailyRes.ok) {
           const dailyData = await dailyRes.json();
@@ -129,12 +141,17 @@ export default function ModernActiveUsers({
             (item: DailyUserData) => item.date === today
           );
           setTodayUsers(todayData?.users || []);
+        } else {
+          const message = `${dailyRes.status} ${dailyRes.statusText}`;
+          console.error("Daily active users request failed:", message);
+          setError((prev) => prev || message);
         }
       } catch (error) {
         console.error("Error fetching active users data:", error);
         // Set fallback data
         setChartData([]);
         setTodayUsers([]);
+        setError(error instanceof Error ? error.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -168,7 +185,7 @@ export default function ModernActiveUsers({
   );
   const todayActiveUsers = todayUsers.length;
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="space-y-6">
         {/* Header skeleton */}
@@ -285,55 +302,77 @@ export default function ModernActiveUsers({
       <div className="p-4 rounded-lg border bg-card">
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">{t("title.activityTrend")}</span>
+          <span className="text-sm font-medium">
+            {t("title.activityTrend")}
+          </span>
         </div>
-        <ChartContainer config={chartConfig} className="h-48 w-full">
-          <AreaChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                });
-              }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis axisLine={false} tickLine={false} />
-            <ChartTooltip
-              content={({ active, payload, label }) => {
-                if (active && payload && payload.length) {
-                  return (
-                    <div className="rounded-lg border bg-background p-3 shadow-md">
-                      <p className="font-medium">
-                        {new Date(label).toLocaleDateString("en-US", {
-                          weekday: "long",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                      <p className="text-sm text-primary">
-                        {t("tooltip.activeUsers")}: {payload[0].value}
-                      </p>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="noOfUsers"
-              stroke="hsl(var(--primary))"
-              fill="hsl(var(--primary))"
-              fillOpacity={0.1}
-              strokeWidth={2}
-            />
-          </AreaChart>
-        </ChartContainer>
+        {error && (
+          <div className="mb-2 text-sm text-red-600 dark:text-red-400">
+            {t("title.activityTrend")}: {error}
+          </div>
+        )}
+        {chartData.length === 0 ? (
+          <div className="flex h-48 items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+            {error ? error : "No data for this range."}
+          </div>
+        ) : (
+          <div className="h-[192px] w-full" style={{ height: 192 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(value) => {
+                    const date = new Date(value);
+                    return date.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    });
+                  }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis axisLine={false} tickLine={false} />
+                <Tooltip
+                  content={(props) => {
+                    const { active, payload, label } = props;
+                    if (active && payload && payload.length && label) {
+                      return (
+                        <div className="rounded-lg border bg-background px-3 py-2 shadow-md">
+                          <p className="text-sm font-medium mb-1">
+                            {new Date(label).toLocaleDateString("en-US", {
+                              weekday: "long",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                            <span className="text-sm text-muted-foreground">
+                              {t("tooltip.activeUsers")}:
+                            </span>
+                            <span className="text-sm font-semibold">
+                              {payload[0].value}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="noOfUsers"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: "hsl(var(--primary))" }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   );

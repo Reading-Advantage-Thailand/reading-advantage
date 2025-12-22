@@ -71,15 +71,15 @@ export default function ActivityDistributionPieChart() {
   const fetchActivity = async () => {
     try {
       const response = await fetch(`/api/v1/activity`);
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch activity data');
+        throw new Error("Failed to fetch activity data");
       }
-      
+
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error fetching activity data:', error);
+      console.error("Error fetching activity data:", error);
       return { userActivityData: {} };
     }
   };
@@ -178,7 +178,7 @@ export default function ActivityDistributionPieChart() {
                 data={chartData}
                 dataKey="numberOfTimes"
                 nameKey="activity"
-                label={(entry) => entry.activity}
+                label={(entry: any) => entry.activity}
                 labelLine={true}
                 outerRadius="80%"
                 cx="50%"

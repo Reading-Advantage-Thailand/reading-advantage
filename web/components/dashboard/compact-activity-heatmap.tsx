@@ -73,9 +73,10 @@ export function CompactActivityHeatmap({
         }
 
         // Step 2: Fetch activity data from API
-        const idParam = scope === "license" 
-          ? `licenseId=${licenseId}` 
-          : `entityId=${entityId}`;
+        const idParam =
+          scope === "license"
+            ? `licenseId=${licenseId}`
+            : `entityId=${entityId}`;
         const response = await fetch(
           `/api/v1/metrics/activity?${idParam}&scope=${scope}&format=heatmap&timeframe=${timeframe}&granularity=day`
         );

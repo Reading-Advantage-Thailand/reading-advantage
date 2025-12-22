@@ -117,8 +117,6 @@ export default function Matching({ userId }: Props) {
       const res = await fetch(`/api/v1/users/sentences/${userId}`);
       const data = await res.json();
 
-      console.log(data);
-
       // step 1 : sort Article sentence: ID and SN due date expired
       const matching = data.sentences.sort((a: Sentence, b: Sentence) => {
         return dayjs(a.due).isAfter(dayjs(b.due)) ? 1 : -1;
@@ -140,7 +138,7 @@ export default function Matching({ userId }: Props) {
         initialWords.length > 5 ? initialWords.slice(0, 5) : initialWords
       );
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -232,33 +230,31 @@ export default function Matching({ userId }: Props) {
               <>
                 <div className="flex flex-wrap justify-center">
                   {words.map((word, index) => (
-                    <>
-                      <div
-                        key={index}
-                        className={`cursor-pointer rounded-xl p-5 m-5 w-64 text-center dark:bg-[#020817] border-solid border border-[#282e3e14] bg-slate-50 hover:bg-slate-200 shadow-lg 
+                    <div
+                      key={index}
+                      className={`cursor-pointer rounded-xl p-5 m-5 w-64 text-center dark:bg-[#020817] border-solid border border-[#282e3e14] bg-slate-50 hover:bg-slate-200 shadow-lg 
               ${correctMatches.includes(word.text) && "hidden"}
               ${animateShake}  
               ${
                 selectedCard?.text === word.text && "dark:text-black"
               }            
               `}
-                        style={getCardStyle(word)}
-                      >
-                        <div className="mb-5">
-                          {new RegExp(/^[a-zA-Z\s,.']+$/).test(word.text) && (
-                            <AudioButton
-                              key={word?.text}
-                              audioUrl={word?.audioUrl}
-                              startTimestamp={word?.timepoint}
-                              endTimestamp={word?.endTimepoint}
-                            />
-                          )}
-                        </div>
-                        <div onClick={() => handleCardClick(word)}>
-                          {word.text}
-                        </div>
+                      style={getCardStyle(word)}
+                    >
+                      <div className="mb-5">
+                        {new RegExp(/^[a-zA-Z\s,.']+$/).test(word.text) && (
+                          <AudioButton
+                            key={word?.text}
+                            audioUrl={word?.audioUrl}
+                            startTimestamp={word?.timepoint}
+                            endTimestamp={word?.endTimepoint}
+                          />
+                        )}
                       </div>
-                    </>
+                      <div onClick={() => handleCardClick(word)}>
+                        {word.text}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </>

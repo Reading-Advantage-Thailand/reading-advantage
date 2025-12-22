@@ -5,9 +5,9 @@ import { protect, ExtendedNextRequest } from "@/server/controllers/auth-controll
 import { getClassroomStudents } from "@/server/controllers/classroom-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     classroomId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -18,7 +18,8 @@ router.use(protect);
 
 // GET /api/v1/classroom/[classroomId]/students
 router.get(async (req: ExtendedNextRequest, ctx: RequestContext) => {
-  return getClassroomStudents(req, ctx.params.classroomId);
+  const { classroomId } = await ctx.params;
+  return getClassroomStudents(req, classroomId) as any;
 });
 
 export async function GET(request: NextRequest, ctx: RequestContext) {

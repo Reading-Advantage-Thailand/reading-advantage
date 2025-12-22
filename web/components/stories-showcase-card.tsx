@@ -36,8 +36,6 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
     const systemPathRegex = /\/(?:[a-z]{2}\/)?system\/.*\/?$/i;
     const t: string | any = useScopedI18n("selectType.types");
 
-    console.log("story", story);
-
     React.useEffect(() => {
       handleTranslateSummary();
     }, [story, locale]);
@@ -122,9 +120,9 @@ const StoryShowcaseCard = React.forwardRef<HTMLDivElement, Props>(
             <div className=" bg-black bg-opacity-40">
               <p className="text-sm drop-shadow-lg line-clamp-4 text-white">
                 {locale == "en" ? (
-                  <p>{story?.storyBible?.summary}</p>
+                  <>{story?.storyBible?.summary}</>
                 ) : (
-                  <p>{summarySentence}</p>
+                  <>{summarySentence}</>
                 )}
               </p>
             </div>

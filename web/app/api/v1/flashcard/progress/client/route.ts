@@ -5,10 +5,10 @@ import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
 export interface RequestContext {
-  params: {
+  params: Promise<{
     id?: string;
     articleId?: string;
-  };
+  }>;
 }
 
 // Custom handler for client-side progress updates
@@ -25,7 +25,7 @@ async function updateFlashcardProgressClient(req: any, ctx: RequestContext) {
 
   // Create a modified request context with the user ID
   const modifiedCtx = {
-    params: { id: req.session.user.id }
+    params: Promise.resolve({ id: req.session.user.id })
   };
   
   // Create a modified request with the body data
@@ -41,7 +41,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.post(updateFlashcardProgressClient);
+router.post(updateFlashcardProgressClient) as any;
 
 export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

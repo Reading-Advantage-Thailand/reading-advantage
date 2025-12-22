@@ -75,9 +75,7 @@ export const columns: ColumnDef<Payment>[] = [
     accessorKey: "maxUsers",
     header: () => <div className="capitalize text-center">Total Licenses</div>,
     cell: ({ row }) => (
-      <div className="lowercase text-center">
-        {row.getValue("maxUsers")}
-      </div>
+      <div className="lowercase text-center">{row.getValue("maxUsers")}</div>
     ),
   },
   {
@@ -96,8 +94,7 @@ export const columns: ColumnDef<Payment>[] = [
     ),
     cell: ({ row }) => {
       const total =
-        Number(row.getValue("maxUsers")) -
-        Number(row.getValue("usedLicenses"));
+        Number(row.getValue("maxUsers")) - Number(row.getValue("usedLicenses"));
       return <div className="lowercase text-center">{total}</div>;
     },
   },
@@ -162,10 +159,10 @@ export default function LicesneUsageList({ data }: LicenseUsageListProps) {
         <Input
           placeholder="Search schools..."
           value={
-            (table.getColumn("school_name")?.getFilterValue() as string) ?? ""
+            (table.getColumn("schoolName")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("school_name")?.setFilterValue(event.target.value)
+            table.getColumn("schoolName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

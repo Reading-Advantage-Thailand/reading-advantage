@@ -5,9 +5,7 @@ import { getArticlesByTypeGenre } from "@/server/controllers/article-controller"
 import { protect } from "@/server/controllers/auth-controller";
 
 export interface RequestContext {
-  params?: {
-    license_id: string;
-  };
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -17,7 +15,7 @@ router.use(logRequest);
 router.use(protect);
 
 // API: GET api/v1/system/dashboard/getArticleByTypeGenre
-router.get(getArticlesByTypeGenre);
+router.get(getArticlesByTypeGenre) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

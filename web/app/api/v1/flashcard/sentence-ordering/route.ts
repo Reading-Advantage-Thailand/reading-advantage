@@ -8,7 +8,7 @@ const router = createEdgeRouter<NextRequest, {}>();
 
 router.use(logRequest);
 router.use(protect);
-router.post(saveSentenceOrderingResults);
+router.post(saveSentenceOrderingResults) as any;
 
 export async function POST(request: NextRequest) {
   const result = await router.run(request, {});

@@ -13,9 +13,9 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isoWeek);
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     classroomId: string;
-  };
+  }>;
 }
 
 interface License {
@@ -894,10 +894,10 @@ export async function getUnenrollClassroom(req: ExtendedNextRequest) {
 
 export async function getStudentInClassroom(
   req: ExtendedNextRequest,
-  { params }: { params: { classroomId: string } }
+  ctx: { params: Promise<{ classroomId: string }> }
 ) {
+  const { classroomId } = await ctx.params;
   try {
-    const { classroomId } = params;
 
     const classroom = await prisma.classroom.findUnique({
       where: { id: classroomId },
@@ -1091,8 +1091,9 @@ function generateClassCode(): string {
 // achive classroom
 export async function achivedClassroom(
   req: ExtendedNextRequest,
-  { params: { classroomId } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { classroomId } = await ctx.params;
   try {
     const { archived } = await req.json();
 
@@ -1124,8 +1125,9 @@ export async function achivedClassroom(
 // update classroom
 export async function updateClassroom(
   req: ExtendedNextRequest,
-  { params: { classroomId } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { classroomId } = await ctx.params;
   try {
     const { classroomName, grade } = await req.json();
 
@@ -1159,8 +1161,9 @@ export async function updateClassroom(
 // delete classroom
 export async function deleteClassroom(
   req: ExtendedNextRequest,
-  { params: { classroomId } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { classroomId } = await ctx.params;
   try {
     const classroom = await prisma.classroom.findUnique({
       where: { id: classroomId },
@@ -1185,8 +1188,9 @@ export async function deleteClassroom(
 
 export async function patchClassroomEnroll(
   req: ExtendedNextRequest,
-  { params: { classroomId } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { classroomId } = await ctx.params;
   const studentSchema = z.object({
     studentId: z.string(),
     lastActivity: z.string(),
@@ -1251,8 +1255,9 @@ export async function patchClassroomEnroll(
 
 export async function patchClassroomUnenroll(
   req: ExtendedNextRequest,
-  { params: { classroomId } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { classroomId } = await ctx.params;
   try {
     const json = await req.json();
     const studentId = json.studentId;
@@ -1752,7 +1757,8 @@ export async function getClassXpPerStudents(
   ctx: RequestContext
 ) {
   try {
-    const classroomId = ctx.params?.classroomId;
+    const params = await ctx.params;
+    const classroomId = params?.classroomId;
     if (!classroomId) {
       return NextResponse.json(
         { message: "Missing classroomId" },
@@ -1841,8 +1847,9 @@ export async function getClassXpPerStudents(
 
 export async function addCoTeacher(
   req: ExtendedNextRequest,
-  { params: { classroomId } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { classroomId } = await ctx.params;
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -1928,8 +1935,9 @@ export async function addCoTeacher(
 
 export async function removeCoTeacher(
   req: ExtendedNextRequest,
-  { params: { classroomId } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { classroomId } = await ctx.params;
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -2008,8 +2016,9 @@ export async function removeCoTeacher(
 // Get all teachers in a classroom
 export async function getClassroomTeachers(
   req: ExtendedNextRequest,
-  { params: { classroomId } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { classroomId } = await ctx.params;
   try {
     const user = await getCurrentUser();
     if (!user) {

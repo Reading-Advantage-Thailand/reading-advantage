@@ -6,10 +6,10 @@ import { splitTextIntoSentences } from "@/lib/utils";
 import { generateTranslatedPassageFromSentences } from "@/server/utils/generators/translation-generator";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
     articleId?: string;
-  };
+  }>;
 }
 
 interface WordList {
@@ -30,8 +30,9 @@ interface WordList {
 
 export async function getFlashcardStats(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const type = req.nextUrl.searchParams.get("type"); // "vocabulary" or "sentences"
 
@@ -133,8 +134,9 @@ function calculateFlashcardStats(cards: any[]) {
 
 export async function updateFlashcardProgress(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const { cardId, rating, type } = await req.json();
 
@@ -242,8 +244,9 @@ export async function updateFlashcardProgress(
 
 export async function postSaveWordList(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const {
       due,
@@ -320,8 +323,9 @@ export async function postSaveWordList(
 
 export async function getWordList(
   req: NextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
 
@@ -374,8 +378,9 @@ export async function deleteWordlist(req: ExtendedNextRequest) {
 
 export async function postSentendcesFlashcard(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const {
       articleId,
@@ -518,8 +523,9 @@ export async function postSentendcesFlashcard(
 
 export async function getSentencesFlashcard(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   const articleId = req.nextUrl.searchParams.get("articleId");
   try {
     const sentences = await prisma.userSentenceRecord.findMany({
@@ -699,8 +705,9 @@ export async function deleteSentencesFlashcard(req: ExtendedNextRequest) {
 
 export async function getVocabulariesFlashcard(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const vocabularies = await prisma.userWordRecord.findMany({
       where: {
@@ -728,8 +735,9 @@ export async function getVocabulariesFlashcard(
 
 export async function postVocabulariesFlashcard(
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) {
+  const { id } = await ctx.params;
   try {
     const {
       articleId,
@@ -818,8 +826,9 @@ export async function deleteVocabulariesFlashcard(req: ExtendedNextRequest) {
 
 export async function getClozeTestSentences(
   req: ExtendedNextRequest,
-  { params: { deckId } }: { params: { deckId: string } }
+  ctx: { params: Promise<{ deckId: string }> }
 ) {
+  const { deckId } = await ctx.params;
   try {
     const userId = req.session?.user?.id;
 
@@ -1069,8 +1078,9 @@ export async function saveClozeTestResults(req: ExtendedNextRequest) {
 
 export async function getSentencesForOrdering(
   req: ExtendedNextRequest,
-  { params: { deckId } }: { params: { deckId: string } }
+  ctx: { params: Promise<{ deckId: string }> }
 ) {
+  const { deckId } = await ctx.params;
   try {
     const userId = req.session?.user?.id;
 
@@ -1224,8 +1234,9 @@ export async function getSentencesForOrdering(
 
 export async function getWordsForOrdering(
   req: ExtendedNextRequest,
-  { params: { deckId } }: { params: { deckId: string } }
+  ctx: { params: Promise<{ deckId: string }> }
 ) {
+  const { deckId } = await ctx.params;
   try {
     const userId = req.session?.user?.id;
 

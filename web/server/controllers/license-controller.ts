@@ -6,15 +6,15 @@ import { LicenseType } from "@prisma/client";
 import { randomUUID } from "crypto";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export interface Context {
-  params: {
+  params: Promise<{
     userId: string;
-  };
+  }>;
 }
 
 export const createLicenseKey = catchAsync(async (req: ExtendedNextRequest) => {
@@ -99,7 +99,8 @@ export const getAllLicenses = catchAsync(async (req: ExtendedNextRequest) => {
   });
 });
 
-export const deleteLicense = catchAsync(async (req: ExtendedNextRequest, { params: { id } }: RequestContext) => {
+export const deleteLicense = catchAsync(async (req: ExtendedNextRequest, ctx: RequestContext) => {
+  const { id } = await ctx.params;
   // Check if license exists
   const license = await prisma.license.findUnique({
     where: { id },
@@ -140,7 +141,7 @@ export const activateLicense = async (
     const { key, userId } = await req.json();
     
     // Use userId from context (URL parameter) if available, otherwise from body
-    const targetUserId = context?.params?.id || userId;
+    const targetUserId = context ? (await context.params).id : userId;
     
     // Authorization check: users can only activate license for themselves
     // unless they are ADMIN or TEACHER
@@ -262,8 +263,9 @@ export const activateLicense = async (
 
 export const getLicense = async (
   req: ExtendedNextRequest,
-  { params: { id } }: RequestContext
+  ctx: RequestContext
 ) => {
+  const { id } = await ctx.params;
   try {
     const license = await prisma.license.findUnique({
       where: { id },
@@ -322,7 +324,7 @@ export const deactivateLicense = async (
     const { userId, licenseId } = await req.json();
     
     // Use userId from context (URL parameter) if available, otherwise from body
-    const targetUserId = context?.params?.id || userId;
+    const targetUserId = context ? (await context.params).id : userId;
     
     // Authorization check
     const currentUser = req.session?.user;
@@ -405,7 +407,7 @@ export const updateUserLicense = async (
     const { userId, oldLicenseId, newLicenseKey } = await req.json();
     
     // Use userId from context (URL parameter) if available, otherwise from body
-    const targetUserId = context?.params?.id || userId;
+    const targetUserId = context ? (await context.params).id : userId;
     
     // Authorization check
     const currentUser = req.session?.user;
@@ -720,8 +722,9 @@ export const getXp30days = async (request: NextRequest) => {
 
 export const getLessonXp = async (
   req: NextRequest,
-  { params: { userId } }: Context
+  ctx: Context
 ) => {
+  const { userId } = await ctx.params;
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
 

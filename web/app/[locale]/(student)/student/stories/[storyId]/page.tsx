@@ -75,8 +75,9 @@ async function getStory(storyId: string) {
 export default async function StoryChapterSelectionPage({
   params,
 }: {
-  params: { locale: string; storyId: string };
+  params: Promise<{ locale: string; storyId: string }>;
 }) {
+  const { storyId, locale } = await params;
   const t = await getScopedI18n("components.articleCard");
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
@@ -91,7 +92,7 @@ export default async function StoryChapterSelectionPage({
     readChapter: t("readChapter"),
   };
 
-  const storyResponse = await getStory(params.storyId);
+  const storyResponse = await getStory(storyId);
 
   return (
     <div className="md:flex md:flex-row md:gap-3 md:mb-5">
@@ -137,7 +138,7 @@ export default async function StoryChapterSelectionPage({
 
             <TabsContent value="chapters">
               <ChapterList
-                locale={params.locale}
+                locale={locale}
                 storyId={storyResponse.id}
                 chapters={storyResponse.chapters}
                 translations={translations}
@@ -164,14 +165,14 @@ export default async function StoryChapterSelectionPage({
       {user.role.includes("teacher") && (
         <StoriesAssignDialog
           story={storyResponse}
-          storyId={params.storyId}
+          storyId={storyId}
           userId={user.id}
         />
       )}
 
       {user.role.includes("system") && (
         <div className="flex gap-4">
-          <StoriesActions story={storyResponse} storyId={params.storyId} />
+          <StoriesActions story={storyResponse} storyId={storyId} />
         </div>
       )}
     </div>

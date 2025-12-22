@@ -6,7 +6,7 @@ import { Role } from "@prisma/client";
 import { getAdminAlerts } from "@/server/controllers/admin-controller";
 
 interface RequestContext {
-  params?: unknown;
+  params: Promise<Record<string, never>>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
@@ -16,7 +16,7 @@ router.use(logRequest);
 router.use(restrictTo(Role.SYSTEM, Role.ADMIN));
 
 // GET /api/v1/admin/alerts
-router.get(getAdminAlerts);
+router.get(getAdminAlerts) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

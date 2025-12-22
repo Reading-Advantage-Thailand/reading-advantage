@@ -5,17 +5,17 @@ import { protect } from "@/server/controllers/auth-controller";
 import { updateLessonWord, deleteLessonWord } from "@/server/controllers/lesson-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     wordId: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.post(updateLessonWord);
-router.delete(deleteLessonWord);
+router.post(updateLessonWord) as any;
+router.delete(deleteLessonWord) as any;
 
 export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

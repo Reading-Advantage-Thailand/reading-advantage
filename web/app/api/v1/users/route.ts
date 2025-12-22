@@ -8,15 +8,19 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
-const router = createEdgeRouter<NextRequest, NextResponse>();
+interface RequestContext {
+  params: Promise<Record<string, never>>;
+}
+
+const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.get(getAllUsers);
-router.patch(updateUserData);
-router.delete(deleteUser); // Future implementation for deleting a user
+router.get(getAllUsers) as any;
+router.patch(updateUserData) as any;
+router.delete(deleteUser) as any; // Future implementation for deleting a user
 
-export async function GET(request: NextRequest, ctx: NextResponse) {
+export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
@@ -26,7 +30,7 @@ export async function GET(request: NextRequest, ctx: NextResponse) {
   throw new Error("Expected a NextResponse from router.run");
 }
 
-export async function PATCH(request: NextRequest, ctx: NextResponse) {
+export async function PATCH(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
@@ -36,7 +40,7 @@ export async function PATCH(request: NextRequest, ctx: NextResponse) {
   throw new Error("Expected a NextResponse from router.run");
 }
 
-export async function POST(request: NextRequest, ctx: NextResponse) {
+export async function POST(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;
@@ -46,7 +50,7 @@ export async function POST(request: NextRequest, ctx: NextResponse) {
   throw new Error("Expected a NextResponse from router.run");
 }
 
-export async function DELETE(request: NextRequest, ctx: NextResponse) {
+export async function DELETE(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);
   if (result instanceof NextResponse) {
     return result;

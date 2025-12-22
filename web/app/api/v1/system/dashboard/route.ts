@@ -4,7 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { protect } from "@/server/controllers/auth-controller";
 import { getSystemDashboard } from "@/server/controllers/system-dashboard-controller";
 
-interface RequestContext {}
+interface RequestContext {
+  params: Promise<Record<string, never>>;
+}
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
@@ -12,7 +14,7 @@ const router = createEdgeRouter<NextRequest, RequestContext>();
 router.use(logRequest);
 router.use(protect);
 
-router.get(getSystemDashboard);
+router.get(getSystemDashboard) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

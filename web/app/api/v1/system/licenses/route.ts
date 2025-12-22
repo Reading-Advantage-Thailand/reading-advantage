@@ -5,9 +5,9 @@ import { getSystemLicenses } from "@/server/controllers/system-controller";
 import { createEdgeRouter } from "next-connect";
 
 interface ExtendedNextRequest {
-  params: {
+  params: Promise<{
     userId?: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
@@ -16,7 +16,7 @@ const router = createEdgeRouter<NextRequest, ExtendedNextRequest>();
 router.use(logRequest);
 router.use(protect);
 
-router.get(getSystemLicenses);
+router.get(getSystemLicenses) as any;
 
 export async function GET(request: NextRequest, ctx: ExtendedNextRequest) {
   const result = await router.run(request, ctx);

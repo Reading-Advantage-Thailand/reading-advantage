@@ -9,17 +9,18 @@ type Schema$Course = classroom_v1.Schema$Course;
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { courseId: string } }
+  ctx: { params: Promise<{ courseId: string }> }
 ) {
+  const { courseId } = await ctx.params;
   const accessToken = req.cookies.get("google_access_token")?.value;
   const refreshToken = req.cookies.get("google_refresh_token")?.value;
-  const { courseId } = params;
   const lastUrl =
     req.nextUrl.searchParams.get("redirect") ||
     `/teacher/class-roster/${courseId}`;
 
   if (!accessToken && !refreshToken) {
-    cookies().set({
+    const cookieStore = await cookies();
+    cookieStore.set({
       name: "last_url",
       value: lastUrl,
       httpOnly: true,

@@ -34,8 +34,7 @@ const nextConfig = {
       },
     ],
   },
-  // Disable all minification and compression to avoid syntax errors
-  swcMinify: false,
+  // Disable console removal to avoid potential issues
   compiler: {
     removeConsole: false,
   },

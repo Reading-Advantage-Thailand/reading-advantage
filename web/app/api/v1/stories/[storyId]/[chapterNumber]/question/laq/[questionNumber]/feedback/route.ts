@@ -5,18 +5,18 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getStoryFeedbackLAquestion } from "@/server/controllers/stories-question-controller";
 
 interface RequestContext {
-  params: {
+  params: Promise<{
     storyId: string;
     chapterNumber: string;
     questionNumber: string;
-  };
+  }>;
 }
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
 router.use(protect);
-router.post(getStoryFeedbackLAquestion);
+router.post(getStoryFeedbackLAquestion) as any;
 
 export async function GET(request: NextRequest, ctx: RequestContext) {
   const result = await router.run(request, ctx);

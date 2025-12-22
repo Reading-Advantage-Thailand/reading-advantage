@@ -19,9 +19,10 @@ export default async function SchoolsDashboardPage() {
   }
 
   const schoolListfetch = async () => {
+    const requestHeaders = await headers();
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/licenses`,
-      { method: "GET", headers: headers() }
+      { method: "GET", headers: requestHeaders }
     );
     if (!res.ok) throw new Error("Failed to fetch school list");
     const fetchdata = await res.json();
@@ -29,9 +30,10 @@ export default async function SchoolsDashboardPage() {
   };
 
   const userRoleListfetch = async () => {
+    const requestHeaders = await headers();
     const userRes = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users`,
-      { method: "GET", headers: headers() }
+      { method: "GET", headers: requestHeaders }
     );
     if (!userRes.ok) throw new Error("Failed to fetch user role list");
     const userData = await userRes.json();
@@ -40,11 +42,12 @@ export default async function SchoolsDashboardPage() {
 
   const averageCefrLevelDatafetch = async () => {
     try {
+      const requestHeaders = await headers();
       const cefrRes = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/activity/all`,
         {
           method: "GET",
-          headers: headers(),
+          headers: requestHeaders,
           // Add timeout to prevent hanging
           signal: AbortSignal.timeout(30000), // 30 second timeout
         }
