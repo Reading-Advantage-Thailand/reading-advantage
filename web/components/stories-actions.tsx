@@ -61,7 +61,7 @@ export default function StoriesActions({ story, storyId }: Props) {
   };
 
   return (
-    <div className="flex gap-4 mb-4 ml-4">
+    <>
       <Button
         onClick={() => {
           handleOpen();
@@ -89,6 +89,6 @@ export default function StoriesActions({ story, storyId }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

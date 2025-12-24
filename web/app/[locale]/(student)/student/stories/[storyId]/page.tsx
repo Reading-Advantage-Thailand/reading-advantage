@@ -14,6 +14,8 @@ import StoriesAssignDialog from "@/components/teacher/stories-assign-dialog";
 import StoriesActions from "@/components/stories-actions";
 import { CardDescription } from "@/components/ui/card";
 import { StoriesSummary } from "@/components/stories-summary";
+import ExportStoryWorkbooksButton from "@/components/teacher/export-story-workbooks-button";
+import { log } from "console";
 
 export interface StoryBible {
   mainPlot: {
@@ -82,6 +84,8 @@ export default async function StoryChapterSelectionPage({
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 
+  console.log(user);
+
   const translations = {
     chapters: t("chapters"),
     characters: t("characters"),
@@ -98,27 +102,44 @@ export default async function StoryChapterSelectionPage({
     <div className="md:flex md:flex-row md:gap-3 md:mb-5">
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            {storyResponse.title}
-          </CardTitle>
-          <div className="flex flex-wrap gap-3">
-            <Badge>
-              {t("raLevel", {
-                raLevel: storyResponse.ra_level,
-              })}
-            </Badge>
-            <Badge>
-              {t("cefrLevel", {
-                cefrLevel: storyResponse.cefr_level,
-              })}
-            </Badge>
-            <CardDescription>
-              <StoriesSummary
-                story={storyResponse}
-                storyId={storyResponse.id}
-              />
-            </CardDescription>
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div className="flex-1">
+              <CardTitle className="text-2xl font-bold">
+                {storyResponse.title}
+              </CardTitle>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Badge>
+                  {t("raLevel", {
+                    raLevel: storyResponse.ra_level,
+                  })}
+                </Badge>
+                <Badge>
+                  {t("cefrLevel", {
+                    cefrLevel: storyResponse.cefr_level,
+                  })}
+                </Badge>
+              </div>
+            </div>
+
+            {["TEACHER", "ADMIN", "SYSTEM"].includes(user.role) && (
+              <div className="flex flex-wrap gap-2">
+                <StoriesAssignDialog
+                  story={storyResponse}
+                  storyId={storyId}
+                  userId={user.id}
+                />
+                <ExportStoryWorkbooksButton
+                  chapters={storyResponse.chapters}
+                  storyTitle={storyResponse.title}
+                />
+                <StoriesActions story={storyResponse} storyId={storyId} />
+              </div>
+            )}
           </div>
+
+          <CardDescription className="mt-3">
+            <StoriesSummary story={storyResponse} storyId={storyResponse.id} />
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="w-full h-auto aspect-[16/9] overflow-hidden">
@@ -161,20 +182,6 @@ export default async function StoryChapterSelectionPage({
           </Tabs>
         </CardContent>
       </Card>
-
-      {user.role.includes("teacher") && (
-        <StoriesAssignDialog
-          story={storyResponse}
-          storyId={storyId}
-          userId={user.id}
-        />
-      )}
-
-      {user.role.includes("system") && (
-        <div className="flex gap-4">
-          <StoriesActions story={storyResponse} storyId={storyId} />
-        </div>
-      )}
     </div>
   );
 }

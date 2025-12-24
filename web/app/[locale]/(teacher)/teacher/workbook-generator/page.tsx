@@ -154,21 +154,35 @@ export default function WorkbookGeneratorPage() {
                   : "border-gray-300 hover:border-blue-400 hover:shadow-md"
               }`}
             >
-              <div className="flex items-center gap-4">
-                <div
-                  className={`p-3 rounded-full shadow-sm transition-colors ${
-                    templateContent
-                      ? "bg-green-100 dark:bg-green-900"
-                      : "bg-white dark:bg-gray-800"
-                  }`}
-                >
-                  {templateContent ? (
-                    <CheckCircle className="h-6 w-6 text-green-500" />
-                  ) : (
-                    <FileText className="h-6 w-6 text-gray-400" />
-                  )}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <div
+                    className={`p-3 rounded-full shadow-sm transition-colors ${
+                      templateContent
+                        ? "bg-green-100 dark:bg-green-900"
+                        : "bg-white dark:bg-gray-800"
+                    }`}
+                  >
+                    {templateContent ? (
+                      <CheckCircle className="h-6 w-6 text-green-500" />
+                    ) : (
+                      <FileText className="h-6 w-6 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 sm:hidden">
+                    <Label
+                      htmlFor="template-upload"
+                      className="text-lg font-semibold cursor-pointer flex items-center gap-2"
+                    >
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-sm font-bold">
+                        1
+                      </span>
+                      {t("workbookGeneratorPage.step1.title")}
+                    </Label>
+                  </div>
                 </div>
-                <div className="flex-1">
+
+                <div className="flex-1 hidden sm:block">
                   <Label
                     htmlFor="template-upload"
                     className="text-lg font-semibold cursor-pointer flex items-center gap-2"
@@ -183,6 +197,12 @@ export default function WorkbookGeneratorPage() {
                       t("workbookGeneratorPage.step1.placeholder")}
                   </div>
                 </div>
+
+                <div className="sm:hidden text-sm text-muted-foreground mb-2 ml-14 -mt-2">
+                  {templateFileName ||
+                    t("workbookGeneratorPage.step1.placeholder")}
+                </div>
+
                 <Input
                   id="template-upload"
                   type="file"
@@ -192,7 +212,7 @@ export default function WorkbookGeneratorPage() {
                 />
                 <Button
                   variant="outline"
-                  className="hover:bg-blue-50 dark:hover:bg-blue-950"
+                  className="w-full sm:w-auto hover:bg-blue-50 dark:hover:bg-blue-950"
                   onClick={() =>
                     document.getElementById("template-upload")?.click()
                   }
@@ -213,21 +233,35 @@ export default function WorkbookGeneratorPage() {
                   : "border-gray-300 hover:border-purple-400 hover:shadow-md"
               }`}
             >
-              <div className="flex items-center gap-4">
-                <div
-                  className={`p-3 rounded-full shadow-sm transition-colors ${
-                    jsonContent
-                      ? "bg-green-100 dark:bg-green-900"
-                      : "bg-white dark:bg-gray-800"
-                  }`}
-                >
-                  {jsonContent ? (
-                    <CheckCircle className="h-6 w-6 text-green-500" />
-                  ) : (
-                    <FileJson className="h-6 w-6 text-gray-400" />
-                  )}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <div
+                    className={`p-3 rounded-full shadow-sm transition-colors ${
+                      jsonContent
+                        ? "bg-green-100 dark:bg-green-900"
+                        : "bg-white dark:bg-gray-800"
+                    }`}
+                  >
+                    {jsonContent ? (
+                      <CheckCircle className="h-6 w-6 text-green-500" />
+                    ) : (
+                      <FileJson className="h-6 w-6 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 sm:hidden">
+                    <Label
+                      htmlFor="json-upload"
+                      className="text-lg font-semibold cursor-pointer flex items-center gap-2"
+                    >
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-500 text-white text-sm font-bold">
+                        2
+                      </span>
+                      {t("workbookGeneratorPage.step2.title")}
+                    </Label>
+                  </div>
                 </div>
-                <div className="flex-1">
+
+                <div className="flex-1 hidden sm:block">
                   <Label
                     htmlFor="json-upload"
                     className="text-lg font-semibold cursor-pointer flex items-center gap-2"
@@ -242,6 +276,11 @@ export default function WorkbookGeneratorPage() {
                       t("workbookGeneratorPage.step2.placeholder")}
                   </div>
                 </div>
+
+                <div className="sm:hidden text-sm text-muted-foreground mb-2 ml-14 -mt-2">
+                  {jsonFileName || t("workbookGeneratorPage.step2.placeholder")}
+                </div>
+
                 <Input
                   id="json-upload"
                   type="file"
@@ -251,7 +290,7 @@ export default function WorkbookGeneratorPage() {
                 />
                 <Button
                   variant="outline"
-                  className="hover:bg-purple-50 dark:hover:bg-purple-950"
+                  className="w-full sm:w-auto hover:bg-purple-50 dark:hover:bg-purple-950"
                   onClick={() =>
                     document.getElementById("json-upload")?.click()
                   }

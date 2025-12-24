@@ -25,7 +25,7 @@ router.get(async (req, ctx) => {
     const { article_id } = await ctx.params;
 
     // 1. Fetch Article with Relations
-    const article = await prisma.article.findUnique({
+    let article: any = await prisma.article.findUnique({
       where: { id: article_id },
       include: {
         multipleChoiceQuestions: true,
@@ -34,9 +34,24 @@ router.get(async (req, ctx) => {
       },
     });
 
+    let isChapter = false;
+
+    // 2. If not article, Try Fetch Chapter
+    if (!article) {
+      article = await prisma.chapter.findUnique({
+        where: { id: article_id },
+        include: {
+          multipleChoiceQuestions: true,
+          shortAnswerQuestions: true,
+          longAnswerQuestions: true,
+        },
+      });
+      isChapter = !!article;
+    }
+
     if (!article) {
       return NextResponse.json(
-        { message: "Article not found" },
+        { message: "Article or Chapter not found" },
         { status: 404 }
       );
     }
@@ -115,10 +130,17 @@ router.get(async (req, ctx) => {
 
         if (allSucceeded) {
           // Fetch the updated article with translations
-          const updatedArticle = await prisma.article.findUnique({
+          let updatedArticle: any = await prisma.article.findUnique({
             where: { id: article_id },
             select: { translatedPassage: true },
           });
+
+          if (!updatedArticle) {
+            updatedArticle = await prisma.chapter.findUnique({
+              where: { id: article_id },
+              select: { translatedPassage: true },
+            });
+          }
 
           if (updatedArticle?.translatedPassage) {
             translatedPassage = updatedArticle.translatedPassage;
@@ -177,8 +199,8 @@ router.get(async (req, ctx) => {
 
     // If no translated sentences, fallback to splitting passage by \n\n
     if (paragraphs.length === 0 && article.passage) {
-      const fallbackParagraphs = article.passage.split("\n\n");
-      fallbackParagraphs.forEach((p, i) => {
+      const fallbackParagraphs = (article.passage as string).split("\n\n");
+      fallbackParagraphs.forEach((p: string, i: number) => {
         paragraphs.push({
           number: i + 1,
           text: p,
@@ -206,7 +228,7 @@ router.get(async (req, ctx) => {
     // 7. Get 4 comprehension questions (limit to first 4 MCQs)
     const compQuestions = article.multipleChoiceQuestions
       .slice(0, 4)
-      .map((q, i) => ({
+      .map((q: any, i: number) => ({
         number: i + 1,
         question: q.question,
         options: q.options,
@@ -215,9 +237,9 @@ router.get(async (req, ctx) => {
     // 8. Get MC answers (from first 4 questions)
     const mcAnswers = article.multipleChoiceQuestions
       .slice(0, 4)
-      .map((q, i) => {
+      .map((q: any, i: number) => {
         const answerIndex = q.options.findIndex(
-          (opt) =>
+          (opt: string) =>
             opt.toLowerCase().includes(q.answer.toLowerCase()) ||
             q.answer.toLowerCase().includes(opt.toLowerCase())
         );
@@ -240,7 +262,7 @@ router.get(async (req, ctx) => {
     if (article.shortAnswerQuestions.length > 0) {
       // Find a valid question (not just a single letter)
       const validSAQ = article.shortAnswerQuestions.find(
-        (q) => q.question.length > 5 && q.question.includes(" ")
+        (q: any) => q.question.length > 5 && q.question.includes(" ")
       );
 
       if (validSAQ) {
@@ -383,7 +405,7 @@ router.get(async (req, ctx) => {
     if (article.longAnswerQuestions.length > 0) {
       // Find a valid question (not just a single letter)
       const validLAQ = article.longAnswerQuestions.find(
-        (q) => q.question.length > 5 && q.question.includes(" ")
+        (q: any) => q.question.length > 5 && q.question.includes(" ")
       );
 
       if (validLAQ) {
@@ -399,14 +421,18 @@ router.get(async (req, ctx) => {
 
     // 15. Build Workbook JSON
     const workbookData: WorkbookJSON = {
-      lesson_number: "Lesson 1",
+      lesson_number: isChapter
+        ? `Chapter ${article.chapterNumber}`
+        : "Lesson 1",
       lesson_title: article.title || "",
       level_name: `Level ${article.raLevel || 0}`,
       cefr_level: `CEFR ${article.cefrLevel || ""}`,
       vocabulary: vocab,
       article_image_url: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${article.id}.png`,
       article_caption: article.imageDescription || "Article Illustration",
-      article_url: `https://app.reading-advantage.com/th/student/read/${article.id}`,
+      article_url: isChapter
+        ? `https://app.reading-advantage.com/th/student/stories/${article.storyId}/${article.chapterNumber}`
+        : `https://app.reading-advantage.com/th/student/read/${article.id}`,
       article_paragraphs: paragraphs,
       comprehension_questions: compQuestions,
       short_answer_question: shortAnswerQuestion,

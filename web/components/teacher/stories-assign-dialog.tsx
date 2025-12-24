@@ -32,13 +32,5 @@ export default function StoriesAssignDialog({ story, storyId, userId }: Props) {
       });
   };
 
-  return (
-    <div>
-      <div className="flex gap-4">
-        <Button className="mb-4 ml-5" onClick={handleShow}>
-          Copy Link
-        </Button>
-      </div>
-    </div>
-  );
+  return <Button onClick={handleShow}>Copy Link</Button>;
 }

@@ -38,7 +38,7 @@ export async function translate(request: NextRequest, ctx: RequestContext) {
     );
   }
 
-  const article = await prisma.article.findUnique({
+  let article: any = await prisma.article.findUnique({
     where: { id: article_id },
     select: {
       id: true,
@@ -50,10 +50,27 @@ export async function translate(request: NextRequest, ctx: RequestContext) {
     },
   });
 
+  let isChapter = false;
+
+  if (!article) {
+    article = await prisma.chapter.findUnique({
+      where: { id: article_id },
+      select: {
+        id: true,
+        summary: true,
+        translatedSummary: true,
+        passage: true,
+        translatedPassage: true,
+        sentences: true,
+      },
+    });
+    isChapter = !!article;
+  }
+
   if (!article) {
     return NextResponse.json(
       {
-        message: "Article not found",
+        message: "Article or Chapter not found",
       },
       { status: 404 }
     );
@@ -89,10 +106,18 @@ export async function translate(request: NextRequest, ctx: RequestContext) {
         ...(existingTranslations || {}),
         [targetLanguage]: translatedSentences,
       };
-      await prisma.article.update({
-        where: { id: article_id },
-        data: { translatedSummary: updatedTranslations },
-      });
+
+      if (isChapter) {
+        await prisma.chapter.update({
+          where: { id: article_id },
+          data: { translatedSummary: updatedTranslations },
+        });
+      } else {
+        await prisma.article.update({
+          where: { id: article_id },
+          data: { translatedSummary: updatedTranslations },
+        });
+      }
       return NextResponse.json({
         message: "Translation successful",
         translated_sentences: translatedSentences,
@@ -161,10 +186,17 @@ export async function translate(request: NextRequest, ctx: RequestContext) {
         [targetLanguage]: translatedSentences,
       };
 
-      await prisma.article.update({
-        where: { id: article_id },
-        data: { translatedPassage: updatedTranslations },
-      });
+      if (isChapter) {
+        await prisma.chapter.update({
+          where: { id: article_id },
+          data: { translatedPassage: updatedTranslations },
+        });
+      } else {
+        await prisma.article.update({
+          where: { id: article_id },
+          data: { translatedPassage: updatedTranslations },
+        });
+      }
       return NextResponse.json({
         message: "Translation successful",
         translated_sentences: translatedSentences,

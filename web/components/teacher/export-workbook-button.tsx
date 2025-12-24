@@ -15,7 +15,7 @@ export default function ExportWorkbookButton({
   article,
   articleId,
 }: ExportWorkbookButtonProps) {
-  const t = useScopedI18n("exportWorkbookButton");
+  const t = useScopedI18n("components.exportWorkbookButton");
   const [loading, setLoading] = useState(false);
 
   const handleExport = async () => {
@@ -56,7 +56,7 @@ export default function ExportWorkbookButton({
   };
 
   return (
-    <Button size="sm" onClick={handleExport} disabled={loading}>
+    <Button className="gap-2" size="sm" onClick={handleExport} disabled={loading}>
       <Download className="h-4 w-4" />
       {loading ? t("exporting") : t("buttonText")}
     </Button>
