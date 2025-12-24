@@ -84,8 +84,6 @@ export default async function StoryChapterSelectionPage({
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 
-  console.log(user);
-
   const translations = {
     chapters: t("chapters"),
     characters: t("characters"),
