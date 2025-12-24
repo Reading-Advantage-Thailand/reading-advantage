@@ -55,6 +55,11 @@ export const teacherPageConfig: TeacherPageConfig = {
       href: "/teacher/passages",
       icon: "article",
     },
+    {
+      title: "workbookGenerator",
+      href: "/teacher/workbook-generator",
+      icon: "book",
+    },
     // {
     //   title: "google classroom",
     //   href: "/teacher/classroom",

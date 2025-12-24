@@ -14,6 +14,7 @@ import LAQuestionCard from "@/components/questions/laq-question-card";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
 import PrintArticle from "@/components/teacher/print-article";
+import ExportWorkbookButton from "@/components/teacher/export-workbook-button";
 import ArticleLesson from "@/components/lesson/lesson-button";
 
 export const metadata = {
@@ -41,12 +42,12 @@ export default async function ArticleQuizPage({
   if (!user) return redirect("/auth/signin");
 
   const isAtLeastTeacher = (role: string) =>
-    role.includes("teacher") ||
-    role.includes("admin") ||
-    role.includes("system");
+    role.includes("TEACHER") ||
+    role.includes("ADMIN") ||
+    role.includes("SYSTEM");
 
   const isAboveTeacher = (role: string) =>
-    role.includes("admin") || role.includes("system");
+    role.includes("ADMIN") || role.includes("SYSTEM");
 
   const articleResponse = await getArticle(articleId);
 
@@ -64,30 +65,33 @@ export default async function ArticleQuizPage({
           userId={user.id}
         />
         <div className="flex flex-col gap-4 mb-40 mt-4 max-w-[400px]">
-          <div className="flex gap-2 justify-center items-center sm:flex-nowrap flex-wrap">
-            {isAtLeastTeacher(user.role) && (
-              <>
-                <PrintArticle
-                  articleId={articleId}
-                  article={articleResponse.article}
-                />
-              </>
-            )}
-            {isAboveTeacher(user.role) && (
-              <ArticleActions
-                article={articleResponse.article}
+          {/* Teacher Tools Section */}
+          {isAtLeastTeacher(user.role) && (
+            <div className="flex gap-2 justify-center items-center flex-wrap bg-white/5 p-3 rounded-lg border border-white/10">
+              <PrintArticle
                 articleId={articleId}
+                article={articleResponse.article}
               />
-            )}
-
-            {isAtLeastTeacher("teacher") && (
+              <ExportWorkbookButton
+                articleId={articleId}
+                article={articleResponse.article}
+              />
+              {isAboveTeacher(user.role) && (
+                <ArticleActions
+                  article={articleResponse.article}
+                  articleId={articleId}
+                />
+              )}
               <AssignDialog
                 article={articleResponse.article}
                 articleId={articleId}
                 userId={user.id}
               />
-            )}
+            </div>
+          )}
 
+          {/* Student Actions Section */}
+          <div className="flex gap-2 justify-center items-center flex-wrap">
             <WordList
               article={articleResponse.article}
               articleId={articleId}

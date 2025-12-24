@@ -32,7 +32,12 @@ export default function RatingPopup({
   const [modalIsOpen, setModalIsOpen] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [oldRating, setOldRating] = React.useState(0);
+  const [isMounted, setIsMounted] = React.useState(false);
   const router = useRouter();
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   React.useEffect(() => {
     ratedFetch();
@@ -167,16 +172,20 @@ export default function RatingPopup({
         <h1 onClick={toggleModal} className="cursor-pointer">
           Rate this article
         </h1>
-        <Stack onClick={toggleModal} className="cursor-pointer">
-          <Rating
-            value={averageRating}
-            onChange={handleChange}
-            precision={0.5}
-            size="large"
-            className="dark:bg-white py-1 px-4 rounded-xl"
-            readOnly
-          />
-        </Stack>
+        <div onClick={toggleModal} className="cursor-pointer">
+          {isMounted ? (
+            <Rating
+              value={averageRating}
+              onChange={handleChange}
+              precision={0.5}
+              size="large"
+              className="dark:bg-white py-1 px-4 rounded-xl"
+              readOnly
+            />
+          ) : (
+            <div className="h-10 w-40 bg-gray-200 dark:bg-gray-700 rounded-xl" />
+          )}
+        </div>
       </div>
 
       {/* modal */}

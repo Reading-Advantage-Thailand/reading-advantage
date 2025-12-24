@@ -1279,6 +1279,47 @@ export default {
         unnamedClass: "Unnamed Class",
         na: "N/A",
       },
+      workbookGeneratorPage: {
+        title: "Workbook Generator",
+        description:
+          "Create beautiful, printable workbooks from your templates and content",
+        cardTitle: "Generate Your Workbook",
+        cardDescription:
+          "Upload your HTML template and JSON content to create a custom workbook",
+        step1: {
+          title: "Upload Template (HTML)",
+          placeholder: "Select `workbook_template.html`",
+        },
+        step2: {
+          title: "Upload Content (JSON)",
+          placeholder: "Select `content_*.json`",
+        },
+        selectButton: "Select",
+        generateButton: "Generate & Preview Workbook",
+        howToUse: {
+          title: "How to Use",
+          step1Title: "Upload Template:",
+          step1Description:
+            "Select your HTML template file (workbook_template.html) that contains the layout and structure",
+          step2Title: "Upload Content:",
+          step2Description:
+            "Select your JSON file containing the article content, questions, and vocabulary",
+          step3Title: "Generate:",
+          step3Description:
+            "Click the generate button to create and preview your workbook in a new tab",
+        },
+        messages: {
+          uploadBothFiles:
+            "Please upload both a template file and a JSON data file.",
+          popupBlocked:
+            "Pop-up blocked. Please allow pop-ups for this site to view the workbook.",
+          successGenerated:
+            "Workbook generated successfully! Opened in a new tab.",
+          errorGenerating: "Error generating workbook:",
+          success: "Success",
+          error: "Error",
+        },
+      },
     },
     admin: {
       generate: [
@@ -2087,6 +2128,7 @@ export default {
       passages: "Passages",
       assignments: "Assignments",
       dashboard: "Dashboard",
+      workbookGenerator: "Workbook Generator",
     },
     sidebarTeacherNav: {
       dashboard: "Dashboard",
@@ -2096,6 +2138,7 @@ export default {
       reports: "Reports",
       passages: "Passages",
       assignments: "Assignments",
+      workbookGenerator: "Workbook Generator",
     },
     articleRecordsTable: {
       title: "Title",

@@ -1259,6 +1259,87 @@ export default {
         unnamedClass: "Lớp chưa đặt tên",
         na: "Không xác định",
       },
+      workbookGeneratorPage: {
+        title: "Workbook Generator",
+        description:
+          "Create beautiful, printable workbooks from your templates and content",
+        cardTitle: "Generate Your Workbook",
+        cardDescription:
+          "Upload your HTML template and JSON content to create a custom workbook",
+        step1: {
+          title: "Upload Template (HTML)",
+          placeholder: "Select `workbook_template.html`",
+        },
+        step2: {
+          title: "Upload Content (JSON)",
+          placeholder: "Select `content_*.json`",
+        },
+        selectButton: "Select",
+        generateButton: "Generate & Preview Workbook",
+        howToUse: {
+          title: "How to Use",
+          step1Title: "Upload Template:",
+          step1Description:
+            "Select your HTML template file (workbook_template.html) that contains the layout and structure",
+          step2Title: "Upload Content:",
+          step2Description:
+            "Select your JSON file containing the article content, questions, and vocabulary",
+          step3Title: "Generate:",
+          step3Description:
+            "Click the generate button to create and preview your workbook in a new tab",
+        },
+        messages: {
+          uploadBothFiles:
+            "Please upload both a template file and a JSON data file.",
+          popupBlocked:
+            "Pop-up blocked. Please allow pop-ups for this site to view the workbook.",
+          successGenerated:
+            "Workbook generated successfully! Opened in a new tab.",
+          errorGenerating: "Error generating workbook:",
+          success: "Success",
+          error: "Error",
+        },
+        workbookGeneratorPage: {
+          title: "Trình tạo Workbook",
+          description:
+            "Tạo các workbook đẹp mắt, có thể in được từ các mẫu và nội dung của bạn",
+          cardTitle: "Tạo Workbook của bạn",
+          cardDescription:
+            "Tải lên mẫu HTML và nội dung JSON của bạn để tạo workbook tùy chỉnh",
+          step1: {
+            title: "Tải lên Mẫu (HTML)",
+            placeholder: "Chọn `workbook_template.html`",
+          },
+          step2: {
+            title: "Tải lên Nội dung (JSON)",
+            placeholder: "Chọn `content_*.json`",
+          },
+          selectButton: "Chọn",
+          generateButton: "Tạo & Xem trước Workbook",
+          howToUse: {
+            title: "Cách sử dụng",
+            step1Title: "Tải lên Mẫu:",
+            step1Description:
+              "Chọn tệp mẫu HTML của bạn (workbook_template.html) chứa bố cục và cấu trúc",
+            step2Title: "Tải lên Nội dung:",
+            step2Description:
+              "Chọn tệp JSON của bạn chứa nội dung bài viết, câu hỏi và từ vựng",
+            step3Title: "Tạo:",
+            step3Description:
+              "Nhấp vào nút tạo để tạo và xem trước workbook của bạn trong một tab mới",
+          },
+          messages: {
+            uploadBothFiles: "Vui lòng tải lên cả tệp mẫu và tệp dữ liệu JSON.",
+            popupBlocked:
+              "Cửa sổ bật lên bị chặn. Vui lòng cho phép cửa sổ bật lên cho trang web này để xem workbook.",
+            successGenerated:
+              "Đã tạo workbook thành công! Đã mở trong tab mới.",
+            errorGenerating: "Lỗi khi tạo workbook:",
+            success: "Thành công",
+            error: "Lỗi",
+          },
+        },
+      },
     },
     admin: {
       generate: [
@@ -2072,6 +2153,7 @@ export default {
       passages: "Những đoạn văn",
       assignments: "Bài tập",
       dashboard: "Bảng Điều Khiển",
+      workbookGenerator: "TạoWorkbook",
     },
     sidebarTeacherNav: {
       dashboard: "Bảng Điều Khiển",
@@ -2081,6 +2163,7 @@ export default {
       reports: "báo cáo",
       passages: "Những đoạn văn",
       assignments: "Bài tập",
+      workbookGenerator: "TạoWorkbook",
     },
     articleRecordsTable: {
       title: "Tiêu đề",

@@ -1181,6 +1181,41 @@ export default {
         unnamedClass: "未命名班級",
         na: "無",
       },
+      workbookGeneratorPage: {
+        title: "練習冊產生器",
+        description: "從您的模板和內容建立美觀且可列印的練習冊",
+        cardTitle: "產生您的練習冊",
+        cardDescription: "上傳您的 HTML 模板和 JSON 內容以建立自定義練習冊",
+        step1: {
+          title: "上傳模板 (HTML)",
+          placeholder: "選擇 `workbook_template.html`",
+        },
+        step2: {
+          title: "上傳內容 (JSON)",
+          placeholder: "選擇 `content_*.json`",
+        },
+        selectButton: "選擇",
+        generateButton: "產生並預覽練習冊",
+        howToUse: {
+          title: "使用說明",
+          step1Title: "上傳模板：",
+          step1Description:
+            "選擇包含佈局和結構的 HTML 模板檔案 (workbook_template.html)",
+          step2Title: "上傳內容：",
+          step2Description: "選擇包含文章內容、問題和詞彙的 JSON 檔案",
+          step3Title: "產生：",
+          step3Description: "點擊產生按鈕以在新分頁中建立並預覽您的練習冊",
+        },
+        messages: {
+          uploadBothFiles: "請同時上傳模板檔案和 JSON 資料檔案。",
+          popupBlocked:
+            "彈出視窗已遭封鎖。請允許此網站的彈出視窗以查看練習冊。",
+          successGenerated: "練習冊產生成功！已在新分頁中開啟。",
+          errorGenerating: "產生練習冊時發生錯誤：",
+          success: "成功",
+          error: "錯誤",
+        },
+      },
     },
     admin: {
       generate: [
@@ -1960,6 +1995,7 @@ export default {
       passages: "段落",
       assignments: "作業",
       dashboard: "控制台",
+      workbookGenerator: "練習冊產生器",
     },
     sidebarTeacherNav: {
       dashboard: "控制台",
@@ -1969,6 +2005,7 @@ export default {
       reports: "報告",
       passages: "段落",
       assignments: "作業",
+      workbookGenerator: "工作簿生成器",
     },
     articleRecordsTable: {
       title: "標題",

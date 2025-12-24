@@ -57,11 +57,14 @@ export function SidebarTeacherNav({ items }: SidebarTeacherNavProps) {
                   >
                     {t(
                       item.title as
+                        | "dashboard"
                         | "myClasses"
                         | "myStudents"
                         | "classRoster"
                         | "reports"
                         | "assignments"
+                        | "passages"
+                        | "workbookGenerator"
                     )}
                     {/* {t(item.title)} */}
                   </span>

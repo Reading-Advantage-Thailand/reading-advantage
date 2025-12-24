@@ -25,10 +25,7 @@ export type TranslateResponse = {
   translated_sentences: string[];
 };
 
-export async function translate(
-  request: NextRequest,
-  ctx: RequestContext
-) {
+export async function translate(request: NextRequest, ctx: RequestContext) {
   const { article_id } = await ctx.params;
   const { type, targetLanguage } = await request.json();
 
@@ -156,10 +153,14 @@ export async function translate(
       const temp = await translatePassageWithGPT(sentences, targetLanguage);
       const translatedSentences =
         temp[targetLanguage as keyof typeof temp] || [];
+
+      // Always include EN sentences in translatedPassage
       const updatedTranslations = {
         ...(existingTranslations || {}),
+        en: existingTranslations?.en || sentences, // Keep original EN sentences
         [targetLanguage]: translatedSentences,
       };
+
       await prisma.article.update({
         where: { id: article_id },
         data: { translatedPassage: updatedTranslations },

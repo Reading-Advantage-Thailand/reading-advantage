@@ -13,11 +13,11 @@ export default function PrintArticle({
   articleId: string;
   article: Article;
 }) {
-  const [laqQuestions, setLAQQuestions] = useState([]);
-  const [saqQuestions, setSAQQuestions] = useState([]);
-  const [maqQuestions, setMAQQuestions] = useState([]);
-  const [wordList, setWordList] = useState([]);
-  const [translated, setTranslated] = useState([]);
+  const [laqQuestions, setLAQQuestions] = useState<any[]>([]);
+  const [saqQuestions, setSAQQuestions] = useState<any[]>([]);
+  const [maqQuestions, setMAQQuestions] = useState<any[]>([]);
+  const [wordList, setWordList] = useState<any[]>([]);
+  const [translated, setTranslated] = useState<any[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
   const locale = useCurrentLocale();
@@ -66,10 +66,12 @@ export default function PrintArticle({
         body: JSON.stringify({ article, articleId }),
       });
       const data = await response.json();
-      if (data.message) {
-        console.error(data.message);
-      } else {
+      if (Array.isArray(data)) {
+        setWordList(data);
+      } else if (data.word_list) {
         setWordList(data.word_list);
+      } else if (data.message) {
+        console.error(data.message);
       }
     };
     const fetchTranslate = async () => {
@@ -119,9 +121,8 @@ export default function PrintArticle({
       );
   };
 
-  const vocabularyList = wordList.map(
-    (word: { vocabulary: string }) => word.vocabulary
-  );
+  const vocabularyList =
+    wordList?.map((word: { vocabulary: string }) => word.vocabulary) || [];
 
   const paragraphs = article.passage.split("\n\n");
 
@@ -130,7 +131,9 @@ export default function PrintArticle({
 
   return (
     <div className="flex items-center">
-      <Button onClick={() => reactToPrintFn()}>{t("printButton")}</Button>
+      <Button size="sm" onClick={() => reactToPrintFn()}>
+        {t("printButton")}
+      </Button>
       <div className="hidden">
         <div
           ref={contentRef}
@@ -303,7 +306,7 @@ export default function PrintArticle({
 
                 <section className="p-6">
                   <h3 className="text-xl font-semibold">Translation</h3>
-                  <p className="text-gray-800 leading-relaxed mt-6 text-sm">
+                  <div className="text-gray-800 leading-relaxed mt-6 text-sm">
                     {translated.map((paragraph: string, index: number) => {
                       const paragraphLength = paragraph.length;
                       charCount += paragraphLength;
@@ -324,7 +327,7 @@ export default function PrintArticle({
                         </p>
                       );
                     })}
-                  </p>
+                  </div>
                 </section>
               </>
             )}

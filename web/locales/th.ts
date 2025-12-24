@@ -1245,6 +1245,45 @@ export default {
         unnamedClass: "ชั้นเรียนที่ยังไม่มีชื่อ",
         na: "ไม่ระบุ",
       },
+      workbookGeneratorPage: {
+        title: "เครื่องมือสร้างเวิร์กบุ๊ก",
+        description:
+          "สร้างแบบเวิร์กบุ๊กที่สวยงามและพิมพ์ได้จากเทมเพลตและเนื้อหาของคุณ",
+        cardTitle: "สร้างแบบเวิร์กบุ๊กของคุณ",
+        cardDescription:
+          "อัปโหลดเทมเพลต HTML และเนื้อหา JSON เพื่อสร้างแบบเวิร์กบุ๊กแบบกำหนดเอง",
+        step1: {
+          title: "อัปโหลดเทมเพลต (HTML)",
+          placeholder: "เลือก `workbook_template.html`",
+        },
+        step2: {
+          title: "อัปโหลดเนื้อหา (JSON)",
+          placeholder: "เลือก `content_*.json`",
+        },
+        selectButton: "เลือก",
+        generateButton: "สร้างและดูตัวอย่างแบบเวิร์กบุ๊ก",
+        howToUse: {
+          title: "วิธีการใช้งาน",
+          step1Title: "อัปโหลดเทมเพลต:",
+          step1Description:
+            "เลือกไฟล์เทมเพลต HTML (workbook_template.html) ที่มีเลย์เอาต์และโครงสร้าง",
+          step2Title: "อัปโหลดเนื้อหา:",
+          step2Description:
+            "เลือกไฟล์ JSON ที่มีเนื้อหาบทความ คำถาม และคำศัพท์",
+          step3Title: "สร้าง:",
+          step3Description:
+            "คลิกปุ่มสร้างเพื่อสร้างและดูตัวอย่างแบบเวิร์กบุ๊กของคุณในแท็บใหม่",
+        },
+        messages: {
+          uploadBothFiles: "โปรดอัปโหลดทั้งไฟล์เทมเพลตและไฟล์ข้อมูล JSON",
+          popupBlocked:
+            "ป๊อปอัปถูกบล็อก โปรดอนุญาตป๊อปอัปสำหรับไซต์นี้เพื่อดูแบบเวิร์กบุ๊ก",
+          successGenerated: "สร้างแบบเวิร์กบุ๊กสำเร็จแล้ว! เปิดในแท็บใหม่",
+          errorGenerating: "เกิดข้อผิดพลาดในการสร้างแบบเวิร์กบุ๊ก:",
+          success: "สำเร็จ",
+          error: "ข้อผิดพลาด",
+        },
+      },
     },
     admin: {
       generate: [
@@ -2059,6 +2098,7 @@ export default {
       passages: "บทความ",
       assignments: "งานที่มอบหมาย",
       dashboard: "แดชบอร์ด",
+      workbookGenerator: "สร้างเวิร์กบุ๊ก",
     },
     sidebarTeacherNav: {
       dashboard: "แดชบอร์ด",
@@ -2068,6 +2108,7 @@ export default {
       reports: "รายงาน",
       passages: "บทความ",
       assignments: "งานที่มอบหมาย",
+      workbookGenerator: "สร้างเวิร์กบุ๊ก",
     },
     articleRecordsTable: {
       title: "ชื่อบทความ",

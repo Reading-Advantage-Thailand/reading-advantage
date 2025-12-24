@@ -3,9 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { ExtendedNextRequest } from "./auth-controller";
 import { getCurrentUser } from "@/lib/session";
 import { Role } from "@prisma/client";
-import { 
-  AdminAlertsResponse, 
-  Alert, 
+import {
+  AdminAlertsResponse,
+  Alert,
   AdminOverviewResponse,
   AdminSegmentsResponse,
   SchoolSegment,
@@ -98,7 +98,7 @@ export async function getAdminDashboard(req: NextRequest) {
     }
 
     // Calculate date range based on timeframe
-    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+    const daysAgo = timeframe === "7d" ? 7 : timeframe === "90d" ? 90 : 30;
     const activityStartDate = new Date();
     activityStartDate.setDate(activityStartDate.getDate() - daysAgo);
 
@@ -254,49 +254,49 @@ export async function getAdminAlerts(req: NextRequest) {
 
   try {
     const user = await getCurrentUser();
-    
+
     if (!user) {
       return NextResponse.json(
-        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { code: "UNAUTHORIZED", message: "Not authenticated" },
         { status: 401 }
       );
     }
 
     const { searchParams } = new URL(req.url);
     let licenseId: string | null = null;
-    
+
     // SYSTEM role can select any license via query parameter
     // ADMIN role must use their own license from session
     if (user.role === Role.SYSTEM) {
-      licenseId = searchParams.get('licenseId');
+      licenseId = searchParams.get("licenseId");
     } else if (user.role === Role.ADMIN) {
       licenseId = user.license_id || null;
-      
+
       if (!licenseId) {
         return NextResponse.json(
-          { code: 'FORBIDDEN', message: 'Admin user has no license assigned' },
+          { code: "FORBIDDEN", message: "Admin user has no license assigned" },
           { status: 403 }
         );
       }
     } else {
       return NextResponse.json(
-        { code: 'FORBIDDEN', message: 'Insufficient permissions' },
+        { code: "FORBIDDEN", message: "Insufficient permissions" },
         { status: 403 }
       );
     }
-    
+
     const alerts: Alert[] = [];
 
     // Build where clause for schools
     let schoolWhere: any = {};
-    
+
     // If licenseId is provided, only get the school associated with that license
     if (licenseId) {
       const license = await prisma.license.findUnique({
         where: { id: licenseId },
         select: { schoolId: true },
       });
-      
+
       if (license?.schoolId) {
         schoolWhere = { id: license.schoolId };
       } else {
@@ -330,7 +330,7 @@ export async function getAdminAlerts(req: NextRequest) {
               },
               take: 1,
               orderBy: {
-                createdAt: 'desc',
+                createdAt: "desc",
               },
             },
           },
@@ -365,9 +365,9 @@ export async function getAdminAlerts(req: NextRequest) {
         if (activeRate < 30) {
           alerts.push({
             id: `low-activity-${school.id}`,
-            type: 'warning',
-            severity: activeRate < 10 ? 'high' : 'medium',
-            title: 'Low Student Activity',
+            type: "warning",
+            severity: activeRate < 10 ? "high" : "medium",
+            title: "Low Student Activity",
             message: `Only ${Math.round(activeRate)}% of students in ${school.name} were active in the last 30 days.`,
             schoolId: school.id,
             schoolName: school.name,
@@ -382,14 +382,15 @@ export async function getAdminAlerts(req: NextRequest) {
         const expiryDate = license.expiresAt;
         if (expiryDate && new Date(expiryDate) <= sevenDaysFromNow) {
           const daysUntilExpiry = Math.ceil(
-            (new Date(expiryDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+            (new Date(expiryDate).getTime() - now.getTime()) /
+              (1000 * 60 * 60 * 24)
           );
-          
+
           alerts.push({
             id: `expiring-license-${license.id}`,
-            type: 'warning',
-            severity: daysUntilExpiry <= 3 ? 'critical' : 'high',
-            title: 'License Expiring Soon',
+            type: "warning",
+            severity: daysUntilExpiry <= 3 ? "critical" : "high",
+            title: "License Expiring Soon",
             message: `A license for ${school.name} expires in ${daysUntilExpiry} day(s).`,
             schoolId: school.id,
             schoolName: school.name,
@@ -412,9 +413,9 @@ export async function getAdminAlerts(req: NextRequest) {
       if (totalSeats > 0 && licensesUsed >= totalSeats * 0.9) {
         alerts.push({
           id: `license-capacity-${school.id}`,
-          type: 'warning',
-          severity: licensesUsed >= totalSeats ? 'critical' : 'high',
-          title: 'License Capacity Warning',
+          type: "warning",
+          severity: licensesUsed >= totalSeats ? "critical" : "high",
+          title: "License Capacity Warning",
           message: `${school.name} is using ${licensesUsed} of ${totalSeats} available license seats (${Math.round((licensesUsed / totalSeats) * 100)}%).`,
           schoolId: school.id,
           schoolName: school.name,
@@ -426,13 +427,15 @@ export async function getAdminAlerts(req: NextRequest) {
 
     // Sort alerts by severity
     const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-    alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+    alerts.sort(
+      (a, b) => severityOrder[a.severity] - severityOrder[b.severity]
+    );
 
     const response: AdminAlertsResponse = {
       alerts,
       summary: {
         total: alerts.length,
-        critical: alerts.filter((a) => a.severity === 'critical').length,
+        critical: alerts.filter((a) => a.severity === "critical").length,
         unacknowledged: alerts.filter((a) => !a.acknowledged).length,
       },
       cache: {
@@ -445,23 +448,23 @@ export async function getAdminAlerts(req: NextRequest) {
 
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
-        'X-Response-Time': `${duration}ms`,
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=240",
+        "X-Response-Time": `${duration}ms`,
       },
     });
   } catch (error) {
-    console.error('[Controller] getAdminAlerts - Error:', error);
+    console.error("[Controller] getAdminAlerts - Error:", error);
 
     return NextResponse.json(
       {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch alerts',
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch alerts",
         details: error instanceof Error ? { error: error.message } : {},
       },
       {
         status: 500,
         headers: {
-          'X-Response-Time': `${Date.now() - startTime}ms`,
+          "X-Response-Time": `${Date.now() - startTime}ms`,
         },
       }
     );
@@ -481,19 +484,19 @@ export async function getAdminOverview(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { code: "UNAUTHORIZED", message: "Not authenticated" },
         { status: 401 }
       );
     }
 
     // Get query parameters
     const { searchParams } = new URL(req.url);
-    const timeframe = searchParams.get('timeframe') || '30d';
-    const requestedLicenseId = searchParams.get('licenseId');
+    const timeframe = searchParams.get("timeframe") || "30d";
+    const requestedLicenseId = searchParams.get("licenseId");
 
     // Determine which license to query
     let targetLicenseId: string | null = null;
-    
+
     if (user.role === Role.SYSTEM) {
       // SYSTEM users can query any license or all licenses
       targetLicenseId = requestedLicenseId;
@@ -504,18 +507,20 @@ export async function getAdminOverview(req: NextRequest) {
 
     // Calculate date range
     const now = new Date();
-    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+    const daysAgo = timeframe === "7d" ? 7 : timeframe === "90d" ? 90 : 30;
     const startDate = new Date(now);
     startDate.setDate(startDate.getDate() - daysAgo);
 
     // Build where clause for license filtering
-    const licenseFilter = targetLicenseId ? {
-      licenseOnUsers: {
-        some: {
-          licenseId: targetLicenseId,
-        },
-      },
-    } : {};
+    const licenseFilter = targetLicenseId
+      ? {
+          licenseOnUsers: {
+            some: {
+              licenseId: targetLicenseId,
+            },
+          },
+        }
+      : {};
 
     // Get summary data (parallel queries)
     const [
@@ -532,13 +537,13 @@ export async function getAdminOverview(req: NextRequest) {
       readingSessionsToday,
     ] = await Promise.all([
       // Total schools
-      targetLicenseId 
+      targetLicenseId
         ? prisma.license.count({ where: { id: targetLicenseId } })
         : prisma.school.count(),
 
       // Total students
       prisma.user.count({
-        where: { 
+        where: {
           role: Role.STUDENT,
           ...licenseFilter,
         },
@@ -546,7 +551,7 @@ export async function getAdminOverview(req: NextRequest) {
 
       // Total teachers
       prisma.user.count({
-        where: { 
+        where: {
           role: { in: [Role.TEACHER, Role.ADMIN] },
           ...licenseFilter,
         },
@@ -600,7 +605,7 @@ export async function getAdminOverview(req: NextRequest) {
           select: {
             classroomId: true,
           },
-          distinct: ['classroomId'],
+          distinct: ["classroomId"],
         });
 
         return activeClassrooms.length;
@@ -612,21 +617,23 @@ export async function getAdminOverview(req: NextRequest) {
           createdAt: {
             gte: startDate,
           },
-          ...(targetLicenseId ? {
-            user: {
-              licenseOnUsers: {
-                some: {
-                  licenseId: targetLicenseId,
+          ...(targetLicenseId
+            ? {
+                user: {
+                  licenseOnUsers: {
+                    some: {
+                      licenseId: targetLicenseId,
+                    },
+                  },
                 },
-              },
-            },
-          } : {}),
+              }
+            : {}),
         },
       }),
 
       // Average reading level
       prisma.user.aggregate({
-        where: { 
+        where: {
           role: Role.STUDENT,
           ...licenseFilter,
         },
@@ -663,15 +670,17 @@ export async function getAdminOverview(req: NextRequest) {
           createdAt: {
             gte: new Date(now.setHours(0, 0, 0, 0)),
           },
-          ...(targetLicenseId ? {
-            user: {
-              licenseOnUsers: {
-                some: {
-                  licenseId: targetLicenseId,
+          ...(targetLicenseId
+            ? {
+                user: {
+                  licenseOnUsers: {
+                    some: {
+                      licenseId: targetLicenseId,
+                    },
+                  },
                 },
-              },
-            },
-          } : {}),
+              }
+            : {}),
         },
       }),
     ]);
@@ -685,7 +694,8 @@ export async function getAdminOverview(req: NextRequest) {
         activeUsers30d: activeUsers,
         activeClassrooms,
         totalReadingSessions,
-        averageReadingLevel: Math.round((averageReadingLevel._avg.level || 0) * 10) / 10,
+        averageReadingLevel:
+          Math.round((averageReadingLevel._avg.level || 0) * 10) / 10,
       },
       recentActivity: {
         newUsersToday,
@@ -693,7 +703,7 @@ export async function getAdminOverview(req: NextRequest) {
         readingSessionsToday,
       },
       systemHealth: {
-        status: 'healthy',
+        status: "healthy",
         lastChecked: new Date().toISOString(),
       },
       cache: {
@@ -706,23 +716,23 @@ export async function getAdminOverview(req: NextRequest) {
 
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
-        'X-Response-Time': `${duration}ms`,
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=240",
+        "X-Response-Time": `${duration}ms`,
       },
     });
   } catch (error) {
-    console.error('[Controller] getAdminOverview - Error:', error);
+    console.error("[Controller] getAdminOverview - Error:", error);
 
     return NextResponse.json(
       {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch admin overview',
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch admin overview",
         details: error instanceof Error ? { error: error.message } : {},
       },
       {
         status: 500,
         headers: {
-          'X-Response-Time': `${Date.now() - startTime}ms`,
+          "X-Response-Time": `${Date.now() - startTime}ms`,
         },
       }
     );
@@ -739,46 +749,46 @@ export async function getSchoolSegments(req: NextRequest) {
 
   try {
     const user = await getCurrentUser();
-    
+
     if (!user) {
       return NextResponse.json(
-        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { code: "UNAUTHORIZED", message: "Not authenticated" },
         { status: 401 }
       );
     }
 
     const { searchParams } = new URL(req.url);
     let licenseId: string | null = null;
-    
+
     // SYSTEM role can select any license via query parameter
     // ADMIN role must use their own license from session
     if (user.role === Role.SYSTEM) {
-      licenseId = searchParams.get('licenseId');
+      licenseId = searchParams.get("licenseId");
     } else if (user.role === Role.ADMIN) {
       licenseId = user.license_id || null;
-      
+
       if (!licenseId) {
         return NextResponse.json(
-          { code: 'FORBIDDEN', message: 'Admin user has no license assigned' },
+          { code: "FORBIDDEN", message: "Admin user has no license assigned" },
           { status: 403 }
         );
       }
     } else {
       return NextResponse.json(
-        { code: 'FORBIDDEN', message: 'Insufficient permissions' },
+        { code: "FORBIDDEN", message: "Insufficient permissions" },
         { status: 403 }
       );
     }
 
     // Build where clause for schools
     let schoolWhere: any = {};
-    
+
     if (licenseId) {
       const license = await prisma.license.findUnique({
         where: { id: licenseId },
         select: { schoolId: true },
       });
-      
+
       if (license?.schoolId) {
         schoolWhere = { id: license.schoolId };
       }
@@ -800,7 +810,7 @@ export async function getSchoolSegments(req: NextRequest) {
               },
               take: 1,
               orderBy: {
-                createdAt: 'desc',
+                createdAt: "desc",
               },
             },
           },
@@ -820,8 +830,8 @@ export async function getSchoolSegments(req: NextRequest) {
     // Process schools into segments
     const segments: SchoolSegment[] = schools.map((school) => {
       const students = school.users.filter((u) => u.role === Role.STUDENT);
-      const teachers = school.users.filter((u) => 
-        u.role === Role.TEACHER || u.role === Role.ADMIN
+      const teachers = school.users.filter(
+        (u) => u.role === Role.TEACHER || u.role === Role.ADMIN
       );
 
       // Count active users (had activity in last 30 days)
@@ -830,14 +840,14 @@ export async function getSchoolSegments(req: NextRequest) {
       ).length;
 
       const totalUsers = school.users.length;
-      const activeRate = totalUsers > 0 
-        ? Math.round((activeUsers / totalUsers) * 100) 
-        : 0;
+      const activeRate =
+        totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0;
 
       // Calculate average level
-      const avgLevel = students.length > 0
-        ? students.reduce((sum, s) => sum + s.level, 0) / students.length
-        : 0;
+      const avgLevel =
+        students.length > 0
+          ? students.reduce((sum, s) => sum + s.level, 0) / students.length
+          : 0;
 
       // Calculate total XP
       const totalXp = students.reduce((sum, s) => sum + s.xp, 0);
@@ -868,11 +878,13 @@ export async function getSchoolSegments(req: NextRequest) {
     // Calculate summary statistics
     const summary = {
       totalSchools: segments.length,
-      averageActiveRate: segments.length > 0
-        ? Math.round(
-            segments.reduce((sum, s) => sum + s.activeRate, 0) / segments.length
-          )
-        : 0,
+      averageActiveRate:
+        segments.length > 0
+          ? Math.round(
+              segments.reduce((sum, s) => sum + s.activeRate, 0) /
+                segments.length
+            )
+          : 0,
       totalLicensesUsed: segments.reduce((sum, s) => sum + s.licensesUsed, 0),
     };
 
@@ -889,23 +901,23 @@ export async function getSchoolSegments(req: NextRequest) {
 
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
-        'X-Response-Time': `${duration}ms`,
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=240",
+        "X-Response-Time": `${duration}ms`,
       },
     });
   } catch (error) {
-    console.error('[Controller] getSchoolSegments - Error:', error);
+    console.error("[Controller] getSchoolSegments - Error:", error);
 
     return NextResponse.json(
       {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch school segments',
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch school segments",
         details: error instanceof Error ? { error: error.message } : {},
       },
       {
         status: 500,
         headers: {
-          'X-Response-Time': `${Date.now() - startTime}ms`,
+          "X-Response-Time": `${Date.now() - startTime}ms`,
         },
       }
     );
@@ -925,18 +937,18 @@ export async function getTeacherEffectiveness(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+        { code: "UNAUTHORIZED", message: "Not authenticated" },
         { status: 401 }
       );
     }
 
     const { searchParams } = new URL(req.url);
-    const requestedLicenseId = searchParams.get('licenseId');
-    const timeframe = searchParams.get('timeframe') || '30d';
+    const requestedLicenseId = searchParams.get("licenseId");
+    const timeframe = searchParams.get("timeframe") || "30d";
 
     // Determine which license to query
     let targetLicenseId: string | null = null;
-    
+
     if (user.role === Role.SYSTEM) {
       targetLicenseId = requestedLicenseId;
     } else if (user.role === Role.ADMIN) {
@@ -944,18 +956,20 @@ export async function getTeacherEffectiveness(req: NextRequest) {
     }
 
     // Calculate date range
-    const daysAgo = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+    const daysAgo = timeframe === "7d" ? 7 : timeframe === "90d" ? 90 : 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysAgo);
 
     // Build license filter
-    const licenseFilter = targetLicenseId ? {
-      licenseOnUsers: {
-        some: {
-          licenseId: targetLicenseId,
-        },
-      },
-    } : {};
+    const licenseFilter = targetLicenseId
+      ? {
+          licenseOnUsers: {
+            some: {
+              licenseId: targetLicenseId,
+            },
+          },
+        }
+      : {};
 
     // Get all teachers with their classrooms and students
     const teachers = await prisma.user.findMany({
@@ -1011,22 +1025,24 @@ export async function getTeacherEffectiveness(req: NextRequest) {
 
         return {
           id: tc.classroom.id,
-          name: tc.classroom.classroomName || 'Unnamed Classroom',
+          name: tc.classroom.classroomName || "Unnamed Classroom",
           studentCount: students.length,
           activeCount: activeStudents.length,
         };
       });
 
-      const totalStudents = classrooms.reduce((sum, c) => sum + c.studentCount, 0);
+      const totalStudents = classrooms.reduce(
+        (sum, c) => sum + c.studentCount,
+        0
+      );
       const totalActive = classrooms.reduce((sum, c) => sum + c.activeCount, 0);
-      const engagementRate = totalStudents > 0 
-        ? Math.round((totalActive / totalStudents) * 100) 
-        : 0;
+      const engagementRate =
+        totalStudents > 0 ? Math.round((totalActive / totalStudents) * 100) : 0;
 
       return {
         teacherId: teacher.id,
-        teacherName: teacher.name || 'Unknown',
-        email: teacher.email || '',
+        teacherName: teacher.name || "Unknown",
+        email: teacher.email || "",
         studentCount: totalStudents,
         activeStudents: totalActive,
         engagementRate,
@@ -1041,13 +1057,21 @@ export async function getTeacherEffectiveness(req: NextRequest) {
       .sort((a, b) => b.engagementRate - a.engagementRate);
 
     // Calculate summary
-    const totalStudents = filteredTeachers.reduce((sum, t) => sum + t.studentCount, 0);
-    const totalActive = filteredTeachers.reduce((sum, t) => sum + t.activeStudents, 0);
-    const averageEngagement = filteredTeachers.length > 0
-      ? Math.round(
-          filteredTeachers.reduce((sum, t) => sum + t.engagementRate, 0) / filteredTeachers.length
-        )
-      : 0;
+    const totalStudents = filteredTeachers.reduce(
+      (sum, t) => sum + t.studentCount,
+      0
+    );
+    const totalActive = filteredTeachers.reduce(
+      (sum, t) => sum + t.activeStudents,
+      0
+    );
+    const averageEngagement =
+      filteredTeachers.length > 0
+        ? Math.round(
+            filteredTeachers.reduce((sum, t) => sum + t.engagementRate, 0) /
+              filteredTeachers.length
+          )
+        : 0;
 
     const response: TeacherEffectivenessResponse = {
       teachers: filteredTeachers,
@@ -1067,26 +1091,25 @@ export async function getTeacherEffectiveness(req: NextRequest) {
 
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'private, max-age=60, stale-while-revalidate=240',
-        'X-Response-Time': `${duration}ms`,
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=240",
+        "X-Response-Time": `${duration}ms`,
       },
     });
   } catch (error) {
-    console.error('[Controller] getTeacherEffectiveness - Error:', error);
+    console.error("[Controller] getTeacherEffectiveness - Error:", error);
 
     return NextResponse.json(
       {
-        code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch teacher effectiveness data',
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch teacher effectiveness data",
         details: error instanceof Error ? { error: error.message } : {},
       },
       {
         status: 500,
         headers: {
-          'X-Response-Time': `${Date.now() - startTime}ms`,
+          "X-Response-Time": `${Date.now() - startTime}ms`,
         },
       }
     );
   }
 }
-
