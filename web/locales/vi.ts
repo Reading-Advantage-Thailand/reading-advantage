@@ -2165,6 +2165,12 @@ export default {
       assignments: "Bài tập",
       workbookGenerator: "TạoWorkbook",
     },
+    exportWorkbookButton: {
+      buttonText: "Xuất Workbook",
+      exporting: "Đang xuất...",
+      success: "Xuất workbook thành công!",
+      error: "Không thể xuất workbook",
+    },
     articleRecordsTable: {
       title: "Tiêu đề",
       date: "Ngày",

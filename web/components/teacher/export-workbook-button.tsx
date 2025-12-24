@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Article } from "@/components/models/article-model";
 import { Download } from "lucide-react";
 import { useState } from "react";
+import { useScopedI18n } from "@/locales/client";
 
 interface ExportWorkbookButtonProps {
   article: Article;
@@ -14,6 +15,7 @@ export default function ExportWorkbookButton({
   article,
   articleId,
 }: ExportWorkbookButtonProps) {
+  const t = useScopedI18n("exportWorkbookButton");
   const [loading, setLoading] = useState(false);
 
   const handleExport = async () => {
@@ -44,9 +46,10 @@ export default function ExportWorkbookButton({
       document.body.appendChild(downloadAnchorNode);
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
+      // alert(t("success")); // Optional: feedback
     } catch (error) {
       console.error("Failed to export workbook data", error);
-      alert("Failed to export workbook data. See console for details.");
+      alert(t("error") + ". See console for details.");
     } finally {
       setLoading(false);
     }
@@ -55,7 +58,7 @@ export default function ExportWorkbookButton({
   return (
     <Button size="sm" onClick={handleExport} disabled={loading}>
       <Download className="h-4 w-4" />
-      {loading ? "Exporting..." : "Export Workbook"}
+      {loading ? t("exporting") : t("buttonText")}
     </Button>
   );
 }

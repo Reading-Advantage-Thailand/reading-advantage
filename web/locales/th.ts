@@ -2110,6 +2110,12 @@ export default {
       assignments: "งานที่มอบหมาย",
       workbookGenerator: "สร้างเวิร์กบุ๊ก",
     },
+    exportWorkbookButton: {
+      buttonText: "ส่งออกเวิร์กบุ๊ก",
+      exporting: "กำลังส่งออก...",
+      success: "ส่งออกเวิร์กบุ๊กสำเร็จ!",
+      error: "ไม่สามารถส่งออกเวิร์กบุ๊กได้",
+    },
     articleRecordsTable: {
       title: "ชื่อบทความ",
       date: "วันที่",

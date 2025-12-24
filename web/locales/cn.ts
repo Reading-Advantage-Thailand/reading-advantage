@@ -1997,6 +1997,12 @@ export default {
         assignments: "作业",
         workbookGenerator: "工作簿生成器",
       },
+      exportWorkbookButton: {
+        buttonText: "导出练习册",
+        exporting: "正在导出...",
+        success: "练习册导出成功！",
+        error: "导出练习册失败",
+      },
       articleRecordsTable: {
         title: "标题",
         date: "日期",

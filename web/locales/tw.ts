@@ -2007,6 +2007,12 @@ export default {
       assignments: "作業",
       workbookGenerator: "工作簿生成器",
     },
+    exportWorkbookButton: {
+      buttonText: "匯出練習冊",
+      exporting: "正在匯出...",
+      success: "練習冊匯出成功！",
+      error: "匯出練習冊失敗",
+    },
     articleRecordsTable: {
       title: "標題",
       date: "日期",

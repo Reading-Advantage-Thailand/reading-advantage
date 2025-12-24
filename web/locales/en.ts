@@ -2140,6 +2140,12 @@ export default {
       assignments: "Assignments",
       workbookGenerator: "Workbook Generator",
     },
+    exportWorkbookButton: {
+      buttonText: "Export Workbook",
+      exporting: "Exporting...",
+      success: "Workbook exported successfully!",
+      error: "Failed to export workbook",
+    },
     articleRecordsTable: {
       title: "Title",
       date: "Date",
