@@ -94,6 +94,14 @@ export default async function StoryChapterSelectionPage({
     readChapter: t("readChapter"),
   };
 
+  const isAtLeastTeacher = (role: string) =>
+    role.includes("TEACHER") ||
+    role.includes("ADMIN") ||
+    role.includes("SYSTEM");
+
+  const isAboveTeacher = (role: string) =>
+    role.includes("ADMIN") || role.includes("SYSTEM");
+
   const storyResponse = await getStory(storyId);
 
   return (
@@ -119,17 +127,19 @@ export default async function StoryChapterSelectionPage({
               </div>
             </div>
 
-            {["TEACHER", "ADMIN", "SYSTEM"].includes(user.role) && (
+            {isAtLeastTeacher(user.role) && (
               <div className="flex flex-wrap gap-2">
                 <StoriesAssignDialog
                   story={storyResponse}
                   storyId={storyId}
                   userId={user.id}
                 />
-                <ExportStoryWorkbooksButton
-                  chapters={storyResponse.chapters}
-                  storyTitle={storyResponse.title}
-                />
+                {isAboveTeacher(user.role) && (
+                  <ExportStoryWorkbooksButton
+                    chapters={storyResponse.chapters}
+                    storyTitle={storyResponse.title}
+                  />
+                )}
                 <StoriesActions story={storyResponse} storyId={storyId} />
               </div>
             )}

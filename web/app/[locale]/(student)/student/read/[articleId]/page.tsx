@@ -72,10 +72,12 @@ export default async function ArticleQuizPage({
                 articleId={articleId}
                 article={articleResponse.article}
               />
-              <ExportWorkbookButton
-                articleId={articleId}
-                article={articleResponse.article}
-              />
+              {isAboveTeacher(user.role) && (
+                <ExportWorkbookButton
+                  articleId={articleId}
+                  article={articleResponse.article}
+                />
+              )}
               {isAboveTeacher(user.role) && (
                 <ArticleActions
                   article={articleResponse.article}
