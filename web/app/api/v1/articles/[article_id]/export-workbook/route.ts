@@ -429,7 +429,7 @@ router.get(async (req, ctx) => {
       cefr_level: `CEFR ${article.cefrLevel || ""}`,
       vocabulary: vocab,
       article_image_url: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${article.id}.png`,
-      article_caption: article.imageDescription || "Article Illustration",
+      article_caption: article.summary || "Article Illustration",
       article_url: isChapter
         ? `https://app.reading-advantage.com/th/student/stories/${article.storyId}/${article.chapterNumber}`
         : `https://app.reading-advantage.com/th/student/read/${article.id}`,
