@@ -4,8 +4,10 @@ import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextResponse, type NextRequest } from "next/server";
 
-
-const router = createEdgeRouter<NextRequest, { params: Promise<Record<string, never>> }>();
+const router = createEdgeRouter<
+  NextRequest,
+  { params: Promise<Record<string, never>> }
+>();
 
 router.use(logRequest);
 
@@ -26,14 +28,18 @@ router.use(logRequest);
 // });
 
 router.use(protect);
+// Switch to optimized version for performance comparison
 router.get(getSearchArticles) as any;
 
-export async function GET(request: NextRequest, ctx: { params: Promise<Record<string, never>> }): Promise<NextResponse> {
-    const result = await router.run(request, ctx);
-    if (result instanceof NextResponse) {
-        return result;
-    }
-    // Handle the case where result is not a NextResponse
-    // You might want to return a default NextResponse or throw an error
-    throw new Error("Expected a NextResponse from router.run");
+export async function GET(
+  request: NextRequest,
+  ctx: { params: Promise<Record<string, never>> }
+): Promise<NextResponse> {
+  const result = await router.run(request, ctx);
+  if (result instanceof NextResponse) {
+    return result;
+  }
+  // Handle the case where result is not a NextResponse
+  // You might want to return a default NextResponse or throw an error
+  throw new Error("Expected a NextResponse from router.run");
 }
