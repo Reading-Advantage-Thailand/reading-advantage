@@ -15,6 +15,7 @@ import StoriesActions from "@/components/stories-actions";
 import { CardDescription } from "@/components/ui/card";
 import { StoriesSummary } from "@/components/stories-summary";
 import ExportStoryWorkbooksButton from "@/components/teacher/export-story-workbooks-button";
+import { BookOpen, Users } from "lucide-react";
 import { log } from "console";
 
 export interface StoryBible {
@@ -105,26 +106,50 @@ export default async function StoryChapterSelectionPage({
   const storyResponse = await getStory(storyId);
 
   return (
-    <div className="md:flex md:flex-row md:gap-3 md:mb-5">
-      <Card className="w-full">
+    <div className="container mx-auto px-4 py-6 max-w-7xl">
+      {/* Hero Section with Image */}
+      <div className="relative w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden mb-8 shadow-2xl">
+        <Image
+          src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${storyResponse.id}.png`}
+          alt={storyResponse.title}
+          fill
+          className="object-cover"
+          priority
+        />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+        {/* Content Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white">
+          <div className="flex flex-wrap gap-2 mb-3">
+            <Badge className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30">
+              {t("raLevel", {
+                raLevel: storyResponse.raLevel,
+              })}
+            </Badge>
+            <Badge className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30">
+              {t("cefrLevel", {
+                cefrLevel: storyResponse.cefrLevel,
+              })}{" "}
+            </Badge>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg">
+            {storyResponse.title}
+          </h1>
+        </div>
+      </div>
+
+      {/* Main Content Card */}
+      <Card className="shadow-lg border-2">
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="flex-1">
-              <CardTitle className="text-2xl font-bold">
-                {storyResponse.title}
-              </CardTitle>
-              <div className="flex flex-wrap gap-2 mt-2">
-                <Badge>
-                  {t("raLevel", {
-                    raLevel: storyResponse.ra_level,
-                  })}
-                </Badge>
-                <Badge>
-                  {t("cefrLevel", {
-                    cefrLevel: storyResponse.cefr_level,
-                  })}
-                </Badge>
-              </div>
+              <CardDescription className="text-base">
+                <StoriesSummary
+                  story={storyResponse}
+                  storyId={storyResponse.id}
+                />
+              </CardDescription>
             </div>
 
             {isAtLeastTeacher(user.role) && (
@@ -144,28 +169,25 @@ export default async function StoryChapterSelectionPage({
               </div>
             )}
           </div>
-
-          <CardDescription className="mt-3">
-            <StoriesSummary story={storyResponse} storyId={storyResponse.id} />
-          </CardDescription>
         </CardHeader>
+
         <CardContent>
-          <div className="w-full h-auto aspect-[16/9] overflow-hidden">
-            <Image
-              src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${storyResponse.id}.png`}
-              alt="Story Image"
-              width={640}
-              height={640}
-              className="w-full h-full object-cover object-center"
-            />
-          </div>
-          <Tabs defaultValue="chapters" className="w-full mt-4">
-            <TabsList className="flex justify-start space-x-2">
-              <TabsTrigger value="chapters">Chapters</TabsTrigger>
-              <TabsTrigger value="characters">Characters</TabsTrigger>
+          <Tabs defaultValue="chapters" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="chapters" className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                <span>Chapters</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="characters"
+                className="flex items-center gap-2"
+              >
+                <Users className="w-4 h-4" />
+                <span>Characters</span>
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="chapters">
+            <TabsContent value="chapters" className="mt-0">
               <ChapterList
                 locale={locale}
                 storyId={storyResponse.id}
@@ -174,18 +196,30 @@ export default async function StoryChapterSelectionPage({
               />
             </TabsContent>
 
-            <TabsContent value="characters">
-              <ScrollArea className="h-40 p-2">
+            <TabsContent value="characters" className="mt-0">
+              <div className="grid gap-4 md:grid-cols-2">
                 {storyResponse.storyBible.characters.map(
                   (char: any, index: number) => (
-                    <div key={index} className="mb-4">
-                      <p className="font-semibold">{char.name}</p>
-                      <p className="text-gray-500">{char.description}</p>
-                      <Separator className="my-2" />
-                    </div>
+                    <Card
+                      key={index}
+                      className="hover:shadow-md transition-shadow"
+                    >
+                      <CardHeader>
+                        <CardTitle className="text-lg">{char.name}</CardTitle>
+                        <CardDescription>{char.description}</CardDescription>
+                      </CardHeader>
+                      {char.background && (
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground">
+                            <span className="font-semibold">Background:</span>{" "}
+                            {char.background}
+                          </p>
+                        </CardContent>
+                      )}
+                    </Card>
                   )
                 )}
-              </ScrollArea>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
