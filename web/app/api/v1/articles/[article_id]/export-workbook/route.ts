@@ -427,6 +427,8 @@ router.get(async (req, ctx) => {
       lesson_title: article.title || "",
       level_name: `Level ${article.raLevel || 0}`,
       cefr_level: `CEFR ${article.cefrLevel || ""}`,
+      article_type: article.type || "",
+      genre: article.genre || "",
       vocabulary: vocab,
       article_image_url: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${article.id}.png`,
       article_caption: article.summary || "Article Illustration",

@@ -5,6 +5,8 @@ export interface WorkbookJSON {
   lesson_title: string;
   level_name: string;
   cefr_level: string;
+  article_type: string;
+  genre: string;
   vocabulary: {
     word: string;
     phonetic: string;
@@ -75,6 +77,8 @@ export const mapArticleToWorkbookJSON = (
     lesson_title: article.title,
     level_name: `Level ${article.ra_level}`,
     cefr_level: `CEFR ${article.cefr_level}`,
+    article_type: article.type || "",
+    genre: article.genre || "",
     vocabulary: vocab,
     article_image_url: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${article.id}.png`,
     article_caption: article.image_description || "Article Illustration",
