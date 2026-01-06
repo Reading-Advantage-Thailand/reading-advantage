@@ -30,10 +30,7 @@ export default async function ArticleQuizPage({
   const user = await getCurrentUser();
   if (!user) return redirect("/auth/signin");
 
-  const chapterResponse = await getStoryChapter(
-    storyId,
-    chapterNumber
-  );
+  const chapterResponse = await getStoryChapter(storyId, chapterNumber);
 
   if (chapterResponse.message)
     return (
@@ -41,23 +38,26 @@ export default async function ArticleQuizPage({
     );
 
   return (
-    <>
-      <div className="md:flex md:flex-row md:gap-3 md:mb-5">
-        <StoryChapterCard
-          story={chapterResponse}
-          storyId={storyId}
-          userId={user.id}
-          chapterNumber={chapterNumber}
-        />
-        <div className="flex flex-col mb-40 md:mb-0 md:basis-2/5 mt-4">
-          <div className="flex justify-evently">
-            <StoriesWordList
-              chapter={chapterResponse}
-              storyId={storyId}
-              chapterNumber={chapterNumber}
-              userId={user.id}
-            />
-          </div>
+    <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content - Chapter Card */}
+        <div className="lg:col-span-2">
+          <StoryChapterCard
+            story={chapterResponse}
+            storyId={storyId}
+            userId={user.id}
+            chapterNumber={chapterNumber}
+          />
+        </div>
+
+        {/* Sidebar - Word List and Questions */}
+        <div className="lg:col-span-1 space-y-6">
+          <StoriesWordList
+            chapter={chapterResponse}
+            storyId={storyId}
+            chapterNumber={chapterNumber}
+            userId={user.id}
+          />
 
           <StoryMCQuestionCard
             userId={user.id}
@@ -66,6 +66,7 @@ export default async function ArticleQuizPage({
             articleLevel={chapterResponse.ra_Level}
             chapterNumber={chapterResponse.chapterNumber}
           />
+
           <StorySAQuestionCard
             userId={user.id}
             storyId={storyId}
@@ -73,6 +74,7 @@ export default async function ArticleQuizPage({
             articleLevel={chapterResponse.ra_Level}
             chapterNumber={chapterResponse.chapterNumber}
           />
+
           <StoryLAQuestionCard
             userId={user.id}
             storyId={storyId}
@@ -83,6 +85,6 @@ export default async function ArticleQuizPage({
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }
