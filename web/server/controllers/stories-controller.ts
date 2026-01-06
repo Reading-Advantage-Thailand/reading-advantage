@@ -391,6 +391,14 @@ export async function getStoryById(
       include: {
         chapters: {
           orderBy: { chapterNumber: "asc" },
+          select: {
+            id: true,
+            chapterNumber: true,
+            title: true,
+            summary: true,
+            rating: true,
+            userRatingCount: true,
+          },
         },
       },
     });
@@ -458,6 +466,26 @@ export async function getStoryById(
           },
         });
 
+        // Fallback: check legacy format (storyId only with chapter_number in details)
+        let saqFallback = saqExists;
+        if (!saqFallback) {
+          saqFallback = await prisma.userActivity.findFirst({
+            where: {
+              userId,
+              activityType: ActivityType.SA_QUESTION,
+              completed: true,
+              OR: [
+                { targetId: storyId },
+                { targetId: { startsWith: `${storyId}_` } },
+              ],
+              details: {
+                path: ["chapter_number"],
+                equals: chapter.chapterNumber,
+              },
+            },
+          });
+        }
+
         const laqExists = await prisma.userActivity.findFirst({
           where: {
             userId,
@@ -467,7 +495,23 @@ export async function getStoryById(
           },
         });
 
-        const isCompleted = mcqCount === 5 && saqExists && laqExists;
+        // Fallback: check legacy format (storyId only)
+        let laqFallback = laqExists;
+        if (!laqFallback) {
+          laqFallback = await prisma.userActivity.findFirst({
+            where: {
+              userId,
+              activityType: ActivityType.LA_QUESTION,
+              completed: true,
+              OR: [
+                { targetId: storyId },
+                { targetId: { startsWith: `${storyId}_` } },
+              ],
+            },
+          });
+        }
+
+        const isCompleted = mcqCount >= 5 && !!saqFallback && !!laqFallback;
 
         return {
           ...chapter,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { Article } from "@/components/models/article-model";
 import { ExtendedNextRequest } from "./auth-controller";
 import { QuizStatus } from "@prisma/client";
@@ -56,6 +57,7 @@ const nameToValue = (name: string): string => {
 // GET search articles
 // GET /api/articles?level=10&type=fiction&genre=Fantasy
 // GET /api/v1/articles?type=nonfiction&genre=Career+Guides&subgenre=Career+Change&page=1&limit=10 <--when scroll down
+
 export async function getSearchArticles(req: ExtendedNextRequest) {
   try {
     const userId = req.session?.user.id as string;
@@ -76,7 +78,6 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     }
 
     const normalizeGenreDoc = (doc: any) => {
-      // Accept either { Name, Subgenres } or { name, subgenres }
       const name = doc.Name ?? doc.name ?? "";
       const subgenres = doc.Subgenres ?? doc.subgenres ?? [];
       return { Name: name, Subgenres: subgenres };
@@ -88,7 +89,6 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       const allGenres = rawGenres.map(normalizeGenreDoc);
 
       if (genre) {
-        // Try to find by label (Name) or by a slug/value form
         const genreItem = allGenres.find((data: any) => {
           if (data.Name === genre) return true;
           const slug = nameToValue(data.Name);
@@ -116,7 +116,6 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       isPublic: true,
     };
 
-    // Add type/genre/subgenre filters if specified
     if (type) {
       whereConditions.type = type;
     }
@@ -127,92 +126,51 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       whereConditions.subGenre = subgenre;
     }
 
-    // First try to find articles within user's level range (±1)
-    let articles = await prisma.article.findMany({
-      where: {
-        ...whereConditions,
-        raLevel: {
-          gte: Number(level) - 1,
-          lte: Number(level) + 1,
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      select: {
-        id: true,
-        type: true,
-        genre: true,
-        subGenre: true,
-        title: true,
-        summary: true,
-        cefrLevel: true,
-        raLevel: true,
-        rating: true,
-        createdAt: true,
-        authorId: true,
-        author: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-    });
+    // OPTIMIZED: Single query using raw SQL for better performance
+    // This combines the level-range check and fallback into one query
+    const queryStart = performance.now();
 
-    if (articles.length === 0) {
-      articles = await prisma.article.findMany({
-        where: whereConditions,
-        orderBy: [
-          {
-            createdAt: "desc",
-          },
-        ],
-        skip: (page - 1) * limit,
-        take: limit,
-        select: {
-          id: true,
-          type: true,
-          genre: true,
-          subGenre: true,
-          title: true,
-          summary: true,
-          cefrLevel: true,
-          raLevel: true,
-          rating: true,
-          createdAt: true,
-          authorId: true,
-          author: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      });
-    }
+    // Use Prisma's raw query for optimal performance
+    const userLevel = Number(level);
+    const offset = (page - 1) * limit;
 
-    const articleIds = articles.map((article) => article.id);
-    const userActivities = await prisma.userActivity.findMany({
-      where: {
-        userId: userId,
-        targetId: { in: articleIds },
-        activityType: "ARTICLE_READ",
-      },
-    });
+    const articles = await prisma.$queryRaw<any[]>`
+      SELECT 
+        a.id,
+        a.type,
+        a.genre,
+        a.sub_genre as "subGenre",
+        a.title,
+        a.summary,
+        a.cefr_level as "cefrLevel",
+        a.ra_level as "raLevel",
+        a.rating,
+        a."createdAt" as "createdAt",
+        a.author_id as "authorId",
+        u.id as "author_id",
+        u.name as "author_name",
+        ua.completed as "userActivityCompleted",
+        CASE 
+          WHEN a.ra_level BETWEEN ${userLevel - 1} AND ${userLevel + 1} THEN 0
+          ELSE 1
+        END as priority_order
+      FROM article a
+      LEFT JOIN users u ON a.author_id = u.id
+      LEFT JOIN "UserActivity" ua ON ua.target_id = a.id 
+        AND ua.user_id = ${userId}
+        AND ua.activity_type = 'ARTICLE_READ'
+      WHERE a.is_public = true
+        ${type ? Prisma.sql`AND a.type = ${type}` : Prisma.empty}
+        ${genre ? Prisma.sql`AND a.genre = ${genre}` : Prisma.empty}
+        ${subgenre ? Prisma.sql`AND a.sub_genre = ${subgenre}` : Prisma.empty}
+      ORDER BY priority_order ASC, a."createdAt" DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `;
 
-    const readArticleIds = new Set(
-      userActivities.map((activity) => activity.targetId)
-    );
-    const completedArticleIds = new Set(
-      userActivities
-        .filter((activity) => activity.completed)
-        .map((activity) => activity.targetId)
-    );
+    const queryTime = performance.now() - queryStart;
 
-    // Format results to match the expected structure
+    // Format results
     results = articles.map((article) => ({
       id: article.id,
       type: article.type,
@@ -224,13 +182,13 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
       ra_level: article.raLevel?.toString(),
       average_rating: article.rating || 0,
       created_at: article.createdAt,
-      is_read: readArticleIds.has(article.id),
-      is_completed: completedArticleIds.has(article.id),
+      is_read: article.userActivityCompleted !== null,
+      is_completed: article.userActivityCompleted === true,
       is_approved: true,
       authorId: article.authorId,
       author: {
-        id: article.author?.id || null,
-        name: article.author?.name || null,
+        id: article.author_id || null,
+        name: article.author_name || null,
       },
     }));
 
@@ -250,8 +208,9 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     console.error("Error getting documents", err);
     return NextResponse.json(
       {
-        message: "[getSearchArticles] Internal server error",
+        message: "[getSearchArticlesOptimized] Internal server error",
         results: [],
+        selectionType: ["fiction", "nonfiction"],
         error: err,
       },
       { status: 500 }

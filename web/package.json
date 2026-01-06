@@ -15,13 +15,17 @@
     "db:studio": "prisma studio",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
+    "db:seed:demo": "tsx prisma/demo-seed.ts",
     "db:seed:small": "SEED_SIZE=small prisma db seed",
     "db:seed:medium": "SEED_SIZE=medium prisma db seed",
     "db:seed:large": "SEED_SIZE=large prisma db seed",
     "backfill:schools": "ts-node scripts/backfill-schools.ts",
     "backfill:schools:dry": "DRY_RUN=true VERBOSE=true ts-node scripts/backfill-schools.ts",
     "refresh-activity-heatmap-matviews": "tsx scripts/refresh-activity-heatmap-matviews.ts",
-    "refresh-genre-metrics": "tsx scripts/refresh-genre-metrics.ts"
+    "refresh-genre-metrics": "tsx scripts/refresh-genre-metrics.ts",
+    "refresh:demo": "tsx scripts/refresh-demo-data.ts",
+    "check:demo": "tsx scripts/check-demo-data.ts",
+    "check:teacher": "tsx scripts/check-teacher-classrooms.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
