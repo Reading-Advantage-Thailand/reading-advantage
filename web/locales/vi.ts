@@ -2145,6 +2145,7 @@ export default {
       stories: "Cốt truyện",
       history: "Lịch sử",
       sentences: "Câu",
+      games: "Game",  
       reports: "Báo cáo",
       vocabulary: "từ vựng",
       myClasses: "Lớp học của tôi",
