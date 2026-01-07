@@ -1987,6 +1987,7 @@ export default {
       stories: "劇情",
       history: "歷史",
       sentences: "句子",
+      games: "遊戲",
       reports: "報告",
       vocabulary: "詞彙",
       myClasses: "我的課程",
