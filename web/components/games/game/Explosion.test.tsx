@@ -1,27 +1,37 @@
-import { render } from '@testing-library/react';
-import type { ReactNode } from 'react';
-import { Explosion } from './Explosion';
+import { render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { Explosion } from "./Explosion";
 
-jest.mock('framer-motion', () => ({
+jest.mock("framer-motion", () => ({
   motion: {
-    div: ({ children, onAnimationComplete, ...props }: {
+    div: ({
+      children,
+      onAnimationComplete,
+      "data-testid": testId,
+      ...props
+    }: {
       children?: ReactNode;
       onAnimationComplete?: () => void;
+      "data-testid"?: string;
     }) => {
       if (onAnimationComplete) {
         onAnimationComplete();
       }
-      return <div {...props}>{children}</div>;
+      return (
+        <div data-testid={testId} {...props}>
+          {children}
+        </div>
+      );
     },
   },
 }));
 
-describe('Explosion', () => {
-  it('renders particles and triggers completion once', () => {
+describe("Explosion", () => {
+  it("renders particles and triggers completion once", () => {
     const onComplete = jest.fn();
-    const { container } = render(<Explosion x={10} y={20} onComplete={onComplete} />);
+    render(<Explosion x={10} y={20} onComplete={onComplete} />);
 
-    const particles = container.querySelectorAll('.bg-yellow-500');
+    const particles = screen.getAllByTestId("explosion-particle");
     expect(particles).toHaveLength(8);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });

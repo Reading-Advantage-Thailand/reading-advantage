@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen } from "@testing-library/react";
 import {
   Card,
   CardHeader,
@@ -6,10 +6,10 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from './card';
+} from "./card";
 
-describe('Card', () => {
-  it('renders card slots with data attributes', () => {
+describe("Card", () => {
+  it("renders card slots with data attributes", () => {
     render(
       <Card>
         <CardHeader>
@@ -21,9 +21,21 @@ describe('Card', () => {
       </Card>
     );
 
-    expect(screen.getByText('Title').getAttribute('data-slot')).toBe('card-title');
-    expect(screen.getByText('Description').getAttribute('data-slot')).toBe('card-description');
-    expect(screen.getByText('Content').getAttribute('data-slot')).toBe('card-content');
-    expect(screen.getByText('Footer').getAttribute('data-slot')).toBe('card-footer');
+    expect(screen.getByText("Title")).toHaveAttribute(
+      "data-slot",
+      "card-title"
+    );
+    expect(screen.getByText("Description")).toHaveAttribute(
+      "data-slot",
+      "card-description"
+    );
+    expect(screen.getByText("Content")).toHaveAttribute(
+      "data-slot",
+      "card-content"
+    );
+    expect(screen.getByText("Footer")).toHaveAttribute(
+      "data-slot",
+      "card-footer"
+    );
   });
 });
