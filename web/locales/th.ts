@@ -2088,6 +2088,7 @@ export default {
     sidebarNav: {
       read: "อ่าน",
       stories: "เนื้อเรื่อง",
+      games: "เกม",
       history: "ประวัติ",
       sentences: "ประโยค",
       reports: "รายงาน",

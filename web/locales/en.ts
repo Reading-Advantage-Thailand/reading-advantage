@@ -2118,6 +2118,7 @@ export default {
     sidebarNav: {
       read: "Read",
       stories: "stories",
+      games: "Games",
       sentences: "Sentences",
       reports: "Reports",
       history: "History",

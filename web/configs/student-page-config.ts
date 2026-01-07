@@ -31,6 +31,11 @@ export const studentPageConfig: StudentPageConfig = {
       icon: "storyBook",
     },
     {
+      title: "games",
+      href: "/student/games",
+      icon: "gamepad",
+    },
+    {
       title: "assignments",
       href: "/student/assignments",
       icon: "assignments",

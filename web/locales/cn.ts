@@ -1976,6 +1976,7 @@ export default {
         read: "阅读",
         stories: "剧情",
         history: "历史",
+        games: "游戏",
         sentences: "句子",
         reports: "报告",
         vocabulary: "词汇",
