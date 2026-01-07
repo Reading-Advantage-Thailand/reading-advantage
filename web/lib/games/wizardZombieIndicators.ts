@@ -1,4 +1,4 @@
-import type { Orb } from '@/lib/wizardZombie'
+import type { Orb } from '@/lib/games/wizardZombie'
 
 export type Indicator = {
   orb: Orb

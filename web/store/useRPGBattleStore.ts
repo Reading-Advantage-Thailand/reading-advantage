@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { BattleEnemyId, BattleHeroId, BattleLocationId } from '@/lib/rpgBattleSelection'
+import { BattleEnemyId, BattleHeroId, BattleLocationId } from '@/lib/games/rpgBattleSelection'
 
 export type BattleStatus = 'idle' | 'playing' | 'victory' | 'defeat'
 export type BattleTurn = 'player' | 'enemy'
