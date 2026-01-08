@@ -81,6 +81,7 @@ export default function DragonFlightPage() {
             accuracy: gameResults.accuracy,
             dragonCount: gameResults.dragonCount,
             timeTaken: gameResults.timeTaken,
+            difficulty: gameResults.difficulty,
           }),
         });
 
