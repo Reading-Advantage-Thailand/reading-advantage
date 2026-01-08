@@ -29,6 +29,7 @@ export type DragonFlightResults = {
   totalAttempts: number;
   dragonCount: number;
   timeTaken: number; // Time taken in seconds
+  difficulty: "easy" | "normal" | "hard" | "extreme";
 };
 
 type DragonFlightConfig = {
@@ -40,6 +41,7 @@ type DragonFlightResultInput = {
   correctAnswers: number;
   totalAttempts: number;
   dragonCount: number;
+  difficulty: "easy" | "normal" | "hard" | "extreme";
 };
 
 const DEFAULT_DURATION_MS = 30000;
@@ -138,7 +140,12 @@ export const calculateBossPower = (totalAttempts: number): number =>
   Math.max(3, Math.ceil(totalAttempts * 0.6));
 
 export const getDragonFlightResults = (
-  { correctAnswers, totalAttempts, dragonCount }: DragonFlightResultInput,
+  {
+    correctAnswers,
+    totalAttempts,
+    dragonCount,
+    difficulty,
+  }: DragonFlightResultInput,
   elapsedMs: number = 0
 ): DragonFlightResults => {
   const accuracy = totalAttempts > 0 ? correctAnswers / totalAttempts : 0;
@@ -156,5 +163,6 @@ export const getDragonFlightResults = (
     totalAttempts,
     dragonCount,
     timeTaken,
+    difficulty,
   };
 };
