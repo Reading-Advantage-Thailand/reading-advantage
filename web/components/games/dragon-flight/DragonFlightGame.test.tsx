@@ -46,6 +46,8 @@ const assets = {
   parallaxMiddle: createImage(1024, 1024),
   parallaxBottom: createImage(1024, 1024),
   loadingBackground: createImage(1024, 1024),
+  projectileFireball: createImage(100, 100),
+  projectileBoss: createImage(100, 100),
 };
 
 const vocabulary: VocabularyItem[] = [
