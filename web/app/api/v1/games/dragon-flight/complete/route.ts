@@ -19,8 +19,14 @@ async function completeDragonFlightGame(req: ExtendedNextRequest) {
     }
 
     const body = await req.json();
-    const { correctAnswers, totalAttempts, accuracy, dragonCount, timeTaken } =
-      body;
+    const {
+      correctAnswers,
+      totalAttempts,
+      accuracy,
+      dragonCount,
+      timeTaken,
+      difficulty,
+    } = body;
 
     // Validate required fields
     if (
@@ -59,6 +65,7 @@ async function completeDragonFlightGame(req: ExtendedNextRequest) {
             accuracy,
             dragonCount: dragonCount || 0,
             xpEarned,
+            difficulty,
             gameSession: uniqueTargetId,
           },
         },
@@ -89,6 +96,30 @@ async function completeDragonFlightGame(req: ExtendedNextRequest) {
           // Update session if available
           if (req.session?.user) {
             req.session.user.xp = user.xp + xpEarned;
+          }
+
+          // Update Game Ranking
+          if (difficulty) {
+            await prisma.gameRanking.upsert({
+              where: {
+                userId_gameType_difficulty: {
+                  userId: userId,
+                  gameType: "DRAGON_FLIGHT",
+                  difficulty: difficulty,
+                },
+              },
+              update: {
+                totalXp: {
+                  increment: xpEarned,
+                },
+              },
+              create: {
+                userId: userId,
+                gameType: "DRAGON_FLIGHT",
+                difficulty: difficulty,
+                totalXp: xpEarned,
+              },
+            });
           }
         }
       }

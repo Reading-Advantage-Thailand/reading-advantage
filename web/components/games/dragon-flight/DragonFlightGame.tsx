@@ -10,7 +10,9 @@ import React, {
 import Konva from "konva";
 import { Group, Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Flame } from "lucide-react";
+import { ArrowLeft, ArrowRight, Flame, Trophy, Timer } from "lucide-react";
+import { RankingDialog } from "./RankingDialog";
+
 import { withBasePath } from "@/lib/games/basePath";
 import {
   advanceDragonFlightTime,
@@ -147,6 +149,52 @@ const GATE_SCALE_FACTOR = 0.5;
 const PLAYER_BASE_SCALE = 0.22;
 const BOSS_BASE_SCALE = 0.55;
 const ARMY_BASE_SCALE = 0.12;
+
+export type Difficulty = "easy" | "normal" | "hard" | "extreme";
+
+type DifficultySetting = {
+  durationMs: number;
+  penalty: number;
+  gameOverOnMiss: boolean;
+  label: string;
+  description: string;
+  color: string;
+};
+
+const DIFFICULTY_SETTINGS: Record<Difficulty, DifficultySetting> = {
+  easy: {
+    durationMs: 30000,
+    penalty: 1,
+    gameOverOnMiss: false,
+    label: "Easy",
+    description: "30s • Relaxed",
+    color: "bg-emerald-500",
+  },
+  normal: {
+    durationMs: 60000,
+    penalty: 1,
+    gameOverOnMiss: false,
+    label: "Normal",
+    description: "1m • Standard",
+    color: "bg-blue-500",
+  },
+  hard: {
+    durationMs: 90000,
+    penalty: 2,
+    gameOverOnMiss: false,
+    label: "Hard",
+    description: "1m 30s • -2 Dragons",
+    color: "bg-orange-500",
+  },
+  extreme: {
+    durationMs: 120000,
+    penalty: 0,
+    gameOverOnMiss: true,
+    label: "Extreme",
+    description: "2m • One Strike Fail",
+    color: "bg-red-600",
+  },
+};
 
 const buildSpriteGrid = (width: number, height: number): SpriteGrid => {
   const columnBase = Math.floor(width / 3);
@@ -370,20 +418,26 @@ const getActiveGatePair = (pairs: GatePair[]) => {
 
 export function DragonFlightGame({
   vocabulary,
-  durationMs = 30000,
+  durationMs,
   onComplete,
   onRestart,
   preloadedAssets,
 }: DragonFlightGameProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [difficulty, setDifficulty] = useState<Difficulty>("normal");
+  const [showRanking, setShowRanking] = useState(false);
+
   const [stageSize, setStageSize] = useState<StageSize>(DEFAULT_STAGE);
   const [assets, setAssets] = useState<DragonFlightAssets | null>(
     preloadedAssets ?? null
   );
   const [isLoading, setIsLoading] = useState(!preloadedAssets);
   const [state, setState] = useState<DragonFlightState>(() => {
-    return createDragonFlightState(vocabulary, { durationMs });
+    return createDragonFlightState(vocabulary, {
+      durationMs: durationMs ?? DIFFICULTY_SETTINGS.normal.durationMs,
+    });
   });
+
   const initialRoundRef = useRef<DragonFlightRound>(state.round);
   const [gatePairs, setGatePairs] = useState<GatePair[]>([]);
   const gateIdRef = useRef(0);
@@ -400,6 +454,16 @@ export function DragonFlightGame({
   const [bossHealth, setBossHealth] = useState(0);
   const [bossY, setBossY] = useState(DEFAULT_STAGE.height * 0.28);
   const [bossSequenceDone, setBossSequenceDone] = useState(false);
+
+  useEffect(() => {
+    if (!hasStarted) {
+      const settings = DIFFICULTY_SETTINGS[difficulty];
+      setState((prev) => ({
+        ...prev,
+        durationMs: settings.durationMs,
+      }));
+    }
+  }, [difficulty, hasStarted]);
   const { playSound } = useSound();
   const resultsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSelectionRef = useRef<PendingSelection | null>(null);
@@ -446,7 +510,10 @@ export function DragonFlightGame({
   }, [preloadedAssets]);
 
   const resetGame = useCallback(() => {
-    const nextState = createDragonFlightState(vocabulary, { durationMs });
+    const settings = DIFFICULTY_SETTINGS[difficulty];
+    const nextState = createDragonFlightState(vocabulary, {
+      durationMs: durationMs ?? settings.durationMs,
+    });
     initialRoundRef.current = nextState.round;
     setState(nextState);
     setGatePairs([]);
@@ -460,7 +527,7 @@ export function DragonFlightGame({
     setBossSequenceDone(false);
     pendingSelectionRef.current = null;
     playerTargetRef.current = null;
-  }, [vocabulary, durationMs]);
+  }, [vocabulary, difficulty]);
 
   useEffect(() => {
     resetGame();
@@ -603,17 +670,44 @@ export function DragonFlightGame({
             side: pending.side,
             outcome: pending.outcome,
           });
-          setState((prevState) => ({
-            ...prevState,
-            attempts: prevState.attempts + 1,
-            correctAnswers:
-              prevState.correctAnswers +
-              (pending.outcome === "correct" ? 1 : 0),
-            dragonCount:
-              pending.outcome === "correct"
-                ? prevState.dragonCount + 1
-                : Math.max(1, prevState.dragonCount - 1),
-          }));
+
+          setState((prevState) => {
+            const settings = DIFFICULTY_SETTINGS[difficulty];
+            let nextDragonCount = prevState.dragonCount;
+            let nextCorrectAnswers = prevState.correctAnswers;
+            let isGameOver = false;
+
+            if (pending.outcome === "correct") {
+              nextDragonCount += 1;
+              nextCorrectAnswers += 1;
+            } else {
+              if (settings.gameOverOnMiss) {
+                isGameOver = true;
+              } else {
+                nextDragonCount = Math.max(
+                  1,
+                  prevState.dragonCount - settings.penalty
+                );
+              }
+            }
+
+            if (isGameOver) {
+              return {
+                ...prevState,
+                dragonCount: 0,
+                status: "boss",
+                attempts: prevState.attempts + 1,
+              };
+            }
+
+            return {
+              ...prevState,
+              attempts: prevState.attempts + 1,
+              correctAnswers: nextCorrectAnswers,
+              dragonCount: nextDragonCount,
+            };
+          });
+
           playSound(pending.outcome === "correct" ? "success" : "error");
 
           // Delay return to center to let player reach the gate first
@@ -747,6 +841,7 @@ export function DragonFlightGame({
         correctAnswers: state.correctAnswers,
         totalAttempts: state.attempts,
         dragonCount: state.dragonCount,
+        difficulty,
       },
       state.elapsedMs
     ); // Pass elapsed time
@@ -942,7 +1037,7 @@ export function DragonFlightGame({
 
             {/* Center: Progress Bar */}
             <div className="mt-4 flex-1 max-w-2xl px-4">
-              <div className="relative h-2 w-full overflow-hidden rounded-full bg-black/30 backdrop-blur-sm">
+              <div className="relative h-6 w-full overflow-hidden rounded-full bg-black/30 backdrop-blur-sm border border-white/10">
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 box-shadow-glow"
                   initial={{ width: "100%" }}
@@ -950,6 +1045,13 @@ export function DragonFlightGame({
                   transition={{ duration: 0.2, ease: "linear" }}
                   style={{ borderRadius: 999 }}
                 />
+                <div className="absolute inset-0 z-10 flex items-center justify-center text-xs font-bold text-white drop-shadow-md tracking-widest">
+                  {Math.max(
+                    0,
+                    Math.ceil((state.durationMs - state.elapsedMs) / 1000)
+                  )}
+                  s
+                </div>
               </div>
             </div>
 
@@ -1027,7 +1129,11 @@ export function DragonFlightGame({
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                {feedback.outcome === "correct" ? "+1 Dragon" : "-1 Dragon"}
+                {feedback.outcome === "correct"
+                  ? "+1 Dragon"
+                  : DIFFICULTY_SETTINGS[difficulty].gameOverOnMiss
+                    ? "GAME OVER"
+                    : `-${DIFFICULTY_SETTINGS[difficulty].penalty} Dragons`}
               </motion.div>
             )}
           </AnimatePresence>
@@ -1211,10 +1317,21 @@ export function DragonFlightGame({
                   dragon flight.
                 </p>
               </div>
-              <div className="rounded-md border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm">
-                {isLoading ? "Loading Assets" : "Ready"}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowRanking(true)}
+                  className="rounded-full border border-white/20 bg-white/10 p-2 text-white/80 backdrop-blur-sm transition-all hover:bg-white/20 hover:text-yellow-400"
+                  title="Leaderboard"
+                >
+                  <Trophy className="h-5 w-5" />
+                </button>
+                <div className="rounded-md border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-white/80 backdrop-blur-sm">
+                  {isLoading ? "Loading Assets" : "Ready"}
+                </div>
               </div>
             </div>
+
+            {/* Difficulty Preview (Hidden in center, shown in footer now) */}
           </div>
 
           {/* Content Section */}
@@ -1395,16 +1512,45 @@ export function DragonFlightGame({
                   <Flame className="h-5 w-5 text-white/70" />
                 </div>
                 {/* Progress bar */}
+
                 <div className="flex-1">
-                  <div className="text-xs uppercase tracking-[0.2em] text-white/60 mb-1.5">
-                    {isLoading ? "Summoning Dragon Gates" : "Ready To Fly"}
+                  {/* Difficulty Selector */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-medium mr-1">
+                      Difficulty
+                    </span>
+                    {(Object.keys(DIFFICULTY_SETTINGS) as Difficulty[]).map(
+                      (diff) => (
+                        <button
+                          key={diff}
+                          onClick={() => setDifficulty(diff)}
+                          disabled={isLoading}
+                          className={`px-3 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold transition-all border ${
+                            difficulty === diff
+                              ? `${DIFFICULTY_SETTINGS[diff].color} text-white border-transparent bg-opacity-100 shadow-md`
+                              : "bg-white/5 text-white/50 border-white/10 hover:bg-white/10 hover:text-white/80"
+                          }`}
+                        >
+                          {DIFFICULTY_SETTINGS[diff].label}
+                        </button>
+                      )
+                    )}
+                  </div>
+
+                  {/* Status & Bar */}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="text-xs uppercase tracking-[0.2em] text-white/60">
+                      {isLoading
+                        ? "Summoning..."
+                        : DIFFICULTY_SETTINGS[difficulty].description}
+                    </div>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         isLoading
                           ? "bg-white/40 animate-pulse"
-                          : "bg-emerald-400"
+                          : DIFFICULTY_SETTINGS[difficulty].color
                       }`}
                       style={{ width: isLoading ? "60%" : "100%" }}
                     />
@@ -1434,6 +1580,7 @@ export function DragonFlightGame({
           </div>
         </div>
       )}
+      <RankingDialog open={showRanking} onOpenChange={setShowRanking} />
     </div>
   );
 }

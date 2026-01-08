@@ -46,6 +46,8 @@ model User {
   sentNotifications   AssignmentNotification[] @relation("TeacherNotifications")
   receivedNotifications AssignmentNotification[] @relation("StudentNotifications")
   learningGoals       LearningGoal[]
+  gameRankings        GameRanking[]
+
 
   @@map("users")
 }
@@ -800,3 +802,28 @@ model GoalProgressLog {
   @@index([goalId, createdAt])
   @@map("goal_progress_logs")
 }
+
+enum GameType {
+  DRAGON_FLIGHT
+  MAGIC_DEFENSE
+  RPG_BATTLE
+  RUNE_MATCH
+  WIZARD_VS_ZOMBIE
+}
+
+model GameRanking {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  gameType   GameType @map("game_type")
+  difficulty String
+  totalXp    Int      @default(0) @map("total_xp")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameType, difficulty])
+  @@index([gameType, difficulty, totalXp])
+  @@map("game_rankings")
+}
+
