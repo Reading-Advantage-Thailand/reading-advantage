@@ -124,14 +124,14 @@ export function StartScreen({
                         "flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all duration-300",
                         isSelected
                           ? "bg-white/10 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.2)] scale-105"
-                          : "bg-transparent border-white/5 hover:bg-white/5 hover:border-white/10 opacity-70 hover:opacity-100"
+                          : "bg-transparent border-white/5 hover:bg-white/5 hover:border-white/10 opacity-70 hover:opacity-100",
                       )}
                     >
                       <Icon className={cn("w-6 h-6", diff.color)} />
                       <span
                         className={cn(
                           "text-xs font-bold uppercase tracking-wider",
-                          isSelected ? "text-white" : "text-slate-400"
+                          isSelected ? "text-white" : "text-slate-400",
                         )}
                       >
                         {diff.label}
