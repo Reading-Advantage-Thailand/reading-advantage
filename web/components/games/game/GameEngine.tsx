@@ -278,7 +278,7 @@ export function GameEngine() {
   return (
     <div
       data-testid="game-stage"
-      className="relative w-full h-[600px] overflow-hidden border-x-4 border-slate-800 shadow-inner rounded-lg bg-slate-900"
+      className="relative w-full h-full overflow-hidden bg-slate-900"
       style={{
         backgroundImage: `url(${BACKGROUND_IMAGE})`,
         backgroundSize: "cover",
