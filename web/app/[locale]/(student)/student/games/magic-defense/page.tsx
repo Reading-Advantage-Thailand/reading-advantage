@@ -1,31 +1,146 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { GameContainer } from '@/components/games/game/GameContainer'
-import { useGameStore } from '@/store/useGameStore'
-import { SAMPLE_VOCABULARY } from '@/lib/games/sampleVocabulary'
+import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
+import { GameContainer } from "@/components/games/game/GameContainer";
+import { useGameStore } from "@/store/useGameStore";
+import { Loader2, AlertCircle, ChevronLeft, Wand2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Header } from "@/components/header";
 
 export default function MagicDefensePage() {
-  const setVocabulary = useGameStore((state) => state.setVocabulary)
+  const setVocabulary = useGameStore((state) => state.setVocabulary);
+  const setLastResult = useGameStore((state) => state.setLastResult);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setVocabulary(SAMPLE_VOCABULARY)
-  }, [setVocabulary])
+    const fetchVocabulary = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch("/api/v1/games/magic-defense/vocabulary");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to fetch vocabulary");
+        }
+
+        if (data.vocabulary && data.vocabulary.length >= 10) {
+          setVocabulary(data.vocabulary);
+        } else {
+          setError(
+            data.message ||
+              "Not enough vocabulary words. Please save at least 10 words to play."
+          );
+        }
+      } catch (err) {
+        console.error("Error fetching vocabulary:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load vocabulary"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVocabulary();
+  }, [setVocabulary]);
+
+  const handleComplete = useCallback(
+    async (results: {
+      score: number;
+      correctAnswers: number;
+      totalAttempts: number;
+      accuracy: number;
+    }) => {
+      const xp = Math.floor(results.correctAnswers * results.accuracy);
+      setLastResult(xp, results.accuracy);
+
+      try {
+        const response = await fetch("/api/v1/games/magic-defense/complete", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            score: results.score,
+            correctAnswers: results.correctAnswers,
+            totalAttempts: results.totalAttempts,
+            accuracy: results.accuracy,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log("Game completed! XP earned:", data.xpEarned);
+        } else {
+          console.error("Failed to save game results:", data.message);
+        }
+      } catch (err) {
+        console.error("Error saving game results:", err);
+      }
+    },
+    [setLastResult]
+  );
 
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-4xl space-y-8">
-        <header className="text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-2">
-            Magic Defense
-          </h1>
-          <p className="text-muted-foreground">
-            Defend your castles from the falling words!
-          </p>
-        </header>
+    <div className="space-y-6">
+      {/* Back Button */}
+      <Button variant="ghost" size="sm" asChild>
+        <Link href="/student/games">
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          Back to Games
+        </Link>
+      </Button>
 
-        <GameContainer />
-      </div>
-    </main>
-  )
+      {/* Header */}
+      <Header
+        heading="Magic Defense"
+        text="Defend your castles from the falling words! Type the correct translation to destroy them."
+      >
+        <Wand2 className="h-8 w-8 text-primary" />
+      </Header>
+
+      {/* Loading State */}
+      {isLoading && (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
+            <p className="text-lg font-medium text-muted-foreground">
+              Loading vocabulary...
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Unable to Start Game</AlertTitle>
+          <AlertDescription className="mt-2 space-y-2">
+            <p>{error}</p>
+            <p className="text-sm opacity-80">
+              Tip: Save vocabulary words from articles to build your word
+              collection.
+            </p>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Game Container */}
+      {!isLoading && !error && (
+        <Card className="overflow-hidden border-2 shadow-xl bg-slate-900 border-slate-800">
+          <CardContent className="p-0">
+            <GameContainer onComplete={handleComplete} />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
 }
