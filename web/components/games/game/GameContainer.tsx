@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useGameStore } from "@/store/useGameStore";
+import { useGameStore, Difficulty } from "@/store/useGameStore";
 import { StartScreen } from "./StartScreen";
 import { GameEngine } from "./GameEngine";
 import { ResultsScreen } from "./ResultsScreen";
@@ -26,6 +26,8 @@ export function GameContainer({ onComplete }: GameContainerProps) {
     resetGame,
   } = useGameStore();
 
+  const [difficulty, setDifficulty] = React.useState<Difficulty>("normal");
+
   const accuracy = totalAttempts > 0 ? correctAnswers / totalAttempts : 0;
   const xp = calculateXP(score, correctAnswers, totalAttempts);
 
@@ -40,19 +42,25 @@ export function GameContainer({ onComplete }: GameContainerProps) {
     }
   }, [status, onComplete, score, correctAnswers, totalAttempts, accuracy]);
 
+  const handleStart = (selectedDifficulty: Difficulty) => {
+    setDifficulty(selectedDifficulty);
+    resetGame();
+  };
+
   return (
     <div className="relative w-full max-w-6xl mx-auto h-[600px] overflow-hidden rounded-3xl border border-purple-500/20 bg-slate-900/40 backdrop-blur-md shadow-[0_0_40px_rgba(168,85,247,0.15)] ring-1 ring-white/10">
       {status === "idle" && (
-        <StartScreen vocabulary={vocabulary} onStart={resetGame} />
+        <StartScreen vocabulary={vocabulary} onStart={handleStart} />
       )}
 
-      {status === "playing" && <GameEngine />}
+      {status === "playing" && <GameEngine difficulty={difficulty} />}
 
       {status === "game-over" && (
         <ResultsScreen
           score={score}
           accuracy={accuracy}
           xp={xp}
+          missedWords={useGameStore.getState().missedWords}
           onRestart={resetGame}
         />
       )}
