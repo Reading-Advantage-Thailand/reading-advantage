@@ -80,6 +80,30 @@ export function ResultsScreen({
             </div>
           )}
 
+          {missedWords.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                <AlertCircle className="w-4 h-4" />
+                Words to Review
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+                {Array.from(new Set(missedWords.map((w) => JSON.stringify(w))))
+                  .map((s) => JSON.parse(s))
+                  .map((word: VocabularyItem, i: number) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between p-2 rounded-lg bg-red-500/10 border border-red-500/20"
+                    >
+                      <span className="font-bold text-sm">{word.term}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {word.translation}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
           <div className="pt-4 flex flex-col gap-3">
             <Button
               onClick={onRestart}

@@ -74,7 +74,7 @@ const getCastleRowForHp = (hp: number) => {
 
 const getNearestAliveCastleId = (
   x: number,
-  castles: Record<CastleId, number>
+  castles: Record<CastleId, number>,
 ): CastleId => {
   const entries = (
     Object.entries(CASTLE_POSITIONS) as [CastleId, number][]
@@ -89,10 +89,10 @@ const getNearestAliveCastleId = (
 };
 
 const getRandomAliveCastleId = (
-  castles: Record<CastleId, number>
+  castles: Record<CastleId, number>,
 ): CastleId => {
   const aliveCastles = (Object.keys(castles) as CastleId[]).filter(
-    (castleId) => castles[castleId] > 0
+    (castleId) => castles[castleId] > 0,
   );
   if (aliveCastles.length === 0) return "center";
 
@@ -140,7 +140,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
   const [explosions, setExplosions] = useState<ActiveExplosion[]>([]);
   const [bolts, setBolts] = useState<ActiveBolt[]>([]);
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(
-    null
+    null,
   );
 
   // Timer State (60 seconds)
@@ -207,7 +207,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
 
   const [spawnRate, setSpawnRate] = useState(settings.current.spawnRate);
   const [missileDuration, setMissileDuration] = useState(
-    settings.current.duration
+    settings.current.duration,
   );
 
   const accuracy = totalAttempts > 0 ? correctAnswers / totalAttempts : 0;
@@ -244,7 +244,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
 
       // Destroy all falling missiles
       const fallingMissiles = activeMissiles.filter(
-        (m) => m.state === "falling"
+        (m) => m.state === "falling",
       );
 
       if (fallingMissiles.length > 0) {
@@ -311,7 +311,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       castles,
       resetCombo,
       addMissedWord,
-    ]
+    ],
   );
 
   const handleBoltComplete = useCallback(
@@ -331,16 +331,16 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       // Start death animation on hit
       setActiveMissiles((prev) =>
         prev.map((missile) =>
-          missile.id === enemyId ? { ...missile, state: "dying" } : missile
-        )
+          missile.id === enemyId ? { ...missile, state: "dying" } : missile,
+        ),
       );
     },
-    []
+    [],
   );
 
   const handleDeathComplete = useCallback((enemyId: string) => {
     setActiveMissiles((prev) =>
-      prev.filter((missile) => missile.id !== enemyId)
+      prev.filter((missile) => missile.id !== enemyId),
     );
   }, []);
 
@@ -349,7 +349,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       const matchingMissile = activeMissiles.find(
         (m) =>
           m.state === "falling" &&
-          m.translation.toLowerCase() === answer.toLowerCase()
+          m.translation.toLowerCase() === answer.toLowerCase(),
       );
 
       if (matchingMissile) {
@@ -363,8 +363,8 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
           prev.map((missile) =>
             missile.id === matchingMissile.id
               ? { ...missile, state: "targeted" }
-              : missile
-          )
+              : missile,
+          ),
         );
 
         const casterId = getRandomAliveCastleId(castles);
@@ -385,10 +385,10 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
 
         if ((combo + 1) % 3 === 0) {
           setSpawnRate((prev) =>
-            Math.max(prev - 200, settings.current.minSpawnRate)
+            Math.max(prev - 200, settings.current.minSpawnRate),
           );
           setMissileDuration((prev) =>
-            Math.max(prev - 0.5, settings.current.minDuration)
+            Math.max(prev - 0.5, settings.current.minDuration),
           );
         }
 
@@ -415,7 +415,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       incrementCombo,
       addMana,
       resetCombo,
-    ]
+    ],
   );
 
   if (status !== "playing") return null;
