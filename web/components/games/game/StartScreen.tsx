@@ -1,19 +1,34 @@
 import React, { useState } from "react";
-import { VocabularyItem } from "@/store/useGameStore";
-import { Wand2, BookOpen, Flame } from "lucide-react";
+import { VocabularyItem, Difficulty } from "@/store/useGameStore";
+import { Wand2, BookOpen, Flame, Skull, Swords, Shield } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface StartScreenProps {
   vocabulary: VocabularyItem[];
-  onStart: () => void;
+  onStart: (difficulty: Difficulty) => void;
 }
+
+const DIFFICULTIES: {
+  id: Difficulty;
+  label: string;
+  color: string;
+  icon: React.ElementType;
+}[] = [
+  { id: "easy", label: "Easy", color: "text-emerald-400", icon: Shield },
+  { id: "normal", label: "Normal", color: "text-blue-400", icon: Swords },
+  { id: "hard", label: "Hard", color: "text-orange-400", icon: Flame },
+  { id: "extreme", label: "Extreme", color: "text-red-500", icon: Skull },
+];
 
 export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] =
+    useState<Difficulty>("normal");
 
   const handleStart = () => {
     setIsLoading(true);
     setTimeout(() => {
-      onStart();
+      onStart(selectedDifficulty);
     }, 500);
   };
 
@@ -74,67 +89,79 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
               </div>
             </div>
 
-            {/* Right Column: Vocabulary Preview */}
-            <div className="flex flex-col rounded-3xl border border-white/10 bg-slate-900/80 p-0 backdrop-blur-md overflow-hidden">
-              <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02]">
-                <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
-                  <BookOpen className="h-3 w-3" />
-                  Spell Book
-                </div>
+            {/* Right Column: Vocabulary Preview & Difficulty */}
+            <div className="flex flex-col gap-4 h-full min-h-0">
+              {/* Difficulty Selector */}
+              <div className="flex-none grid grid-cols-4 gap-3 bg-slate-900/60 p-3 rounded-2xl border border-white/10 backdrop-blur-md">
+                {DIFFICULTIES.map((diff) => {
+                  const Icon = diff.icon;
+                  const isSelected = selectedDifficulty === diff.id;
+                  return (
+                    <button
+                      key={diff.id}
+                      onClick={() => setSelectedDifficulty(diff.id)}
+                      className={cn(
+                        "flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all duration-300",
+                        isSelected
+                          ? "bg-white/10 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.2)] scale-105"
+                          : "bg-transparent border-white/5 hover:bg-white/5 hover:border-white/10 opacity-70 hover:opacity-100"
+                      )}
+                    >
+                      <Icon className={cn("w-6 h-6", diff.color)} />
+                      <span
+                        className={cn(
+                          "text-xs font-bold uppercase tracking-wider",
+                          isSelected ? "text-white" : "text-slate-400"
+                        )}
+                      >
+                        {diff.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
-                {vocabulary.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm p-8">
-                    <BookOpen className="h-8 w-8 mb-3 opacity-20" />
-                    No vocabulary loaded yet.
+              {/* Vocabulary List */}
+              <div className="flex-1 flex flex-col rounded-3xl border border-white/10 bg-slate-900/80 p-0 backdrop-blur-md overflow-hidden min-h-0">
+                <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02]">
+                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
+                    <BookOpen className="h-3 w-3" />
+                    Spell Book
                   </div>
-                ) : (
-                  <div className="grid gap-1">
-                    {vocabulary.slice(0, 50).map((item, index) => (
-                      <div
-                        key={`${item.term}-${index}`}
-                        className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-all group border border-transparent hover:border-white/5"
-                      >
-                        <span className="font-bold text-slate-200 text-sm group-hover:text-purple-300 transition-colors">
-                          {item.term}
-                        </span>
-                        <span className="text-slate-400 text-sm font-medium">
-                          {item.translation}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+                  {vocabulary.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm p-8">
+                      <BookOpen className="h-8 w-8 mb-3 opacity-20" />
+                      No vocabulary loaded yet.
+                    </div>
+                  ) : (
+                    <div className="grid gap-1">
+                      {vocabulary.slice(0, 50).map((item, index) => (
+                        <div
+                          key={`${item.term}-${index}`}
+                          className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition-all group border border-transparent hover:border-white/5"
+                        >
+                          <span className="font-bold text-slate-200 text-sm group-hover:text-purple-300 transition-colors">
+                            {item.term}
+                          </span>
+                          <span className="text-slate-400 text-sm font-medium">
+                            {item.translation}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Footer with Progress/Difficulty Bar */}
+        {/* Footer with Start Button */}
         <div className="flex-none border-t border-white/10 bg-slate-950/80 px-6 py-4 backdrop-blur-md">
-          <div className="flex items-center justify-between gap-6">
-            {/* Left: Progress/Info */}
-            <div className="flex items-center gap-4 flex-1">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-purple-500/30 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
-                <Flame className="h-5 w-5 text-purple-400" />
-              </div>
-              <div className="flex-1 max-w-sm hidden sm:block">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-purple-300/70 font-bold">
-                    Power Level
-                  </span>
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-purple-300/50">
-                    100%
-                  </span>
-                </div>
-                <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-600 to-purple-400 w-full rounded-full shadow-[0_0_10px_rgba(168,85,247,0.4)]" />
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Start Button */}
+          <div className="flex items-center justify-end gap-6">
             <button
               onClick={handleStart}
               disabled={isLoading}

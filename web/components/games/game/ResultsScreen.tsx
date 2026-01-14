@@ -1,48 +1,94 @@
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Trophy, Target, Zap } from 'lucide-react'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Trophy, Target, Zap, AlertCircle } from "lucide-react";
+import { VocabularyItem } from "@/store/useGameStore";
 
 interface ResultsScreenProps {
-  score: number
-  accuracy: number
-  xp: number
-  onRestart: () => void
+  score: number;
+  accuracy: number;
+  xp: number;
+  missedWords: VocabularyItem[];
+  onRestart: () => void;
 }
 
-export function ResultsScreen({ score, accuracy, xp, onRestart }: ResultsScreenProps) {
+export function ResultsScreen({
+  score,
+  accuracy,
+  xp,
+  missedWords,
+  onRestart,
+}: ResultsScreenProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
-      <Card className="w-full max-w-md bg-gradient-to-b from-background to-muted/50 border-2 shadow-2xl">
+      <Card className="w-full max-w-2xl bg-gradient-to-b from-background to-muted/50 border-2 shadow-2xl">
         <CardHeader>
-          <CardTitle className="text-3xl text-center font-bold tracking-tight">Game Over</CardTitle>
+          <CardTitle className="text-3xl text-center font-bold tracking-tight">
+            Game Over
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8 py-6">
+        <CardContent className="space-y-6 py-6">
           <div className="grid grid-cols-3 gap-4">
             <div className="flex flex-col items-center p-3 bg-primary/5 rounded-xl border border-primary/10">
               <Trophy className="w-6 h-6 text-yellow-500 mb-2" />
-              <span className="text-xs font-semibold text-muted-foreground uppercase">Score</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase">
+                Score
+              </span>
               <span className="text-xl font-bold">{score}</span>
             </div>
             <div className="flex flex-col items-center p-3 bg-primary/5 rounded-xl border border-primary/10">
               <Target className="w-6 h-6 text-blue-500 mb-2" />
-              <span className="text-xs font-semibold text-muted-foreground uppercase">Accuracy</span>
-              <span className="text-xl font-bold">{Math.round(accuracy * 100)}%</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase">
+                Accuracy
+              </span>
+              <span className="text-xl font-bold">
+                {Math.round(accuracy * 100)}%
+              </span>
             </div>
             <div className="flex flex-col items-center p-3 bg-primary/5 rounded-xl border border-primary/10">
               <Zap className="w-6 h-6 text-purple-500 mb-2" />
-              <span className="text-xs font-semibold text-muted-foreground uppercase">XP Earned</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase">
+                XP Earned
+              </span>
               <span className="text-xl font-bold text-primary">{xp} XP</span>
             </div>
           </div>
 
+          {missedWords.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                <AlertCircle className="w-4 h-4" />
+                Words to Review
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+                {Array.from(new Set(missedWords.map((w) => JSON.stringify(w))))
+                  .map((s) => JSON.parse(s))
+                  .map((word: VocabularyItem, i: number) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between p-2 rounded-lg bg-red-500/10 border border-red-500/20"
+                    >
+                      <span className="font-bold text-sm">{word.term}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {word.translation}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
           <div className="pt-4">
-            <Button onClick={onRestart} className="w-full h-14 text-lg font-bold" size="lg">
+            <Button
+              onClick={onRestart}
+              className="w-full h-14 text-lg font-bold"
+              size="lg"
+            >
               Try Again
             </Button>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

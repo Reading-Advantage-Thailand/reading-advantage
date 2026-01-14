@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   useGameStore,
   VocabularyItem,
@@ -109,7 +109,13 @@ const getCastleMotion = (hp: number) => ({
 const getHealthPercent = (hp: number) =>
   `${(Math.max(hp, 0) / MAX_CASTLE_HP) * 100}%`;
 
-export function GameEngine() {
+import { Difficulty } from "@/store/useGameStore";
+
+interface GameEngineProps {
+  difficulty?: Difficulty;
+}
+
+export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
   const {
     vocabulary,
     status,
@@ -120,6 +126,13 @@ export function GameEngine() {
     damageCastle,
     increaseScore,
     incrementAttempts,
+    addMissedWord,
+    incrementCombo,
+    resetCombo,
+    addMana,
+    useMana,
+    combo,
+    mana,
   } = useGameStore();
   const { playSound } = useSound();
   const [activeMissiles, setActiveMissiles] = useState<ActiveMissile[]>([]);
@@ -129,9 +142,73 @@ export function GameEngine() {
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(
     null
   );
-  const [consecutiveCorrect, setConsecutiveCorrect] = useState(0);
-  const [spawnRate, setSpawnRate] = useState(5000);
-  const [missileDuration, setMissileDuration] = useState(15);
+
+  // Timer State (60 seconds)
+  const [timeRemaining, setTimeRemaining] = useState(60);
+  const { endGame } = useGameStore();
+
+  useInterval(() => {
+    if (status === "playing") {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          endGame();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }
+  }, 1000);
+
+  // Difficulty settings
+  const getInitialSettings = (diff: Difficulty) => {
+    switch (diff) {
+      case "easy":
+        return {
+          spawnRate: 6000,
+          duration: 20,
+          minSpawnRate: 3000,
+          minDuration: 10,
+        };
+      case "hard":
+        return {
+          spawnRate: 4000,
+          duration: 10,
+          minSpawnRate: 1500,
+          minDuration: 6,
+        };
+      case "extreme":
+        return {
+          spawnRate: 3000,
+          duration: 8,
+          minSpawnRate: 800,
+          minDuration: 5,
+        };
+      case "normal":
+      default:
+        return {
+          spawnRate: 5000,
+          duration: 15,
+          minSpawnRate: 2000,
+          minDuration: 8,
+        };
+    }
+  };
+
+  const settings = useRef(getInitialSettings(difficulty));
+
+  // Update settings ref when difficulty changes and reset spawn rates
+  useEffect(() => {
+    const newSettings = getInitialSettings(difficulty);
+    settings.current = newSettings;
+    setSpawnRate(newSettings.spawnRate);
+    setMissileDuration(newSettings.duration);
+    setTimeRemaining(60); // Reset timer on difficulty change/start
+  }, [difficulty]);
+
+  const [spawnRate, setSpawnRate] = useState(settings.current.spawnRate);
+  const [missileDuration, setMissileDuration] = useState(
+    settings.current.duration
+  );
 
   const accuracy = totalAttempts > 0 ? correctAnswers / totalAttempts : 0;
   const leftCastleRow = getCastleRowForHp(castles.left);
@@ -159,6 +236,48 @@ export function GameEngine() {
 
   useInterval(spawnMissile, status === "playing" ? spawnRate : null);
 
+  // Special Ability: Thunder Storm
+  const activateSpecialAbility = useCallback(() => {
+    if (mana >= 100) {
+      playSound("success"); // Add a better sound later like "thunder"
+      useMana(100);
+
+      // Destroy all falling missiles
+      const fallingMissiles = activeMissiles.filter(
+        (m) => m.state === "falling"
+      );
+
+      if (fallingMissiles.length > 0) {
+        // Create explosions for all
+        const newExplosions = fallingMissiles.map((m) => ({
+          id: nanoid(),
+          x: m.x,
+          y: 50, // Approximate Y
+        }));
+        setExplosions((prev) => [...prev, ...newExplosions]);
+
+        // Remove missiles
+        setActiveMissiles((prev) => prev.filter((m) => m.state !== "falling"));
+
+        // Find center castle to fire from
+        const casterX = CASTLE_POSITIONS["center"];
+
+        // Optional: Add visual effect for global attack
+      }
+    }
+  }, [mana, activeMissiles, useMana, playSound]);
+
+  // Keyboard listener for Special Ability (Spacebar)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        activateSpecialAbility();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activateSpecialAbility]);
+
   const handleReachBottom = useCallback(
     (id: string) => {
       if (handledHitsRef.current.has(id)) return;
@@ -168,15 +287,31 @@ export function GameEngine() {
       if (!target) return;
 
       playSound("missile-hit");
-      setConsecutiveCorrect(0);
       setSpawnRate((prev) => Math.min(prev + 200, 3000));
       setMissileDuration((prev) => Math.min(prev + 0.5, 15));
 
       incrementAttempts();
+      resetCombo(); // Reset combo on hit
+
+      // Add missed word
+      const vocabItem: VocabularyItem = {
+        term: target.term,
+        translation: target.translation,
+      };
+      addMissedWord(vocabItem);
+
       damageCastle(getNearestAliveCastleId(target.targetX, castles));
       setActiveMissiles((prev) => prev.filter((missile) => missile.id !== id));
     },
-    [activeMissiles, damageCastle, playSound, incrementAttempts, castles]
+    [
+      activeMissiles,
+      damageCastle,
+      playSound,
+      incrementAttempts,
+      castles,
+      resetCombo,
+      addMissedWord,
+    ]
   );
 
   const handleBoltComplete = useCallback(
@@ -220,7 +355,9 @@ export function GameEngine() {
       if (matchingMissile) {
         playSound("success");
         setFeedback("correct");
-        setConsecutiveCorrect((prev) => prev + 1);
+
+        incrementCombo();
+        addMana(10);
 
         setActiveMissiles((prev) =>
           prev.map((missile) =>
@@ -246,9 +383,13 @@ export function GameEngine() {
           },
         ]);
 
-        if ((consecutiveCorrect + 1) % 3 === 0) {
-          setSpawnRate((prev) => Math.max(prev - 200, 1000));
-          setMissileDuration((prev) => Math.max(prev - 0.5, 5));
+        if ((combo + 1) % 3 === 0) {
+          setSpawnRate((prev) =>
+            Math.max(prev - 200, settings.current.minSpawnRate)
+          );
+          setMissileDuration((prev) =>
+            Math.max(prev - 0.5, settings.current.minDuration)
+          );
         }
 
         increaseScore(10);
@@ -257,7 +398,7 @@ export function GameEngine() {
       } else {
         playSound("error");
         setFeedback("incorrect");
-        setConsecutiveCorrect(0);
+        resetCombo();
         incrementAttempts();
         setTimeout(() => setFeedback(null), 500);
         return false;
@@ -266,10 +407,14 @@ export function GameEngine() {
     [
       activeMissiles,
       playSound,
-      consecutiveCorrect,
+      combo,
       increaseScore,
       incrementAttempts,
       castles,
+      settings,
+      incrementCombo,
+      addMana,
+      resetCombo,
     ]
   );
 
@@ -296,7 +441,13 @@ export function GameEngine() {
         aria-hidden="true"
       />
       <div className="relative z-10 h-full">
-        <HUD score={score} accuracy={accuracy} />
+        <HUD
+          score={score}
+          accuracy={accuracy}
+          combo={combo}
+          mana={mana}
+          timeRemaining={timeRemaining}
+        />
 
         <AnimatePresence>
           {activeMissiles.map((missile) => (
