@@ -7,12 +7,15 @@ import { GameEngine } from "./GameEngine";
 import { ResultsScreen } from "./ResultsScreen";
 import { calculateXP } from "@/lib/games/xp";
 
+import { RankingDialog } from "./RankingDialog";
+
 interface GameContainerProps {
   onComplete?: (results: {
     score: number;
     correctAnswers: number;
     totalAttempts: number;
     accuracy: number;
+    difficulty: Difficulty;
   }) => void;
 }
 
@@ -27,6 +30,7 @@ export function GameContainer({ onComplete }: GameContainerProps) {
   } = useGameStore();
 
   const [difficulty, setDifficulty] = React.useState<Difficulty>("normal");
+  const [showRanking, setShowRanking] = React.useState(false);
 
   const accuracy = totalAttempts > 0 ? correctAnswers / totalAttempts : 0;
   const xp = calculateXP(score, correctAnswers, totalAttempts);
@@ -38,9 +42,18 @@ export function GameContainer({ onComplete }: GameContainerProps) {
         correctAnswers,
         totalAttempts,
         accuracy,
+        difficulty,
       });
     }
-  }, [status, onComplete, score, correctAnswers, totalAttempts, accuracy]);
+  }, [
+    status,
+    onComplete,
+    score,
+    correctAnswers,
+    totalAttempts,
+    accuracy,
+    difficulty,
+  ]);
 
   const handleStart = (selectedDifficulty: Difficulty) => {
     setDifficulty(selectedDifficulty);
@@ -50,7 +63,11 @@ export function GameContainer({ onComplete }: GameContainerProps) {
   return (
     <div className="relative w-full max-w-6xl mx-auto h-[600px] overflow-hidden rounded-3xl border border-purple-500/20 bg-slate-900/40 backdrop-blur-md shadow-[0_0_40px_rgba(168,85,247,0.15)] ring-1 ring-white/10">
       {status === "idle" && (
-        <StartScreen vocabulary={vocabulary} onStart={handleStart} />
+        <StartScreen
+          vocabulary={vocabulary}
+          onStart={handleStart}
+          onShowRanking={() => setShowRanking(true)}
+        />
       )}
 
       {status === "playing" && <GameEngine difficulty={difficulty} />}
@@ -62,8 +79,11 @@ export function GameContainer({ onComplete }: GameContainerProps) {
           xp={xp}
           missedWords={useGameStore.getState().missedWords}
           onRestart={resetGame}
+          onShowRanking={() => setShowRanking(true)}
         />
       )}
+
+      <RankingDialog open={showRanking} onOpenChange={setShowRanking} />
     </div>
   );
 }

@@ -1,11 +1,20 @@
 import React, { useState } from "react";
 import { VocabularyItem, Difficulty } from "@/store/useGameStore";
-import { Wand2, BookOpen, Flame, Skull, Swords, Shield } from "lucide-react";
+import {
+  Wand2,
+  BookOpen,
+  Flame,
+  Skull,
+  Swords,
+  Shield,
+  Trophy,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StartScreenProps {
   vocabulary: VocabularyItem[];
   onStart: (difficulty: Difficulty) => void;
+  onShowRanking: () => void;
 }
 
 const DIFFICULTIES: {
@@ -20,7 +29,11 @@ const DIFFICULTIES: {
   { id: "extreme", label: "Extreme", color: "text-red-500", icon: Skull },
 ];
 
-export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
+export function StartScreen({
+  vocabulary,
+  onStart,
+  onShowRanking,
+}: StartScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>("normal");
@@ -50,6 +63,13 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={onShowRanking}
+                className="flex items-center gap-2 rounded-md border border-yellow-500/20 bg-yellow-500/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-yellow-500 hover:bg-yellow-500/20 transition-colors"
+              >
+                <Trophy className="h-3 w-3" />
+                Leaderboard
+              </button>
               <div className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white/70 backdrop-blur-sm">
                 Ready
               </div>
