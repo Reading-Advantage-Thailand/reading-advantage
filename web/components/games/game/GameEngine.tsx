@@ -624,7 +624,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
           </motion.div>
         </div>
 
-        <div className="absolute top-20 left-0 right-0 z-20">
+        <div className="absolute top-1/2 left-0 right-0 z-20 -translate-y-1/2 pointer-events-none">
           <InputController onSubmit={checkAnswer} />
         </div>
       </div>
