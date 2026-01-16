@@ -40,7 +40,7 @@ export interface GameState {
   resetCombo: () => void;
   incrementCombo: () => void;
   addMana: (amount: number) => void;
-  useMana: (amount: number) => void;
+  spendMana: (amount: number) => void;
   endGame: () => void;
 }
 
@@ -117,7 +117,7 @@ export const useGameStore = create<GameState>((set) => ({
     }),
   addMana: (amount) =>
     set((state) => ({ mana: Math.min(state.mana + amount, 100) })),
-  useMana: (amount) =>
+  spendMana: (amount) =>
     set((state) => ({ mana: Math.max(state.mana - amount, 0) })),
   endGame: () => set({ status: "game-over" }),
 }));

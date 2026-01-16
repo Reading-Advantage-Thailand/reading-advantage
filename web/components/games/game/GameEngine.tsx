@@ -130,7 +130,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
     incrementCombo,
     resetCombo,
     addMana,
-    useMana,
+    spendMana,
     combo,
     mana,
   } = useGameStore();
@@ -240,7 +240,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
   const activateSpecialAbility = useCallback(() => {
     if (mana >= 100) {
       playSound("success"); // Add a better sound later like "thunder"
-      useMana(100);
+      spendMana(100);
 
       // Destroy all falling missiles
       const fallingMissiles = activeMissiles.filter(
@@ -265,7 +265,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
         // Optional: Add visual effect for global attack
       }
     }
-  }, [mana, activeMissiles, useMana, playSound]);
+  }, [mana, activeMissiles, spendMana, playSound]);
 
   // Keyboard listener for Special Ability (Spacebar)
   useEffect(() => {
