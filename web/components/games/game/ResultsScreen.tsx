@@ -10,6 +10,7 @@ interface ResultsScreenProps {
   xp: number;
   missedWords: VocabularyItem[];
   onRestart: () => void;
+  onShowRanking: () => void;
 }
 
 export function ResultsScreen({
@@ -18,6 +19,7 @@ export function ResultsScreen({
   xp,
   missedWords,
   onRestart,
+  onShowRanking,
 }: ResultsScreenProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
@@ -78,13 +80,22 @@ export function ResultsScreen({
             </div>
           )}
 
-          <div className="pt-4">
+          <div className="pt-4 flex flex-col gap-3">
             <Button
               onClick={onRestart}
               className="w-full h-14 text-lg font-bold"
               size="lg"
             >
               Try Again
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={onShowRanking}
+              className="w-full text-muted-foreground hover:text-foreground"
+            >
+              <Trophy className="mr-2 h-4 w-4" />
+              View Leaderboard
             </Button>
           </div>
         </CardContent>

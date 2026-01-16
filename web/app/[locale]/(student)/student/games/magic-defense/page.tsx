@@ -56,6 +56,7 @@ export default function MagicDefensePage() {
       correctAnswers: number;
       totalAttempts: number;
       accuracy: number;
+      difficulty: string;
     }) => {
       const xp = Math.floor(results.correctAnswers * results.accuracy);
       setLastResult(xp, results.accuracy);
@@ -71,6 +72,7 @@ export default function MagicDefensePage() {
             correctAnswers: results.correctAnswers,
             totalAttempts: results.totalAttempts,
             accuracy: results.accuracy,
+            difficulty: results.difficulty,
           }),
         });
 
