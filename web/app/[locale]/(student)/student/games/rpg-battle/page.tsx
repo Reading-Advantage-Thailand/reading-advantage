@@ -1,33 +1,57 @@
-'use client'
+"use client";
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import Link from 'next/link'
-import { useGameStore } from '@/store/useGameStore'
-import { useRPGBattleStore } from '@/store/useRPGBattleStore'
-import { selectBattleActions, WordPerformance } from '@/lib/games/rpgBattleWordSelection'
-import { calculateRpgBattleXp } from '@/lib/games/rpgBattleXp'
-import { SAMPLE_VOCABULARY } from '@/lib/games/sampleVocabulary'
-import { battleEnemies, battleHeroes, battleLocations } from '@/lib/games/rpgBattleSelection'
-import { rollEnemyDamage, scaleBattleXp, scaleEnemyHealth } from '@/lib/games/rpgBattleScaling'
-import { ActionMenu } from '@/components/games/rpg-battle/ActionMenu'
-import { BattleScene } from '@/components/games/rpg-battle/BattleScene'
-import { BattleLog } from '@/components/games/rpg-battle/BattleLog'
-import { HealthBar } from '@/components/games/rpg-battle/HealthBar'
-import { Sprite } from '@/components/games/rpg-battle/Sprite'
-import { BattleResults } from '@/components/games/rpg-battle/BattleResults'
-import { BattleEffects } from '@/components/games/rpg-battle/BattleEffects'
-import { BattleSelectionModal } from '@/components/games/rpg-battle/BattleSelectionModal'
-import { useSound } from '@/hooks/useSound'
-import { AnimatePresence, motion } from 'framer-motion'
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Link from "next/link";
+import { useGameStore } from "@/store/useGameStore";
+import { useRPGBattleStore } from "@/store/useRPGBattleStore";
+import {
+  selectBattleActions,
+  WordPerformance,
+} from "@/lib/games/rpgBattleWordSelection";
+import { calculateRpgBattleXp } from "@/lib/games/rpgBattleXp";
+import {
+  battleEnemies,
+  battleHeroes,
+  battleLocations,
+} from "@/lib/games/rpgBattleSelection";
+import {
+  rollEnemyDamage,
+  scaleBattleXp,
+  scaleEnemyHealth,
+} from "@/lib/games/rpgBattleScaling";
+import { ActionMenu } from "@/components/games/rpg-battle/ActionMenu";
+import { BattleScene } from "@/components/games/rpg-battle/BattleScene";
+import { BattleLog } from "@/components/games/rpg-battle/BattleLog";
+import { HealthBar } from "@/components/games/rpg-battle/HealthBar";
+import { Sprite } from "@/components/games/rpg-battle/Sprite";
+import { BattleResults } from "@/components/games/rpg-battle/BattleResults";
+import { BattleEffects } from "@/components/games/rpg-battle/BattleEffects";
+import { BattleSelectionModal } from "@/components/games/rpg-battle/BattleSelectionModal";
+import { StartScreen } from "@/components/games/rpg-battle/StartScreen";
+import { useSound } from "@/hooks/useSound";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader2, AlertCircle, ChevronLeft, Swords } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Header } from "@/components/header";
 
-const ACTION_COUNT = 3
-const BASIC_DAMAGE = 10
-const POWER_DAMAGE = 18
-const MAX_TURNS = 12
+const ACTION_COUNT = 3;
+const BASIC_DAMAGE = 10;
+const POWER_DAMAGE = 18;
+const MAX_TURNS = 12;
 
 export default function RpgBattlePage() {
-  const vocabulary = useGameStore((state) => state.vocabulary)
-  const setVocabulary = useGameStore((state) => state.setVocabulary)
+  const vocabulary = useGameStore((state) => state.vocabulary);
+  const setVocabulary = useGameStore((state) => state.setVocabulary);
+  const setLastResult = useGameStore((state) => state.setLastResult);
+
   const {
     playerHealth,
     playerMaxHealth,
@@ -56,60 +80,118 @@ export default function RpgBattlePage() {
     selectLocation,
     selectEnemy,
     resetSelection,
-  } = useRPGBattleStore()
+  } = useRPGBattleStore();
 
-  const [inputValue, setInputValue] = useState('')
-  const [performance, setPerformance] = useState<Record<string, WordPerformance>>({})
-  const [turnsTaken, setTurnsTaken] = useState(0)
-  const [longestStreak, setLongestStreak] = useState(0)
-  const [shakeKey, setShakeKey] = useState(0)
-  const [flashKey, setFlashKey] = useState(0)
-  const [flashTone, setFlashTone] = useState<'player' | 'enemy'>('enemy')
-  const [showResults, setShowResults] = useState(false)
-  const [resultXp, setResultXp] = useState(1)
-  const [resultAccuracy, setResultAccuracy] = useState(0)
-  const [heroSprite, setHeroSprite] = useState(() => battleHeroes[0].sprite)
-  const [enemySprite, setEnemySprite] = useState(() => battleEnemies[0].sprite)
-  const { playSound } = useSound()
-  const resultsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState("");
+  const [performance, setPerformance] = useState<
+    Record<string, WordPerformance>
+  >({});
+  const [turnsTaken, setTurnsTaken] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
+  const [shakeKey, setShakeKey] = useState(0);
+  const [flashKey, setFlashKey] = useState(0);
+  const [flashTone, setFlashTone] = useState<"player" | "enemy">("enemy");
+  const [showResults, setShowResults] = useState(false);
+  const [resultXp, setResultXp] = useState(1);
+  const [resultAccuracy, setResultAccuracy] = useState(0);
+  const [heroSprite, setHeroSprite] = useState(() => battleHeroes[0].sprite);
+  const [enemySprite, setEnemySprite] = useState(() => battleEnemies[0].sprite);
+  const { playSound } = useSound();
+  const resultsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Game key to force remount on restart if needed,
+  // currently used primarily to trigger data refetch if logic dictates,
+  // but here we might just reset state.
+  const [gameKey, setGameKey] = useState(0);
+  const [showStartScreen, setShowStartScreen] = useState(true);
 
   const selectedEnemy = useMemo(
     () => battleEnemies.find((enemy) => enemy.id === selectedEnemyId),
-    [selectedEnemyId]
-  )
-  const enemyMultiplier = selectedEnemy?.multiplier ?? 1
+    [selectedEnemyId],
+  );
+  const enemyMultiplier = selectedEnemy?.multiplier ?? 1;
   const selectedLocation = useMemo(
-    () => battleLocations.find((location) => location.id === selectedLocationId),
-    [selectedLocationId]
-  )
+    () =>
+      battleLocations.find((location) => location.id === selectedLocationId),
+    [selectedLocationId],
+  );
+
+  // Fetch vocabulary from API
+  useEffect(() => {
+    const fetchVocabulary = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch("/api/v1/games/rpg-battle/vocabulary");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to fetch vocabulary");
+        }
+
+        if (data.vocabulary && data.vocabulary.length >= 5) {
+          setVocabulary(data.vocabulary);
+        } else {
+          setError(
+            data.message ||
+              "Not enough vocabulary words. Please save at least 5 words to play.",
+          );
+        }
+      } catch (err) {
+        console.error("Error fetching vocabulary:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load vocabulary",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVocabulary();
+  }, [setVocabulary, gameKey]);
 
   useEffect(() => {
-    setVocabulary(SAMPLE_VOCABULARY)
-    resetSelection()
-    setStatus('idle')
-  }, [resetSelection, setStatus, setVocabulary])
+    if (vocabulary.length > 0 && !showStartScreen) {
+      // Only reset selection if we have vocabulary loaded and not showing start screen
+      resetSelection();
+      setStatus("idle");
+    }
+  }, [resetSelection, setStatus, vocabulary.length, gameKey, showStartScreen]);
 
   useEffect(() => {
-    if (selectionStep !== 'ready' || !selectedHeroId || !selectedEnemyId) {
-      return
+    if (selectionStep !== "ready" || !selectedHeroId || !selectedEnemyId) {
+      return;
     }
 
-    const heroSelection = battleHeroes.find((hero) => hero.id === selectedHeroId) ?? battleHeroes[0]
-    const enemySelection = selectedEnemy ?? battleEnemies[0]
+    const heroSelection =
+      battleHeroes.find((hero) => hero.id === selectedHeroId) ??
+      battleHeroes[0];
+    const enemySelection = selectedEnemy ?? battleEnemies[0];
 
-    setHeroSprite(heroSelection.sprite)
-    setEnemySprite(enemySelection.sprite)
-    initializeBattle({ enemyMaxHealth: scaleEnemyHealth(enemySelection.multiplier) })
-  }, [initializeBattle, selectedEnemy, selectedEnemyId, selectedHeroId, selectionStep])
+    setHeroSprite(heroSelection.sprite);
+    setEnemySprite(enemySelection.sprite);
+    initializeBattle({
+      enemyMaxHealth: scaleEnemyHealth(enemySelection.multiplier),
+    });
+  }, [
+    initializeBattle,
+    selectedEnemy,
+    selectedEnemyId,
+    selectedHeroId,
+    selectionStep,
+  ]);
 
   useEffect(() => {
-    setLongestStreak((prev) => Math.max(prev, streak))
-  }, [streak])
+    setLongestStreak((prev) => Math.max(prev, streak));
+  }, [streak]);
 
   const actions = useMemo(
     () => selectBattleActions(vocabulary, performance, { count: ACTION_COUNT }),
-    [performance, vocabulary]
-  )
+    [performance, vocabulary],
+  );
 
   const { totalCorrect, totalAttempts } = useMemo(() => {
     return Object.values(performance).reduce(
@@ -117,41 +199,89 @@ export default function RpgBattlePage() {
         totalCorrect: acc.totalCorrect + entry.correct,
         totalAttempts: acc.totalAttempts + entry.attempts,
       }),
-      { totalCorrect: 0, totalAttempts: 0 }
-    )
-  }, [performance])
+      { totalCorrect: 0, totalAttempts: 0 },
+    );
+  }, [performance]);
+
+  const handleGameComplete = useCallback(
+    async (xp: number, accuracy: number, outcome: "victory" | "defeat") => {
+      // Send results to API
+      try {
+        const response = await fetch("/api/v1/games/rpg-battle/complete", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            xp,
+            accuracy,
+            totalAttempts,
+            totalCorrect,
+            turnsTaken: Math.max(1, turnsTaken),
+            heroId: selectedHeroId,
+            enemyId: selectedEnemyId,
+            outcome,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          console.log("Game completed! XP earned:", data.xpEarned);
+          setLastResult(data.xpEarned, accuracy);
+        } else {
+          console.error("Failed to save game results:", data.message);
+        }
+      } catch (err) {
+        console.error("Error saving game results:", err);
+      }
+    },
+    [
+      selectedHeroId,
+      selectedEnemyId,
+      totalAttempts,
+      totalCorrect,
+      turnsTaken,
+      setLastResult,
+    ],
+  );
 
   useEffect(() => {
     if (resultsTimeoutRef.current) {
-      clearTimeout(resultsTimeoutRef.current)
-      resultsTimeoutRef.current = null
+      clearTimeout(resultsTimeoutRef.current);
+      resultsTimeoutRef.current = null;
     }
 
-    if (status === 'victory' || status === 'defeat') {
-      const accuracy = totalAttempts > 0 ? totalCorrect / totalAttempts : 0
-      setResultAccuracy(accuracy)
+    if (status === "victory" || status === "defeat") {
+      const accuracy = totalAttempts > 0 ? totalCorrect / totalAttempts : 0;
+      setResultAccuracy(accuracy);
       const baseXp = calculateRpgBattleXp({
         playerHealth,
         playerMaxHealth,
         turnsTaken: Math.max(1, turnsTaken),
         maxTurns: MAX_TURNS,
         longestStreak,
-      })
-      setResultXp(scaleBattleXp(baseXp, enemyMultiplier))
-      setShowResults(false)
+      });
+      const finalXp = scaleBattleXp(baseXp, enemyMultiplier);
+      setResultXp(finalXp);
+
+      // Call handleGameComplete to save results
+      handleGameComplete(finalXp, accuracy, status);
+
+      setShowResults(false);
       resultsTimeoutRef.current = setTimeout(() => {
-        setShowResults(true)
-      }, 1200)
+        setShowResults(true);
+      }, 1200);
     } else {
-      setShowResults(false)
+      setShowResults(false);
     }
 
     return () => {
       if (resultsTimeoutRef.current) {
-        clearTimeout(resultsTimeoutRef.current)
-        resultsTimeoutRef.current = null
+        clearTimeout(resultsTimeoutRef.current);
+        resultsTimeoutRef.current = null;
       }
-    }
+    };
   }, [
     status,
     longestStreak,
@@ -161,188 +291,293 @@ export default function RpgBattlePage() {
     totalCorrect,
     turnsTaken,
     enemyMultiplier,
-  ])
+    handleGameComplete,
+  ]);
 
   const menuActions = useMemo(
-    () => actions.map((action) => ({ id: action.id, label: action.term, power: action.power })),
-    [actions]
-  )
+    () =>
+      actions.map((action) => ({
+        id: action.id,
+        label: action.term,
+        power: action.power,
+      })),
+    [actions],
+  );
 
   const updatePerformance = (term: string, correct: boolean) => {
     setPerformance((prev) => {
-      const current = prev[term] ?? { correct: 0, attempts: 0 }
+      const current = prev[term] ?? { correct: 0, attempts: 0 };
       return {
         ...prev,
         [term]: {
           correct: current.correct + (correct ? 1 : 0),
           attempts: current.attempts + 1,
         },
-      }
-    })
-  }
+      };
+    });
+  };
 
   const triggerEnemyTurn = () => {
-    const damage = rollEnemyDamage(enemyMultiplier)
-    setTurn('enemy')
+    const damage = rollEnemyDamage(enemyMultiplier);
+    setTurn("enemy");
     setTimeout(() => {
-      enemyAttack(damage)
-      setTurnsTaken((prev) => prev + 1)
-      setFlashTone('player')
-      setFlashKey((prev) => prev + 1)
-      setShakeKey((prev) => prev + 1)
-      addLogEntry('Enemy strikes back!', 'enemy')
-      playSound('missile-hit')
-    }, 600)
-  }
+      enemyAttack(damage);
+      setTurnsTaken((prev) => prev + 1);
+      setFlashTone("player");
+      setFlashKey((prev) => prev + 1);
+      setShakeKey((prev) => prev + 1);
+      addLogEntry("Enemy strikes back!", "enemy");
+      playSound("missile-hit");
+    }, 600);
+  };
 
   const handleSubmit = (value: string) => {
-    if (status !== 'playing' || inputLocked || turn !== 'player') return
+    if (status !== "playing" || inputLocked || turn !== "player") return;
 
-    const normalized = value.trim().toLowerCase()
-    const matched = actions.find((action) => action.translation.toLowerCase() === normalized)
-    const fallback = actions.find((action) => action.power === 'power') ?? actions[0]
+    const normalized = value.trim().toLowerCase();
+    const matched = actions.find(
+      (action) => action.translation.toLowerCase() === normalized,
+    );
+    const fallback =
+      actions.find((action) => action.power === "power") ?? actions[0];
 
     if (matched) {
-      const damage = matched.power === 'power' ? POWER_DAMAGE : BASIC_DAMAGE
-      const nextEnemyHealth = Math.max(0, enemyHealth - damage)
+      const damage = matched.power === "power" ? POWER_DAMAGE : BASIC_DAMAGE;
+      const nextEnemyHealth = Math.max(0, enemyHealth - damage);
 
-      submitAnswer(value, matched.translation, matched.power)
-      playSound('success')
-      updatePerformance(matched.term, true)
-      addLogEntry(`You cast ${matched.term}!`, 'player')
-      damageEnemy(damage)
-      setTurnsTaken((prev) => prev + 1)
-      setFlashTone('enemy')
-      setFlashKey((prev) => prev + 1)
-      setShakeKey((prev) => prev + 1)
-      setInputValue('')
+      submitAnswer(value, matched.translation, matched.power);
+      playSound("success");
+      updatePerformance(matched.term, true);
+      addLogEntry(`You cast ${matched.term}!`, "player");
+      damageEnemy(damage);
+      setTurnsTaken((prev) => prev + 1);
+      setFlashTone("enemy");
+      setFlashKey((prev) => prev + 1);
+      setShakeKey((prev) => prev + 1);
+      setInputValue("");
 
       if (nextEnemyHealth > 0) {
-        triggerEnemyTurn()
+        triggerEnemyTurn();
       }
-      return
+      return;
     }
 
     if (fallback) {
-      submitAnswer(value, fallback.translation)
-      playSound('error')
-      updatePerformance(fallback.term, false)
-      addLogEntry(`Incorrect! The spell was ${fallback.translation}.`, 'system')
+      submitAnswer(value, fallback.translation);
+      playSound("error");
+      updatePerformance(fallback.term, false);
+      addLogEntry(
+        `Incorrect! The spell was ${fallback.translation}.`,
+        "system",
+      );
+      setInputValue("");
+      // Trigger enemy turn on incorrect answer
+      triggerEnemyTurn();
     }
-  }
+  };
 
   const handleRestart = () => {
-    setInputValue('')
-    setTurnsTaken(0)
-    setLongestStreak(0)
-    setFlashKey(0)
-    setShakeKey(0)
-    setFlashTone('enemy')
-    setShowResults(false)
-    setResultXp(1)
-    setResultAccuracy(0)
-    setStatus('idle')
-    resetSelection()
+    setInputValue("");
+    setTurnsTaken(0);
+    setLongestStreak(0);
+    setFlashKey(0);
+    setShakeKey(0);
+    setFlashTone("enemy");
+    setShowResults(false);
+    setResultXp(1);
+    setResultAccuracy(0);
+    setPerformance({}); // Reset performance on restart
+    setShowStartScreen(true); // Show start screen again
+    setStatus("idle"); // Reset status to idle
+    // Increment gameKey to potentially re-fetch vocabulary if we wanted to shuffle,
+    // or just to reset internal state if components rely on mount.
+    // For now effectively acting as a soft reload of the game logic.
+    setGameKey((prev) => prev + 1);
+  };
+
+  const handleStartBattle = () => {
+    setShowStartScreen(false);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/student/games">
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Back to Games
+          </Link>
+        </Button>
+        <Header
+          heading="RPG Battle"
+          text="Type the correct translation to unleash your spells."
+        >
+          <Swords className="h-8 w-8 text-primary" />
+        </Header>
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
+            <p className="text-lg font-medium text-muted-foreground">
+              Summoning forces...
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Preparing your spellbook
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/student/games">
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Back to Games
+          </Link>
+        </Button>
+        <Header
+          heading="RPG Battle"
+          text="Type the correct translation to unleash your spells."
+        >
+          <Swords className="h-8 w-8 text-primary" />
+        </Header>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Unable to Start Battle</AlertTitle>
+          <AlertDescription className="mt-2 space-y-2">
+            <p>{error}</p>
+            <p className="text-sm opacity-80">
+              Tip: Save vocabulary words from articles to build your spellbook.
+            </p>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-5xl space-y-6">
-        <header className="space-y-2 text-center">
-          <div className="flex items-center justify-between text-sm">
-            <Link href="/" className="text-muted-foreground hover:text-foreground">
-              Back to Home
-            </Link>
-            <span className="text-muted-foreground">Turn: {turn === 'player' ? 'Player' : 'Enemy'}</span>
-          </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-primary">RPG Battle</h1>
-          <p className="text-muted-foreground">
-            Type the correct translation to unleash your spells.
-          </p>
-        </header>
+    <div className="space-y-6">
+      <Button variant="ghost" size="sm" asChild>
+        <Link href="/student/games">
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          Back to Games
+        </Link>
+      </Button>
+      <Header
+        heading="RPG Battle"
+        text="Type the correct translation to unleash your spells."
+      >
+        <Swords className="h-8 w-8 text-primary" />
+      </Header>
 
-        {showResults && (status === 'victory' || status === 'defeat') ? (
-          <BattleResults
-            outcome={status}
-            xp={resultXp}
-            accuracy={resultAccuracy}
-            onRestart={handleRestart}
-          />
-        ) : (
-          <BattleEffects shakeKey={shakeKey} flashKey={flashKey} flashTone={flashTone}>
-            <BattleScene
-              backgroundImage={selectedLocation?.background}
-              playerHealth={
-                <HealthBar
-                  current={playerHealth}
-                  max={playerMaxHealth}
-                  label="Hero"
-                  tone="player"
-                />
-              }
-              enemyHealth={
-                <HealthBar
-                  current={enemyHealth}
-                  max={enemyMaxHealth}
-                  label="Enemy"
-                  tone="enemy"
-                />
-              }
-              player={
-                <Sprite
-                  src={heroSprite}
-                  pose={playerPose}
-                  alt="Hero"
-                  size={140}
-                  flip
-                />
-              }
-              enemy={
-                <Sprite
-                  src={enemySprite}
-                  pose={enemyPose}
-                  alt="Enemy"
-                  size={140}
-                />
-              }
-              actionMenu={
-                <div className="space-y-2">
-                  <ActionMenu
-                    actions={menuActions}
-                    value={inputValue}
-                    onChange={setInputValue}
-                    onSubmit={handleSubmit}
-                    disabled={inputLocked || turn !== 'player' || status !== 'playing'}
+      {showStartScreen && vocabulary.length > 0 && status === "idle" ? (
+        <Card className="overflow-hidden border-2 shadow-xl bg-slate-900 border-slate-800 min-h-[600px]">
+          <CardContent className="p-0 h-full">
+            <StartScreen vocabulary={vocabulary} onStart={handleStartBattle} />
+          </CardContent>
+        </Card>
+      ) : null}
+      {showResults && (status === "victory" || status === "defeat") ? (
+        <BattleResults
+          outcome={status}
+          xp={resultXp}
+          accuracy={resultAccuracy}
+          onRestart={handleRestart}
+        />
+      ) : !showStartScreen ? (
+        <Card className="overflow-hidden border-2 shadow-xl bg-slate-900 border-slate-800">
+          <CardContent className="p-0">
+            <BattleEffects
+              shakeKey={shakeKey}
+              flashKey={flashKey}
+              flashTone={flashTone}
+            >
+              <BattleScene
+                backgroundImage={selectedLocation?.background}
+                playerHealth={
+                  <HealthBar
+                    current={playerHealth}
+                    max={playerMaxHealth}
+                    label="Hero"
+                    tone="player"
                   />
-                  <AnimatePresence>
-                    {revealedTranslation ? (
-                      <motion.p
-                        key={revealedTranslation}
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        className="text-sm font-semibold text-amber-600"
-                      >
-                        Correct answer: {revealedTranslation}
-                      </motion.p>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
-              }
-              battleLog={<BattleLog entries={battleLog} />}
-            />
-          </BattleEffects>
-        )}
-      </div>
-      <BattleSelectionModal
-        step={selectionStep}
-        heroes={battleHeroes}
-        locations={battleLocations}
-        enemies={battleEnemies}
-        onSelectHero={selectHero}
-        onSelectLocation={selectLocation}
-        onSelectEnemy={selectEnemy}
-      />
-    </main>
-  )
+                }
+                enemyHealth={
+                  <HealthBar
+                    current={enemyHealth}
+                    max={enemyMaxHealth}
+                    label="Enemy"
+                    tone="enemy"
+                  />
+                }
+                player={
+                  <Sprite
+                    src={heroSprite}
+                    pose={playerPose}
+                    alt="Hero"
+                    size={140}
+                    flip
+                  />
+                }
+                enemy={
+                  <Sprite
+                    src={enemySprite}
+                    pose={enemyPose}
+                    alt="Enemy"
+                    size={140}
+                  />
+                }
+                actionMenu={
+                  <div className="space-y-2">
+                    <ActionMenu
+                      actions={menuActions}
+                      value={inputValue}
+                      onChange={setInputValue}
+                      onSubmit={handleSubmit}
+                      disabled={
+                        inputLocked || turn !== "player" || status !== "playing"
+                      }
+                    />
+                    <AnimatePresence>
+                      {revealedTranslation ? (
+                        <motion.p
+                          key={revealedTranslation}
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          className="text-sm font-semibold text-amber-400"
+                        >
+                          Correct answer: {revealedTranslation}
+                        </motion.p>
+                      ) : null}
+                    </AnimatePresence>
+                  </div>
+                }
+                battleLog={<BattleLog entries={battleLog} />}
+                turnIndicator={
+                  <div className="text-xs text-slate-400">
+                    Turn: {turn === "player" ? "Player" : "Enemy"}
+                  </div>
+                }
+              />
+            </BattleEffects>
+          </CardContent>
+        </Card>
+      ) : null}
+      {!showStartScreen && (
+        <BattleSelectionModal
+          step={selectionStep}
+          heroes={battleHeroes}
+          locations={battleLocations}
+          enemies={battleEnemies}
+          onSelectHero={selectHero}
+          onSelectLocation={selectLocation}
+          onSelectEnemy={selectEnemy}
+        />
+      )}
+    </div>
+  );
 }
