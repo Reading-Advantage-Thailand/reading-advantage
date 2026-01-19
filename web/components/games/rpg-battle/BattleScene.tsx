@@ -1,13 +1,14 @@
-import React from 'react'
+import React from "react";
 
 interface BattleSceneProps {
-  player: React.ReactNode
-  enemy: React.ReactNode
-  playerHealth: React.ReactNode
-  enemyHealth: React.ReactNode
-  actionMenu: React.ReactNode
-  battleLog: React.ReactNode
-  backgroundImage?: string
+  player: React.ReactNode;
+  enemy: React.ReactNode;
+  playerHealth: React.ReactNode;
+  enemyHealth: React.ReactNode;
+  actionMenu: React.ReactNode;
+  battleLog: React.ReactNode;
+  backgroundImage?: string;
+  turnIndicator?: React.ReactNode;
 }
 
 export function BattleScene({
@@ -18,19 +19,22 @@ export function BattleScene({
   actionMenu,
   battleLog,
   backgroundImage,
+  turnIndicator,
 }: BattleSceneProps) {
-  const stageStyle = backgroundImage ? {
-    backgroundImage: `url(${backgroundImage})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-  } : undefined
+  const stageStyle = backgroundImage
+    ? {
+        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url(${backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    : undefined;
 
   return (
-    <section className="w-full rounded-2xl border bg-background/80 p-4 shadow-sm md:p-6">
+    <section className="w-full p-4 md:p-6">
       <div
         data-testid="battle-stage"
-        className="flex min-h-[280px] items-end justify-between gap-6 rounded-2xl bg-muted/60 p-4 md:p-6"
+        className="flex min-h-[280px] items-end justify-between gap-6 rounded-2xl bg-slate-800/60 backdrop-blur-sm p-4 md:p-6 shadow-2xl border border-slate-700/50"
         style={stageStyle}
       >
         <div className="flex flex-1 flex-col items-start gap-3">
@@ -49,8 +53,11 @@ export function BattleScene({
         className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
       >
         <div className="min-h-[120px]">{actionMenu}</div>
-        <div className="min-h-[120px]">{battleLog}</div>
+        <div className="min-h-[120px] space-y-2">
+          {turnIndicator}
+          {battleLog}
+        </div>
       </div>
     </section>
-  )
+  );
 }
