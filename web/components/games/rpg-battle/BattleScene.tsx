@@ -1,5 +1,8 @@
 import React from "react";
 
+import { FloatingTextItem, FloatingTextOverlay } from "./FloatingText";
+import { ComboIndicator } from "./ComboIndicator";
+
 interface BattleSceneProps {
   player: React.ReactNode;
   enemy: React.ReactNode;
@@ -9,6 +12,8 @@ interface BattleSceneProps {
   battleLog: React.ReactNode;
   backgroundImage?: string;
   turnIndicator?: React.ReactNode;
+  floatingTexts?: FloatingTextItem[];
+  streak?: number;
 }
 
 export function BattleScene({
@@ -20,6 +25,8 @@ export function BattleScene({
   battleLog,
   backgroundImage,
   turnIndicator,
+  floatingTexts = [],
+  streak = 0,
 }: BattleSceneProps) {
   const stageStyle = backgroundImage
     ? {
@@ -34,9 +41,12 @@ export function BattleScene({
     <section className="w-full p-4 md:p-6">
       <div
         data-testid="battle-stage"
-        className="flex min-h-[280px] items-end justify-between gap-6 rounded-2xl bg-slate-800/60 backdrop-blur-sm p-4 md:p-6 shadow-2xl border border-slate-700/50"
+        className="relative flex min-h-[280px] items-end justify-between gap-6 rounded-2xl bg-slate-800/60 backdrop-blur-sm p-4 md:p-6 shadow-2xl border border-slate-700/50 overflow-hidden"
         style={stageStyle}
       >
+        <FloatingTextOverlay items={floatingTexts} />
+        <ComboIndicator streak={streak} />
+
         <div className="flex flex-1 flex-col items-start gap-3">
           <div className="w-full">{playerHealth}</div>
           <div className="flex w-full items-end justify-start">{player}</div>
