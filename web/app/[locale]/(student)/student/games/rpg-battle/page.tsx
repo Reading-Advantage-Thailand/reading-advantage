@@ -33,6 +33,7 @@ import { Sprite } from "@/components/games/rpg-battle/Sprite";
 import { BattleResults } from "@/components/games/rpg-battle/BattleResults";
 import { BattleEffects } from "@/components/games/rpg-battle/BattleEffects";
 import { BattleSelectionModal } from "@/components/games/rpg-battle/BattleSelectionModal";
+import { FloatingTextItem } from "@/components/games/rpg-battle/FloatingText";
 import { StartScreen } from "@/components/games/rpg-battle/StartScreen";
 import { useSound } from "@/hooks/useSound";
 import { AnimatePresence, motion } from "framer-motion";
@@ -106,6 +107,22 @@ export default function RpgBattlePage() {
   // but here we might just reset state.
   const [gameKey, setGameKey] = useState(0);
   const [showStartScreen, setShowStartScreen] = useState(true);
+  const [floatingTexts, setFloatingTexts] = useState<FloatingTextItem[]>([]);
+
+  const spawnFloatingText = (
+    text: string,
+    x: number,
+    y: number,
+    type: FloatingTextItem["type"],
+  ) => {
+    const id = Math.random().toString(36).substring(7);
+    setFloatingTexts((prev) => [...prev, { id, text, x, y, type }]);
+
+    // Auto remove after animation
+    setTimeout(() => {
+      setFloatingTexts((prev) => prev.filter((item) => item.id !== id));
+    }, 1000);
+  };
 
   const selectedEnemy = useMemo(
     () => battleEnemies.find((enemy) => enemy.id === selectedEnemyId),
@@ -322,6 +339,7 @@ export default function RpgBattlePage() {
     setTurn("enemy");
     setTimeout(() => {
       enemyAttack(damage);
+      spawnFloatingText(`-${damage}`, 20, 60, "damage-player"); // Player position
       setTurnsTaken((prev) => prev + 1);
       setFlashTone("player");
       setFlashKey((prev) => prev + 1);
@@ -342,14 +360,35 @@ export default function RpgBattlePage() {
       actions.find((action) => action.power === "power") ?? actions[0];
 
     if (matched) {
-      const damage = matched.power === "power" ? POWER_DAMAGE : BASIC_DAMAGE;
+      // Calculate damage with streak bonus
+      const baseDamage =
+        matched.power === "power" ? POWER_DAMAGE : BASIC_DAMAGE;
+      // Bonus: +1 damage for every 2 streak
+      const streakBonus = Math.floor(streak / 2);
+      const damage = baseDamage + streakBonus;
+
       const nextEnemyHealth = Math.max(0, enemyHealth - damage);
 
       submitAnswer(value, matched.translation, matched.power);
       playSound("success");
+
+      // TTS: Speak the word
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        const utterance = new SpeechSynthesisUtterance(matched.term);
+        utterance.lang = "en-US"; // Assume English terms for now
+        utterance.rate = 1.0;
+        window.speechSynthesis.speak(utterance);
+      }
+
       updatePerformance(matched.term, true);
       addLogEntry(`You cast ${matched.term}!`, "player");
       damageEnemy(damage);
+      spawnFloatingText(`-${damage}`, 80, 40, "damage-enemy");
+      if (Math.random() > 0.8) {
+        setTimeout(() => {
+          spawnFloatingText("CRITICAL!", 80, 20, "crit");
+        }, 200);
+      }
       setTurnsTaken((prev) => prev + 1);
       setFlashTone("enemy");
       setFlashKey((prev) => prev + 1);
@@ -496,6 +535,8 @@ export default function RpgBattlePage() {
               flashTone={flashTone}
             >
               <BattleScene
+                floatingTexts={floatingTexts}
+                streak={streak}
                 backgroundImage={selectedLocation?.background}
                 playerHealth={
                   <HealthBar
