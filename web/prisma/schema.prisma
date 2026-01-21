@@ -592,6 +592,7 @@ enum ActivityType {
   DRAGON_FLIGHT
   MAGIC_DEFENSE
   RPG_BATTLE
+  RUNE_MATCH
 }
 
 enum Status {
