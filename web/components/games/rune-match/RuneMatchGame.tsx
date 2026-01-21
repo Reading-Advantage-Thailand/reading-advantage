@@ -325,7 +325,7 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
                 y: row,
                 offsetX: 0,
                 offsetY: 0,
-                color: "#ef4444",
+                color: "#94a3b8",
                 opacity: 1,
                 scale: 1,
                 duration: 1500,
