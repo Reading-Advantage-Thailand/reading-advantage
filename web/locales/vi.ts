@@ -636,9 +636,61 @@ export default {
         phase9Title: "Luyện từ - Thẻ từ vựng",
         phase9Description:
           "Luyện tập các từ vựng đã học trong bài. Bạn có thể dùng hoạt động này để tự đánh giá khả năng nhận diện từ",
-        phase10Title: "Luyện từ - Ghép từ",
+        phase10Title: "Luyện từ - Luyện tập qua trò chơi",
         phase10Description:
-          "Luyện tập các từ vựng bằng cách ghép các từ với nghĩa tương ứng",
+          "Luyện tập các từ vựng đã học trong bài học này bằng cách chơi trò chơi",
+        phase10: {
+          headerTitle: "Luyện từ - Luyện tập qua trò chơi",
+          headerDescription:
+            "Đã đến lúc kiểm tra kỹ năng của bạn! Chọn một trò chơi để luyện tập các từ vựng bạn đã học.",
+          unableToLoad: "Không thể tải trò chơi",
+          notEnoughVocab:
+            "Không đủ từ vựng trong bài học này để chơi trò chơi (Tối thiểu 5 từ).",
+          failedToLoad: "Tải dữ liệu trò chơi thất bại.",
+          awesome: "Tuyệt vời!",
+          completed: "Đã hoàn thành",
+          youCompleted: "Bạn đã hoàn thành",
+          score: "Điểm",
+          accuracy: "Độ chính xác",
+          playAgain: "Chơi lại",
+          continueNext: "Tiếp tục sang giai đoạn tiếp theo khi bạn đã sẵn sàng",
+          chooseGame: "Chọn một trò chơi để bắt đầu",
+          lastPlayed: "Chơi lần cuối",
+          exitGame: "Thoát trò chơi",
+          difficulty: {
+            easy: "Dễ",
+            medium: "Trung bình",
+            hard: "Khó",
+          },
+          types: {
+            spelling: "Chính tả",
+            matching: "Ghép cặp",
+            strategy: "Chiến thuật",
+            vocabulary: "Từ vựng",
+          },
+          games: {
+            "wizard-vs-zombie": {
+              title: "Wizard vs Zombie",
+              description:
+                "Sử dụng sức mạnh từ vựng của bạn để đánh bại bầy thây ma.",
+            },
+            "rune-match": {
+              title: "Rune Match",
+              description:
+                "Ghép các ký tự và từ vựng để mở khóa bí mật cổ xưa.",
+            },
+            "dragon-flight": {
+              title: "Dragon Flight",
+              description:
+                "Chọn cánh cổng chính xác để phát triển đàn rồng của bạn.",
+            },
+            "magic-defense": {
+              title: "Magic Defense",
+              description:
+                "Bảo vệ tháp của bạn bằng cách sử dụng phép thuật và từ vựng.",
+            },
+          },
+        },
         phase11Title: "Luyện câu - Thẻ câu",
         phase11Description:
           "Luyện các câu đã học bằng thẻ. Bạn có thể tự đánh giá khả năng hiểu câu của mình",
@@ -2145,7 +2197,7 @@ export default {
       stories: "Cốt truyện",
       history: "Lịch sử",
       sentences: "Câu",
-      games: "Game",  
+      games: "Game",
       reports: "Báo cáo",
       vocabulary: "từ vựng",
       myClasses: "Lớp học của tôi",
