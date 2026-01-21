@@ -644,9 +644,61 @@ export default {
         phase9Title: "Vocabulary Practice - Flashcards",
         phase9Description:
           "Practice the vocabulary you've learned in this lesson. You can use this activity to assess your vocabulary recognition skills",
-        phase10Title: "Vocabulary Practice - Matching",
+        phase10Title: "Vocabulary Practice - Game Practice",
         phase10Description:
-          "Practice the vocabulary you've learned in this lesson by matching words with their meanings",
+          "Practice the vocabulary you've learned in this lesson by playing games",
+        phase10: {
+          headerTitle: "Vocabulary Practice - Game Practice",
+          headerDescription:
+            "Time to test your skills! Choose a game to practice the words you've learned.",
+          unableToLoad: "Unable to Load Games",
+          notEnoughVocab:
+            "Not enough vocabulary in this lesson to play games (Minimum 5).",
+          failedToLoad: "Failed to load game data.",
+          awesome: "Awesome!",
+          completed: "Completed",
+          youCompleted: "You completed",
+          score: "Score",
+          accuracy: "Accuracy",
+          playAgain: "Play Again",
+          continueNext: "Continue to next phase whenever you're ready",
+          chooseGame: "Choose a game to start",
+          lastPlayed: "Last Played",
+          exitGame: "Exit Game",
+          difficulty: {
+            easy: "Easy",
+            medium: "Medium",
+            hard: "Hard",
+          },
+          types: {
+            spelling: "Spelling",
+            matching: "Matching",
+            strategy: "Strategy",
+            vocabulary: "Vocabulary",
+          },
+          games: {
+            "wizard-vs-zombie": {
+              title: "Wizard vs Zombie",
+              description:
+                "Use your vocabulary powers to defeat the zombie horde.",
+            },
+            "rune-match": {
+              title: "Rune Match",
+              description:
+                "Match runes and vocabulary to unlock ancient secrets.",
+            },
+            "dragon-flight": {
+              title: "Dragon Flight",
+              description:
+                "Choose the correct gate to grow your dragon flight.",
+            },
+            "magic-defense": {
+              title: "Magic Defense",
+              description:
+                "Defend your tower using magic spells and vocabulary.",
+            },
+          },
+        },
         phase11Title: "Sentence Practice - Flashcards",
         phase11Description:
           "Practice the sentences you've learned in this lesson. You can use this activity to assess your sentence recognition skills",
@@ -693,7 +745,7 @@ export default {
           "Multiple Choice Questions",
           "Short Answer Questions",
           "Vocabulary Practice - Flashcards",
-          "Vocabulary Practice - Matching",
+          "Vocabulary Practice - Game Practice",
           "Sentence Practice - Flashcards",
           "Sentence Practice - Activity Selection",
           "Language Questions",
