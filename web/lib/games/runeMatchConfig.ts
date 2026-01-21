@@ -1,36 +1,36 @@
-export type MonsterType = 'goblin' | 'skeleton' | 'orc' | 'dragon'
+export type MonsterType = "goblin" | "skeleton" | "orc" | "dragon";
 
 export type MonsterConfig = {
-  hp: number
-  attack: number
-  xp: number
-}
+  hp: number;
+  attack: number;
+  xp: number;
+};
 
 export type RuneMatchConfig = {
   player: {
-    maxHp: number
-  }
-  monsters: Record<MonsterType, MonsterConfig>
+    maxHp: number;
+  };
+  monsters: Record<MonsterType, MonsterConfig>;
   combat: {
-    attackIntervalMs: number
-    match3Damage: number
-    match4Damage: number
-    match5Damage: number
-    lShapeDamage: number
-    cascadeBonus: number
-    powerRuneMultiplier: number
-    invalidSwapPenalty: number
-  }
+    attackIntervalMs: number;
+    match3Damage: number;
+    match4Damage: number;
+    match5Damage: number;
+    lShapeDamage: number;
+    cascadeBonus: number;
+    powerRuneMultiplier: number;
+    invalidSwapPenalty: number;
+  };
   powerUps: {
-    healAmount: number
-    shieldDuration: number
-    spawnRate: number
-  }
+    healAmount: number;
+    shieldDuration: number;
+    spawnRate: number;
+  };
   grid: {
-    columns: number
-    rows: number
-  }
-}
+    columns: number;
+    rows: number;
+  };
+};
 
 export const RUNE_MATCH_CONFIG: RuneMatchConfig = {
   player: {
@@ -55,10 +55,10 @@ export const RUNE_MATCH_CONFIG: RuneMatchConfig = {
   powerUps: {
     healAmount: 5,
     shieldDuration: 1,
-    spawnRate: 0.10,
+    spawnRate: 0.1,
   },
   grid: {
-    columns: 6,
-    rows: 6,
+    columns: 5,
+    rows: 5,
   },
-}
+};
