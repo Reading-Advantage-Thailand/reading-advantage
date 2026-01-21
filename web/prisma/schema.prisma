@@ -593,6 +593,7 @@ enum ActivityType {
   MAGIC_DEFENSE
   RPG_BATTLE
   RUNE_MATCH
+  WIZARD_ZOMBIE
 }
 
 enum Status {
