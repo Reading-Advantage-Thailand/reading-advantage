@@ -73,7 +73,7 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
     if (!level) {
       return NextResponse.json(
         { message: "Level is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -213,7 +213,7 @@ export async function getSearchArticles(req: ExtendedNextRequest) {
         selectionType: ["fiction", "nonfiction"],
         error: err,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -306,14 +306,14 @@ export async function getArticles(req: ExtendedNextRequest) {
     console.error(error);
     return NextResponse.json(
       { message: "Internal server error", error: error },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function getArticleById(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   try {
     const { article_id } = await ctx.params;
@@ -332,12 +332,13 @@ export async function getArticleById(
     if (!article) {
       return NextResponse.json(
         { message: "Article not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Check if user has read the article
-    const existingActivity = await prisma.userActivity.findUnique({
+    // Check if user has read the article and create activity record atomically
+    await prisma.userActivity.upsert({
       where: {
         userId_activityType_targetId: {
           userId: userId,
@@ -345,23 +346,18 @@ export async function getArticleById(
           targetId: article_id,
         },
       },
-    });
-
-    if (!existingActivity) {
-      // Create user activity record
-      await prisma.userActivity.create({
-        data: {
-          userId: userId,
-          activityType: "ARTICLE_READ",
-          targetId: article_id,
-          completed: false,
-          details: {
-            articleTitle: article.title,
-            level: req.session?.user.level,
-          },
+      create: {
+        userId: userId,
+        activityType: "ARTICLE_READ",
+        targetId: article_id,
+        completed: false,
+        details: {
+          articleTitle: article.title,
+          level: req.session?.user.level,
         },
-      });
-    }
+      },
+      update: {}, // Do nothing if record already exists
+    });
 
     // Validate article data
     if (
@@ -397,7 +393,7 @@ export async function getArticleById(
             id: !article.id,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -411,7 +407,7 @@ export async function getArticleById(
 
       if (hasMissingSentences && article.passage) {
         console.log(
-          `Article ${article_id} has timepoints without sentences field. Regenerating...`
+          `Article ${article_id} has timepoints without sentences field. Regenerating...`,
         );
 
         try {
@@ -435,12 +431,12 @@ export async function getArticleById(
 
           articleSentences = newTimepoints;
           console.log(
-            `Successfully regenerated sentences for article ${article_id}`
+            `Successfully regenerated sentences for article ${article_id}`,
           );
         } catch (error) {
           console.error(
             `Failed to regenerate sentences for article ${article_id}:`,
-            error
+            error,
           );
           // Continue with existing data if regeneration fails
         }
@@ -472,20 +468,20 @@ export async function getArticleById(
       {
         article: formattedArticle,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (err) {
     console.error("Error getting documents", err);
     return NextResponse.json(
       { message: "[getArticle] Internal server error", error: err },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function deleteArticle(
   req: ExtendedNextRequest,
-  ctx: { params: Promise<{ article_id: string }> }
+  ctx: { params: Promise<{ article_id: string }> },
 ) {
   try {
     const { article_id } = await ctx.params;
@@ -497,7 +493,7 @@ export async function deleteArticle(
     if (!article) {
       return NextResponse.json(
         { message: "No such article found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -511,7 +507,7 @@ export async function deleteArticle(
     console.error("Error deleting article", error);
     return NextResponse.json(
       { message: "Internal server error", error: error },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -635,12 +631,12 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
     });
 
     const readArticleIds = new Set(
-      userActivities.map((activity) => activity.targetId)
+      userActivities.map((activity) => activity.targetId),
     );
     const completedArticleIds = new Set(
       userActivities
         .filter((activity) => activity.completed)
-        .map((activity) => activity.targetId)
+        .map((activity) => activity.targetId),
     );
 
     const results = paginatedArticles.map((article) => ({
@@ -706,13 +702,13 @@ export async function getArticleWithParams(req: ExtendedNextRequest) {
         message: "Internal server error",
         error: error.message || error.toString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function updateArticlesByTypeGenre(
-  req: Request
+  req: Request,
 ): Promise<Response> {
   try {
     // This function is kept for compatibility but with Prisma,
@@ -720,7 +716,7 @@ export async function updateArticlesByTypeGenre(
 
     return NextResponse.json(
       { message: "Updated successfully" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: unknown) {
     console.error("Error updating articles summary:", error);
@@ -729,7 +725,7 @@ export async function updateArticlesByTypeGenre(
         message: "Internal server error",
         error: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -777,7 +773,7 @@ export async function getArticlesByTypeGenre(req: Request): Promise<Response> {
         message: "Internal server error",
         error: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -811,7 +807,7 @@ export const getGenres = async (req: Request): Promise<Response> => {
           label: normalized.Name,
           subgenres: normalized.Subgenres || [],
         };
-      }
+      },
     );
 
     // Sort genres alphabetically by label
@@ -831,7 +827,7 @@ export const getGenres = async (req: Request): Promise<Response> => {
         error: "Failed to fetch genres",
         message: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };
@@ -846,7 +842,7 @@ export enum LanguageType {
 
 async function translatePassageWithGoogle(
   sentences: string[],
-  targetLanguage: string
+  targetLanguage: string,
 ): Promise<string[]> {
   const translate = new Translate({
     projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
@@ -915,7 +911,7 @@ interface TranslateRequestContext {
 
 export const translateArticleSummary = async (
   request: NextRequest,
-  ctx: TranslateRequestContext
+  ctx: TranslateRequestContext,
 ) => {
   try {
     const { article_id } = await ctx.params;
@@ -926,7 +922,7 @@ export const translateArticleSummary = async (
         {
           message: "Invalid target language",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -944,7 +940,7 @@ export const translateArticleSummary = async (
         {
           message: "Article not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -953,7 +949,7 @@ export const translateArticleSummary = async (
         {
           message: "Article summary not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -978,7 +974,7 @@ export const translateArticleSummary = async (
       } else {
         translatedSentences = await translatePassageWithGoogle(
           sentences,
-          targetLanguage
+          targetLanguage,
         );
       }
 
@@ -1008,7 +1004,7 @@ export const translateArticleSummary = async (
               ? translationError.message
               : "Unknown error",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   } catch (error) {
@@ -1017,7 +1013,7 @@ export const translateArticleSummary = async (
       {
         message: "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };

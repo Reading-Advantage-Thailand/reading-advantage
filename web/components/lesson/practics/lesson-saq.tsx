@@ -322,7 +322,7 @@ function LessonSAQForm({
             answer: formData.answer,
             timeRecorded: timer,
           }),
-        }
+        },
       );
 
       const submitData = await submitResponse.json();
@@ -339,7 +339,7 @@ function LessonSAQForm({
               answer: formData.answer,
               timeRecorded: timer,
             }),
-          }
+          },
         );
 
         const submitData = await submitResponse.json();
@@ -363,7 +363,7 @@ function LessonSAQForm({
           body: JSON.stringify({
             rating,
           }),
-        }
+        },
       );
 
       toast({
@@ -458,35 +458,37 @@ function LessonSAQForm({
                       <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {t("scorerate")}
                       </DialogTitle>
-                      <DialogDescription className="space-y-6">
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-                            {t("question")}
-                          </h4>
-                          <p className="text-gray-700 dark:text-gray-300">
-                            {resp.result.question}
-                          </p>
-                        </div>
-
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-                            {t("yourAnswer")}
-                          </h4>
-                          <div className="bg-green-50 dark:bg-green-900 p-4 rounded-lg border-l-4 border-green-500">
-                            <p className="text-green-700 dark:text-green-300 font-medium">
-                              {data.answer}
+                      <DialogDescription className="space-y-6" asChild>
+                        <div className="space-y-6 text-sm text-muted-foreground">
+                          <div className="space-y-3">
+                            <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+                              {t("question")}
+                            </h4>
+                            <p className="text-gray-700 dark:text-gray-300">
+                              {resp.result.question}
                             </p>
                           </div>
-                        </div>
 
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-                            {t("suggestedAnswer")}
-                          </h4>
-                          <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg border-l-4 border-blue-500">
-                            <p className="text-blue-700 dark:text-blue-300">
-                              {data.suggested_answer}
-                            </p>
+                          <div className="space-y-3">
+                            <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+                              {t("yourAnswer")}
+                            </h4>
+                            <div className="bg-green-50 dark:bg-green-900 p-4 rounded-lg border-l-4 border-green-500">
+                              <p className="text-green-700 dark:text-green-300 font-medium">
+                                {data.answer}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+                              {t("suggestedAnswer")}
+                            </h4>
+                            <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg border-l-4 border-blue-500">
+                              <p className="text-blue-700 dark:text-blue-300">
+                                {data.suggested_answer}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </DialogDescription>
