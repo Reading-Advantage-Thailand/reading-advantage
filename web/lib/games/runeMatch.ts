@@ -58,6 +58,7 @@ export type RuneMatchState = {
   powerWord: string | null;
   correctAnswers: number;
   totalAttempts: number;
+  nextAttackTimer: number; // Time until next monster attack
   activeVocabulary: VocabularyItem[]; // Subset of vocabulary used in this game session
   vocabulary: VocabularyItem[];
   rng: () => number;
@@ -409,6 +410,63 @@ export const advanceTime = (
     })
     .filter((ft) => ft.duration > 0);
 
+  // Realtime Monster Attack
+  if (newState.monster && !newState.isFrozen && newState.status === "playing") {
+    newState.nextAttackTimer -= deltaMs;
+    if (newState.nextAttackTimer <= 0) {
+      // Attack!
+      const damage = Math.floor(state.rng() * newState.monster.attack) + 1;
+
+      if (newState.player.hasShield) {
+        newState.player = { ...newState.player, hasShield: false };
+        newState.floatingTexts = [
+          ...newState.floatingTexts,
+          {
+            id: generateId(),
+            text: "BLOCKED!",
+            x: -1,
+            y: -1,
+            offsetX: 0,
+            offsetY: 0,
+            color: "#60a5fa",
+            opacity: 1,
+            scale: 1,
+            duration: 2000,
+            maxDuration: 2000,
+          },
+        ];
+      } else {
+        newState.player = {
+          ...newState.player,
+          hp: Math.max(0, newState.player.hp - damage),
+        };
+        newState.floatingTexts = [
+          ...newState.floatingTexts,
+          {
+            id: generateId(),
+            text: `-${damage}`,
+            x: -1,
+            y: -1,
+            offsetX: 0,
+            offsetY: 0,
+            color: "#ef4444",
+            opacity: 1,
+            scale: 1,
+            duration: 2000,
+            maxDuration: 2000,
+          },
+        ];
+        newState.shakeIntensity = 1.0;
+        if (newState.player.hp <= 0) newState.status = "defeat";
+      }
+
+      newState.monsterState = "attack";
+      newState.monsterStateTimer = 500;
+      // Reset timer (3-5 seconds)
+      newState.nextAttackTimer = 3000 + state.rng() * 2000;
+    }
+  }
+
   return newState;
 };
 
@@ -664,6 +722,7 @@ export const createRuneMatchState = (
     powerWord,
     correctAnswers: 0,
     totalAttempts: 0,
+    nextAttackTimer: 3000,
     activeVocabulary,
     vocabulary,
     rng,
