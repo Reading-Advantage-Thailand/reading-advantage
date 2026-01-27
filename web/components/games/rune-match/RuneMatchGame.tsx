@@ -293,60 +293,7 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
             };
           }
 
-          // Monster counter-attack (turn-based) - only if not victory
-          if (
-            newState.status === "playing" &&
-            newState.monster &&
-            !newState.isFrozen
-          ) {
-            const monsterAtk = newState.monster.attack;
-            const damage = Math.floor(prev.rng() * monsterAtk) + 1;
-
-            if (newState.player.hasShield) {
-              newState.player = { ...newState.player, hasShield: false };
-              newState.floatingTexts = [
-                ...newState.floatingTexts,
-                {
-                  id: Math.random().toString(36).substring(2, 9),
-                  text: "BLOCKED!",
-                  x: -1,
-                  y: -1,
-                  offsetX: 0,
-                  offsetY: 0,
-                  color: "#60a5fa",
-                  opacity: 1,
-                  scale: 1,
-                  duration: 2000,
-                  maxDuration: 2000,
-                },
-              ];
-            } else {
-              newState.player = {
-                ...newState.player,
-                hp: Math.max(0, newState.player.hp - damage),
-              };
-              newState.floatingTexts = [
-                ...newState.floatingTexts,
-                {
-                  id: Math.random().toString(36).substring(2, 9),
-                  text: `-${damage}`,
-                  x: -1,
-                  y: -1,
-                  offsetX: 0,
-                  offsetY: 0,
-                  color: "#ef4444",
-                  opacity: 1,
-                  scale: 1,
-                  duration: 2000,
-                  maxDuration: 2000,
-                },
-              ];
-              newState.shakeIntensity = 1.0;
-              if (newState.player.hp <= 0) newState.status = "defeat";
-            }
-            newState.monsterState = "attack";
-            newState.monsterStateTimer = 500;
-          }
+          // Monster counter-attack removed (now realtime)
 
           // Clear frozen after attack
           if (newState.isFrozen) {
@@ -361,26 +308,31 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
 
           return newState;
         } else {
-          // No match: revert swap (no penalty)
+          // No match: Allow swap but deduct 1 HP
+          const newHp = Math.max(0, prev.player.hp - 1);
           return {
             ...prev,
+            grid: gridAfterSwap,
+            player: { ...prev.player, hp: newHp },
             selectedCell: null,
+            status: newHp <= 0 ? "defeat" : prev.status,
             floatingTexts: [
               ...prev.floatingTexts,
               {
                 id: Math.random().toString(36).substring(2, 9),
-                text: "No Match!",
+                text: "-1 HP",
                 x: col,
                 y: row,
                 offsetX: 0,
                 offsetY: 0,
-                color: "#94a3b8",
+                color: "#ef4444",
                 opacity: 1,
                 scale: 1,
                 duration: 1500,
                 maxDuration: 1500,
               },
             ],
+            shakeIntensity: newHp < prev.player.hp ? 0.5 : prev.shakeIntensity,
           };
         }
       } else {
