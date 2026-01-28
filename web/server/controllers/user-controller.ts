@@ -50,10 +50,7 @@ interface RequestContext {
   }>;
 }
 
-export async function getUser(
-  req: ExtendedNextRequest,
-  ctx: RequestContext
-) {
+export async function getUser(req: ExtendedNextRequest, ctx: RequestContext) {
   try {
     const { id } = await ctx.params;
     const user = await prisma.user.findUnique({
@@ -97,14 +94,14 @@ export async function getUser(
     console.error("Error getting user", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function updateUser(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   try {
     const { id } = await ctx.params;
@@ -165,14 +162,14 @@ export async function updateUser(
     console.error("Error updating user", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function postActivityLog(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   try {
     const { id } = await ctx.params;
@@ -288,8 +285,11 @@ export async function postActivityLog(
       activity = existingActivity;
     }
 
-    // Create XP log if XP is earned
-    if (data.xpEarned && data.xpEarned > 0) {
+    // Create XP log if XP is earned or if it's an initial level test (even with 0 XP)
+    if (
+      (data.xpEarned && data.xpEarned > 0) ||
+      (data.isInitialLevelTest && typeof data.xpEarned === "number")
+    ) {
       await prisma.xPLog.create({
         data: {
           userId: id,
@@ -341,7 +341,7 @@ export async function postActivityLog(
 
 export async function putActivityLog(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   try {
     const { id } = await ctx.params;
@@ -504,7 +504,7 @@ export async function putActivityLog(
 
 export async function getActivityLog(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   const { id } = await ctx.params;
   try {
@@ -568,7 +568,7 @@ export async function getActivityLog(
     });
 
     const articleMap = new Map(
-      articles.map((article) => [article.id, article])
+      articles.map((article) => [article.id, article]),
     );
 
     let cumulativeXp = 0;
@@ -628,7 +628,7 @@ export async function getActivityLog(
 
     formattedResults.sort(
       (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
 
     return NextResponse.json({
@@ -646,7 +646,7 @@ export async function getActivityLog(
 
 export async function getUserRecords(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   const { id } = await ctx.params;
   try {
@@ -701,7 +701,9 @@ export async function getUserRecords(
       },
     });
 
-    const articlesById = new Map(articles.map((article) => [article.id, article]));
+    const articlesById = new Map(
+      articles.map((article) => [article.id, article]),
+    );
 
     const results: any[] = [];
 
@@ -733,11 +735,26 @@ export async function getUserRecords(
           details: {
             type: article?.type || (readActivity.details as any)?.type || "",
             genre: article?.genre || (readActivity.details as any)?.genre || "",
-            subgenre: article?.subGenre || (readActivity.details as any)?.subgenre || "",
-            level: article?.raLevel || (readActivity.details as any)?.level || 0,
-            cefr_level: article?.cefrLevel || (readActivity.details as any)?.cefr_level || "",
-            title: article?.title || (readActivity.details as any)?.articleTitle || (readActivity.details as any)?.title || "Unknown Article",
-            articleTitle: article?.title || (readActivity.details as any)?.articleTitle || (readActivity.details as any)?.title || "Unknown Article",
+            subgenre:
+              article?.subGenre ||
+              (readActivity.details as any)?.subgenre ||
+              "",
+            level:
+              article?.raLevel || (readActivity.details as any)?.level || 0,
+            cefr_level:
+              article?.cefrLevel ||
+              (readActivity.details as any)?.cefr_level ||
+              "",
+            title:
+              article?.title ||
+              (readActivity.details as any)?.articleTitle ||
+              (readActivity.details as any)?.title ||
+              "Unknown Article",
+            articleTitle:
+              article?.title ||
+              (readActivity.details as any)?.articleTitle ||
+              (readActivity.details as any)?.title ||
+              "Unknown Article",
             rating: extractedRating,
             rated: extractedRating,
             score: (readActivity.details as any)?.score || 0,
@@ -755,7 +772,7 @@ export async function getUserRecords(
 
     results.sort(
       (a, b) =>
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
     );
     const limitedResults = results.slice(0, limit);
 
@@ -766,14 +783,14 @@ export async function getUserRecords(
     console.error("Error getting documents", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function getUserHeatmap(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   const { id } = await ctx.params;
   try {
@@ -802,7 +819,7 @@ export async function getUserHeatmap(
     console.error("Error getting documents", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -836,7 +853,7 @@ export async function getAllUsers(req: NextRequest) {
     console.error("Error getting documents", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -857,7 +874,7 @@ export async function updateUserData(req: ExtendedNextRequest) {
         {
           message: "User not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -876,7 +893,7 @@ export async function updateUserData(req: ExtendedNextRequest) {
         {
           message: "License not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -887,7 +904,7 @@ export async function updateUserData(req: ExtendedNextRequest) {
         {
           message: "License is already used",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -911,20 +928,20 @@ export async function updateUserData(req: ExtendedNextRequest) {
 
     return NextResponse.json(
       { message: "Update user successfully" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Error updating documents", error);
     return NextResponse.json(
       { message: "Internal server error", results: [] },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function getUserActivityData(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   const { id } = await ctx.params;
   try {
@@ -977,7 +994,7 @@ export async function getUserActivityData(
     });
 
     const articleMap = new Map(
-      articles.map((article) => [article.id, article])
+      articles.map((article) => [article.id, article]),
     );
 
     // Calculate cumulative XP progression from all XP logs chronologically
@@ -1044,7 +1061,7 @@ export async function getUserActivityData(
     // Sort results by timestamp descending for display (newest first)
     formattedResults.sort(
       (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
 
     return NextResponse.json({
@@ -1062,7 +1079,7 @@ export async function getUserActivityData(
 
 export async function getStudentData(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   const { id } = await ctx.params;
   try {
@@ -1121,7 +1138,7 @@ export async function getStudentData(
 
 export async function resetUserProgress(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   const { id } = await ctx.params;
   try {
@@ -1190,14 +1207,14 @@ export async function resetUserProgress(
     console.error("Error resetting user progress:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function getUserXpLogs(
   req: ExtendedNextRequest,
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   const { id } = await ctx.params;
   try {
@@ -1218,7 +1235,7 @@ export async function getUserXpLogs(
     });
 
     const activityMap = new Map(
-      activities.map((activity) => [activity.id, activity])
+      activities.map((activity) => [activity.id, activity]),
     );
     const formattedResults = xpLogs.map((xpLog) => {
       const activity = activityMap.get(xpLog.activityId);
@@ -1249,7 +1266,7 @@ export async function getUserXpLogs(
     console.error("getUserXpLogs => ", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -1284,7 +1301,7 @@ export async function deleteUser(req: ExtendedNextRequest) {
     console.error("Error deleting user:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -1304,8 +1321,8 @@ export async function deleteAllUsers(req: ExtendedNextRequest) {
         classroomStudents.map((student) =>
           prisma.classroomStudent.delete({
             where: { id: student.id },
-          })
-        )
+          }),
+        ),
       );
     } while (classroomStudents.length > 0);
 
@@ -1320,8 +1337,8 @@ export async function deleteAllUsers(req: ExtendedNextRequest) {
         users.map((user) =>
           prisma.user.delete({
             where: { id: user.id },
-          })
-        )
+          }),
+        ),
       );
     } while (users.length > 0);
 
@@ -1330,7 +1347,7 @@ export async function deleteAllUsers(req: ExtendedNextRequest) {
     console.error("Error deleting all users:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
