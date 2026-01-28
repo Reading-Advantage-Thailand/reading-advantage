@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Article } from "../../models/article-model";
-import { Book, PlayIcon, PauseIcon, VolumeXIcon, Settings, RotateCcwIcon } from "lucide-react";
+import {
+  Book,
+  PlayIcon,
+  PauseIcon,
+  VolumeXIcon,
+  Settings,
+  RotateCcwIcon,
+} from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,9 +55,9 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   const sentenceRefs = useRef<{ [key: number]: HTMLElement | null }>({});
 
   // Get data from article
-  const timepoints = useMemo(() => 
-    ((article as any).timepoints as TimePoint[]) || [], 
-    [article]
+  const timepoints = useMemo(
+    () => ((article as any).timepoints as TimePoint[]) || [],
+    [article],
   );
   const audioUrl = (article as any).audio_url || "";
 
@@ -61,10 +68,13 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   // Generate storage key for this specific article and user
   const completionStorageKey = `phase3_completed_${userId}_${articleId}`;
 
+  // Create cache busting key
+  const cacheKey = useMemo(() => Date.now(), [articleId]);
+
   // Load completion status from localStorage on component mount
   useEffect(() => {
     const savedCompletionStatus = localStorage.getItem(completionStorageKey);
-    if (savedCompletionStatus === 'true') {
+    if (savedCompletionStatus === "true") {
       setHasCompletedReading(true);
     }
   }, [completionStorageKey]);
@@ -74,7 +84,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     // Clean up any old completion status for different articles
     const currentKey = completionStorageKey;
     const allKeys = Object.keys(localStorage);
-    allKeys.forEach(key => {
+    allKeys.forEach((key) => {
       if (key.startsWith(`phase3_completed_${userId}_`) && key !== currentKey) {
         // Optionally remove old completion status for other articles
         // localStorage.removeItem(key);
@@ -86,7 +96,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   const markReadingComplete = () => {
     console.log("Marking reading as complete");
     setHasCompletedReading(true);
-    localStorage.setItem(completionStorageKey, 'true');
+    localStorage.setItem(completionStorageKey, "true");
   };
 
   // Helper function to reset reading progress (if needed)
@@ -104,13 +114,16 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
 
   useEffect(() => {
     // Initialize audio
-    if (audioUrl) {
+    // Fallback to articleId if audio_url is missing
+    const sourceAudio = (article as any).audio_url || `${articleId}.mp3`;
+
+    if (sourceAudio) {
       // ใช้ URL แบบเดียวกันกับ phase2-vocabulary-preview
-      let fullAudioUrl = audioUrl;
+      let fullAudioUrl = sourceAudio;
 
       // เพิ่มการตรวจสอบ URL format
       if (!fullAudioUrl.startsWith("http")) {
-        fullAudioUrl = `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_URL}/${audioUrl}`;
+        fullAudioUrl = `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_URL}/${sourceAudio}?v=${cacheKey}`;
       }
 
       const audio = new Audio(fullAudioUrl);
@@ -130,7 +143,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
         audioRef.current.pause();
       }
     };
-  }, [audioUrl]);
+  }, [audioUrl, articleId, cacheKey, article]);
 
   useEffect(() => {
     // Only mark as complete when audio has finished reading the last sentence
@@ -138,7 +151,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     if (sentences.length === 0) {
       markReadingComplete();
     }
-    
+
     onCompleteChange(hasCompletedReading);
   }, [onCompleteChange, hasCompletedReading, sentences.length]);
 
@@ -226,7 +239,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
         newSentenceIndex < sentences.length
       ) {
         console.log(
-          `Sentence changed: ${currentSentence} -> ${newSentenceIndex} at time ${currentTime.toFixed(2)}s`
+          `Sentence changed: ${currentSentence} -> ${newSentenceIndex} at time ${currentTime.toFixed(2)}s`,
         );
         setCurrentSentence(newSentenceIndex);
 
@@ -276,14 +289,14 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     audioRef.current.ontimeupdate = () => {
       // Additional tracking through timeupdate event
       updateCurrentSentence();
-      
+
       // Check if audio is near the end and mark as complete
       if (audioRef.current && sentences.length > 0) {
         const currentTime = audioRef.current.currentTime;
         const duration = audioRef.current.duration;
-        
+
         // If we're in the last 0.5 seconds or at 95% completion, mark as complete
-        if ((duration - currentTime <= 0.5) || (currentTime / duration >= 0.95)) {
+        if (duration - currentTime <= 0.5 || currentTime / duration >= 0.95) {
           if (!hasCompletedReading) {
             console.log("Audio near end, marking as complete");
             markReadingComplete();
@@ -298,7 +311,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
 
   const handleSentenceClick = (sentenceIndex: number) => {
     console.log(
-      `Clicked sentence ${sentenceIndex}: "${sentences[sentenceIndex]}"`
+      `Clicked sentence ${sentenceIndex}: "${sentences[sentenceIndex]}"`,
     );
 
     // Jump to specific sentence time if audio is available
@@ -483,7 +496,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                                   sentenceGroup.length - 1 && " "}
                               </span>
                             );
-                          }
+                          },
                         )}
                       </p>
                     </div>
@@ -515,36 +528,44 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
           <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-3">
             <div
               className={`h-3 rounded-full transition-all duration-500 ${
-                hasCompletedReading 
-                  ? "bg-gradient-to-r from-green-500 to-emerald-600" 
+                hasCompletedReading
+                  ? "bg-gradient-to-r from-green-500 to-emerald-600"
                   : "bg-gradient-to-r from-emerald-500 to-teal-600"
               }`}
               style={{
                 width: `${
-                  sentences.length > 0 
-                    ? hasCompletedReading 
-                      ? 100 
-                      : ((currentSentence + 1) / sentences.length) * 100 
+                  sentences.length > 0
+                    ? hasCompletedReading
+                      ? 100
+                      : ((currentSentence + 1) / sentences.length) * 100
                     : 0
                 }%`,
               }}
             />
           </div>
           <div className="flex justify-between items-center mt-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            <span className={`font-medium ${hasCompletedReading ? "text-green-600 dark:text-green-400" : ""}`}>
-              {t("sentenceProgress", { 
-                current: hasCompletedReading ? sentences.length : Math.min(currentSentence + 1, sentences.length),
-                total: sentences.length 
+            <span
+              className={`font-medium ${hasCompletedReading ? "text-green-600 dark:text-green-400" : ""}`}
+            >
+              {t("sentenceProgress", {
+                current: hasCompletedReading
+                  ? sentences.length
+                  : Math.min(currentSentence + 1, sentences.length),
+                total: sentences.length,
               })}
             </span>
-            <span className={`font-medium flex items-center gap-1 ${hasCompletedReading ? "text-green-600 dark:text-green-400" : ""}`}>
+            <span
+              className={`font-medium flex items-center gap-1 ${hasCompletedReading ? "text-green-600 dark:text-green-400" : ""}`}
+            >
               {sentences.length > 0
-                ? hasCompletedReading 
+                ? hasCompletedReading
                   ? 100
                   : Math.round(((currentSentence + 1) / sentences.length) * 100)
                 : 0}
               {t("percentComplete")}
-              {hasCompletedReading && <span className="text-green-500">🎉</span>}
+              {hasCompletedReading && (
+                <span className="text-green-500">🎉</span>
+              )}
             </span>
           </div>
         </div>
@@ -581,21 +602,29 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
 
       {/* Completion Status */}
       {sentences.length > 0 && (
-        <div className={`p-4 rounded-xl border transition-all duration-500 ${
-          hasCompletedReading 
-            ? "bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800"
-            : "bg-gradient-to-r from-orange-300 to-yellow-300 dark:from-orange-950 dark:to-yellow-950 border-orange-200 dark:border-orange-800"
-        }`}>
+        <div
+          className={`p-4 rounded-xl border transition-all duration-500 ${
+            hasCompletedReading
+              ? "bg-gradient-to-r from-green-300 to-emerald-300 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800"
+              : "bg-gradient-to-r from-orange-300 to-yellow-300 dark:from-orange-950 dark:to-yellow-950 border-orange-200 dark:border-orange-800"
+          }`}
+        >
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${
-              hasCompletedReading ? "bg-green-500 animate-pulse" : "bg-orange-500"
-            }`}></div>
-            <span className={`font-medium ${
-              hasCompletedReading 
-                ? "text-green-800 dark:text-green-200" 
-                : "text-orange-800 dark:text-orange-200"
-            }`}>
-              {hasCompletedReading 
+            <div
+              className={`w-3 h-3 rounded-full ${
+                hasCompletedReading
+                  ? "bg-green-500 animate-pulse"
+                  : "bg-orange-500"
+              }`}
+            ></div>
+            <span
+              className={`font-medium ${
+                hasCompletedReading
+                  ? "text-green-800 dark:text-green-200"
+                  : "text-orange-800 dark:text-orange-200"
+              }`}
+            >
+              {hasCompletedReading
                 ? t("readingCompleted")
                 : t("listenToUnlock")}
             </span>

@@ -60,9 +60,9 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   const sentenceRefs = useRef<{ [key: number]: HTMLElement | null }>({});
 
   // Get data from article
-  const timepoints = useMemo(() => 
-    ((article as any).timepoints as TimePoint[]) || [], 
-    [article]
+  const timepoints = useMemo(
+    () => ((article as any).timepoints as TimePoint[]) || [],
+    [article],
   );
   const translatedPassage =
     ((article as any).translatedPassage as TranslatedPassage) || {};
@@ -121,11 +121,11 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   const handleTranslationToggle = () => {
     const newShowTranslation = !showTranslation;
     setShowTranslation(newShowTranslation);
-    
+
     if (newShowTranslation && translatedSentences.length === 0) {
       fetchTranslations();
     }
-    
+
     if (!newShowTranslation) {
       setSelectedSentence(null);
     }
@@ -133,14 +133,20 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
 
   useEffect(() => {
     // Initialize audio
-    if (audioUrl) {
+    const effectiveAudioUrl = audioUrl || `${articleId}.mp3`;
+
+    if (effectiveAudioUrl) {
+      const cacheKey = new Date().getTime();
       // ใช้ URL แบบเดียวกันกับ phase2-vocabulary-preview
-      let fullAudioUrl = audioUrl;
+      let fullAudioUrl = effectiveAudioUrl;
 
       // เพิ่มการตรวจสอบ URL format
       if (!fullAudioUrl.startsWith("http")) {
-        fullAudioUrl = `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_URL}/${audioUrl}`;
+        fullAudioUrl = `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/${AUDIO_URL}/${effectiveAudioUrl}`;
       }
+
+      // Add cache buster
+      fullAudioUrl = `${fullAudioUrl}?v=${cacheKey}`;
 
       const audio = new Audio(fullAudioUrl);
       audio.preload = "metadata";
@@ -149,6 +155,8 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       };
       audio.onerror = () => {
         console.error(`Audio failed to load: ${fullAudioUrl}`);
+        // If fallback failed and we haven't tried just the ID yet (and inputs were differnt), maybe logic could be more complex,
+        // but for now this matches Phase 3 fix.
         setIsAudioLoaded(false);
       };
       audioRef.current = audio;
@@ -159,7 +167,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
         audioRef.current.pause();
       }
     };
-  }, [audioUrl]);
+  }, [audioUrl, articleId]);
 
   useEffect(() => {
     onCompleteChange(true);
@@ -249,7 +257,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
         newSentenceIndex < sentences.length
       ) {
         console.log(
-          `Sentence changed: ${currentSentence} -> ${newSentenceIndex} at time ${currentTime.toFixed(2)}s`
+          `Sentence changed: ${currentSentence} -> ${newSentenceIndex} at time ${currentTime.toFixed(2)}s`,
         );
         setCurrentSentence(newSentenceIndex);
 
@@ -296,7 +304,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
 
   const handleSentenceClick = (sentenceIndex: number) => {
     console.log(
-      `Clicked sentence ${sentenceIndex}: "${sentences[sentenceIndex]}"`
+      `Clicked sentence ${sentenceIndex}: "${sentences[sentenceIndex]}"`,
     );
 
     // Jump to specific sentence time if audio is available
@@ -312,7 +320,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       const newSelected =
         selectedSentence === sentenceIndex ? null : sentenceIndex;
       console.log(
-        `Translation ${newSelected !== null ? "shown" : "hidden"} for sentence ${sentenceIndex}`
+        `Translation ${newSelected !== null ? "shown" : "hidden"} for sentence ${sentenceIndex}`,
       );
       setSelectedSentence(newSelected);
     }
@@ -427,7 +435,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
 
                   const rect = sentenceElement.getBoundingClientRect();
                   const containerElement = sentenceElement.closest(
-                    ".bg-white, .dark\\:bg-gray-900"
+                    ".bg-white, .dark\\:bg-gray-900",
                   );
                   const containerRect =
                     containerElement?.getBoundingClientRect();
@@ -557,7 +565,7 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                                   sentenceGroup.length - 1 && " "}
                               </span>
                             );
-                          }
+                          },
                         )}
                       </p>
                     </div>
@@ -605,9 +613,9 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
                   ? Math.round(((currentSentence + 1) / sentences.length) * 100)
                   : Math.min(
                       Math.round(
-                        ((currentSentence + 1) / sentences.length) * 100
+                        ((currentSentence + 1) / sentences.length) * 100,
                       ),
-                      100
+                      100,
                     )
                 : 0}
               {t("percentComplete")}
