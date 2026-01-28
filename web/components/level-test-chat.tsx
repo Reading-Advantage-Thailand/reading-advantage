@@ -100,6 +100,7 @@ export default function LevelTestChat({ userId }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [testFinished, setTestFinished] = useState(false);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -400,13 +401,16 @@ export default function LevelTestChat({ userId }: Props) {
     }
   };
 
-  const saveAndContinue = async () => {
-    if (!assessment) return;
-
+  const saveAssessmentToDb = async (
+    assessmentData: Assessment,
+  ): Promise<boolean> => {
     setIsSaving(true);
     try {
       // Convert AI's CEFR level to system XP
-      const systemXp = cefrToSystemXp(assessment.level, assessment.sublevel);
+      const systemXp = cefrToSystemXp(
+        assessmentData.level,
+        assessmentData.sublevel,
+      );
       const calculatedLevel = levelCalculation(systemXp);
 
       const updateResult = await fetch(`/api/v1/users/${userId}/activitylog`, {
@@ -418,25 +422,21 @@ export default function LevelTestChat({ userId }: Props) {
           isInitialLevelTest: true,
           details: {
             assessmentMethod: "chat",
-            cefrLevel: assessment.level,
-            sublevel: assessment.sublevel,
-            aiXp: assessment.xp,
+            cefrLevel: assessmentData.level,
+            sublevel: assessmentData.sublevel,
+            aiXp: assessmentData.xp,
             systemXp: systemXp,
             messageCount: messages.length,
-            strengths: assessment.strengths,
-            improvements: assessment.improvements,
+            strengths: assessmentData.strengths,
+            improvements: assessmentData.improvements,
             cefr_level: calculatedLevel.cefrLevel,
           },
         }),
       });
 
       if (updateResult.status === 200) {
-        toast({
-          title: t("toast.successUpdate"),
-          description: t("toast.successUpdateDescription"),
-        });
-        router.push("/student/read");
-        router.refresh();
+        setIsSaved(true);
+        return true;
       } else {
         console.error("Update Failed");
         toast({
@@ -444,6 +444,7 @@ export default function LevelTestChat({ userId }: Props) {
           description: t("toast.errorDescription"),
           variant: "destructive",
         });
+        return false;
       }
     } catch (error) {
       console.error(error);
@@ -452,8 +453,41 @@ export default function LevelTestChat({ userId }: Props) {
         description: t("toast.errorDescription"),
         variant: "destructive",
       });
+      return false;
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Auto-save when assessment is available
+  useEffect(() => {
+    if (assessment && !isSaved && !isSaving) {
+      saveAssessmentToDb(assessment);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assessment]);
+
+  const handleContinue = async () => {
+    if (isSaved) {
+      toast({
+        title: t("toast.successUpdate"),
+        description: t("toast.successUpdateDescription"),
+      });
+      router.push("/student/read");
+      router.refresh();
+      return;
+    }
+
+    if (assessment) {
+      const success = await saveAssessmentToDb(assessment);
+      if (success) {
+        toast({
+          title: t("toast.successUpdate"),
+          description: t("toast.successUpdateDescription"),
+        });
+        router.push("/student/read");
+        router.refresh();
+      }
     }
   };
 
@@ -522,7 +556,7 @@ export default function LevelTestChat({ userId }: Props) {
             <Button
               size="lg"
               className="w-full mt-4"
-              onClick={saveAndContinue}
+              onClick={handleContinue}
               disabled={isSaving}
             >
               {isSaving ? (
@@ -530,8 +564,10 @@ export default function LevelTestChat({ userId }: Props) {
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   {t("saving")}
                 </>
+              ) : isSaved ? (
+                t("getStartedButton") // Or "Continue" if you want to change the text
               ) : (
-                t("getStartedButton")
+                "Retry Save & Continue"
               )}
             </Button>
           </CardContent>
