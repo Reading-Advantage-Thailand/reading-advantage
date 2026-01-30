@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Medal, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useScopedI18n } from "@/locales/client";
 import type { Difficulty } from "./DragonFlightGame";
 
 type RankingEntry = {
@@ -27,6 +28,7 @@ interface RankingDialogProps {
 }
 
 export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
+  const t = useScopedI18n("pages.student.gamesPage");
   const [data, setData] = useState<RankingData | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -88,8 +90,8 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
       return (
         <div className="flex flex-col items-center justify-center py-12 text-center text-white/40">
           <Trophy className="h-12 w-12 mb-2 opacity-20" />
-          <p>No champions yet.</p>
-          <p className="text-xs">Be the first to claim victory!</p>
+          <p>{t("dragonFlight.ranking.noChampions")}</p>
+          <p className="text-xs">{t("dragonFlight.ranking.beTheFirst")}</p>
         </div>
       );
     }
@@ -104,7 +106,7 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
                 "flex items-center gap-4 rounded-xl border p-3 transition-colors",
                 index === 0
                   ? "border-yellow-500/30 bg-yellow-500/10"
-                  : "border-white/5 bg-white/5 hover:bg-white/10"
+                  : "border-white/5 bg-white/5 hover:bg-white/10",
               )}
             >
               <div className="flex h-8 w-8 items-center justify-center shrink-0">
@@ -122,7 +124,9 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
                 <div className="truncate text-sm font-medium text-white">
                   {user.name}
                 </div>
-                <div className="text-xs text-white/50">Dragon Rider</div>
+                <div className="text-xs text-white/50">
+                  {t("dragonFlight.ranking.dragonRider")}
+                </div>
               </div>
 
               <div className="text-right">
@@ -143,7 +147,7 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Trophy className="h-5 w-5 text-yellow-500" />
-            Leaderboard
+            {t("dragonFlight.ranking.leaderboard")}
           </DialogTitle>
         </DialogHeader>
 
@@ -155,7 +159,7 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
                 value={diff}
                 className="uppercase text-[10px] data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50"
               >
-                {diff}
+                {t(`dragonFlight.difficulty.${diff}`)}
               </TabsTrigger>
             ))}
           </TabsList>

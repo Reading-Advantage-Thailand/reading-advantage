@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Target, Zap, AlertCircle } from "lucide-react";
 import { VocabularyItem } from "@/store/useGameStore";
+import { useScopedI18n } from "@/locales/client";
 
 interface ResultsScreenProps {
   score: number;
@@ -21,12 +22,13 @@ export function ResultsScreen({
   onRestart,
   onShowRanking,
 }: ResultsScreenProps) {
+  const t = useScopedI18n("pages.student.gamesPage");
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
       <Card className="w-full max-w-2xl bg-gradient-to-b from-background to-muted/50 border-2 shadow-2xl">
         <CardHeader>
           <CardTitle className="text-3xl text-center font-bold tracking-tight">
-            Game Over
+            {t("common.gameOver")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 py-6">
@@ -34,14 +36,14 @@ export function ResultsScreen({
             <div className="flex flex-col items-center p-3 bg-primary/5 rounded-xl border border-primary/10">
               <Trophy className="w-6 h-6 text-yellow-500 mb-2" />
               <span className="text-xs font-semibold text-muted-foreground uppercase">
-                Score
+                {t("common.score")}
               </span>
               <span className="text-xl font-bold">{score}</span>
             </div>
             <div className="flex flex-col items-center p-3 bg-primary/5 rounded-xl border border-primary/10">
               <Target className="w-6 h-6 text-blue-500 mb-2" />
               <span className="text-xs font-semibold text-muted-foreground uppercase">
-                Accuracy
+                {t("common.accuracy")}
               </span>
               <span className="text-xl font-bold">
                 {Math.round(accuracy * 100)}%
@@ -50,9 +52,11 @@ export function ResultsScreen({
             <div className="flex flex-col items-center p-3 bg-primary/5 rounded-xl border border-primary/10">
               <Zap className="w-6 h-6 text-purple-500 mb-2" />
               <span className="text-xs font-semibold text-muted-foreground uppercase">
-                XP Earned
+                {t("common.xpEarned")}
               </span>
-              <span className="text-xl font-bold text-primary">{xp} XP</span>
+              <span className="text-xl font-bold text-primary">
+                {xp} {t("common.xp")}
+              </span>
             </div>
           </div>
 
@@ -60,7 +64,7 @@ export function ResultsScreen({
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                 <AlertCircle className="w-4 h-4" />
-                Words to Review
+                {t("common.wordsToReview")}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
                 {Array.from(new Set(missedWords.map((w) => JSON.stringify(w))))
@@ -86,7 +90,7 @@ export function ResultsScreen({
               className="w-full h-14 text-lg font-bold"
               size="lg"
             >
-              Try Again
+              {t("common.tryAgain")}
             </Button>
 
             <Button
@@ -95,7 +99,7 @@ export function ResultsScreen({
               className="w-full text-muted-foreground hover:text-foreground"
             >
               <Trophy className="mr-2 h-4 w-4" />
-              View Leaderboard
+              {t("common.viewLeaderboard")}
             </Button>
           </div>
         </CardContent>

@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useScopedI18n } from "@/locales/client";
 
 interface BattleResultsProps {
   outcome: "victory" | "defeat";
@@ -15,7 +16,9 @@ export function BattleResults({
   accuracy,
   onRestart,
 }: BattleResultsProps) {
-  const title = outcome === "victory" ? "Victory" : "Defeat";
+  const t = useScopedI18n("pages.student.gamesPage");
+  const title =
+    outcome === "victory" ? t("common.victory") : t("common.defeat");
   const accentClass =
     outcome === "victory" ? "text-emerald-400" : "text-rose-400";
   const bgGradient =
@@ -38,18 +41,22 @@ export function BattleResults({
         <CardContent className="space-y-6">
           <div className="grid grid-cols-2 gap-4 text-center">
             <div className="rounded-lg border border-slate-700/50 bg-slate-800/60 backdrop-blur-sm p-3">
-              <p className="text-xs uppercase text-slate-400">XP Earned</p>
+              <p className="text-xs uppercase text-slate-400">
+                {t("common.xpEarned")}
+              </p>
               <p className="text-2xl font-bold text-slate-100">{xp}</p>
             </div>
             <div className="rounded-lg border border-slate-700/50 bg-slate-800/60 backdrop-blur-sm p-3">
-              <p className="text-xs uppercase text-slate-400">Accuracy</p>
+              <p className="text-xs uppercase text-slate-400">
+                {t("common.accuracy")}
+              </p>
               <p className="text-2xl font-bold text-slate-100">
                 {Math.round(accuracy * 100)}%
               </p>
             </div>
           </div>
           <Button onClick={onRestart} className="w-full" size="lg">
-            Play Again
+            {t("common.playAgain")}
           </Button>
         </CardContent>
       </Card>

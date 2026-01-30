@@ -10,8 +10,10 @@ import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useScopedI18n } from "@/locales/client";
 
 export default function DragonFlightPage() {
+  const t = useScopedI18n("pages.student.gamesPage");
   const vocabulary = useGameStore((state) => state.vocabulary);
   const setVocabulary = useGameStore((state) => state.setVocabulary);
   const setLastResult = useGameStore((state) => state.setLastResult);
@@ -39,15 +41,12 @@ export default function DragonFlightPage() {
         if (data.vocabulary && data.vocabulary.length >= 10) {
           setVocabulary(data.vocabulary);
         } else {
-          setError(
-            data.message ||
-              "Not enough vocabulary words. Please save at least 10 words to play."
-          );
+          setError(data.message || t("notEnoughWords", { count: "10" }));
         }
       } catch (err) {
         console.error("Error fetching vocabulary:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to load vocabulary"
+          err instanceof Error ? err.message : "Failed to load vocabulary",
         );
       } finally {
         setIsLoading(false);
@@ -97,7 +96,7 @@ export default function DragonFlightPage() {
         console.error("Error saving game results:", err);
       }
     },
-    [setLastResult, setResults]
+    [setLastResult, setResults],
   );
 
   return (
@@ -106,14 +105,14 @@ export default function DragonFlightPage() {
       <Button variant="ghost" size="sm" asChild>
         <Link href="/student/games">
           <ChevronLeft className="mr-1 h-4 w-4" />
-          Back to Games
+          {t("backToGames")}
         </Link>
       </Button>
 
       {/* Header */}
       <Header
-        heading="Dragon Flight"
-        text="Choose the correct gate to grow your dragon flight before the Skeleton King arrives."
+        heading={t("games.dragonFlight.title")}
+        text={t("games.dragonFlight.description")}
       >
         <Flame className="h-8 w-8 text-primary" />
       </Header>
@@ -124,10 +123,10 @@ export default function DragonFlightPage() {
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
             <p className="text-lg font-medium text-muted-foreground">
-              Loading vocabulary...
+              {t("loadingVocabulary")}
             </p>
             <p className="text-sm text-muted-foreground">
-              Preparing your dragon adventure
+              {t("preparingAdventure")}
             </p>
           </CardContent>
         </Card>
@@ -137,13 +136,10 @@ export default function DragonFlightPage() {
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Unable to Start Game</AlertTitle>
+          <AlertTitle>{t("unableToStartGame")}</AlertTitle>
           <AlertDescription className="mt-2 space-y-2">
             <p>{error}</p>
-            <p className="text-sm opacity-80">
-              Tip: Save vocabulary words from articles to build your word
-              collection.
-            </p>
+            <p className="text-sm opacity-80">{t("saveTip")}</p>
           </AlertDescription>
         </Alert>
       )}

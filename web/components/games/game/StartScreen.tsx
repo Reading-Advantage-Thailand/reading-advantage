@@ -10,6 +10,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useScopedI18n } from "@/locales/client";
 
 interface StartScreenProps {
   vocabulary: VocabularyItem[];
@@ -17,26 +18,47 @@ interface StartScreenProps {
   onShowRanking: () => void;
 }
 
-const DIFFICULTIES: {
-  id: Difficulty;
-  label: string;
-  color: string;
-  icon: React.ElementType;
-}[] = [
-  { id: "easy", label: "Easy", color: "text-emerald-400", icon: Shield },
-  { id: "normal", label: "Normal", color: "text-blue-400", icon: Swords },
-  { id: "hard", label: "Hard", color: "text-orange-400", icon: Flame },
-  { id: "extreme", label: "Extreme", color: "text-red-500", icon: Skull },
-];
-
 export function StartScreen({
   vocabulary,
   onStart,
   onShowRanking,
 }: StartScreenProps) {
+  const t = useScopedI18n("pages.student.gamesPage");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<Difficulty>("normal");
+
+  const DIFFICULTIES: {
+    id: Difficulty;
+    label: string;
+    color: string;
+    icon: React.ElementType;
+  }[] = [
+    {
+      id: "easy",
+      label: t("magicDefense.difficulty.easy"),
+      color: "text-emerald-400",
+      icon: Shield,
+    },
+    {
+      id: "normal",
+      label: t("magicDefense.difficulty.normal"),
+      color: "text-blue-400",
+      icon: Swords,
+    },
+    {
+      id: "hard",
+      label: t("magicDefense.difficulty.hard"),
+      color: "text-orange-400",
+      icon: Flame,
+    },
+    {
+      id: "extreme",
+      label: t("magicDefense.difficulty.extreme"),
+      color: "text-red-500",
+      icon: Skull,
+    },
+  ];
 
   const handleStart = () => {
     setIsLoading(true);
@@ -56,10 +78,10 @@ export function StartScreen({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white tracking-tight">
-                Defense Briefing
+                {t("magicDefense.defenseBriefing")}
               </h2>
               <p className="text-sm text-slate-300 mt-0.5">
-                Review the spells (vocabulary) to defend your castles.
+                {t("magicDefense.reviewSpells")}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -68,10 +90,10 @@ export function StartScreen({
                 className="flex items-center gap-2 rounded-md border border-yellow-500/20 bg-yellow-500/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-yellow-500 hover:bg-yellow-500/20 transition-colors"
               >
                 <Trophy className="h-3 w-3" />
-                Leaderboard
+                {t("magicDefense.leaderboard")}
               </button>
               <div className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white/70 backdrop-blur-sm">
-                Ready
+                {t("common.ready")}
               </div>
             </div>
           </div>
@@ -100,11 +122,10 @@ export function StartScreen({
 
               <div className="relative z-10 mt-2 max-w-[240px]">
                 <h3 className="text-lg font-bold text-white mb-2">
-                  The Siege Begins
+                  {t("magicDefense.theSiegeBegins")}
                 </h3>
                 <p className="text-xs leading-relaxed text-slate-300">
-                  Type correct translations to destroy falling meteors before
-                  they impact your kingdom.
+                  {t("magicDefense.siegeDescription")}
                 </p>
               </div>
             </div>
@@ -124,14 +145,14 @@ export function StartScreen({
                         "flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all duration-300",
                         isSelected
                           ? "bg-white/10 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.2)] scale-105"
-                          : "bg-transparent border-white/5 hover:bg-white/5 hover:border-white/10 opacity-70 hover:opacity-100"
+                          : "bg-transparent border-white/5 hover:bg-white/5 hover:border-white/10 opacity-70 hover:opacity-100",
                       )}
                     >
                       <Icon className={cn("w-6 h-6", diff.color)} />
                       <span
                         className={cn(
                           "text-xs font-bold uppercase tracking-wider",
-                          isSelected ? "text-white" : "text-slate-400"
+                          isSelected ? "text-white" : "text-slate-400",
                         )}
                       >
                         {diff.label}
@@ -146,7 +167,7 @@ export function StartScreen({
                 <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02]">
                   <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
                     <BookOpen className="h-3 w-3" />
-                    Spell Book
+                    {t("magicDefense.spellBook")}
                   </div>
                 </div>
 
@@ -154,7 +175,7 @@ export function StartScreen({
                   {vocabulary.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm p-8">
                       <BookOpen className="h-8 w-8 mb-3 opacity-20" />
-                      No vocabulary loaded yet.
+                      {t("magicDefense.noVocabularyLoaded")}
                     </div>
                   ) : (
                     <div className="grid gap-1">
@@ -189,7 +210,7 @@ export function StartScreen({
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               <span className="flex items-center gap-2 relative z-10">
-                Start Defense
+                {t("magicDefense.startDefense")}
                 <Flame className="h-4 w-4 fill-current" />
               </span>
             </button>

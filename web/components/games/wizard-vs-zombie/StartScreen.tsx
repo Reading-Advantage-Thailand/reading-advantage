@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { withBasePath } from "@/lib/games/basePath";
 import { Difficulty } from "@/lib/games/wizardZombie";
+import { useScopedI18n } from "@/locales/client";
 
 interface StartScreenProps {
   vocabulary: VocabularyItem[];
@@ -18,32 +19,6 @@ interface RankingEntry {
   image: string | null;
   xp: number;
 }
-
-const DIFFICULTY_CONFIG: Record<
-  Difficulty,
-  { label: string; color: string; description: string }
-> = {
-  easy: {
-    label: "Easy",
-    color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-    description: "Slower zombies, fewer hordes. Good for practice.",
-  },
-  normal: {
-    label: "Normal",
-    color: "text-blue-400 bg-blue-400/10 border-blue-400/20",
-    description: "Standard challenge. Balanced speed and spawn rates.",
-  },
-  hard: {
-    label: "Hard",
-    color: "text-orange-400 bg-orange-400/10 border-orange-400/20",
-    description: "Fast zombies, relentless hordes. For veterans.",
-  },
-  extreme: {
-    label: "Extreme",
-    color: "text-red-400 bg-red-400/10 border-red-400/20",
-    description: "Nightmare speed. survive if you can.",
-  },
-};
 
 function SpriteAnimation({
   src,
@@ -82,10 +57,34 @@ function SpriteAnimation({
 }
 
 export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
+  const t = useScopedI18n("pages.student.gamesPage");
   const [activeTab, setActiveTab] = useState<TabType>("briefing");
   const [difficulty, setDifficulty] = useState<Difficulty>("normal");
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [isLoadingRankings, setIsLoadingRankings] = useState(false);
+
+  const DIFFICULTY_CONFIG = {
+    easy: {
+      label: t("wizardVsZombie.difficulty.easy"),
+      color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
+      description: t("wizardVsZombie.difficulty.easyDesc"),
+    },
+    normal: {
+      label: t("wizardVsZombie.difficulty.normal"),
+      color: "text-blue-400 bg-blue-400/10 border-blue-400/20",
+      description: t("wizardVsZombie.difficulty.normalDesc"),
+    },
+    hard: {
+      label: t("wizardVsZombie.difficulty.hard"),
+      color: "text-orange-400 bg-orange-400/10 border-orange-400/20",
+      description: t("wizardVsZombie.difficulty.hardDesc"),
+    },
+    extreme: {
+      label: t("wizardVsZombie.difficulty.extreme"),
+      color: "text-red-400 bg-red-400/10 border-red-400/20",
+      description: t("wizardVsZombie.difficulty.extremeDesc"),
+    },
+  };
 
   useEffect(() => {
     const fetchRankings = async () => {
@@ -114,9 +113,21 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
   }, [activeTab, difficulty]);
 
   const tabs = [
-    { id: "briefing" as TabType, label: "Briefing", icon: Shield },
-    { id: "rankings" as TabType, label: "Rankings", icon: Trophy },
-    { id: "vocabulary" as TabType, label: "Vocabulary", icon: BookOpen },
+    {
+      id: "briefing" as TabType,
+      label: t("wizardVsZombie.tabs.briefing"),
+      icon: Shield,
+    },
+    {
+      id: "rankings" as TabType,
+      label: t("wizardVsZombie.tabs.rankings"),
+      icon: Trophy,
+    },
+    {
+      id: "vocabulary" as TabType,
+      label: t("wizardVsZombie.tabs.vocabulary"),
+      icon: BookOpen,
+    },
   ];
 
   return (
@@ -130,14 +141,14 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white tracking-tight">
-                Arcane Defense
+                {t("wizardVsZombie.arcaneDefense")}
               </h2>
               <p className="text-sm text-slate-300 mt-0.5">
-                Prepare your spells and defend against the undead.
+                {t("wizardVsZombie.prepareSpells")}
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white/70 backdrop-blur-sm">
-              Ready
+              {t("common.ready")}
             </div>
           </div>
         </div>
@@ -179,18 +190,16 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                   <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-[40px] -z-10" />
                   <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                     <Ghost className="w-5 h-5 text-purple-400" />
-                    Mission Objective
+                    {t("wizardVsZombie.missionObjective")}
                   </h3>
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    Collect the correct energy orbs matching the target
-                    vocabulary word. Avoid zombies and use your shockwave to
-                    push them back!
+                    {t("wizardVsZombie.missionDescription")}
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl border border-white/5 bg-white/5">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                    Difficulty Selection
+                    {t("wizardVsZombie.difficultySelection")}
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
                     {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(
@@ -233,17 +242,26 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                     />
                   </div>
                 </div>
-                <h3 className="text-white font-bold mb-2">Survive the Horde</h3>
+                <h3 className="text-white font-bold mb-2">
+                  {t("wizardVsZombie.surviveHorde")}
+                </h3>
                 <ul className="text-xs text-slate-400 space-y-1">
                   <li>
-                    Use <span className="text-yellow-400">Arrow Keys</span>/WASD
-                    to move
+                    {t("wizardVsZombie.instructions.useArrowKeys")}{" "}
+                    <span className="text-yellow-400">
+                      {t("wizardVsZombie.instructions.arrowKeys")}
+                    </span>
+                    /{t("wizardVsZombie.instructions.wasd")}{" "}
+                    {t("wizardVsZombie.instructions.toMove")}
                   </li>
                   <li>
-                    Press <span className="text-yellow-400">Space</span> to cast
-                    Shockwave
+                    {t("wizardVsZombie.instructions.press")}{" "}
+                    <span className="text-yellow-400">
+                      {t("wizardVsZombie.instructions.space")}
+                    </span>{" "}
+                    {t("wizardVsZombie.instructions.toCastShockwave")}
                   </li>
-                  <li>Collect Orbs to heal and score points</li>
+                  <li>{t("wizardVsZombie.instructions.collectOrbs")}</li>
                 </ul>
               </div>
             </div>
@@ -274,14 +292,15 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                 <div className="flex items-center justify-between mb-2 px-2">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                     <Trophy className="w-4 h-4 text-yellow-500" />
-                    Top Survivors ({DIFFICULTY_CONFIG[difficulty].label})
+                    {t("wizardVsZombie.topSurvivors")} (
+                    {DIFFICULTY_CONFIG[difficulty].label})
                   </h3>
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                   {isLoadingRankings ? (
                     <div className="flex items-center justify-center h-40 text-slate-500 text-sm">
-                      Loading rankings...
+                      {t("wizardVsZombie.loadingRankings")}
                     </div>
                   ) : rankings.length > 0 ? (
                     <div className="space-y-2">
@@ -323,7 +342,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                   ) : (
                     <div className="flex flex-col items-center justify-center h-40 text-slate-500 text-sm">
                       <Trophy className="w-8 h-8 opacity-20 mb-2" />
-                      No records for {DIFFICULTY_CONFIG[difficulty].label} yet.
+                      {t("wizardVsZombie.noRecords")}
                     </div>
                   )}
                 </div>
@@ -337,7 +356,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-emerald-500" />
-                  Active Vocabulary ({vocabulary.length})
+                  {t("wizardVsZombie.activeVocabulary")} ({vocabulary.length})
                 </h3>
               </div>
 
@@ -366,7 +385,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-40 text-slate-500 text-sm">
                     <BookOpen className="w-8 h-8 opacity-20 mb-2" />
-                    No vocabulary found.
+                    {t("wizardVsZombie.noVocabulary")}
                   </div>
                 )}
               </div>
@@ -382,7 +401,8 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
             <span className="flex items-center justify-center gap-2 relative z-10">
-              Start Game ({DIFFICULTY_CONFIG[difficulty].label})
+              {t("wizardVsZombie.startGame")} (
+              {DIFFICULTY_CONFIG[difficulty].label})
               <Skull className="h-4 w-4" />
             </span>
           </button>

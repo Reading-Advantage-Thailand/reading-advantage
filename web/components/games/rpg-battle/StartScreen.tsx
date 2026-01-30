@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { battleEnemies } from "@/lib/games/rpgBattleSelection";
 import { Sprite } from "./Sprite";
+import { useScopedI18n } from "@/locales/client";
 
 interface StartScreenProps {
   vocabulary: VocabularyItem[];
@@ -32,6 +33,7 @@ interface RankingsData {
 }
 
 export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
+  const t = useScopedI18n("pages.student.gamesPage");
   const [activeTab, setActiveTab] = useState<TabType>("briefing");
   const [selectedEnemy, setSelectedEnemy] = useState(battleEnemies[0].id);
   const [rankings, setRankings] = useState<RankingsData>({});
@@ -59,9 +61,21 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
   }, [activeTab]);
 
   const tabs = [
-    { id: "briefing" as TabType, label: "Briefing", icon: Swords },
-    { id: "rankings" as TabType, label: "Rankings", icon: Trophy },
-    { id: "vocabulary" as TabType, label: "Vocabulary", icon: BookOpen },
+    {
+      id: "briefing" as TabType,
+      label: t("rpgBattle.tabs.briefing"),
+      icon: Swords,
+    },
+    {
+      id: "rankings" as TabType,
+      label: t("rpgBattle.tabs.rankings"),
+      icon: Trophy,
+    },
+    {
+      id: "vocabulary" as TabType,
+      label: t("rpgBattle.tabs.vocabulary"),
+      icon: BookOpen,
+    },
   ];
 
   return (
@@ -75,14 +89,14 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white tracking-tight">
-                Battle Preparation
+                {t("rpgBattle.battlePreparation")}
               </h2>
               <p className="text-sm text-slate-300 mt-0.5">
-                Review your spells and check the leaderboards before battle.
+                {t("rpgBattle.reviewSpells")}
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white/70 backdrop-blur-sm">
-              Ready
+              {t("common.ready")}
             </div>
           </div>
         </div>
@@ -136,11 +150,10 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
 
                 <div className="relative z-10 mt-2 max-w-[240px]">
                   <h3 className="text-lg font-bold text-white mb-2">
-                    The Battle Awaits
+                    {t("rpgBattle.theBattleAwaits")}
                   </h3>
                   <p className="text-xs leading-relaxed text-slate-300">
-                    Type correct translations to cast powerful spells and defeat
-                    your enemies in turn-based combat.
+                    {t("rpgBattle.battleDescription")}
                   </p>
                 </div>
               </div>
@@ -150,7 +163,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                 <div className="flex-1 flex flex-col rounded-3xl border border-white/10 bg-slate-900/80 p-6 backdrop-blur-md overflow-hidden">
                   <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-4">
                     <Shield className="h-3 w-3" />
-                    How to Play
+                    {t("common.howToPlay")}
                   </div>
 
                   <div className="space-y-4 text-sm text-slate-300">
@@ -160,10 +173,10 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                       </div>
                       <div>
                         <p className="font-semibold text-white mb-1">
-                          Choose Your Path
+                          {t("rpgBattle.instructions.step1Title")}
                         </p>
                         <p className="text-xs text-slate-400">
-                          Select your hero, battlefield, and enemy to face.
+                          {t("rpgBattle.instructions.step1Desc")}
                         </p>
                       </div>
                     </div>
@@ -174,11 +187,10 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                       </div>
                       <div>
                         <p className="font-semibold text-white mb-1">
-                          Cast Your Spells
+                          {t("rpgBattle.instructions.step2Title")}
                         </p>
                         <p className="text-xs text-slate-400">
-                          Type the correct translation to unleash attacks. Power
-                          spells deal more damage!
+                          {t("rpgBattle.instructions.step2Desc")}
                         </p>
                       </div>
                     </div>
@@ -189,11 +201,10 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                       </div>
                       <div>
                         <p className="font-semibold text-white mb-1">
-                          Defeat the Enemy
+                          {t("rpgBattle.instructions.step3Title")}
                         </p>
                         <p className="text-xs text-slate-400">
-                          Reduce enemy HP to zero before they defeat you. Earn
-                          XP based on performance!
+                          {t("rpgBattle.instructions.step3Desc")}
                         </p>
                       </div>
                     </div>
@@ -201,8 +212,8 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                     <div className="mt-6 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
                       <p className="text-xs text-purple-300">
                         <Sparkles className="inline h-3 w-3 mr-1" />
-                        <strong>Tip:</strong> Stronger enemies grant more XP but
-                        are harder to defeat. Choose wisely!
+                        <strong>{t("common.tip")}:</strong>{" "}
+                        {t("rpgBattle.instructions.tip")}
                       </p>
                     </div>
                   </div>
@@ -259,7 +270,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                 <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02]">
                   <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
                     <Trophy className="h-3 w-3" />
-                    Top Warriors -{" "}
+                    {t("rpgBattle.topWarriors")} -{" "}
                     {battleEnemies.find((e) => e.id === selectedEnemy)?.label}
                   </div>
                 </div>
@@ -267,7 +278,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                 <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
                   {isLoadingRankings ? (
                     <div className="h-full flex items-center justify-center text-slate-500 text-sm">
-                      Loading rankings...
+                      {t("rpgBattle.loadingRankings")}
                     </div>
                   ) : rankings[selectedEnemy]?.length > 0 ? (
                     <div className="space-y-2">
@@ -301,7 +312,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                             {entry.name}
                           </span>
                           <span className="text-purple-400 font-bold text-sm">
-                            {entry.xp} XP
+                            {entry.xp} {t("common.xp")}
                           </span>
                         </div>
                       ))}
@@ -309,7 +320,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                   ) : (
                     <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm p-8">
                       <Trophy className="h-8 w-8 mb-3 opacity-20" />
-                      No rankings yet for this enemy.
+                      {t("rpgBattle.noRankings")}
                     </div>
                   )}
                 </div>
@@ -323,7 +334,8 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
               <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02] flex-none">
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
                   <BookOpen className="h-3 w-3" />
-                  Spell Book ({vocabulary.length} spells)
+                  {t("rpgBattle.spellBook")} ({vocabulary.length}{" "}
+                  {t("rpgBattle.spells")})
                 </div>
               </div>
 
@@ -331,7 +343,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                 {vocabulary.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm p-8">
                     <BookOpen className="h-8 w-8 mb-3 opacity-20" />
-                    No vocabulary loaded yet.
+                    {t("rpgBattle.noVocabulary")}
                   </div>
                 ) : (
                   <div className="grid gap-1">
@@ -364,7 +376,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               <span className="flex items-center gap-2 relative z-10">
-                Start Battle
+                {t("common.startBattle")}
                 <Swords className="h-4 w-4" />
               </span>
             </button>
