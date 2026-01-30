@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Article } from "../../models/article-model";
-import { Book, PlayIcon, PauseIcon, VolumeXIcon, Settings } from "lucide-react";
+import {
+  Book,
+  PlayIcon,
+  PauseIcon,
+  VolumeXIcon,
+  Settings,
+  RotateCcwIcon,
+} from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +64,10 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   const [translationError, setTranslationError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isAudioLoaded, setIsAudioLoaded] = useState(false);
+  const [audioLoadProgress, setAudioLoadProgress] = useState(0);
+  const [audioLoadError, setAudioLoadError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(true);
   const sentenceRefs = useRef<{ [key: number]: HTMLElement | null }>({});
 
   // Get data from article
@@ -132,12 +143,15 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   };
 
   useEffect(() => {
-    // Initialize audio
+    // Initialize audio with improved loading strategy
     const effectiveAudioUrl = audioUrl || `${articleId}.mp3`;
 
     if (effectiveAudioUrl) {
+      setIsLoadingAudio(true);
+      setAudioLoadError(null);
+      setAudioLoadProgress(0);
+
       const cacheKey = new Date().getTime();
-      // ใช้ URL แบบเดียวกันกับ phase2-vocabulary-preview
       let fullAudioUrl = effectiveAudioUrl;
 
       // เพิ่มการตรวจสอบ URL format
@@ -149,25 +163,62 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
       fullAudioUrl = `${fullAudioUrl}?v=${cacheKey}`;
 
       const audio = new Audio(fullAudioUrl);
-      audio.preload = "metadata";
-      audio.onloadeddata = () => {
-        setIsAudioLoaded(true);
-      };
-      audio.onerror = () => {
-        console.error(`Audio failed to load: ${fullAudioUrl}`);
-        // If fallback failed and we haven't tried just the ID yet (and inputs were differnt), maybe logic could be more complex,
-        // but for now this matches Phase 3 fix.
-        setIsAudioLoaded(false);
-      };
-      audioRef.current = audio;
-    }
+      audio.preload = "auto"; // เปลี่ยนจาก metadata เป็น auto เพื่อโหลดทั้งหมด
 
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-    };
-  }, [audioUrl, articleId]);
+      // Track loading progress
+      const handleProgress = () => {
+        if (audio.buffered.length > 0) {
+          const bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
+          const duration = audio.duration;
+          if (duration > 0) {
+            const progress = (bufferedEnd / duration) * 100;
+            setAudioLoadProgress(Math.min(progress, 100));
+          }
+        }
+      };
+
+      const handleCanPlayThrough = () => {
+        setIsAudioLoaded(true);
+        setIsLoadingAudio(false);
+        setAudioLoadProgress(100);
+        console.log("Audio loaded successfully and ready to play");
+      };
+
+      const handleLoadedData = () => {
+        setIsAudioLoaded(true);
+        setIsLoadingAudio(false);
+        console.log("Audio data loaded");
+      };
+
+      const handleError = (e: Event) => {
+        console.error(`Audio failed to load: ${fullAudioUrl}`, e);
+        setIsAudioLoaded(false);
+        setIsLoadingAudio(false);
+        setAudioLoadError(
+          "Failed to load audio. Please check your internet connection.",
+        );
+      };
+
+      // Add event listeners
+      audio.addEventListener("progress", handleProgress);
+      audio.addEventListener("canplaythrough", handleCanPlayThrough);
+      audio.addEventListener("loadeddata", handleLoadedData);
+      audio.addEventListener("error", handleError);
+
+      audioRef.current = audio;
+
+      // Start loading
+      audio.load();
+
+      return () => {
+        audio.removeEventListener("progress", handleProgress);
+        audio.removeEventListener("canplaythrough", handleCanPlayThrough);
+        audio.removeEventListener("loadeddata", handleLoadedData);
+        audio.removeEventListener("error", handleError);
+        audio.pause();
+      };
+    }
+  }, [audioUrl, articleId, retryCount]);
 
   useEffect(() => {
     onCompleteChange(true);
@@ -302,6 +353,18 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     updateCurrentSentence();
   };
 
+  const retryAudioLoad = () => {
+    if (retryCount < 3) {
+      console.log(`Retrying audio load (attempt ${retryCount + 1}/3)`);
+      setRetryCount((prev) => prev + 1);
+      setAudioLoadError(null);
+    } else {
+      setAudioLoadError(
+        "Failed to load audio after 3 attempts. Please refresh the page.",
+      );
+    }
+  };
+
   const handleSentenceClick = (sentenceIndex: number) => {
     console.log(
       `Clicked sentence ${sentenceIndex}: "${sentences[sentenceIndex]}"`,
@@ -341,6 +404,56 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
           {t("phase5Description")}
         </p>
       </div>
+
+      {/* Audio Loading Status */}
+      {isLoadingAudio && !audioLoadError && (
+        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
+            <span className="text-blue-800 dark:text-blue-200 font-medium">
+              Loading audio... {Math.round(audioLoadProgress)}%
+            </span>
+          </div>
+          <div className="w-full bg-blue-200 dark:bg-blue-900 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${audioLoadProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Audio Loading Error */}
+      {audioLoadError && (
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <VolumeXIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <div>
+                <p className="text-red-800 dark:text-red-200 font-medium">
+                  {audioLoadError}
+                </p>
+                {retryCount < 3 && (
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                    Attempt {retryCount + 1} of 3
+                  </p>
+                )}
+              </div>
+            </div>
+            {retryCount < 3 && (
+              <Button
+                onClick={retryAudioLoad}
+                size="sm"
+                variant="outline"
+                className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900"
+              >
+                <RotateCcwIcon className="h-4 w-4 mr-1" />
+                Retry
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Reading Controls */}
       <div className="bg-zinc-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
