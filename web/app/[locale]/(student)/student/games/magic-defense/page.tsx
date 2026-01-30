@@ -9,8 +9,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
+import { useScopedI18n } from "@/locales/client";
 
 export default function MagicDefensePage() {
+  const t = useScopedI18n("pages.student.gamesPage");
   const setVocabulary = useGameStore((state) => state.setVocabulary);
   const setLastResult = useGameStore((state) => state.setLastResult);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,15 +34,12 @@ export default function MagicDefensePage() {
         if (data.vocabulary && data.vocabulary.length >= 10) {
           setVocabulary(data.vocabulary);
         } else {
-          setError(
-            data.message ||
-              "Not enough vocabulary words. Please save at least 10 words to play."
-          );
+          setError(data.message || t("notEnoughWords", { count: "10" }));
         }
       } catch (err) {
         console.error("Error fetching vocabulary:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to load vocabulary"
+          err instanceof Error ? err.message : "Failed to load vocabulary",
         );
       } finally {
         setIsLoading(false);
@@ -87,7 +86,7 @@ export default function MagicDefensePage() {
         console.error("Error saving game results:", err);
       }
     },
-    [setLastResult]
+    [setLastResult],
   );
 
   return (
@@ -96,14 +95,14 @@ export default function MagicDefensePage() {
       <Button variant="ghost" size="sm" asChild>
         <Link href="/student/games">
           <ChevronLeft className="mr-1 h-4 w-4" />
-          Back to Games
+          {t("backToGames")}
         </Link>
       </Button>
 
       {/* Header */}
       <Header
-        heading="Magic Defense"
-        text="Defend your castles from the falling words! Type the correct translation to destroy them."
+        heading={t("games.magicDefense.title")}
+        text={t("games.magicDefense.description")}
       >
         <Wand2 className="h-8 w-8 text-primary" />
       </Header>
@@ -114,7 +113,7 @@ export default function MagicDefensePage() {
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
             <p className="text-lg font-medium text-muted-foreground">
-              Loading vocabulary...
+              {t("loadingVocabulary")}
             </p>
           </CardContent>
         </Card>
@@ -124,13 +123,10 @@ export default function MagicDefensePage() {
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Unable to Start Game</AlertTitle>
+          <AlertTitle>{t("unableToStartGame")}</AlertTitle>
           <AlertDescription className="mt-2 space-y-2">
             <p>{error}</p>
-            <p className="text-sm opacity-80">
-              Tip: Save vocabulary words from articles to build your word
-              collection.
-            </p>
+            <p className="text-sm opacity-80">{t("saveTip")}</p>
           </AlertDescription>
         </Alert>
       )}

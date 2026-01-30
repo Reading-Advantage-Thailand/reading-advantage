@@ -7,27 +7,29 @@ import {
   type MonsterType,
 } from "@/lib/games/runeMatchConfig";
 import { withBasePath } from "@/lib/games/basePath";
+import { useScopedI18n } from "@/locales/client";
 
 // Helper for simplified monster metadata (could be shared or duplicated if simple enough)
-const MONSTER_METADATA: Record<MonsterType, { label: string; image: string }> =
-  {
-    goblin: {
-      label: "Goblin",
-      image: "/games/rune-match/monsters/goblin_3x4_pose_sheet.png",
-    },
-    skeleton: {
-      label: "Skeleton",
-      image: "/games/rune-match/monsters/skeleton_3x4_pose_sheet.png",
-    },
-    orc: {
-      label: "Orc",
-      image: "/games/rune-match/monsters/orc_3x4_pose_sheet.png",
-    },
-    dragon: {
-      label: "Dragon",
-      image: "/games/rune-match/monsters/dragon_3x4_pose_sheet.png",
-    },
-  };
+const getMonsterMetadata = (
+  t: any,
+): Record<MonsterType, { label: string; image: string }> => ({
+  goblin: {
+    label: t("runeMatch.monsters.goblin"),
+    image: "/games/rune-match/monsters/goblin_3x4_pose_sheet.png",
+  },
+  skeleton: {
+    label: t("runeMatch.monsters.skeleton"),
+    image: "/games/rune-match/monsters/skeleton_3x4_pose_sheet.png",
+  },
+  orc: {
+    label: t("runeMatch.monsters.orc"),
+    image: "/games/rune-match/monsters/orc_3x4_pose_sheet.png",
+  },
+  dragon: {
+    label: t("runeMatch.monsters.dragon"),
+    image: "/games/rune-match/monsters/dragon_3x4_pose_sheet.png",
+  },
+});
 
 interface StartScreenProps {
   vocabulary: VocabularyItem[];
@@ -44,6 +46,8 @@ interface RankingEntry {
 }
 
 export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
+  const t = useScopedI18n("pages.student.gamesPage");
+  const MONSTER_METADATA = getMonsterMetadata(t);
   const [activeTab, setActiveTab] = useState<TabType>("briefing");
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [isLoadingRankings, setIsLoadingRankings] = useState(false);
@@ -76,9 +80,21 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
   }, [activeTab, selectedMonster]);
 
   const tabs = [
-    { id: "briefing" as TabType, label: "Briefing", icon: Swords },
-    { id: "rankings" as TabType, label: "Rankings", icon: Trophy },
-    { id: "vocabulary" as TabType, label: "Vocabulary", icon: BookOpen },
+    {
+      id: "briefing" as TabType,
+      label: t("runeMatch.tabs.briefing"),
+      icon: Swords,
+    },
+    {
+      id: "rankings" as TabType,
+      label: t("runeMatch.tabs.rankings"),
+      icon: Trophy,
+    },
+    {
+      id: "vocabulary" as TabType,
+      label: t("runeMatch.tabs.vocabulary"),
+      icon: BookOpen,
+    },
   ];
 
   return (
@@ -92,14 +108,14 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white tracking-tight">
-                Adventure awaits
+                {t("runeMatch.adventureAwaits")}
               </h2>
               <p className="text-sm text-slate-300 mt-0.5">
-                Prepare your runes and check the leaderboards.
+                {t("runeMatch.prepareRunes")}
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white/70 backdrop-blur-sm">
-              Ready
+              {t("common.ready")}
             </div>
           </div>
         </div>
@@ -141,40 +157,45 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                   <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/20 rounded-full blur-[40px] -z-10" />
                   <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                     <Shield className="w-5 h-5 text-cyan-400" />
-                    Mission Objective
+                    {t("runeMatch.missionObjective")}
                   </h3>
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    Match 3 or more vocabulary runes to attack monsters. Find
-                    translated pairs or match power-ups to survive!
+                    {t("runeMatch.missionDescription")}
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl border border-white/5 bg-white/5">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                    Gameplay Tips
+                    {t("runeMatch.gameplayTips")}
                   </h4>
                   <ul className="space-y-2 text-sm text-slate-300">
                     <li className="flex gap-2">
                       <span className="text-cyan-400 font-bold">•</span>
-                      <span>Match runes to deal damage.</span>
+                      <span>{t("runeMatch.tip1")}</span>
                     </li>
                     <li className="flex gap-2">
                       <span className="text-green-400 font-bold">•</span>
                       <span>
-                        Match <span className="text-green-400">Heal</span> runes
-                        to restore HP.
+                        {t("runeMatch.tip2Prefix")}{" "}
+                        <span className="text-green-400">
+                          {t("runeMatch.tip2Heal")}
+                        </span>{" "}
+                        {t("runeMatch.tip2Suffix")}
                       </span>
                     </li>
                     <li className="flex gap-2">
                       <span className="text-blue-400 font-bold">•</span>
                       <span>
-                        Match <span className="text-blue-400">Shield</span>{" "}
-                        runes to block attacks.
+                        {t("runeMatch.tip3Prefix")}{" "}
+                        <span className="text-blue-400">
+                          {t("runeMatch.tip3Shield")}
+                        </span>{" "}
+                        {t("runeMatch.tip3Suffix")}
                       </span>
                     </li>
                     <li className="flex gap-2">
                       <span className="text-yellow-400 font-bold">•</span>
-                      <span>Large combos deal massive damage!</span>
+                      <span>{t("runeMatch.tip4")}</span>
                     </li>
                   </ul>
                 </div>
@@ -184,10 +205,11 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                 <div className="w-16 h-16 rounded-full bg-cyan-500/20 flex items-center justify-center mb-4 border border-cyan-500/30 shadow-[0_0_20px_rgba(34,211,238,0.2)] animate-pulse">
                   <Swords className="w-8 h-8 text-cyan-400" />
                 </div>
-                <h3 className="text-white font-bold mb-1">Combat Ready</h3>
+                <h3 className="text-white font-bold mb-1">
+                  {t("runeMatch.combatReady")}
+                </h3>
                 <p className="text-xs text-slate-400 max-w-[200px]">
-                  The monsters are approaching. Are you ready to test your
-                  vocabulary skills?
+                  {t("runeMatch.combatReadyDesc")}
                 </p>
               </div>
             </div>
@@ -243,14 +265,15 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                 <div className="flex items-center justify-between mb-2 px-2">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                     <Trophy className="w-4 h-4 text-yellow-500" />
-                    Top {MONSTER_METADATA[selectedMonster].label} Slayers
+                    {t("runeMatch.topHeroes")} (
+                    {MONSTER_METADATA[selectedMonster].label})
                   </h3>
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                   {isLoadingRankings ? (
                     <div className="flex items-center justify-center h-40 text-slate-500 text-sm">
-                      Loading rankings...
+                      {t("runeMatch.loadingRankings")}
                     </div>
                   ) : rankings.length > 0 ? (
                     <div className="space-y-2">
@@ -292,10 +315,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                   ) : (
                     <div className="flex flex-col items-center justify-center h-40 text-slate-500 text-sm">
                       <Trophy className="w-8 h-8 opacity-20 mb-2" />
-                      No records for {
-                        MONSTER_METADATA[selectedMonster].label
-                      }{" "}
-                      yet.
+                      {t("runeMatch.noRankings")}
                     </div>
                   )}
                 </div>
@@ -309,7 +329,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-emerald-500" />
-                  Active Vocabulary ({vocabulary.length})
+                  {t("runeMatch.runeCollection")} ({vocabulary.length})
                 </h3>
               </div>
 
@@ -338,7 +358,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-40 text-slate-500 text-sm">
                     <BookOpen className="w-8 h-8 opacity-20 mb-2" />
-                    No vocabulary found.
+                    {t("runeMatch.noVocabulary")}
                   </div>
                 )}
               </div>
@@ -354,7 +374,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
             <span className="flex items-center justify-center gap-2 relative z-10">
-              Start Game
+              {t("common.startGame")}
               <Swords className="h-4 w-4" />
             </span>
           </button>

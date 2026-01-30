@@ -11,6 +11,7 @@ import { Header } from "@/components/header";
 import { ChevronLeft, Swords } from "lucide-react";
 import { SAMPLE_VOCABULARY } from "@/lib/games/sampleVocabulary";
 import { useGameStore } from "@/store/useGameStore";
+import { useScopedI18n } from "@/locales/client";
 
 const RuneMatchGame = dynamic(
   () =>
@@ -21,6 +22,7 @@ const RuneMatchGame = dynamic(
 );
 
 export default function RuneMatchPage() {
+  const t = useScopedI18n("pages.student.gamesPage");
   const router = useRouter();
   const vocabulary = useGameStore((state) => state.vocabulary);
   const setVocabulary = useGameStore((state) => state.setVocabulary);
@@ -88,13 +90,13 @@ export default function RuneMatchPage() {
       <Button variant="ghost" size="sm" asChild>
         <Link href="/student/games">
           <ChevronLeft className="mr-1 h-4 w-4" />
-          Back to Games
+          {t("backToGames")}
         </Link>
       </Button>
 
       <Header
-        heading="Rune Match"
-        text="Match runes, cast spells, defeat monsters."
+        heading={t("games.runeMatch.title")}
+        text={t("games.runeMatch.description")}
       >
         <Swords className="h-8 w-8 text-primary" />
       </Header>

@@ -12,6 +12,7 @@ import { Group, Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Flame, Trophy, Timer } from "lucide-react";
 import { RankingDialog } from "./RankingDialog";
+import { useScopedI18n } from "@/locales/client";
 
 import { withBasePath } from "@/lib/games/basePath";
 import {
@@ -115,23 +116,23 @@ const ASSETS = {
   boss: withBasePath("/games/dragon-flight/boss-3x3-sheet-facing-up.png"),
   player: withBasePath("/games/dragon-flight/player-3x3-sheet-facing-down.png"),
   playerCamera: withBasePath(
-    "/games/dragon-flight/player-3x3-sheet-facing-camera.png"
+    "/games/dragon-flight/player-3x3-sheet-facing-camera.png",
   ),
   army: withBasePath(
-    "/games/dragon-flight/dragon-army-3x3-sheet-facing-up.png"
+    "/games/dragon-flight/dragon-army-3x3-sheet-facing-up.png",
   ),
   parallaxTop: withBasePath("/games/dragon-flight/parallax-top-tiling.png"),
   parallaxMiddle: withBasePath(
-    "/games/dragon-flight/parallax-middle-tiling.png"
+    "/games/dragon-flight/parallax-middle-tiling.png",
   ),
   parallaxBottom: withBasePath(
-    "/games/dragon-flight/parallax-bottom-tiling.png"
+    "/games/dragon-flight/parallax-bottom-tiling.png",
   ),
   loadingBackground: withBasePath(
-    "/games/dragon-flight/loading-screen-background.png"
+    "/games/dragon-flight/loading-screen-background.png",
   ),
   projectileFireball: withBasePath(
-    "/games/dragon-flight/projectile-fireball.png"
+    "/games/dragon-flight/projectile-fireball.png",
   ),
   projectileBoss: withBasePath("/games/dragon-flight/projectile-boss.png"),
 };
@@ -161,40 +162,42 @@ type DifficultySetting = {
   color: string;
 };
 
-const DIFFICULTY_SETTINGS: Record<Difficulty, DifficultySetting> = {
+const getDifficultySettings = (
+  t: any,
+): Record<Difficulty, DifficultySetting> => ({
   easy: {
     durationMs: 30000,
     penalty: 1,
     gameOverOnMiss: false,
-    label: "Easy",
-    description: "30s • Relaxed",
+    label: t("dragonFlight.difficulty.easy"),
+    description: t("dragonFlight.difficulty.easyDesc"),
     color: "bg-emerald-500",
   },
   normal: {
     durationMs: 60000,
     penalty: 1,
     gameOverOnMiss: false,
-    label: "Normal",
-    description: "1m • Standard",
+    label: t("dragonFlight.difficulty.normal"),
+    description: t("dragonFlight.difficulty.normalDesc"),
     color: "bg-blue-500",
   },
   hard: {
     durationMs: 90000,
     penalty: 2,
     gameOverOnMiss: false,
-    label: "Hard",
-    description: "1m 30s • -2 Dragons",
+    label: t("dragonFlight.difficulty.hard"),
+    description: t("dragonFlight.difficulty.hardDesc"),
     color: "bg-orange-500",
   },
   extreme: {
     durationMs: 120000,
     penalty: 0,
     gameOverOnMiss: true,
-    label: "Extreme",
-    description: "2m • One Strike Fail",
+    label: t("dragonFlight.difficulty.extreme"),
+    description: t("dragonFlight.difficulty.extremeDesc"),
     color: "bg-red-600",
   },
-};
+});
 
 const buildSpriteGrid = (width: number, height: number): SpriteGrid => {
   const columnBase = Math.floor(width / 3);
@@ -202,10 +205,10 @@ const buildSpriteGrid = (width: number, height: number): SpriteGrid => {
   const columnRemainder = width % 3;
   const rowRemainder = height % 3;
   const columns = [0, 1, 2].map(
-    (index) => columnBase + (index < columnRemainder ? 1 : 0)
+    (index) => columnBase + (index < columnRemainder ? 1 : 0),
   );
   const rows = [0, 1, 2].map(
-    (index) => rowBase + (index < rowRemainder ? 1 : 0)
+    (index) => rowBase + (index < rowRemainder ? 1 : 0),
   );
   const columnOffsets = columns.reduce<number[]>((acc, _value, index) => {
     const nextValue = index === 0 ? 0 : acc[index - 1] + columns[index - 1];
@@ -286,7 +289,7 @@ const buildLayout = (
   gateGrid: SpriteGrid,
   playerGrid: SpriteGrid,
   bossGrid: SpriteGrid,
-  armyGrid: SpriteGrid
+  armyGrid: SpriteGrid,
 ): FlightLayout => {
   const gateFrameWidth = gateGrid.columns[0] ?? 1;
   const gateFrameHeight = gateGrid.rows[0] ?? 1;
@@ -296,14 +299,14 @@ const buildLayout = (
   const gateTop = clamp(
     stage.height * 0.55 - gateHeight / 2,
     120,
-    stage.height * 0.7
+    stage.height * 0.7,
   );
 
   const leftGate = {
     left: clamp(
       stage.width * 0.28 - gateWidth / 2,
       24,
-      stage.width - gateWidth - 24
+      stage.width - gateWidth - 24,
     ),
     top: gateTop,
     width: gateWidth,
@@ -313,7 +316,7 @@ const buildLayout = (
     left: clamp(
       stage.width * 0.72 - gateWidth / 2,
       24,
-      stage.width - gateWidth - 24
+      stage.width - gateWidth - 24,
     ),
     top: gateTop,
     width: gateWidth,
@@ -325,7 +328,7 @@ const buildLayout = (
   const playerScale = clamp(
     (stage.width * PLAYER_BASE_SCALE) / playerFrameWidth,
     0.12,
-    0.3
+    0.3,
   );
 
   const bossFrameWidth = bossGrid.columns[0] ?? 1;
@@ -333,7 +336,7 @@ const buildLayout = (
   const bossScale = clamp(
     (stage.width * BOSS_BASE_SCALE) / bossFrameWidth,
     0.25,
-    0.65
+    0.65,
   );
 
   const armyFrameWidth = armyGrid.columns[0] ?? 1;
@@ -341,7 +344,7 @@ const buildLayout = (
   const armyScale = clamp(
     (stage.width * ARMY_BASE_SCALE) / armyFrameWidth,
     0.06,
-    0.18
+    0.18,
   );
 
   return {
@@ -412,7 +415,7 @@ const getActiveGatePair = (pairs: GatePair[]) => {
   if (pairs.length === 0) return null;
   return pairs.reduce(
     (current, pair) => (pair.y > current.y ? pair : current),
-    pairs[0]
+    pairs[0],
   );
 };
 
@@ -423,13 +426,15 @@ export function DragonFlightGame({
   onRestart,
   preloadedAssets,
 }: DragonFlightGameProps) {
+  const t = useScopedI18n("pages.student.gamesPage");
+  const DIFFICULTY_SETTINGS = useMemo(() => getDifficultySettings(t), [t]);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>("normal");
   const [showRanking, setShowRanking] = useState(false);
 
   const [stageSize, setStageSize] = useState<StageSize>(DEFAULT_STAGE);
   const [assets, setAssets] = useState<DragonFlightAssets | null>(
-    preloadedAssets ?? null
+    preloadedAssets ?? null,
   );
   const [isLoading, setIsLoading] = useState(!preloadedAssets);
   const [state, setState] = useState<DragonFlightState>(() => {
@@ -479,7 +484,7 @@ export function DragonFlightGame({
     setStageSize((prev) =>
       prev.width === nextWidth && prev.height === nextHeight
         ? prev
-        : { width: nextWidth, height: nextHeight }
+        : { width: nextWidth, height: nextHeight },
     );
   }, []);
 
@@ -581,24 +586,24 @@ export function DragonFlightGame({
   const gateGrid = useMemo(
     () =>
       assets ? buildSpriteGrid(assets.gates.width, assets.gates.height) : null,
-    [assets]
+    [assets],
   );
   const playerGrid = useMemo(
     () =>
       assets
         ? buildSpriteGrid(assets.player.width, assets.player.height)
         : null,
-    [assets]
+    [assets],
   );
   const bossGrid = useMemo(
     () =>
       assets ? buildSpriteGrid(assets.boss.width, assets.boss.height) : null,
-    [assets]
+    [assets],
   );
   const armyGrid = useMemo(
     () =>
       assets ? buildSpriteGrid(assets.army.width, assets.army.height) : null,
-    [assets]
+    [assets],
   );
   const layout = useMemo(() => {
     if (!gateGrid || !playerGrid || !bossGrid || !armyGrid) return null;
@@ -609,7 +614,7 @@ export function DragonFlightGame({
     if (!layout) return;
     if (playerTargetRef.current !== null) return;
     setPlayerX((prev) =>
-      Math.abs(prev - layout.playerX) > 1 ? layout.playerX : prev
+      Math.abs(prev - layout.playerX) > 1 ? layout.playerX : prev,
     );
   }, [layout]);
 
@@ -686,7 +691,7 @@ export function DragonFlightGame({
               } else {
                 nextDragonCount = Math.max(
                   1,
-                  prevState.dragonCount - settings.penalty
+                  prevState.dragonCount - settings.penalty,
                 );
               }
             }
@@ -727,7 +732,7 @@ export function DragonFlightGame({
         return isNearTarget ? target : next;
       });
     },
-    state.status === "running" && layout && hasStarted ? TICK_MS : null
+    state.status === "running" && layout && hasStarted ? TICK_MS : null,
   );
 
   const createGatePair = useCallback(
@@ -741,7 +746,7 @@ export function DragonFlightGame({
         y: -layout.leftGate.height,
       };
     },
-    [layout, vocabulary]
+    [layout, vocabulary],
   );
 
   useEffect(() => {
@@ -756,21 +761,21 @@ export function DragonFlightGame({
     () => {
       setGateFrame((prev) => (prev + 1) % 3);
     },
-    hasStarted ? GATE_ANIM_MS : null
+    hasStarted ? GATE_ANIM_MS : null,
   );
 
   useInterval(
     () => {
       setPlayerFrame((prev) => (prev + 1) % 9);
     },
-    hasStarted ? PLAYER_ANIM_MS : null
+    hasStarted ? PLAYER_ANIM_MS : null,
   );
 
   useInterval(
     () => {
       setBossFrame((prev) => (prev + 1) % 3);
     },
-    state.status === "boss" && hasStarted ? BOSS_ANIM_MS : null
+    state.status === "boss" && hasStarted ? BOSS_ANIM_MS : null,
   );
 
   useInterval(
@@ -787,7 +792,7 @@ export function DragonFlightGame({
         return next >= targetY ? targetY : next;
       });
     },
-    state.status === "boss" && layout && hasStarted ? TICK_MS : null
+    state.status === "boss" && layout && hasStarted ? TICK_MS : null,
   );
 
   useInterval(
@@ -800,7 +805,7 @@ export function DragonFlightGame({
       displayDragonCount > 0 &&
       hasStarted
       ? BOSS_HEALTH_TICK_MS
-      : null
+      : null,
   );
 
   useEffect(() => {
@@ -843,7 +848,7 @@ export function DragonFlightGame({
         dragonCount: state.dragonCount,
         difficulty,
       },
-      state.elapsedMs
+      state.elapsedMs,
     ); // Pass elapsed time
     setResults(nextResults);
     setShowResults(false);
@@ -908,7 +913,7 @@ export function DragonFlightGame({
       setLockedPairId(pair.id);
       setFeedback(null);
     },
-    [activePair, hasStarted, layout, lockedPairId, state.status]
+    [activePair, hasStarted, layout, lockedPairId, state.status],
   );
 
   useEffect(() => {
@@ -968,21 +973,21 @@ export function DragonFlightGame({
     ? clamp(
         layout!.playerY - arrowSize / 2,
         140,
-        stageSize.height - arrowSize - 80
+        stageSize.height - arrowSize - 80,
       )
     : 0;
   const leftArrowX = canRenderGame
     ? clamp(
         layout!.playerX - arrowOffsetX - arrowSize / 2,
         12,
-        stageSize.width - arrowSize - 12
+        stageSize.width - arrowSize - 12,
       )
     : 0;
   const rightArrowX = canRenderGame
     ? clamp(
         layout!.playerX + arrowOffsetX - arrowSize / 2,
         12,
-        stageSize.width - arrowSize - 12
+        stageSize.width - arrowSize - 12,
       )
     : 0;
 
@@ -1028,7 +1033,7 @@ export function DragonFlightGame({
             {/* Left: Prompt */}
             <div className="min-w-[140px] rounded-2xl border border-white/10 bg-black/40 px-5 py-3 backdrop-blur-md shadow-lg">
               <div className="text-[10px] uppercase tracking-[0.2em] text-white/60 mb-0.5">
-                Prompt
+                {t("dragonFlight.prompt")}
               </div>
               <div className="text-2xl font-bold text-white leading-none">
                 {promptRound.term || "—"}
@@ -1048,7 +1053,7 @@ export function DragonFlightGame({
                 <div className="absolute inset-0 z-10 flex items-center justify-center text-xs font-bold text-white drop-shadow-md tracking-widest">
                   {Math.max(
                     0,
-                    Math.ceil((state.durationMs - state.elapsedMs) / 1000)
+                    Math.ceil((state.durationMs - state.elapsedMs) / 1000),
                   )}
                   s
                 </div>
@@ -1060,7 +1065,7 @@ export function DragonFlightGame({
               <div className="flex items-center justify-end gap-1.5 mb-0.5">
                 <Flame className="h-3 w-3 text-amber-400" />
                 <span className="text-[10px] uppercase tracking-[0.2em] text-white/60">
-                  Dragons
+                  {t("dragonFlight.dragons")}
                 </span>
               </div>
               <motion.div
@@ -1203,7 +1208,9 @@ export function DragonFlightGame({
                           : "text-red-600 dark:text-red-400"
                       }`}
                     >
-                      {results.victory ? "Victory!" : "Defeat"}
+                      {results.victory
+                        ? t("dragonFlight.victory")
+                        : t("dragonFlight.defeat")}
                     </motion.h2>
                     <motion.p
                       initial={{ opacity: 0 }}
@@ -1212,8 +1219,8 @@ export function DragonFlightGame({
                       className="text-sm text-muted-foreground mt-1"
                     >
                       {results.victory
-                        ? "Your dragon army conquered the Skeleton King!"
-                        : "The Skeleton King was too powerful..."}
+                        ? t("dragonFlight.victoryDesc")
+                        : t("dragonFlight.defeatDesc")}
                     </motion.p>
                   </div>
 
@@ -1227,7 +1234,7 @@ export function DragonFlightGame({
                       className="rounded-lg border bg-emerald-50 dark:bg-emerald-950/30 p-4 text-center"
                     >
                       <div className="text-xs font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-400 mb-1">
-                        XP Earned
+                        {t("dragonFlight.xpEarned")}
                       </div>
                       <div className="text-4xl font-bold text-emerald-700 dark:text-emerald-300">
                         +{results.xp}
@@ -1243,7 +1250,7 @@ export function DragonFlightGame({
                     >
                       <div className="rounded-lg border bg-muted/50 p-3 text-center">
                         <div className="text-xs font-medium uppercase text-muted-foreground">
-                          Accuracy
+                          {t("dragonFlight.accuracy")}
                         </div>
                         <div className="text-2xl font-bold text-foreground">
                           {Math.round(results.accuracy * 100)}%
@@ -1251,7 +1258,7 @@ export function DragonFlightGame({
                       </div>
                       <div className="rounded-lg border bg-muted/50 p-3 text-center">
                         <div className="text-xs font-medium uppercase text-muted-foreground">
-                          Correct
+                          {t("dragonFlight.correct")}
                         </div>
                         <div className="text-2xl font-bold text-foreground">
                           {results.correctAnswers}/{results.totalAttempts}
@@ -1259,7 +1266,7 @@ export function DragonFlightGame({
                       </div>
                       <div className="rounded-lg border bg-muted/50 p-3 text-center">
                         <div className="text-xs font-medium uppercase text-muted-foreground">
-                          Dragons
+                          {t("dragonFlight.dragons")}
                         </div>
                         <div className="text-2xl font-bold text-foreground">
                           {results.dragonCount}
@@ -1267,7 +1274,7 @@ export function DragonFlightGame({
                       </div>
                       <div className="rounded-lg border bg-muted/50 p-3 text-center">
                         <div className="text-xs font-medium uppercase text-muted-foreground">
-                          Time
+                          {t("dragonFlight.time")}
                         </div>
                         <div className="text-2xl font-bold text-foreground">
                           {results.timeTaken}s
@@ -1290,7 +1297,7 @@ export function DragonFlightGame({
                       }}
                       className="w-full rounded-lg bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg active:scale-[0.98] pointer-events-auto cursor-pointer"
                     >
-                      Play Again
+                      {t("dragonFlight.playAgain")}
                     </motion.button>
                   </div>
                 </motion.div>
@@ -1310,11 +1317,10 @@ export function DragonFlightGame({
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-3xl font-bold text-white">
-                  Flight Briefing
+                  {t("dragonFlight.flightBriefing")}
                 </h2>
                 <p className="text-sm text-white/70 mt-1">
-                  Review the vocabulary, then tap Start Game to launch your
-                  dragon flight.
+                  {t("dragonFlight.briefingDesc")}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -1457,10 +1463,10 @@ export function DragonFlightGame({
 
                 <div className="mt-2">
                   <h3 className="text-lg font-semibold text-white">
-                    The Gate Run Begins Soon
+                    {t("dragonFlight.gateRunBegins")}
                   </h3>
                   <p className="mt-2 text-sm text-white/70 max-w-xs">
-                    Choose the correct translation to grow your dragon flight.
+                    {t("dragonFlight.gateRunDesc")}
                   </p>
                 </div>
               </div>
@@ -1468,12 +1474,12 @@ export function DragonFlightGame({
               {/* Vocabulary Preview Card */}
               <div className="rounded-3xl border border-white/15 bg-slate-900/60 p-5 backdrop-blur-md sm:p-6">
                 <div className="text-xs uppercase tracking-[0.3em] text-white/60 mb-4">
-                  Vocabulary Preview
+                  {t("dragonFlight.vocabularyPreview")}
                 </div>
                 <div className="max-h-64 overflow-y-auto rounded-xl">
                   {vocabulary.length === 0 ? (
                     <div className="px-4 py-6 text-center text-sm text-white/60">
-                      No vocabulary loaded yet.
+                      {t("dragonFlight.noVocabularyLoaded")}
                     </div>
                   ) : (
                     <div className="space-y-0">
@@ -1492,7 +1498,7 @@ export function DragonFlightGame({
                       ))}
                       {vocabulary.length > 8 && (
                         <div className="px-4 py-2 text-center text-xs text-white/50">
-                          +{vocabulary.length - 8} more words
+                          +{vocabulary.length - 8} {t("dragonFlight.moreWords")}
                         </div>
                       )}
                     </div>
@@ -1517,7 +1523,7 @@ export function DragonFlightGame({
                   {/* Difficulty Selector */}
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-medium mr-1">
-                      Difficulty
+                      {t("dragonFlight.difficultyLabel")}
                     </span>
                     {(Object.keys(DIFFICULTY_SETTINGS) as Difficulty[]).map(
                       (diff) => (
@@ -1533,7 +1539,7 @@ export function DragonFlightGame({
                         >
                           {DIFFICULTY_SETTINGS[diff].label}
                         </button>
-                      )
+                      ),
                     )}
                   </div>
 
@@ -1541,7 +1547,7 @@ export function DragonFlightGame({
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="text-xs uppercase tracking-[0.2em] text-white/60">
                       {isLoading
-                        ? "Summoning..."
+                        ? t("dragonFlight.summoning")
                         : DIFFICULTY_SETTINGS[difficulty].description}
                     </div>
                   </div>
@@ -1573,7 +1579,9 @@ export function DragonFlightGame({
                 }}
                 disabled={isLoading}
               >
-                {isLoading ? "Loading" : "Start Game"}
+                {isLoading
+                  ? t("dragonFlight.loading")
+                  : t("dragonFlight.start")}
                 <Flame className="h-4 w-4" />
               </button>
             </div>
@@ -1690,19 +1698,19 @@ const DragonFlightCanvas = ({
 
   const gateGrid = useMemo(
     () => buildSpriteGrid(assets.gates.width, assets.gates.height),
-    [assets]
+    [assets],
   );
   const playerGrid = useMemo(
     () => buildSpriteGrid(assets.player.width, assets.player.height),
-    [assets]
+    [assets],
   );
   const bossGrid = useMemo(
     () => buildSpriteGrid(assets.boss.width, assets.boss.height),
-    [assets]
+    [assets],
   );
   const armyGrid = useMemo(
     () => buildSpriteGrid(assets.army.width, assets.army.height),
-    [assets]
+    [assets],
   );
 
   useEffect(() => {
@@ -1716,15 +1724,15 @@ const DragonFlightCanvas = ({
 
     const topMetrics = buildParallaxMetrics(
       assets.parallaxTop,
-      stageSize.width
+      stageSize.width,
     );
     const middleMetrics = buildParallaxMetrics(
       assets.parallaxMiddle,
-      stageSize.width
+      stageSize.width,
     );
     const bottomMetrics = buildParallaxMetrics(
       assets.parallaxBottom,
-      stageSize.width
+      stageSize.width,
     );
 
     const animation = new Konva.Animation(
@@ -1860,7 +1868,7 @@ const DragonFlightCanvas = ({
         // Cleanup
         if (toRemove.size > 0) {
           projectilesRef.current = projectilesRef.current.filter(
-            (p) => !toRemove.has(p.id)
+            (p) => !toRemove.has(p.id),
           );
           toRemove.forEach((id) => {
             const sprite = projectileSpritesRef.current.get(id);
@@ -1876,7 +1884,7 @@ const DragonFlightCanvas = ({
         middleLayerRef.current,
         topLayerRef.current,
         projectileLayerRef.current,
-      ]
+      ],
     );
 
     animation.start();
@@ -1906,11 +1914,11 @@ const DragonFlightCanvas = ({
   const topMetrics = buildParallaxMetrics(assets.parallaxTop, stageSize.width);
   const middleMetrics = buildParallaxMetrics(
     assets.parallaxMiddle,
-    stageSize.width
+    stageSize.width,
   );
   const bottomMetrics = buildParallaxMetrics(
     assets.parallaxBottom,
-    stageSize.width
+    stageSize.width,
   );
 
   return (

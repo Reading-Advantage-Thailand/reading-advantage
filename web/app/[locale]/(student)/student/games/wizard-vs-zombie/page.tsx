@@ -15,8 +15,10 @@ import { VocabularyItem } from "@/store/useGameStore";
 import { StartScreen } from "@/components/games/wizard-vs-zombie/StartScreen";
 import { Difficulty } from "@/lib/games/wizardZombie";
 import { AnimatePresence, motion } from "framer-motion";
+import { useScopedI18n } from "@/locales/client";
 
 export default function WizardZombiePage() {
+  const t = useScopedI18n("pages.student.gamesPage");
   const { data: session } = useSession();
   const [vocabulary, setVocabulary] = useState<VocabularyItem[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -90,13 +92,13 @@ export default function WizardZombiePage() {
       <Button variant="ghost" size="sm" asChild>
         <Link href="/student/games">
           <ArrowLeft className="mr-1 h-4 w-4" />
-          Back to Games
+          {t("backToGames")}
         </Link>
       </Button>
 
       <Header
-        heading="Wizard vs Zombie"
-        text="Collect healing orbs and survive the zombie horde."
+        heading={t("games.wizardVsZombie.title")}
+        text={t("collectHealingOrbs")}
       >
         <div className="p-2 bg-purple-500/10 rounded-lg">
           <Button

@@ -42,6 +42,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
+import { useScopedI18n } from "@/locales/client";
 
 const ACTION_COUNT = 3;
 const BASIC_DAMAGE = 10;
@@ -49,6 +50,7 @@ const POWER_DAMAGE = 18;
 const MAX_TURNS = 12;
 
 export default function RpgBattlePage() {
+  const t = useScopedI18n("pages.student.gamesPage");
   const vocabulary = useGameStore((state) => state.vocabulary);
   const setVocabulary = useGameStore((state) => state.setVocabulary);
   const setLastResult = useGameStore((state) => state.setLastResult);
@@ -152,10 +154,7 @@ export default function RpgBattlePage() {
         if (data.vocabulary && data.vocabulary.length >= 5) {
           setVocabulary(data.vocabulary);
         } else {
-          setError(
-            data.message ||
-              "Not enough vocabulary words. Please save at least 5 words to play.",
-          );
+          setError(data.message || t("notEnoughWords", { count: "5" }));
         }
       } catch (err) {
         console.error("Error fetching vocabulary:", err);
@@ -444,12 +443,12 @@ export default function RpgBattlePage() {
         <Button variant="ghost" size="sm" asChild>
           <Link href="/student/games">
             <ChevronLeft className="mr-1 h-4 w-4" />
-            Back to Games
+            {t("backToGames")}
           </Link>
         </Button>
         <Header
-          heading="RPG Battle"
-          text="Type the correct translation to unleash your spells."
+          heading={t("games.rpgBattle.title")}
+          text={t("games.rpgBattle.description")}
         >
           <Swords className="h-8 w-8 text-primary" />
         </Header>
@@ -457,10 +456,10 @@ export default function RpgBattlePage() {
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
             <p className="text-lg font-medium text-muted-foreground">
-              Summoning forces...
+              {t("loadingVocabulary")}
             </p>
             <p className="text-sm text-muted-foreground">
-              Preparing your spellbook
+              {t("preparingGame")}
             </p>
           </CardContent>
         </Card>
@@ -474,23 +473,21 @@ export default function RpgBattlePage() {
         <Button variant="ghost" size="sm" asChild>
           <Link href="/student/games">
             <ChevronLeft className="mr-1 h-4 w-4" />
-            Back to Games
+            {t("backToGames")}
           </Link>
         </Button>
         <Header
-          heading="RPG Battle"
-          text="Type the correct translation to unleash your spells."
+          heading={t("games.rpgBattle.title")}
+          text={t("games.rpgBattle.description")}
         >
           <Swords className="h-8 w-8 text-primary" />
         </Header>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Unable to Start Battle</AlertTitle>
+          <AlertTitle>{t("unableToStartGame")}</AlertTitle>
           <AlertDescription className="mt-2 space-y-2">
             <p>{error}</p>
-            <p className="text-sm opacity-80">
-              Tip: Save vocabulary words from articles to build your spellbook.
-            </p>
+            <p className="text-sm opacity-80">{t("saveTip")}</p>
           </AlertDescription>
         </Alert>
       </div>
@@ -502,12 +499,12 @@ export default function RpgBattlePage() {
       <Button variant="ghost" size="sm" asChild>
         <Link href="/student/games">
           <ChevronLeft className="mr-1 h-4 w-4" />
-          Back to Games
+          {t("backToGames")}
         </Link>
       </Button>
       <Header
-        heading="RPG Battle"
-        text="Type the correct translation to unleash your spells."
+        heading={t("games.rpgBattle.title")}
+        text={t("games.rpgBattle.description")}
       >
         <Swords className="h-8 w-8 text-primary" />
       </Header>

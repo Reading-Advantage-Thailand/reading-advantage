@@ -31,72 +31,7 @@ import {
   Star,
   Clock,
 } from "lucide-react";
-
-const games = [
-  {
-    id: "dragon-flight",
-    title: "Dragon Flight",
-    description:
-      "Choose the correct gate to grow your dragon flight before the Skeleton King arrives.",
-    icon: Flame,
-    coverImage: "/games/cover/dragon-flight.png",
-    color: "from-purple-500 via-pink-500 to-rose-500",
-    difficulty: "Medium",
-    type: "Strategy",
-    badge: "Popular",
-    badgeVariant: "default" as const,
-  },
-  {
-    id: "magic-defense",
-    title: "Magic Defense",
-    description:
-      "Defend your tower using magic spells and vocabulary knowledge.",
-    icon: Shield,
-    coverImage: "/games/cover/magic-defense.png",
-    color: "from-blue-500 via-cyan-500 to-teal-500",
-    difficulty: "Hard",
-    type: "Vocabulary",
-    badge: "New",
-    badgeVariant: "secondary" as const,
-  },
-  {
-    id: "rpg-battle",
-    title: "RPG Battle",
-    description:
-      "Battle monsters and level up your character with vocabulary skills.",
-    icon: Sword,
-    coverImage: "/games/cover/rpg-battle.png",
-    color: "from-red-500 via-orange-500 to-amber-500",
-    difficulty: "Medium",
-    type: "Vocabulary",
-    badge: "Popular",
-    badgeVariant: "default" as const,
-  },
-  {
-    id: "rune-match",
-    title: "Rune Match",
-    description: "Match runes and vocabulary to unlock ancient secrets.",
-    icon: Puzzle,
-    coverImage: "/games/cover/rune-match.png",
-    color: "from-green-500 via-emerald-500 to-teal-500",
-    difficulty: "Easy",
-    type: "Matching",
-    badge: null,
-    badgeVariant: "outline" as const,
-  },
-  {
-    id: "wizard-vs-zombie",
-    title: "Wizard vs Zombie",
-    description: "Use your vocabulary powers to defeat the zombie horde.",
-    icon: Zap,
-    coverImage: "/games/cover/wizard-vs-zombie.png",
-    color: "from-yellow-500 via-amber-500 to-orange-500",
-    difficulty: "Easy",
-    type: "Spelling",
-    badge: "Recommended",
-    badgeVariant: "secondary" as const,
-  },
-];
+import { useScopedI18n } from "@/locales/client";
 
 const difficultyColors = {
   Easy: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20",
@@ -107,13 +42,74 @@ const difficultyColors = {
 
 export default function GamesPage() {
   const router = useRouter();
+  const t = useScopedI18n("pages.student.gamesPage");
+
+  const games = [
+    {
+      id: "dragon-flight",
+      title: t("games.dragonFlight.title"),
+      description: t("games.dragonFlight.description"),
+      icon: Flame,
+      coverImage: "/games/cover/dragon-flight.png",
+      color: "from-purple-500 via-pink-500 to-rose-500",
+      difficulty: t("difficulty.medium"),
+      type: t("types.strategy"),
+      badge: t("badges.popular"),
+      badgeVariant: "default" as const,
+    },
+    {
+      id: "magic-defense",
+      title: t("games.magicDefense.title"),
+      description: t("games.magicDefense.description"),
+      icon: Shield,
+      coverImage: "/games/cover/magic-defense.png",
+      color: "from-blue-500 via-cyan-500 to-teal-500",
+      difficulty: t("difficulty.hard"),
+      type: t("types.vocabulary"),
+      badge: t("badges.new"),
+      badgeVariant: "secondary" as const,
+    },
+    {
+      id: "rpg-battle",
+      title: t("games.rpgBattle.title"),
+      description: t("games.rpgBattle.description"),
+      icon: Sword,
+      coverImage: "/games/cover/rpg-battle.png",
+      color: "from-red-500 via-orange-500 to-amber-500",
+      difficulty: t("difficulty.medium"),
+      type: t("types.vocabulary"),
+      badge: t("badges.popular"),
+      badgeVariant: "default" as const,
+    },
+    {
+      id: "rune-match",
+      title: t("games.runeMatch.title"),
+      description: t("games.runeMatch.description"),
+      icon: Puzzle,
+      coverImage: "/games/cover/rune-match.png",
+      color: "from-green-500 via-emerald-500 to-teal-500",
+      difficulty: t("difficulty.easy"),
+      type: t("types.matching"),
+      badge: null,
+      badgeVariant: "outline" as const,
+    },
+    {
+      id: "wizard-vs-zombie",
+      title: t("games.wizardVsZombie.title"),
+      description: t("games.wizardVsZombie.description"),
+      icon: Zap,
+      coverImage: "/games/cover/wizard-vs-zombie.png",
+      color: "from-yellow-500 via-amber-500 to-orange-500",
+      difficulty: t("difficulty.easy"),
+      type: t("types.spelling"),
+      badge: t("badges.recommended"),
+      badgeVariant: "secondary" as const,
+    },
+  ];
 
   return (
     <>
-      <Header
-        heading="Games"
-        text="Practice your vocabulary skills with fun and engaging games"
-      />
+      <Header heading={t("heading")} text={t("description")} />
 
       <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto mt-6 overflow-visible">
         <TooltipProvider>
@@ -132,13 +128,13 @@ export default function GamesPage() {
                         variant={game.badgeVariant}
                         className="shadow-lg font-semibold"
                       >
-                        {game.badge === "Popular" && (
+                        {game.badge === t("badges.popular") && (
                           <Trophy className="w-3 h-3 mr-1" />
                         )}
-                        {game.badge === "New" && (
+                        {game.badge === t("badges.new") && (
                           <Sparkles className="w-3 h-3 mr-1" />
                         )}
-                        {game.badge === "Recommended" && (
+                        {game.badge === t("badges.recommended") && (
                           <Star className="w-3 h-3 mr-1" />
                         )}
                         {game.badge}
@@ -177,7 +173,7 @@ export default function GamesPage() {
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Click to play!</p>
+                        <p>{t("clickToPlay")}</p>
                       </TooltipContent>
                     </Tooltip>
                   </CardHeader>
@@ -215,7 +211,7 @@ export default function GamesPage() {
                       }}
                     >
                       <Gamepad2 className="w-4 h-4 mr-2" />
-                      Play Now
+                      {t("playNow")}
                     </Button>
                   </CardFooter>
 
@@ -250,18 +246,17 @@ export default function GamesPage() {
             <CardContent className="pt-6 pb-4 space-y-4 flex-1 flex flex-col">
               <div className="flex-1 text-center">
                 <CardTitle className="mb-2 text-2xl font-bold text-muted-foreground">
-                  Coming Soon
+                  {t("comingSoon")}
                 </CardTitle>
                 <CardDescription className="text-base leading-relaxed">
-                  More exciting games are on the way! Stay tuned for new
-                  vocabulary challenges.
+                  {t("comingSoonDescription")}
                 </CardDescription>
               </div>
 
               {/* Placeholder badges */}
               <div className="flex flex-wrap gap-2 mt-auto justify-center">
                 <Badge variant="outline" className="font-medium opacity-50">
-                  New Games
+                  {t("newGames")}
                 </Badge>
               </div>
             </CardContent>
@@ -272,7 +267,7 @@ export default function GamesPage() {
                 className="w-full font-semibold text-base h-11 cursor-not-allowed"
               >
                 <Clock className="w-4 h-4 mr-2" />
-                Coming Soon
+                {t("comingSoon")}
               </Button>
             </CardFooter>
           </Card>

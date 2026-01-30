@@ -38,6 +38,7 @@ import type { VocabularyItem } from "@/store/useGameStore";
 import { withBasePath } from "@/lib/games/basePath";
 import { MonsterSelection } from "./MonsterSelection";
 import { Button } from "@/components/ui/button";
+import { useScopedI18n } from "@/locales/client";
 
 export type RuneMatchGameResult = {
   xp: number;
@@ -68,6 +69,7 @@ type RuneMatchAssets = {
 };
 
 export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
+  const t = useScopedI18n("pages.student.gamesPage");
   const [gameState, setGameState] = useState<RuneMatchState | null>(null);
   const [assets, setAssets] = useState<RuneMatchAssets | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -514,14 +516,16 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
               />
             </div>
             <div className="space-y-2">
-              <h2 className="text-4xl font-bold text-white">Victory!</h2>
+              <h2 className="text-4xl font-bold text-white">
+                {t("common.victory")}
+              </h2>
               <p className="text-xl text-slate-400">
                 You defeated the {gameState.monster?.type}!
               </p>
             </div>
             <div className="p-6 bg-white/5 rounded-2xl border border-white/10 min-w-[200px]">
               <p className="text-sm text-slate-500 uppercase tracking-widest">
-                XP Earned
+                {t("common.xpEarned")}
               </p>
               <p className="text-5xl font-black text-yellow-500">
                 +{gameState.monster?.xp}
@@ -545,7 +549,7 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
               size="lg"
               className="px-12 bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
             >
-              Continue
+              {t("common.continue")}
             </Button>
           </motion.div>
         )}
@@ -569,7 +573,9 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
               />
             </div>
             <div className="space-y-2">
-              <h2 className="text-4xl font-bold text-white">Defeat...</h2>
+              <h2 className="text-4xl font-bold text-white">
+                {t("common.defeat")}
+              </h2>
               <p className="text-xl text-slate-400">
                 The monster was too strong.
               </p>
@@ -580,7 +586,7 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
               size="lg"
               className="px-12 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
             >
-              Try Again
+              {t("common.tryAgain")}
             </Button>
           </motion.div>
         )}
