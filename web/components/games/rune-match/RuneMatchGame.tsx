@@ -17,6 +17,7 @@ import {
   Circle,
 } from "react-konva";
 import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, RefreshCcw } from "lucide-react";
 import {
   createRuneMatchState,
   initializeGrid,
@@ -72,6 +73,9 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
   const t = useScopedI18n("pages.student.gamesPage");
   const [gameState, setGameState] = useState<RuneMatchState | null>(null);
   const [assets, setAssets] = useState<RuneMatchAssets | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [animFrame, setAnimFrame] = useState(0);
@@ -187,13 +191,14 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
 
   useEffect(() => {
     let mounted = true;
+    setLoadError(null);
     const load = async () => {
       const loadImage = (src: string): Promise<HTMLImageElement> =>
         new Promise((res, rej) => {
           const img = new Image();
           img.src = withBasePath(src);
           img.onload = () => res(img);
-          img.onerror = rej;
+          img.onerror = () => rej(new Error(`Failed to load image: ${src}`));
         });
       try {
         const [goblin, skeleton, orc, dragon, base, heal, shield, background] =
@@ -215,13 +220,17 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
           });
       } catch (e) {
         console.error("Failed to load assets", e);
+        if (mounted)
+          setLoadError(
+            "Failed to load game assets. Please check your connection.",
+          );
       }
     };
     load();
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [retryCount]);
 
   const resetGame = useCallback(() => {
     if (vocabulary.length > 0) setGameState(createRuneMatchState(vocabulary));
@@ -428,9 +437,27 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
         data-testid="rune-match-container"
         className="relative h-[60vh] w-full overflow-hidden rounded-2xl bg-slate-950 flex items-center justify-center border border-white/10 md:aspect-video md:h-auto"
       >
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-white"></div>
-          <p className="text-sm text-white/60">Loading assets...</p>
+        <div className="flex flex-col items-center gap-4 text-center p-4">
+          {loadError ? (
+            <>
+              <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
+              <p className="text-sm text-red-400 font-medium">{loadError}</p>
+              <Button
+                onClick={() => setRetryCount((c) => c + 1)}
+                variant="outline"
+                size="sm"
+                className="mt-2 text-white border-white/20 hover:bg-white/10"
+              >
+                <RefreshCcw className="mr-2 h-4 w-4" />
+                Retry Loading
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-white"></div>
+              <p className="text-sm text-white/60">Loading assets...</p>
+            </>
+          )}
         </div>
       </div>
     );
