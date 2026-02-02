@@ -86,7 +86,7 @@ const AudioButton: React.FC<{
         if ((audio as any).timeUpdateHandler) {
           audio.removeEventListener(
             "timeupdate",
-            (audio as any).timeUpdateHandler
+            (audio as any).timeUpdateHandler,
           );
         }
 
@@ -121,7 +121,7 @@ const AudioButton: React.FC<{
         if ((audio as any).timeUpdateHandler) {
           audio.removeEventListener(
             "timeupdate",
-            (audio as any).timeUpdateHandler
+            (audio as any).timeUpdateHandler,
           );
           delete (audio as any).timeUpdateHandler;
         }
@@ -150,7 +150,7 @@ const AudioButton: React.FC<{
                     setIsPlaying(false);
                   }
                 },
-                Math.max(duration, 100)
+                Math.max(duration, 100),
               ); // อย่างน้อย 100ms
 
               // เพิ่ม timeupdate listener เพื่อตรวจสอบเวลาแบบ real-time
@@ -183,7 +183,7 @@ const AudioButton: React.FC<{
               if ((audio as any).timeUpdateHandler) {
                 audio.removeEventListener(
                   "timeupdate",
-                  (audio as any).timeUpdateHandler
+                  (audio as any).timeUpdateHandler,
                 );
                 delete (audio as any).timeUpdateHandler;
               }
@@ -271,7 +271,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
 
         if (!resWordlist.ok) {
           throw new Error(
-            `API request failed with status: ${resWordlist.status}`
+            `API request failed with status: ${resWordlist.status}`,
           );
         }
 
@@ -290,7 +290,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
                   (nextWord.timeSeconds ||
                     nextWord.startTime ||
                     (index + 1) * 2) - 0.25,
-                  startTime + 0.1
+                  startTime + 0.1,
                 )
               : undefined; // คำสุดท้ายไม่มี endTime -> เล่นจนจบไฟล์
 
@@ -336,7 +336,7 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
                 endTime, // อาจเป็น undefined สำหรับคำสุดท้าย
                 audioUrl,
               };
-            }
+            },
           );
         }
 
@@ -359,6 +359,37 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
       fetchWordList();
     }
   }, [article, articleId]);
+
+  // Preload audio for first 5 words to improve performance on slow connections
+  useEffect(() => {
+    if (wordList.length > 0) {
+      const preloadCount = Math.min(5, wordList.length);
+      console.log(`Preloading audio for first ${preloadCount} words`);
+
+      const preloadAudios = wordList
+        .slice(0, preloadCount)
+        .map((word) => {
+          if (word.audioUrl) {
+            const audio = new Audio(word.audioUrl);
+            audio.preload = "auto";
+            audio.load();
+            return audio;
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      // Cleanup function
+      return () => {
+        preloadAudios.forEach((audio) => {
+          if (audio) {
+            audio.pause();
+            audio.src = "";
+          }
+        });
+      };
+    }
+  }, [wordList]);
 
   const handleWordClick = (index: number) => {
     setActiveWordIndex(activeWordIndex === index ? null : index);
@@ -480,7 +511,9 @@ const Phase2VocabularyPreview: React.FC<Phase2VocabularyPreviewProps> = ({
         <div className="bg-zinc-200 dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
             <span>{lt("vocabularyProgress")}</span>
-            <span>{(lt as any)("wordsToLearn", { count: wordList.length })}</span>
+            <span>
+              {(lt as any)("wordsToLearn", { count: wordList.length })}
+            </span>
           </div>
           <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
