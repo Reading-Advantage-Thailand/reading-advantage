@@ -599,6 +599,279 @@ export default {
           },
         },
       },
+      gamesPage: {
+        // Main page
+        heading: "เกม",
+        description: "ฝึกทักษะคำศัพท์ของคุณด้วยเกมที่สนุกและน่าสนใจ",
+
+        // Game cards
+        games: {
+          dragonFlight: {
+            title: "Dragon Flight",
+            description:
+              "เลือกประตูที่ถูกต้องเพื่อให้ฝูงมังกรของคุณเติบโตก่อนที่ราชาโครงกระดูกจะมาถึง",
+          },
+          magicDefense: {
+            title: "Magic Defense",
+            description: "ปกป้องหอคอยของคุณโดยใช้เวทมนตร์และความรู้ด้านคำศัพท์",
+          },
+          rpgBattle: {
+            title: "RPG Battle",
+            description:
+              "ต่อสู้กับมอนสเตอร์และเพิ่มเลเวลตัวละครของคุณด้วยทักษะคำศัพท์",
+          },
+          runeMatch: {
+            title: "Rune Match",
+            description: "จับคู่รูนและคำศัพท์เพื่อปลดล็อกความลับโบราณ",
+          },
+          wizardVsZombie: {
+            title: "Wizard vs Zombie",
+            description: "ใช้พลังคำศัพท์ของคุณเพื่อเอาชนะฝูงซอมบี้",
+          },
+        },
+
+        // Badges
+        badges: {
+          popular: "ยอดนิยม",
+          new: "ใหม่",
+          recommended: "แนะนำ",
+        },
+
+        // Difficulty levels
+        difficulty: {
+          easy: "ง่าย",
+          medium: "ปานกลาง",
+          hard: "ยาก",
+        },
+
+        // Game types
+        types: {
+          strategy: "กลยุทธ์",
+          vocabulary: "คำศัพท์",
+          matching: "การจับคู่",
+          spelling: "การสะกดคำ",
+        },
+
+        // Actions
+        playNow: "เล่นเลย",
+        clickToPlay: "คลิกเพื่อเล่น!",
+
+        // Coming soon
+        comingSoon: "เร็วๆ นี้",
+        comingSoonDescription:
+          "เกมที่น่าตื่นเต้นเพิ่มเติมกำลังจะมา! ติดตามความท้าทายคำศัพท์ใหม่ๆ",
+        newGames: "เกมใหม่",
+
+        // Individual game pages
+        backToGames: "กลับไปหน้าเกม",
+        loadingVocabulary: "กำลังโหลดคำศัพท์...",
+        preparingAdventure: "กำลังเตรียมการผจญภัยมังกรของคุณ",
+        preparingGame: "กำลังเตรียมเกมของคุณ",
+        unableToStartGame: "ไม่สามารถเริ่มเกมได้",
+        notEnoughWords:
+          "คำศัพท์ไม่เพียงพอ กรุณาบันทึกคำศัพท์อย่างน้อย {count} คำเพื่อเล่น",
+        saveTip: "เคล็ดลับ: บันทึกคำศัพท์จากบทความเพื่อสร้างคลังคำศัพท์ของคุณ",
+        collectHealingOrbs: "เก็บลูกบอลรักษาและเอาชีวิตรอดจากฝูงซอมบี้",
+
+        // Common game UI
+        common: {
+          score: "คะแนน",
+          accuracy: "ความแม่นยำ",
+          xpEarned: "XP ที่ได้รับ",
+          gameOver: "เกมจบ",
+          victory: "ชนะ",
+          defeat: "แพ้",
+          playAgain: "เล่นอีกครั้ง",
+          tryAgain: "ลองอีกครั้ง",
+          continue: "ดำเนินการต่อ",
+          startGame: "เริ่มเกม",
+          startBattle: "เริ่มการต่อสู้",
+          startSurvival: "เริ่มโหมดเอาชีวิตรอด",
+          ready: "พร้อม",
+          loading: "กำลังโหลด",
+          wordsToReview: "คำศัพท์ที่ต้องทบทวน",
+          viewLeaderboard: "ดูกระดานผู้นำ",
+          howToPlay: "วิธีเล่น",
+          tip: "เคล็ดลับ",
+          xp: "XP",
+        },
+
+        // RPG Battle specific
+        rpgBattle: {
+          battlePreparation: "เตรียมการต่อสู้",
+          reviewSpells: "ตรวจสอบเวทมนตร์และกระดานผู้นำก่อนเข้าสู่การต่อสู้",
+          theBattleAwaits: "การต่อสู้กำลังรอคุณอยู่",
+          battleDescription:
+            "พิมพ์คำแปลที่ถูกต้องเพื่อปล่อยเวทมนตร์อันทรงพลังและเอาชนะศัตรูในการต่อสู้แบบผลัดกัน",
+          tabs: {
+            briefing: "สรุปภารกิจ",
+            rankings: "อันดับ",
+            vocabulary: "คำศัพท์",
+          },
+          instructions: {
+            step1Title: "เลือกเส้นทางของคุณ",
+            step1Desc: "เลือกฮีโร่, สนามรบ, และศัตรูที่จะเผชิญหน้า",
+            step2Title: "ร่ายเวทมนตร์",
+            step2Desc:
+              "พิมพ์คำแปลที่ถูกต้องเพื่อปล่อยการโจมตี เวทมนตร์พิเศษสร้างความเสียหายมากกว่า!",
+            step3Title: "เอาชนะศัตรู",
+            step3Desc:
+              "ลด HP ของศัตรูให้เหลือศูนย์ก่อนที่พวกเขาจะเอาชนะคุณ รับ XP ตามผลงาน!",
+            tip: "ศัตรูที่แข็งแกร่งให้ XP มากกว่าแต่เอาชนะยากกว่า เลือกอย่างชาญฉลาด!",
+          },
+          topWarriors: "นักรบชั้นนำ",
+          spellBook: "หนังสือเวทมนตร์",
+          spells: "เวทมนตร์",
+          noRankings: "ยังไม่มีอันดับสำหรับศัตรูนี้",
+          noVocabulary: "ยังไม่มีคำศัพท์",
+          loadingRankings: "กำลังโหลดอันดับ...",
+        },
+
+        // Wizard vs Zombie specific
+        wizardVsZombie: {
+          arcaneDefense: "การป้องกันลึกลับ",
+          prepareSpells: "เตรียมคาถาของคุณและป้องกันผีดิบ",
+          missionObjective: "วัตถุประสงค์ภารกิจ",
+          missionDescription:
+            "เก็บลูกพลังงานที่ถูกต้องตรงกับคำศัพท์เป้าหมาย หลีกเลี่ยงซอมบี้และใช้คลื่นกระแทกเพื่อผลักพวกมันกลับ!",
+          difficultySelection: "เลือกระดับความยาก",
+          surviveHorde: "เอาชีวิตรอดจากฝูงซอมบี้",
+          topSurvivors: "ผู้รอดชีวิตอันดับต้น",
+          noRecords: "ยังไม่มีบันทึก",
+          activeVocabulary: "คำศัพท์ที่ใช้งาน",
+          noVocabulary: "ไม่พบคำศัพท์",
+          startGame: "เริ่มเกม",
+          tabs: {
+            briefing: "สรุปภารกิจ",
+            rankings: "อันดับ",
+            vocabulary: "คำศัพท์",
+          },
+          selectDifficulty: "เลือกความยาก",
+          difficulty: {
+            easy: "ง่าย",
+            normal: "ปกติ",
+            hard: "ยาก",
+            extreme: "สุดโหด",
+            easyDesc: "ซอมบี้ช้าลง ฝูงน้อยลง เหมาะสำหรับฝึกซ้อม",
+            normalDesc: "ความท้าทายมาตรฐาน ความเร็วและอัตราการเกิดสมดุล",
+            hardDesc: "ซอมบี้เร็ว ฝูงซอมบี้จู่โจมไม่หยุด สำหรับผู้เชี่ยวชาญ",
+            extremeDesc: "ความเร็วระดับฝันร้าย เอาชีวิตรอดถ้าทำได้",
+          },
+          loadingRankings: "กำลังโหลดอันดับ...",
+          instructions: {
+            useArrowKeys: "ใช้",
+            arrowKeys: "ปุ่มลูกศร",
+            wasd: "WASD",
+            toMove: "เพื่อเคลื่อนที่",
+            press: "กด",
+            space: "Space",
+            toCastShockwave: "เพื่อปล่อยคลื่นกระแทก",
+            collectOrbs: "เก็บลูกบอลเพื่อรักษาและได้คะแนน",
+          },
+        },
+
+        // Magic Defense specific
+        magicDefense: {
+          wave: "เวฟ",
+          lives: "ชีวิต",
+          combo: "คอมโบ",
+          highScore: "คะแนนสูงสุด",
+          defenseBriefing: "สรุปการป้องกัน",
+          reviewSpells: "ตรวจสอบคาถา (คำศัพท์) เพื่อปกป้องปราสาทของคุณ",
+          leaderboard: "กระดานผู้นำ",
+          theSiegeBegins: "การโจมตีเริ่มต้น",
+          siegeDescription:
+            "พิมพ์คำแปลที่ถูกต้องเพื่อทำลายดาวตกก่อนที่จะกระทบอาณาจักรของคุณ",
+          spellBook: "หนังสือคาถา",
+          noVocabularyLoaded: "ยังไม่มีคำศัพท์",
+          startDefense: "เริ่มการป้องกัน",
+          difficulty: {
+            easy: "ง่าย",
+            normal: "ปกติ",
+            hard: "ยาก",
+            extreme: "สุดโหด",
+          },
+        },
+
+        // Rune Match specific
+        runeMatch: {
+          selectMonster: "เลือกมอนสเตอร์",
+          adventureAwaits: "การผจญภัยรอคุณอยู่",
+          prepareRunes: "เตรียมรูนของคุณและตรวจสอบกระดานผู้นำ",
+          missionObjective: "วัตถุประสงค์ภารกิจ",
+          missionDescription:
+            "จับคู่รูนคำศัพท์ 3 อันขึ้นไปเพื่อโจมตีมอนสเตอร์ หาคู่คำแปลหรือจับคู่ไอเท็มพิเศษเพื่ออยู่รอด!",
+          gameplayTips: "เคล็ดลับการเล่น",
+          tip1: "จับคู่รูนเพื่อสร้างความเสียหาย",
+          tip2Prefix: "จับคู่รูน",
+          tip2Heal: "รักษา",
+          tip2Suffix: "เพื่อฟื้นฟู HP",
+          tip3Prefix: "จับคู่รูน",
+          tip3Shield: "โล่กั้น",
+          tip3Suffix: "เพื่อป้องกันการโจมตี",
+          tip4: "คอมโบใหญ่สร้างความเสียหายมากมาย!",
+          combatReady: "พร้อมสู้รบ",
+          combatReadyDesc:
+            "มอนสเตอร์กำลังเข้าใกล้ คุณพร้อมทดสอบทักษะคำศัพท์แล้วหรือยัง?",
+          topHeroes: "ผู้กล้าอันดับต้น",
+          loadingRankings: "กำลังโหลดอันดับ...",
+          noRankings: "ยังไม่มีอันดับ มาเป็นคนแรกสิ!",
+          runeCollection: "คอลเลกชั่นรูน",
+          noVocabulary: "ยังไม่มีคำศัพท์",
+          tabs: {
+            briefing: "สรุปภารกิจ",
+            rankings: "อันดับ",
+            vocabulary: "คำศัพท์",
+          },
+          monsters: {
+            goblin: "ก็อบลิน",
+            skeleton: "โครงกระดูก",
+            orc: "ออร์ค",
+            dragon: "มังกร",
+          },
+        },
+        // Dragon Flight specific
+        dragonFlight: {
+          prompt: "โจทย์",
+          dragons: "มังกร",
+          victory: "ชัยชนะ!",
+          defeat: "พ่ายแพ้",
+          victoryDesc: "กองทัพมังกรของคุณพิชิตราชากระดูกได้สำเร็จ!",
+          defeatDesc: "ราชากระดูกแข็งแกร่งเกินไป...",
+          xpEarned: "XP ที่ได้รับ",
+          accuracy: "ความแม่นยำ",
+          correct: "ถูกต้อง",
+          time: "เวลา",
+          playAgain: "เล่นอีกครั้ง",
+          flightBriefing: "วิธีการเล่น",
+          briefingDesc: "ทบทวนคำศัพท์ แล้วกดเริ่มเกมเพื่อปล่อยฝูงมังกรของคุณ",
+          gateRunBegins: "การผจญภัยกำลังจะเริ่มขึ้น",
+          gateRunDesc: "เลือกคำแปลที่ถูกต้องเพื่อเพิ่มจำนวนฝูงมังกรของคุณ",
+          vocabularyPreview: "ตัวอย่างคำศัพท์",
+          noVocabularyLoaded: "ยังไม่มีคำศัพท์",
+          start: "เริ่มเกม",
+          loading: "กำลังโหลด",
+          summoning: "กำลังเรียกมังกร...",
+          difficultyLabel: "ระดับความยาก",
+          moreWords: "คำเพิ่มเติม",
+          difficulty: {
+            easy: "ง่าย",
+            normal: "ปกติ",
+            hard: "ยาก",
+            extreme: "สุดโหด",
+            easyDesc: "30วิ • ผ่อนคลาย",
+            normalDesc: "1นาที • มาตรฐาน",
+            hardDesc: "1นาที 30วิ • -2 มังกร",
+            extremeDesc: "2นาที • พลาดครั้งเดียวจบ",
+          },
+          ranking: {
+            noChampions: "ยังไม่มีผู้ชนะ",
+            beTheFirst: "มาเป็นคนแรกที่คว้าชัยชนะ!",
+            dragonRider: "นักขี่มังกร",
+            leaderboard: "กระดานผู้นำ",
+          },
+        },
+      },
       lessonPage: {
         translatingContent: "กำลังแปลเนื้อหา...",
         translationError: "เกิดข้อผิดพลาดในการแปลเนื้อหา",
@@ -630,9 +903,57 @@ export default {
         phase9Title: "ฝึกคำศัพท์ - การ์ดคำศัพท์",
         phase9Description:
           "ฝึกคำศัพท์ที่คุณได้เรียนรู้ในบทเรียนนี้ คุณสามารถใช้กิจกรรมนี้เพื่อประเมินความสามารถในการอ่านคำศัพท์ของคุณด้วยตัวเอง",
-        phase10Title: "ฝึกคำศัพท์ - จับคู่คำศัพท์",
+        phase10Title: "ฝึกคำศัพท์ - ฝึกฝนด้วยเกม",
         phase10Description:
-          "ฝึกคำศัพท์ที่คุณได้เรียนรู้ในบทเรียนนี้ คุณสามารถเลือกจับคู่คำศัพท์ที่มีความหมายตรงกัน",
+          "ฝึกฝนทักษะของคุณด้วยเกมที่สร้างสรรค์ คุณสามารถเลือกเกมเพื่อฝึกฝนคำศัพท์ที่คุณได้เรียนรู้",
+        phase10: {
+          headerTitle: "ฝึกคำศัพท์ - ฝึกฝนด้วยเกม",
+          headerDescription:
+            "ได้เวลาทดสอบทักษะของคุณแล้ว! เลือกเกมเพื่อฝึกฝนคำศัพท์ที่คุณได้เรียนรู้",
+          unableToLoad: "ไม่สามารถโหลดเกมได้",
+          notEnoughVocab:
+            "คำศัพท์ในบทเรียนนี้ไม่เพียงพอสำหรับเล่นเกม (ขั้นต่ำ 5 คำ)",
+          failedToLoad: "โหลดข้อมูลเกมล้มเหลว",
+          awesome: "ยอดเยี่ยม!",
+          completed: "เสร็จสิ้น",
+          youCompleted: "คุณเล่นจบ",
+          score: "คะแนน",
+          accuracy: "ความแม่นยำ",
+          playAgain: "เล่นอีกครั้ง",
+          continueNext: "ไปยังขั้นตอนถัดไปเมื่อคุณพร้อม",
+          chooseGame: "เลือกเกมเพื่อเริ่ม",
+          lastPlayed: "เล่นล่าสุด",
+          exitGame: "ออกจากเกม",
+          difficulty: {
+            easy: "ง่าย",
+            medium: "ปานกลาง",
+            hard: "ยาก",
+          },
+          types: {
+            spelling: "การสะกดคำ",
+            matching: "การจับคู่",
+            strategy: "กลยุทธ์",
+            vocabulary: "คำศัพท์",
+          },
+          games: {
+            "wizard-vs-zombie": {
+              title: "Wizard vs Zombie",
+              description: "ใช้พลังคำศัพท์ของคุณเพื่อปราบฝูงซอมบี้",
+            },
+            "rune-match": {
+              title: "Rune Match",
+              description: "จับคู่รูนและคำศัพท์เพื่อปลดล็อกความลับโบราณ",
+            },
+            "dragon-flight": {
+              title: "Dragon Flight",
+              description: "เลือกประตูที่ถูกต้องเพื่อให้มังกรของคุณเติบโต",
+            },
+            "magic-defense": {
+              title: "Magic Defense",
+              description: "ปกป้องหอคอยของคุณโดยใช้เวทมนตร์และคำศัพท์",
+            },
+          },
+        },
         phase11Title: "ฝึกประโยค - การ์ดประโยค",
         phase11Description:
           "ฝึกประโยคที่คุณได้เรียนรู้ในบทเรียนนี้ คุณสามารถใช้กิจกรรมนี้เพื่อประเมินความสามารถในการอ่านประโยคของคุณด้วยตัวเอง",
@@ -673,7 +994,7 @@ export default {
           "คำถามแบบปรนัย",
           "คำถามแบบอัตนัย",
           "ฝึกคำศัพท์ - การ์ดคำศัพท์",
-          "ฝึกคำศัพท์ - จับคู่คำศัพท์",
+          "ฝึกคำศัพท์ - ฝึกฝนด้วยเกม",
           "ฝึกประโยค - การ์ดประโยค",
           "ฝึกประโยค - เลือกกิจกรรม",
           "คำถามเกี่ยวกับภาษา",
@@ -2088,6 +2409,7 @@ export default {
     sidebarNav: {
       read: "อ่าน",
       stories: "เนื้อเรื่อง",
+      games: "เกม",
       history: "ประวัติ",
       sentences: "ประโยค",
       reports: "รายงาน",

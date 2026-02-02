@@ -52,6 +52,7 @@ import {
   Lock,
   Clipboard,
   FileText,
+  Gamepad2,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -110,6 +111,7 @@ export const Icons = {
   lock: Lock,
   clipboard: Clipboard,
   fileText: FileText,
+  gamepad: Gamepad2,
   logo: ({ ...props }: LucideProps) => (
     <svg
       version="1.0"

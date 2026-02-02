@@ -564,6 +564,289 @@ export default {
           },
         },
       },
+      gamesPage: {
+        // Main page
+        heading: "Games",
+        description:
+          "Practice your vocabulary skills with fun and engaging games",
+
+        // Game cards
+        games: {
+          dragonFlight: {
+            title: "Dragon Flight",
+            description:
+              "Choose the correct gate to grow your dragon flight before the Skeleton King arrives.",
+          },
+          magicDefense: {
+            title: "Magic Defense",
+            description:
+              "Defend your tower using magic spells and vocabulary knowledge.",
+          },
+          rpgBattle: {
+            title: "RPG Battle",
+            description:
+              "Battle monsters and level up your character with vocabulary skills.",
+          },
+          runeMatch: {
+            title: "Rune Match",
+            description:
+              "Match runes and vocabulary to unlock ancient secrets.",
+          },
+          wizardVsZombie: {
+            title: "Wizard vs Zombie",
+            description:
+              "Use your vocabulary powers to defeat the zombie horde.",
+          },
+        },
+
+        // Badges
+        badges: {
+          popular: "Popular",
+          new: "New",
+          recommended: "Recommended",
+        },
+
+        // Difficulty levels
+        difficulty: {
+          easy: "Easy",
+          medium: "Medium",
+          hard: "Hard",
+        },
+
+        // Game types
+        types: {
+          strategy: "Strategy",
+          vocabulary: "Vocabulary",
+          matching: "Matching",
+          spelling: "Spelling",
+        },
+
+        // Actions
+        playNow: "Play Now",
+        clickToPlay: "Click to play!",
+
+        // Coming soon
+        comingSoon: "Coming Soon",
+        comingSoonDescription:
+          "More exciting games are on the way! Stay tuned for new vocabulary challenges.",
+        newGames: "New Games",
+
+        // Individual game pages
+        backToGames: "Back to Games",
+        loadingVocabulary: "Loading vocabulary...",
+        preparingAdventure: "Preparing your dragon adventure",
+        preparingGame: "Preparing your game",
+        unableToStartGame: "Unable to Start Game",
+        notEnoughWords:
+          "Not enough vocabulary words. Please save at least {count} words to play.",
+        saveTip:
+          "Tip: Save vocabulary words from articles to build your word collection.",
+        collectHealingOrbs:
+          "Collect healing orbs and survive the zombie horde.",
+
+        // Common game UI
+        common: {
+          score: "Score",
+          accuracy: "Accuracy",
+          xpEarned: "XP Earned",
+          gameOver: "Game Over",
+          victory: "Victory",
+          defeat: "Defeat",
+          playAgain: "Play Again",
+          tryAgain: "Try Again",
+          continue: "Continue",
+          startGame: "Start Game",
+          startBattle: "Start Battle",
+          startSurvival: "Start Survival",
+          ready: "Ready",
+          loading: "Loading",
+          wordsToReview: "Words to Review",
+          viewLeaderboard: "View Leaderboard",
+          howToPlay: "How to Play",
+          tip: "Tip",
+          xp: "XP",
+        },
+
+        // RPG Battle specific
+        rpgBattle: {
+          battlePreparation: "Battle Preparation",
+          reviewSpells:
+            "Review your spells and check the leaderboards before battle.",
+          theBattleAwaits: "The Battle Awaits",
+          battleDescription:
+            "Type correct translations to cast powerful spells and defeat your enemies in turn-based combat.",
+          tabs: {
+            briefing: "Briefing",
+            rankings: "Rankings",
+            vocabulary: "Vocabulary",
+          },
+          instructions: {
+            step1Title: "Choose Your Path",
+            step1Desc: "Select your hero, battlefield, and enemy to face.",
+            step2Title: "Cast Your Spells",
+            step2Desc:
+              "Type the correct translation to unleash attacks. Power spells deal more damage!",
+            step3Title: "Defeat the Enemy",
+            step3Desc:
+              "Reduce enemy HP to zero before they defeat you. Earn XP based on performance!",
+            tip: "Stronger enemies grant more XP but are harder to defeat. Choose wisely!",
+          },
+          topWarriors: "Top Warriors",
+          spellBook: "Spell Book",
+          spells: "spells",
+          noRankings: "No rankings yet for this enemy.",
+          noVocabulary: "No vocabulary loaded yet.",
+          loadingRankings: "Loading rankings...",
+        },
+
+        // Wizard vs Zombie specific
+        wizardVsZombie: {
+          arcaneDefense: "Arcane Defense",
+          prepareSpells: "Prepare your spells and defend against the undead.",
+          missionObjective: "Mission Objective",
+          missionDescription:
+            "Collect the correct energy orbs matching the target vocabulary word. Avoid zombies and use your shockwave to push them back!",
+          difficultySelection: "Difficulty Selection",
+          surviveHorde: "Survive the Horde",
+          topSurvivors: "Top Survivors",
+          noRecords: "No records yet.",
+          activeVocabulary: "Active Vocabulary",
+          noVocabulary: "No vocabulary found.",
+          startGame: "Start Game",
+          tabs: {
+            briefing: "Briefing",
+            rankings: "Rankings",
+            vocabulary: "Vocabulary",
+          },
+          selectDifficulty: "Select Difficulty",
+          difficulty: {
+            easy: "Easy",
+            normal: "Normal",
+            hard: "Hard",
+            extreme: "Extreme",
+            easyDesc: "Slower zombies, fewer hordes. Good for practice.",
+            normalDesc: "Standard challenge. Balanced speed and spawn rates.",
+            hardDesc: "Fast zombies, relentless hordes. For veterans.",
+            extremeDesc: "Nightmare speed. survive if you can.",
+          },
+          loadingRankings: "Loading rankings...",
+          instructions: {
+            useArrowKeys: "Use",
+            arrowKeys: "Arrow Keys",
+            wasd: "WASD",
+            toMove: "to move",
+            press: "Press",
+            space: "Space",
+            toCastShockwave: "to cast Shockwave",
+            collectOrbs: "Collect Orbs to heal and score points",
+          },
+        },
+
+        // Magic Defense specific
+        magicDefense: {
+          wave: "Wave",
+          lives: "Lives",
+          combo: "Combo",
+          highScore: "High Score",
+          defenseBriefing: "Defense Briefing",
+          reviewSpells:
+            "Review the spells (vocabulary) to defend your castles.",
+          leaderboard: "Leaderboard",
+          theSiegeBegins: "The Siege Begins",
+          siegeDescription:
+            "Type correct translations to destroy falling meteors before they impact your kingdom.",
+          spellBook: "Spell Book",
+          noVocabularyLoaded: "No vocabulary loaded yet.",
+          startDefense: "Start Defense",
+          difficulty: {
+            easy: "Easy",
+            normal: "Normal",
+            hard: "Hard",
+            extreme: "Extreme",
+          },
+        },
+
+        // Rune Match specific
+        runeMatch: {
+          selectMonster: "Select Monster",
+          adventureAwaits: "Adventure awaits",
+          prepareRunes: "Prepare your runes and check the leaderboards.",
+          missionObjective: "Mission Objective",
+          missionDescription:
+            "Match 3 or more vocabulary runes to attack monsters. Find translated pairs or match power-ups to survive!",
+          gameplayTips: "Gameplay Tips",
+          tip1: "Match runes to deal damage.",
+          tip2Prefix: "Match",
+          tip2Heal: "Heal",
+          tip2Suffix: "runes to restore HP.",
+          tip3Prefix: "Match",
+          tip3Shield: "Shield",
+          tip3Suffix: "runes to block attacks.",
+          tip4: "Large combos deal massive damage!",
+          combatReady: "Combat Ready",
+          combatReadyDesc:
+            "The monsters are approaching. Are you ready to test your vocabulary skills?",
+          topHeroes: "Top Heroes",
+          loadingRankings: "Loading rankings...",
+          noRankings: "No rankings yet. Be the first!",
+          runeCollection: "Rune Collection",
+          noVocabulary: "No vocabulary loaded.",
+          tabs: {
+            briefing: "Briefing",
+            rankings: "Rankings",
+            vocabulary: "Vocabulary",
+          },
+          monsters: {
+            goblin: "Goblin",
+            skeleton: "Skeleton",
+            orc: "Orc",
+            dragon: "Dragon",
+          },
+        },
+        // Dragon Flight specific
+        dragonFlight: {
+          prompt: "Prompt",
+          dragons: "Dragons",
+          victory: "Victory!",
+          defeat: "Defeat",
+          victoryDesc: "Your dragon army conquered the Skeleton King!",
+          defeatDesc: "The Skeleton King was too powerful...",
+          xpEarned: "XP Earned",
+          accuracy: "Accuracy",
+          correct: "Correct",
+          time: "Time",
+          playAgain: "Play Again",
+          flightBriefing: "Flight Briefing",
+          briefingDesc:
+            "Review the vocabulary, then tap Start Game to launch your dragon flight.",
+          gateRunBegins: "The Gate Run Begins Soon",
+          gateRunDesc:
+            "Choose the correct translation to grow your dragon flight.",
+          vocabularyPreview: "Vocabulary Preview",
+          noVocabularyLoaded: "No vocabulary loaded yet.",
+          start: "Start Game",
+          loading: "Loading",
+          summoning: "Summoning...",
+          difficultyLabel: "Difficulty",
+          moreWords: "more words",
+          difficulty: {
+            easy: "Easy",
+            normal: "Normal",
+            hard: "Hard",
+            extreme: "Extreme",
+            easyDesc: "30s • Relaxed",
+            normalDesc: "1m • Standard",
+            hardDesc: "1m 30s • -2 Dragons",
+            extremeDesc: "2m • One Strike Fail",
+          },
+          ranking: {
+            noChampions: "No champions yet.",
+            beTheFirst: "Be the first to claim victory!",
+            dragonRider: "Dragon Rider",
+            leaderboard: "Leaderboard",
+          },
+        },
+      },
       lessonPage: {
         translatingContent: "翻譯中...",
         translationError: "翻譯內容時出錯。",
@@ -594,8 +877,55 @@ export default {
         phase8Description: "回答與文章有關的簡短書面問題",
         phase9Title: "詞彙練習 - 單字卡",
         phase9Description: "練習您在本課中學到的詞彙，可用來自我評估識詞能力",
-        phase10Title: "詞彙練習 - 配對",
-        phase10Description: "將詞彙與其意思進行配對以進行練習",
+        phase10Title: "詞彙練習 - 遊戲練習",
+        phase10Description: "透過玩遊戲練習本課所學詞彙",
+        phase10: {
+          headerTitle: "詞彙練習 - 遊戲練習",
+          headerDescription:
+            "是時候測試你的技能了！選擇一個遊戲來練習你學過的單字。",
+          unableToLoad: "無法載入遊戲",
+          notEnoughVocab: "本課詞彙不足以進行遊戲（最少 5 個）。",
+          failedToLoad: "載入遊戲資料失敗。",
+          awesome: "太棒了！",
+          completed: "已完成",
+          youCompleted: "你完成了",
+          score: "得分",
+          accuracy: "準確率",
+          playAgain: "再玩一次",
+          continueNext: "準備好後繼續下一階段",
+          chooseGame: "選擇一個遊戲開始",
+          lastPlayed: "上次遊玩",
+          exitGame: "退出遊戲",
+          difficulty: {
+            easy: "簡單",
+            medium: "中等",
+            hard: "困難",
+          },
+          types: {
+            spelling: "拼寫",
+            matching: "配對",
+            strategy: "策略",
+            vocabulary: "詞彙",
+          },
+          games: {
+            "wizard-vs-zombie": {
+              title: "Wizard vs Zombie",
+              description: "使用你的詞彙力量擊敗殭屍群。",
+            },
+            "rune-match": {
+              title: "Rune Match",
+              description: "匹配符文和詞彙以解鎖遠古秘密。",
+            },
+            "dragon-flight": {
+              title: "Dragon Flight",
+              description: "選擇正確的大門來培養你的龍群。",
+            },
+            "magic-defense": {
+              title: "Magic Defense",
+              description: "使用魔法和詞彙保衛你的塔樓。",
+            },
+          },
+        },
         phase11Title: "句子練習 - 句子卡",
         phase11Description: "練習您在本課中學到的句子，可用來自我評估識句能力",
         phase12Title: "句子練習 - 選擇活動",
@@ -1987,6 +2317,7 @@ export default {
       stories: "劇情",
       history: "歷史",
       sentences: "句子",
+      games: "遊戲",
       reports: "報告",
       vocabulary: "詞彙",
       myClasses: "我的課程",

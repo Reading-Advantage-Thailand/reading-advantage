@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Handlebars from "handlebars";
+// @ts-ignore
+import Handlebars from "handlebars/dist/handlebars.min.js";
 import { Button } from "@/components/ui/button";
 import {
   Card,
