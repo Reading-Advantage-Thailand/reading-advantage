@@ -34,6 +34,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
+import { ScopedI18n } from "@/locales/locales";
 
 export interface ClassDetailDashboardProps {
   classroomId: string;
@@ -47,7 +48,8 @@ export function ClassDetailDashboard({
   classCode,
 }: ClassDetailDashboardProps) {
   const router = useRouter();
-  const t = useScopedI18n("pages.teacher.dashboardPage.classDetail") as any;
+  const scope = "pages.teacher.dashboardPage.classDetail" as const;
+  const t = useScopedI18n(scope) as ScopedI18n<typeof scope>;
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -197,8 +199,8 @@ export function ClassDetailDashboard({
         </TabsContent>
 
         <TabsContent value="goals" className="space-y-4">
-          <ClassroomGoalsManagement 
-            classroomId={classroomId} 
+          <ClassroomGoalsManagement
+            classroomId={classroomId}
             className={className}
           />
         </TabsContent>
