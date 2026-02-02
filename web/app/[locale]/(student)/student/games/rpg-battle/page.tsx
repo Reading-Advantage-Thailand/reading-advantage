@@ -588,7 +588,9 @@ export default function RpgBattlePage() {
                           exit={{ opacity: 0, y: -4 }}
                           className="text-sm font-semibold text-amber-400"
                         >
-                          Correct answer: {revealedTranslation}
+                          {t("rpgBattle.correctAnswer", {
+                            answer: revealedTranslation,
+                          })}
                         </motion.p>
                       ) : null}
                     </AnimatePresence>
@@ -597,7 +599,12 @@ export default function RpgBattlePage() {
                 battleLog={<BattleLog entries={battleLog} />}
                 turnIndicator={
                   <div className="text-xs text-slate-400">
-                    Turn: {turn === "player" ? "Player" : "Enemy"}
+                    {t("rpgBattle.turn", {
+                      who:
+                        turn === "player"
+                          ? t("rpgBattle.player")
+                          : t("rpgBattle.enemy"),
+                    })}
                   </div>
                 }
               />

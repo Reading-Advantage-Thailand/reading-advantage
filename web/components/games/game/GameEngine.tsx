@@ -8,6 +8,12 @@ import {
   MAX_CASTLE_HP,
 } from "@/store/useGameStore";
 import { withBasePath } from "@/lib/games/basePath";
+import {
+  CASTLE_CONFIG,
+  GAME_CONSTANTS,
+  SCALING_CONFIG,
+  getInitialSettings,
+} from "@/lib/games/magicDefenseConfig";
 import { useInterval } from "@/hooks/useInterval";
 import { useSound } from "@/hooks/useSound";
 import { nanoid } from "nanoid";
@@ -41,28 +47,10 @@ interface ActiveBolt {
   targetEnemyId: string;
 }
 
-const CASTLE_SHEET = withBasePath("/games/magic-defense/castles_3x2_sheet.png");
-const CASTLE_COLUMNS = 2;
-const CASTLE_ROWS = 3;
-const CASTLE_SHEET_WIDTH = 1536;
-const CASTLE_SHEET_HEIGHT = 1024;
-const CASTLE_SPRITE_WIDTH = 768;
-const CASTLE_SPRITE_HEIGHT = 341;
-const CASTLE_SCALE = 0.25;
-const CASTLE_RENDER_WIDTH = CASTLE_SPRITE_WIDTH * CASTLE_SCALE;
-const CASTLE_RENDER_HEIGHT = CASTLE_SPRITE_HEIGHT * CASTLE_SCALE;
-const CASTLE_BAR_HEIGHT = 8;
-const BACKGROUND_IMAGE = withBasePath("/games/magic-defense/background.png");
-const CASTLE_POSITIONS: Record<CastleId, number> = {
-  left: 20,
-  center: 50,
-  right: 80,
-};
-
 const getCastleSpriteStyle = (column: number, row: number) => ({
-  backgroundImage: `url(${CASTLE_SHEET})`,
-  backgroundSize: `${CASTLE_SHEET_WIDTH}px ${CASTLE_SHEET_HEIGHT}px`,
-  backgroundPosition: `${(column / (CASTLE_COLUMNS - 1)) * 100}% ${(row / (CASTLE_ROWS - 1)) * 100}%`,
+  backgroundImage: `url(${CASTLE_CONFIG.sheet})`,
+  backgroundSize: `${CASTLE_CONFIG.sheetWidth}px ${CASTLE_CONFIG.sheetHeight}px`,
+  backgroundPosition: `${(column / (CASTLE_CONFIG.columns - 1)) * 100}% ${(row / (CASTLE_CONFIG.rows - 1)) * 100}%`,
   backgroundRepeat: "no-repeat",
 });
 
@@ -74,25 +62,25 @@ const getCastleRowForHp = (hp: number) => {
 
 const getNearestAliveCastleId = (
   x: number,
-  castles: Record<CastleId, number>
+  castles: Record<CastleId, number>,
 ): CastleId => {
   const entries = (
-    Object.entries(CASTLE_POSITIONS) as [CastleId, number][]
+    Object.entries(CASTLE_CONFIG.positions) as [CastleId, number][]
   ).filter(([castleId]) => castles[castleId] > 0);
   if (entries.length === 0) return "center";
 
   return entries.reduce((closest, [castleId, position]) => {
-    const closestDistance = Math.abs(x - CASTLE_POSITIONS[closest]);
+    const closestDistance = Math.abs(x - CASTLE_CONFIG.positions[closest]);
     const currentDistance = Math.abs(x - position);
     return currentDistance < closestDistance ? castleId : closest;
   }, entries[0][0]);
 };
 
 const getRandomAliveCastleId = (
-  castles: Record<CastleId, number>
+  castles: Record<CastleId, number>,
 ): CastleId => {
   const aliveCastles = (Object.keys(castles) as CastleId[]).filter(
-    (castleId) => castles[castleId] > 0
+    (castleId) => castles[castleId] > 0,
   );
   if (aliveCastles.length === 0) return "center";
 
@@ -140,7 +128,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
   const [explosions, setExplosions] = useState<ActiveExplosion[]>([]);
   const [bolts, setBolts] = useState<ActiveBolt[]>([]);
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(
-    null
+    null,
   );
 
   // Timer State (60 seconds)
@@ -207,7 +195,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
 
   const [spawnRate, setSpawnRate] = useState(settings.current.spawnRate);
   const [missileDuration, setMissileDuration] = useState(
-    settings.current.duration
+    settings.current.duration,
   );
 
   const accuracy = totalAttempts > 0 ? correctAnswers / totalAttempts : 0;
@@ -220,14 +208,16 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
 
     const randomVocab =
       vocabulary[Math.floor(Math.random() * vocabulary.length)];
-    const startX = Math.random() * 25 + 37.5;
+    const startX =
+      Math.random() * GAME_CONSTANTS.missileSpawnXRange +
+      GAME_CONSTANTS.missileSpawnXOffset;
     const targetCastleId = getNearestAliveCastleId(startX, castles);
     const newMissile: ActiveMissile = {
       ...randomVocab,
       id: nanoid(),
       x: startX,
       targetCastleId,
-      targetX: CASTLE_POSITIONS[targetCastleId],
+      targetX: CASTLE_CONFIG.positions[targetCastleId],
       state: "falling",
     };
 
@@ -238,13 +228,13 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
 
   // Special Ability: Thunder Storm
   const activateSpecialAbility = useCallback(() => {
-    if (mana >= 100) {
+    if (mana >= GAME_CONSTANTS.manaCostSpecial) {
       playSound("success"); // Add a better sound later like "thunder"
-      spendMana(100);
+      spendMana(GAME_CONSTANTS.manaCostSpecial);
 
       // Destroy all falling missiles
       const fallingMissiles = activeMissiles.filter(
-        (m) => m.state === "falling"
+        (m) => m.state === "falling",
       );
 
       if (fallingMissiles.length > 0) {
@@ -260,7 +250,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
         setActiveMissiles((prev) => prev.filter((m) => m.state !== "falling"));
 
         // Find center castle to fire from
-        const casterX = CASTLE_POSITIONS["center"];
+        const casterX = CASTLE_CONFIG.positions["center"];
 
         // Optional: Add visual effect for global attack
       }
@@ -287,8 +277,18 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       if (!target) return;
 
       playSound("missile-hit");
-      setSpawnRate((prev) => Math.min(prev + 200, 3000));
-      setMissileDuration((prev) => Math.min(prev + 0.5, 15));
+      setSpawnRate((prev) =>
+        Math.min(
+          prev + SCALING_CONFIG.spawnRateAdjustment,
+          SCALING_CONFIG.spawnRateLimit,
+        ),
+      );
+      setMissileDuration((prev) =>
+        Math.min(
+          prev + SCALING_CONFIG.durationAdjustment,
+          SCALING_CONFIG.durationLimit,
+        ),
+      );
 
       incrementAttempts();
       resetCombo(); // Reset combo on hit
@@ -311,7 +311,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       castles,
       resetCombo,
       addMissedWord,
-    ]
+    ],
   );
 
   const handleBoltComplete = useCallback(
@@ -331,16 +331,16 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       // Start death animation on hit
       setActiveMissiles((prev) =>
         prev.map((missile) =>
-          missile.id === enemyId ? { ...missile, state: "dying" } : missile
-        )
+          missile.id === enemyId ? { ...missile, state: "dying" } : missile,
+        ),
       );
     },
-    []
+    [],
   );
 
   const handleDeathComplete = useCallback((enemyId: string) => {
     setActiveMissiles((prev) =>
-      prev.filter((missile) => missile.id !== enemyId)
+      prev.filter((missile) => missile.id !== enemyId),
     );
   }, []);
 
@@ -349,7 +349,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       const matchingMissile = activeMissiles.find(
         (m) =>
           m.state === "falling" &&
-          m.translation.toLowerCase() === answer.toLowerCase()
+          m.translation.toLowerCase() === answer.toLowerCase(),
       );
 
       if (matchingMissile) {
@@ -363,12 +363,12 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
           prev.map((missile) =>
             missile.id === matchingMissile.id
               ? { ...missile, state: "targeted" }
-              : missile
-          )
+              : missile,
+          ),
         );
 
         const casterId = getRandomAliveCastleId(castles);
-        const casterX = CASTLE_POSITIONS[casterId];
+        const casterX = CASTLE_CONFIG.positions[casterId];
 
         // Spawn Bolt
         const boltId = nanoid();
@@ -385,10 +385,10 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
 
         if ((combo + 1) % 3 === 0) {
           setSpawnRate((prev) =>
-            Math.max(prev - 200, settings.current.minSpawnRate)
+            Math.max(prev - 200, settings.current.minSpawnRate),
           );
           setMissileDuration((prev) =>
-            Math.max(prev - 0.5, settings.current.minDuration)
+            Math.max(prev - 0.5, settings.current.minDuration),
           );
         }
 
@@ -415,7 +415,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       incrementCombo,
       addMana,
       resetCombo,
-    ]
+    ],
   );
 
   if (status !== "playing") return null;
@@ -425,7 +425,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
       data-testid="game-stage"
       className="relative w-full h-full overflow-hidden bg-slate-900"
       style={{
-        backgroundImage: `url(${BACKGROUND_IMAGE})`,
+        backgroundImage: `url(${GAME_CONSTANTS.backgroundImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
@@ -499,17 +499,17 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
           >
             <div
               style={{
-                width: `${CASTLE_RENDER_WIDTH}px`,
-                height: `${CASTLE_RENDER_HEIGHT}px`,
+                width: `${CASTLE_CONFIG.renderWidth}px`,
+                height: `${CASTLE_CONFIG.renderHeight}px`,
               }}
               aria-hidden="true"
             >
               <div
                 style={{
                   ...getCastleSpriteStyle(0, leftCastleRow),
-                  width: `${CASTLE_SPRITE_WIDTH}px`,
-                  height: `${CASTLE_SPRITE_HEIGHT}px`,
-                  transform: `scale(${CASTLE_SCALE})`,
+                  width: `${CASTLE_CONFIG.spriteWidth}px`,
+                  height: `${CASTLE_CONFIG.spriteHeight}px`,
+                  transform: `scale(${CASTLE_CONFIG.scale})`,
                   transformOrigin: "top left",
                 }}
                 aria-hidden="true"
@@ -518,8 +518,8 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
             <div
               className="bg-slate-800 rounded-full mt-2 overflow-hidden border border-slate-700"
               style={{
-                width: `${CASTLE_RENDER_WIDTH}px`,
-                height: `${CASTLE_BAR_HEIGHT}px`,
+                width: `${CASTLE_CONFIG.renderWidth}px`,
+                height: `${CASTLE_CONFIG.barHeight}px`,
               }}
             >
               <motion.div
@@ -538,17 +538,17 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
           >
             <div
               style={{
-                width: `${CASTLE_RENDER_WIDTH}px`,
-                height: `${CASTLE_RENDER_HEIGHT}px`,
+                width: `${CASTLE_CONFIG.renderWidth}px`,
+                height: `${CASTLE_CONFIG.renderHeight}px`,
               }}
               aria-hidden="true"
             >
               <div
                 style={{
                   ...getCastleSpriteStyle(1, centerCastleRow),
-                  width: `${CASTLE_SPRITE_WIDTH}px`,
-                  height: `${CASTLE_SPRITE_HEIGHT}px`,
-                  transform: `scale(${CASTLE_SCALE})`,
+                  width: `${CASTLE_CONFIG.spriteWidth}px`,
+                  height: `${CASTLE_CONFIG.spriteHeight}px`,
+                  transform: `scale(${CASTLE_CONFIG.scale})`,
                   transformOrigin: "top left",
                 }}
                 aria-hidden="true"
@@ -557,8 +557,8 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
             <div
               className="bg-slate-800 rounded-full mt-2 overflow-hidden border border-slate-700"
               style={{
-                width: `${CASTLE_RENDER_WIDTH}px`,
-                height: `${CASTLE_BAR_HEIGHT}px`,
+                width: `${CASTLE_CONFIG.renderWidth}px`,
+                height: `${CASTLE_CONFIG.barHeight}px`,
               }}
             >
               <motion.div
@@ -577,17 +577,17 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
           >
             <div
               style={{
-                width: `${CASTLE_RENDER_WIDTH}px`,
-                height: `${CASTLE_RENDER_HEIGHT}px`,
+                width: `${CASTLE_CONFIG.renderWidth}px`,
+                height: `${CASTLE_CONFIG.renderHeight}px`,
               }}
               aria-hidden="true"
             >
               <div
                 style={{
                   ...getCastleSpriteStyle(0, rightCastleRow),
-                  width: `${CASTLE_SPRITE_WIDTH}px`,
-                  height: `${CASTLE_SPRITE_HEIGHT}px`,
-                  transform: `scale(${CASTLE_SCALE})`,
+                  width: `${CASTLE_CONFIG.spriteWidth}px`,
+                  height: `${CASTLE_CONFIG.spriteHeight}px`,
+                  transform: `scale(${CASTLE_CONFIG.scale})`,
                   transformOrigin: "top left",
                 }}
                 aria-hidden="true"
@@ -596,8 +596,8 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
             <div
               className="bg-slate-800 rounded-full mt-2 overflow-hidden border border-slate-700"
               style={{
-                width: `${CASTLE_RENDER_WIDTH}px`,
-                height: `${CASTLE_BAR_HEIGHT}px`,
+                width: `${CASTLE_CONFIG.renderWidth}px`,
+                height: `${CASTLE_CONFIG.barHeight}px`,
               }}
             >
               <motion.div
