@@ -4,9 +4,10 @@ import { indexPageConfig } from "@/configs/index-page-config";
 export default async function StudentHomeLayout({
   children,
 }: BaseAppLayoutProps) {
+  // Disable sidebar for Role Selection to avoid premature widget rendering
   return (
     <AppLayout
-      disableSidebar={false}
+      disableSidebar={true}
       disableProgressBar={true}
       mainNavConfig={indexPageConfig.mainNav}
     >

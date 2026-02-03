@@ -60,7 +60,7 @@ export const authOptions: NextAuthOptions = {
             if (PasswordUtils.isHashed(user.password)) {
               isValidPassword = await PasswordUtils.comparePassword(
                 credentials.password,
-                user.password
+                user.password,
               );
             } else {
               isValidPassword = user.password === credentials.password;
@@ -72,14 +72,16 @@ export const authOptions: NextAuthOptions = {
           }
 
           const currentDate = new Date();
-          
+
           // Get active license info
-          const activeLicenseId = user.licenseOnUsers[0]?.licenseId || user.licenseId;
+          const activeLicenseId =
+            user.licenseOnUsers[0]?.licenseId || user.licenseId;
           const activeLicense = user.licenseOnUsers[0]?.license;
-          
+
           // Use license expiration date if available, otherwise use user expiration date
-          const effectiveExpirationDate = activeLicense?.expiresAt || user.expiredDate;
-          
+          const effectiveExpirationDate =
+            activeLicense?.expiresAt || user.expiredDate;
+
           const isExpired = effectiveExpirationDate
             ? effectiveExpirationDate < currentDate
             : false;
@@ -96,8 +98,12 @@ export const authOptions: NextAuthOptions = {
             licenseLevel = "EXPIRED" as const;
           }
 
-          const teacherClassIds = user.teacherClassrooms.map((tc) => tc.classroomId);
-          const studentClassIds = user.studentClassrooms.map((sc) => sc.classroomId);
+          const teacherClassIds = user.teacherClassrooms.map(
+            (tc) => tc.classroomId,
+          );
+          const studentClassIds = user.studentClassrooms.map(
+            (sc) => sc.classroomId,
+          );
 
           const returnUser = {
             id: user.id,
@@ -115,8 +121,10 @@ export const authOptions: NextAuthOptions = {
             onborda: user.onborda ?? false,
             license_level: licenseLevel,
             school_id: user.schoolId ?? undefined,
-            teacher_class_ids: teacherClassIds.length > 0 ? teacherClassIds : undefined,
-            student_class_ids: studentClassIds.length > 0 ? studentClassIds : undefined,
+            teacher_class_ids:
+              teacherClassIds.length > 0 ? teacherClassIds : undefined,
+            student_class_ids:
+              studentClassIds.length > 0 ? studentClassIds : undefined,
           };
 
           return returnUser;
@@ -180,12 +188,16 @@ export const authOptions: NextAuthOptions = {
               level: true,
               xp: true,
               cefrLevel: true,
+              // FIX: Fetch latest role from DB to ensure session sync works
+              role: true,
             },
           });
           if (dbUser) {
             token.level = dbUser.level;
             token.xp = dbUser.xp;
             token.cefr_level = dbUser.cefrLevel ?? "";
+            // FIX: Update token role from DB
+            token.role = dbUser.role;
           }
         } catch (error) {
           console.error("Error refreshing user level from database:", error);

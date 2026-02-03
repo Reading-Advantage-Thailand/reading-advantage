@@ -12,11 +12,12 @@ import { Viewport } from "next";
 import { NextAuthSessionProvider } from "@/components/providers/nextauth-session-provider";
 import { getCurrentUser } from "@/lib/session";
 import { LocaleProvider } from "@/components/providers/locale-provider";
-import { Onborda, OnbordaProvider } from "onborda";
-import { steps } from "@/lib/steps";
-import CustomCard from "@/components/tour/CustomCard";
+// Onborda disabled to prevent crash
+// import { Onborda, OnbordaProvider } from "onborda";
+// import { steps } from "@/lib/steps";
+// import CustomCard from "@/components/tour/CustomCard";
+// import AuthRedirectHandler from "@/components/auth-redirect-handler";
 import { ThemeWrapper } from "@/components/theme-warpper";
-import AuthRedirectHandler from "@/components/auth-redirect-handler";
 
 const cabinSketch = localFont({
   src: "../../assets/fonts/CabinSketch-Regular.ttf",
@@ -88,7 +89,7 @@ export default async function RootLayout({
           "min-h-screen bg-background font-sans antialiased",
           cabinSketch.variable,
           fontSans.variable,
-          cabinSketchBold.variable
+          cabinSketchBold.variable,
         )}
       >
         <ThemeProvider
@@ -99,17 +100,7 @@ export default async function RootLayout({
         >
           <NextAuthSessionProvider session={user}>
             <LocaleProvider locale={locale}>
-              <OnbordaProvider>
-                <Onborda
-                  steps={steps}
-                  cardComponent={CustomCard}
-                  shadowOpacity="0.8"
-                >
-                  <AuthRedirectHandler>
-                    <ThemeWrapper>{children}</ThemeWrapper>
-                  </AuthRedirectHandler>
-                </Onborda>
-              </OnbordaProvider>
+              <ThemeWrapper>{children}</ThemeWrapper>
             </LocaleProvider>
           </NextAuthSessionProvider>
           <Toaster />

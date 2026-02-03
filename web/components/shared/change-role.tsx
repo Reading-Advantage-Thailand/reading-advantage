@@ -11,15 +11,23 @@ import {
 } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { Role } from "@prisma/client";
 import { UserCircle, GraduationCap, School, Ghost } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
+// Define Role locally to avoid importing @prisma/client in client component
+enum Role {
+  USER = "USER",
+  STUDENT = "STUDENT",
+  TEACHER = "TEACHER",
+  ADMIN = "ADMIN",
+  SYSTEM = "SYSTEM",
+}
+
 type Props = {
   userId: string;
-  userRole: Role;
+  userRole: string; // Changed from Role to string for broader compatibility
   className?: string;
 };
 
@@ -64,11 +72,11 @@ export default function ChangeRole({ userId, userRole, className }: Props) {
         icon: <Ghost size={32} />,
         value: Role.SYSTEM,
         color: "red",
-      }
+      },
     );
   }
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<Role>(userRole);
+  const [selectedRole, setSelectedRole] = useState<string>(userRole);
   const { update } = useSession();
   const router = useRouter();
 
@@ -137,7 +145,7 @@ export default function ChangeRole({ userId, userRole, className }: Props) {
           <RoleSelectionItem
             onClick={() =>
               setSelectedRole((prevRole) =>
-                prevRole === role.value ? userRole : role.value
+                prevRole === role.value ? userRole : role.value,
               )
             }
             key={index}
@@ -189,7 +197,7 @@ const RoleSelectionItem = ({
       onClick={onClick}
       className={cn(
         `relative overflow-hidden rounded-lg border shadow-2x hover:shadow-3x cursor-pointer hover:dark:bg-${color}-900`,
-        isSelected && `dark:bg-${color}-900 hover:dark:bg-${color}-800`
+        isSelected && `dark:bg-${color}-900 hover:dark:bg-${color}-800`,
       )}
     >
       <div className="flex flex-col justify-between rounded-md p-3">
