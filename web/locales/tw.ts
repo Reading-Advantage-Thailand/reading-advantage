@@ -697,6 +697,10 @@ export default {
           noRankings: "No rankings yet for this enemy.",
           noVocabulary: "No vocabulary loaded yet.",
           loadingRankings: "Loading rankings...",
+          correctAnswer: "正確答案: {answer}",
+          turn: "回合: {who}",
+          player: "玩家",
+          enemy: "敵人",
         },
 
         // Wizard vs Zombie specific

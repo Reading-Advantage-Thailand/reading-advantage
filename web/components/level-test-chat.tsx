@@ -26,6 +26,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
+import { useSession } from "next-auth/react";
 
 type Props = {
   userId: string;
@@ -95,6 +96,7 @@ export default function LevelTestChat({ userId }: Props) {
   const t = useScopedI18n("components.levelTestChat");
   const router = useRouter();
   const currentLocale = useCurrentLocale();
+  const { update } = useSession();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -443,6 +445,7 @@ export default function LevelTestChat({ userId }: Props) {
           title: t("toast.errorTitle"),
           description: t("toast.errorDescription"),
           variant: "destructive",
+          className: "bg-red-500",
         });
         return false;
       }
@@ -473,6 +476,8 @@ export default function LevelTestChat({ userId }: Props) {
         title: t("toast.successUpdate"),
         description: t("toast.successUpdateDescription"),
       });
+      // Force session refresh before navigation to ensure middleware sees new level
+      await update();
       router.push("/student/read");
       router.refresh();
       return;
@@ -485,6 +490,8 @@ export default function LevelTestChat({ userId }: Props) {
           title: t("toast.successUpdate"),
           description: t("toast.successUpdateDescription"),
         });
+        // Force session refresh before navigation to ensure middleware sees new level
+        await update();
         router.push("/student/read");
         router.refresh();
       }
@@ -520,39 +527,6 @@ export default function LevelTestChat({ userId }: Props) {
               </p>
             </div>
 
-            {/*<div className="space-y-3">
-              <div>
-                <h4 className="font-semibold text-green-600 mb-1">
-                  {t("strengths")}
-                </h4>
-                <ul className="list-disc list-inside text-sm space-y-1">
-                  {assessment.strengths?.map((strength, index) => (
-                    <li key={index}>{strength}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-orange-600 mb-1">
-                  {t("improvements")}
-                </h4>
-                <ul className="list-disc list-inside text-sm space-y-1">
-                  {assessment.improvements?.map((improvement, index) => (
-                    <li key={index}>{improvement}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {assessment.nextSteps && (
-                <div>
-                  <h4 className="font-semibold text-blue-600 mb-1">
-                    {t("nextSteps")}
-                  </h4>
-                  <p className="text-sm">{assessment.nextSteps}</p>
-                </div>
-              )}
-            </div>*/}
-
             <Button
               size="lg"
               className="w-full mt-4"
@@ -565,7 +539,7 @@ export default function LevelTestChat({ userId }: Props) {
                   {t("saving")}
                 </>
               ) : isSaved ? (
-                t("getStartedButton") // Or "Continue" if you want to change the text
+                t("getStartedButton")
               ) : (
                 "Retry Save & Continue"
               )}
