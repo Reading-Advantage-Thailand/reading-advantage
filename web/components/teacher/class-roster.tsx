@@ -54,6 +54,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useClassroomActions } from "@/hooks/teacher/useClassroomActions";
 
 type StudentData = {
   id: string;
@@ -97,11 +98,8 @@ export default function ClassRoster() {
   const tr = useScopedI18n("components.classRoster");
   const ts = useScopedI18n("components.myStudent");
   const router = useRouter();
-  const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
-  const [isResetting, setIsResetting] = useState<boolean>(false);
   const { classrooms, fetchClassrooms } = useClassroomStore();
-  const [loading, setLoading] = useState<boolean>(false);
   const pathname = usePathname();
   const [classroomId, setClassroomId] = useState<string>("");
   const {
@@ -112,178 +110,117 @@ export default function ClassRoster() {
     setSelectedClassroom,
     setStudentInClass,
   } = useClassroomState();
+  const {
+    fetchStudentInClass,
+    handleClassChange,
+    syncStudents,
+    handleResetProgress,
+    setIsResetModalOpen,
+    loading,
+    isResetting,
+    isResetModalOpen,
+  } = useClassroomActions();
 
-  const handleResetProgress = async (selectedStudentId: string) => {
-    setIsResetting(true);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/${selectedStudentId}/reset-all-progress`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          cache: "no-cache",
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast({
-          title: "Fail.",
-          description: errorData.message || `XP reset failed.`,
-        });
-        return;
-      }
-
-      toast({
-        title: "Success.",
-        description: `Student progress reset successfully.`,
-      });
-
-      if (typeof window !== "undefined") {
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (
-            key &&
-            (key.includes("mcq") ||
-              key.includes("question") ||
-              key.includes(selectedStudentId))
-          ) {
-            keysToRemove.push(key);
-          }
-        }
-        keysToRemove.forEach((key) => localStorage.removeItem(key));
-
-        const sessionKeysToRemove = [];
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const key = sessionStorage.key(i);
-          if (
-            key &&
-            (key.includes("mcq") ||
-              key.includes("question") ||
-              key.includes(selectedStudentId))
-          ) {
-            sessionKeysToRemove.push(key);
-          }
-        }
-        sessionKeysToRemove.forEach((key) => sessionStorage.removeItem(key));
-      }
-
-      if (selectedClassroom) {
-        await fetchStudentInClass(selectedClassroom);
-      }
-
-      window.location.reload();
-    } catch (error) {
-      console.error("Error resetting progress:", error);
-      toast({
-        title: "Fail.",
-        description: `Failed to reset student progress.`,
-      });
-    } finally {
-      setIsResetting(false);
-      setIsResetModalOpen(false);
-    }
-  };
-
-  const columns: ColumnDef<StudentData>[] = [
-    {
-      accessorKey: "display_name",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            {tr("name")}
-            <CaretSortIcon className="ml-2 h-4 w-4" />
-          </Button>
-        );
+  const columns: ColumnDef<StudentData>[] = React.useMemo(
+    () => [
+      {
+        accessorKey: "display_name",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            >
+              {tr("name")}
+              <CaretSortIcon className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => (
+          <div className="captoliza ml-4">{row.getValue("display_name")}</div>
+        ),
       },
-      cell: ({ row }) => (
-        <div className="captoliza ml-4">{row.getValue("display_name")}</div>
-      ),
-    },
-    {
-      accessorKey: "last_activity",
-      header: () => {
-        return <div className="text-center">{tr("lastActivity")}</div>;
+      {
+        accessorKey: "last_activity",
+        header: () => {
+          return <div className="text-center">{tr("lastActivity")}</div>;
+        },
+        cell: ({ row }) => {
+          return (
+            <div className="captoliza text-center">
+              {row.getValue("last_activity")
+                ? new Date(row.getValue("last_activity")).toLocaleString()
+                : "No Activity"}
+            </div>
+          );
+        },
       },
-      cell: ({ row }) => {
-        return (
-          <div className="captoliza text-center">
-            {row.getValue("last_activity")
-              ? new Date(row.getValue("last_activity")).toLocaleString()
-              : "No Activity"}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "action",
-      header: () => {
-        return <div className="text-center">{tr("actions")}</div>;
-      },
-      cell: ({ row }) => {
-        const payment = row.original;
-        return (
-          <div className="text-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="default" className="ml-auto">
-                  {tr("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem
-                  onClick={() =>
-                    router.push(
-                      `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/student-progress/${payment.id}`
-                    )
-                  }
-                >
-                  {ts("progress")}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    router.push(
-                      `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/enroll-classes/${payment.id}`
-                    )
-                  }
-                >
-                  {ts("enroll")}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setIsResetModalOpen(true);
-                    setSelectedStudentId(payment.id);
-                  }}
-                >
-                  {ts("resetProgress")}
-                </DropdownMenuItem>
-                {classrooms && (
+      {
+        accessorKey: "action",
+        header: () => {
+          return <div className="text-center">{tr("actions")}</div>;
+        },
+        cell: ({ row }) => {
+          const payment = row.original;
+          return (
+            <div className="text-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="default" className="ml-auto">
+                    {tr("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
                   <DropdownMenuItem
                     onClick={() =>
                       router.push(
-                        `${process.env.NEXT_PUBLIC_BASE_URL}//teacher/class-roster/${classrooms[0]?.id}/history/${payment.id}`
+                        `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/student-progress/${payment.id}`
                       )
                     }
                   >
-                    {tr("history")}
+                    {ts("progress")}
                   </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        );
+                  <DropdownMenuItem
+                    onClick={() =>
+                      router.push(
+                        `${process.env.NEXT_PUBLIC_BASE_URL}/teacher/enroll-classes/${payment.id}`
+                      )
+                    }
+                  >
+                    {ts("enroll")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setIsResetModalOpen(true);
+                      setSelectedStudentId(payment.id);
+                    }}
+                  >
+                    {ts("resetProgress")}
+                  </DropdownMenuItem>
+                  {classrooms && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        router.push(
+                          `${process.env.NEXT_PUBLIC_BASE_URL}//teacher/class-roster/${classrooms[0]?.id}/history/${payment.id}`
+                        )
+                      }
+                    >
+                      {tr("history")}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          );
+        },
       },
-    },
-  ];
+    ],
+    [tr, ts]
+  );
+  const data = React.useMemo(() => studentInClass || [], [studentInClass]);
 
   const table = useReactTable({
-    data: studentInClass || [],
+    data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -300,41 +237,6 @@ export default function ClassRoster() {
       rowSelection,
     },
   });
-
-  const syncStudents = async (courseId: string) => {
-    setLoading(true);
-
-    try {
-      const lastUrl = window.location.pathname;
-      const response = await fetch(
-        `/api/v1/classroom/oauth2/classroom/courses/${courseId}?redirect=${encodeURIComponent(
-          lastUrl
-        )}`,
-        {
-          method: "GET",
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok && !data.authUrl) {
-        toast({
-          title: "Success",
-          description: "Students synced successfully",
-        });
-      } else if (response.status === 401) {
-        toast({
-          title: "Error",
-          description: "No student in class",
-        });
-      } else {
-        window.location.href = data.authUrl;
-      }
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-    }
-    setLoading(false);
-  };
 
   useEffect(() => {
     if (classrooms.length) {
@@ -362,39 +264,10 @@ export default function ClassRoster() {
     }
   }, []);
 
-  const fetchStudentInClass = async (classId: string) => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${classId}`,
-        {
-          method: "GET",
-        }
-      );
-      if (!res.ok) throw new Error("Failed to fetch Classroom list");
-
-      const data = await res.json();
-      setStudentInClass(data.studentInClass);
-      setClasses(data.classroom);
-    } catch (error) {
-      console.error("Error fetching Classroom list:", error);
-    }
-  };
-
-  const handleClassChange = async (value: string) => {
-    try {
-      setSelectedClassroom(value);
-
-      await fetchStudentInClass(value);
-      router.push(`/teacher/class-roster/${value}`);
-    } catch (error) {
-      console.error("Error fetching Classroom list:", error);
-    }
-  };
-
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <Header heading="Class Roster" />
+        {/* <Header heading="Class Roster" /> */}
         <Select value={selectedClassroom} onValueChange={handleClassChange}>
           <SelectTrigger className="mt-4 h-auto w-[180px]">
             <SelectValue placeholder="Select a Classroom" />
@@ -429,8 +302,8 @@ export default function ClassRoster() {
         {selectedClassroom &&
           classroomId &&
           (classes &&
-          Object.keys(classes).length > 0 &&
-          !classes.importedFromGoogle ? (
+            Object.keys(classes).length > 0 &&
+            !classes.importedFromGoogle ? (
             <Button
               variant="outline"
               onClick={() => {
@@ -509,9 +382,9 @@ export default function ClassRoster() {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
