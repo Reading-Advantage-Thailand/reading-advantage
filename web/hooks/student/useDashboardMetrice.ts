@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { VelocityMetrics } from "@/server/services/metrics/velocity-service";
 import { GenreMetricsResponse } from "@/server/services/metrics/genre-engagement-service";
+import { toast } from "@/components/ui/use-toast";
 
 interface DashboardData {
     velocity: VelocityMetrics | null;
@@ -88,6 +89,10 @@ export function useDashboardMetrice(userId: string) {
             }
         } catch (e: any) {
             setError(e instanceof Error ? e : new Error(String(e)));
+            toast({
+                title: "Fail.",
+                description: `Failed to load dashboard data: ${e instanceof Error ? e.message : String(e)}`,
+            });
         } finally {
             setLoading(false);
         }
