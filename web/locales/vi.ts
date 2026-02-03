@@ -734,6 +734,10 @@ export default {
           noRankings: "No rankings yet for this enemy.",
           noVocabulary: "No vocabulary loaded yet.",
           loadingRankings: "Loading rankings...",
+          correctAnswer: "Câu trả lời đúng: {answer}",
+          turn: "Lượt: {who}",
+          player: "Người chơi",
+          enemy: "Kẻ thù",
         },
 
         // Wizard vs Zombie specific

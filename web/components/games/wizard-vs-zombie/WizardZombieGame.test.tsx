@@ -74,7 +74,13 @@ const vocabulary: VocabularyItem[] = [
 
 describe("WizardZombieGame", () => {
   const startGame = async () => {
-    render(<WizardZombieGame vocabulary={vocabulary} onComplete={jest.fn()} />);
+    render(
+      <WizardZombieGame
+        vocabulary={vocabulary}
+        onComplete={jest.fn()}
+        difficulty="normal"
+      />,
+    );
     // Wait for assets to "load"
     const startButton = await screen.findByRole("button", {
       name: /start survival/i,
@@ -83,10 +89,16 @@ describe("WizardZombieGame", () => {
   };
 
   it("renders the briefing screen initially", async () => {
-    render(<WizardZombieGame vocabulary={vocabulary} onComplete={jest.fn()} />);
+    render(
+      <WizardZombieGame
+        vocabulary={vocabulary}
+        onComplete={jest.fn()}
+        difficulty="normal"
+      />,
+    );
     expect(await screen.findByText(/Arcane Survival/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /start survival/i })
+      screen.getByRole("button", { name: /start survival/i }),
     ).toBeInTheDocument();
   });
 
