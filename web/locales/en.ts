@@ -743,6 +743,10 @@ export default {
           noRankings: "No rankings yet for this enemy.",
           noVocabulary: "No vocabulary loaded yet.",
           loadingRankings: "Loading rankings...",
+          correctAnswer: "Correct answer: {answer}",
+          turn: "Turn: {who}",
+          player: "Player",
+          enemy: "Enemy",
         },
 
         // Wizard vs Zombie specific

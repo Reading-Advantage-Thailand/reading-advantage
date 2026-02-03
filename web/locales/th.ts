@@ -725,6 +725,10 @@ export default {
           noRankings: "ยังไม่มีอันดับสำหรับศัตรูนี้",
           noVocabulary: "ยังไม่มีคำศัพท์",
           loadingRankings: "กำลังโหลดอันดับ...",
+          correctAnswer: "คำตอบที่ถูก: {answer}",
+          turn: "ตาของ: {who}",
+          player: "ผู้เล่น",
+          enemy: "ศัตรู",
         },
 
         // Wizard vs Zombie specific

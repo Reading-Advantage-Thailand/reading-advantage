@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Target, Zap, AlertCircle } from "lucide-react";
@@ -23,6 +23,13 @@ export function ResultsScreen({
   onShowRanking,
 }: ResultsScreenProps) {
   const t = useScopedI18n("pages.student.gamesPage");
+
+  const uniqueMissedWords = useMemo(() => {
+    return Array.from(new Set(missedWords.map((w) => JSON.stringify(w)))).map(
+      (s) => JSON.parse(s),
+    ) as VocabularyItem[];
+  }, [missedWords]);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
       <Card className="w-full max-w-2xl bg-gradient-to-b from-background to-muted/50 border-2 shadow-2xl">
@@ -67,43 +74,17 @@ export function ResultsScreen({
                 {t("common.wordsToReview")}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-                {Array.from(new Set(missedWords.map((w) => JSON.stringify(w))))
-                  .map((s) => JSON.parse(s))
-                  .map((word: VocabularyItem, i: number) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-2 rounded-lg bg-red-500/10 border border-red-500/20"
-                    >
-                      <span className="font-bold text-sm">{word.term}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {word.translation}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {missedWords.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                <AlertCircle className="w-4 h-4" />
-                Words to Review
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-                {Array.from(new Set(missedWords.map((w) => JSON.stringify(w))))
-                  .map((s) => JSON.parse(s))
-                  .map((word: VocabularyItem, i: number) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-2 rounded-lg bg-red-500/10 border border-red-500/20"
-                    >
-                      <span className="font-bold text-sm">{word.term}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {word.translation}
-                      </span>
-                    </div>
-                  ))}
+                {uniqueMissedWords.map((word: VocabularyItem, i: number) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-2 rounded-lg bg-red-500/10 border border-red-500/20"
+                  >
+                    <span className="font-bold text-sm">{word.term}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {word.translation}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
