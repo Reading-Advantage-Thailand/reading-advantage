@@ -23,6 +23,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
+import SearchFilterDashboard from "@/components/student/search-filter-dashboard";
+import AssignmentTableDashboard from "@/components/student/assignment-table-dashboard";
 import { Header } from "./header";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -704,142 +706,30 @@ export default function StudentAssignmentTable({ userId }: AssignmentProps) {
   return (
     <div className="flex flex-col gap-4 py-4">
       <Header heading={t("assignments")} />
-      <div className="flex sm:justify-between sm:items-end items-center flex-col sm:flex-row gap-4">
-        <Input
-          placeholder={t("searchAssignments")}
-          value={searchQuery}
-          onChange={(event) => handleSearchChange(event.target.value)}
-          className="max-w-sm"
-        />
-        <div className="flex items-center gap-2 flex-wrap">
-          <select
-            className="px-3 py-1 border rounded-md text-sm min-w-[120px]"
-            value={statusFilter}
-            onChange={(event) => {
-              handleStatusFilterChange(event.target.value);
-            }}
-          >
-            <option value="all">{t("allStatus")}</option>
-            <option value="0">{t("notFinished")}</option>
-            <option value="1">{t("inProgress")}</option>
-            <option value="2">{t("done")}</option>
-          </select>
-          <select
-            className="px-3 py-1 border rounded-md text-sm min-w-[120px]"
-            value={dueDateFilter}
-            onChange={(event) => {
-              handleDueDateFilterChange(event.target.value);
-            }}
-          >
-            <option value="all">{t("allDueDates")}</option>
-            <option value="overdue">{t("overdue")}</option>
-            <option value="today">{t("dueToday")}</option>
-            <option value="upcoming">{t("upcomming")}</option>
-          </select>
-        </div>
-      </div>
+      <SearchFilterDashboard
+        t={t}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+        statusFilter={statusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
+        dueDateFilter={dueDateFilter}
+        onDueDateFilterChange={handleDueDateFilterChange}
+      />
       {searchQuery !== debouncedSearchQuery && (
         <div className="text-sm text-muted-foreground">Searching...</div>
       )}
-      <div className="rounded-md border overflow-x-auto">
-        <Table className="min-w-full">
-          <TableHeader className="font-bold">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className="px-2 py-3 text-xs sm:text-sm"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  onClick={() => handleRowClick(row.original)}
-                  className={isMobile ? "cursor-pointer hover:bg-muted/50" : ""}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className="px-2 py-3 text-xs sm:text-sm"
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-xs sm:text-sm"
-                >
-                  {loading ? "Loading assignments..." : "No assignments found"}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="flex items-center justify-between flex-col sm:flex-row gap-4">
-        <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
-          Showing{" "}
-          {Math.min(
-            (pagination.currentPage - 1) * pagination.limit + 1,
-            pagination.totalCount
-          )}{" "}
-          to{" "}
-          {Math.min(
-            pagination.currentPage * pagination.limit,
-            pagination.totalCount
-          )}{" "}
-          of {pagination.totalCount} assignments
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrevPage}
-            disabled={!pagination.hasPrevPage || loading}
-            className="text-xs sm:text-sm"
-          >
-            {t("previous")}
-          </Button>
-          <div className="flex items-center gap-1">
-            <span className="text-xs sm:text-sm whitespace-nowrap">
-              Page {pagination.currentPage} of {pagination.totalPages}
-            </span>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextPage}
-            disabled={!pagination.hasNextPage || loading}
-            className="text-xs sm:text-sm"
-          >
-            {t("next")}
-          </Button>
-        </div>
-      </div>
+      <AssignmentTableDashboard
+        table={table}
+        flexRender={flexRender}
+        columnsLength={columns.length}
+        loading={loading}
+        isMobile={isMobile}
+        handleRowClick={handleRowClick}
+        pagination={pagination}
+        onPrevPage={handlePrevPage}
+        onNextPage={handleNextPage}
+        t={t}
+      />
 
       <AssignmentDetailDialog />
     </div>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { StoryChapter } from "./models/article-model";
 import { cn, splitTextIntoSentences } from "@/lib/utils";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
@@ -37,6 +37,7 @@ import {
   TrackNextIcon,
   TrackPreviousIcon,
 } from "@radix-ui/react-icons";
+import useAudio from "@/hooks/stories-chapter/useAudio";
 
 type Sentence = {
   sentence: string;
@@ -86,117 +87,57 @@ export default function ChapterContent({
   const [translate, setTranslate] = useState<string[]>([]);
   const [isTranslate, setIsTranslate] = useState(false);
   const [isTranslateOpen, setIsTranslateOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const sentences = splitTextIntoSentences(story.chapter.passage, true);
   const router = useRouter();
   const chapter = Number(chapterNumber);
   const [isTranslateClicked, setIsTranslateClicked] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
-  const [speed, setSpeed] = useState<string>("1");
-  const [currentTime, setCurrentTime] = useState(0);
-  const [togglePlayer, setTogglePlayer] = useState<Boolean>(false);
-  const [selectedSentence, setSelectedSentence] = React.useState<Number>(-1);
-
-  const sentenceList: Sentence[] = story.timepoints.map((timepoint, index) => {
-    const startTime = timepoint.timeSeconds;
-    const endTime =
-      index === story.timepoints.length - 1
-        ? timepoint.timeSeconds + 10
-        : story.timepoints[index + 1].timeSeconds - 0.3;
-    const sentence =
-      sentences.length <= story.timepoints.length
-        ? story.timepoints[index].sentences
-        : sentences[index];
-    return {
-      sentence: sentence ?? sentences[index],
-      index: timepoint.index,
-      startTime,
-      endTime,
-      audioUrl: timepoint.file
-        ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}`
-        : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${story.storyId}-${chapterNumber}.mp3`,
-    };
-  });
-
-  const handlePlayPause = async () => {
-    if (audioRef.current) {
-      try {
-        if (isPlaying) {
-          audioRef.current.pause();
-        } else {
-          await audioRef.current.play();
-        }
-        setIsPlaying(!isPlaying);
-      } catch (error) {
-        console.error("Error playing/pausing audio:", error);
-        setIsPlaying(false);
-      }
-    }
-  };
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-      const currentSentence = sentenceList[currentAudioIndex];
-      if (audioRef.current.currentTime >= currentSentence.endTime) {
-        handleAudioEnded();
-      }
-    }
-  };
-
-  const handleSentenceClick = (startTime: number, audioIndex: number) => {
-    if (audioRef.current && togglePlayer) {
-      audioRef.current.pause();
-      setCurrentAudioIndex(audioIndex);
-      setSelectedIndex(audioIndex);
-      setSelectedSentence(audioIndex);
-      audioRef.current.src = sentenceList[audioIndex].audioUrl;
-      audioRef.current.currentTime = startTime;
-      const playAudio = () => {
-        audioRef.current!.play().catch((error) => {
-          console.error("Error playing audio: ", error);
-        });
-        audioRef.current!.removeEventListener("canplaythrough", playAudio);
+  const sentenceList = useMemo<Sentence[]>(() => {
+    return story.timepoints.map((timepoint, index) => {
+      const startTime = timepoint.timeSeconds;
+      const endTime =
+        index === story.timepoints.length - 1
+          ? timepoint.timeSeconds + 10
+          : story.timepoints[index + 1].timeSeconds - 0.3;
+      const sentence =
+        sentences.length <= story.timepoints.length
+          ? story.timepoints[index].sentences
+          : sentences[index];
+      return {
+        sentence: sentence ?? sentences[index],
+        index: timepoint.index,
+        startTime,
+        endTime,
+        audioUrl: timepoint.file
+          ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}`
+          : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${story.storyId}-${chapterNumber}.mp3`,
       };
-      audioRef.current.addEventListener("canplaythrough", playAudio);
-      audioRef.current.load();
-      if (!isPlaying) {
-        setIsPlaying(true);
-      }
-    }
-  };
-
-  const handleAudioEnded = () => {
-    if (currentAudioIndex < sentenceList.length - 1) {
-      const nextAudioIndex = currentAudioIndex + 1;
-      setCurrentAudioIndex(nextAudioIndex);
-      if (audioRef.current) {
-        audioRef.current.src = sentenceList[nextAudioIndex].audioUrl;
-        audioRef.current.load();
-        const playAudio = () => {
-          audioRef.current!.currentTime =
-            sentenceList[nextAudioIndex].startTime;
-          audioRef.current!.play().catch((error) => {
-            console.error("Error playing audio: ", error);
-          });
-          audioRef.current!.removeEventListener("canplaythrough", playAudio);
-        };
-        audioRef.current.addEventListener("canplaythrough", playAudio);
-      }
-    } else {
-      setIsPlaying(false);
-      setCurrentAudioIndex(0);
-    }
-  };
+    });
+  }, [story.timepoints, story.storyId, chapterNumber, sentences]);
+  const {
+    audioRef,
+    currentAudioIndex,
+    togglePlayer,
+    isPlaying,
+    selectedIndex,
+    selectedSentence,
+    setSelectedIndex,
+    setSelectedSentence,
+    handleAudioEnded,
+    handleNextTrack,
+    handlePlayPause,
+    handlePreviousTrack,
+    handleSentenceClick,
+    handleSpeedTime,
+    handleTimeUpdate,
+    handleTogglePlayer,
+  } = useAudio(sentenceList);
 
   const getHighlightedClass = (index: number) =>
     cn(
       "cursor-pointer text-muted-foreground hover:bg-blue-200 hover:dark:bg-blue-900 hover:text-primary rounded-md",
       currentAudioIndex === index &&
-        isPlaying &&
-        "bg-red-200 dark:bg-red-900 text-primary"
+      isPlaying &&
+      "bg-red-200 dark:bg-red-900 text-primary"
     );
 
   const renderSentence = (sentence: string, i: number) => {
@@ -207,18 +148,6 @@ export default function ChapterContent({
         {index !== array.length - 1 && <div className="mt-3" />}
       </span>
     ));
-  };
-
-  const handleTogglePlayer = () => {
-    if (togglePlayer) {
-      setTogglePlayer(false);
-      audioRef.current?.load();
-      setIsPlaying(false);
-      setCurrentAudioIndex(0);
-      setSpeed("1");
-    } else {
-      setTogglePlayer(true);
-    }
   };
 
   const saveToFlashcard = async () => {
@@ -338,74 +267,6 @@ export default function ChapterContent({
     }
   }
 
-  const handleSpeedTime = (value: string) => {
-    setSpeed(value);
-  };
-
-  const handleNextTrack = () => {
-    if (isPlaying) {
-      if (currentAudioIndex < sentenceList.length - 1) {
-        const nextAudioIndex = currentAudioIndex + 1;
-        setCurrentAudioIndex(nextAudioIndex);
-        if (audioRef.current) {
-          audioRef.current.src = sentenceList[nextAudioIndex].audioUrl;
-          audioRef.current.load();
-          const playAudio = () => {
-            audioRef.current!.currentTime =
-              sentenceList[nextAudioIndex].startTime;
-            audioRef.current!.play().catch((error) => {
-              console.error("Error playing audio: ", error);
-            });
-            audioRef.current!.removeEventListener("canplaythrough", playAudio);
-          };
-          audioRef.current.addEventListener("canplaythrough", playAudio);
-        }
-      } else {
-        setIsPlaying(false);
-      }
-    }
-  };
-
-  const handlePreviousTrack = () => {
-    if (isPlaying) {
-      if (currentAudioIndex > 0) {
-        const prevAudioIndex = currentAudioIndex - 1;
-        setCurrentAudioIndex(prevAudioIndex);
-        if (audioRef.current) {
-          audioRef.current.src = sentenceList[prevAudioIndex].audioUrl;
-          audioRef.current.load();
-          const playAudio = () => {
-            audioRef.current!.currentTime =
-              sentenceList[prevAudioIndex].startTime;
-            audioRef.current!.play().catch((error) => {
-              console.error("Error playing audio: ", error);
-            });
-            audioRef.current!.removeEventListener("canplaythrough", playAudio);
-          };
-          audioRef.current.addEventListener("canplaythrough", playAudio);
-        }
-      } else {
-        setCurrentAudioIndex(0);
-        setSelectedIndex(-1);
-        if (audioRef.current) {
-          audioRef.current.src = sentenceList[currentAudioIndex].audioUrl;
-          audioRef.current.load();
-
-          const playAudio = () => {
-            audioRef.current!.currentTime =
-              sentenceList[currentAudioIndex].startTime;
-            audioRef.current!.play().catch((error) => {
-              console.error("Error playing audio: ", error);
-            });
-            audioRef.current!.removeEventListener("canplaythrough", playAudio);
-          };
-
-          audioRef.current.addEventListener("canplaythrough", playAudio);
-        }
-      }
-    }
-  };
-
   const handleTranslate = async () => {
     if (isTranslate === false) {
       await handleTranslateSentence();
@@ -414,35 +275,6 @@ export default function ChapterContent({
       setIsTranslateClicked(!isTranslateClicked);
     }
   };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    setSelectedIndex(-1);
-    if (audio) {
-      audio.src = sentenceList[currentAudioIndex].audioUrl;
-
-      audio.load();
-      const handleLoadedMetadata = () => {
-        audio.currentTime = sentenceList[currentAudioIndex].startTime;
-
-        audio.playbackRate = Number(speed);
-
-        if (isPlaying) {
-          audio.play().catch((error) => {
-            // Handle any errors (e.g., user interaction required)
-            console.error("Playback error:", error);
-          });
-        }
-      };
-
-      audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-
-      return () => {
-        audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-        audio.pause();
-      };
-    }
-  }, [currentAudioIndex, speed]);
 
   return (
     <div>
