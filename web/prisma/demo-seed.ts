@@ -103,7 +103,7 @@ async function createDemoSchool() {
 
   if (existingSchool) {
     console.log(
-      `✅ Demo school already exists: ${existingSchool.name} (ID: ${existingSchool.id})`
+      `✅ Demo school already exists: ${existingSchool.name} (ID: ${existingSchool.id})`,
     );
     return existingSchool;
   }
@@ -122,11 +122,15 @@ async function createDemoSchool() {
 async function createDemoLicense(schoolId: string) {
   console.log("📜 Creating demo license...");
 
-  const licenseKey = `DEMO-${DEMO_CONFIG.school.name.replace(/\s+/g, "-").toUpperCase()}-${Date.now()}`;
+  // Use a fixed license key for demo data to prevent creating new licenses every day
+  const licenseKey = `DEMO-${DEMO_CONFIG.school.name.replace(/\s+/g, "-").toUpperCase()}`;
 
   const license = await prisma.license.upsert({
     where: { key: licenseKey },
-    update: {},
+    update: {
+      // Update expiration date to extend it
+      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+    },
     create: {
       key: licenseKey,
       schoolName: DEMO_CONFIG.school.name,
@@ -200,12 +204,12 @@ async function createDemoUsers(schoolId: string, licenseId: string) {
             { raLevel: 18, min: 221000, max: 242999 },
           ];
           const level = levelTable.find(
-            (l) => l.raLevel === studentConfig.raLevel
+            (l) => l.raLevel === studentConfig.raLevel,
           );
           if (level) {
             // Random XP within the level range
             return Math.floor(
-              level.min + Math.random() * (level.max - level.min)
+              level.min + Math.random() * (level.max - level.min),
             );
           }
           return 0;
@@ -233,7 +237,7 @@ async function createDemoUsers(schoolId: string, licenseId: string) {
 
     users.push({ ...student, raLevel: studentConfig.raLevel });
     console.log(
-      `  ✓ Created student: ${student.name} (${studentConfig.level})`
+      `  ✓ Created student: ${student.name} (${studentConfig.level})`,
     );
   }
 
@@ -313,7 +317,7 @@ async function createDemoUsers(schoolId: string, licenseId: string) {
 async function createDemoClassrooms(
   schoolId: string,
   teacherId: string,
-  students: any[]
+  students: any[],
 ) {
   console.log("🎓 Creating demo classrooms...");
 
@@ -338,7 +342,7 @@ async function createDemoClassrooms(
         createdBy: teacherId,
         grade: classroomConfig.grade,
         archived: false, // Explicitly set to false
-        classCode: `DEMO-${classroomConfig.name.replace(/\s+/g, "-").toUpperCase()}-${Date.now()}`,
+        classCode: `DEMO-${classroomConfig.name.replace(/\s+/g, "-").toUpperCase()}`,
       },
     });
 
@@ -363,7 +367,7 @@ async function createDemoClassrooms(
 
     classrooms.push(classroom);
     console.log(
-      `  ✓ Created classroom: ${classroom.classroomName} with ${classroomConfig.studentIndices.length} students`
+      `  ✓ Created classroom: ${classroom.classroomName} with ${classroomConfig.studentIndices.length} students`,
     );
   }
 
@@ -538,7 +542,7 @@ async function generateSRSFlashcards(students: any[]) {
   }
 
   console.log(
-    `✅ Generated ${totalWordRecords} word flashcards and ${totalSentenceRecords} sentence flashcards`
+    `✅ Generated ${totalWordRecords} word flashcards and ${totalSentenceRecords} sentence flashcards`,
   );
 }
 
@@ -556,7 +560,7 @@ async function generateLessonRecords(students: any[]) {
 
   if (articles.length === 0) {
     console.log(
-      "⚠️  No public articles found. Skipping lesson record generation."
+      "⚠️  No public articles found. Skipping lesson record generation.",
     );
     return;
   }
@@ -646,7 +650,7 @@ async function generateInitialActivities(students: any[]) {
       Math.floor(Math.random() * 12) + 8,
       Math.floor(Math.random() * 60),
       0,
-      0
+      0,
     );
 
     for (const student of students) {
@@ -722,7 +726,7 @@ async function generateInitialActivities(students: any[]) {
   }
 
   console.log(
-    `✅ Generated ${totalActivities} activities and ${totalXPLogs} XP logs`
+    `✅ Generated ${totalActivities} activities and ${totalXPLogs} XP logs`,
   );
 }
 
@@ -747,7 +751,7 @@ async function refreshMaterializedViews() {
     }
 
     console.log(
-      `✅ Materialized views refresh completed in ${result.duration}ms`
+      `✅ Materialized views refresh completed in ${result.duration}ms`,
     );
   } catch (error) {
     console.error("⚠️  Failed to refresh materialized views:", error);
@@ -771,7 +775,7 @@ async function main() {
     // Step 3: Create demo users
     const { students, teacher, admin } = await createDemoUsers(
       school.id,
-      license.id
+      license.id,
     );
 
     // Step 4: Create demo classrooms
@@ -795,16 +799,16 @@ async function main() {
     console.log("\n👨‍🎓 Students:");
     DEMO_CONFIG.students.forEach((s, i) => {
       console.log(
-        `  ${i + 1}. ${s.name} - ${s.email} / ${DEMO_CONFIG.password}`
+        `  ${i + 1}. ${s.name} - ${s.email} / ${DEMO_CONFIG.password}`,
       );
     });
     console.log("\n👨‍🏫 Teacher:");
     console.log(
-      `  ${DEMO_CONFIG.teacher.name} - ${DEMO_CONFIG.teacher.email} / ${DEMO_CONFIG.password}`
+      `  ${DEMO_CONFIG.teacher.name} - ${DEMO_CONFIG.teacher.email} / ${DEMO_CONFIG.password}`,
     );
     console.log("\n👨‍💼 Admin:");
     console.log(
-      `  ${DEMO_CONFIG.admin.name} - ${DEMO_CONFIG.admin.email} / ${DEMO_CONFIG.password}`
+      `  ${DEMO_CONFIG.admin.name} - ${DEMO_CONFIG.admin.email} / ${DEMO_CONFIG.password}`,
     );
     console.log("\n" + "─".repeat(60));
     console.log(`\n🏫 School: ${school.name}`);

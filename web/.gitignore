@@ -49,3 +49,6 @@ node_modules
 # service accounts
 service-account.json
 /lib/generated/prisma
+
+# agent
+.agent
