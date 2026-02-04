@@ -142,7 +142,29 @@ export async function getClassOverview(
 
     // Calculate average accuracy from user records
     // For now, using a simplified approach
-    const averageAccuracy = 0; // TODO: Implement proper accuracy calculation
+    // TODO: Implement proper accuracy calculation
+    const XPLogStudents = await prisma.xPLog.groupBy({
+      by: ['userId', 'activityType'],
+      where: {
+        userId: { in: studentIds },
+        activityType: {
+          in: ['MC_QUESTION', 'SA_QUESTION'],
+        },
+      },
+      _avg: {
+        xpEarned: true,
+      },
+    });
+
+    const mcLogs = XPLogStudents.filter(log => log.activityType === 'MC_QUESTION');
+    const mcQuestionAccuracy = mcLogs.length > 0
+      ? Math.round((mcLogs.reduce((sum, log) => sum + (log._avg?.xpEarned || 0), 0) / mcLogs.length) * 10) / 10
+      : 0;
+
+    const saLogs = XPLogStudents.filter(log => log.activityType === 'SA_QUESTION');
+    const saQuestionAccuracy = saLogs.length > 0
+      ? Math.round((saLogs.reduce((sum, log) => sum + (log._avg?.xpEarned || 0), 0) / saLogs.length) * 10) / 10
+      : 0;
 
     const totalStudents = students.length;
     const averageLevel = totalStudents > 0
@@ -174,10 +196,12 @@ export async function getClassOverview(
         assignmentsCompleted: completedAssignments,
       },
       performance: {
-        averageAccuracy: Math.round(averageAccuracy * 10) / 10,
-        averageReadingTime: 0,
-        booksCompleted: 0,
-      },
+        saQuestionAccuracy,
+        mcQuestionAccuracy,
+        // averageAccuracy: Math.round(averageAccuracy * 10) / 10,
+        // averageReadingTime: 0,
+        // booksCompleted: 0,
+      }
     };
 
     return NextResponse.json({
