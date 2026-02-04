@@ -150,15 +150,26 @@ async function middleware(req: NextRequest) {
 
     // Explicitly check current path containment to avoid loop
     if (userRole === ROLES.TEACHER) {
-      if (!normalizedPath.startsWith("/teacher")) {
+      if (
+        !normalizedPath.startsWith("/teacher") &&
+        !normalizedPath.startsWith("/student")
+      ) {
         targetPath = "/teacher/my-classes";
       }
     } else if (userRole === ROLES.ADMIN) {
-      if (!normalizedPath.startsWith("/admin")) {
+      if (
+        !normalizedPath.startsWith("/teacher") &&
+        !normalizedPath.startsWith("/student") &&
+        !normalizedPath.startsWith("/admin")
+      ) {
         targetPath = "/admin/dashboard";
       }
     } else if (userRole === ROLES.SYSTEM) {
-      if (!normalizedPath.startsWith("/system")) {
+      if (
+        normalizedPath === "/" ||
+        normalizedPath.startsWith("/auth") ||
+        normalizedPath === ""
+      ) {
         targetPath = "/system/dashboard";
       }
     } else if (userRole === ROLES.STUDENT) {
