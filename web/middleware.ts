@@ -152,7 +152,8 @@ async function middleware(req: NextRequest) {
     if (userRole === ROLES.TEACHER) {
       if (
         !normalizedPath.startsWith("/teacher") &&
-        !normalizedPath.startsWith("/student")
+        !normalizedPath.startsWith("/student") &&
+        !normalizedPath.startsWith("/settings")
       ) {
         targetPath = "/teacher/my-classes";
       }
@@ -160,7 +161,8 @@ async function middleware(req: NextRequest) {
       if (
         !normalizedPath.startsWith("/teacher") &&
         !normalizedPath.startsWith("/student") &&
-        !normalizedPath.startsWith("/admin")
+        !normalizedPath.startsWith("/admin") &&
+        !normalizedPath.startsWith("/settings")
       ) {
         targetPath = "/admin/dashboard";
       }
@@ -173,7 +175,10 @@ async function middleware(req: NextRequest) {
         targetPath = "/system/dashboard";
       }
     } else if (userRole === ROLES.STUDENT) {
-      if (!normalizedPath.startsWith("/student")) {
+      if (
+        !normalizedPath.startsWith("/student") &&
+        !normalizedPath.startsWith("/settings")
+      ) {
         targetPath = "/student/read";
       }
     }
