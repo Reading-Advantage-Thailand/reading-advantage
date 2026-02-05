@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, Loader2, AlertCircle, Flame } from "lucide-react";
-import { DragonFlightGame } from "@/components/games/dragon-flight/DragonFlightGame";
+import { DragonFlightGame } from "@/components/games/vocabulary/dragon-flight/DragonFlightGame";
 import type { DragonFlightResults } from "@/lib/games/dragonFlight";
 import { useGameStore } from "@/store/useGameStore";
 import { Header } from "@/components/header";

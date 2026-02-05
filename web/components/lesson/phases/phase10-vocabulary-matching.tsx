@@ -21,9 +21,9 @@ import Image from "next/image";
 import { useGameStore, VocabularyItem } from "@/store/useGameStore";
 
 // Game Components - Imports
-import { WizardZombieGame } from "@/components/games/wizard-vs-zombie/WizardZombieGame";
-import { RuneMatchGame } from "@/components/games/rune-match/RuneMatchGame";
-import { DragonFlightGame } from "@/components/games/dragon-flight/DragonFlightGame";
+import { WizardZombieGame } from "@/components/games/vocabulary/wizard-vs-zombie/WizardZombieGame";
+import { RuneMatchGame } from "@/components/games/vocabulary/rune-match/RuneMatchGame";
+import { DragonFlightGame } from "@/components/games/vocabulary/dragon-flight/DragonFlightGame";
 import { GameContainer as MagicDefenseGame } from "@/components/games/game/GameContainer";
 
 interface Phase10VocabularyMatchingProps {

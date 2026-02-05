@@ -4,8 +4,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import type { RuneMatchGameResult } from "@/components/games/rune-match/RuneMatchGame";
-import { StartScreen } from "@/components/games/rune-match/StartScreen";
+import type { RuneMatchGameResult } from "@/components/games/vocabulary/rune-match/RuneMatchGame";
+import { StartScreen } from "@/components/games/vocabulary/rune-match/StartScreen";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
 import { ChevronLeft, Swords } from "lucide-react";
@@ -15,7 +15,7 @@ import { useScopedI18n } from "@/locales/client";
 
 const RuneMatchGame = dynamic(
   () =>
-    import("@/components/games/rune-match/RuneMatchGame").then(
+    import("@/components/games/vocabulary/rune-match/RuneMatchGame").then(
       (mod) => mod.RuneMatchGame,
     ),
   { ssr: false },

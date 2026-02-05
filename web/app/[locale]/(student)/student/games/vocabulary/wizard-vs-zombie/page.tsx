@@ -6,13 +6,13 @@ import { useSession } from "next-auth/react";
 import {
   WizardZombieGame,
   WizardZombieGameResult,
-} from "@/components/games/wizard-vs-zombie/WizardZombieGame";
+} from "@/components/games/vocabulary/wizard-vs-zombie/WizardZombieGame";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { VocabularyItem } from "@/store/useGameStore";
-import { StartScreen } from "@/components/games/wizard-vs-zombie/StartScreen";
+import { StartScreen } from "@/components/games/vocabulary/wizard-vs-zombie/StartScreen";
 import { Difficulty } from "@/lib/games/wizardZombie";
 import { AnimatePresence, motion } from "framer-motion";
 import { useScopedI18n } from "@/locales/client";

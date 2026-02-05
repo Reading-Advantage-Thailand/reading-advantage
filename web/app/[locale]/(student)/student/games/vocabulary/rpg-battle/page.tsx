@@ -25,16 +25,16 @@ import {
   scaleBattleXp,
   scaleEnemyHealth,
 } from "@/lib/games/rpgBattleScaling";
-import { ActionMenu } from "@/components/games/rpg-battle/ActionMenu";
-import { BattleScene } from "@/components/games/rpg-battle/BattleScene";
-import { BattleLog } from "@/components/games/rpg-battle/BattleLog";
-import { HealthBar } from "@/components/games/rpg-battle/HealthBar";
-import { Sprite } from "@/components/games/rpg-battle/Sprite";
-import { BattleResults } from "@/components/games/rpg-battle/BattleResults";
-import { BattleEffects } from "@/components/games/rpg-battle/BattleEffects";
-import { BattleSelectionModal } from "@/components/games/rpg-battle/BattleSelectionModal";
-import { FloatingTextItem } from "@/components/games/rpg-battle/FloatingText";
-import { StartScreen } from "@/components/games/rpg-battle/StartScreen";
+import { ActionMenu } from "@/components/games/vocabulary/rpg-battle/ActionMenu";
+import { BattleScene } from "@/components/games/vocabulary/rpg-battle/BattleScene";
+import { BattleLog } from "@/components/games/vocabulary/rpg-battle/BattleLog";
+import { HealthBar } from "@/components/games/vocabulary/rpg-battle/HealthBar";
+import { Sprite } from "@/components/games/vocabulary/rpg-battle/Sprite";
+import { BattleResults } from "@/components/games/vocabulary/rpg-battle/BattleResults";
+import { BattleEffects } from "@/components/games/vocabulary/rpg-battle/BattleEffects";
+import { BattleSelectionModal } from "@/components/games/vocabulary/rpg-battle/BattleSelectionModal";
+import { FloatingTextItem } from "@/components/games/vocabulary/rpg-battle/FloatingText";
+import { StartScreen } from "@/components/games/vocabulary/rpg-battle/StartScreen";
 import { useSound } from "@/hooks/useSound";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, AlertCircle, ChevronLeft, Swords } from "lucide-react";

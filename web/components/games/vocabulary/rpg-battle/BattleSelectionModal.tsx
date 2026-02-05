@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Sprite } from "@/components/games/rpg-battle/Sprite";
+import { Sprite } from "@/components/games/vocabulary/rpg-battle/Sprite";
 import {
   BASE_XP_CAP,
   scaleBattleXp,
