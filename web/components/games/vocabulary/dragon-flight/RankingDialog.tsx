@@ -25,9 +25,26 @@ type RankingData = Record<string, RankingEntry[]>;
 interface RankingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  apiEndpoint?: string;
+  difficulties?: Difficulty[];
+  title?: string;
+  roleLabel?: string;
+  emptyStateMessage?: string;
+  emptyStateSubMessage?: string;
+  translationNamespace?: "dragonFlight" | "castleDefense" | string;
 }
 
-export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
+export function RankingDialog({
+  open,
+  onOpenChange,
+  apiEndpoint = "/api/v1/games/dragon-flight/ranking",
+  difficulties = ["easy", "normal", "hard", "extreme"],
+  title,
+  roleLabel,
+  emptyStateMessage,
+  emptyStateSubMessage,
+  translationNamespace = "dragonFlight",
+}: RankingDialogProps) {
   const t = useScopedI18n("pages.student.gamesPage");
   const [data, setData] = useState<RankingData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,7 +58,7 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
   const fetchRankings = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/v1/games/dragon-flight/ranking");
+      const res = await fetch(apiEndpoint);
       if (res.ok) {
         const json = await res.json();
         setData(json.rankings);
@@ -62,7 +79,7 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
     );
   };
 
-  const difficulties: Difficulty[] = ["easy", "normal", "hard", "extreme"];
+  const difficultiesList = difficulties;
 
   const DifficultyTab = ({ diff }: { diff: Difficulty }) => {
     const rankings = data?.[diff] || [];
@@ -90,8 +107,14 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
       return (
         <div className="flex flex-col items-center justify-center py-12 text-center text-white/40">
           <Trophy className="h-12 w-12 mb-2 opacity-20" />
-          <p>{t("dragonFlight.ranking.noChampions")}</p>
-          <p className="text-xs">{t("dragonFlight.ranking.beTheFirst")}</p>
+          <p>
+            {emptyStateMessage ||
+              t(`${translationNamespace}.ranking.noChampions` as any)}
+          </p>
+          <p className="text-xs">
+            {emptyStateSubMessage ||
+              t(`${translationNamespace}.ranking.beTheFirst` as any)}
+          </p>
         </div>
       );
     }
@@ -125,7 +148,8 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
                   {user.name}
                 </div>
                 <div className="text-xs text-white/50">
-                  {t("dragonFlight.ranking.dragonRider")}
+                  {roleLabel ||
+                    t(`${translationNamespace}.ranking.dragonRider` as any)}
                 </div>
               </div>
 
@@ -147,24 +171,25 @@ export function RankingDialog({ open, onOpenChange }: RankingDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Trophy className="h-5 w-5 text-yellow-500" />
-            {t("dragonFlight.ranking.leaderboard")}
+            {title || t(`${translationNamespace}.ranking.leaderboard` as any)}
           </DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="normal" className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-white/5">
-            {difficulties.map((diff) => (
+            {difficultiesList.map((diff) => (
               <TabsTrigger
                 key={diff}
                 value={diff}
                 className="uppercase text-[10px] data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50"
               >
-                {t(`dragonFlight.difficulty.${diff}`)}
+                {/* Fallback to generic labels if needed, but reusing dragonFlight keys for now is checking existing i18n structure */}
+                {t(`${translationNamespace}.difficulty.${diff}` as any)}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          {difficulties.map((diff) => (
+          {difficultiesList.map((diff) => (
             <TabsContent key={diff} value={diff} className="mt-4">
               <DifficultyTab diff={diff} />
             </TabsContent>

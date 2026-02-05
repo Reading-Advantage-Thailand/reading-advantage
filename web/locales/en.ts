@@ -643,6 +643,21 @@ export default {
             description:
               "Use your vocabulary powers to defeat the zombie horde.",
           },
+          castleDefense: {
+            title: "Castle Defense",
+            description:
+              "Collect words to build towers and defend your castle from invaders!",
+          },
+        },
+
+        // Sections
+        sections: {
+          vocabulary: "Vocabulary Games",
+          vocabularyDescription:
+            "Practice and improve your vocabulary skills with these engaging games",
+          sentence: "Sentence Games",
+          sentenceDescription:
+            "Master sentence structure and comprehension through interactive gameplay",
         },
 
         // Badges
@@ -665,6 +680,7 @@ export default {
           vocabulary: "Vocabulary",
           matching: "Matching",
           spelling: "Spelling",
+          sentence: "Sentence",
         },
 
         // Actions
@@ -894,6 +910,20 @@ export default {
             beTheFirst: "Be the first to claim victory!",
             dragonRider: "Dragon Rider",
             leaderboard: "Leaderboard",
+          },
+        },
+        castleDefense: {
+          difficulty: {
+            easy: "Easy",
+            normal: "Normal",
+            hard: "Hard",
+            extreme: "Extreme",
+          },
+          ranking: {
+            noChampions: "No commanders yet.",
+            beTheFirst: "Defend the castle and claim your spot!",
+            dragonRider: "Castle Defender",
+            leaderboard: "High Scores",
           },
         },
       },

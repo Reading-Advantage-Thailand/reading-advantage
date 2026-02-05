@@ -628,6 +628,21 @@ export default {
             title: "Wizard vs Zombie",
             description: "ใช้พลังคำศัพท์ของคุณเพื่อเอาชนะฝูงซอมบี้",
           },
+          castleDefense: {
+            title: "Castle Defense",
+            description:
+              "เก็บคำศัพท์เพื่อสร้างหอคอยและปกป้องปราสาทของคุณจากผู้บุกรุก!",
+          },
+        },
+
+        // Sections
+        sections: {
+          vocabulary: "เกมคำศัพท์",
+          vocabularyDescription:
+            "ฝึกฝนและพัฒนาทักษะคำศัพท์ของคุณด้วยเกมที่น่าสนใจเหล่านี้",
+          sentence: "เกมประโยค",
+          sentenceDescription:
+            "เชี่ยวชาญโครงสร้างประโยคและความเข้าใจผ่านการเล่นเกมแบบโต้ตอบ",
         },
 
         // Badges
@@ -650,6 +665,7 @@ export default {
           vocabulary: "คำศัพท์",
           matching: "การจับคู่",
           spelling: "การสะกดคำ",
+          sentence: "ประโยค",
         },
 
         // Actions
@@ -872,6 +888,20 @@ export default {
             noChampions: "ยังไม่มีผู้ชนะ",
             beTheFirst: "มาเป็นคนแรกที่คว้าชัยชนะ!",
             dragonRider: "นักขี่มังกร",
+            leaderboard: "กระดานผู้นำ",
+          },
+        },
+        castleDefense: {
+          difficulty: {
+            easy: "ง่าย",
+            normal: "ปกติ",
+            hard: "ยาก",
+            extreme: "สุดโหด",
+          },
+          ranking: {
+            noChampions: "ยังไม่มีผู้พิทักษ์",
+            beTheFirst: "ปกป้องปราสาทและคว้าอันดับหนึ่ง!",
+            dragonRider: "ผู้พิทักษ์ปราสาท",
             leaderboard: "กระดานผู้นำ",
           },
         },

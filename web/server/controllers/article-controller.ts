@@ -336,28 +336,36 @@ export async function getArticleById(
       );
     }
 
-    // Check if user has read the article
     // Check if user has read the article and create activity record atomically
-    await prisma.userActivity.upsert({
-      where: {
-        userId_activityType_targetId: {
+    // Wrap in try-catch to handle race conditions when multiple requests arrive simultaneously
+    try {
+      await prisma.userActivity.upsert({
+        where: {
+          userId_activityType_targetId: {
+            userId: userId,
+            activityType: "ARTICLE_READ",
+            targetId: article_id,
+          },
+        },
+        create: {
           userId: userId,
           activityType: "ARTICLE_READ",
           targetId: article_id,
+          completed: false,
+          details: {
+            articleTitle: article.title,
+            level: req.session?.user.level,
+          },
         },
-      },
-      create: {
-        userId: userId,
-        activityType: "ARTICLE_READ",
-        targetId: article_id,
-        completed: false,
-        details: {
-          articleTitle: article.title,
-          level: req.session?.user.level,
-        },
-      },
-      update: {}, // Do nothing if record already exists
-    });
+        update: {}, // Do nothing if record already exists
+      });
+    } catch (error: any) {
+      // Ignore unique constraint errors (P2002) - record already exists from concurrent request
+      if (error.code !== "P2002") {
+        console.error("Error creating user activity:", error);
+        // Don't fail the request, just log the error
+      }
+    }
 
     // Validate article data
     if (

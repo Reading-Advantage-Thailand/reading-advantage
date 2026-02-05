@@ -594,6 +594,7 @@ enum ActivityType {
   RPG_BATTLE
   RUNE_MATCH
   WIZARD_ZOMBIE
+  CASTLE_DEFENSE
 }
 
 enum Status {
@@ -813,6 +814,7 @@ enum GameType {
   RPG_BATTLE
   RUNE_MATCH
   WIZARD_VS_ZOMBIE
+  CASTLE_DEFENSE
 }
 
 model GameRanking {

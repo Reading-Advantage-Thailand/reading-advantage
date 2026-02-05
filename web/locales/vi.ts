@@ -634,6 +634,21 @@ export default {
             description:
               "Use your vocabulary powers to defeat the zombie horde.",
           },
+          castleDefense: {
+            title: "Castle Defense",
+            description:
+              "Thu thập từ vựng để xây tháp và bảo vệ lâu đài của bạn khỏi kẻ xâm lược!",
+          },
+        },
+
+        // Sections
+        sections: {
+          vocabulary: "Trò chơi từ vựng",
+          vocabularyDescription:
+            "Luyện tập và cải thiện kỹ năng từ vựng của bạn với những trò chơi thú vị này",
+          sentence: "Trò chơi câu",
+          sentenceDescription:
+            "Làm chủ cấu trúc câu và hiểu biết thông qua trò chơi tương tác",
         },
 
         // Badges
@@ -656,6 +671,7 @@ export default {
           vocabulary: "Vocabulary",
           matching: "Matching",
           spelling: "Spelling",
+          sentence: "Sentence",
         },
 
         // Actions
@@ -846,45 +862,58 @@ export default {
         },
         // Dragon Flight specific
         dragonFlight: {
-          prompt: "Prompt",
-          dragons: "Dragons",
-          victory: "Victory!",
-          defeat: "Defeat",
-          victoryDesc: "Your dragon army conquered the Skeleton King!",
-          defeatDesc: "The Skeleton King was too powerful...",
-          xpEarned: "XP Earned",
-          accuracy: "Accuracy",
-          correct: "Correct",
-          time: "Time",
-          playAgain: "Play Again",
-          flightBriefing: "Flight Briefing",
+          prompt: "Câu hỏi",
+          dragons: "Rồng",
+          victory: "Chiến thắng!",
+          defeat: "Thất bại",
+          victoryDesc: "Quân đoàn rồng của bạn đã chinh phục Vua Xương!",
+          defeatDesc: "Vua Xương quá mạnh...",
+          xpEarned: "XP nhận được",
+          accuracy: "Độ chính xác",
+          correct: "Chính xác",
+          time: "Thời gian",
+          playAgain: "Chơi lại",
+          flightBriefing: "Hướng dẫn bay",
           briefingDesc:
-            "Review the vocabulary, then tap Start Game to launch your dragon flight.",
-          gateRunBegins: "The Gate Run Begins Soon",
-          gateRunDesc:
-            "Choose the correct translation to grow your dragon flight.",
-          vocabularyPreview: "Vocabulary Preview",
-          noVocabularyLoaded: "No vocabulary loaded yet.",
-          start: "Start Game",
-          loading: "Loading",
-          summoning: "Summoning...",
-          difficultyLabel: "Difficulty",
-          moreWords: "more words",
+            "Ôn tập từ vựng, sau đó nhấn Bắt đầu trò chơi để phóng đàn rồng của bạn.",
+          gateRunBegins: "Cuộc đua cổng bắt đầu",
+          gateRunDesc: "Chọn bản dịch đúng để phát triển đàn rồng của bạn.",
+          vocabularyPreview: "Xem trước từ vựng",
+          noVocabularyLoaded: "Chưa có từ vựng.",
+          start: "Bắt đầu trò chơi",
+          loading: "Đang tải",
+          summoning: "Đang triệu hồi...",
+          difficultyLabel: "Độ khó",
+          moreWords: "từ khác",
           difficulty: {
-            easy: "Easy",
-            normal: "Normal",
-            hard: "Hard",
-            extreme: "Extreme",
-            easyDesc: "30s • Relaxed",
-            normalDesc: "1m • Standard",
-            hardDesc: "1m 30s • -2 Dragons",
-            extremeDesc: "2m • One Strike Fail",
+            easy: "Dễ",
+            normal: "Thường",
+            hard: "Khó",
+            extreme: "Cực khó",
+            easyDesc: "30 giây • Thư giãn",
+            normalDesc: "1 phút • Tiêu chuẩn",
+            hardDesc: "1 phút 30 giây • -2 Rồng",
+            extremeDesc: "2 phút • Sai một lần là thua",
           },
           ranking: {
-            noChampions: "No champions yet.",
-            beTheFirst: "Be the first to claim victory!",
-            dragonRider: "Dragon Rider",
-            leaderboard: "Leaderboard",
+            noChampions: "Chưa có nhà vô địch nào.",
+            beTheFirst: "Hãy là người đầu tiên giành chiến thắng!",
+            dragonRider: "Người kỵ sĩ rồng",
+            leaderboard: "Bảng xếp hạng",
+          },
+        },
+        castleDefense: {
+          difficulty: {
+            easy: "Dễ",
+            normal: "Thường",
+            hard: "Khó",
+            extreme: "Cực khó",
+          },
+          ranking: {
+            noChampions: "Chưa có người chỉ huy.",
+            beTheFirst: "Bảo vệ lâu đài và giành vị trí quán quân!",
+            dragonRider: "Người bảo vệ lâu đài",
+            leaderboard: "Bảng xếp hạng",
           },
         },
       },

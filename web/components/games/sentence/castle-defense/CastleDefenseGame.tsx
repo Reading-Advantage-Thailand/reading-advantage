@@ -1,16 +1,35 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { Stage, Layer, Rect, Circle, Text, Image as KonvaImage, Group } from 'react-konva'
-import { Shield } from 'lucide-react'
-import { GameStartScreen, type ControlHint, type Instruction } from '@/components/game/GameStartScreen'
-import { GameEndScreen } from '@/components/game/GameEndScreen'
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
+import {
+  Stage,
+  Layer,
+  Rect,
+  Circle,
+  Text,
+  Image as KonvaImage,
+  Group,
+} from "react-konva";
+import { Shield, Trophy } from "lucide-react";
+import {
+  GameStartScreen,
+  type ControlHint,
+  type Instruction,
+} from "@/components/games/game/GameStartScreen";
+import { GameEndScreen } from "@/components/games/game/GameEndScreen";
+import { RankingDialog } from "@/components/games/vocabulary/dragon-flight/RankingDialog";
 
 // Import shared components (REUSE from Wizard)
-import { VirtualDPad } from '@/components/ui/VirtualDPad'
-import { useDirectionalInput } from '@/hooks/useDirectionalInput'
-import { useInterval } from '@/hooks/useInterval'
-import { withBasePath } from '@/lib/basePath'
+import { VirtualDPad } from "@/components/games/ui/VirtualDPad";
+import { useDirectionalInput } from "@/hooks/useDirectionalInput";
+import { useInterval } from "@/hooks/useInterval";
+import { withBasePath } from "@/lib/games/basePath";
 
 // Import game logic
 import {
@@ -25,255 +44,312 @@ import {
   WORD_RADIUS,
   inRange,
   calculateCastleDefenseXP,
-} from '@/lib/castleDefense'
-import { BackgroundLayer } from './BackgroundLayer'
-import type { VocabularyItem } from '@/store/useGameStore'
+} from "@/lib/games/castleDefense";
+import { BackgroundLayer } from "./BackgroundLayer";
+import type { VocabularyItem } from "@/store/useGameStore";
 
 // Sprite sheet helpers (same as Wizard)
 const buildSpriteGrid = (width: number, height: number) => {
-  const fw = width / 3
-  const fh = height / 3
-  return { fw, fh }
-}
+  const fw = width / 3;
+  const fh = height / 3;
+  return { fw, fh };
+};
 
 const getSpriteCrop = (fw: number, fh: number, col: number, row: number) => ({
   x: col * fw,
   y: row * fh,
   width: fw,
-  height: fh
-})
+  height: fh,
+});
 
 // Types
 type GameAssets = {
-  player: HTMLImageElement
-  soldier: HTMLImageElement
-  tank: HTMLImageElement
-  boss: HTMLImageElement
-  towerBase: HTMLImageElement
-  towerBuilt: HTMLImageElement
-  base: HTMLImageElement
-}
+  player: HTMLImageElement;
+  soldier: HTMLImageElement;
+  tank: HTMLImageElement;
+  boss: HTMLImageElement;
+  towerBase: HTMLImageElement;
+  towerBuilt: HTMLImageElement;
+  base: HTMLImageElement;
+};
 
 type Props = {
-  vocabulary: VocabularyItem[]
-  onComplete?: (results: { xp: number; accuracy: number }) => void
-}
+  vocabulary: VocabularyItem[];
+  onComplete?: (results: {
+    xp: number;
+    accuracy: number;
+    difficulty: string;
+  }) => void;
+};
 
 const CASTLE_DEFENSE_INSTRUCTIONS: Instruction[] = [
-  { step: 1, text: 'Collect the sentence words in order to prepare a tower.' },
-  { step: 2, text: 'Move to an empty tower base to build and protect the path.' },
-  { step: 3, text: 'Defeat incoming enemies before they reach the castle.' },
-]
+  { step: 1, text: "Collect the sentence words in order to prepare a tower." },
+  {
+    step: 2,
+    text: "Move to an empty tower base to build and protect the path.",
+  },
+  { step: 3, text: "Defeat incoming enemies before they reach the castle." },
+];
 
 const CASTLE_DEFENSE_CONTROLS: ControlHint[] = [
-  { label: 'Move', keys: 'Arrows / WASD', color: 'bg-amber-500' },
-  { label: 'Build', keys: 'Walk to base', color: 'bg-emerald-500' },
-  { label: 'Collect', keys: 'Touch words', color: 'bg-blue-500' },
-]
+  { label: "Move", keys: "Arrows / WASD", color: "bg-amber-500" },
+  { label: "Build", keys: "Walk to base", color: "bg-emerald-500" },
+  { label: "Collect", keys: "Touch words", color: "bg-blue-500" },
+];
 
 export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
   // ============================================
   // STATE
   // ============================================
-  const [gameState, setGameState] = useState<CastleDefenseState | null>(null)
-  const [assets, setAssets] = useState<GameAssets | null>(null)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-  const [camera, setCamera] = useState({ x: 0, y: 0, scale: 1 })
-  const [hasStarted, setHasStarted] = useState(false)
+  const [gameState, setGameState] = useState<CastleDefenseState | null>(null);
+  const [difficulty, setDifficulty] = useState<
+    "easy" | "normal" | "hard" | "extreme"
+  >("normal");
+  const [showRanking, setShowRanking] = useState(false);
+  const [assets, setAssets] = useState<GameAssets | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [camera, setCamera] = useState({ x: 0, y: 0, scale: 1 });
+  const [hasStarted, setHasStarted] = useState(false);
   const [buildEffects, setBuildEffects] = useState<
     { id: string; x: number; y: number; createdAt: number }[]
-  >([])
+  >([]);
 
   // Animation frames
-  const [playerFrame, setPlayerFrame] = useState(0)
-  const [enemyFrame, setEnemyFrame] = useState(0)
+  const [playerFrame, setPlayerFrame] = useState(0);
+  const [enemyFrame, setEnemyFrame] = useState(0);
 
   // Refs
-  const containerRef = useRef<HTMLDivElement>(null)
-  const previousTowerIds = useRef<string[]>([])
+  const containerRef = useRef<HTMLDivElement>(null);
+  const previousTowerIds = useRef<string[]>([]);
 
   // Input
-  const { input, setVirtualInput, consumeCast } = useDirectionalInput()
+  const { input, setVirtualInput, consumeCast } = useDirectionalInput();
 
   // ============================================
   // ASSET LOADING
   // ============================================
   useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
     const loadImage = (src: string): Promise<HTMLImageElement> =>
       new Promise((res, rej) => {
-        const img = new Image()
-        img.src = withBasePath(src)
-        img.onload = () => res(img)
-        img.onerror = rej
-      })
+        const img = new Image();
+        img.src = withBasePath(src);
+        img.onload = () => res(img);
+        img.onerror = rej;
+      });
 
     const load = async () => {
       try {
-        const [player, soldier, tank, boss, towerBase, towerBuilt, base] = await Promise.all([
-          loadImage('/games/castle-defense/player_3x3_pose_sheet.png'),
-          loadImage('/games/castle-defense/goblin_3x3_pose_sheet.png'),
-          loadImage('/games/castle-defense/orc_3x3_pose_sheet.png'),
-          loadImage('/games/castle-defense/troll_3x3_pose_sheet.png'),
-          loadImage('/games/castle-defense/tower-base.png'),
-          loadImage('/games/castle-defense/tower-built.png'),
-          loadImage('/games/castle-defense/player-castle.png'),
-        ])
+        const [player, soldier, tank, boss, towerBase, towerBuilt, base] =
+          await Promise.all([
+            loadImage(
+              "/games/sentence/castle-defense/player_3x3_pose_sheet.png",
+            ),
+            loadImage(
+              "/games/sentence/castle-defense/goblin_3x3_pose_sheet.png",
+            ),
+            loadImage("/games/sentence/castle-defense/orc_3x3_pose_sheet.png"),
+            loadImage(
+              "/games/sentence/castle-defense/troll_3x3_pose_sheet.png",
+            ),
+            loadImage("/games/sentence/castle-defense/tower-base.png"),
+            loadImage("/games/sentence/castle-defense/tower-built.png"),
+            loadImage("/games/sentence/castle-defense/player-castle.png"),
+          ]);
         if (mounted) {
-          setAssets({ player, soldier, tank, boss, towerBase, towerBuilt, base })
+          setAssets({
+            player,
+            soldier,
+            tank,
+            boss,
+            towerBase,
+            towerBuilt,
+            base,
+          });
         }
       } catch (e) {
-        console.error('Failed to load assets', e)
+        console.error("Failed to load assets", e);
       }
-    }
+    };
 
-    load()
-    return () => { mounted = false }
-  }, [])
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-  const towers = gameState?.towers
+  const towers = gameState?.towers;
 
   useEffect(() => {
-    if (!towers) return
-    const currentIds = towers.map(tower => tower.id)
-    const newTowers = towers.filter(tower => !previousTowerIds.current.includes(tower.id))
+    if (!towers) return;
+    const currentIds = towers.map((tower) => tower.id);
+    const newTowers = towers.filter(
+      (tower) => !previousTowerIds.current.includes(tower.id),
+    );
 
     if (newTowers.length > 0) {
-      const now = Date.now()
-      setBuildEffects(prev => [
+      const now = Date.now();
+      setBuildEffects((prev) => [
         ...prev,
-        ...newTowers.map(tower => ({
+        ...newTowers.map((tower) => ({
           id: `${tower.id}-${now}`,
           x: tower.x,
           y: tower.y,
           createdAt: now,
         })),
-      ])
+      ]);
     }
 
-    previousTowerIds.current = currentIds
-  }, [towers])
+    previousTowerIds.current = currentIds;
+  }, [towers]);
 
   // ============================================
   // RESPONSIVE CONTAINER
   // ============================================
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current) return;
 
     const updateDimensions = (rect?: DOMRectReadOnly) => {
-      if (!containerRef.current && !rect) return
-      const { width, height } = rect ?? containerRef.current!.getBoundingClientRect()
+      if (!containerRef.current && !rect) return;
+      const { width, height } =
+        rect ?? containerRef.current!.getBoundingClientRect();
       if (width > 0 && height > 0) {
-        setDimensions({ width, height })
+        setDimensions({ width, height });
       }
-    }
-    const handleResize = () => updateDimensions()
+    };
+    const handleResize = () => updateDimensions();
 
-    updateDimensions()
+    updateDimensions();
 
-    const observer = new ResizeObserver(entries => {
-      updateDimensions(entries[0]?.contentRect)
-    })
+    const observer = new ResizeObserver((entries) => {
+      updateDimensions(entries[0]?.contentRect);
+    });
 
-    observer.observe(containerRef.current)
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('orientationchange', handleResize)
+    observer.observe(containerRef.current);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
     return () => {
-      observer.disconnect()
-      window.removeEventListener('resize', handleResize)
-      window.removeEventListener('orientationchange', handleResize)
-    }
-  }, [hasStarted]) // Re-run when game starts and container becomes available
+      observer.disconnect();
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+    };
+  }, [hasStarted]); // Re-run when game starts and container becomes available
 
   // ============================================
   // GAME INITIALIZATION
   // ============================================
   const startGame = useCallback(() => {
-    setGameState(createCastleDefenseState(vocabulary))
-    setHasStarted(true)
-  }, [vocabulary])
+    setGameState(createCastleDefenseState(vocabulary, { difficulty }));
+    setHasStarted(true);
+  }, [vocabulary, difficulty]);
 
   // ============================================
   // GAME LOOP
   // ============================================
-  useInterval(() => {
-    if (gameState && gameState.status === 'playing' && assets && hasStarted) {
-      const nextState = advanceCastleDefenseTime(
-        gameState, 
-        GAME_TICK_MS, 
-        { dx: input.dx, dy: input.dy, drop: input.cast }, 
-        vocabulary
-      )
-      setGameState(nextState)
+  useInterval(
+    () => {
+      if (gameState && gameState.status === "playing" && assets && hasStarted) {
+        const nextState = advanceCastleDefenseTime(
+          gameState,
+          GAME_TICK_MS,
+          { dx: input.dx, dy: input.dy, drop: input.cast },
+          vocabulary, // Make sure advanceCastleDefenseTime signature supports this in your game logic update if needed, strictly it takes state, dt, input, vocab
+        );
+        setGameState(nextState);
 
-      if (input.cast) {
-        consumeCast()
+        if (input.cast) {
+          consumeCast();
+        }
+
+        // Update camera
+        if (dimensions.width > 0 && dimensions.height > 0) {
+          const scaleX = dimensions.width / GAME_WIDTH;
+          const scaleY = dimensions.height / GAME_HEIGHT;
+          const scale = Math.max(scaleX, scaleY, 0.8);
+
+          let camX = dimensions.width / 2 - nextState.player.x * scale;
+          let camY = dimensions.height / 2 - nextState.player.y * scale;
+
+          const minX = dimensions.width - GAME_WIDTH * scale;
+          const minY = dimensions.height - GAME_HEIGHT * scale;
+
+          if (minX > 0) camX = (dimensions.width - GAME_WIDTH * scale) / 2;
+          else camX = Math.max(minX, Math.min(0, camX));
+
+          if (minY > 0) camY = (dimensions.height - GAME_HEIGHT * scale) / 2;
+          else camY = Math.max(minY, Math.min(0, camY));
+
+          setCamera({ x: camX, y: camY, scale });
+        }
+
+        // Check for game over
+        if (
+          (nextState.status === "gameover" || nextState.status === "victory") &&
+          onComplete
+        ) {
+          const totalAttempts =
+            nextState.correctWordCollections +
+            nextState.incorrectWordCollections;
+          const accuracy =
+            totalAttempts > 0
+              ? nextState.correctWordCollections / totalAttempts
+              : 0;
+          onComplete({
+            xp: calculateCastleDefenseXP(nextState.score),
+            accuracy,
+            difficulty: nextState.difficulty,
+          });
+        }
       }
-
-      // Update camera
-      if (dimensions.width > 0 && dimensions.height > 0) {
-        const scaleX = dimensions.width / GAME_WIDTH
-        const scaleY = dimensions.height / GAME_HEIGHT
-        const scale = Math.max(scaleX, scaleY, 0.8)
-
-        let camX = (dimensions.width / 2) - (nextState.player.x * scale)
-        let camY = (dimensions.height / 2) - (nextState.player.y * scale)
-
-        const minX = dimensions.width - (GAME_WIDTH * scale)
-        const minY = dimensions.height - (GAME_HEIGHT * scale)
-
-        if (minX > 0) camX = (dimensions.width - GAME_WIDTH * scale) / 2
-        else camX = Math.max(minX, Math.min(0, camX))
-
-        if (minY > 0) camY = (dimensions.height - GAME_HEIGHT * scale) / 2
-        else camY = Math.max(minY, Math.min(0, camY))
-
-        setCamera({ x: camX, y: camY, scale })
-      }
-
-      // Check for game over
-      if ((nextState.status === 'gameover' || nextState.status === 'victory') && onComplete) {
-        const totalAttempts = nextState.correctWordCollections + nextState.incorrectWordCollections
-        const accuracy = totalAttempts > 0 ? nextState.correctWordCollections / totalAttempts : 0
-        onComplete({ xp: calculateCastleDefenseXP(nextState.score), accuracy })
-      }
-    }
-  }, gameState?.status === 'playing' && hasStarted ? GAME_TICK_MS : null)
+    },
+    gameState?.status === "playing" && hasStarted ? GAME_TICK_MS : null,
+  );
 
   // Animation Loop
   useInterval(() => {
     if (hasStarted) {
-      setPlayerFrame(f => (f + 1) % 3)
-      setEnemyFrame(f => (f + 1) % 3)
+      setPlayerFrame((f) => (f + 1) % 3);
+      setEnemyFrame((f) => (f + 1) % 3);
     }
-  }, ANIMATION_FRAME_MS)
+  }, ANIMATION_FRAME_MS);
 
-  useInterval(() => {
-    setBuildEffects(prev =>
-      prev.filter(effect => Date.now() - effect.createdAt < 600)
-    )
-  }, buildEffects.length > 0 ? 100 : null)
+  useInterval(
+    () => {
+      setBuildEffects((prev) =>
+        prev.filter((effect) => Date.now() - effect.createdAt < 600),
+      );
+    },
+    buildEffects.length > 0 ? 100 : null,
+  );
 
   // Memoize sprite grids
   const grids = useMemo(() => {
-    if (!assets) return null
+    if (!assets) return null;
     return {
       player: buildSpriteGrid(assets.player.width, assets.player.height),
       soldier: buildSpriteGrid(assets.soldier.width, assets.soldier.height),
       tank: buildSpriteGrid(assets.tank.width, assets.tank.height),
       boss: buildSpriteGrid(assets.boss.width, assets.boss.height),
-    }
-  }, [assets])
+    };
+  }, [assets]);
 
   const activeBuildSlot = useMemo(() => {
-    if (!gameState || !gameState.sentenceCompleted) return null
-    return gameState.towerSlots.find(slot => {
-      const hasTower = gameState.towers.some(tower => tower.id === `tower-${slot.id}`)
-      if (hasTower) return false
-      return inRange(gameState.player.x, gameState.player.y, slot.x, slot.y, 50)
-    })
-  }, [gameState])
+    if (!gameState || !gameState.sentenceCompleted) return null;
+    return gameState.towerSlots.find((slot) => {
+      const hasTower = gameState.towers.some(
+        (tower) => tower.id === `tower-${slot.id}`,
+      );
+      if (hasTower) return false;
+      return inRange(
+        gameState.player.x,
+        gameState.player.y,
+        slot.x,
+        slot.y,
+        50,
+      );
+    });
+  }, [gameState]);
 
   // ============================================
   // RENDER HELPERS
@@ -285,7 +361,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
           Loading Defense...
         </div>
       </div>
-    )
+    );
   }
 
   if (!hasStarted) {
@@ -301,17 +377,59 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
           controls={CASTLE_DEFENSE_CONTROLS}
           startButtonText="Start Defense"
           onStart={startGame}
+        >
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1 bg-slate-900/80 p-1 rounded-lg border border-white/10">
+              {["easy", "normal", "hard", "extreme"].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d as any)}
+                  className={`px-3 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider transition-colors ${
+                    difficulty === d
+                      ? "bg-amber-500 text-slate-900"
+                      : "text-slate-400 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowRanking(true)}
+              className="p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 transition-colors border border-white/10"
+              title="Leaderboard"
+            >
+              <Trophy className="w-5 h-5" />
+            </button>
+          </div>
+        </GameStartScreen>
+
+        <RankingDialog
+          open={showRanking}
+          onOpenChange={setShowRanking}
+          apiEndpoint="/api/v1/games/castle-defense/ranking"
+          translationNamespace="castleDefense"
         />
       </div>
-    )
+    );
   }
 
-  if (gameState?.status === 'gameover' || gameState?.status === 'victory') {
-    const totalAttempts = gameState.correctWordCollections + gameState.incorrectWordCollections
-    const accuracy = totalAttempts > 0 ? gameState.correctWordCollections / totalAttempts : 0
-    const endStatus = gameState.status === 'victory' ? 'victory' : 'defeat'
-    const endTitle = gameState.status === 'victory' ? 'Victory!' : 'Defeated'
-    const endSubtitle = gameState.status === 'victory' ? 'The castle stands strong.' : 'The castle has fallen.'
+  const handleBackToMenu = useCallback(() => {
+    setHasStarted(false);
+    setGameState(null);
+  }, []);
+
+  if (gameState?.status === "gameover" || gameState?.status === "victory") {
+    const totalAttempts =
+      gameState.correctWordCollections + gameState.incorrectWordCollections;
+    const accuracy =
+      totalAttempts > 0 ? gameState.correctWordCollections / totalAttempts : 0;
+    const endStatus = gameState.status === "victory" ? "victory" : "defeat";
+    const endTitle = gameState.status === "victory" ? "Victory!" : "Defeated";
+    const endSubtitle =
+      gameState.status === "victory"
+        ? "The castle stands strong."
+        : "The castle has fallen.";
 
     return (
       <div className="relative h-[60vh] w-full overflow-hidden rounded-2xl bg-slate-950 border border-white/10 md:aspect-video md:h-auto">
@@ -323,13 +441,16 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
           title={endTitle}
           subtitle={endSubtitle}
           customStats={[
-            { label: 'Waves Cleared', value: gameState.wavesCompleted },
-            { label: 'Enemies Defeated', value: gameState.totalEnemiesDefeated },
+            { label: "Waves Cleared", value: gameState.wavesCompleted },
+            {
+              label: "Enemies Defeated",
+              value: gameState.totalEnemiesDefeated,
+            },
           ]}
-          onRestart={startGame}
+          onRestart={handleBackToMenu}
         />
       </div>
-    )
+    );
   }
 
   return (
@@ -339,22 +460,37 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
     >
       {gameState && dimensions.width > 0 && dimensions.height > 0 && (
         <Stage width={dimensions.width} height={dimensions.height}>
-          <Layer scaleX={camera.scale} scaleY={camera.scale} x={camera.x} y={camera.y}>
-            <BackgroundLayer grassMap={gameState.grassMap} path={gameState.path} />
+          <Layer
+            scaleX={camera.scale}
+            scaleY={camera.scale}
+            x={camera.x}
+            y={camera.y}
+          >
+            <BackgroundLayer
+              grassMap={gameState.grassMap}
+              path={gameState.path}
+            />
 
             {/* Tower slots */}
-            {gameState.towerSlots.map(slot => (
+            {gameState.towerSlots.map((slot) => (
               <Group key={slot.id}>
-                {gameState.sentenceCompleted && !gameState.towers.some(tower => tower.id === `tower-${slot.id}`) && (
-                  <Circle
-                    x={slot.x}
-                    y={slot.y}
-                    radius={TILE_SIZE * 0.6}
-                    stroke={activeBuildSlot?.id === slot.id ? '#22c55e' : 'rgba(250, 204, 21, 0.9)'}
-                    strokeWidth={activeBuildSlot?.id === slot.id ? 4 : 2}
-                    dash={activeBuildSlot?.id === slot.id ? [6, 4] : [4, 6]}
-                  />
-                )}
+                {gameState.sentenceCompleted &&
+                  !gameState.towers.some(
+                    (tower) => tower.id === `tower-${slot.id}`,
+                  ) && (
+                    <Circle
+                      x={slot.x}
+                      y={slot.y}
+                      radius={TILE_SIZE * 0.6}
+                      stroke={
+                        activeBuildSlot?.id === slot.id
+                          ? "#22c55e"
+                          : "rgba(250, 204, 21, 0.9)"
+                      }
+                      strokeWidth={activeBuildSlot?.id === slot.id ? 4 : 2}
+                      dash={activeBuildSlot?.id === slot.id ? [6, 4] : [4, 6]}
+                    />
+                  )}
                 <KonvaImage
                   image={assets.towerBase}
                   x={slot.x}
@@ -363,13 +499,19 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
                   height={TILE_SIZE}
                   offsetX={TILE_SIZE / 2}
                   offsetY={TILE_SIZE / 2}
-                  opacity={gameState.towers.some(tower => tower.id === `tower-${slot.id}`) ? 0.3 : 0.8}
+                  opacity={
+                    gameState.towers.some(
+                      (tower) => tower.id === `tower-${slot.id}`,
+                    )
+                      ? 0.3
+                      : 0.8
+                  }
                 />
               </Group>
             ))}
 
             {/* Active towers */}
-            {gameState.towers.map(tower => (
+            {gameState.towers.map((tower) => (
               <Group key={tower.id}>
                 <Circle
                   x={tower.x}
@@ -392,11 +534,11 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
             ))}
 
             {/* Tower build effects */}
-            {buildEffects.map(effect => {
-              const age = Date.now() - effect.createdAt
-              const progress = Math.min(age / 600, 1)
-              const radius = TILE_SIZE * (0.6 + progress * 0.8)
-              const opacity = 1 - progress
+            {buildEffects.map((effect) => {
+              const age = Date.now() - effect.createdAt;
+              const progress = Math.min(age / 600, 1);
+              const radius = TILE_SIZE * (0.6 + progress * 0.8);
+              const opacity = 1 - progress;
               return (
                 <Circle
                   key={effect.id}
@@ -406,7 +548,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
                   stroke={`rgba(34, 197, 94, ${opacity})`}
                   strokeWidth={3}
                 />
-              )
+              );
             })}
 
             {/* Base (Castle) */}
@@ -421,7 +563,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
             />
 
             {/* Projectiles */}
-            {gameState.projectiles.map(proj => (
+            {gameState.projectiles.map((proj) => (
               <Circle
                 key={proj.id}
                 x={proj.x}
@@ -432,17 +574,22 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
             ))}
 
             {/* Enemies */}
-            {gameState.enemies.map(enemy => {
-              const enemyImage = enemy.type === 'boss' ? assets.boss
-                : enemy.type === 'tank' ? assets.tank
-                : assets.soldier
-              const size = enemy.type === 'boss' ? 72
-                : enemy.type === 'tank' ? 56
-                : 40
-              
-              const grid = enemy.type === 'boss' ? grids?.boss
-                : enemy.type === 'tank' ? grids?.tank
-                : grids?.soldier
+            {gameState.enemies.map((enemy) => {
+              const enemyImage =
+                enemy.type === "boss"
+                  ? assets.boss
+                  : enemy.type === "tank"
+                    ? assets.tank
+                    : assets.soldier;
+              const size =
+                enemy.type === "boss" ? 72 : enemy.type === "tank" ? 56 : 40;
+
+              const grid =
+                enemy.type === "boss"
+                  ? grids?.boss
+                  : enemy.type === "tank"
+                    ? grids?.tank
+                    : grids?.soldier;
 
               return (
                 <Group key={enemy.id}>
@@ -473,36 +620,38 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
                     y={enemy.y - size / 2 - 10}
                     width={30 * (enemy.hp / enemy.maxHp)}
                     height={4}
-                    fill={enemy.hp > enemy.maxHp * 0.5 ? '#22c55e' : '#ef4444'}
+                    fill={enemy.hp > enemy.maxHp * 0.5 ? "#22c55e" : "#ef4444"}
                     cornerRadius={2}
                   />
                 </Group>
-              )
+              );
             })}
 
             {/* Words */}
-            {gameState.words.filter(w => !w.isCollected).map(word => (
-              <Group key={word.term + word.x} x={word.x} y={word.y}>
-                <Circle
-                  radius={WORD_RADIUS}
-                  fill="white"
-                  stroke="#111"
-                  strokeWidth={2}
-                />
-                <Text
-                  text={word.translation}
-                  fontSize={11}
-                  fontStyle="bold"
-                  fill="black"
-                  offsetX={word.radius}
-                  offsetY={word.radius}
-                  width={word.radius * 2}
-                  height={word.radius * 2}
-                  align="center"
-                  verticalAlign="middle"
-                />
-              </Group>
-            ))}
+            {gameState.words
+              .filter((w) => !w.isCollected)
+              .map((word) => (
+                <Group key={word.term + word.x} x={word.x} y={word.y}>
+                  <Circle
+                    radius={WORD_RADIUS}
+                    fill="white"
+                    stroke="#111"
+                    strokeWidth={2}
+                  />
+                  <Text
+                    text={word.translation}
+                    fontSize={11}
+                    fontStyle="bold"
+                    fill="black"
+                    offsetX={word.radius}
+                    offsetY={word.radius}
+                    width={word.radius * 2}
+                    height={word.radius * 2}
+                    align="center"
+                    verticalAlign="middle"
+                  />
+                </Group>
+              ))}
 
             {/* Player */}
             {grids && (
@@ -518,7 +667,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
                   grids.player.fw,
                   grids.player.fh,
                   playerFrame,
-                  input.dx === 0 && input.dy === 0 ? 0 : 1
+                  input.dx === 0 && input.dy === 0 ? 0 : 1,
                 )}
                 scaleX={input.dx < 0 ? -1 : 1}
               />
@@ -537,14 +686,22 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
             </div>
           )}
           <div className="bg-slate-950/70 border border-white/10 px-4 py-2 rounded-xl shadow-lg backdrop-blur-md text-center">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Progress</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">
+              Progress
+            </span>
             <div className="text-sm font-semibold text-white md:text-base">
               {gameState.sentenceWords.map((word, idx) => (
                 <span
                   key={`${word}-${idx}`}
-                  className={gameState.collectedWordIndices.includes(idx) ? 'text-emerald-300' : 'text-slate-400'}
+                  className={
+                    gameState.collectedWordIndices.includes(idx)
+                      ? "text-emerald-300"
+                      : "text-slate-400"
+                  }
                 >
-                  {gameState.collectedWordIndices.includes(idx) ? word : '___'}{' '}
+                  {gameState.collectedWordIndices.includes(idx)
+                    ? word
+                    : "___"}{" "}
                 </span>
               ))}
             </div>
@@ -555,7 +712,8 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
             </div>
           )}
           <div className="bg-slate-950/70 border border-white/10 px-3 py-1 rounded-full shadow-lg text-white text-[11px] font-bold uppercase tracking-widest md:text-xs">
-            Wave {gameState.wave}/6 - Enemies: {gameState.enemiesKilledThisWave}/{gameState.totalEnemiesThisWave}
+            Wave {gameState.wave}/6 - Enemies: {gameState.enemiesKilledThisWave}
+            /{gameState.totalEnemiesThisWave}
           </div>
         </div>
       )}
@@ -563,20 +721,30 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
       {/* HUD - TOP */}
       <div className="absolute top-44 left-4 z-30 pointer-events-none md:top-4">
         <div className="bg-slate-900/90 border border-slate-700/50 px-4 py-2 rounded-2xl shadow-xl backdrop-blur-md">
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-1">Score</span>
-          <span className="text-xl font-black text-white leading-none">{gameState?.score || 0}</span>
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-1">
+            Score
+          </span>
+          <span className="text-xl font-black text-white leading-none">
+            {gameState?.score || 0}
+          </span>
         </div>
       </div>
 
       <div className="absolute top-44 right-4 z-30 pointer-events-none md:top-4">
         <div className="bg-slate-900/90 border border-slate-700/50 px-4 py-2 rounded-2xl shadow-xl backdrop-blur-md text-right">
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-1">Castle HP</span>
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-1">
+            Castle HP
+          </span>
           <div className="flex items-center gap-2">
-            <span className="text-xl font-black text-rose-500 leading-none">{gameState?.base.hp || 0}</span>
+            <span className="text-xl font-black text-rose-500 leading-none">
+              {gameState?.base.hp || 0}
+            </span>
             <div className="w-16 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-              <div 
-                className="h-full bg-rose-500 transition-all duration-300" 
-                style={{ width: `${(gameState?.base.hp || 0) / (gameState?.base.maxHp || 100) * 100}%` }}
+              <div
+                className="h-full bg-rose-500 transition-all duration-300"
+                style={{
+                  width: `${((gameState?.base.hp || 0) / (gameState?.base.maxHp || 100)) * 100}%`,
+                }}
               />
             </div>
           </div>
@@ -600,9 +768,12 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
       )}
 
       {/* D-Pad */}
-      <div className="absolute bottom-6 right-6 z-30 pointer-events-auto" data-testid="virtual-dpad">
+      <div
+        className="absolute bottom-6 right-6 z-30 pointer-events-auto"
+        data-testid="virtual-dpad"
+      >
         <VirtualDPad onInput={setVirtualInput} />
       </div>
     </div>
-  )
+  );
 }

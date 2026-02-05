@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import { CastleDefenseGame } from './CastleDefenseGame'
 import { VocabularyItem } from '@/store/useGameStore'
-import * as castleDefense from '@/lib/castleDefense'
+import * as castleDefense from '@/lib/games/castleDefense'
 import type React from 'react'
 
 jest.mock('@/lib/castleDefense', () => {
