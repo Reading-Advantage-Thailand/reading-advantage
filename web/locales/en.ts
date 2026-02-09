@@ -648,6 +648,11 @@ export default {
             description:
               "Collect words to build towers and defend your castle from invaders!",
           },
+          potionRush: {
+            title: "Potion Rush",
+            description:
+              "Mix potions by combining words in the correct order to defeat the monster!",
+          },
         },
 
         // Sections

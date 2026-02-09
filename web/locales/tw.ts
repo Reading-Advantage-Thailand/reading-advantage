@@ -601,6 +601,10 @@ export default {
             title: "Castle Defense",
             description: "收集詞彙來建造塔樓並保衛你的城堡免受入侵者的攻擊！",
           },
+          potionRush: {
+            title: "Potion Rush",
+            description: "透過按順序組合單字來調製藥水，擊敗怪物！",
+          },
         },
 
         // Sections

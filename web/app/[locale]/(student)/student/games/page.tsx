@@ -119,6 +119,18 @@ export default function GamesPage() {
       badge: t("badges.new"),
       badgeVariant: "secondary" as const,
     },
+    {
+      id: "sentence/potion-rush",
+      title: t("games.potionRush.title"),
+      description: t("games.potionRush.description"),
+      icon: Sparkles,
+      coverImage: "/games/cover/potion-rush-cover.png",
+      color: "from-indigo-500 via-purple-500 to-pink-500",
+      difficulty: t("difficulty.medium"),
+      type: t("types.sentence"),
+      badge: t("badges.new"),
+      badgeVariant: "secondary" as const,
+    },
   ];
 
   return (

@@ -633,6 +633,11 @@ export default {
             description:
               "เก็บคำศัพท์เพื่อสร้างหอคอยและปกป้องปราสาทของคุณจากผู้บุกรุก!",
           },
+          potionRush: {
+            title: "Potion Rush",
+            description:
+              "ผสมยาโดยการเรียงคำศัพท์ตามลำดับที่ถูกต้องเพื่อเอาชนะมอนสเตอร์!",
+          },
         },
 
         // Sections
@@ -940,6 +945,7 @@ export default {
             leaderboard: "กระดานผู้นำ",
           },
         },
+
       },
       lessonPage: {
         translatingContent: "กำลังแปลเนื้อหา...",

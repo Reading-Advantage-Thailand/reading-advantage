@@ -1,0 +1,336 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Stage, Layer, Image as KonvaImage } from "react-konva";
+import { usePotionRushStore } from "@/store/usePotionRushStore";
+import { VocabularyItem } from "@/store/useGameStore";
+import { withBasePath } from "@/lib/games/basePath";
+import { useGameLoop } from "@/hooks/useGameLoop";
+import { AnimatePresence, motion, useAnimation } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { Beaker } from "lucide-react";
+import { GameEndScreen } from "@/components/games/game/GameEndScreen";
+import {
+  GameStartScreen,
+  type ControlHint,
+  type Instruction,
+} from "@/components/games/game/GameStartScreen";
+
+// Components
+import ConveyorBelt from "./ConveyorBelt";
+import CauldronStation from "./CauldronStation";
+import CustomerQueue from "./CustomerQueue";
+import TrashPortal from "./TrashPortal";
+import PotionRushEffectsLayer from "./PotionRushEffectsLayer";
+import PotionRushSoundController from "./PotionRushSoundController";
+
+interface PotionRushGameProps {
+  vocabList: VocabularyItem[];
+  difficulty: "easy" | "normal" | "hard" | "extreme";
+  onComplete: (results: {
+    xp: number;
+    accuracy: number;
+    difficulty: string;
+    score: number;
+  }) => void;
+}
+
+export default function PotionRushGame({
+  vocabList,
+  difficulty,
+  onComplete,
+}: PotionRushGameProps) {
+  const router = useRouter();
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  // Image Loading State
+  const [images, setImages] = useState<Record<string, HTMLImageElement>>({});
+
+  useEffect(() => {
+    const assets = {
+      wall: withBasePath("/games/sentence/potion-rush/shop-wall.png"),
+      floor: withBasePath("/games/sentence/potion-rush/shop-floor.png"),
+      counter: withBasePath("/games/sentence/potion-rush/shop-counter.png"),
+    };
+
+    const loadedImgs: Record<string, HTMLImageElement> = {};
+    let count = 0;
+    const sources = Object.entries(assets);
+
+    sources.forEach(([key, src]) => {
+      const img = new window.Image();
+      img.src = src;
+      img.onload = () => {
+        loadedImgs[key] = img;
+        count++;
+        if (count === sources.length) {
+          setImages(loadedImgs);
+        }
+      };
+      img.onerror = () => {
+        console.error(`Failed to load: ${src}`);
+        count++;
+        if (count === sources.length) {
+          setImages(loadedImgs);
+        }
+      };
+    });
+  }, []);
+
+  // Store Actions
+  const startGame = usePotionRushStore((state) => state.startGame);
+  const tick = usePotionRushStore((state) => state.tick);
+  const gameState = usePotionRushStore((state) => state.gameState);
+  const reset = usePotionRushStore((state) => state.reset);
+  const score = usePotionRushStore((state) => state.score);
+  const reputation = usePotionRushStore((state) => state.reputation);
+  const completedSentences = usePotionRushStore(
+    (state) => state.completedSentences,
+  );
+  const totalXpEarned = usePotionRushStore((state) => state.totalXpEarned);
+
+  // Visual Effects
+  const controls = useAnimation();
+  const prevReputation = useRef(reputation);
+
+  useEffect(() => {
+    if (reputation < prevReputation.current) {
+      // Trigger Damage Effect
+      controls.start("damage");
+    }
+    prevReputation.current = reputation;
+  }, [reputation, controls]);
+
+  // Game Over Handler
+  useEffect(() => {
+    if (gameState === "GAME_OVER") {
+      onComplete({
+        xp: totalXpEarned,
+        accuracy: Math.max(0, Math.min(reputation, 100)) / 100,
+        difficulty: difficulty,
+        score: score,
+      });
+    }
+  }, [gameState, totalXpEarned, reputation, difficulty, score, onComplete]);
+
+  // Layout Constants
+  const isPortrait = dimensions.height > dimensions.width;
+  const VIRTUAL_WIDTH = isPortrait ? 720 : 1280;
+  const VIRTUAL_HEIGHT = isPortrait ? 1280 : 720;
+
+  // Calculate Scale to fit (Contain)
+  const scaleX = dimensions.width / VIRTUAL_WIDTH;
+  const scaleY = dimensions.height / VIRTUAL_HEIGHT;
+  const scale = Math.min(scaleX, scaleY);
+
+  // Center the Stage
+  const stageX = (dimensions.width - VIRTUAL_WIDTH * scale) / 2;
+  const stageY = (dimensions.height - VIRTUAL_HEIGHT * scale) / 2;
+
+  const LAYOUT = isPortrait
+    ? {
+        wallH: 640,
+        floorH: 640,
+        counterY: 250,
+        customerY: 252,
+        cauldronY: 450,
+        beltY: 1150,
+        trashX: 360, // Center
+        trashY: 800, // Between Cauldrons and Belt
+        isPortrait: true,
+      }
+    : {
+        wallH: 480,
+        floorH: 240,
+        counterY: 480 - 80, // 400
+        customerY: 402, // 2px below counter top
+        cauldronY: 540,
+        beltY: 620,
+        trashX: 1230,
+        trashY: 540,
+        isPortrait: false,
+      };
+
+  // Initialization & Resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight,
+        });
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Game Loop (fixed timestep to match other Konva games)
+  const isRunning =
+    gameState === "PLAYING" && dimensions.width > 0 && dimensions.height > 0;
+  useGameLoop((dt) => tick(dt, VIRTUAL_WIDTH), isRunning, 50);
+
+  // Initial Start
+  useEffect(() => {
+    return () => reset();
+  }, [reset]);
+
+  if (dimensions.width === 0)
+    return <div ref={containerRef} className="w-full h-full" />;
+
+  return (
+    <div ref={containerRef} className="w-full h-full relative font-sans">
+      <PotionRushSoundController />
+
+      <AnimatePresence>
+        {!hasStarted && (
+          <GameStartScreen
+            gameTitle="Potion Rush"
+            gameSubtitle="Alchemical Management"
+            icon={Beaker}
+            vocabulary={vocabList}
+            instructions={POTION_RUSH_INSTRUCTIONS}
+            proTip="Use the Trash Portal to clear ruined potions if you make a mistake."
+            controls={POTION_RUSH_CONTROLS}
+            startButtonText="Start Brewing"
+            onStart={() => {
+              setHasStarted(true);
+              startGame(vocabList, difficulty);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* HUD Overlay (HTML is easier for text overlays than Canvas sometimes) */}
+      {hasStarted && (
+        <div className="absolute top-0 left-0 p-4 text-white z-10 pointer-events-none">
+          <div className="text-xl font-bold text-amber-400 drop-shadow-lg">
+            Score: {score}
+          </div>
+          <div className="text-sm text-slate-300 drop-shadow-md">
+            Reputation: {reputation}%
+          </div>
+        </div>
+      )}
+
+      <motion.div
+        animate={controls}
+        variants={{
+          default: { x: 0 },
+          damage: {
+            x: [0, -10, 10, -10, 10, 0],
+            transition: { duration: 0.4 },
+          },
+        }}
+        className="relative"
+      >
+        <Stage
+          width={dimensions.width}
+          height={dimensions.height}
+          scaleX={scale}
+          scaleY={scale}
+          x={stageX}
+          y={stageY}
+        >
+          <Layer>
+            {/* 1. Background Wall */}
+            {images.wall && (
+              <KonvaImage
+                image={images.wall}
+                width={VIRTUAL_WIDTH}
+                height={LAYOUT.wallH}
+              />
+            )}
+
+            {/* 2. Background Floor */}
+            {images.floor && (
+              <KonvaImage
+                image={images.floor}
+                y={LAYOUT.wallH}
+                width={VIRTUAL_WIDTH}
+                height={LAYOUT.floorH}
+              />
+            )}
+
+            {/* 3. Customer Queue (Behind counter) */}
+            <CustomerQueue y={LAYOUT.customerY} width={VIRTUAL_WIDTH} />
+
+            {/* 4. Counter (In front of customers) */}
+            {images.counter && (
+              <KonvaImage
+                image={images.counter}
+                y={LAYOUT.counterY}
+                width={VIRTUAL_WIDTH}
+                height={160}
+              />
+            )}
+
+            {/* 5. Active Stations */}
+            <CauldronStation
+              y={LAYOUT.cauldronY}
+              width={VIRTUAL_WIDTH}
+              layout={LAYOUT}
+            />
+
+            <TrashPortal x={LAYOUT.trashX} y={LAYOUT.trashY} />
+
+            <ConveyorBelt
+              y={LAYOUT.beltY}
+              width={VIRTUAL_WIDTH}
+              dragBoundFunc={(pos) => pos}
+              layout={LAYOUT}
+            />
+
+            <PotionRushEffectsLayer />
+          </Layer>
+        </Stage>
+      </motion.div>
+
+      {/* Red Flash Overlay */}
+      <motion.div
+        className="absolute inset-0 bg-red-500 pointer-events-none z-40"
+        initial={{ opacity: 0 }}
+        animate={controls}
+        variants={{
+          default: { opacity: 0 },
+          damage: {
+            opacity: [0, 0.3, 0],
+            transition: { duration: 0.4 },
+          },
+        }}
+      />
+
+      {gameState === "GAME_OVER" && (
+        <GameEndScreen
+          status="defeat"
+          title="Shop Closed!"
+          subtitle="The reputation of your potion shop hit rock bottom."
+          score={score}
+          xp={totalXpEarned}
+          accuracy={Math.max(0, Math.min(reputation, 100)) / 100}
+          customStats={[
+            { label: "Customers Served", value: completedSentences },
+          ]}
+          restartButtonText="Open Again"
+          onRestart={() => startGame(vocabList, difficulty)}
+          onExit={() => router.push("/")}
+        />
+      )}
+    </div>
+  );
+}
+
+const POTION_RUSH_INSTRUCTIONS: Instruction[] = [
+  { step: 1, text: "Take orders from customers in their native language." },
+  { step: 2, text: "Collect target language words from the conveyor belt." },
+  { step: 3, text: "Drag correct words to a cauldron, then serve the potion." },
+];
+
+const POTION_RUSH_CONTROLS: ControlHint[] = [
+  { label: "Match", keys: "Meanings", color: "bg-amber-500" },
+  { label: "Drag", keys: "Ingredients", color: "bg-emerald-500" },
+];

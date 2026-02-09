@@ -639,6 +639,11 @@ export default {
             description:
               "Thu thập từ vựng để xây tháp và bảo vệ lâu đài của bạn khỏi kẻ xâm lược!",
           },
+          potionRush: {
+            title: "Potion Rush",
+            description:
+              "Pha chế thuốc bằng cách kết hợp các từ theo đúng thứ tự để đánh bại quái vật!",
+          },
         },
 
         // Sections
