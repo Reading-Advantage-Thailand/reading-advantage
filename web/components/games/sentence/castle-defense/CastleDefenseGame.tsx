@@ -17,6 +17,7 @@ import {
   Group,
 } from "react-konva";
 import { Shield, Trophy } from "lucide-react";
+import { useScopedI18n } from "@/locales/client";
 import {
   GameStartScreen,
   type ControlHint,
@@ -82,22 +83,32 @@ type Props = {
   }) => void;
 };
 
-const CASTLE_DEFENSE_INSTRUCTIONS: Instruction[] = [
-  { step: 1, text: "Collect the sentence words in order to prepare a tower." },
-  {
-    step: 2,
-    text: "Move to an empty tower base to build and protect the path.",
-  },
-  { step: 3, text: "Defeat incoming enemies before they reach the castle." },
-];
-
-const CASTLE_DEFENSE_CONTROLS: ControlHint[] = [
-  { label: "Move", keys: "Arrows / WASD", color: "bg-amber-500" },
-  { label: "Build", keys: "Walk to base", color: "bg-emerald-500" },
-  { label: "Collect", keys: "Touch words", color: "bg-blue-500" },
-];
-
 export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
+  const t = useScopedI18n("pages.student.gamesPage.castleDefense");
+
+  const CASTLE_DEFENSE_INSTRUCTIONS: Instruction[] = [
+    { step: 1, text: t("instructions.step1") },
+    { step: 2, text: t("instructions.step2") },
+    { step: 3, text: t("instructions.step3") },
+  ];
+
+  const CASTLE_DEFENSE_CONTROLS: ControlHint[] = [
+    {
+      label: t("controls.move"),
+      keys: t("controls.moveKeys"),
+      color: "bg-amber-500",
+    },
+    {
+      label: t("controls.build"),
+      keys: t("controls.buildKeys"),
+      color: "bg-emerald-500",
+    },
+    {
+      label: t("controls.collect"),
+      keys: t("controls.collectKeys"),
+      color: "bg-blue-500",
+    },
+  ];
   // ============================================
   // STATE
   // ============================================
@@ -124,6 +135,11 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
 
   // Input
   const { input, setVirtualInput, consumeCast } = useDirectionalInput();
+
+  const handleBackToMenu = useCallback(() => {
+    setHasStarted(false);
+    setGameState(null);
+  }, []);
 
   // ============================================
   // ASSET LOADING
@@ -358,7 +374,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
     return (
       <div className="relative h-[60vh] w-full overflow-hidden rounded-2xl bg-slate-950 flex items-center justify-center border border-white/10 md:aspect-video md:h-auto">
         <div className="text-white animate-pulse font-mono tracking-widest uppercase">
-          Loading Defense...
+          {t("loading")}
         </div>
       </div>
     );
@@ -368,14 +384,14 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
     return (
       <div className="relative h-[60vh] w-full overflow-hidden rounded-2xl bg-slate-950 border border-white/10 md:aspect-video md:h-auto">
         <GameStartScreen
-          gameTitle="Castle Defense"
-          gameSubtitle="Kingdom Defense"
+          gameTitle={t("title")}
+          gameSubtitle={t("subtitle")}
           icon={Shield}
           vocabulary={vocabulary}
           instructions={CASTLE_DEFENSE_INSTRUCTIONS}
-          proTip="Finish sentences quickly to unlock more towers and control the waves."
+          proTip={t("proTip")}
           controls={CASTLE_DEFENSE_CONTROLS}
-          startButtonText="Start Defense"
+          startButtonText={t("startButton")}
           onStart={startGame}
         >
           <div className="flex items-center gap-2">
@@ -390,7 +406,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
                       : "text-slate-400 hover:text-white hover:bg-white/10"
                   }`}
                 >
-                  {d}
+                  {t(`difficulty.${d}` as any)}
                 </button>
               ))}
             </div>
@@ -414,22 +430,20 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
     );
   }
 
-  const handleBackToMenu = useCallback(() => {
-    setHasStarted(false);
-    setGameState(null);
-  }, []);
-
   if (gameState?.status === "gameover" || gameState?.status === "victory") {
     const totalAttempts =
       gameState.correctWordCollections + gameState.incorrectWordCollections;
     const accuracy =
       totalAttempts > 0 ? gameState.correctWordCollections / totalAttempts : 0;
     const endStatus = gameState.status === "victory" ? "victory" : "defeat";
-    const endTitle = gameState.status === "victory" ? "Victory!" : "Defeated";
+    const endTitle =
+      gameState.status === "victory"
+        ? t("messages.victory")
+        : t("messages.defeat");
     const endSubtitle =
       gameState.status === "victory"
-        ? "The castle stands strong."
-        : "The castle has fallen.";
+        ? t("messages.victoryDesc")
+        : t("messages.defeatDesc");
 
     return (
       <div className="relative h-[60vh] w-full overflow-hidden rounded-2xl bg-slate-950 border border-white/10 md:aspect-video md:h-auto">
@@ -441,9 +455,12 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
           title={endTitle}
           subtitle={endSubtitle}
           customStats={[
-            { label: "Waves Cleared", value: gameState.wavesCompleted },
             {
-              label: "Enemies Defeated",
+              label: t("messages.wavesCleared"),
+              value: gameState.wavesCompleted,
+            },
+            {
+              label: t("messages.enemiesDefeated"),
               value: gameState.totalEnemiesDefeated,
             },
           ]}
@@ -687,7 +704,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
           )}
           <div className="bg-slate-950/70 border border-white/10 px-4 py-2 rounded-xl shadow-lg backdrop-blur-md text-center">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">
-              Progress
+              {t("hud.progress")}
             </span>
             <div className="text-sm font-semibold text-white md:text-base">
               {gameState.sentenceWords.map((word, idx) => (
@@ -708,12 +725,15 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
           </div>
           {gameState.sentenceCompleted && (
             <div className="bg-emerald-600/90 border border-emerald-300/60 px-4 py-1 rounded-full shadow-lg text-white text-[11px] font-black uppercase tracking-widest md:text-xs">
-              Sentence Complete - Build Tower!
+              {t("messages.sentenceComplete")}
             </div>
           )}
           <div className="bg-slate-950/70 border border-white/10 px-3 py-1 rounded-full shadow-lg text-white text-[11px] font-bold uppercase tracking-widest md:text-xs">
-            Wave {gameState.wave}/6 - Enemies: {gameState.enemiesKilledThisWave}
-            /{gameState.totalEnemiesThisWave}
+            {t("hud.wave", {
+              current: gameState.wave,
+              killed: gameState.enemiesKilledThisWave,
+              total: gameState.totalEnemiesThisWave,
+            })}
           </div>
         </div>
       )}
@@ -722,7 +742,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
       <div className="absolute top-44 left-4 z-30 pointer-events-none md:top-4">
         <div className="bg-slate-900/90 border border-slate-700/50 px-4 py-2 rounded-2xl shadow-xl backdrop-blur-md">
           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-1">
-            Score
+            {t("hud.score")}
           </span>
           <span className="text-xl font-black text-white leading-none">
             {gameState?.score || 0}
@@ -733,7 +753,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
       <div className="absolute top-44 right-4 z-30 pointer-events-none md:top-4">
         <div className="bg-slate-900/90 border border-slate-700/50 px-4 py-2 rounded-2xl shadow-xl backdrop-blur-md text-right">
           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-1">
-            Castle HP
+            {t("hud.castleHp")}
           </span>
           <div className="flex items-center gap-2">
             <span className="text-xl font-black text-rose-500 leading-none">
@@ -754,7 +774,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
       {activeBuildSlot && (
         <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <div className="bg-emerald-600/90 border border-emerald-300/60 px-5 py-2 rounded-full shadow-lg text-white font-black uppercase tracking-widest text-xs">
-            Build Tower
+            {t("hud.buildTower")}
           </div>
         </div>
       )}

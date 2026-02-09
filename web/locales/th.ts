@@ -892,6 +892,41 @@ export default {
           },
         },
         castleDefense: {
+          title: "Castle Defense",
+          subtitle: "ปกป้องราชอาณาจักร",
+          loading: "กำลังโหลดเกมป้องกัน...",
+          proTip:
+            "เรียงประโยคให้เสร็จไวๆ เพื่อปลดล็อกป้อมปราการและควบคุมการบุก",
+          startButton: "เริ่มป้องกัน",
+          instructions: {
+            step1: "เก็บคำศัพท์ในประโยคตามลำดับเพื่อเตรียมสร้างป้อม",
+            step2: "เดินไปยังฐานป้อมที่ว่างเพื่อสร้างและปกป้องเส้นทาง",
+            step3: "กำจัดศัตรูที่บุกเข้ามาก่อนที่จะถึงปราสาท",
+          },
+          controls: {
+            move: "เคลื่อนที่",
+            moveKeys: "ลูกศร / WASD",
+            build: "สร้าง",
+            buildKeys: "เดินไปที่ฐาน",
+            collect: "เก็บคำ",
+            collectKeys: "สัมผัสคำ",
+          },
+          hud: {
+            score: "คะแนน",
+            castleHp: "เลือดปราสาท",
+            progress: "ความคืบหน้า",
+            wave: "เวฟ {current}/6 - ศัตรู: {killed}/{total}",
+            buildTower: "สร้างป้อม",
+          },
+          messages: {
+            sentenceComplete: "ประโยคครบแล้ว - สร้างป้อมเลย!",
+            victory: "ชัยชนะ!",
+            defeat: "พ่ายแพ้",
+            victoryDesc: "ปราสาทยังคงตั้งตระหง่าน",
+            defeatDesc: "ปราสาทแตกพ่ายแล้ว",
+            wavesCleared: "เวฟที่ผ่าน",
+            enemiesDefeated: "ศัตรูที่กำจัด",
+          },
           difficulty: {
             easy: "ง่าย",
             normal: "ปกติ",

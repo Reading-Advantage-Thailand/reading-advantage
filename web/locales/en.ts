@@ -913,6 +913,41 @@ export default {
           },
         },
         castleDefense: {
+          title: "Castle Defense",
+          subtitle: "Kingdom Defense",
+          loading: "Loading Defense...",
+          proTip:
+            "Finish sentences quickly to unlock more towers and control the waves.",
+          startButton: "Start Defense",
+          instructions: {
+            step1: "Collect the sentence words in order to prepare a tower.",
+            step2: "Move to an empty tower base to build and protect the path.",
+            step3: "Defeat incoming enemies before they reach the castle.",
+          },
+          controls: {
+            move: "Move",
+            moveKeys: "Arrows / WASD",
+            build: "Build",
+            buildKeys: "Walk to base",
+            collect: "Collect",
+            collectKeys: "Touch words",
+          },
+          hud: {
+            score: "Score",
+            castleHp: "Castle HP",
+            progress: "Progress",
+            wave: "Wave {current}/6 - Enemies: {killed}/{total}",
+            buildTower: "Build Tower",
+          },
+          messages: {
+            sentenceComplete: "Sentence Complete - Build Tower!",
+            victory: "Victory!",
+            defeat: "Defeated",
+            victoryDesc: "The castle stands strong.",
+            defeatDesc: "The castle has fallen.",
+            wavesCleared: "Waves Cleared",
+            enemiesDefeated: "Enemies Defeated",
+          },
           difficulty: {
             easy: "Easy",
             normal: "Normal",

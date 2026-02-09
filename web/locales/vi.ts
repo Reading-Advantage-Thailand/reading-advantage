@@ -903,6 +903,43 @@ export default {
           },
         },
         castleDefense: {
+          title: "Castle Defense",
+          subtitle: "Bảo vệ Vương quốc",
+          loading: "Đang tải trò chơi...",
+          proTip:
+            "Hoàn thành câu nhanh chóng để mở khóa thêm tháp và kiểm soát các đợt tấn công.",
+          startButton: "Bắt đầu thủ thành",
+          instructions: {
+            step1:
+              "Thu thập các từ trong câu theo thứ tự để chuẩn bị xây tháp.",
+            step2:
+              "Di chuyển đến bệ tháp trống để xây dựng và bảo vệ con đường.",
+            step3: "Đánh bại kẻ thù trước khi chúng đến lâu đài.",
+          },
+          controls: {
+            move: "Di chuyển",
+            moveKeys: "Mũi tên / WASD",
+            build: "Xây dựng",
+            buildKeys: "Đi đến bệ tháp",
+            collect: "Thu thập",
+            collectKeys: "Chạm vào từ",
+          },
+          hud: {
+            score: "Điểm",
+            castleHp: "HP Lâu đài",
+            progress: "Tiến độ",
+            wave: "Đợt {current}/6 - Kẻ thù: {killed}/{total}",
+            buildTower: "Xây tháp",
+          },
+          messages: {
+            sentenceComplete: "Hoàn thành câu - Xây tháp ngay!",
+            victory: "Chiến thắng!",
+            defeat: "Thất bại",
+            victoryDesc: "Lâu đài vẫn đứng vững.",
+            defeatDesc: "Lâu đài đã sụp đổ.",
+            wavesCleared: "Đợt đã qua",
+            enemiesDefeated: "Kẻ thù bị tiêu diệt",
+          },
           difficulty: {
             easy: "Dễ",
             normal: "Thường",
