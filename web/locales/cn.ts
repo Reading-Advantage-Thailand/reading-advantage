@@ -603,6 +603,11 @@ export default {
             title: "Potion Rush",
             description: "通过按顺序列出单词来混合药水，以击败怪物！",
           },
+          enchantedLibrary: {
+            title: "Enchanted Library",
+            description:
+              "Explore the Enchanted Library and collect magical artifacts by matching words and completing challenges!",
+          },
         },
 
         // Sections

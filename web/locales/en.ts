@@ -653,6 +653,11 @@ export default {
             description:
               "Mix potions by combining words in the correct order to defeat the monster!",
           },
+          enchantedLibrary: {
+            title: "Enchanted Library",
+            description:
+              "Explore the Enchanted Library and collect magical artifacts by matching words and completing challenges!",
+          },
         },
 
         // Sections

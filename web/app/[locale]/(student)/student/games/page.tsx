@@ -29,6 +29,7 @@ import {
   Trophy,
   Star,
   Clock,
+  BookOpen,
 } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 
@@ -98,6 +99,18 @@ export default function GamesPage() {
       description: t("games.dragonFlight.description"),
       icon: Flame,
       coverImage: "/games/cover/dragon-flight-cover.png",
+      color: "from-purple-500 via-pink-500 to-rose-500",
+      difficulty: t("difficulty.medium"),
+      type: t("types.strategy"),
+      badge: t("badges.popular"),
+      badgeVariant: "default" as const,
+    },
+    {
+      id: "vocabulary/enchanted-library",
+      title: t("games.enchantedLibrary.title"),
+      description: t("games.enchantedLibrary.description"),
+      icon: BookOpen,
+      coverImage: "/games/cover/enchanted-library-cover.png",
       color: "from-purple-500 via-pink-500 to-rose-500",
       difficulty: t("difficulty.medium"),
       type: t("types.strategy"),

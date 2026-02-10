@@ -644,6 +644,11 @@ export default {
             description:
               "Pha chế thuốc bằng cách kết hợp các từ theo đúng thứ tự để đánh bại quái vật!",
           },
+          enchantedLibrary: {
+            title: "Enchanted Library",
+            description:
+              "Explore the Enchanted Library and collect magical artifacts by matching words and completing challenges!",
+          },
         },
 
         // Sections
