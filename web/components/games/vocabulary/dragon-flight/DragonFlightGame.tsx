@@ -532,7 +532,7 @@ export function DragonFlightGame({
     setBossSequenceDone(false);
     pendingSelectionRef.current = null;
     playerTargetRef.current = null;
-  }, [vocabulary, difficulty]);
+  }, [vocabulary, difficulty, DIFFICULTY_SETTINGS]);
 
   useEffect(() => {
     resetGame();

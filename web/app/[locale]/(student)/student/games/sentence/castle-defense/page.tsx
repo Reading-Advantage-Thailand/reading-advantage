@@ -72,7 +72,7 @@ export default function CastleDefensePage() {
     } else {
       setIsLoading(false);
     }
-  }, [vocabulary.length, setVocabulary]);
+  }, [vocabulary.length, setVocabulary, locale]);
 
   const handleComplete = useCallback(
     async (results: { xp: number; accuracy: number; difficulty: string }) => {
@@ -209,7 +209,10 @@ export default function CastleDefensePage() {
                         <li>ไปที่หน้าอ่านบทความ (Articles)</li>
                         <li>เลือกบทความที่ต้องการอ่าน</li>
                         <li>คลิกที่ประโยคที่ต้องการบันทึก</li>
-                        <li>เลือก "บันทึกลงแฟลชการ์ด" (Save to Flashcard)</li>
+                        <li>
+                          เลือก &quot;บันทึกลงแฟลชการ์ด&quot; (Save to
+                          Flashcard)
+                        </li>
                         <li>กลับมาที่หน้านี้เพื่อเล่นเกม</li>
                       </ol>
                     </div>

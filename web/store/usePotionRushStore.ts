@@ -85,6 +85,9 @@ interface PotionRushState {
   timeToNextCustomerSpawn: number;
   timeToNextIngredientSpawn: number;
 
+  timeLeft: number; // Seconds remaining
+  timeLimit: number; // Total time for the level
+
   // Actions
   startGame: (
     vocabList: VocabularyItem[],
@@ -135,6 +138,8 @@ export const usePotionRushStore = create<PotionRushState>((set, get) => ({
   score: 0,
   reputation: 100,
   dayTime: 0,
+  timeLeft: 180,
+  timeLimit: 180,
 
   cauldrons: [
     {
@@ -181,6 +186,8 @@ export const usePotionRushStore = create<PotionRushState>((set, get) => ({
       score: 0,
       reputation: 100,
       dayTime: 0,
+      timeLeft: 180,
+      timeLimit: 180,
       customers: [null, null, null],
       conveyorItems: [],
       effects: [],
@@ -233,6 +240,7 @@ export const usePotionRushStore = create<PotionRushState>((set, get) => ({
       completedSentences: 0,
       vocabList: [],
       totalXpEarned: 0,
+      timeLeft: 180,
     }),
 
   spawnCustomer: () => {
@@ -347,9 +355,17 @@ export const usePotionRushStore = create<PotionRushState>((set, get) => ({
       timeToNextIngredientSpawn,
       spawnRate,
       vocabList,
+      timeLeft,
     } = get();
 
     if (gameState !== "PLAYING") return;
+
+    // 0. Time Limit
+    const newTimeLeft = timeLeft - dt;
+    if (newTimeLeft <= 0) {
+      set({ gameState: "GAME_OVER", timeLeft: 0 });
+      return;
+    }
 
     // --- 1. SPAWN LOGIC & CUSTOMER MANAGEMENT ---
     // We process customers first so we can modify the array in place if needed before movement logic?
@@ -545,6 +561,7 @@ export const usePotionRushStore = create<PotionRushState>((set, get) => ({
         cauldrons: nextCauldrons,
         timeToNextCustomerSpawn: nextCustomerTimer,
         timeToNextIngredientSpawn: nextIngredientTimer,
+        timeLeft: newTimeLeft,
       });
     }
   },
@@ -669,12 +686,14 @@ export const usePotionRushStore = create<PotionRushState>((set, get) => ({
     };
 
     // Remove words from pool
-    const wordsToRemove = customer.request.term.split(" ");
-    const nextActiveWordPool = [...activeWordPool];
-    wordsToRemove.forEach((word) => {
-      const idx = nextActiveWordPool.indexOf(word);
-      if (idx > -1) nextActiveWordPool.splice(idx, 1);
-    });
+    // FIX: Do NOT remove words here. They were removed when spawned onto the belt.
+    // If we remove them again, we might steal words from other customers.
+    // const wordsToRemove = customer.request.term.split(" ");
+    // const nextActiveWordPool = [...activeWordPool];
+    // wordsToRemove.forEach((word) => {
+    //   const idx = nextActiveWordPool.indexOf(word);
+    //   if (idx > -1) nextActiveWordPool.splice(idx, 1);
+    // });
 
     // Reset Cauldron
     const nextCauldrons = [...cauldrons];
@@ -707,7 +726,7 @@ export const usePotionRushStore = create<PotionRushState>((set, get) => ({
       cauldrons: nextCauldrons,
       score: score + points,
       totalXpEarned: totalXpEarned + xp,
-      activeWordPool: nextActiveWordPool,
+      // activeWordPool: nextActiveWordPool, // Unchanged
       completedSentences: completedSentences + 1,
     });
 
@@ -717,9 +736,16 @@ export const usePotionRushStore = create<PotionRushState>((set, get) => ({
   },
 
   discardIngredient: (ingredientId) => {
-    const { conveyorItems } = get();
+    const { conveyorItems, activeWordPool } = get();
+    const item = conveyorItems.find((i) => i.id === ingredientId);
+    if (!item) return;
+
+    // Return word to pool
+    const nextActiveWordPool = [...activeWordPool, item.word];
+
     set({
       conveyorItems: conveyorItems.filter((item) => item.id !== ingredientId),
+      activeWordPool: nextActiveWordPool,
     });
   },
 

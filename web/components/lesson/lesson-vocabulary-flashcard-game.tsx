@@ -105,7 +105,7 @@ export default function LessonVocabularyFlashcardGame({
   const [startTime, setStartTime] = useState<number | null>(null);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   const [completionData, setCompletionData] = useState<CompletionData | null>(
-    null
+    null,
   );
   const [sessionStats, setSessionStats] = useState<SessionStats>({
     correct: 0,
@@ -195,7 +195,7 @@ export default function LessonVocabularyFlashcardGame({
   const checkExistingCompletion = async () => {
     try {
       const response = await fetch(
-        `/api/v1/users/${userId}/activitylog?activityType=lesson_flashcard&targetId=${articleId}`
+        `/api/v1/users/${userId}/activitylog?activityType=lesson_flashcard&targetId=${articleId}`,
       );
 
       if (!response.ok) return;
@@ -205,7 +205,7 @@ export default function LessonVocabularyFlashcardGame({
       // Find lesson_flashcard activity for this article
       const existingActivity = data?.activityLogs?.find(
         (log: any) =>
-          log.activityType === "lesson_flashcard" && log.targetId === articleId
+          log.activityType === "lesson_flashcard" && log.targetId === articleId,
       );
 
       // If we found a lesson_flashcard activity, regardless of completed status
@@ -458,7 +458,7 @@ export default function LessonVocabularyFlashcardGame({
     if (awardedXp > 0) {
       setTimeout(() => {
         toast.success(
-          `Great job! You earned ${awardedXp} XP for completing the flashcards!`
+          `Great job! You earned ${awardedXp} XP for completing the flashcards!`,
         );
       }, 1000);
     }
@@ -474,11 +474,12 @@ export default function LessonVocabularyFlashcardGame({
   }, []);
 
   // Update completion when game state changes
+  // Update completion when game state changes
   useEffect(() => {
     if (gameState === GameState.NO_CARDS || gameState === GameState.COMPLETED) {
       onCompleteChange(true);
     }
-  }, [gameState]);
+  }, [gameState, onCompleteChange]);
 
   // Force render completion if we have completion data (for debugging)
   const shouldShowCompletion =

@@ -966,6 +966,58 @@ export default {
             leaderboard: "High Scores",
           },
         },
+        potionRush: {
+          loading: "Loading Alchemical Supplies...",
+          backToGames: "Back to Games",
+          noSentences: "No Sentences Found",
+          insufficientSentences: "Insufficient Sentences",
+          noSentencesDesc:
+            "You haven't saved any sentences to your flashcards yet.",
+          insufficientDesc: "You need at least {count} sentences to play.",
+          currentCount: "You currently have {count}.",
+          readArticles: "Read Articles",
+          subtitle: "Level up your alchemy skills",
+          play: "Play",
+          rankings: "Rankings",
+          leaderboards: "Leaderboards",
+          mode: "{difficulty} Mode",
+          noRecords: "No records yet. Be the first!",
+          difficulty: {
+            easy: "Easy",
+            normal: "Normal",
+            hard: "Hard",
+            extreme: "Extreme",
+          },
+          // Game component translations
+          title: "Potion Rush",
+          gameSubtitle: "Alchemical Management",
+          proTip:
+            "Use the Trash Portal to clear ruined potions if you make a mistake.",
+          startButton: "Start Brewing",
+          instructions: {
+            step1: "Take orders from customers in their native language.",
+            step2: "Collect target language words from the conveyor belt.",
+            step3: "Drag correct words to a cauldron, then serve the potion.",
+          },
+          controls: {
+            match: "Match",
+            matchKeys: "Meanings",
+            drag: "Drag",
+            dragKeys: "Ingredients",
+          },
+          hud: {
+            score: "Score",
+            reputation: "Reputation",
+          },
+          messages: {
+            victory: "Closing Time!",
+            defeat: "Shop Closed!",
+            victoryDesc: "Great work! The shop is closed for the day.",
+            defeatDesc: "The reputation of your potion shop hit rock bottom.",
+            customersServed: "Customers Served",
+            openAgain: "Open Again",
+          },
+        },
       },
       lessonPage: {
         translatingContent: "Translating content...",

@@ -13,5 +13,5 @@ const getSentencesHandler = CastleDefenseController.getSentences;
 router.get(getSentencesHandler as any);
 
 export async function GET(request: NextRequest) {
-  return router.run(request, {});
+  return router.run(request, {}) as Promise<Response>;
 }

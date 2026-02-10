@@ -167,7 +167,7 @@ export default function RpgBattlePage() {
     };
 
     fetchVocabulary();
-  }, [setVocabulary, gameKey]);
+  }, [setVocabulary, gameKey, t]);
 
   useEffect(() => {
     if (vocabulary.length > 0 && !showStartScreen) {

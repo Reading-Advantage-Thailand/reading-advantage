@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { VocabularyItem } from "@/store/useGameStore";
-import { useCurrentLocale } from "@/locales/client";
+import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import {
   ArrowLeft,
   Trophy,
@@ -46,6 +46,7 @@ export default function PotionRushPage() {
   });
 
   const locale = useCurrentLocale();
+  const t = useScopedI18n("pages.student.gamesPage.potionRush");
 
   // Fetch Sentences
   useEffect(() => {
@@ -138,9 +139,7 @@ export default function PotionRushPage() {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-slate-950 px-6 py-10 text-white flex items-center justify-center">
-        <div className="text-white/60 animate-pulse">
-          Loading Alchemical Supplies...
-        </div>
+        <div className="text-white/60 animate-pulse">{t("loading")}</div>
       </main>
     );
   }
@@ -155,7 +154,7 @@ export default function PotionRushPage() {
             className="text-sm uppercase tracking-[0.2em] text-white/60 transition hover:text-white flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Games
+            {t("backToGames")}
           </Link>
 
           <div className="flex items-center justify-center min-h-[70vh]">
@@ -169,30 +168,26 @@ export default function PotionRushPage() {
 
                 <h1 className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-amber-300 to-red-300 bg-clip-text text-transparent">
                   {warningStatus.type === "NO_SENTENCES"
-                    ? "No Sentences Found"
-                    : "Insufficient Sentences"}
+                    ? t("noSentences")
+                    : t("insufficientSentences")}
                 </h1>
 
                 <div className="text-center mb-8 space-y-3">
                   {warningStatus.type === "NO_SENTENCES" ? (
                     <p className="text-lg text-white/80">
-                      You haven't saved any sentences to your flashcards yet.
+                      {t("noSentencesDesc")}
                     </p>
                   ) : (
                     <>
                       <p className="text-lg text-white/80">
-                        You need at least{" "}
-                        <span className="text-amber-400 font-bold text-2xl">
-                          {warningStatus.requiredCount}
-                        </span>{" "}
-                        sentences to play.
+                        {t("insufficientDesc", {
+                          count: warningStatus.requiredCount || 0,
+                        })}
                       </p>
                       <p className="text-lg text-white/80">
-                        You currently have{" "}
-                        <span className="text-red-400 font-bold text-2xl">
-                          {warningStatus.currentCount}
-                        </span>
-                        .
+                        {t("currentCount", {
+                          count: warningStatus.currentCount || 0,
+                        })}
                       </p>
                     </>
                   )}
@@ -204,7 +199,7 @@ export default function PotionRushPage() {
                     className="group bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/50 flex items-center justify-center gap-2"
                   >
                     <BookOpen className="w-5 h-5" />
-                    Read Articles
+                    {t("readArticles")}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>
@@ -229,11 +224,9 @@ export default function PotionRushPage() {
           </Link>
           <div>
             <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Potion Rush
+              {"Potion Rush"}
             </h1>
-            <p className="text-xs text-white/50">
-              Level up your alchemy skills
-            </p>
+            <p className="text-xs text-white/50">{t("subtitle")}</p>
           </div>
         </div>
 
@@ -248,7 +241,7 @@ export default function PotionRushPage() {
             )}
           >
             <Gamepad2 className="w-4 h-4" />
-            Play
+            {t("play")}
           </button>
           <button
             onClick={() => setActiveTab("rankings")}
@@ -260,7 +253,7 @@ export default function PotionRushPage() {
             )}
           >
             <Trophy className="w-4 h-4" />
-            Rankings
+            {t("rankings")}
           </button>
         </div>
       </header>
@@ -302,7 +295,7 @@ export default function PotionRushPage() {
           <div className="p-6 max-w-4xl mx-auto w-full h-full overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <Trophy className="w-6 h-6 text-amber-400" />
-              Leaderboards
+              {t("leaderboards")}
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -314,7 +307,7 @@ export default function PotionRushPage() {
                   >
                     <div className="px-4 py-3 bg-slate-800 border-b border-white/5 flex justify-between items-center">
                       <h3 className="font-bold capitalize text-white/90">
-                        {dif} Mode
+                        {t("mode", { difficulty: t(`difficulty.${dif}`) })}
                       </h3>
                     </div>
                     <div className="divide-y divide-white/5">
@@ -348,7 +341,7 @@ export default function PotionRushPage() {
                         ))
                       ) : (
                         <div className="p-8 text-center text-white/30 text-sm">
-                          No records yet. Be the first!
+                          {t("noRecords")}
                         </div>
                       )}
                     </div>

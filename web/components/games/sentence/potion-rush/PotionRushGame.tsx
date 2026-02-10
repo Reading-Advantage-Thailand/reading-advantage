@@ -15,6 +15,7 @@ import {
   type ControlHint,
   type Instruction,
 } from "@/components/games/game/GameStartScreen";
+import { useScopedI18n } from "@/locales/client";
 
 // Components
 import ConveyorBelt from "./ConveyorBelt";
@@ -40,6 +41,7 @@ export default function PotionRushGame({
   difficulty,
   onComplete,
 }: PotionRushGameProps) {
+  const t = useScopedI18n("pages.student.gamesPage.potionRush");
   const router = useRouter();
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -90,6 +92,8 @@ export default function PotionRushGame({
     (state) => state.completedSentences,
   );
   const totalXpEarned = usePotionRushStore((state) => state.totalXpEarned);
+  const timeLeft = usePotionRushStore((state) => state.timeLeft);
+  const timeLimit = usePotionRushStore((state) => state.timeLimit);
 
   // Visual Effects
   const controls = useAnimation();
@@ -114,6 +118,13 @@ export default function PotionRushGame({
       });
     }
   }, [gameState, totalXpEarned, reputation, difficulty, score, onComplete]);
+
+  // Format Time
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
   // Layout Constants
   const isPortrait = dimensions.height > dimensions.width;
@@ -189,14 +200,29 @@ export default function PotionRushGame({
       <AnimatePresence>
         {!hasStarted && (
           <GameStartScreen
-            gameTitle="Potion Rush"
-            gameSubtitle="Alchemical Management"
+            gameTitle={t("title")}
+            gameSubtitle={t("gameSubtitle")}
             icon={Beaker}
             vocabulary={vocabList}
-            instructions={POTION_RUSH_INSTRUCTIONS}
-            proTip="Use the Trash Portal to clear ruined potions if you make a mistake."
-            controls={POTION_RUSH_CONTROLS}
-            startButtonText="Start Brewing"
+            instructions={[
+              { step: 1, text: t("instructions.step1") },
+              { step: 2, text: t("instructions.step2") },
+              { step: 3, text: t("instructions.step3") },
+            ]}
+            proTip={t("proTip")}
+            controls={[
+              {
+                label: t("controls.match"),
+                keys: t("controls.matchKeys"),
+                color: "bg-amber-500",
+              },
+              {
+                label: t("controls.drag"),
+                keys: t("controls.dragKeys"),
+                color: "bg-emerald-500",
+              },
+            ]}
+            startButtonText={t("startButton")}
             onStart={() => {
               setHasStarted(true);
               startGame(vocabList, difficulty);
@@ -207,12 +233,17 @@ export default function PotionRushGame({
 
       {/* HUD Overlay (HTML is easier for text overlays than Canvas sometimes) */}
       {hasStarted && (
-        <div className="absolute top-0 left-0 p-4 text-white z-10 pointer-events-none">
-          <div className="text-xl font-bold text-amber-400 drop-shadow-lg">
-            Score: {score}
+        <div className="absolute top-0 left-0 w-full p-4 text-white z-10 pointer-events-none flex justify-between items-start">
+          <div>
+            <div className="text-xl font-bold text-amber-400 drop-shadow-lg">
+              {t("hud.score")}: {score}
+            </div>
+            <div className="text-sm text-slate-300 drop-shadow-md">
+              {t("hud.reputation")}: {Math.max(0, Math.round(reputation))}%
+            </div>
           </div>
-          <div className="text-sm text-slate-300 drop-shadow-md">
-            Reputation: {reputation}%
+          <div className="text-2xl font-bold text-white drop-shadow-lg bg-black/30 px-4 py-1 rounded-full">
+            {formatTime(timeLeft)}
           </div>
         </div>
       )}
@@ -306,16 +337,20 @@ export default function PotionRushGame({
 
       {gameState === "GAME_OVER" && (
         <GameEndScreen
-          status="defeat"
-          title="Shop Closed!"
-          subtitle="The reputation of your potion shop hit rock bottom."
+          status={reputation <= 0 ? "defeat" : "victory"}
+          title={reputation <= 0 ? t("messages.defeat") : t("messages.victory")}
+          subtitle={
+            reputation <= 0
+              ? t("messages.defeatDesc")
+              : t("messages.victoryDesc")
+          }
           score={score}
           xp={totalXpEarned}
           accuracy={Math.max(0, Math.min(reputation, 100)) / 100}
           customStats={[
-            { label: "Customers Served", value: completedSentences },
+            { label: t("messages.customersServed"), value: completedSentences },
           ]}
-          restartButtonText="Open Again"
+          restartButtonText={t("messages.openAgain")}
           onRestart={() => startGame(vocabList, difficulty)}
           onExit={() => router.push("/")}
         />
@@ -323,14 +358,3 @@ export default function PotionRushGame({
     </div>
   );
 }
-
-const POTION_RUSH_INSTRUCTIONS: Instruction[] = [
-  { step: 1, text: "Take orders from customers in their native language." },
-  { step: 2, text: "Collect target language words from the conveyor belt." },
-  { step: 3, text: "Drag correct words to a cauldron, then serve the potion." },
-];
-
-const POTION_RUSH_CONTROLS: ControlHint[] = [
-  { label: "Match", keys: "Meanings", color: "bg-amber-500" },
-  { label: "Drag", keys: "Ingredients", color: "bg-emerald-500" },
-];

@@ -13,5 +13,5 @@ const completeGameHandler = CastleDefenseController.completeGame;
 router.post(completeGameHandler as any);
 
 export async function POST(request: NextRequest) {
-  return router.run(request, {});
+  return router.run(request, {}) as Promise<Response>;
 }
