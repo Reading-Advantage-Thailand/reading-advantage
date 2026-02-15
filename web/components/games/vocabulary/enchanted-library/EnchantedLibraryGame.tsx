@@ -313,20 +313,41 @@ export function EnchantedLibraryGame({
   );
 
   useEffect(() => {
-    if (!gameState || gameState.status !== "victory") return;
-    const accuracy = totalAttempts > 0 ? correctAnswers / totalAttempts : 0;
-    const xp = calculateXP(
-      Math.max(0, gameState.mana),
-      correctAnswers,
-      totalAttempts,
-    );
-    const nextResults = { xp, accuracy, gameTime: gameState.gameTime };
-    setResults(nextResults);
-    if (!hasReportedRef.current) {
-      onComplete(nextResults);
-      hasReportedRef.current = true;
+    if (!gameState) return;
+
+    // Handle victory
+    if (gameState.status === "victory") {
+      const accuracy = totalAttempts > 0 ? correctAnswers / totalAttempts : 0;
+      const xp = calculateXP(
+        Math.max(0, gameState.mana),
+        correctAnswers,
+        totalAttempts,
+      );
+      const nextResults = { xp, accuracy, gameTime: gameState.gameTime };
+      setResults(nextResults);
+      if (!hasReportedRef.current) {
+        onComplete(nextResults);
+        hasReportedRef.current = true;
+      }
+      setGamePhase("ended");
     }
-    setGamePhase("ended");
+
+    // Handle game over (mana depleted or time ran out)
+    if (gameState.status === "gameover") {
+      const accuracy = totalAttempts > 0 ? correctAnswers / totalAttempts : 0;
+      const xp = calculateXP(
+        Math.max(0, gameState.mana),
+        correctAnswers,
+        totalAttempts,
+      );
+      const nextResults = { xp, accuracy, gameTime: gameState.gameTime };
+      setResults(nextResults);
+      if (!hasReportedRef.current) {
+        onComplete(nextResults);
+        hasReportedRef.current = true;
+      }
+      setGamePhase("ended");
+    }
   }, [gameState, correctAnswers, totalAttempts, onComplete]);
 
   useEffect(() => {
@@ -455,58 +476,53 @@ export function EnchantedLibraryGame({
       className="relative h-[75vh] w-full overflow-hidden rounded-3xl bg-gradient-to-b from-amber-100 to-amber-200 shadow-2xl ring-1 ring-amber-300/50 touch-none md:aspect-video md:h-auto"
     >
       {gamePhase === "start" && (
-        <>
-          <GameStartScreen
-            gameTitle="Enchanted Library"
-            gameSubtitle="Mystic Studies"
-            vocabulary={vocabulary}
-            instructions={[
-              {
-                step: 1,
-                text: "Collect magic books that match the target word.",
-                icon: BookOpen,
-              },
-              {
-                step: 2,
-                text: "Correct books grant +10 mana and a shield charge.",
-                icon: Sparkles,
-              },
-              {
-                step: 3,
-                text: "Wrong books or spirits drain mana. Choose carefully.",
-                icon: Shield,
-              },
-              {
-                step: 4,
-                text: "Master each word twice to complete your studies.",
-                icon: Book,
-              },
-            ]}
-            proTip="Use shield charges to bounce spirits when the stacks get crowded."
-            controls={[
-              { label: "Move", keys: "Arrows / WASD", color: "bg-amber-500" },
-              {
-                label: "Shield",
-                keys: "Space / Enter",
-                color: "bg-emerald-500",
-              },
-            ]}
-            startButtonText="Start Adventure"
-            icon={BookOpen}
-            onStart={() => {
-              resetGame();
-              setGamePhase("playing");
-            }}
+        <GameStartScreen
+          gameTitle="Enchanted Library"
+          gameSubtitle="Mystic Studies"
+          vocabulary={vocabulary}
+          instructions={[
+            {
+              step: 1,
+              text: "Collect magic books that match the target word.",
+              icon: BookOpen,
+            },
+            {
+              step: 2,
+              text: "Correct books grant +10 mana and a shield charge.",
+              icon: Sparkles,
+            },
+            {
+              step: 3,
+              text: "Wrong books or spirits drain mana. Choose carefully.",
+              icon: Shield,
+            },
+            {
+              step: 4,
+              text: "Master each word twice to complete your studies.",
+              icon: Book,
+            },
+          ]}
+          proTip="Use shield charges to bounce spirits when the stacks get crowded."
+          controls={[
+            { label: "Move", keys: "Arrows / WASD", color: "bg-amber-500" },
+            {
+              label: "Shield",
+              keys: "Space / Enter",
+              color: "bg-emerald-500",
+            },
+          ]}
+          startButtonText="Start Adventure"
+          icon={BookOpen}
+          onStart={() => {
+            resetGame();
+            setGamePhase("playing");
+          }}
+        >
+          <DifficultySelector
+            selected={difficulty}
+            onSelect={onDifficultyChange}
           />
-
-          {/* Difficulty Selector */}
-          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-full max-w-4xl px-6">
-            <DifficultySelector
-              selected={difficulty}
-              onSelect={onDifficultyChange}
-            />
-          </div>
-        </>
+        </GameStartScreen>
       )}
 
       {gamePhase === "playing" && gameState && grids && (
@@ -520,6 +536,18 @@ export function EnchantedLibraryGame({
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 text-amber-900 font-bold text-xl pointer-events-none drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
             <div className="bg-white/80 px-3 py-1 rounded-lg">
               Mana: {gameState.mana}
+            </div>
+            <div
+              className={`px-3 py-1 rounded-lg ${
+                gameState.timeRemaining <= 30000
+                  ? "bg-red-500/90 text-white animate-pulse"
+                  : "bg-white/80"
+              }`}
+            >
+              Time: {Math.floor(gameState.timeRemaining / 60000)}:
+              {String(
+                Math.floor((gameState.timeRemaining % 60000) / 1000),
+              ).padStart(2, "0")}
             </div>
             <div className="bg-white/80 px-3 py-1 rounded-lg text-blue-600 text-base flex items-center gap-1">
               SHIELD:{" "}
@@ -747,7 +775,7 @@ export function EnchantedLibraryGame({
             status="complete"
             title="Master Wizard!"
             subtitle="You've learned all the vocabulary!"
-            score={Math.max(0, gameState.mana)}
+            score={results.xp}
             xp={results.xp}
             accuracy={results.accuracy}
             customStats={[

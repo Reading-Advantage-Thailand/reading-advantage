@@ -42,6 +42,7 @@ export type EnchantedLibraryState = {
   shieldActive: boolean;
   shieldTimer: number;
   gameTime: number;
+  timeRemaining: number;
   spiritSpawnTimer: number;
   spiritSpeed: number;
   difficulty: Difficulty;
@@ -94,6 +95,7 @@ export const MANA_GAIN_CORRECT = 10;
 export const MANA_LOSS_INCORRECT = 5;
 export const MANA_LOSS_SPIRIT_HIT = 10;
 export const MIN_BOOK_SPAWN_DISTANCE = 150; // Minimum distance from player
+export const GAME_DURATION_MS = 180000; // 3 minutes
 
 export const createEnchantedLibraryState = (
   vocabulary: VocabularyItem[],
@@ -144,6 +146,7 @@ export const createEnchantedLibraryState = (
     shieldActive: false,
     shieldTimer: 0,
     gameTime: 0,
+    timeRemaining: GAME_DURATION_MS,
     spiritSpawnTimer: 0,
     spiritSpeed: initialSpiritSpeed,
     difficulty,
@@ -594,7 +597,27 @@ export const advanceEnchantedLibraryTime = (
     return state;
   }
 
-  let newState = state;
+  // Update game time and time remaining
+  let newState: EnchantedLibraryState = {
+    ...state,
+    gameTime: state.gameTime + dt,
+    timeRemaining: Math.max(0, state.timeRemaining - dt),
+  };
+
+  // Check for game over conditions
+  if (newState.mana <= 0) {
+    return {
+      ...newState,
+      status: "gameover",
+    };
+  }
+
+  if (newState.timeRemaining <= 0) {
+    return {
+      ...newState,
+      status: "gameover",
+    };
+  }
 
   // Check shield activation input (cast button)
   if (input.cast) {

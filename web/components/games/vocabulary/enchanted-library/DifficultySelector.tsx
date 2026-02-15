@@ -13,49 +13,39 @@ const DIFFICULTY_INFO: Record<
   Difficulty,
   {
     label: string;
-    description: string;
     xpMultiplier: number;
     icon: typeof Zap;
     color: string;
-    bgColor: string;
-    borderColor: string;
+    glowColor: string;
   }
 > = {
   easy: {
     label: "Easy",
-    description: "Fewer spirits, slower pace",
     xpMultiplier: 1.0,
     icon: Zap,
-    color: "text-green-700",
-    bgColor: "bg-green-100",
-    borderColor: "border-green-400",
+    color: "text-green-400",
+    glowColor: "shadow-green-500/20",
   },
   normal: {
     label: "Normal",
-    description: "Balanced challenge",
     xpMultiplier: 1.5,
     icon: Shield,
-    color: "text-blue-700",
-    bgColor: "bg-blue-100",
-    borderColor: "border-blue-400",
+    color: "text-blue-400",
+    glowColor: "shadow-blue-500/20",
   },
   hard: {
     label: "Hard",
-    description: "More spirits, faster pace",
     xpMultiplier: 2.0,
     icon: Flame,
-    color: "text-orange-700",
-    bgColor: "bg-orange-100",
-    borderColor: "border-orange-400",
+    color: "text-orange-400",
+    glowColor: "shadow-orange-500/20",
   },
   extreme: {
     label: "Extreme",
-    description: "Maximum challenge!",
     xpMultiplier: 3.0,
     icon: Skull,
-    color: "text-red-700",
-    bgColor: "bg-red-100",
-    borderColor: "border-red-400",
+    color: "text-red-400",
+    glowColor: "shadow-red-500/20",
   },
 };
 
@@ -64,11 +54,11 @@ export function DifficultySelector({
   onSelect,
 }: DifficultySelectorProps) {
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <h3 className="text-xl font-semibold text-center mb-4 text-amber-900">
-        Select Difficulty
-      </h3>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] font-semibold text-white/40 uppercase tracking-wider whitespace-nowrap">
+        Difficulty:
+      </span>
+      <div className="flex gap-1.5">
         {(Object.keys(DIFFICULTY_INFO) as Difficulty[]).map((difficulty) => {
           const info = DIFFICULTY_INFO[difficulty];
           const Icon = info.icon;
@@ -78,37 +68,30 @@ export function DifficultySelector({
             <motion.button
               key={difficulty}
               onClick={() => onSelect(difficulty)}
-              className={`relative p-4 rounded-xl border-2 transition-all ${
+              className={`relative px-2.5 py-1.5 rounded-lg border transition-all ${
                 isSelected
-                  ? `${info.bgColor} ${info.borderColor} shadow-lg scale-105`
-                  : "bg-white border-amber-200 hover:border-amber-300 hover:shadow-md"
+                  ? `border-white/30 bg-white/10 ${info.glowColor} shadow-lg`
+                  : "border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20"
               }`}
-              whileHover={{ scale: isSelected ? 1.05 : 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              title={`${info.label} - ${info.xpMultiplier}x XP`}
             >
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <Icon
-                  className={`w-8 h-8 ${isSelected ? info.color : "text-amber-600"}`}
+                  className={`w-3.5 h-3.5 ${isSelected ? info.color : "text-white/40"}`}
                 />
-                <div className="text-center">
-                  <div
-                    className={`font-bold text-sm ${isSelected ? info.color : "text-amber-900"}`}
-                  >
-                    {info.label}
-                  </div>
-                  <div className="text-xs text-amber-700 mt-1">
-                    {info.description}
-                  </div>
-                  <div className="text-xs font-semibold text-amber-600 mt-2">
-                    {info.xpMultiplier}x XP
-                  </div>
-                </div>
+                <span
+                  className={`font-bold text-[11px] whitespace-nowrap ${isSelected ? "text-white" : "text-white/60"}`}
+                >
+                  {info.label}
+                </span>
               </div>
               {isSelected && (
                 <motion.div
-                  className="absolute inset-0 rounded-xl border-2 border-amber-400"
+                  className={`absolute inset-0 rounded-lg border ${info.color.replace("text-", "border-")}`}
                   initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  animate={{ opacity: 0.6, scale: 1 }}
                   transition={{ duration: 0.2 }}
                 />
               )}
