@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Zap, Shield, Flame, Skull } from "lucide-react";
 import type { Difficulty } from "@/lib/games/enchantedLibrary";
+import { useScopedI18n } from "@/locales/client";
 
 interface DifficultySelectorProps {
   selected: Difficulty;
@@ -53,10 +54,12 @@ export function DifficultySelector({
   selected,
   onSelect,
 }: DifficultySelectorProps) {
+  const t = useScopedI18n("pages.student.gamesPage.enchantedLibrary");
+
   return (
     <div className="flex items-center gap-2">
       <span className="text-[10px] font-semibold text-white/40 uppercase tracking-wider whitespace-nowrap">
-        Difficulty:
+        {t("difficulty.label")}:
       </span>
       <div className="flex gap-1.5">
         {(Object.keys(DIFFICULTY_INFO) as Difficulty[]).map((difficulty) => {

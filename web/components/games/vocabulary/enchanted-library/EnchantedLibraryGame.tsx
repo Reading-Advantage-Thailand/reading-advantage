@@ -32,6 +32,7 @@ import { withBasePath } from "@/lib/games/basePath";
 import { motion } from "framer-motion";
 import { Book, BookOpen, Shield, Sparkles } from "lucide-react";
 import { calculateXP } from "@/lib/games/xp";
+import { useScopedI18n } from "@/locales/client";
 import { SparkleBurst } from "./SparkleBurst";
 import { BookPickupBurst } from "./BookPickupBurst";
 import { mapInputVectorToDirectional } from "./enchantedLibraryInput";
@@ -116,6 +117,7 @@ export function EnchantedLibraryGame({
   const [showGrimoire, setShowGrimoire] = useState(false);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const t = useScopedI18n("pages.student.gamesPage.enchantedLibrary");
   const [sparkles, setSparkles] = useState<
     Array<{ id: number; x: number; y: number }>
   >([]);
@@ -477,41 +479,45 @@ export function EnchantedLibraryGame({
     >
       {gamePhase === "start" && (
         <GameStartScreen
-          gameTitle="Enchanted Library"
-          gameSubtitle="Mystic Studies"
+          gameTitle={t("title")}
+          gameSubtitle={t("subtitle")}
           vocabulary={vocabulary}
           instructions={[
             {
               step: 1,
-              text: "Collect magic books that match the target word.",
+              text: t("instructions.step1"),
               icon: BookOpen,
             },
             {
               step: 2,
-              text: "Correct books grant +10 mana and a shield charge.",
+              text: t("instructions.step2"),
               icon: Sparkles,
             },
             {
               step: 3,
-              text: "Wrong books or spirits drain mana. Choose carefully.",
+              text: t("instructions.step3"),
               icon: Shield,
             },
             {
               step: 4,
-              text: "Master each word twice to complete your studies.",
+              text: t("instructions.step4"),
               icon: Book,
             },
           ]}
-          proTip="Use shield charges to bounce spirits when the stacks get crowded."
+          proTip={t("proTip")}
           controls={[
-            { label: "Move", keys: "Arrows / WASD", color: "bg-amber-500" },
             {
-              label: "Shield",
-              keys: "Space / Enter",
+              label: t("controls.move"),
+              keys: t("controls.moveKeys"),
+              color: "bg-amber-500",
+            },
+            {
+              label: t("controls.shield"),
+              keys: t("controls.shieldKeys"),
               color: "bg-emerald-500",
             },
           ]}
-          startButtonText="Start Adventure"
+          startButtonText={t("startButton")}
           icon={BookOpen}
           onStart={() => {
             resetGame();
@@ -535,7 +541,7 @@ export function EnchantedLibraryGame({
           {/* HUD Overlay */}
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 text-amber-900 font-bold text-xl pointer-events-none drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
             <div className="bg-white/80 px-3 py-1 rounded-lg">
-              Mana: {gameState.mana}
+              {t("hud.mana")}: {gameState.mana}
             </div>
             <div
               className={`px-3 py-1 rounded-lg ${
@@ -544,13 +550,13 @@ export function EnchantedLibraryGame({
                   : "bg-white/80"
               }`}
             >
-              Time: {Math.floor(gameState.timeRemaining / 60000)}:
+              {t("hud.time")}: {Math.floor(gameState.timeRemaining / 60000)}:
               {String(
                 Math.floor((gameState.timeRemaining % 60000) / 1000),
               ).padStart(2, "0")}
             </div>
             <div className="bg-white/80 px-3 py-1 rounded-lg text-blue-600 text-base flex items-center gap-1">
-              SHIELD:{" "}
+              {t("hud.shields")}:{" "}
               {Array(gameState.player.maxShieldCharges)
                 .fill(0)
                 .map((_, i) => (
@@ -773,17 +779,17 @@ export function EnchantedLibraryGame({
         <>
           <GameEndScreen
             status="complete"
-            title="Master Wizard!"
-            subtitle="You've learned all the vocabulary!"
+            title={t("messages.victory")}
+            subtitle={t("messages.victoryDesc")}
             score={results.xp}
             xp={results.xp}
             accuracy={results.accuracy}
             customStats={[
               {
-                label: "Words Mastered",
+                label: t("messages.wordsMastered"),
                 value: `${Array.from(gameState.vocabularyProgress.values()).filter((count) => count >= 2).length}/${vocabulary.length}`,
               },
-              { label: "Correct Books", value: correctAnswers },
+              { label: t("messages.correctBooks"), value: correctAnswers },
               {
                 label: "Difficulty",
                 value: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
