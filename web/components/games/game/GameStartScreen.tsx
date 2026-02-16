@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Gamepad2, Play, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useTheme } from "next-themes";
 import { VocabularyItem } from "@/store/useGameStore";
 
 export interface Instruction {
@@ -49,13 +50,15 @@ export function GameStartScreen({
 }: GameStartScreenProps) {
   const hasInstructions = Boolean(instructions && instructions.length > 0);
   const hasControls = Boolean(controls && controls.length > 0);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 flex flex-col bg-slate-950/90 text-white overflow-hidden backdrop-blur-sm"
+      className="absolute inset-0 z-50 flex flex-col overflow-hidden"
     >
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-8">
         <header className="flex flex-wrap items-center justify-between gap-4">
@@ -64,7 +67,7 @@ export function GameStartScreen({
               <TitleIcon className="h-6 w-6 text-amber-400" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-white">
                 {gameTitle}
               </h2>
             </div>
@@ -161,9 +164,9 @@ export function GameStartScreen({
         </div>
       </div>
 
-      <footer className="p-6 sm:p-8 border-t border-white/10 bg-slate-900/80 backdrop-blur-md flex flex-wrap items-center justify-center sm:justify-between gap-6">
+      <footer className="p-6 sm:p-8 border-t border-white/10 bg-slate-900/80 backdrop-blur-md flex flex-col gap-6">
         {hasControls ? (
-          <div className="hidden sm:flex items-center gap-6 text-[10px] uppercase tracking-[0.2em] text-white/50 sm:text-xs">
+          <div className="hidden sm:flex items-center gap-6 text-[10px] uppercase tracking-[0.2em] text-white/50 sm:text-xs flex-wrap">
             {controls?.map((control, index) => (
               <div
                 key={`${control.label}-${index}`}
@@ -175,16 +178,19 @@ export function GameStartScreen({
             ))}
           </div>
         ) : (
-          <span className="hidden sm:block text-[10px] uppercase tracking-[0.2em] text-white/40">
-            Prepare your strategy
-          </span>
+          !children && (
+            <span className="hidden sm:block text-[10px] uppercase tracking-[0.2em] text-white/40">
+              Prepare your strategy
+            </span>
+          )
         )}
 
-        <div className="flex items-center gap-4">
-          {children}
+        <div className="flex w-full items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4">{children}</div>
+
           <button
             onClick={onStart}
-            className="group relative px-12 py-4 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-full transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(245,158,11,0.35)] flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            className={`group relative px-12 py-4 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-full transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(245,158,11,0.35)] flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 ${isDark ? "focus-visible:ring-offset-slate-950" : "focus-visible:ring-offset-white"}`}
           >
             <Play className="w-5 h-5 fill-current" />
             <span className="relative z-10">{startButtonText}</span>

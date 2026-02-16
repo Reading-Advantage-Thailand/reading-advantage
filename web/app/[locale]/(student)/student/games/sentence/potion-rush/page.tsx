@@ -1,10 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
-import { VocabularyItem } from "@/store/useGameStore";
-import { useCurrentLocale, useScopedI18n } from "@/locales/client";
+import type { PotionRushGameResult } from "@/components/games/sentence/potion-rush/PotionRushGame";
+import type { VocabularyItem } from "@/store/useGameStore";
+import { Button } from "@/components/ui/button";
 import {
+  ChevronLeft,
+  Beaker,
   ArrowLeft,
   Trophy,
   Gamepad2,
@@ -12,6 +14,9 @@ import {
   BookOpen,
   ArrowRight,
 } from "lucide-react";
+import { Header } from "@/components/header";
+import { useCallback, useEffect, useState } from "react";
+import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -138,7 +143,7 @@ export default function PotionRushPage() {
   // Loading Screen
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-slate-950 px-6 py-10 text-white flex items-center justify-center">
+      <main className="min-h-screen  px-6 py-10 text-white flex items-center justify-center">
         <div className="text-white/60 animate-pulse">{t("loading")}</div>
       </main>
     );
@@ -147,15 +152,21 @@ export default function PotionRushPage() {
   // Warning Screen
   if (warningStatus.type) {
     return (
-      <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-          <Link
-            href="/student/games"
-            className="text-sm uppercase tracking-[0.2em] text-white/60 transition hover:text-white flex items-center gap-2"
+      <main className="min-h-screen px-6 py-10 text-white">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 items-start">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/student/games">
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              Back to Games
+            </Link>
+          </Button>
+
+          <Header
+            heading="Potion Rush"
+            text="Mix ingredients to fulfill orders and become the master alchemist!"
           >
-            <ArrowLeft className="w-4 h-4" />
-            {t("backToGames")}
-          </Link>
+            <Beaker className="h-8 w-8 text-primary" />
+          </Header>
 
           <div className="flex items-center justify-center min-h-[70vh]">
             <div className="max-w-2xl w-full">
@@ -214,7 +225,7 @@ export default function PotionRushPage() {
   return (
     <main className="w-full min-h-screen bg-slate-950 text-white flex flex-col">
       {/* Header */}
-      <header className="px-6 py-4 flex items-center justify-between border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+      <header className="px-6 py-4 flex items-center justify-between border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center gap-4">
           <Link
             href="/student/games"

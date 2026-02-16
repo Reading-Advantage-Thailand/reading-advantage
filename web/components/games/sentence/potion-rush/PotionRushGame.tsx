@@ -25,15 +25,17 @@ import TrashPortal from "./TrashPortal";
 import PotionRushEffectsLayer from "./PotionRushEffectsLayer";
 import PotionRushSoundController from "./PotionRushSoundController";
 
+export interface PotionRushGameResult {
+  xp: number;
+  accuracy: number;
+  difficulty: "easy" | "normal" | "hard" | "extreme";
+  score: number;
+}
+
 interface PotionRushGameProps {
   vocabList: VocabularyItem[];
   difficulty: "easy" | "normal" | "hard" | "extreme";
-  onComplete: (results: {
-    xp: number;
-    accuracy: number;
-    difficulty: string;
-    score: number;
-  }) => void;
+  onComplete: (results: PotionRushGameResult) => void;
 }
 
 export default function PotionRushGame({

@@ -15,6 +15,10 @@ const CastleDefenseGame = dynamic(
   { ssr: false },
 );
 
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, Shield } from "lucide-react";
+import { Header } from "@/components/header";
+
 type WarningStatus = {
   type: "NO_SENTENCES" | "INSUFFICIENT_SENTENCES" | null;
   requiredCount?: number;
@@ -103,7 +107,7 @@ export default function CastleDefensePage() {
   // Show loading state
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <main className="min-h-screen px-6 py-10 text-white">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-white/60 animate-pulse">กำลังโหลด...</div>
@@ -119,13 +123,14 @@ export default function CastleDefensePage() {
     warningStatus.type === "INSUFFICIENT_SENTENCES"
   ) {
     return (
-      <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <main className="min-h-screen px-6 py-10 text-white">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
           <Link
             href="/student/games"
             className="text-sm uppercase tracking-[0.2em] text-white/60 transition hover:text-white"
           >
-            ← กลับไปหน้าเกม
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            {"กลับไปหน้าเกม"}
           </Link>
 
           <div className="flex items-center justify-center min-h-[70vh]">
@@ -246,23 +251,20 @@ export default function CastleDefensePage() {
 
   // Show game if everything is OK
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        <Link
-          href="/student/games"
-          className="text-sm uppercase tracking-[0.2em] text-white/60 transition hover:text-white"
-        >
-          ← กลับไปหน้าเกม
+    <main className="min-h-screen px-6 transition-colors duration-300 text-slate-900">
+      <Button variant="ghost" size="sm" asChild className="mb-4">
+        <Link href="/student/games">
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          {"กลับไปหน้าเกม"}
         </Link>
-
-        <header className="flex flex-col gap-3">
-          <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-            Castle Defense
-          </h1>
-          <p className="max-w-2xl text-base text-white/70">
-            Collect words to build towers and defend your castle!
-          </p>
-        </header>
+      </Button>
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+        <Header
+          heading="Castle Defense"
+          text="Collect words to build towers and defend your castle!"
+        >
+          <Shield className="h-8 w-8 text-primary" />
+        </Header>
 
         <CastleDefenseGame
           vocabulary={vocabulary}

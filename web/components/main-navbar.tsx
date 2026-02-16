@@ -20,7 +20,7 @@ export function MainNav({ children, items }: MainNavProps) {
   const t = useScopedI18n("components.mainNav");
   const menuT = useScopedI18n("components");
   return (
-    <div className="flex md:gap-10 gap-6">
+    <div className="flex md:gap-10 gap-6 relative z-50">
       <Link href="/" className="hidden items-center space-x-2 md:flex">
         <Icons.logo />
         <span className="hidden text-[#3b82f6] font-heading font-bold sm:inline-block">
@@ -38,7 +38,7 @@ export function MainNav({ children, items }: MainNavProps) {
                 item.href.startsWith(`/${segment}`)
                   ? "text-foreground"
                   : "text-foreground/60",
-                item.disabled && "cursor-not-allowed opacity-80"
+                item.disabled && "cursor-not-allowed opacity-80",
               )}
             >
               {t(item.title)}

@@ -168,7 +168,7 @@ export default function GamesPage() {
                   return (
                     <div key={game.id} className="h-full">
                       <Card
-                        className="group relative h-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1 hover:z-50 cursor-pointer border-2 hover:border-primary/50 bg-card/50 backdrop-blur-sm flex flex-col"
+                        className="group relative h-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1 hover:z-30 cursor-pointer border-2 hover:border-primary/50 bg-card/50 backdrop-blur-sm flex flex-col"
                         onClick={() => router.push(`/student/games/${game.id}`)}
                       >
                         {/* Badge overlay */}
@@ -301,7 +301,7 @@ export default function GamesPage() {
                   return (
                     <div key={game.id} className="h-full">
                       <Card
-                        className="group relative h-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1 hover:z-50 cursor-pointer border-2 hover:border-primary/50 bg-card/50 backdrop-blur-sm flex flex-col"
+                        className="group relative h-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1 hover:z-30 cursor-pointer border-2 hover:border-primary/50 bg-card/50 backdrop-blur-sm flex flex-col"
                         onClick={() => router.push(`/student/games/${game.id}`)}
                       >
                         {/* Badge overlay */}

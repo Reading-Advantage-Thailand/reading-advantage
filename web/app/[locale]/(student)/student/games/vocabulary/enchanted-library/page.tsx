@@ -6,6 +6,10 @@ import { use, useCallback, useEffect, useState } from "react";
 import type { EnchantedLibraryGameResult } from "@/components/games/vocabulary/enchanted-library/EnchantedLibraryGame";
 import type { VocabularyItem } from "@/store/useGameStore";
 import type { Difficulty } from "@/lib/games/enchantedLibrary";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, BookOpen, Trophy, Gamepad2 } from "lucide-react";
+import { Header } from "@/components/header";
+import { cn } from "@/lib/utils";
 
 const EnchantedLibraryGame = dynamic(
   () =>
@@ -32,6 +36,7 @@ export default function EnchantedLibraryPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>("normal");
+  const [activeTab, setActiveTab] = useState<"game" | "rankings">("game");
   const [rankings, setRankings] = useState<Record<Difficulty, RankingEntry[]>>({
     easy: [],
     normal: [],
@@ -133,7 +138,7 @@ export default function EnchantedLibraryPage({
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 px-6 py-10 text-white flex items-center justify-center">
+      <main className="min-h-screen px-6 py-10 text-white flex items-center justify-center">
         <div className="text-xl">Loading vocabulary...</div>
       </main>
     );
@@ -141,7 +146,7 @@ export default function EnchantedLibraryPage({
 
   if (error) {
     return (
-      <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
+      <main className="min-h-screen px-6 py-10 text-white">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
           <Link
             href="/student/games"
@@ -164,32 +169,118 @@ export default function EnchantedLibraryPage({
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        <Link
-          href="/student/games"
-          className="text-sm uppercase tracking-[0.2em] text-white/60 transition hover:text-white"
-        >
+    <main className="min-h-screen px-6 text-slate-900">
+      <Button variant="ghost" size="sm" asChild className="mb-4">
+        <Link href="/student/games">
+          <ChevronLeft className="mr-1 h-4 w-4" />
           Back to Games
         </Link>
+      </Button>
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <Header
+            heading="Enchanted Library"
+            text="Collect magic books to master new words while dodging friendly spirits."
+          >
+            <BookOpen className="h-8 w-8 text-primary" />
+          </Header>
 
-        <header className="flex flex-col gap-3">
-          <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-            Enchanted Library
-          </h1>
-          <p className="max-w-2xl text-base text-white/70">
-            Collect magic books to master new words while dodging friendly
-            spirits.
-          </p>
-        </header>
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg self-start">
+            <button
+              onClick={() => setActiveTab("game")}
+              className={cn(
+                "px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2",
+                activeTab === "game"
+                  ? "bg-purple-600 text-white shadow-md"
+                  : "text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white",
+              )}
+            >
+              <Gamepad2 className="w-4 h-4" />
+              Play
+            </button>
+            <button
+              onClick={() => setActiveTab("rankings")}
+              className={cn(
+                "px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2",
+                activeTab === "rankings"
+                  ? "bg-amber-600 text-white shadow-md"
+                  : "text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white",
+              )}
+            >
+              <Trophy className="w-4 h-4" />
+              Rankings
+            </button>
+          </div>
+        </div>
 
-        <EnchantedLibraryGame
-          vocabulary={vocabulary}
-          onComplete={handleComplete}
-          difficulty={difficulty}
-          onDifficultyChange={setDifficulty}
-          rankings={rankings}
-        />
+        {activeTab === "game" ? (
+          <EnchantedLibraryGame
+            vocabulary={vocabulary}
+            onComplete={handleComplete}
+            difficulty={difficulty}
+            onDifficultyChange={setDifficulty}
+            rankings={rankings}
+          />
+        ) : (
+          <div className="p-6 w-full bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white">
+              <Trophy className="w-6 h-6 text-amber-500" />
+              Leaderboards
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {(["easy", "normal", "hard", "extreme"] as Difficulty[]).map(
+                (dif) => (
+                  <div
+                    key={dif}
+                    className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden"
+                  >
+                    <div className="px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-white/5 flex justify-between items-center">
+                      <h3 className="font-bold capitalize text-slate-700 dark:text-white/90">
+                        {dif} Mode
+                      </h3>
+                    </div>
+                    <div className="divide-y divide-slate-200 dark:divide-white/5">
+                      {rankings[dif]?.length ? (
+                        rankings[dif].map((entry, index) => (
+                          <div
+                            key={entry.userId}
+                            className="px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                          >
+                            <div
+                              className={cn(
+                                "w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold",
+                                index === 0
+                                  ? "bg-amber-400 text-slate-900"
+                                  : index === 1
+                                    ? "bg-slate-300 text-slate-900"
+                                    : index === 2
+                                      ? "bg-amber-700 text-white"
+                                      : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-white/50",
+                              )}
+                            >
+                              {index + 1}
+                            </div>
+                            <div className="flex-1 truncate font-medium text-slate-700 dark:text-white/80">
+                              {entry.name}
+                            </div>
+                            <div className="font-mono text-purple-600 dark:text-purple-400 font-bold">
+                              {entry.xp.toLocaleString()} XP
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-8 text-center text-slate-500 dark:text-white/30 text-sm">
+                          No records yet
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ),
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

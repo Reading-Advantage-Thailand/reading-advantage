@@ -475,7 +475,7 @@ export function EnchantedLibraryGame({
     <div
       ref={containerRef}
       style={{ minHeight: "400px" }}
-      className="relative h-[75vh] w-full overflow-hidden rounded-3xl bg-gradient-to-b from-amber-100 to-amber-200 shadow-2xl ring-1 ring-amber-300/50 touch-none md:aspect-video md:h-auto"
+      className="relative h-[75vh] w-full overflow-hidden rounded-3xl bg-slate-950 shadow-2xl touch-none md:aspect-video md:h-auto"
     >
       {gamePhase === "start" && (
         <GameStartScreen
