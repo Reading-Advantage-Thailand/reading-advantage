@@ -350,7 +350,10 @@ export default function PotionRushGame({
           xp={totalXpEarned}
           accuracy={Math.max(0, Math.min(reputation, 100)) / 100}
           customStats={[
-            { label: t("messages.customersServed"), value: completedSentences },
+            {
+              label: t("messages.customersServed"),
+              value: completedSentences,
+            },
           ]}
           restartButtonText={t("messages.openAgain")}
           onRestart={() => startGame(vocabList, difficulty)}

@@ -9,25 +9,25 @@ import { VocabularyItem } from "@/store/useGameStore";
 
 export interface Instruction {
   step: number;
-  text: string;
+  text: React.ReactNode;
   icon?: LucideIcon;
 }
 
 export interface ControlHint {
-  label: string;
-  keys: string;
+  label: React.ReactNode;
+  keys: React.ReactNode;
   color: string;
 }
 
 export interface GameStartScreenProps {
-  gameTitle: string;
+  gameTitle: React.ReactNode;
   vocabulary: VocabularyItem[];
   onStart: () => void;
-  gameSubtitle?: string;
+  gameSubtitle?: React.ReactNode;
   instructions?: Instruction[];
-  proTip?: string;
+  proTip?: React.ReactNode;
   controls?: ControlHint[];
-  startButtonText?: string;
+  startButtonText?: React.ReactNode;
   icon?: LucideIcon;
   children?: React.ReactNode;
 }
@@ -93,10 +93,7 @@ export function GameStartScreen({
                       instruction.step ?? index + 1,
                     ).padStart(2, "0");
                     return (
-                      <li
-                        key={`${instruction.text}-${index}`}
-                        className="flex gap-3"
-                      >
+                      <li key={index} className="flex gap-3">
                         <span className="text-amber-400 font-bold">
                           {stepLabel}.
                         </span>
@@ -168,10 +165,7 @@ export function GameStartScreen({
         {hasControls ? (
           <div className="hidden sm:flex items-center gap-6 text-[10px] uppercase tracking-[0.2em] text-white/50 sm:text-xs flex-wrap">
             {controls?.map((control, index) => (
-              <div
-                key={`${control.label}-${index}`}
-                className="flex items-center gap-2"
-              >
+              <div key={index} className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${control.color}`} />
                 {control.label}: {control.keys}
               </div>

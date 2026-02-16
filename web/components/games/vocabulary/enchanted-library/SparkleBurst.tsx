@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { motion } from 'framer-motion'
+import React from "react";
+import { motion } from "framer-motion";
 
 interface SparkleBurstProps {
-  x: number
-  y: number
-  onComplete: () => void
+  x: number;
+  y: number;
+  onComplete: () => void;
 }
 
 export function SparkleBurst({ x, y, onComplete }: SparkleBurstProps) {
-  const particles = Array.from({ length: 10 })
+  const particles = Array.from({ length: 10 });
 
   return (
     <div
@@ -28,11 +28,12 @@ export function SparkleBurst({ x, y, onComplete }: SparkleBurstProps) {
             opacity: 0,
             scale: 0,
           }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="sparkle-particle absolute h-2 w-2 rounded-full bg-yellow-300 shadow-[0_0_10px_rgba(251,191,36,0.9)]"
           onAnimationComplete={i === 0 ? onComplete : undefined}
+          data-testid="sparkle-particle"
         />
       ))}
     </div>
-  )
+  );
 }

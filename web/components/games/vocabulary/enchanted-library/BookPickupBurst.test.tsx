@@ -1,25 +1,29 @@
-import { render } from '@testing-library/react'
-import type { ReactNode } from 'react'
-import { BookPickupBurst } from './BookPickupBurst'
+import { render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { BookPickupBurst } from "./BookPickupBurst";
 
-jest.mock('framer-motion', () => ({
+jest.mock("framer-motion", () => ({
   motion: {
-    div: ({ children, onAnimationComplete, ...props }: {
-      children?: ReactNode
-      onAnimationComplete?: () => void
+    div: ({
+      children,
+      onAnimationComplete,
+      ...props
+    }: {
+      children?: ReactNode;
+      onAnimationComplete?: () => void;
     }) => {
       if (onAnimationComplete) {
-        onAnimationComplete()
+        onAnimationComplete();
       }
-      return <div {...props}>{children}</div>
+      return <div {...props}>{children}</div>;
     },
   },
-}))
+}));
 
-describe('BookPickupBurst', () => {
-  it('renders the book burst with the correct variant and frame', () => {
-    const onComplete = jest.fn()
-    const { container } = render(
+describe("BookPickupBurst", () => {
+  it("renders the book burst with the correct variant and frame", () => {
+    const onComplete = jest.fn();
+    render(
       <BookPickupBurst
         x={50}
         y={40}
@@ -29,14 +33,15 @@ describe('BookPickupBurst', () => {
         frameIndex={2}
         variant="glow"
         onComplete={onComplete}
-      />
-    )
+      />,
+    );
 
-    const burst = container.querySelector('[data-variant="glow"]')
-    expect(burst).toBeTruthy()
+    const burst = screen.getByTestId("book-pickup-burst");
+    expect(burst).toHaveAttribute("data-variant", "glow");
 
-    const sprite = container.querySelector('[data-frame-index="2"]')
-    expect(sprite).toBeTruthy()
-    expect(onComplete).toHaveBeenCalledTimes(1)
-  })
-})
+    const sprite = screen.getByTestId("burst-sprite");
+    expect(sprite).toHaveAttribute("data-frame-index", "2");
+
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+});
