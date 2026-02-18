@@ -643,6 +643,11 @@ export default {
             description:
               "สำรวจห้องสมุดต้องมนตร์และรวบรวมวัตถุวิเศษด้วยการจับคู่คำศัพท์และทำภารกิจให้สำเร็จ!",
           },
+          dragonRider: {
+            title: "Dragon Rider",
+            description:
+              "Ride your dragon through the skies, collecting words and defeating enemies to save the kingdom!",
+          },
         },
 
         // Sections
@@ -1009,7 +1014,8 @@ export default {
           instructions: {
             step1: "เก็บหนังสือวิเศษที่ตรงกับคำเป้าหมาย",
             step2: "หนังสือที่ถูกต้องให้ +10 มานาและโล่หนึ่งชั้น",
-            step3: "เก็บหนังสือผิดหรือถูกวิญญาณโจมตีจะลดมานา เลือกอย่างระมัดระวัง",
+            step3:
+              "เก็บหนังสือผิดหรือถูกวิญญาณโจมตีจะลดมานา เลือกอย่างระมัดระวัง",
             step4: "เชี่ยวชาญแต่ละคำสองครั้งเพื่อจบการศึกษา",
           },
           controls: {
@@ -1050,6 +1056,115 @@ export default {
             beTheFirst: "เชี่ยวชาญห้องสมุดและคว้าตำแหน่งของคุณ!",
             topScholar: "พ่อมดผู้เชี่ยวชาญ",
             leaderboard: "คะแนนสูงสุด",
+          },
+        },
+        dragonRider: {
+          title: "Dragon Rider",
+          description:
+            "ขี่มังกรของคุณผ่านท้องฟ้า เก็บคำศัพท์และเอาชนะศัตรูเพื่อช่วยอาณาจักร!",
+          startScreen: {
+            title: "Dragon Rider",
+            description: "เลือกความยากและเริ่มต้นการผจญภัยสุดยิ่งใหญ่!",
+            difficultyLabel: "ความยาก",
+            difficultyEasy: "ง่าย",
+            difficultyNormal: "ปกติ",
+            difficultyHard: "ยาก",
+            difficultyExtreme: "สุดโหด",
+            startButton: "เริ่มการผจญภัย",
+            rankingButton: "คะแนนสูงสุด",
+            instructionsButton: "คำแนะนำ",
+            loading: "กำลังโหลดการผจญภัย...",
+          },
+          instructionsScreen: {
+            title: "คำแนะนำ",
+            backButton: "กลับไปเมนู",
+            controls: {
+              title: "การควบคุม",
+              move: "เคลื่อนที่",
+              moveKeys: "ลูกศร / WASD",
+              shield: "โล่",
+              shieldKeys: "Space / Enter",
+            },
+            gameplay: {
+              title: "การเล่นเกม",
+              objective: "เป้าหมาย",
+              objectiveDesc:
+                "เก็บคำศัพท์เพื่อเพิ่มระยะการบินของมังกรและเอาชนะราชาโครงกระดูก!",
+              gates: "ประตู",
+              gatesDesc:
+                "เลือกประตูที่ถูกต้องเพื่อเพิ่มระยะการบินของมังกรก่อนที่ราชาโครงกระดูกจะมาถึง",
+              boss: "บอส",
+              bossDesc: "เอาชนะราชาโครงกระดูกด้วยการตอบคำถามคำศัพท์ให้ถูกต้อง",
+              shields: "โล่",
+              shieldsDesc: "ใช้โล่เพื่อป้องกันการโจมตีจากราชาโครงกระดูก",
+              mana: "มานา",
+              manaDesc: "เก็บคำศัพท์เพื่อรับมานาและใช้โล่เพื่อป้องกันตัวเอง",
+            },
+            scoring: {
+              title: "การให้คะแนน",
+              wordsCollected: "คำศัพท์ที่เก็บได้",
+              wordsCollectedDesc: "+10 คะแนนต่อคำ",
+              correctAnswers: "คำตอบที่ถูกต้อง",
+              correctAnswersDesc: "+20 คะแนนต่อคำตอบที่ถูกต้อง",
+              shieldsUsed: "โล่ที่ใช้",
+              shieldsUsedDesc: "-5 คะแนนต่อโล่ที่ใช้",
+              timeBonus: "โบนัสเวลา",
+              timeBonusDesc: "+1 คะแนนต่อวินาทีที่เหลือ",
+            },
+          },
+          gameplayScreen: {
+            hud: {
+              wordsCollected: "คำศัพท์ที่เก็บได้",
+              shields: "โล่",
+              mana: "มานา",
+              time: "เวลา",
+              bossHealth: "พลังชีวิตราชาโครงกระดูก",
+            },
+            messages: {
+              waveIncoming: "คลื่นกำลังมา!",
+              bossApproaching: "ราชาโครงกระดูกกำลังมา!",
+              bossDefeated: "ราชาโครงกระดูกถูกกำจัดแล้ว!",
+              gameComplete: "การผจญภัยสมบูรณ์!",
+              gameOver: "เกมโอเวอร์",
+              pressEnterToContinue: "กด Enter เพื่อเล่นต่อ",
+              pressSpaceToShield: "กด Space เพื่อใช้โล่",
+            },
+          },
+          resultsScreen: {
+            title: "การผจญภัยสมบูรณ์!",
+            score: "คะแนนสุดท้าย",
+            wordsCollected: "คำศัพท์ที่เก็บได้",
+            correctAnswers: "คำตอบที่ถูกต้อง",
+            shieldsUsed: "โล่ที่ใช้",
+            timeBonus: "โบนัสเวลา",
+            difficulty: "ความยาก",
+            playAgainButton: "เล่นอีกครั้ง",
+            backToMenuButton: "กลับไปเมนู",
+            rankingButton: "คะแนนสูงสุด",
+          },
+          rankingScreen: {
+            title: "คะแนนสูงสุด",
+            backButton: "กลับไปเมนู",
+            noScores: "ยังไม่มีคะแนน",
+            beTheFirst: "เป็นคนแรกที่พิชิตท้องฟ้า!",
+            yourRank: "อันดับของคุณ",
+            topScores: "คะแนนสูงสุด",
+            score: "คะแนน",
+            words: "คำศัพท์",
+            time: "เวลา",
+            difficulty: "ความยาก",
+          },
+          ranking: {
+            leaderboard: "คะแนนสูงสุด",
+            noChampions: "ยังไม่มีคะแนน",
+            beTheFirst: "เป็นคนแรกที่พิชิตท้องฟ้า!",
+            dragonRider: "Dragon Rider",
+          },
+          difficulty: {
+            easy: "ง่าย",
+            normal: "ปกติ",
+            hard: "ยาก",
+            extreme: "สุดโหด",
           },
         },
       },

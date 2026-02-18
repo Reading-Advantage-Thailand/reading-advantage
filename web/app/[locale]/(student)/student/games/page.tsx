@@ -106,6 +106,18 @@ export default function GamesPage() {
       badgeVariant: "default" as const,
     },
     {
+      id: "vocabulary/dragon-rider",
+      title: t("games.dragonRider.title"),
+      description: t("games.dragonRider.description"),
+      icon: Flame,
+      coverImage: "/games/cover/dragon-rider-cover.png",
+      color: "from-purple-500 via-pink-500 to-rose-500",
+      difficulty: t("difficulty.medium"),
+      type: t("types.strategy"),
+      badge: t("badges.popular"),
+      badgeVariant: "default" as const,
+    },
+    {
       id: "vocabulary/enchanted-library",
       title: t("games.enchantedLibrary.title"),
       description: t("games.enchantedLibrary.description"),

@@ -54,7 +54,7 @@ export default function DragonFlightPage() {
     };
 
     fetchVocabulary();
-  }, [setVocabulary, gameKey]); // Re-fetch when gameKey changes
+  }, [setVocabulary, gameKey, t]); // Re-fetch when gameKey changes
 
   const handleRestart = useCallback(() => {
     setXpEarned(null);

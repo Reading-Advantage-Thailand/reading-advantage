@@ -597,6 +597,7 @@ enum ActivityType {
   CASTLE_DEFENSE
   POTION_RUSH
   ENCHANTED_LIBRARY
+  DRAGON_RIDER
 }
 
 enum Status {
@@ -819,6 +820,7 @@ enum GameType {
   CASTLE_DEFENSE
   POTION_RUSH
   ENCHANTED_LIBRARY
+  DRAGON_RIDER
 }
 
 model GameRanking {
