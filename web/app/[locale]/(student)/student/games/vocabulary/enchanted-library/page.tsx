@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, BookOpen, Trophy, Gamepad2 } from "lucide-react";
 import { Header } from "@/components/header";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 const EnchantedLibraryGame = dynamic(
   () =>
@@ -138,9 +140,14 @@ export default function EnchantedLibraryPage({
 
   if (loading) {
     return (
-      <main className="min-h-screen px-6 py-10 text-white flex items-center justify-center">
-        <div className="text-xl">Loading vocabulary...</div>
-      </main>
+      <Card className="border-dashed">
+        <CardContent className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
+          <p className="text-lg font-medium text-muted-foreground">
+            {"กำลังโหลดคำศัพท์"}
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 

@@ -19,6 +19,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useCurrentLocale, useScopedI18n } from "@/locales/client";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 const PotionRushGame = dynamic(
   () => import("@/components/games/sentence/potion-rush/PotionRushGame"),
@@ -143,9 +145,14 @@ export default function PotionRushPage() {
   // Loading Screen
   if (isLoading) {
     return (
-      <main className="min-h-screen  px-6 py-10 text-white flex items-center justify-center">
-        <div className="text-white/60 animate-pulse">{t("loading")}</div>
-      </main>
+      <Card className="border-dashed">
+        <CardContent className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
+          <p className="text-lg font-medium text-muted-foreground">
+            {"กำลังโหลด"}
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -223,65 +230,67 @@ export default function PotionRushPage() {
   }
 
   return (
-    <main className="w-full min-h-screen bg-slate-950 text-white flex flex-col">
+    <main className="w-full h-full min-h-[calc(100vh-120px)] bg-slate-950 text-white flex flex-col">
       {/* Header */}
-      <header className="px-6 py-4 flex items-center justify-between border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
-        <div className="flex items-center gap-4">
+      <header className="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <Link
             href="/student/games"
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors shrink-0"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </Link>
-          <div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent truncate">
               {"Potion Rush"}
             </h1>
-            <p className="text-xs text-white/50">{t("subtitle")}</p>
+            <p className="text-xs text-white/50 hidden sm:block">
+              {t("subtitle")}
+            </p>
           </div>
         </div>
 
-        <div className="flex bg-slate-800 p-1 rounded-lg">
+        <div className="flex bg-slate-800 p-1 rounded-lg shrink-0">
           <button
             onClick={() => setActiveTab("game")}
             className={cn(
-              "px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2",
+              "px-2 sm:px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-1 sm:gap-2",
               activeTab === "game"
                 ? "bg-purple-600 text-white shadow-md"
                 : "text-white/60 hover:text-white",
             )}
           >
             <Gamepad2 className="w-4 h-4" />
-            {t("play")}
+            <span className="hidden sm:inline">{t("play")}</span>
           </button>
           <button
             onClick={() => setActiveTab("rankings")}
             className={cn(
-              "px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2",
+              "px-2 sm:px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-1 sm:gap-2",
               activeTab === "rankings"
                 ? "bg-amber-600 text-white shadow-md"
                 : "text-white/60 hover:text-white",
             )}
           >
             <Trophy className="w-4 h-4" />
-            {t("rankings")}
+            <span className="hidden sm:inline">{t("rankings")}</span>
           </button>
         </div>
       </header>
 
       {/* Content */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 min-h-0 relative flex flex-col overflow-hidden">
         {activeTab === "game" ? (
-          <div className="h-full flex flex-col">
+          <div className="flex-1 min-h-0 flex flex-col">
             {/* Difficulty Selector */}
-            <div className="bg-slate-900/80 border-b border-white/5 py-2 px-6 flex justify-center gap-2">
+            <div className="bg-slate-900/80 border-b border-white/5 py-2 px-3 sm:px-6 flex flex-wrap justify-center gap-1 sm:gap-2">
               {(["easy", "normal", "hard", "extreme"] as Difficulty[]).map(
                 (dif) => (
                   <button
                     key={dif}
                     onClick={() => setDifficulty(dif)}
                     className={cn(
-                      "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
+                      "px-2 sm:px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-all border",
                       difficulty === dif
                         ? "bg-white text-slate-900 border-white scale-105"
                         : "bg-transparent text-white/40 border-white/10 hover:border-white/30",
@@ -294,22 +303,24 @@ export default function PotionRushPage() {
             </div>
 
             {/* Game Canvas container - grow to fill remaining space */}
-            <div className="flex-1 w-full bg-neutral-900">
-              <PotionRushGame
-                vocabList={vocabList}
-                difficulty={difficulty}
-                onComplete={handleComplete}
-              />
+            <div className="flex-1 h-full w-full bg-neutral-900 relative">
+              <div className="absolute inset-0">
+                <PotionRushGame
+                  vocabList={vocabList}
+                  difficulty={difficulty}
+                  onComplete={handleComplete}
+                />
+              </div>
             </div>
           </div>
         ) : (
-          <div className="p-6 max-w-4xl mx-auto w-full h-full overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-amber-400" />
+          <div className="p-3 sm:p-6 max-w-4xl mx-auto w-full h-full overflow-y-auto">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2">
+              <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
               {t("leaderboards")}
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
               {(["easy", "normal", "hard", "extreme"] as Difficulty[]).map(
                 (dif) => (
                   <div

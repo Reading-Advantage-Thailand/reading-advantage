@@ -6,6 +6,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { AlertTriangle, BookOpen, ArrowRight } from "lucide-react";
 import { useCurrentLocale } from "@/locales/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 const CastleDefenseGame = dynamic(
   () =>
@@ -105,13 +107,14 @@ export default function CastleDefensePage() {
   // Show loading state
   if (isLoading) {
     return (
-      <main className="min-h-screen px-3 py-4 md:px-6 md:py-10 text-white">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 md:gap-8">
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-white/60 animate-pulse">กำลังโหลด...</div>
-          </div>
-        </div>
-      </main>
+      <Card className="border-dashed">
+        <CardContent className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
+          <p className="text-lg font-medium text-muted-foreground">
+            {"กำลังโหลด"}
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 

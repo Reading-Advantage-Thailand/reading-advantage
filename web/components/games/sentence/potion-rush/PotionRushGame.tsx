@@ -146,12 +146,12 @@ export default function PotionRushGame({
     ? {
         wallH: 640,
         floorH: 640,
-        counterY: 250,
-        customerY: 252,
-        cauldronY: 450,
-        beltY: 1150,
+        counterY: 400,
+        customerY: 402,
+        cauldronY: 600,
+        beltY: 1120,
         trashX: 360, // Center
-        trashY: 800, // Between Cauldrons and Belt
+        trashY: 880, // Between Cauldrons and Belt
         isPortrait: true,
       }
     : {
@@ -166,20 +166,24 @@ export default function PotionRushGame({
         isPortrait: false,
       };
 
-  // Initialization & Resize
+  // Initialization & Resize — use ResizeObserver so we get the real size
+  // the moment the flex container is laid out (window.resize doesn't fire on mount)
   useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight,
-        });
-      }
-    };
+    const el = containerRef.current;
+    if (!el) return;
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          setDimensions({ width, height });
+        }
+      }
+    });
+
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   // Game Loop (fixed timestep to match other Konva games)
@@ -235,16 +239,16 @@ export default function PotionRushGame({
 
       {/* HUD Overlay (HTML is easier for text overlays than Canvas sometimes) */}
       {hasStarted && (
-        <div className="absolute top-0 left-0 w-full p-4 text-white z-10 pointer-events-none flex justify-between items-start">
+        <div className="absolute top-0 left-0 w-full p-2 sm:p-4 text-white z-10 pointer-events-none flex justify-between items-start">
           <div>
-            <div className="text-xl font-bold text-amber-400 drop-shadow-lg">
+            <div className="text-base sm:text-xl font-bold text-amber-400 drop-shadow-lg">
               {t("hud.score")}: {score}
             </div>
-            <div className="text-sm text-slate-300 drop-shadow-md">
+            <div className="text-xs sm:text-sm text-slate-300 drop-shadow-md">
               {t("hud.reputation")}: {Math.max(0, Math.round(reputation))}%
             </div>
           </div>
-          <div className="text-2xl font-bold text-white drop-shadow-lg bg-black/30 px-4 py-1 rounded-full">
+          <div className="text-lg sm:text-2xl font-bold text-white drop-shadow-lg bg-black/30 px-2 sm:px-4 py-1 rounded-full">
             {formatTime(timeLeft)}
           </div>
         </div>
