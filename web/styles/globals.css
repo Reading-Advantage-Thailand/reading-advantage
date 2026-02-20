@@ -8,6 +8,10 @@
 @import "@radix-ui/colors/violet.css";
 @import "@radix-ui/colors/blue.css";
 
+/* Book Fonts */
+@import url("https://fonts.googleapis.com/css?family=Indie+Flower");
+@import url("https://fonts.googleapis.com/css?family=Amatic+SC");
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -296,8 +300,6 @@
 }
 
 /* Book */
-@import url("https://fonts.googleapis.com/css?family=Indie+Flower");
-@import url("https://fonts.googleapis.com/css?family=Amatic+SC");
 
 .color1 {
   color: #2ecc71; /*TURQUOISE*/
