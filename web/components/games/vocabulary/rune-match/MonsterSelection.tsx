@@ -12,10 +12,10 @@ type MonsterSelectionProps = {
 }
 
 const MONSTER_METADATA: Record<MonsterType, { label: string; color: string; description: string; image: string }> = {
-  goblin: { label: 'Goblin', color: 'bg-green-900/50 text-green-400 border-green-500/30', description: 'Weak but fast.', image: '/games/rune-match/monsters/goblin_3x4_pose_sheet.png' },
-  skeleton: { label: 'Skeleton', color: 'bg-slate-800/50 text-slate-300 border-slate-500/30', description: 'Restless undead.', image: '/games/rune-match/monsters/skeleton_3x4_pose_sheet.png' },
-  orc: { label: 'Orc', color: 'bg-red-900/50 text-red-400 border-red-500/30', description: 'A fierce warrior.', image: '/games/rune-match/monsters/orc_3x4_pose_sheet.png' },
-  dragon: { label: 'Dragon', color: 'bg-amber-900/50 text-amber-400 border-amber-500/30', description: 'The ultimate challenge.', image: '/games/rune-match/monsters/dragon_3x4_pose_sheet.png' },
+  goblin: { label: 'Goblin', color: 'bg-green-900/50 text-green-400 border-green-500/30', description: 'Weak but fast.', image: '/games/vocabulary/rune-match/monsters/goblin_3x4_pose_sheet.png' },
+  skeleton: { label: 'Skeleton', color: 'bg-slate-800/50 text-slate-300 border-slate-500/30', description: 'Restless undead.', image: '/games/vocabulary/rune-match/monsters/skeleton_3x4_pose_sheet.png' },
+  orc: { label: 'Orc', color: 'bg-red-900/50 text-red-400 border-red-500/30', description: 'A fierce warrior.', image: '/games/vocabulary/rune-match/monsters/orc_3x4_pose_sheet.png' },
+  dragon: { label: 'Dragon', color: 'bg-amber-900/50 text-amber-400 border-amber-500/30', description: 'The ultimate challenge.', image: '/games/vocabulary/rune-match/monsters/dragon_3x4_pose_sheet.png' },
 }
 
 export function MonsterSelection({ onSelect }: MonsterSelectionProps) {

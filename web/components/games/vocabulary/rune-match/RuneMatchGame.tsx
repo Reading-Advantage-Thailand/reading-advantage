@@ -203,14 +203,14 @@ export function RuneMatchGame({ vocabulary, onComplete }: RuneMatchGameProps) {
       try {
         const [goblin, skeleton, orc, dragon, base, heal, shield, background] =
           await Promise.all([
-            loadImage("/games/rune-match/monsters/goblin_3x4_pose_sheet.png"),
-            loadImage("/games/rune-match/monsters/skeleton_3x4_pose_sheet.png"),
-            loadImage("/games/rune-match/monsters/orc_3x4_pose_sheet.png"),
-            loadImage("/games/rune-match/monsters/dragon_3x4_pose_sheet.png"),
-            loadImage("/games/rune-match/runes/rune_base_3x2_pose_sheet.png"),
-            loadImage("/games/rune-match/runes/rune_heal_3x2_pose_sheet.png"),
-            loadImage("/games/rune-match/runes/rune_shield_3x2_pose_sheet.png"),
-            loadImage("/games/rune-match/ui/background-tiled.png"),
+            loadImage("/games/vocabulary/rune-match/monsters/goblin_3x4_pose_sheet.png"),
+            loadImage("/games/vocabulary/rune-match/monsters/skeleton_3x4_pose_sheet.png"),
+            loadImage("/games/vocabulary/rune-match/monsters/orc_3x4_pose_sheet.png"),
+            loadImage("/games/vocabulary/rune-match/monsters/dragon_3x4_pose_sheet.png"),
+            loadImage("/games/vocabulary/rune-match/runes/rune_base_3x2_pose_sheet.png"),
+            loadImage("/games/vocabulary/rune-match/runes/rune_heal_3x2_pose_sheet.png"),
+            loadImage("/games/vocabulary/rune-match/runes/rune_shield_3x2_pose_sheet.png"),
+            loadImage("/games/vocabulary/rune-match/ui/background-tiled.png"),
           ]);
         if (mounted)
           setAssets({

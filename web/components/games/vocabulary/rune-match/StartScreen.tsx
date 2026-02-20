@@ -15,19 +15,19 @@ const getMonsterMetadata = (
 ): Record<MonsterType, { label: string; image: string }> => ({
   goblin: {
     label: t("runeMatch.monsters.goblin"),
-    image: "/games/rune-match/monsters/goblin_3x4_pose_sheet.png",
+    image: "/games/vocabulary/rune-match/monsters/goblin_3x4_pose_sheet.png",
   },
   skeleton: {
     label: t("runeMatch.monsters.skeleton"),
-    image: "/games/rune-match/monsters/skeleton_3x4_pose_sheet.png",
+    image: "/games/vocabulary/rune-match/monsters/skeleton_3x4_pose_sheet.png",
   },
   orc: {
     label: t("runeMatch.monsters.orc"),
-    image: "/games/rune-match/monsters/orc_3x4_pose_sheet.png",
+    image: "/games/vocabulary/rune-match/monsters/orc_3x4_pose_sheet.png",
   },
   dragon: {
     label: t("runeMatch.monsters.dragon"),
-    image: "/games/rune-match/monsters/dragon_3x4_pose_sheet.png",
+    image: "/games/vocabulary/rune-match/monsters/dragon_3x4_pose_sheet.png",
   },
 });
 
