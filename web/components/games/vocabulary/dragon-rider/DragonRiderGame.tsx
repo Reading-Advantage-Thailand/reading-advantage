@@ -933,7 +933,7 @@ export function DragonRiderGame({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-[70vh] min-h-[480px] max-h-[760px] overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-[0_20px_60px_rgba(15,23,42,0.45)] ${gamePhase !== "start" ? "touch-none select-none" : ""}`}
+      className={`relative w-full h-[80vh] min-h-[320px] sm:min-h-[400px] md:min-h-[480px] max-h-[760px] overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-[0_20px_60px_rgba(15,23,42,0.45)] ${gamePhase !== "start" ? "touch-none select-none" : ""}`}
       data-testid="dragon-rider"
       data-status={statusLabel}
     >
@@ -966,24 +966,27 @@ export function DragonRiderGame({
 
       {canRenderGame && (
         <div className="absolute inset-0 z-10 pointer-events-none">
-          <div className="flex items-start justify-between p-6">
-            <div className="max-w-[60%] rounded-2xl border border-white/10 bg-white/10 px-5 py-3 backdrop-blur">
-              <div className="text-xs uppercase tracking-[0.2em] text-white/70">
+          <div className="flex items-start justify-between p-2 sm:p-4 md:p-6">
+            <div className="max-w-[60%] rounded-2xl border border-white/10 bg-white/10 px-3 py-1.5 sm:px-5 sm:py-3 backdrop-blur">
+              <div className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-white/70">
                 Prompt
               </div>
-              <div className="text-2xl font-semibold text-white">
+              <div className="text-base sm:text-xl md:text-2xl font-semibold text-white">
                 {promptRound.term || "—"}
               </div>
             </div>
-            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-white backdrop-blur">
-              <Flame className="h-4 w-4 text-amber-300" aria-hidden="true" />
-              <span className="text-xs uppercase tracking-[0.2em] text-white/70">
+            <div className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/10 bg-white/10 px-2 sm:px-4 py-1.5 sm:py-2 text-white backdrop-blur">
+              <Flame
+                className="h-3 w-3 sm:h-4 sm:w-4 text-amber-300"
+                aria-hidden="true"
+              />
+              <span className="hidden xs:inline text-xs uppercase tracking-[0.2em] text-white/70">
                 Dragons
               </span>
               <motion.span
                 key={dragonCountDisplay}
                 data-testid="dragon-rider-dragon-count"
-                className="text-lg font-semibold"
+                className="text-base sm:text-lg font-semibold"
                 initial={{ scale: 0.9, opacity: 0.6 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.2 }}
@@ -993,7 +996,7 @@ export function DragonRiderGame({
             </div>
           </div>
 
-          <div className="absolute left-6 right-6 top-[88px]">
+          <div className="absolute left-2 right-2 sm:left-4 sm:right-4 md:left-6 md:right-6 top-[60px] sm:top-[72px] md:top-[88px]">
             <div
               className="h-2 w-full overflow-hidden rounded-full bg-white/10"
               role="progressbar"
@@ -1048,7 +1051,7 @@ export function DragonRiderGame({
           {gateLabels && layout && (
             <>
               <div
-                className="absolute -translate-x-1/2 rounded-xl border border-white/10 bg-black/80 px-4 py-2 text-2xl font-semibold text-white shadow-lg"
+                className="absolute -translate-x-1/2 rounded-xl border border-white/10 bg-black/80 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-xs sm:text-base md:text-2xl font-semibold text-white shadow-lg max-w-[120px] sm:max-w-[180px] md:max-w-none truncate sm:truncate-none"
                 style={{
                   left: layout.leftGate.left + layout.leftGate.width / 2,
                   top: gateLabelTop,
@@ -1057,7 +1060,7 @@ export function DragonRiderGame({
                 {gateLabels?.left}
               </div>
               <div
-                className="absolute -translate-x-1/2 rounded-xl border border-white/10 bg-black/80 px-4 py-2 text-2xl font-semibold text-white shadow-lg"
+                className="absolute -translate-x-1/2 rounded-xl border border-white/10 bg-black/80 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 text-xs sm:text-base md:text-2xl font-semibold text-white shadow-lg max-w-[120px] sm:max-w-[180px] md:max-w-none truncate sm:truncate-none"
                 style={{
                   left: layout.rightGate.left + layout.rightGate.width / 2,
                   top: gateLabelTop,
@@ -1090,7 +1093,7 @@ export function DragonRiderGame({
             {state.status === "boss" && bossBattleStarted && !showResults && (
               <React.Fragment key="boss-battle">
                 <motion.div
-                  className="absolute inset-x-0 top-16 mx-auto flex w-fit items-center gap-3 rounded-full border border-red-500/40 bg-red-950/70 px-6 py-3 text-xl font-bold uppercase tracking-[0.2em] text-red-200"
+                  className="absolute inset-x-0 top-12 sm:top-16 mx-auto flex w-fit items-center gap-2 sm:gap-3 rounded-full border border-red-500/40 bg-red-950/70 px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-xl font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-red-200"
                   initial={{ opacity: 0, scale: 0.8, y: -20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.8 }}
@@ -1099,13 +1102,13 @@ export function DragonRiderGame({
                   ⚔️ Big Boss Battle! ⚔️
                 </motion.div>
                 <motion.div
-                  className="absolute inset-x-0 top-36 mx-auto w-80"
+                  className="absolute inset-x-0 top-24 sm:top-36 mx-auto w-40 sm:w-64 md:w-80 px-2 sm:px-0"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3, delay: 0.2 }}
                 >
-                  <div className="rounded-lg border border-white/10 bg-slate-900/70 p-3 backdrop-blur">
+                  <div className="rounded-lg border border-white/10 bg-slate-900/70 p-2 sm:p-3 backdrop-blur">
                     <div className="text-xs uppercase tracking-[0.2em] text-white/70 mb-1">
                       Boss Health
                     </div>
@@ -1260,8 +1263,16 @@ type ParallaxRefs = {
   bottomB: Konva.Image | null;
 };
 
-const buildParallaxMetrics = (image: HTMLImageElement, stageWidth: number) => {
-  const scale = stageWidth / image.width;
+const buildParallaxMetrics = (
+  image: HTMLImageElement,
+  stageWidth: number,
+  stageHeight: number,
+) => {
+  // Scale must cover BOTH width and height so the tile fills the full canvas
+  // on tall portrait screens (mobile) where height > width.
+  const scaleX = stageWidth / image.width;
+  const scaleY = stageHeight / image.height;
+  const scale = Math.max(scaleX, scaleY);
   return {
     scale,
     height: image.height * scale,
@@ -1325,14 +1336,17 @@ const DragonRiderCanvas = ({
     const topMetrics = buildParallaxMetrics(
       assets.parallaxTop,
       stageSize.width,
+      stageSize.height,
     );
     const middleMetrics = buildParallaxMetrics(
       assets.parallaxMiddle,
       stageSize.width,
+      stageSize.height,
     );
     const bottomMetrics = buildParallaxMetrics(
       assets.parallaxBottom,
       stageSize.width,
+      stageSize.height,
     );
 
     const animation = new Konva.Animation(
@@ -1368,7 +1382,7 @@ const DragonRiderCanvas = ({
     return () => {
       animation.stop();
     };
-  }, [assets, stageSize.width]);
+  }, [assets, stageSize.width, stageSize.height]);
 
   // During flight: use rows 0-1 from animation
   // During boss battle: use row 2 with state-based columns
@@ -1391,14 +1405,20 @@ const DragonRiderCanvas = ({
     col: index % 3,
   }));
 
-  const topMetrics = buildParallaxMetrics(assets.parallaxTop, stageSize.width);
+  const topMetrics = buildParallaxMetrics(
+    assets.parallaxTop,
+    stageSize.width,
+    stageSize.height,
+  );
   const middleMetrics = buildParallaxMetrics(
     assets.parallaxMiddle,
     stageSize.width,
+    stageSize.height,
   );
   const bottomMetrics = buildParallaxMetrics(
     assets.parallaxBottom,
     stageSize.width,
+    stageSize.height,
   );
 
   return (

@@ -104,7 +104,7 @@ export default function DragonRiderPage({
   }
 
   return (
-    <main className="min-h-screen px-6 py-4 text-white">
+    <main className="min-h-screen px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-white">
       <div className="mx-auto w-full max-w-6xl">
         <Button variant="ghost" size="sm" asChild className="mb-4">
           <Link href="/student/games">
