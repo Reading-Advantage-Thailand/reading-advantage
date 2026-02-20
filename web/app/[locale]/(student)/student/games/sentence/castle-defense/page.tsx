@@ -26,8 +26,12 @@ type WarningStatus = {
 };
 
 export default function CastleDefensePage() {
-  const vocabulary = useGameStore((state) => state.vocabulary);
-  const setVocabulary = useGameStore((state) => state.setVocabulary);
+  // Use local state for sentences — NOT the shared vocabulary store,
+  // because Castle Defense uses sentences (not vocab words) and the store
+  // is shared with vocabulary games which would cause cross-contamination.
+  const [sentences, setSentences] = useState<
+    { term: string; translation: string }[]
+  >([]);
   const setLastResult = useGameStore((state) => state.setLastResult);
   const [warningStatus, setWarningStatus] = useState<WarningStatus>({
     type: null,
@@ -36,7 +40,7 @@ export default function CastleDefensePage() {
   const locale = useCurrentLocale();
 
   useEffect(() => {
-    // Custom fetch for Castle Defense sentences
+    // Always fetch fresh sentences from the API (never reuse vocab store)
     const fetchSentences = async () => {
       try {
         setIsLoading(true);
@@ -59,9 +63,7 @@ export default function CastleDefensePage() {
         }
 
         if (data.sentences) {
-          // Adapt API response to VocabularyItem format
-          // API returns { term, translation } which matches needed format
-          setVocabulary(data.sentences);
+          setSentences(data.sentences);
         }
       } catch (error) {
         console.error("Failed to load sentences:", error);
@@ -71,12 +73,8 @@ export default function CastleDefensePage() {
       }
     };
 
-    if (vocabulary.length === 0) {
-      fetchSentences();
-    } else {
-      setIsLoading(false);
-    }
-  }, [vocabulary.length, setVocabulary, locale]);
+    fetchSentences();
+  }, [locale]);
 
   const handleComplete = useCallback(
     async (results: { xp: number; accuracy: number; difficulty: string }) => {
@@ -107,8 +105,8 @@ export default function CastleDefensePage() {
   // Show loading state
   if (isLoading) {
     return (
-      <main className="min-h-screen px-6 py-10 text-white">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+      <main className="min-h-screen px-3 py-4 md:px-6 md:py-10 text-white">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 md:gap-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-white/60 animate-pulse">กำลังโหลด...</div>
           </div>
@@ -123,11 +121,11 @@ export default function CastleDefensePage() {
     warningStatus.type === "INSUFFICIENT_SENTENCES"
   ) {
     return (
-      <main className="min-h-screen px-6 py-10 text-white">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+      <main className="min-h-screen px-3 py-4 md:px-6 md:py-10 text-white">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 md:gap-8">
           <Link
             href="/student/games"
-            className="text-sm uppercase tracking-[0.2em] text-white/60 transition hover:text-white"
+            className="inline-flex items-center text-sm uppercase tracking-[0.2em] text-white/60 transition hover:text-white"
           >
             <ChevronLeft className="mr-1 h-4 w-4" />
             {"กลับไปหน้าเกม"}
@@ -136,7 +134,7 @@ export default function CastleDefensePage() {
           <div className="flex items-center justify-center min-h-[70vh]">
             <div className="max-w-2xl w-full">
               {/* Warning Card */}
-              <div className="bg-gradient-to-br from-amber-500/10 to-red-500/10 border-2 border-amber-500/30 rounded-3xl p-8 md:p-12 shadow-2xl backdrop-blur-sm">
+              <div className="bg-gradient-to-br from-amber-500/10 to-red-500/10 border-2 border-amber-500/30 rounded-3xl p-5 md:p-12 shadow-2xl backdrop-blur-sm">
                 {/* Icon */}
                 <div className="flex justify-center mb-6">
                   <div className="bg-amber-500/20 p-6 rounded-full border-2 border-amber-500/50">
@@ -251,14 +249,14 @@ export default function CastleDefensePage() {
 
   // Show game if everything is OK
   return (
-    <main className="min-h-screen px-6 transition-colors duration-300 text-slate-900">
-      <Button variant="ghost" size="sm" asChild className="mb-4">
+    <main className="min-h-screen px-3 pt-3 pb-6 md:px-6 md:pt-6 transition-colors duration-300 text-slate-900">
+      <Button variant="ghost" size="sm" asChild className="mb-2 md:mb-4">
         <Link href="/student/games">
           <ChevronLeft className="mr-1 h-4 w-4" />
           {"กลับไปหน้าเกม"}
         </Link>
       </Button>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 md:gap-8">
         <Header
           heading="Castle Defense"
           text="Collect words to build towers and defend your castle!"
@@ -266,10 +264,7 @@ export default function CastleDefensePage() {
           <Shield className="h-8 w-8 text-primary" />
         </Header>
 
-        <CastleDefenseGame
-          vocabulary={vocabulary}
-          onComplete={handleComplete}
-        />
+        <CastleDefenseGame vocabulary={sentences} onComplete={handleComplete} />
       </div>
     </main>
   );

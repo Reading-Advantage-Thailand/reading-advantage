@@ -473,7 +473,7 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
   return (
     <div
       ref={containerRef}
-      className="relative h-[75vh] w-full overflow-hidden rounded-3xl bg-slate-900 touch-none md:aspect-video md:h-auto select-none"
+      className="relative h-[calc(100svh-8rem)] w-full overflow-hidden rounded-3xl bg-slate-900 touch-none md:aspect-video md:h-auto select-none"
     >
       {gameState && dimensions.width > 0 && dimensions.height > 0 && (
         <Stage width={dimensions.width} height={dimensions.height}>
@@ -694,19 +694,19 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
       )}
 
       {gameState && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex flex-col items-center gap-2 max-w-[92vw]">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex flex-col items-center gap-1 md:gap-2 w-[min(92vw,560px)]">
           {gameState.currentSentenceThai && (
-            <div className="bg-blue-900/90 border border-blue-400/40 px-5 py-2 rounded-2xl shadow-xl backdrop-blur-md">
-              <div className="text-white text-sm font-black text-center leading-snug md:text-xl">
+            <div className="bg-blue-900/90 border border-blue-400/40 px-3 py-1.5 md:px-5 md:py-2 rounded-2xl shadow-xl backdrop-blur-md w-full">
+              <div className="text-white text-xs md:text-xl font-black text-center leading-snug">
                 {gameState.currentSentenceThai}
               </div>
             </div>
           )}
-          <div className="bg-slate-950/70 border border-white/10 px-4 py-2 rounded-xl shadow-lg backdrop-blur-md text-center">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">
+          <div className="bg-slate-950/70 border border-white/10 px-3 py-1 md:px-4 md:py-2 rounded-xl shadow-lg backdrop-blur-md text-center w-full">
+            <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-0.5">
               {t("hud.progress")}
             </span>
-            <div className="text-sm font-semibold text-white md:text-base">
+            <div className="text-xs md:text-base font-semibold text-white">
               {gameState.sentenceWords.map((word, idx) => (
                 <span
                   key={`${word}-${idx}`}
@@ -724,11 +724,11 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
             </div>
           </div>
           {gameState.sentenceCompleted && (
-            <div className="bg-emerald-600/90 border border-emerald-300/60 px-4 py-1 rounded-full shadow-lg text-white text-[11px] font-black uppercase tracking-widest md:text-xs">
+            <div className="bg-emerald-600/90 border border-emerald-300/60 px-3 py-0.5 rounded-full shadow-lg text-white text-[10px] font-black uppercase tracking-widest">
               {t("messages.sentenceComplete")}
             </div>
           )}
-          <div className="bg-slate-950/70 border border-white/10 px-3 py-1 rounded-full shadow-lg text-white text-[11px] font-bold uppercase tracking-widest md:text-xs">
+          <div className="bg-slate-950/70 border border-white/10 px-3 py-0.5 rounded-full shadow-lg text-white text-[10px] font-bold uppercase tracking-widest">
             {t("hud.wave", {
               current: gameState.wave,
               killed: gameState.enemiesKilledThisWave,
@@ -738,28 +738,28 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
         </div>
       )}
 
-      {/* HUD - TOP */}
-      <div className="absolute top-44 left-4 z-30 pointer-events-none md:top-4">
-        <div className="bg-slate-900/90 border border-slate-700/50 px-4 py-2 rounded-2xl shadow-xl backdrop-blur-md">
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-1">
+      {/* HUD - Score & Castle HP (bottom-left / bottom-right on mobile, top on md+) */}
+      <div className="absolute bottom-[6.5rem] left-3 z-30 pointer-events-none md:bottom-auto md:top-4 md:left-4">
+        <div className="bg-slate-900/90 border border-slate-700/50 px-2 py-1 md:px-4 md:py-2 rounded-xl md:rounded-2xl shadow-xl backdrop-blur-md">
+          <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-0.5">
             {t("hud.score")}
           </span>
-          <span className="text-xl font-black text-white leading-none">
+          <span className="text-base md:text-xl font-black text-white leading-none">
             {gameState?.score || 0}
           </span>
         </div>
       </div>
 
-      <div className="absolute top-44 right-4 z-30 pointer-events-none md:top-4">
-        <div className="bg-slate-900/90 border border-slate-700/50 px-4 py-2 rounded-2xl shadow-xl backdrop-blur-md text-right">
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-1">
+      <div className="absolute bottom-[6.5rem] right-3 z-30 pointer-events-none md:bottom-auto md:top-4 md:right-4">
+        <div className="bg-slate-900/90 border border-slate-700/50 px-2 py-1 md:px-4 md:py-2 rounded-xl md:rounded-2xl shadow-xl backdrop-blur-md text-right">
+          <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none mb-0.5">
             {t("hud.castleHp")}
           </span>
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-black text-rose-500 leading-none">
+          <div className="flex items-center gap-1 md:gap-2">
+            <span className="text-base md:text-xl font-black text-rose-500 leading-none">
               {gameState?.base.hp || 0}
             </span>
-            <div className="w-16 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+            <div className="w-12 md:w-16 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
               <div
                 className="h-full bg-rose-500 transition-all duration-300"
                 style={{
@@ -772,16 +772,16 @@ export function CastleDefenseGame({ vocabulary, onComplete }: Props) {
       </div>
 
       {activeBuildSlot && (
-        <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-          <div className="bg-emerald-600/90 border border-emerald-300/60 px-5 py-2 rounded-full shadow-lg text-white font-black uppercase tracking-widest text-xs">
+        <div className="absolute bottom-24 md:bottom-28 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+          <div className="bg-emerald-600/90 border border-emerald-300/60 px-4 md:px-5 py-1.5 md:py-2 rounded-full shadow-lg text-white font-black uppercase tracking-widest text-[10px] md:text-xs">
             {t("hud.buildTower")}
           </div>
         </div>
       )}
 
       {gameState?.waveMessage && (
-        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-          <div className="bg-amber-500/90 border border-amber-200/60 px-6 py-2 rounded-full shadow-xl text-white font-black uppercase tracking-widest text-xs">
+        <div className="absolute top-[30%] md:top-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+          <div className="bg-amber-500/90 border border-amber-200/60 px-5 md:px-6 py-1.5 md:py-2 rounded-full shadow-xl text-white font-black uppercase tracking-widest text-[10px] md:text-xs">
             {gameState.waveMessage}
           </div>
         </div>
