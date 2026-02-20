@@ -169,7 +169,7 @@ export default function EnchantedLibraryPage({
   }
 
   return (
-    <main className="min-h-screen px-6 text-slate-900">
+    <main className="min-h-screen px-3 sm:px-6 text-slate-900">
       <Button variant="ghost" size="sm" asChild className="mb-4">
         <Link href="/student/games">
           <ChevronLeft className="mr-1 h-4 w-4" />

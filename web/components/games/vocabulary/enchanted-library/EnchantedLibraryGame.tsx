@@ -462,9 +462,9 @@ export function EnchantedLibraryGame({
     return (
       <div
         ref={containerRef}
-        className="relative h-[60vh] w-full overflow-hidden rounded-2xl bg-gradient-to-b from-amber-100 to-amber-200 flex items-center justify-center border border-amber-300 md:aspect-video md:h-auto"
+        className="relative h-[50vh] sm:h-[60vh] w-full overflow-hidden rounded-2xl bg-gradient-to-b from-amber-100 to-amber-200 flex items-center justify-center border border-amber-300 md:aspect-video md:h-auto"
       >
-        <div className="text-amber-800 animate-pulse font-mono tracking-widest uppercase">
+        <div className="text-amber-800 animate-pulse font-mono tracking-widest uppercase text-sm sm:text-base">
           Loading Library...
         </div>
       </div>
@@ -474,8 +474,8 @@ export function EnchantedLibraryGame({
   return (
     <div
       ref={containerRef}
-      style={{ minHeight: "400px" }}
-      className="relative h-[75vh] w-full overflow-hidden rounded-3xl bg-slate-950 shadow-2xl touch-none md:aspect-video md:h-auto"
+      style={{ minHeight: "320px" }}
+      className="relative h-[80vh] sm:h-[70vh] w-full overflow-hidden rounded-3xl bg-slate-950 shadow-2xl touch-none md:aspect-video md:h-auto"
     >
       {gamePhase === "start" && (
         <GameStartScreen
@@ -539,12 +539,12 @@ export function EnchantedLibraryGame({
           className="absolute inset-0"
         >
           {/* HUD Overlay */}
-          <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 text-amber-900 font-bold text-xl pointer-events-none drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
-            <div className="bg-white/80 px-3 py-1 rounded-lg">
+          <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10 flex flex-col gap-1 text-amber-900 font-bold text-sm sm:text-base md:text-xl pointer-events-none drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
+            <div className="bg-white/80 px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg">
               {t("hud.mana")}: {gameState.mana}
             </div>
             <div
-              className={`px-3 py-1 rounded-lg ${
+              className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg ${
                 gameState.timeRemaining <= 30000
                   ? "bg-red-500/90 text-white animate-pulse"
                   : "bg-white/80"
@@ -555,7 +555,7 @@ export function EnchantedLibraryGame({
                 Math.floor((gameState.timeRemaining % 60000) / 1000),
               ).padStart(2, "0")}
             </div>
-            <div className="bg-white/80 px-3 py-1 rounded-lg text-blue-600 text-base flex items-center gap-1">
+            <div className="bg-white/80 px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg text-blue-600 text-sm sm:text-base flex items-center gap-0.5 sm:gap-1">
               {t("hud.shields")}:{" "}
               {Array(gameState.player.maxShieldCharges)
                 .fill(0)
@@ -574,20 +574,22 @@ export function EnchantedLibraryGame({
             </div>
           </div>
 
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-yellow-400 to-amber-500 px-6 py-3 rounded-full border-2 border-yellow-300 backdrop-blur-sm pointer-events-none shadow-lg">
-            <span className="text-white/90 mr-2 text-sm">Find:</span>
-            <span className="text-2xl font-bold text-white drop-shadow-md">
+          <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-yellow-400 to-amber-500 px-3 py-1.5 sm:px-6 sm:py-3 rounded-full border-2 border-yellow-300 backdrop-blur-sm pointer-events-none shadow-lg max-w-[55%] sm:max-w-none text-center">
+            <span className="text-white/90 mr-1 sm:mr-2 text-xs sm:text-sm">
+              Find:
+            </span>
+            <span className="text-base sm:text-xl md:text-2xl font-bold text-white drop-shadow-md">
               {gameState.targetWord}
             </span>
           </div>
 
-          <div className="absolute top-4 right-4 z-20">
+          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-20">
             <button
               onClick={() => setShowGrimoire(true)}
-              className="bg-white/90 p-3 rounded-full text-amber-900 shadow-lg border-2 border-amber-300 hover:scale-110 transition-transform active:scale-95"
+              className="bg-white/90 p-2 sm:p-3 rounded-full text-amber-900 shadow-lg border-2 border-amber-300 hover:scale-110 transition-transform active:scale-95"
               title="My Grimoire"
             >
-              <Book className="w-6 h-6" />
+              <Book className="w-4 h-4 sm:w-6 sm:h-6" />
             </button>
           </div>
 
@@ -633,11 +635,11 @@ export function EnchantedLibraryGame({
           </div>
 
           {/* Virtual Controls */}
-          <div className="absolute bottom-8 right-8 z-20 flex flex-row items-end gap-6">
+          <div className="absolute bottom-3 right-3 sm:bottom-8 sm:right-8 z-20 flex flex-row items-end gap-3 sm:gap-6">
             <button
               onClick={() => triggerCast()}
               disabled={gameState.player.shieldCharges === 0}
-              className={`w-20 h-20 rounded-full border-2 flex items-center justify-center font-bold transition-all active:scale-95 ${
+              className={`w-14 h-14 sm:w-20 sm:h-20 rounded-full border-2 flex items-center justify-center font-bold text-xs sm:text-sm transition-all active:scale-95 ${
                 gameState.player.shieldCharges > 0
                   ? "bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]"
                   : "bg-slate-400 border-slate-300 text-slate-600 opacity-50"
