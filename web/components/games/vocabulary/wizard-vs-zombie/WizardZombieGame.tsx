@@ -133,10 +133,16 @@ export function WizardZombieGame({
 
       try {
         const [player, zombie, orb, floor] = await Promise.all([
-          loadImage("/games/wizard-vs-zombie/player_3x3_pose_sheet.png"),
-          loadImage("/games/wizard-vs-zombie/zombie_3x3_pose_sheet.png"),
-          loadImage("/games/wizard-vs-zombie/orb_3x3_pose_sheet.png"),
-          loadImage("/games/wizard-vs-zombie/tile-ruins.png"),
+          loadImage(
+            "/games/vocabulary/wizard-vs-zombie/player_3x3_pose_sheet.png",
+          ),
+          loadImage(
+            "/games/vocabulary/wizard-vs-zombie/zombie_3x3_pose_sheet.png",
+          ),
+          loadImage(
+            "/games/vocabulary/wizard-vs-zombie/orb_3x3_pose_sheet.png",
+          ),
+          loadImage("/games/vocabulary/wizard-vs-zombie/tile-ruins.png"),
         ]);
         if (mounted) setAssets({ player, zombie, orb, floor });
       } catch (e) {
@@ -329,9 +335,10 @@ export function WizardZombieGame({
     return (
       <div
         ref={containerRef}
-        className="relative h-[60vh] w-full overflow-hidden rounded-2xl bg-slate-950 flex items-center justify-center border border-white/10 md:aspect-video md:h-auto"
+        className="relative w-full overflow-hidden rounded-2xl bg-slate-950 flex items-center justify-center border border-white/10"
+        style={{ height: "min(75svh, 100%)" }}
       >
-        <div className="text-white animate-pulse font-mono tracking-widest uppercase">
+        <div className="text-white animate-pulse font-mono tracking-widest uppercase text-sm sm:text-base">
           Initializing Grimoire...
         </div>
       </div>
@@ -341,8 +348,8 @@ export function WizardZombieGame({
   return (
     <div
       ref={containerRef}
-      style={{ minHeight: "400px" }}
-      className="relative h-[75vh] w-full overflow-hidden rounded-3xl bg-slate-900 shadow-2xl ring-1 ring-white/10 touch-none md:aspect-video md:h-auto"
+      style={{ minHeight: "400px", height: "100%" }}
+      className="relative w-full overflow-hidden rounded-3xl bg-slate-900 shadow-2xl ring-1 ring-white/10 touch-none"
     >
       <AnimatePresence>
         {!hasStarted && (
@@ -444,8 +451,8 @@ export function WizardZombieGame({
               </div>
             </div>
 
-            <footer className="p-6 sm:p-8 border-t border-white/10 bg-slate-900/80 backdrop-blur-md flex flex-wrap items-center justify-between gap-6">
-              <div className="flex items-center gap-6 text-xs uppercase tracking-[0.2em] text-white/50">
+            <footer className="p-4 sm:p-6 md:p-8 border-t border-white/10 bg-slate-900/80 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6">
+              <div className="flex items-center gap-4 sm:gap-6 text-xs uppercase tracking-[0.2em] text-white/50">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-blue-500" /> Move:
                   Arrows / WASD
@@ -460,7 +467,7 @@ export function WizardZombieGame({
                   resetGame();
                   setHasStarted(true);
                 }}
-                className="group relative px-10 py-4 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold rounded-full transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                className="group relative w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold rounded-full transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
               >
                 <span className="relative z-10">
                   {t("common.startSurvival")}
@@ -577,9 +584,9 @@ export function WizardZombieGame({
           </AnimatePresence>
 
           {/* HUD Overlay */}
-          <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 text-white font-bold text-lg pointer-events-none drop-shadow-md">
+          <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10 flex flex-col gap-0.5 sm:gap-1 text-white font-bold text-sm sm:text-lg pointer-events-none drop-shadow-md">
             <div>HP: {Math.ceil(gameState.player.hp)}</div>
-            <div className="text-blue-400 text-sm flex items-center gap-1">
+            <div className="text-blue-400 text-xs sm:text-sm flex items-center gap-0.5 sm:gap-1">
               SHOCKWAVE:{" "}
               {Array(gameState.player.maxShockwaveCharges)
                 .fill(0)
@@ -597,13 +604,16 @@ export function WizardZombieGame({
                 ))}
             </div>
           </div>
-          <div className="absolute top-4 right-4 z-10 text-white font-bold text-lg pointer-events-none drop-shadow-md">
+          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10 text-white font-bold text-sm sm:text-lg pointer-events-none drop-shadow-md">
             {t("common.score")}: {gameState.score}
           </div>
 
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-black/50 px-6 py-2 rounded-full border border-white/20 backdrop-blur-sm pointer-events-none">
-            <span className="text-white/70 mr-2">Find:</span>
-            <span className="text-xl font-bold text-yellow-400">
+          {/* Target Word - centered below HUD, above virtual controls */}
+          <div className="absolute bottom-28 sm:bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-10 bg-black/60 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full border border-white/20 backdrop-blur-sm pointer-events-none whitespace-nowrap">
+            <span className="text-white/70 mr-1 sm:mr-2 text-sm sm:text-base">
+              Find:
+            </span>
+            <span className="text-base sm:text-xl font-bold text-yellow-400">
               {gameState.targetWord}
             </span>
           </div>
@@ -639,11 +649,11 @@ export function WizardZombieGame({
           ))}
 
           {/* Virtual Controls */}
-          <div className="absolute bottom-8 right-8 z-20 flex flex-row items-end gap-6">
+          <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 z-20 flex flex-row items-end gap-2 sm:gap-4">
             <button
               onClick={() => triggerCast()}
               disabled={gameState.player.shockwaveCharges === 0}
-              className={`w-20 h-20 rounded-full border-2 flex items-center justify-center font-bold transition-all active:scale-95 ${
+              className={`w-14 h-14 sm:w-20 sm:h-20 rounded-full border-2 flex items-center justify-center font-bold text-xs sm:text-sm transition-all active:scale-95 ${
                 gameState.player.shockwaveCharges > 0
                   ? "bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]"
                   : "bg-slate-800 border-slate-700 text-slate-500 opacity-50"

@@ -88,7 +88,7 @@ export default function WizardZombiePage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-10">
       <Button variant="ghost" size="sm" asChild>
         <Link href="/student/games">
           <ArrowLeft className="mr-1 h-4 w-4" />
@@ -111,7 +111,10 @@ export default function WizardZombiePage() {
         </div>
       </Header>
 
-      <div className="w-full h-full max-w-6xl mx-auto overflow-hidden rounded-xl border-2 border-slate-800 bg-slate-950 shadow-2xl backdrop-blur-sm md:aspect-video relative">
+      <div
+        className="w-full max-w-6xl mx-auto overflow-hidden rounded-xl border-2 border-slate-800 bg-slate-950 shadow-2xl backdrop-blur-sm relative"
+        style={{ height: "min(85svh, 100%)" }}
+      >
         {/* Background Elements internal to the game card */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(88,28,135,0.15),rgba(2,6,23,0.8))]" />

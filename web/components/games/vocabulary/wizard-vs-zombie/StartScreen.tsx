@@ -154,8 +154,8 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex-none px-6 pt-4 pb-0">
-          <div className="flex gap-2 bg-slate-900/60 p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
+        <div className="flex-none px-3 sm:px-6 pt-4 pb-0">
+          <div className="flex gap-1 sm:gap-2 bg-slate-900/60 p-1 sm:p-1.5 rounded-2xl border border-white/10 backdrop-blur-md">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -164,15 +164,18 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300",
+                    "flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-300",
                     isActive
                       ? "bg-purple-600/20 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.1)] border border-purple-500/30"
                       : "bg-transparent text-slate-400 hover:bg-white/5 hover:text-slate-300",
                   )}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-bold uppercase tracking-wider">
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm font-bold uppercase tracking-wider">
                     {tab.label}
+                  </span>
+                  <span className="inline sm:hidden text-[10px] font-bold uppercase tracking-wider">
+                    {tab.label.slice(0, 4)}
                   </span>
                 </button>
               );
@@ -234,7 +237,7 @@ export function StartScreen({ vocabulary, onStart }: StartScreenProps) {
                     {/* Sprite Animation */}
                     <SpriteAnimation
                       src={withBasePath(
-                        "/games/wizard-vs-zombie/zombie_3x3_pose_sheet.png",
+                        "/games/vocabulary/wizard-vs-zombie/zombie_3x3_pose_sheet.png",
                       )}
                       frameWidth={3}
                       frameHeight={3}
