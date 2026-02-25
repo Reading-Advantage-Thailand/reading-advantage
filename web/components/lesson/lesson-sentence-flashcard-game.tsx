@@ -99,7 +99,7 @@ export default function LessonSentenceFlashcardGame({
   const [startTime, setStartTime] = useState<number | null>(null);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   const [completionData, setCompletionData] = useState<CompletionData | null>(
-    null
+    null,
   );
   const [sessionStats, setSessionStats] = useState<SessionStats>({
     correct: 0,
@@ -167,7 +167,7 @@ export default function LessonSentenceFlashcardGame({
   };
 
   // Load game data
-  const loadGameData = async () => {
+  const loadGameData = useCallback(async () => {
     try {
       setGameState(GameState.LOADING);
       const response = await fetch(`/api/v1/lesson/sentences/${articleId}`);
@@ -225,7 +225,7 @@ export default function LessonSentenceFlashcardGame({
             last_review: item.last_review
               ? new Date(item.last_review)
               : undefined,
-          })
+          }),
         );
 
         // Use all cards, not just due cards
@@ -247,14 +247,14 @@ export default function LessonSentenceFlashcardGame({
       setGameState(GameState.ERROR);
       toast.error("Failed to load flashcards");
     }
-  };
+  }, [articleId, onCompleteChange]);
 
   // Initial load
   useEffect(() => {
     if (articleId) {
       loadGameData();
     }
-  }, [articleId]);
+  }, [articleId, loadGameData]);
 
   // Remove duplicate fetchSentences and useEffect with hasInitializedRef
 

@@ -1,15 +1,15 @@
 import { withBasePath } from './basePath'
 
 const HERO_SPRITES = [
-  withBasePath('/games/rpg-battle/hero_male_pose_sheet_3x3.png'),
-  withBasePath('/games/rpg-battle/hero_female_pose_sheet_3x3.png'),
+  withBasePath('/games/vocabulary/rpg-battle/hero_male_pose_sheet_3x3.png'),
+  withBasePath('/games/vocabulary/rpg-battle/hero_female_pose_sheet_3x3.png'),
 ]
 
 const ENEMY_SPRITES = [
-  withBasePath('/games/rpg-battle/enemy_slime_pose_sheet_3x3.png'),
-  withBasePath('/games/rpg-battle/enemy_goblin_pose_sheet_3x3.png'),
-  withBasePath('/games/rpg-battle/enemy_spectre_pose_sheet_3x3.png'),
-  withBasePath('/games/rpg-battle/enemy_elemental_pose_sheet_3x3.png'),
+  withBasePath('/games/vocabulary/rpg-battle/enemy_slime_pose_sheet_3x3.png'),
+  withBasePath('/games/vocabulary/rpg-battle/enemy_goblin_pose_sheet_3x3.png'),
+  withBasePath('/games/vocabulary/rpg-battle/enemy_spectre_pose_sheet_3x3.png'),
+  withBasePath('/games/vocabulary/rpg-battle/enemy_elemental_pose_sheet_3x3.png'),
 ]
 
 type RandomFn = () => number
