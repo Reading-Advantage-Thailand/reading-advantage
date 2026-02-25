@@ -61,7 +61,7 @@ export function GameContainer({ onComplete }: GameContainerProps) {
   };
 
   return (
-    <div className="relative w-full max-w-6xl mx-auto h-[600px] overflow-hidden rounded-3xl border border-purple-500/20 bg-slate-900/40 backdrop-blur-md shadow-[0_0_40px_rgba(168,85,247,0.15)] ring-1 ring-white/10">
+    <div className="relative w-full h-[560px] sm:h-[600px] overflow-hidden rounded-3xl border border-purple-500/20 bg-slate-900/40 backdrop-blur-md shadow-[0_0_40px_rgba(168,85,247,0.15)] ring-1 ring-white/10">
       {status === "idle" && (
         <StartScreen
           vocabulary={vocabulary}

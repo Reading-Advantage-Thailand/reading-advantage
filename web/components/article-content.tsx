@@ -56,7 +56,7 @@ type Sentence = {
 
 async function getTranslateSentence(
   articleId: string,
-  targetLanguage: string
+  targetLanguage: string,
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
     const res = await fetch(`/api/v1/assistant/translate/${articleId}`, {
@@ -94,42 +94,42 @@ export default function ArticleContent({
   const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
   const locale = useCurrentLocale();
   const [isTranslateClicked, setIsTranslateClicked] = React.useState(false);
-  // Create cache busting key - simpler approach
-  const cacheKey = useMemo(() => Date.now(), [article.id]);
+  // Use article.id as cache key to ensure consistency between server and client renders
+  const cacheKey = useMemo(() => article.id, [article.id]);
 
   const sentenceList: Sentence[] = useMemo(
     () =>
       Array.isArray(article.timepoints) && article.timepoints.length > 0
         ? article.timepoints.map((timepoint, index) => {
-          const endTime =
-            index < article.timepoints!.length - 1
-              ? article.timepoints![index + 1].timeSeconds - 0.3
-              : timepoint.timeSeconds + 10;
+            const endTime =
+              index < article.timepoints!.length - 1
+                ? article.timepoints![index + 1].timeSeconds - 0.3
+                : timepoint.timeSeconds + 10;
 
-          // Generate the correct audio URL with cache busting
-          const audioUrl = timepoint.file
-            ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}?v=${cacheKey}`
-            : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`;
+            // Generate the correct audio URL with cache busting
+            const audioUrl = timepoint.file
+              ? `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${timepoint.file}?v=${cacheKey}`
+              : `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`;
 
-          // Use timepoint.sentences if available (new format), otherwise use split sentences (old format)
-          const sentenceText = timepoint.sentences || sentences[index] || "";
+            // Use timepoint.sentences if available (new format), otherwise use split sentences (old format)
+            const sentenceText = timepoint.sentences || sentences[index] || "";
 
-          return {
-            sentence: sentenceText,
-            index: index,
-            startTime: timepoint.timeSeconds,
-            endTime,
-            audioUrl,
-          };
-        })
+            return {
+              sentence: sentenceText,
+              index: index,
+              startTime: timepoint.timeSeconds,
+              endTime,
+              audioUrl,
+            };
+          })
         : sentences.map((sentence, index) => ({
-          sentence,
-          index,
-          startTime: index * 2,
-          endTime: (index + 1) * 2,
-          audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`,
-        })),
-    [article.timepoints, article.id, sentences, cacheKey]
+            sentence,
+            index,
+            startTime: index * 2,
+            endTime: (index + 1) * 2,
+            audioUrl: `https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/tts/${article.id}.mp3?v=${cacheKey}`,
+          })),
+    [article.timepoints, article.id, sentences, cacheKey],
   );
   const {
     handleAudioEnded,
@@ -149,15 +149,15 @@ export default function ArticleContent({
     togglePlayer,
     setCurrentAudioIndex,
     setIsPlaying,
-    setSelectedIndex
+    setSelectedIndex,
   } = useAudio(sentenceList);
 
   const getHighlightedClass = (index: number) =>
     cn(
       "cursor-pointer text-muted-foreground hover:bg-blue-200 hover:dark:bg-blue-900 hover:text-primary rounded-md",
       currentAudioIndex === index &&
-      isPlaying &&
-      "bg-red-200 dark:bg-red-900 text-primary"
+        isPlaying &&
+        "bg-red-200 dark:bg-red-900 text-primary",
     );
 
   const renderSentence = (sentence: string, i: number) => {
@@ -181,77 +181,104 @@ export default function ArticleContent({
   };
 
   const saveToFlashcard = async () => {
-    //translate before save
-    if (!isTranslate) {
-      await handleTranslate();
-    } else {
-      try {
-        let card: Card = createEmptyCard();
-        let endTimepoint = 0;
-        if (selectedSentence !== -1) {
-          endTimepoint = sentenceList[selectedSentence as number].endTime;
-        } else {
-          endTimepoint = audioRef.current?.duration as number;
+    try {
+      setLoading(true);
+      let card: Card = createEmptyCard();
+      let endTimepoint = 0;
+      if (selectedSentence !== -1) {
+        endTimepoint = sentenceList[selectedSentence as number].endTime;
+      } else {
+        endTimepoint = audioRef.current?.duration as number;
+      }
+
+      // Get translations for all supported languages
+      const supportedLanguages = ["th", "zh-CN", "zh-TW", "vi"];
+      const translationObj: Record<string, string> = {};
+
+      // Check if we already have cached translations
+      const translatedPassage = article.translatedPassage as Record<
+        string,
+        string[]
+      > | null;
+
+      // Fetch translations for languages that aren't cached
+      const translationPromises = supportedLanguages.map(async (lang) => {
+        // Check cache first
+        if (translatedPassage && translatedPassage[lang]) {
+          translationObj[lang] =
+            translatedPassage[lang][selectedSentence as number];
+          return;
         }
 
-        // Get the correct target language based on current locale
-        type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
-        let targetLanguage: ExtendedLocale = locale as ExtendedLocale;
-        switch (locale) {
-          case "cn":
-            targetLanguage = "zh-CN";
-            break;
-          case "tw":
-            targetLanguage = "zh-TW";
-            break;
-        }
-
-        // Create translation object with the correct language
-        const translationObj: Record<string, string> = {};
-        translationObj[targetLanguage] = translate[selectedSentence as number];
-
-        const resSaveSentences = await fetch(
-          `/api/v1/users/sentences/${userId}`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              sentence: sentenceList[
-                selectedSentence as number
-              ].sentence.replace("~~", ""),
-              sn: selectedSentence,
-              articleId: article.id,
-              translation: translationObj,
-              audioUrl: sentenceList[selectedSentence as number].audioUrl,
-              timepoint: sentenceList[selectedSentence as number].startTime,
-              endTimepoint: endTimepoint,
-              saveToFlashcard: true,
-              ...card,
-            }),
+        // Fetch translation if not cached
+        try {
+          const response = await getTranslateSentence(article.id, lang);
+          if (response.message !== "error" && response.translated_sentences) {
+            translationObj[lang] =
+              response.translated_sentences[selectedSentence as number];
           }
-        );
-
-        if (resSaveSentences.status === 200) {
-          toast({
-            title: "Success",
-            description: `You have saved "${sentenceList[
-              selectedSentence as number
-            ].sentence.replace("~~", "")}" to flashcard`,
-          });
-        } else if (resSaveSentences.status === 400) {
-          toast({
-            title: "Sentence already saved",
-            description: "You have already saved this sentence.",
-            variant: "destructive",
-          });
+        } catch (error) {
+          console.warn(`Failed to translate to ${lang}:`, error);
         }
-      } catch (error) {
-        console.error("Error:", error);
+      });
+
+      await Promise.all(translationPromises);
+
+      // Ensure we have at least one translation
+      if (Object.keys(translationObj).length === 0) {
         toast({
-          title: "Something went wrong.",
-          description: "Your sentence was not saved. Please try again.",
+          title: "Translation failed",
+          description: "Could not translate the sentence. Please try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      const resSaveSentences = await fetch(
+        `/api/v1/users/sentences/${userId}`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sentence: sentenceList[selectedSentence as number].sentence.replace(
+              "~~",
+              "",
+            ),
+            sn: selectedSentence,
+            articleId: article.id,
+            translation: translationObj,
+            audioUrl: sentenceList[selectedSentence as number].audioUrl,
+            timepoint: sentenceList[selectedSentence as number].startTime,
+            endTimepoint: endTimepoint,
+            saveToFlashcard: true,
+            ...card,
+          }),
+        },
+      );
+
+      if (resSaveSentences.status === 200) {
+        toast({
+          title: "Success",
+          description: `You have saved "${sentenceList[
+            selectedSentence as number
+          ].sentence.replace("~~", "")}" to flashcard`,
+        });
+      } else if (resSaveSentences.status === 400) {
+        toast({
+          title: "Sentence already saved",
+          description: "You have already saved this sentence.",
           variant: "destructive",
         });
       }
+    } catch (error) {
+      console.error("Error:", error);
+      toast({
+        title: "Something went wrong.",
+        description: "Your sentence was not saved. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -443,7 +470,7 @@ export default function ArticleContent({
               key={`sentence-${index}`}
               className={cn(
                 selectedIndex === index && "bg-blue-200 dark:bg-blue-900",
-                `${getHighlightedClass(index)}`
+                `${getHighlightedClass(index)}`,
               )}
               onClick={() => {
                 handleSentenceClick(sentence.startTime, index);
@@ -492,15 +519,17 @@ export default function ArticleContent({
           <AlertDialogHeader>
             <AlertDialogTitle>Translate</AlertDialogTitle>
             <AlertDialogDescription>
-              <p>
+              <span className="block">
                 {selectedSentence !== -1
                   ? sentenceList[selectedSentence as number].sentence.replace(
-                    "~~",
-                    ""
-                  )
+                      "~~",
+                      "",
+                    )
                   : ""}
-              </p>
-              <p className="text-green-500 mt-3">{translate[selectedIndex]}</p>
+              </span>
+              <span className="block text-green-500 mt-3">
+                {translate[selectedIndex]}
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

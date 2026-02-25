@@ -3,25 +3,46 @@ import { useEffect, useState, useCallback } from 'react'
 export type InputVector = {
   dx: number
   dy: number
+  cast?: boolean
 }
 
 export function useDirectionalInput() {
   const [keys, setKeys] = useState<Set<string>>(new Set())
-  const [virtualInput, setVirtualInput] = useState<InputVector>({ dx: 0, dy: 0 })
+  const [virtualInput, setVirtualInput] = useState<InputVector>({ dx: 0, dy: 0, cast: false })
   const [castTriggered, setCastTriggered] = useState(false)
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const movementKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'])
+    const castKeys = new Set(['Space', 'Enter'])
+    const shouldTrap = movementKeys.has(e.code) || castKeys.has(e.code)
+
+    if (shouldTrap) {
+      e.preventDefault()
+    }
+
+    if (e.repeat) {
+      return
+    }
+
     setKeys((prev) => {
+      if (prev.has(e.code)) {
+        return prev
+      }
       const next = new Set(prev)
       next.add(e.code)
       return next
     })
-    if (e.code === 'Space' || e.code === 'Enter') {
-        setCastTriggered(true)
+    if (castKeys.has(e.code)) {
+      setCastTriggered(true)
     }
   }, [])
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
+    const movementKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'])
+    const castKeys = new Set(['Space', 'Enter'])
+    if (movementKeys.has(e.code) || castKeys.has(e.code)) {
+      e.preventDefault()
+    }
     setKeys((prev) => {
       const next = new Set(prev)
       next.delete(e.code)
@@ -59,9 +80,11 @@ export function useDirectionalInput() {
       dx = virtualInput.dx
       dy = virtualInput.dy
   }
+  
+  const cast = castTriggered || virtualInput.cast
 
   return { 
-      input: { dx, dy, cast: castTriggered },
+      input: { dx, dy, cast },
       setVirtualInput,
       triggerCast: () => setCastTriggered(true),
       consumeCast

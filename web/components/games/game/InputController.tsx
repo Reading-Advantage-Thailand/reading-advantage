@@ -2,47 +2,93 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, SendHorizonal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface InputControllerProps {
   onSubmit: (value: string) => void;
+  /** When true, renders a visible bottom input bar (for mobile) */
+  mobile?: boolean;
 }
 
-export function InputController({ onSubmit }: InputControllerProps) {
+export function InputController({
+  onSubmit,
+  mobile = false,
+}: InputControllerProps) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
 
-  // Keep focus on input
+  // Keep focus on input for desktop
   useEffect(() => {
+    if (mobile) return;
     const focusInput = () => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
+      if (inputRef.current) inputRef.current.focus();
     };
     focusInput();
     window.addEventListener("click", focusInput);
     return () => window.removeEventListener("click", focusInput);
-  }, []);
+  }, [mobile]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      if (inputValue.trim().length > 0) {
-        onSubmit(inputValue.trim());
-        setInputValue("");
-      }
-    }
+    if (e.key === "Enter") handleSubmit();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Basic regex to allow only letters and spaces if needed, or just let it be loose
     setInputValue(e.target.value);
   };
 
+  const handleSubmit = () => {
+    if (inputValue.trim().length > 0) {
+      onSubmit(inputValue.trim());
+      setInputValue("");
+    }
+  };
+
+  // ── Mobile: clean bottom input bar ─────────────────────────────
+  if (mobile) {
+    return (
+      <div className="flex w-full items-center gap-2 px-3 py-2 pointer-events-auto bg-slate-950/90 backdrop-blur-md border-t border-white/10">
+        <input
+          ref={inputRef}
+          type="text"
+          inputMode="text"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          value={inputValue}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder="Type spell..."
+          className={cn(
+            "flex-1 rounded-xl border bg-white/5 px-4 py-2.5",
+            "text-white text-base font-semibold placeholder:text-slate-500",
+            "transition-all outline-none",
+            isFocused
+              ? "border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.5)]"
+              : "border-white/10",
+          )}
+        />
+        <button
+          onPointerDown={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+          className="flex-shrink-0 flex items-center justify-center rounded-xl bg-purple-600 w-11 h-11 text-white shadow-[0_0_15px_rgba(147,51,234,0.4)] active:scale-95 transition-transform"
+        >
+          <SendHorizonal className="h-5 w-5" />
+        </button>
+      </div>
+    );
+  }
+
+  // ── Desktop: invisible input + magical floating display ─────────
   return (
     <div className="relative w-full flex justify-center items-center pointer-events-none">
-      {/* Hidden Input for capturing keystrokes */}
+      {/* Hidden Input */}
       <input
         ref={inputRef}
         type="text"
@@ -57,7 +103,6 @@ export function InputController({ onSubmit }: InputControllerProps) {
 
       {/* Magical Visual Display */}
       <div className="relative flex flex-col items-center justify-center min-h-[100px] z-50">
-        {/* Placeholder / Instructions */}
         <AnimatePresence>
           {inputValue.length === 0 && (
             <motion.div
@@ -73,14 +118,12 @@ export function InputController({ onSubmit }: InputControllerProps) {
           )}
         </AnimatePresence>
 
-        {/* Typed Text */}
         <div className="relative flex items-center justify-center gap-[1px] py-4">
           <AnimatePresence mode="popLayout">
-            {/* Use Intl.Segmenter to correctly split grapheme clusters (like Thai char + vowel) */}
             {Array.from(
               new Intl.Segmenter("th", { granularity: "grapheme" }).segment(
-                inputValue
-              )
+                inputValue,
+              ),
             ).map((segment, index) => (
               <motion.span
                 key={`${index}-${segment.segment}`}
@@ -97,12 +140,11 @@ export function InputController({ onSubmit }: InputControllerProps) {
                   "text-5xl md:text-7xl font-black tracking-tight",
                   "text-transparent bg-clip-text bg-gradient-to-b from-white via-purple-100 to-purple-300",
                   "drop-shadow-[0_0_15px_rgba(168,85,247,0.8)]",
-                  "font-sans leading-normal"
+                  "font-sans leading-normal",
                 )}
                 style={{
                   textShadow:
                     "0 0 20px rgba(168,85,247,0.5), 0 0 40px rgba(168,85,247,0.3)",
-                  // Ensure no weird clipping for Thai
                   paddingTop: "0.1em",
                   paddingBottom: "0.1em",
                 }}
@@ -112,7 +154,6 @@ export function InputController({ onSubmit }: InputControllerProps) {
             ))}
           </AnimatePresence>
 
-          {/* Cursor */}
           <motion.div
             layoutId="cursor"
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -121,7 +162,6 @@ export function InputController({ onSubmit }: InputControllerProps) {
           />
         </div>
 
-        {/* Underline Glow */}
         {inputValue.length > 0 && (
           <motion.div
             layoutId="underline"

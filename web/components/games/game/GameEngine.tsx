@@ -104,6 +104,14 @@ interface GameEngineProps {
 }
 
 export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
+  // Detect touch/mobile device
+  const [isMobile, setIsMobile] = React.useState(false);
+  React.useEffect(() => {
+    setIsMobile(
+      typeof window !== "undefined" &&
+        (navigator.maxTouchPoints > 0 || "ontouchstart" in window),
+    );
+  }, []);
   const {
     vocabulary,
     status,
@@ -490,7 +498,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
         ))}
 
         {/* Bases/Castles at the bottom */}
-        <div className="absolute bottom-0 w-full flex justify-around p-2 items-end pointer-events-none">
+        <div className="absolute bottom-0 w-full flex justify-around p-2 pb-14 sm:pb-2 items-end pointer-events-none">
           {/* Left Castle */}
           <motion.div
             animate={getCastleMotion(castles.left)}
@@ -610,7 +618,7 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
         </div>
 
         {/* Magician Avatar */}
-        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 pointer-events-none">
+        <div className="absolute bottom-[80px] sm:bottom-32 left-1/2 -translate-x-1/2 pointer-events-none">
           <motion.div
             animate={
               feedback === "correct"
@@ -624,9 +632,36 @@ export function GameEngine({ difficulty = "normal" }: GameEngineProps) {
           </motion.div>
         </div>
 
-        <div className="absolute top-1/2 left-0 right-0 z-20 -translate-y-1/2 pointer-events-none">
-          <InputController onSubmit={checkAnswer} />
-        </div>
+        {/* Input Controller */}
+        {isMobile ? (
+          // Mobile: clean bar pinned to bottom
+          <div className="absolute bottom-0 left-0 right-0 z-20">
+            <InputController onSubmit={checkAnswer} mobile />
+          </div>
+        ) : (
+          // Desktop: invisible keyboard input, centered
+          <div className="absolute top-1/2 left-0 right-0 z-20 -translate-y-1/2 pointer-events-none">
+            <InputController onSubmit={checkAnswer} />
+          </div>
+        )}
+
+        {/* Mobile-only Ultimate button (sits above input bar) */}
+        <AnimatePresence>
+          {isMobile && mana >= GAME_CONSTANTS.manaCostSpecial && (
+            <motion.button
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                activateSpecialAbility();
+              }}
+              className="absolute bottom-[56px] right-3 z-30 flex items-center gap-1.5 rounded-xl border border-cyan-400/40 bg-cyan-950/90 px-3 py-2 text-cyan-300 text-xs font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(34,211,238,0.4)] animate-pulse pointer-events-auto"
+            >
+              ✨ Ultimate!
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

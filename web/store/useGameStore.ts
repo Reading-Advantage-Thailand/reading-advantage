@@ -3,11 +3,10 @@ import { create } from "zustand";
 export interface VocabularyItem {
   term: string;
   translation: string;
+  id?: string;
 }
 
 export type CastleId = "left" | "center" | "right";
-
-export type Difficulty = "easy" | "normal" | "hard" | "extreme";
 
 export const MAX_CASTLE_HP = 3;
 export const DEFAULT_CASTLES: Record<CastleId, number> = {
@@ -15,6 +14,8 @@ export const DEFAULT_CASTLES: Record<CastleId, number> = {
   center: MAX_CASTLE_HP,
   right: MAX_CASTLE_HP,
 };
+
+export type Difficulty = "easy" | "normal" | "hard" | "extreme";
 
 export interface GameState {
   vocabulary: VocabularyItem[];
@@ -27,7 +28,6 @@ export interface GameState {
   lastAccuracy: number;
   missedWords: VocabularyItem[];
   combo: number;
-  maxCombo: number;
   mana: number;
   setVocabulary: (vocab: VocabularyItem[]) => void;
   resetGame: () => void;
@@ -36,9 +36,9 @@ export interface GameState {
   incrementAttempts: () => void;
   quitGame: () => void;
   setLastResult: (xp: number, accuracy: number) => void;
-  addMissedWord: (word: VocabularyItem) => void;
-  resetCombo: () => void;
+  addMissedWord: (item: VocabularyItem) => void;
   incrementCombo: () => void;
+  resetCombo: () => void;
   addMana: (amount: number) => void;
   spendMana: (amount: number) => void;
   endGame: () => void;
@@ -55,7 +55,6 @@ export const useGameStore = create<GameState>((set) => ({
   lastAccuracy: 0,
   missedWords: [],
   combo: 0,
-  maxCombo: 0,
   mana: 0,
   setVocabulary: (vocab) => set({ vocabulary: vocab }),
   resetGame: () =>
@@ -67,7 +66,6 @@ export const useGameStore = create<GameState>((set) => ({
       totalAttempts: 0,
       missedWords: [],
       combo: 0,
-      maxCombo: 0,
       mana: 0,
     }),
   quitGame: () =>
@@ -79,7 +77,6 @@ export const useGameStore = create<GameState>((set) => ({
       totalAttempts: 0,
       missedWords: [],
       combo: 0,
-      maxCombo: 0,
       mana: 0,
     }),
   increaseScore: (amount) =>
@@ -104,20 +101,12 @@ export const useGameStore = create<GameState>((set) => ({
   incrementAttempts: () =>
     set((state) => ({ totalAttempts: state.totalAttempts + 1 })),
   setLastResult: (xp, accuracy) => set({ lastXp: xp, lastAccuracy: accuracy }),
-  addMissedWord: (word) =>
-    set((state) => ({ missedWords: [...state.missedWords, word] })),
+  addMissedWord: (item) =>
+    set((state) => ({ missedWords: [...state.missedWords, item] })),
+  incrementCombo: () => set((state) => ({ combo: state.combo + 1 })),
   resetCombo: () => set({ combo: 0 }),
-  incrementCombo: () =>
-    set((state) => {
-      const newCombo = state.combo + 1;
-      return {
-        combo: newCombo,
-        maxCombo: Math.max(state.maxCombo, newCombo),
-      };
-    }),
-  addMana: (amount) =>
-    set((state) => ({ mana: Math.min(state.mana + amount, 100) })),
+  addMana: (amount) => set((state) => ({ mana: state.mana + amount })),
   spendMana: (amount) =>
-    set((state) => ({ mana: Math.max(state.mana - amount, 0) })),
+    set((state) => ({ mana: Math.max(0, state.mana - amount) })),
   endGame: () => set({ status: "game-over" }),
 }));

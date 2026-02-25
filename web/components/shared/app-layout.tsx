@@ -43,23 +43,27 @@ export default async function AppLayout({
 
   const feactlearderboard = async () => {
     if (!user.license_id) return [];
-    
+
     try {
       const headersList = await headers();
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/users/ranking/${user.license_id}`,
-        { 
-          method: "GET", 
+        {
+          method: "GET",
           headers: headersList,
-          cache: 'no-store'
-        }
+          cache: "no-store",
+        },
       );
-      
+
       if (!res.ok) {
-        console.error("Failed to fetch LeaderBoard:", res.status, res.statusText);
+        console.error(
+          "Failed to fetch LeaderBoard:",
+          res.status,
+          res.statusText,
+        );
         return [];
       }
-      
+
       const fetchdata = await res.json();
       return fetchdata.results || [];
     } catch (error) {
@@ -77,7 +81,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen flex-col space-y-6">
-      <header className="sticky top-0 z-40 border-b bg-background">
+      <header className="sticky top-0 z-[100] border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
           <MainNav items={mainNavConfig} />
           {!disableProgressBar && (
@@ -96,7 +100,7 @@ export default async function AppLayout({
           "container",
           disableSidebar
             ? "grid flex-1 gap-12"
-            : "mx-auto px-4 lg:grid lg:flex-1 gap-12 lg:grid-cols-[200px_1fr]"
+            : "mx-auto px-4 lg:grid lg:flex-1 gap-12 lg:grid-cols-[200px_1fr]",
         )}
       >
         {!disableSidebar && (
@@ -105,9 +109,7 @@ export default async function AppLayout({
             {user.license_id && !disableLeaderboard ? (
               <Leaderboard data={leaderboard} />
             ) : null}
-            {user.role === "STUDENT" && (
-              <SidebarGoalsWidget userId={user.id} />
-            )}
+            {user.role === "STUDENT" && <SidebarGoalsWidget userId={user.id} />}
           </aside>
         )}
         <main className="flex w-full flex-1 flex-col overflow-hidden">
