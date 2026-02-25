@@ -990,6 +990,36 @@ export default {
             hard: "Khó",
             extreme: "Cực khó",
           },
+          // Game component translations
+          title: "Potion Rush",
+          gameSubtitle: "Quản lý giả kim",
+          proTip:
+            "Sử dụng Cổng Rác để dọn những lọ thuốc hỏng nếu bạn phạm sai lầm.",
+          startButton: "Bắt đầu pha chế",
+          instructions: {
+            step1:
+              "Nhận đơn đặt hàng từ khách hàng bằng ngôn ngữ mẹ đẻ của họ.",
+            step2: "Thu thập các từ mục tiêu từ băng chuyền.",
+            step3: "Kéo các từ đúng vào vạc, sau đó phục vụ thuốc.",
+          },
+          controls: {
+            match: "Ghép",
+            matchKeys: "Ý nghĩa",
+            drag: "Kéo",
+            dragKeys: "Nguyên liệu",
+          },
+          hud: {
+            score: "Điểm",
+            reputation: "Danh tiếng",
+          },
+          messages: {
+            victory: "Giờ đóng cửa!",
+            defeat: "Cửa hàng đóng cửa!",
+            victoryDesc: "Làm tốt lắm! Cửa hàng đã đóng cửa trong ngày.",
+            defeatDesc: "Danh tiếng cửa hàng thuốc của bạn đã chạm đáy.",
+            customersServed: "Khách hàng đã phục vụ",
+            openAgain: "Mở lại",
+          },
         },
         enchantedLibrary: {
           title: "Enchanted Library",

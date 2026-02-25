@@ -944,6 +944,34 @@ export default {
             hard: "困難",
             extreme: "極難",
           },
+          // Game component translations
+          title: "Potion Rush",
+          gameSubtitle: "煉金術管理",
+          proTip: "如果您犯了錯誤，請使用垃圾傳送門清除毀壞的藥水。",
+          startButton: "開始釀造",
+          instructions: {
+            step1: "接受客戶母語的訂單。",
+            step2: "從傳送帶上收集目標語言單字。",
+            step3: "將正確的單字拖到大鍋中，然後端上藥水。",
+          },
+          controls: {
+            match: "匹配",
+            matchKeys: "含義",
+            drag: "拖曳",
+            dragKeys: "成分",
+          },
+          hud: {
+            score: "分數",
+            reputation: "聲譽",
+          },
+          messages: {
+            victory: "打烊時間！",
+            defeat: "商店關閉！",
+            victoryDesc: "幹得好！商店今天打烊了。",
+            defeatDesc: "您的藥水店聲譽跌入谷底。",
+            customersServed: "已服務客戶",
+            openAgain: "再次營業",
+          },
         },
         enchantedLibrary: {
           title: "Enchanted Library",
