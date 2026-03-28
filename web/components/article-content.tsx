@@ -388,7 +388,7 @@ export default function ArticleContent({
         <div id="onborda-translate">
           <Button
             variant="default"
-            onClick={handleTranslateSentence}
+            onClick={handleTranslate}
             disabled={loading}
           >
             {loading
