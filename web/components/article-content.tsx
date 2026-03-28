@@ -12,15 +12,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "./ui/context-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "./ui/alert-dialog";
+
 import { toast } from "./ui/use-toast";
 import {
   PlayIcon,
@@ -93,7 +85,7 @@ export default function ArticleContent({
   const [isTranslate, setIsTranslate] = React.useState(false);
   const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
   const locale = useCurrentLocale();
-  const [isTranslateClicked, setIsTranslateClicked] = React.useState(false);
+
   // Use article.id as cache key to ensure consistency between server and client renders
   const cacheKey = useMemo(() => article.id, [article.id]);
 
@@ -329,9 +321,8 @@ export default function ArticleContent({
   const handleTranslate = async () => {
     if (isTranslate === false) {
       await handleTranslateSentence();
-      setIsTranslateClicked(!isTranslateClicked);
     } else {
-      setIsTranslateClicked(!isTranslateClicked);
+      setIsTranslateOpen(!isTranslateOpen);
     }
   };
 
@@ -514,31 +505,7 @@ export default function ArticleContent({
           )}
         </ContextMenuContent>
       </ContextMenu>
-      <AlertDialog open={isTranslateClicked}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Translate</AlertDialogTitle>
-            <AlertDialogDescription>
-              <span className="block">
-                {selectedSentence !== -1
-                  ? sentenceList[selectedSentence as number].sentence.replace(
-                      "~~",
-                      "",
-                    )
-                  : ""}
-              </span>
-              <span className="block text-green-500 mt-3">
-                {translate[selectedIndex]}
-              </span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsTranslateClicked(false)}>
-              Cancel
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
     </div>
   );
 }
