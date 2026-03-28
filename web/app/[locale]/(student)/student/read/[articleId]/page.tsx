@@ -6,6 +6,7 @@ import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
 import CustomError from "./custom-error";
 import { Article } from "@/components/models/article-model";
+import { prisma } from "@/lib/prisma";
 import ArticleActions from "@/components/article-actions";
 import WordList from "@/components/word-list";
 import LAQuestionCard from "@/components/questions/laq-question-card";
@@ -26,8 +27,26 @@ async function getArticle(articleId: string) {
   return fetchData(`/api/v1/articles/${articleId}`);
 }
 
-async function getClassroom() {
-  return fetchData(`/api/v1/classrooms`);
+/** ดึง rating เก่าของ user สำหรับบทความนี้โดยตรงจาก DB (server-side) */
+async function getArticleRating(
+  articleId: string,
+  userId: string
+): Promise<number> {
+  try {
+    const activity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId,
+          activityType: "ARTICLE_RATING",
+          targetId: articleId,
+        },
+      },
+      select: { details: true },
+    });
+    return (activity?.details as any)?.rating ?? 0;
+  } catch {
+    return 0;
+  }
 }
 
 export default async function ArticleQuizPage({
@@ -38,6 +57,7 @@ export default async function ArticleQuizPage({
   const { articleId } = await params;
 
   // Parallelize unavoidable server fetches
+  // user ถูก resolve ก่อนเพื่อใช้ userId ใน getArticleRating
   const [t, user, articleResponse] = await Promise.all([
     getScopedI18n("pages.student.readPage.article"),
     getCurrentUser(),
@@ -45,6 +65,11 @@ export default async function ArticleQuizPage({
   ]);
 
   if (!user) return redirect("/auth/signin");
+
+  // Resolve rating เก่าที่ server แทนที่จะให้ client fetch activitylog ทั้งก้อน
+  const initialRating = await getArticleRating(articleId, user.id);
+
+  // guard ถูกย้ายขึ้นไปอยู่หลัง Promise.all แล้ว
 
   const isAtLeastTeacher = (role: string) =>
     role.includes("TEACHER") ||
@@ -66,6 +91,7 @@ export default async function ArticleQuizPage({
           article={articleResponse.article}
           articleId={articleId}
           userId={user.id}
+          initialRating={initialRating}
         />
         <div className="flex flex-col gap-4 mb-40 mt-4 max-w-[400px]">
           {/* Teacher Tools Section */}

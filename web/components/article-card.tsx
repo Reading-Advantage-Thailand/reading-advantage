@@ -18,12 +18,14 @@ type Props = {
   article: Article;
   articleId: string;
   userId: string;
+  initialRating?: number;
 };
 
 export default async function ArticleCard({
   article,
   articleId,
   userId,
+  initialRating = 0,
 }: Props) {
   const t = await getScopedI18n("components.articleCard");
   return (
@@ -69,6 +71,7 @@ export default async function ArticleCard({
         averageRating={article.average_rating}
         articleId={articleId}
         article={article}
+        initialRating={initialRating}
       />
     </div>
   );

@@ -18,6 +18,8 @@ interface RateDialogProps {
   userId: string;
   articleId: string;
   article: Article;
+  /** rating เก่าของ user สำหรับบทความนี้ (resolve มาจาก server แล้ว) */
+  initialRating?: number;
 }
 
 export default function RatingPopup({
@@ -26,39 +28,20 @@ export default function RatingPopup({
   userId,
   articleId,
   article,
+  initialRating = 0,
 }: RateDialogProps) {
   const t = useScopedI18n("components.rate");
   const [value, setValue] = React.useState<number | null>(-1);
   const [modalIsOpen, setModalIsOpen] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
-  const [oldRating, setOldRating] = React.useState(0);
+  // initialRating มาจาก server — ไม่ต้อง fetch client-side อีกต่อไป
+  const [oldRating, setOldRating] = React.useState(initialRating);
   const [isMounted, setIsMounted] = React.useState(false);
   const router = useRouter();
 
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  React.useEffect(() => {
-    ratedFetch();
-  }, [userId, articleId]);
-
-  const ratedFetch = async () => {
-    try {
-      const ratingData = await fetch(
-        `/api/v1/users/${userId}/activitylog`
-      ).then((data) => data.json());
-      const filterRating = ratingData.results.filter(
-        (data: any) =>
-          data.articleId === articleId &&
-          data.activityType === ActivityType.ArticleRating
-      );
-
-      setOldRating(filterRating[0].details.rating);
-    } catch (error) {
-      console.log("Error fetching rating: ", error);
-    }
-  };
 
   const onUpdateUser = async () => {
     if (value === -1) return;
