@@ -5,17 +5,17 @@ import React from "react";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
 import CustomError from "./custom-error";
-import AssignDialog from "@/components/teacher/assign-dialog";
-import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
 import { Article } from "@/components/models/article-model";
 import ArticleActions from "@/components/article-actions";
 import WordList from "@/components/word-list";
 import LAQuestionCard from "@/components/questions/laq-question-card";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
+import ArticleLesson from "@/components/lesson/lesson-button";
+import AssignDialog from "@/components/teacher/assign-dialog";
+import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
 import PrintArticle from "@/components/teacher/print-article";
 import ExportWorkbookButton from "@/components/teacher/export-workbook-button";
-import ArticleLesson from "@/components/lesson/lesson-button";
 
 export const metadata = {
   title: "Article",
@@ -36,9 +36,14 @@ export default async function ArticleQuizPage({
   params: Promise<{ articleId: string }>;
 }) {
   const { articleId } = await params;
-  const t = await getScopedI18n("pages.student.readPage.article");
 
-  const user = await getCurrentUser();
+  // Parallelize unavoidable server fetches
+  const [t, user, articleResponse] = await Promise.all([
+    getScopedI18n("pages.student.readPage.article"),
+    getCurrentUser(),
+    getArticle(articleId),
+  ]);
+
   if (!user) return redirect("/auth/signin");
 
   const isAtLeastTeacher = (role: string) =>
@@ -48,8 +53,6 @@ export default async function ArticleQuizPage({
 
   const isAboveTeacher = (role: string) =>
     role.includes("ADMIN") || role.includes("SYSTEM");
-
-  const articleResponse = await getArticle(articleId);
 
   if (articleResponse.message)
     return (

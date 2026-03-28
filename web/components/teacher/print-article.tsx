@@ -22,8 +22,16 @@ export default function PrintArticle({
   const reactToPrintFn = useReactToPrint({ contentRef });
   const locale = useCurrentLocale();
   const t = useScopedI18n("components.article");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  useEffect(() => {
+  const handlePrint = async () => {
+    if (isDataLoaded) {
+      reactToPrintFn();
+      return;
+    }
+    
+    setIsLoading(true);
     const fetchLAQQuestions = async () => {
       const response = await fetch(
         `/api/v1/articles/${articleId}/questions/laq`
@@ -95,12 +103,21 @@ export default function PrintArticle({
         setTranslated(data.translated_sentences);
       }
     };
-    fetchTranslate();
-    fetchWordList();
-    fetchSAQQuestions();
-    fetchMAQQuestions();
-    fetchLAQQuestions();
-  }, []);
+    await Promise.all([
+      fetchTranslate(),
+      fetchWordList(),
+      fetchSAQQuestions(),
+      fetchMAQQuestions(),
+      fetchLAQQuestions()
+    ]);
+    
+    setIsDataLoaded(true);
+    setIsLoading(false);
+    
+    setTimeout(() => {
+      reactToPrintFn();
+    }, 500);
+  };
 
   const highlightVocabulary = (text: string, vocabularyList: string[]) => {
     const escapedWords = vocabularyList.map((word) =>
@@ -131,8 +148,8 @@ export default function PrintArticle({
 
   return (
     <div className="flex items-center">
-      <Button size="sm" onClick={() => reactToPrintFn()}>
-        {t("printButton")}
+      <Button size="sm" onClick={handlePrint} disabled={isLoading}>
+        {isLoading ? "Loading..." : t("printButton")}
       </Button>
       <div className="hidden">
         <div
