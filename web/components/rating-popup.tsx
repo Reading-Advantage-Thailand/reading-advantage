@@ -11,6 +11,7 @@ import {
   ActivityType,
 } from "./models/user-activity-log-model";
 import { useRouter } from "next/navigation";
+import { submitRating } from "@/actions/rating";
 
 interface RateDialogProps {
   disabled?: boolean;
@@ -36,6 +37,8 @@ export default function RatingPopup({
   const [loading, setLoading] = React.useState<boolean>(false);
   // initialRating มาจาก server — ไม่ต้อง fetch client-side อีกต่อไป
   const [oldRating, setOldRating] = React.useState(initialRating);
+  const [localAverageRating, setLocalAverageRating] = React.useState(averageRating);
+  const [localInitialRating, setLocalInitialRating] = React.useState(initialRating);
   const [isMounted, setIsMounted] = React.useState(false);
   const router = useRouter();
 
@@ -44,80 +47,35 @@ export default function RatingPopup({
   }, []);
 
   const onUpdateUser = async () => {
-    if (value === -1) return;
-    if (value !== 0 && oldRating === 0) {
-      const ratingActivity = await fetch(
-        `/api/v1/users/${userId}/activitylog`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            articleId: articleId,
-            activityType: ActivityType.ArticleRating,
-            activityStatus: ActivityStatus.Completed,
-            xpEarned: UserXpEarned.Article_Rating,
-            details: {
-              title: article.title,
-              raLevel: article.ra_level,
-              cefr_level: article.cefr_level,
-              rating: value,
-            },
-          }),
-        }
-      );
-      const readActivity = await fetch(`/api/v1/users/${userId}/activitylog`, {
-        method: "POST",
-        body: JSON.stringify({
-          articleId: articleId,
-          activityType: ActivityType.ArticleRead,
-          activityStatus: ActivityStatus.Completed,
-          details: {
-            title: article.title,
-            level: article.ra_level,
-            cefr_level: article.cefr_level,
-            type: article.type,
-            genre: article.genre,
-            subgenre: article.subgenre,
-          },
-        }),
-      });
+    if (value === -1 || value === null) return;
+    setLoading(true);
 
-      const resRatingActivity = await ratingActivity.json();
-      const resReadActivity = await readActivity.json();
-      if (resRatingActivity.status === 200 && resReadActivity.status === 200) {
-        toast({
-          title: t("toast.success"),
-          imgSrc: true,
-          description: `Congratulations!, You received ${UserXpEarned.Article_Rating} XP for completing this activity.`,
-        });
-        router.refresh();
-        setModalIsOpen(false);
-      }
-      setLoading(false);
-    } else if (value !== 0 && oldRating !== 0) {
-      await fetch(`/api/v1/users/${userId}/activitylog`, {
-        method: "POST",
-        body: JSON.stringify({
-          articleId: articleId,
-          activityType: ActivityType.ArticleRating,
-          activityStatus: ActivityStatus.Completed,
-          xpEarned: UserXpEarned.Article_Rating,
-          details: {
-            title: article.title,
-            raLevel: article.ra_level,
-            cefr_level: article.cefr_level,
-            rating: value,
-          },
-        }),
-      });
+    // Optimistic update
+    setLocalInitialRating(value);
+    setModalIsOpen(false);
+
+    const xpEarned = value !== 0 && localInitialRating === 0 ? 10 : 0;
+    toast({
+      title: t("toast.success"),
+      imgSrc: true,
+      description: xpEarned > 0 ? `Congratulations!, You received ${xpEarned} XP for completing this activity.` : "Rating updated.",
+    });
+
+    try {
+      await submitRating(userId, articleId, value, article);
+      // Fetch new average rating
+      const res = await fetch(`/api/v1/articles/${articleId}`);
+      const data = await res.json();
+      setLocalAverageRating(data.article.average_rating);
+    } catch (error) {
+      // Rollback
+      setLocalInitialRating(localInitialRating);
       toast({
-        title: t("toast.success"),
-        imgSrc: true,
-        description: "you not earned XP.",
+        title: "Error",
+        description: "Failed to submit rating.",
       });
-      setModalIsOpen(false);
-
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const handleChange = (
@@ -158,7 +116,7 @@ export default function RatingPopup({
         <div onClick={toggleModal} className="cursor-pointer">
           {isMounted ? (
             <Rating
-              value={averageRating}
+              value={localAverageRating}
               onChange={handleChange}
               precision={0.5}
               size="large"
