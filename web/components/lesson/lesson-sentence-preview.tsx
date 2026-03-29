@@ -44,9 +44,19 @@ type Props = {
   userId: string;
   className?: string;
   phase: "phase3" | "phase5" | "phase6";
-  targetLanguage: "en" | "th" | "cn" | "tw" | "vi";
   onCompleteChange: (complete: boolean) => void;
 };
+
+/**
+ * Normalizes locale codes for the translation API.
+ * Cache/storage uses raw locale keys ("cn", "tw") matching the Article model,
+ * while the API expects IETF tags ("zh-CN", "zh-TW").
+ */
+function normalizeLocaleForAPI(locale: string): string {
+  if (locale === "cn") return "zh-CN";
+  if (locale === "tw") return "zh-TW";
+  return locale;
+}
 
 type Sentence = {
   sentence: string;
@@ -307,17 +317,20 @@ export default function LessonSentensePreview({
 
   async function handleTranslateSentence() {
     setLoading(true);
-    type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
-    let targetLanguage: ExtendedLocale = locale as ExtendedLocale;
-    switch (locale) {
-      case "cn":
-        targetLanguage = "zh-CN";
-        break;
-      case "tw":
-        targetLanguage = "zh-TW";
-        break;
+
+    // 1. Check cache first using the raw locale key (matches Article model: "cn", "tw", "th", ...)
+    const cached = article.translatedPassage?.[locale];
+    if (cached && cached.length > 0) {
+      setTranslate(cached);
+      setIsTranslateOpen(!isTranslateOpen);
+      setIsTranslate(true);
+      setLoading(false);
+      return;
     }
-    const response = await getTranslateSentence(article.id, targetLanguage);
+
+    // 2. No cache — normalize locale for the API ("cn" → "zh-CN", "tw" → "zh-TW") then fetch
+    const apiLocale = normalizeLocaleForAPI(locale);
+    const response = await getTranslateSentence(article.id, apiLocale);
     if (response.message === "error") {
       setIsTranslate(false);
       setIsTranslateOpen(false);
@@ -328,12 +341,11 @@ export default function LessonSentensePreview({
         variant: "destructive",
       });
       return;
-    } else {
-      setTranslate(response.translated_sentences);
-      setIsTranslateOpen(!isTranslateOpen);
-      setIsTranslate(true);
-      setLoading(false);
     }
+    setTranslate(response.translated_sentences);
+    setIsTranslateOpen(!isTranslateOpen);
+    setIsTranslate(true);
+    setLoading(false);
   }
 
   const handleSpeedTime = (value: string) => {
@@ -479,6 +491,13 @@ export default function LessonSentensePreview({
       checkSavedSentences();
     }
   }, [phase, userId, articleId]);
+
+  // Reset translation state when locale changes to prevent showing stale translations
+  useEffect(() => {
+    setTranslate([]);
+    setIsTranslate(false);
+    setIsTranslateOpen(false);
+  }, [locale]);
 
   return (
     <div className="w-full">
