@@ -176,7 +176,9 @@ export default function MCQuestionCard({
         }
       })
       .catch((error) => {
-        setState(QuestionState.LOADING);
+        // ใช้ ERROR แทน LOADING เพื่อป้องกัน fetch loop
+        console.error("Error fetching MCQ:", error);
+        setState(QuestionState.ERROR);
       });
   }, [articleId]);
 
@@ -212,7 +214,8 @@ export default function MCQuestionCard({
         console.error("Error clearing session storage:", e);
       }
     } else {
-      setState(QuestionState.LOADING);
+      // ใช้ INCOMPLETE แทน LOADING เพื่อไม่ให้ trigger fetch loop
+      setState(QuestionState.INCOMPLETE);
     }
 
     setHasStarted(true);
@@ -310,6 +313,8 @@ export default function MCQuestionCard({
       return (
         <QuestionCardComplete resp={data} onRetake={onRetake} page={page} />
       );
+    case QuestionState.ERROR:
+      return <QuestionCardError page={page} />;
     default:
       return <QuestionCardLoading page={page} />;
   }
@@ -375,6 +380,34 @@ function QuestionCardComplete({
             </Button>
           </div>
         </>
+      )}
+    </>
+  );
+}
+
+function QuestionCardError({ page }: { page?: "lesson" | "article" }) {
+  const t = useScopedI18n("components.mcq");
+  return (
+    <>
+      {page === "article" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
+              {t("title")}
+            </CardTitle>
+            <CardDescription className="text-red-500 dark:text-red-400">
+              {t("descriptionFailure")}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
+      {page === "lesson" && (
+        <div className="flex items-start xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+          <div className="space-y-4 w-full">
+            <p className="font-bold text-3xl text-muted-foreground">{t("title")}</p>
+            <p className="text-red-500 dark:text-red-400">{t("descriptionFailure")}</p>
+          </div>
+        </div>
       )}
     </>
   );
@@ -767,51 +800,24 @@ function MCQeustion({
     setCorrectAnswer("");
     setPaused(false);
 
+    // ไม่ต้อง fetch ใหม่ — ใช้ results ที่ load มาแล้วทั้งหมด
+    // currentResp.results คือ array ของทุกข้อ เพียงแค่ advance index ผ่าน progress
     const answeredCount = progress.filter(
       (p) => p !== AnswerStatus.UNANSWERED
     ).length;
 
     if (answeredCount < currentResp.total) {
-      setLoadingAnswer(true);
+      // ตัด results ที่ตอบแล้วออก เหลือเฉพาะข้อที่ยังไม่ตอบ
+      const remainingResults = currentResp.results.filter(
+        (_, idx) => progress[idx] === AnswerStatus.UNANSWERED
+      );
 
-      const timestamp = new Date().getTime();
-      fetch(`/api/v1/articles/${articleId}/questions/mcq?_t=${timestamp}`)
-        .then((res) => res.json())
-        .then((data) => {
-          try {
-            const savedProgress = sessionStorage.getItem(
-              `quiz_progress_${articleId}`
-            );
-            if (savedProgress) {
-              const parsedProgress = JSON.parse(savedProgress);
-              setProgress(parsedProgress);
-              data.progress = parsedProgress;
-            } else {
-              setProgress(data.progress || []);
-            }
-          } catch (e) {
-            console.error("Error handling progress for next question:", e);
-            setProgress(data.progress || []);
-          }
-
-          setCurrentResp(data);
-
-          try {
-            sessionStorage.setItem(`quiz_started_${articleId}`, "true");
-          } catch (e) {
-            console.error("Failed to save to sessionStorage:", e);
-          }
-
-          useQuestionStore.setState({ mcQuestion: data });
-        })
-        .catch((error) => {
-          console.error("Error fetching next question:", error);
-        })
-        .finally(() => {
-          setLoadingAnswer(false);
-        });
-    } else {
-      setLoadingAnswer(false);
+      if (remainingResults.length > 0) {
+        setCurrentResp((prev) => ({
+          ...prev,
+          results: remainingResults,
+        }));
+      }
     }
   };
 

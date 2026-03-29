@@ -2941,6 +2941,8 @@ export default {
       descriptionSuccess2: "Your score is {score} out of {total}.",
       descriptionLoading:
         "Getting questions for this article. Please wait a moment.",
+      descriptionFailure:
+        "There was an error loading the quiz. Please refresh the page and try again.",
       //headings
       quiz: "Quiz",
       reQuiz: "Re-Quiz",

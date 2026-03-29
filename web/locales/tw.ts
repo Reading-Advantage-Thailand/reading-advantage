@@ -2777,6 +2777,7 @@ export default {
       descriptionSuccess: "你已經完成了測驗",
       descriptionSuccess2: "你的分數是 {score}/{total}",
       descriptionLoading: "正在獲取本文的問題，請稍等。",
+      descriptionFailure: "載入測驗時發生錯誤，請重新整理頁面并再試一次。",
       quiz: "測驗",
       reQuiz: "重新測驗",
       quizDescription:

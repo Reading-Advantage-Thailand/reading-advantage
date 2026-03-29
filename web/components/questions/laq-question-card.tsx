@@ -101,6 +101,7 @@ export default function LAQuestionCard({
     },
     state: QuestionState.LOADING,
   });
+  const [fetchError, setFetchError] = useState<string | undefined>(undefined);
 
   const { checkAndNotifyCompletion } = useArticleCompletion();
 
@@ -110,19 +111,25 @@ export default function LAQuestionCard({
       .then((data) => {
         setData(data);
         setState(data.state);
+        setFetchError(undefined);
         useQuestionStore.setState({ laqQuestion: data });
       })
       .catch((error) => {
+        console.error("Error fetching LAQ:", error);
+        setFetchError(error?.message ?? "Failed to load question.");
         setState(QuestionState.ERROR);
       });
-  }, [state, articleId]);
+  // ลบ `state` ออกจาก dependency เพื่อป้องกัน fetch loop
+  }, [articleId]);
 
   const handleCompleted = () => {
-    setState(QuestionState.LOADING);
+    // เปลี่ยนเป็น COMPLETED โดยตรง ไม่ใช้ LOADING ซึ่งจะ trigger fetch loop
+    setState(QuestionState.COMPLETED);
   };
 
   const handleCancel = () => {
-    setState(QuestionState.LOADING);
+    // กลับไปสถานะ INCOMPLETE (แสดงฟอร์มอีกครั้ง) ไม่ใช้ LOADING
+    setState(QuestionState.INCOMPLETE);
   };
 
   useEffect(() => {
@@ -158,12 +165,14 @@ export default function LAQuestionCard({
       );
     case QuestionState.COMPLETED:
       return <QuestionCardComplete resp={data} />;
+    case QuestionState.ERROR:
+      return <QuestionCardError error={fetchError} />;
     default:
-      return <QuestionCardError data={data} />;
+      return <QuestionCardError error={fetchError} />;
   }
 }
 
-function QuestionCardError(data: any) {
+function QuestionCardError({ error }: { error?: string }) {
   const t = useScopedI18n("components.laq");
   return (
     <Card className="mt-3">
@@ -173,7 +182,7 @@ function QuestionCardError(data: any) {
         </CardTitle>
         <CardDescription className="text-red-500 dark:text-red-400">
           {t("descriptionFailure")}
-          {data.error}
+          {error && <span className="block mt-1 text-sm">{error}</span>}
         </CardDescription>
       </CardHeader>
     </Card>

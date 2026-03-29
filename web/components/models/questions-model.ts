@@ -35,6 +35,7 @@ export enum QuestionState {
   LOADING = 0,
   INCOMPLETE = 1,
   COMPLETED = 2,
+  ERROR = 3,
 }
 
 export enum QuizStatus {
