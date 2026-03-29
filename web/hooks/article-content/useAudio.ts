@@ -12,7 +12,7 @@ export type Sentence = {
 export default function useAudio(sentenceList: Sentence[]) {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
+    const currentTimeRef = useRef(0);
     const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
     const [togglePlayer, setTogglePlayer] = useState<Boolean>(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -158,7 +158,7 @@ export default function useAudio(sentenceList: Sentence[]) {
 
     const handleTimeUpdate = () => {
         if (audioRef.current) {
-            setCurrentTime(audioRef.current.currentTime);
+            currentTimeRef.current = audioRef.current.currentTime;
             const currentSentence = sentenceList[currentAudioIndex];
             if (audioRef.current.currentTime >= currentSentence.endTime) {
                 handleAudioEnded();
@@ -205,7 +205,6 @@ export default function useAudio(sentenceList: Sentence[]) {
         handlePreviousTrack,
         audioRef,
         isPlaying,
-        currentTime,
         currentAudioIndex,
         togglePlayer,
         selectedIndex,

@@ -134,7 +134,6 @@ export default function ArticleContent({
     handleTogglePlayer,
     audioRef,
     currentAudioIndex,
-    currentTime,
     isPlaying,
     selectedIndex,
     speed,
