@@ -322,11 +322,6 @@ export async function getArticleById(
     // Get article from Prisma
     const article = await prisma.article.findUnique({
       where: { id: article_id },
-      include: {
-        multipleChoiceQuestions: true,
-        shortAnswerQuestions: true,
-        longAnswerQuestions: true,
-      },
     });
 
     if (!article) {
