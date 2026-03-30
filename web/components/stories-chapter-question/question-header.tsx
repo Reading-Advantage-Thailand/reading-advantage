@@ -18,10 +18,7 @@ type Props = {
   disabled?: boolean;
   userId: string;
   storyId: string;
-};
-
-type ActivityType = {
-  [key: string]: string;
+  activityType?: string;
 };
 
 export default function QuestionHeader({
@@ -32,18 +29,11 @@ export default function QuestionHeader({
   userId,
   storyId,
   disabled = true,
+  activityType,
 }: Props) {
   const [isButtonClicked, setIsButtonClicked] = React.useState<boolean>(false);
   async function onButtonClick() {
     setIsButtonClicked(true);
-    const activityTypes: ActivityType = {
-      "Practice Writing": "la_question",
-      "Start Quiz": "mc_question",
-      "Start Writing": "sa_question",
-    };
-
-    const activityType = activityTypes[buttonLabel as keyof ActivityType];
-
   }
   return isButtonClicked ? (
     <>{children}</>

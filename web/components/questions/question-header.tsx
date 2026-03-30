@@ -21,10 +21,7 @@ type Props = {
   userId: string;
   articleId: string;
   isLocked?: boolean;
-};
-
-type ActivityType = {
-  [key: string]: string;
+  activityType?: string;
 };
 
 export default function QuestionHeader({
@@ -36,6 +33,7 @@ export default function QuestionHeader({
   articleId,
   disabled = true,
   isLocked = false,
+  activityType,
 }: Props) {
   const [isButtonClicked, setIsButtonClicked] = React.useState<boolean>(false);
 
@@ -51,13 +49,6 @@ export default function QuestionHeader({
     }
 
     setIsButtonClicked(true);
-    const activityTypes: ActivityType = {
-      "Practice Writing": "la_question",
-      "Start Quiz": "mc_question",
-      "Start Writing": "sa_question",
-    };
-
-    const activityType = activityTypes[buttonLabel as keyof ActivityType];
 
     if (activityType) {
       fetch(`/api/v1/users/${userId}/activitylog`, {

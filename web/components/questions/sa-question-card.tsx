@@ -320,6 +320,7 @@ function QuestionCardIncomplete({
             userId={userId}
             articleId={articleId}
             disabled={false}
+            activityType="sa_question"
           >
             <QuizContextProvider>
               <SAQuestion

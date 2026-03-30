@@ -518,6 +518,7 @@ function QuestionCardIncomplete({
             userId={userId}
             articleId={articleId}
             disabled={false}
+            activityType="mc_question"
           >
             <QuizContextProvider>
               <MCQeustion

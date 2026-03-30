@@ -260,6 +260,7 @@ function QuestionCardIncomplete({
         articleId={articleId}
         disabled={false}
         isLocked={isLocked}
+        activityType="la_question"
       >
         <QuizContextProvider>
           <LAQuestion
