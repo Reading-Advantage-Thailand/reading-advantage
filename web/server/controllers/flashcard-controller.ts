@@ -1,4 +1,4 @@
-import { ExtendedNextRequest } from "./auth-controller";
+import { ExtendedNextRequest, assertSelfOrAllowedStaff } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fsrs, generatorParameters, Rating, State } from "ts-fsrs";
@@ -32,7 +32,11 @@ export async function getFlashcardStats(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const type = req.nextUrl.searchParams.get("type"); // "vocabulary" or "sentences"
 
@@ -136,7 +140,11 @@ export async function updateFlashcardProgress(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const { cardId, rating, type } = await req.json();
 
@@ -246,7 +254,11 @@ export async function postSaveWordList(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const {
       due,
@@ -325,7 +337,11 @@ export async function getWordList(
   req: NextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req as ExtendedNextRequest, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
 
@@ -353,13 +369,29 @@ export async function getWordList(
   }
 }
 
-export async function deleteWordlist(req: ExtendedNextRequest) {
+export async function deleteWordlist(
+  req: ExtendedNextRequest,
+  ctx: RequestContext
+) {
   try {
-    const { id } = await req.json();
+    const { id: routeId } = await ctx.params;
+    
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
+    
+    const { id: recordId } = await req.json();
+
+    // Verify ownership
+    const record = await prisma.userWordRecord.findUnique({ where: { id: recordId } });
+    if (!record || record.userId !== id) {
+      return NextResponse.json({ message: "Forbidden - Not your record" }, { status: 403 });
+    }
 
     await prisma.userWordRecord.delete({
       where: {
-        id: id,
+        id: recordId,
       },
     });
 
@@ -380,7 +412,11 @@ export async function postSentendcesFlashcard(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const {
       articleId,
@@ -525,7 +561,13 @@ export async function getSentencesFlashcard(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
+  
   const articleId = req.nextUrl.searchParams.get("articleId");
   try {
     const sentences = await prisma.userSentenceRecord.findMany({
@@ -680,13 +722,29 @@ export async function getSentencesFlashcard(
   }
 }
 
-export async function deleteSentencesFlashcard(req: ExtendedNextRequest) {
+export async function deleteSentencesFlashcard(
+  req: ExtendedNextRequest,
+  ctx: RequestContext
+) {
   try {
-    const { id } = await req.json();
+    const { id: routeId } = await ctx.params;
+    
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
+    
+    const { id: recordId } = await req.json();
+
+    // Verify ownership
+    const record = await prisma.userSentenceRecord.findUnique({ where: { id: recordId } });
+    if (!record || record.userId !== id) {
+      return NextResponse.json({ message: "Forbidden - Not your record" }, { status: 403 });
+    }
 
     await prisma.userSentenceRecord.delete({
       where: {
-        id: id,
+        id: recordId,
       },
     });
 
@@ -707,7 +765,11 @@ export async function getVocabulariesFlashcard(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const vocabularies = await prisma.userWordRecord.findMany({
       where: {
@@ -737,7 +799,11 @@ export async function postVocabulariesFlashcard(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const {
       articleId,
@@ -801,13 +867,29 @@ export async function postVocabulariesFlashcard(
   }
 }
 
-export async function deleteVocabulariesFlashcard(req: ExtendedNextRequest) {
+export async function deleteVocabulariesFlashcard(
+  req: ExtendedNextRequest,
+  ctx: RequestContext
+) {
   try {
-    const { id } = await req.json();
+    const { id: routeId } = await ctx.params;
+    
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
+
+    const { id: recordId } = await req.json();
+
+    // Verify ownership
+    const record = await prisma.userWordRecord.findUnique({ where: { id: recordId } });
+    if (!record || record.userId !== id) {
+      return NextResponse.json({ message: "Forbidden - Not your record" }, { status: 403 });
+    }
 
     await prisma.userWordRecord.delete({
       where: {
-        id: id,
+        id: recordId,
       },
     });
 

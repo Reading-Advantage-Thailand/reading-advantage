@@ -1,7 +1,7 @@
 import { getOne, updateOne } from "../handlers/handler-factory";
 import { DBCollection } from "../models/enum";
 import { levelCalculation } from "@/lib/utils";
-import { ExtendedNextRequest } from "./auth-controller";
+import { ExtendedNextRequest, assertSelfOrAllowedStaff } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ActivityType, LicenseType } from "@prisma/client";
@@ -52,7 +52,13 @@ interface RequestContext {
 
 export async function getUser(req: ExtendedNextRequest, ctx: RequestContext) {
   try {
-    const { id } = await ctx.params;
+    const { id: routeId } = await ctx.params;
+    
+    // Auth check
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
     const user = await prisma.user.findUnique({
       where: { id },
       include: {
@@ -104,7 +110,13 @@ export async function updateUser(
   ctx: RequestContext,
 ) {
   try {
-    const { id } = await ctx.params;
+    const { id: routeId } = await ctx.params;
+    
+    // Auth check
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
     const data = await req.json();
 
     const user = await prisma.user.update({
@@ -172,7 +184,14 @@ export async function postActivityLog(
   ctx: RequestContext,
 ) {
   try {
-    const { id } = await ctx.params;
+    const { id: routeId } = await ctx.params;
+    
+    // Auth check
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
+
     // Data from frontend
     const data = await req.json();
 
@@ -344,7 +363,13 @@ export async function putActivityLog(
   ctx: RequestContext,
 ) {
   try {
-    const { id } = await ctx.params;
+    const { id: routeId } = await ctx.params;
+    
+    // Auth check
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
     // Data from frontend
     const data = await req.json();
 
@@ -506,7 +531,14 @@ export async function getActivityLog(
   req: ExtendedNextRequest,
   ctx: RequestContext,
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  
+  // Auth check
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
+
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -658,7 +690,14 @@ export async function getUserRecords(
   req: ExtendedNextRequest,
   ctx: RequestContext,
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  
+  // Auth check
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
+  
   try {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10");
     const nextPage = req.nextUrl.searchParams.get("nextPage");
