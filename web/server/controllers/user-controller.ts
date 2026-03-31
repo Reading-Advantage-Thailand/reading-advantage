@@ -516,6 +516,7 @@ export async function getActivityLog(
     // Get query parameters
     const articleId = req.nextUrl.searchParams.get("articleId");
     const activityType = req.nextUrl.searchParams.get("activityType");
+    const isFiltered = !!(articleId || activityType);
 
     // Build where condition
     const whereCondition: any = {
@@ -537,10 +538,17 @@ export async function getActivityLog(
       },
     });
 
+    const xpWhereCondition: any = {
+      userId: id,
+    };
+
+    if (isFiltered) {
+      const activityIds = activities.map((a) => a.id);
+      xpWhereCondition.activityId = { in: activityIds };
+    }
+
     const allXpLogs = await prisma.xPLog.findMany({
-      where: {
-        userId: id,
-      },
+      where: xpWhereCondition,
       orderBy: {
         createdAt: "asc",
       },
@@ -575,11 +583,13 @@ export async function getActivityLog(
     const xpProgressionMap = new Map();
 
     allXpLogs.forEach((xpLog) => {
-      cumulativeXp += xpLog.xpEarned || 0;
+      if (!isFiltered) {
+        cumulativeXp += xpLog.xpEarned || 0;
+      }
       if (xpLog.activityId) {
         xpProgressionMap.set(xpLog.activityId, {
           xpEarned: xpLog.xpEarned || 0,
-          cumulativeXp: cumulativeXp,
+          cumulativeXp: isFiltered ? 0 : cumulativeXp,
         });
       }
     });
