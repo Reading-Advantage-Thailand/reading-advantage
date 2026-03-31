@@ -58,17 +58,16 @@ async function checkAndUpdateArticleCompletion(
     // ตรวจสอบระดับ license ของ user
     const licenseLevel = await getUserLicenseLevel(userId);
 
-    const mcqActivities = await prisma.userActivity.findMany({
+    const mcqForThisArticle = await prisma.userActivity.findMany({
       where: {
         userId: userId,
         activityType: "MC_QUESTION",
         completed: true,
+        details: {
+          path: ["articleId"],
+          equals: articleId,
+        },
       },
-    });
-
-    const mcqForThisArticle = mcqActivities.filter((activity) => {
-      const details = activity.details as any;
-      return details?.articleId === articleId;
     });
 
     const saqActivity = await prisma.userActivity.findFirst({
@@ -235,19 +234,18 @@ export async function getMCQuestions(
       });
     }
 
-    const userActivities = await prisma.userActivity.findMany({
+    const articleActivities = await prisma.userActivity.findMany({
       where: {
         userId: userId,
         activityType: "MC_QUESTION",
+        details: {
+          path: ["articleId"],
+          equals: article_id,
+        },
       },
       orderBy: {
         createdAt: "asc",
       },
-    });
-
-    const articleActivities = userActivities.filter((activity) => {
-      const details = activity.details as any;
-      return details?.articleId === article_id;
     });
 
     // Get XP logs for these activities
