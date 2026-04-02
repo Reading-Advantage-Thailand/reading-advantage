@@ -146,12 +146,16 @@ export async function getFeedbackWritter(res: object) {
 }
 
 export async function getWordlist(req: ExtendedNextRequest) {
-  const { articleId, article } = await req.json();
+  const { articleId } = await req.json();
 
   const articleData = await prisma.article.findUnique({
     where: { id: articleId },
-    select: { words: true },
+    select: { words: true, passage: true },
   });
+
+  if (!articleData) {
+    return NextResponse.json({ message: "Article not found" }, { status: 404 });
+  }
 
   const fileExtension = ".mp3";
 
@@ -181,8 +185,50 @@ export async function getWordlist(req: ExtendedNextRequest) {
 
     return NextResponse.json(wordList, { status: 200 });
   } else {
+    const sessionUser = req.session?.user;
+    const isStaff = sessionUser && ["ADMIN", "STAFF", "TEACHER", "SUPERADMIN"].includes(sessionUser.role as string);
+
+    if (!isStaff) {
+      // Queue background generation for cold cache miss by normal users
+      const triggerBackgroundGeneration = async () => {
+        try {
+          const wordList = await generateWordList({
+            passage: articleData.passage || "",
+          });
+
+          const enhancedWordList = wordList.word_list.map(
+            (word: any, index: number) => ({
+              ...word,
+              markName: `word${index + 1}`,
+              timeSeconds: index * 2,
+            })
+          );
+
+          await prisma.article.update({
+            where: { id: articleId },
+            data: {
+              words: {
+                wordlist: enhancedWordList,
+              },
+            },
+          });
+
+          await generateAudioForWord({
+            wordList: wordList.word_list,
+            articleId: articleId,
+          });
+        } catch (error) {
+          console.error("Background wordlist generation failed:", error);
+        }
+      };
+
+      triggerBackgroundGeneration();
+
+      return NextResponse.json([], { status: 200 });
+    }
+
     const wordList = await generateWordList({
-      passage: article.passage,
+      passage: articleData.passage || "",
     });
 
     const enhancedWordList = wordList.word_list.map(
