@@ -304,10 +304,19 @@ export async function postActivityLog(
       activity = existingActivity;
     }
 
+    let hasExistingXpLog = false;
+    if (existingActivity) {
+      const existingXpLog = await prisma.xPLog.findFirst({
+        where: { activityId: existingActivity.id },
+      });
+      hasExistingXpLog = !!existingXpLog;
+    }
+
     // Create XP log if XP is earned or if it's an initial level test (even with 0 XP)
     if (
-      (data.xpEarned && data.xpEarned > 0) ||
-      (data.isInitialLevelTest && typeof data.xpEarned === "number")
+      !hasExistingXpLog &&
+      ((data.xpEarned && data.xpEarned > 0) ||
+        (data.isInitialLevelTest && typeof data.xpEarned === "number"))
     ) {
       await prisma.xPLog.create({
         data: {
@@ -484,8 +493,16 @@ export async function putActivityLog(
       });
     }
 
+    let hasExistingXpLog = false;
+    if (existingActivity) {
+      const existingXpLog = await prisma.xPLog.findFirst({
+        where: { activityId: existingActivity.id },
+      });
+      hasExistingXpLog = !!existingXpLog;
+    }
+
     // Create XP log if XP is earned
-    if (data.xpEarned && data.xpEarned > 0) {
+    if (!hasExistingXpLog && data.xpEarned && data.xpEarned > 0) {
       await prisma.xPLog.create({
         data: {
           userId: id,

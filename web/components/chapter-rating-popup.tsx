@@ -50,7 +50,7 @@ export default function ChapterRatingPopup({
       const filterRating = logs.filter(
         (data: any) =>
           (data.storyId === storyId || data.targetId === storyId || data.details?.storyId === storyId) &&
-          (data.chapterNumber === chapterNumber || data.details?.chapter_number === chapterNumber || data.details?.chapterNumber === chapterNumber) &&
+          (String(data.chapterNumber) === String(chapterNumber) || String(data.details?.chapter_number) === String(chapterNumber) || String(data.details?.chapterNumber) === String(chapterNumber)) &&
           data.activityType === ActivityType.ChapterRating
       );
       
@@ -136,9 +136,8 @@ export default function ChapterRatingPopup({
         body: JSON.stringify({
           storyId: storyId,
           chapterNumber: chapterNumber,
-          activityType: ActivityType.ChapterRead,
+          activityType: ActivityType.ChapterRating,
           activityStatus: ActivityStatus.Completed,
-          xpEarned: UserXpEarned.Chapter_Rating,
           details: {
             title: story.chapter.title,
             raLevel: story.ra_Level,
