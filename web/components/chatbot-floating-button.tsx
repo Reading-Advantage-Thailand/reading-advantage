@@ -56,10 +56,7 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
           method: "POST",
           body: JSON.stringify({
             newMessage,
-            title: article.title,
-            passage: article.passage,
-            summary: article.summary,
-            image_description: article.image_description,
+            articleId: article.id,
             blacklistedQuestions,
           }),
         });
@@ -88,10 +85,7 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
     mcQuestion.results,
     saQuestion?.result?.question,
     laqQuestion?.result?.question,
-    article.title,
-    article.passage,
-    article.summary,
-    article.image_description,
+    article.id,
   ]);
 
   useEffect(() => {

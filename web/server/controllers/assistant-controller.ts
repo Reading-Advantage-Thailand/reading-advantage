@@ -19,12 +19,8 @@ interface RequestContext {
   }>;
 }
 
-// Define the schema for the request body
 const createChatbotSchema = z.object({
-  title: z.string(),
-  passage: z.string(),
-  summary: z.string(),
-  image_description: z.string(),
+  articleId: z.string(),
   blacklistedQuestions: z.array(z.string()),
   newMessage: z.object({
     text: z.string(),
@@ -347,6 +343,16 @@ export async function chatBot(req: ExtendedNextRequest) {
   try {
     const param = await req.json();
     const validatedData = createChatbotSchema.parse(param);
+    
+    const article = await prisma.article.findUnique({
+      where: { id: validatedData.articleId },
+      select: { title: true, passage: true, summary: true, imageDescription: true }
+    });
+
+    if (!article) {
+       return NextResponse.json({ error: "Article not found" }, { status: 404 });
+    }
+
     const { textStream } = streamText({
       model: openai(openaiModel),
       messages: [
@@ -354,10 +360,10 @@ export async function chatBot(req: ExtendedNextRequest) {
           role: "system",
           content: `${promptChatBot}
           {                                                                  
-          "title": ${validatedData?.title},
-          "passage": ${validatedData?.passage},
-          "summary": ${validatedData?.summary},
-          "image-description": ${validatedData?.image_description},   
+          "title": ${article.title},
+          "passage": ${article.passage},
+          "summary": ${article.summary},
+          "image-description": ${article.imageDescription},   
           "blacklisted-questions": ${validatedData?.blacklistedQuestions}
           }`,
         },
