@@ -15,10 +15,10 @@ import ArticleLesson from "@/components/lesson/lesson-button";
 import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
 import dynamic from "next/dynamic";
 
-const AssignDialog = dynamic(() => import("@/components/teacher/assign-dialog"), { ssr: false });
-const PrintArticle = dynamic(() => import("@/components/teacher/print-article"), { ssr: false });
-const ExportWorkbookButton = dynamic(() => import("@/components/teacher/export-workbook-button"), { ssr: false });
-const ArticleActions = dynamic(() => import("@/components/article-actions"), { ssr: false });
+const AssignDialog = dynamic(() => import("@/components/teacher/assign-dialog"));
+const PrintArticle = dynamic(() => import("@/components/teacher/print-article"));
+const ExportWorkbookButton = dynamic(() => import("@/components/teacher/export-workbook-button"));
+const ArticleActions = dynamic(() => import("@/components/article-actions"));
 
 export const metadata = {
   title: "Article",
