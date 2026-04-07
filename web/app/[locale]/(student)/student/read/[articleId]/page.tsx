@@ -7,16 +7,18 @@ import { fetchData } from "@/utils/fetch-data";
 import CustomError from "./custom-error";
 import { Article } from "@/components/models/article-model";
 import { prisma } from "@/lib/prisma";
-import ArticleActions from "@/components/article-actions";
 import WordList from "@/components/word-list";
 import LAQuestionCard from "@/components/questions/laq-question-card";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
 import ArticleLesson from "@/components/lesson/lesson-button";
-import AssignDialog from "@/components/teacher/assign-dialog";
 import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
-import PrintArticle from "@/components/teacher/print-article";
-import ExportWorkbookButton from "@/components/teacher/export-workbook-button";
+import dynamic from "next/dynamic";
+
+const AssignDialog = dynamic(() => import("@/components/teacher/assign-dialog"), { ssr: false });
+const PrintArticle = dynamic(() => import("@/components/teacher/print-article"), { ssr: false });
+const ExportWorkbookButton = dynamic(() => import("@/components/teacher/export-workbook-button"), { ssr: false });
+const ArticleActions = dynamic(() => import("@/components/article-actions"), { ssr: false });
 
 export const metadata = {
   title: "Article",

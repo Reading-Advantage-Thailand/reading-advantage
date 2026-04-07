@@ -151,13 +151,14 @@ export default function PrintArticle({
       <Button size="sm" onClick={handlePrint} disabled={isLoading}>
         {isLoading ? "Loading..." : t("printButton")}
       </Button>
-      <div className="hidden">
-        <div
-          ref={contentRef}
-          className="w-[210mm] h-[297mm] mx-auto bg-white print:p-4 print:w-[210mm] print:h-[297mm] relative"
-        >
-          {/* Persistent Print Header */}
-          <div className="hidden print:flex fixed justify-center top-0 left-[35%] text-xs text-gray-600">
+      {isDataLoaded && (
+        <div className="hidden">
+          <div
+            ref={contentRef}
+            className="w-[210mm] h-[297mm] mx-auto bg-white print:p-4 print:w-[210mm] print:h-[297mm] relative"
+          >
+            {/* Persistent Print Header */}
+            <div className="hidden print:flex fixed justify-center top-0 left-[35%] text-xs text-gray-600">
             <div className="flex items-end gap-2">
               <img
                 src="/android-chrome-192x192.png"
@@ -356,6 +357,7 @@ export default function PrintArticle({
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
