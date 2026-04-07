@@ -31,9 +31,11 @@ export default function ArticleActions({ article, articleId }: Props) {
   };
 
   const handleDelete = async (articleId: string) => {
-    console.log(`Deleted article with ID: ${articleId}`);
     try {
-      await fetch(`/api/v1/articles/${articleId}`, { method: "DELETE" });
+      const response = await fetch(`/api/v1/articles/${articleId}`, { method: "DELETE" });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       setOpen(false);
       toast({
         title: "Article Deleted",
@@ -51,10 +53,6 @@ export default function ArticleActions({ article, articleId }: Props) {
 
   const handleApprove = (articleId: string) => {
     console.log(`Approved article with ID: ${articleId}`);
-    toast({
-      title: "Article Approved",
-      description: "The  article has been approved",
-    });
   };
 
   return (
