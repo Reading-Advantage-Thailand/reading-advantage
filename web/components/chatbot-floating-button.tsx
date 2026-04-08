@@ -111,7 +111,7 @@ export default function ChatBotFloatingChatButton({ article }: Props) {
         )}
 
         {isOpen && (
-          <Card className="fixed bottom-4 right-2 w-80 h-[420px] shadow-xl flex flex-col">
+          <Card className="fixed bottom-4 right-2 w-80 max-w-[calc(100vw-1rem)] h-[420px] shadow-xl flex flex-col">
             <CardHeader className="flex border-b-[1px] px-4 py-2">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
