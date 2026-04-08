@@ -270,6 +270,8 @@ export async function postSaveWordList(
       lapses,
       state,
       articleId,
+      storyId,
+      chapterNumber,
       saveToFlashcard,
       foundWordsList,
     } = await req.json();
@@ -278,35 +280,51 @@ export async function postSaveWordList(
 
     await Promise.all(
       foundWordsList.map(async (word: WordList) => {
-        const existingRecord = await prisma.userWordRecord.findFirst({
-          where: {
-            userId: id,
-            articleId: articleId,
-            word: {
-              path: ["vocabulary"],
-              equals: word.vocabulary,
-            },
+        const whereClause: any = {
+          userId: id,
+          word: {
+            path: ["vocabulary"],
+            equals: word.vocabulary,
           },
+        };
+
+        if (articleId) {
+          whereClause.articleId = articleId;
+        } else if (storyId && chapterNumber !== undefined) {
+          whereClause.storyId = storyId;
+          whereClause.chapterNumber = Number(chapterNumber);
+        }
+
+        const existingRecord = await prisma.userWordRecord.findFirst({
+          where: whereClause,
         });
 
         if (existingRecord) {
           wordAllReadySaved.push(word.vocabulary);
         } else {
+          const recordData: any = {
+            userId: id,
+            saveToFlashcard,
+            word: word,
+            difficulty,
+            due,
+            elapsedDays: elapsed_days,
+            lapses,
+            reps,
+            scheduledDays: scheduled_days,
+            stability,
+            state,
+          };
+
+          if (articleId) {
+            recordData.articleId = articleId;
+          } else if (storyId && chapterNumber !== undefined) {
+            recordData.storyId = storyId;
+            recordData.chapterNumber = Number(chapterNumber);
+          }
+
           await prisma.userWordRecord.create({
-            data: {
-              userId: id,
-              articleId,
-              saveToFlashcard,
-              word: word,
-              difficulty,
-              due,
-              elapsedDays: elapsed_days,
-              lapses,
-              reps,
-              scheduledDays: scheduled_days,
-              stability,
-              state,
-            },
+            data: recordData,
           });
         }
       })
@@ -344,11 +362,15 @@ export async function getWordList(
   const id = routeId;
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
+    const storyId = req.nextUrl.searchParams.get("storyId");
+    const chapterNumber = req.nextUrl.searchParams.get("chapterNumber");
 
     const word = await prisma.userWordRecord.findMany({
       where: {
         userId: id,
         ...(articleId && { articleId }),
+        ...(storyId && { storyId }),
+        ...(chapterNumber && { chapterNumber: Number(chapterNumber) }),
       },
       orderBy: {
         createdAt: "desc",
@@ -684,6 +706,8 @@ export async function postVocabulariesFlashcard(
   try {
     const {
       articleId,
+      storyId,
+      chapterNumber,
       word,
       difficulty = 0,
       due = new Date(),
@@ -696,15 +720,23 @@ export async function postVocabulariesFlashcard(
       saveToFlashcard = true,
     } = await req.json();
 
-    const existingVocab = await prisma.userWordRecord.findFirst({
-      where: {
-        userId: id,
-        articleId: articleId,
-        word: {
-          path: ["vocabulary"],
-          equals: word.vocabulary,
-        },
+    const whereClause: any = {
+      userId: id,
+      word: {
+        path: ["vocabulary"],
+        equals: word.vocabulary,
       },
+    };
+
+    if (articleId) {
+      whereClause.articleId = articleId;
+    } else if (storyId && chapterNumber !== undefined) {
+      whereClause.storyId = storyId;
+      whereClause.chapterNumber = Number(chapterNumber);
+    }
+
+    const existingVocab = await prisma.userWordRecord.findFirst({
+      where: whereClause,
     });
 
     if (existingVocab) {
@@ -714,21 +746,29 @@ export async function postVocabulariesFlashcard(
       );
     }
 
+    const recordData: any = {
+      userId: id,
+      word,
+      difficulty,
+      due: new Date(due),
+      elapsedDays: elapsed_days,
+      lapses,
+      reps,
+      scheduledDays: scheduled_days,
+      stability,
+      state,
+      saveToFlashcard,
+    };
+
+    if (articleId) {
+      recordData.articleId = articleId;
+    } else if (storyId && chapterNumber !== undefined) {
+      recordData.storyId = storyId;
+      recordData.chapterNumber = Number(chapterNumber);
+    }
+
     await prisma.userWordRecord.create({
-      data: {
-        userId: id,
-        articleId,
-        word,
-        difficulty,
-        due: new Date(due),
-        elapsedDays: elapsed_days,
-        lapses,
-        reps,
-        scheduledDays: scheduled_days,
-        stability,
-        state,
-        saveToFlashcard,
-      },
+      data: recordData,
     });
 
     return NextResponse.json({
