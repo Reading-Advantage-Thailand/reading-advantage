@@ -53,7 +53,7 @@ export default async function ArticleCard({
           <div className="flex justify-center">
             <Image
               src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${articleId}.png`}
-              alt="Malcolm X"
+              alt={article.image_description || article.title || "Article image"}
               width={640}
               height={640}
             />
