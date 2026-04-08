@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { generateObject, streamText } from "ai";
+import { generateObject, generateText } from "ai";
 import fs, { stat } from "fs";
 import path from "path";
 import { z } from "zod";
@@ -353,7 +353,7 @@ export async function chatBot(req: ExtendedNextRequest) {
        return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
 
-    const { textStream } = streamText({
+    const { text } = await generateText({
       model: openai(openaiModel),
       messages: [
         {
@@ -371,16 +371,7 @@ export async function chatBot(req: ExtendedNextRequest) {
       ],
     });
 
-    const messages = [];
-    for await (const textPart of textStream) {
-      messages.push(textPart);
-    }
-
-    const filteredMessages = messages.filter(
-      (item) =>
-        item !== undefined && item !== "" && item !== "}" && item !== "{"
-    );
-    const fullMessage = filteredMessages.join("");
+    const fullMessage = text.replace(/[{}]/g, "").trim();
 
     return NextResponse.json(
       { messages: "success", sender: "bot", text: fullMessage },
@@ -487,22 +478,13 @@ Image Description: "${image_description}"${blacklistedQuestionsText}`,
     //console.log("Chat Messages:", chatMessages);
 
     // ส่ง prompt เข้า OpenAI พร้อมประวัติ
-    const { textStream } = await streamText({
+    const { text } = await generateText({
       model: openai(openaiModel),
       messages: [systemMessage, ...chatMessages],
     });
 
-    const streamChunks: string[] = [];
+    const fullMessage = text.replace(/[{}]/g, "").trim();
 
-    for await (const chunk of textStream) {
-      if (chunk && chunk !== "{" && chunk !== "}") {
-        streamChunks.push(chunk);
-      }
-    }
-
-    const fullMessage = streamChunks.join("").trim();
-
-    //console.log("Stream Chunks:", streamChunks);
     //console.log("Full Message:", fullMessage);
 
     return NextResponse.json(
