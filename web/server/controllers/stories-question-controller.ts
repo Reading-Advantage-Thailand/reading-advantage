@@ -153,19 +153,38 @@ export async function getStoryMCQuestions(
       textual_evidence: q.textualEvidence,
     }));
 
-    // Get user activities for MC questions (filter by story & chapter)
+    // Get user activities for MC questions (filter by targetId prefix or storyId in details)
     const userActivities = await prisma.userActivity.findMany({
       where: {
         userId,
         activityType: ActivityType.MC_QUESTION,
+        OR: [
+          {
+            targetId: {
+              startsWith: `${storyId}_${chapterNumber}_mcq_`,
+            },
+          },
+          {
+            details: {
+              path: ["storyId"],
+              equals: storyId,
+            },
+          },
+        ],
       },
       orderBy: {
         createdAt: "asc",
       },
     });
 
-    // Keep only activities for this story chapter (details.storyId + details.chapterNumber)
+    // Keep only activities for this story chapter (targetId or details legacy fallback)
     const chapterActivities = userActivities.filter((activity) => {
+      // Modern target-id based record
+      if (activity.targetId.startsWith(`${storyId}_${chapterNumber}_mcq_`)) {
+        return true;
+      }
+
+      // Legacy fallback
       const details = activity.details as any;
       return (
         details?.storyId === storyId &&
@@ -949,31 +968,65 @@ export async function answerStoryMCQuestion(
       }
     }
 
-    // Get all user activities for this chapter's MC questions
-    const userActivities = await prisma.userActivity.findMany({
+    // Get all user activities for this chapter's MC questions (targetId or legacy fallback)
+    const userActivitiesRaw = await prisma.userActivity.findMany({
       where: {
         userId,
         activityType: ActivityType.MC_QUESTION,
-        targetId: {
-          startsWith: `${storyId}_${chapterNumber}_mcq_`,
-        },
+        OR: [
+          {
+            targetId: {
+              startsWith: `${storyId}_${chapterNumber}_mcq_`,
+            },
+          },
+          {
+            details: {
+              path: ["storyId"],
+              equals: storyId,
+            },
+          },
+        ],
       },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    const userActivities = userActivitiesRaw.filter((activity) => {
+      if (activity.targetId.startsWith(`${storyId}_${chapterNumber}_mcq_`)) {
+        return true;
+      }
+      const details = activity.details as any;
+      return (
+        details?.storyId === storyId &&
+        String(details?.chapterNumber) === String(chapterNumber)
+      );
     });
 
     let progress: AnswerStatus[] = new Array(5).fill(AnswerStatus.UNANSWERED);
 
     userActivities.forEach((activity) => {
-      // Extract question number from targetId: storyId_chapterNumber_mcq_questionNumber
-      const parts = activity.targetId.split("_");
-      const questionNum = parseInt(parts[parts.length - 1], 10);
-      const questionIndex = questionNum - 1;
+      const details = activity.details as any;
+      if (!details) return;
+
+      let questionNum: number | undefined;
+
+      // Try extract from modern targetId first
+      if (activity.targetId.startsWith(`${storyId}_${chapterNumber}_mcq_`)) {
+        const parts = activity.targetId.split("_");
+        questionNum = parseInt(parts[parts.length - 1], 10);
+      } else {
+        // Fallback to legacy details
+        questionNum = details.questionNumber ? parseInt(details.questionNumber, 10) : undefined;
+      }
+
+      const questionIndex = (questionNum || 0) - 1;
       if (
         questionIndex >= 0 &&
         questionIndex < 5 &&
-        activity.details &&
-        typeof (activity.details as any).isCorrect === "boolean"
+        typeof details.isCorrect === "boolean"
       ) {
-        progress[questionIndex] = (activity.details as any).isCorrect
+        progress[questionIndex] = details.isCorrect
           ? AnswerStatus.CORRECT
           : AnswerStatus.INCORRECT;
       }
@@ -1109,17 +1162,33 @@ export async function retakeStoryMCQuestion(
       );
     }
 
-    // Find all MCQ userActivity entries for this user
+    // Find MCQ userActivity entries for this chapter (targetId or legacy fallback)
     const activitiesToDelete = await prisma.userActivity.findMany({
       where: {
         userId,
         activityType: ActivityType.MC_QUESTION,
+        OR: [
+          {
+            targetId: {
+              startsWith: `${storyId}_${chapterNumber}_mcq_`,
+            },
+          },
+          {
+            details: {
+              path: ["storyId"],
+              equals: storyId,
+            },
+          },
+        ],
       },
     });
 
-    // Filter to only those that are for this story chapter (details.storyId + details.chapterNumber)
+    // Filter to only those that are for this story chapter
     const storyActivityIds = activitiesToDelete
       .filter((activity) => {
+        if (activity.targetId.startsWith(`${storyId}_${chapterNumber}_mcq_`)) {
+          return true;
+        }
         const details = activity.details as any;
         return (
           details?.storyId === storyId &&
