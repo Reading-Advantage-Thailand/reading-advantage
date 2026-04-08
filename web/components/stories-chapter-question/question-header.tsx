@@ -34,6 +34,16 @@ export default function QuestionHeader({
   const [isButtonClicked, setIsButtonClicked] = React.useState<boolean>(false);
   async function onButtonClick() {
     setIsButtonClicked(true);
+
+    if (activityType) {
+      fetch(`/api/v1/users/${userId}/activitylog`, {
+        method: "POST",
+        body: JSON.stringify({
+          activityType,
+          articleId: storyId,
+        }),
+      });
+    }
   }
   return isButtonClicked ? (
     <>{children}</>
