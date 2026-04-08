@@ -173,14 +173,28 @@ export default function ArticleContent({
 
   const saveToFlashcard = async () => {
     try {
+      let targetIndex = selectedSentence as number;
+      // Fall back to currently highlighted sentence
+      if (targetIndex === -1) {
+        if (selectedIndex !== -1) {
+          targetIndex = selectedIndex;
+        } else if (isPlaying && currentAudioIndex !== -1) {
+          targetIndex = currentAudioIndex;
+        }
+      }
+
+      if (targetIndex === -1) {
+        toast({
+          title: "No sentence selected",
+          description: "Please select a sentence first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setLoading(true);
       let card: Card = createEmptyCard();
-      let endTimepoint = 0;
-      if (selectedSentence !== -1) {
-        endTimepoint = sentenceList[selectedSentence as number].endTime;
-      } else {
-        endTimepoint = audioRef.current?.duration as number;
-      }
+      let endTimepoint = sentenceList[targetIndex].endTime;
 
       // Get translations for all supported languages
       const supportedLanguages = ["th", "zh-CN", "zh-TW", "vi"];
@@ -197,7 +211,7 @@ export default function ArticleContent({
         // Check cache first
         if (translatedPassage && translatedPassage[lang]) {
           translationObj[lang] =
-            translatedPassage[lang][selectedSentence as number];
+            translatedPassage[lang][targetIndex];
           return;
         }
 
@@ -206,7 +220,7 @@ export default function ArticleContent({
           const response = await getTranslateSentence(article.id, lang);
           if (response.message !== "error" && response.translated_sentences) {
             translationObj[lang] =
-              response.translated_sentences[selectedSentence as number];
+              response.translated_sentences[targetIndex];
           }
         } catch (error) {
           console.warn(`Failed to translate to ${lang}:`, error);
@@ -231,15 +245,15 @@ export default function ArticleContent({
         {
           method: "POST",
           body: JSON.stringify({
-            sentence: sentenceList[selectedSentence as number].sentence.replace(
+            sentence: sentenceList[targetIndex].sentence.replace(
               "~~",
               "",
             ),
-            sn: selectedSentence,
+            sn: targetIndex,
             articleId: article.id,
             translation: translationObj,
-            audioUrl: sentenceList[selectedSentence as number].audioUrl,
-            timepoint: sentenceList[selectedSentence as number].startTime,
+            audioUrl: sentenceList[targetIndex].audioUrl,
+            timepoint: sentenceList[targetIndex].startTime,
             endTimepoint: endTimepoint,
             saveToFlashcard: true,
             ...card,
@@ -251,7 +265,7 @@ export default function ArticleContent({
         toast({
           title: "Success",
           description: `You have saved "${sentenceList[
-            selectedSentence as number
+            targetIndex
           ].sentence.replace("~~", "")}" to flashcard`,
         });
       } else if (resSaveSentences.status === 400) {
