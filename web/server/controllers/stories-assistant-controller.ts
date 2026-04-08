@@ -132,60 +132,122 @@ export async function getChapterWordlist(
 ) {
   try {
     const { storyId, chapterNumber } = await ctx.params;
-    console.log(`Starting getChapterWordlist for storyId: ${storyId}, chapterNumber: ${chapterNumber}`);
-    const { chapter } = await req.json();
-    console.log(`Received chapter data: ${JSON.stringify(chapter)}`);
+    const chapNum = parseInt(chapterNumber);
 
     const chapterData = await prisma.chapter.findUnique({
       where: {
         storyId_chapterNumber: {
           storyId,
-          chapterNumber: parseInt(chapterNumber),
+          chapterNumber: chapNum,
         },
       },
-      select: { words: true },
+      select: { words: true, passage: true },
     });
-    console.log(`Fetched chapter data: ${JSON.stringify(chapterData)}`);
+
+    if (!chapterData) {
+      return NextResponse.json(
+        { error: "Chapter not found" },
+        { status: 404 }
+      );
+    }
 
     const fileExtension = ".mp3";
-
     const fileExists = await storage
       .bucket("artifacts.reading-advantage.appspot.com")
       .file(`${AUDIO_WORDS_URL}/${storyId}-${chapterNumber}${fileExtension}`)
       .exists();
-    console.log(`Audio file exists: ${fileExists[0]}`);
 
-    if (chapterData?.words && fileExists[0]) {
+    if (chapterData.words && fileExists[0]) {
       const wordList = typeof chapterData.words === "string" ? JSON.parse(chapterData.words) : chapterData.words;
-      console.log(`Returning existing word list: ${JSON.stringify(wordList)}`);
 
       return NextResponse.json(
         {
           messeges: "success",
           word_list: wordList.word_list,
-          timepoints: wordList.timepoints,
+          timepoints: wordList.timepoints || wordList.word_list.map((w: any) => ({ timeSeconds: w.timeSeconds })),
         },
         { status: 200 }
       );
     } else {
-      console.log("Generating new word list");
+      // Cold cache path
+      const sessionUser = req.session?.user;
+      const isStaff = sessionUser && ["ADMIN", "STAFF", "TEACHER", "SUPERADMIN"].includes(sessionUser.role as string);
+
+      if (!isStaff) {
+        // Queue background generation for cold cache miss by normal users
+        const triggerBackgroundGeneration = async () => {
+          try {
+            if (!chapterData.passage) return;
+
+            const wordList = await generateWordList({
+              passage: chapterData.passage,
+            });
+
+            const enhancedWordList = wordList.word_list.map((word, index) => ({
+              ...word,
+              markName: `word${index + 1}`,
+              timeSeconds: index * 2,
+            }));
+
+            await prisma.chapter.update({
+              where: {
+                storyId_chapterNumber: {
+                  storyId,
+                  chapterNumber: chapNum,
+                },
+              },
+              data: {
+                words: JSON.stringify({
+                  word_list: enhancedWordList,
+                }),
+              },
+            });
+
+            await generateChapterAudioForWord({
+              wordList: wordList.word_list,
+              storyId: storyId,
+              chapterNumber: chapterNumber,
+            });
+          } catch (error) {
+            console.error("Background story wordlist generation failed:", error);
+          }
+        };
+
+        triggerBackgroundGeneration();
+
+        return NextResponse.json(
+          {
+            messeges: "generating",
+            word_list: [],
+            timepoints: [],
+          },
+          { status: 200 }
+        );
+      }
+
+      // Staff path: wait for generation
+      if (!chapterData.passage) {
+        return NextResponse.json(
+          { error: "Chapter passage not found" },
+          { status: 404 }
+        );
+      }
+
       const wordList = await generateWordList({
-        passage: chapter.chapter.content,
+        passage: chapterData.passage,
       });
-      console.log(`Generated word list: ${JSON.stringify(wordList)}`);
 
       const enhancedWordList = wordList.word_list.map((word, index) => ({
         ...word,
         markName: `word${index + 1}`,
         timeSeconds: index * 2,
       }));
-      console.log(`Enhanced word list: ${JSON.stringify(enhancedWordList)}`);
 
       await prisma.chapter.update({
         where: {
           storyId_chapterNumber: {
             storyId,
-            chapterNumber: parseInt(chapterNumber),
+            chapterNumber: chapNum,
           },
         },
         data: {
@@ -194,14 +256,12 @@ export async function getChapterWordlist(
           }),
         },
       });
-      console.log("Updated chapter with new word list");
 
       await generateChapterAudioForWord({
         wordList: wordList.word_list,
         storyId: storyId,
         chapterNumber: chapterNumber,
       });
-      console.log("Generated chapter audio for words");
 
       return NextResponse.json(
         {
