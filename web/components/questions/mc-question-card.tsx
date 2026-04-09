@@ -176,7 +176,7 @@ export default function MCQuestionCard({
         }
       })
       .catch((error) => {
-        // ใช้ ERROR แทน LOADING เพื่อป้องกัน fetch loop
+        // à¹ƒà¸Šà¹‰ ERROR à¹à¸—à¸™ LOADING à¹€à¸žà¸·à¹ˆà¸­à¸›à¹‰à¸­à¸‡à¸à¸±à¸™ fetch loop
         console.error("Error fetching MCQ:", error);
         setState(QuestionState.ERROR);
       });
@@ -214,7 +214,7 @@ export default function MCQuestionCard({
         console.error("Error clearing session storage:", e);
       }
     } else {
-      // ใช้ INCOMPLETE แทน LOADING เพื่อไม่ให้ trigger fetch loop
+      // à¹ƒà¸Šà¹‰ INCOMPLETE à¹à¸—à¸™ LOADING à¹€à¸žà¸·à¹ˆà¸­à¹„à¸¡à¹ˆà¹ƒà¸«à¹‰ trigger fetch loop
       setState(QuestionState.INCOMPLETE);
     }
 
@@ -268,7 +268,7 @@ export default function MCQuestionCard({
         }, 10);
       })
       .catch((error) => {
-        console.error("❌ Error during retake:", error);
+        console.error("âŒ Error during retake:", error);
         setState(QuestionState.INCOMPLETE);
       });
   };
@@ -598,9 +598,22 @@ function MCQeustion({
   const { timer, setPaused } = useContext(QuizContext);
   const t = useScopedI18n("components.mcq");
   const router = useRouter();
+  const [fullResults, setFullResults] = useState(resp.results || []);
   const [currentResp, setCurrentResp] = useState(resp);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Initialize currentIndex to the first unanswered question when data loads
+  useEffect(() => {
+    if (progress && progress.length > 0) {
+      const firstUnanswered = progress.findIndex(p => p === AnswerStatus.UNANSWERED);
+      if (firstUnanswered !== -1) {
+        setCurrentIndex(firstUnanswered);
+      }
+    }
+  }, [fullResults, progress]); 
 
   React.useEffect(() => {
+    setFullResults(resp.results || []);
     setCurrentResp(resp);
 
     if (resp.results && resp.results[0]) {
@@ -621,7 +634,7 @@ function MCQeustion({
       initialProgress.every((status) => status === AnswerStatus.CORRECT)
     ) {
       console.warn(
-        "🚨 MCQeustion: Detected suspicious server progress, resetting to unanswered"
+        "ðŸš¨ MCQeustion: Detected suspicious server progress, resetting to unanswered"
       );
       initialProgress = [
         AnswerStatus.UNANSWERED,
@@ -681,9 +694,8 @@ function MCQeustion({
     }
   }, [resp, articleId]);
 
-  const currentQuestionIndex = progress.findIndex(
-    (p) => p === AnswerStatus.UNANSWERED
-  );
+  const activeQuestion = fullResults[currentIndex];
+  const isAnswered = progress[currentIndex] !== AnswerStatus.UNANSWERED;
 
   const onSubmitted = async (questionId: string, option: string, i: number) => {
     setPaused(true);
@@ -719,9 +731,9 @@ function MCQeustion({
           setCorrectAnswer(data.correctAnswer || "");
           setSelectedOption(i);
           const newProgress = [...progress];
-          if (currentQuestionIndex !== -1) {
+          if (currentIndex !== -1) {
             const actuallyCorrect = isCorrect;
-            newProgress[currentQuestionIndex] = actuallyCorrect
+            newProgress[currentIndex] = actuallyCorrect
               ? AnswerStatus.CORRECT
               : AnswerStatus.INCORRECT;
             setProgress(newProgress);
@@ -794,33 +806,21 @@ function MCQeustion({
         router.refresh();
       }, 100);
     }
-  }, [progress, router, toast, page, setPaused, handleCompleted, currentResp, articleId]);
+  }, [progress, router, page, setPaused, handleCompleted, currentResp, articleId]);
 
   const handleNext = () => {
     setSelectedOption(-1);
     setCorrectAnswer("");
     setPaused(false);
-
-    // ไม่ต้อง fetch ใหม่ — ใช้ results ที่ load มาแล้วทั้งหมด
-    // currentResp.results คือ array ของทุกข้อ เพียงแค่ advance index ผ่าน progress
-    const answeredCount = progress.filter(
-      (p) => p !== AnswerStatus.UNANSWERED
-    ).length;
-
-    if (answeredCount < currentResp.total) {
-      // ตัด results ที่ตอบแล้วออก เหลือเฉพาะข้อที่ยังไม่ตอบ
-      const remainingResults = currentResp.results.filter(
-        (_, idx) => progress[idx] === AnswerStatus.UNANSWERED
-      );
-
-      if (remainingResults.length > 0) {
-        setCurrentResp((prev) => ({
-          ...prev,
-          results: remainingResults,
-        }));
-      }
+    
+    // Find the next unanswered question to advance the index
+    const nextUnanswered = progress.findIndex((p, idx) => p === AnswerStatus.UNANSWERED);
+    if (nextUnanswered !== -1) {
+      setCurrentIndex(nextUnanswered);
     }
   };
+
+  const effectiveResults = [activeQuestion];
 
   return (
     <CardContent>
@@ -855,14 +855,14 @@ function MCQeustion({
       </div>
       <CardTitle className="font-bold text-3xl md:text-3xl mt-3">
         {t("questionHeading", {
-          number: currentQuestionIndex + 1,
+          number: currentIndex + 1,
           total: currentResp.total,
         })}
       </CardTitle>
       <CardDescription className="text-2xl md:text-2xl mt-3">
-        {currentResp.results[0]?.question || "Question not available"}
+        {effectiveResults[0]?.question || "Question not available"}
         <span className="hidden">
-          Question ID: {currentResp.results[0]?.id}
+          Question ID: {effectiveResults[0]?.id}
         </span>
       </CardDescription>
 
@@ -876,13 +876,13 @@ function MCQeustion({
           <div className="p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
             <p className="font-bold text-blue-800 dark:text-blue-200">
               Your Answer:{" "}
-              {(currentResp.results[0]?.options || [])[selectedOption]}
+              {(effectiveResults[0]?.options || [])[selectedOption]}
             </p>
           </div>
         </div>
       )}
 
-      {(currentResp.results[0]?.options || [])
+      {(effectiveResults[0]?.options || [])
         .filter(
           (option) =>
             option && typeof option === "string" && option.trim() !== ""
@@ -891,7 +891,7 @@ function MCQeustion({
           const optionText = option || "";
           return (
             <Button
-              key={`${currentResp.results[0]?.id}-${i}`}
+              key={`${effectiveResults[0]?.id}-${i}`}
               className={cn(
                 "mt-2 h-auto w-full",
                 selectedOption === i && "bg-red-500 hover:bg-red-600",
@@ -901,7 +901,7 @@ function MCQeustion({
               disabled={isLoadingAnswer || selectedOption !== -1}
               onClick={() => {
                 if (selectedOption === -1) {
-                  onSubmitted(currentResp.results[0].id, optionText, i);
+                  onSubmitted(effectiveResults[0].id, optionText, i);
                 }
               }}
             >

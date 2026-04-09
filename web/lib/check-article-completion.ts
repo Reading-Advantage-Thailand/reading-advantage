@@ -15,10 +15,11 @@ export async function checkArticleCompletion(
     
     let wasAlreadyCompleted = false;
     if (articleReadResponse.ok) {
-      const activities = await articleReadResponse.json();
+      const responseData = await articleReadResponse.json();
+      const activities = responseData.activityLogs || [];
       wasAlreadyCompleted = activities.some((activity: any) => 
-        activity.activityType === 'ARTICLE_READ' && 
-        activity.targetId === articleId && 
+        activity.activityType === 'article_read' && 
+        activity.articleId === articleId && 
         activity.completed
       );
     }

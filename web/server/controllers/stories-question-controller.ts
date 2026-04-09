@@ -153,42 +153,26 @@ export async function getStoryMCQuestions(
       textual_evidence: q.textualEvidence,
     }));
 
-    // Get user activities for MC questions (filter by targetId prefix or storyId in details)
+    // Get user activities for MC questions (broad lookup)
     const userActivities = await prisma.userActivity.findMany({
       where: {
         userId,
         activityType: ActivityType.MC_QUESTION,
-        OR: [
-          {
-            targetId: {
-              startsWith: `${storyId}_${chapterNumber}_mcq_`,
-            },
-          },
-          {
-            details: {
-              path: ["storyId"],
-              equals: storyId,
-            },
-          },
-        ],
-      },
-      orderBy: {
-        createdAt: "asc",
       },
     });
 
-    // Keep only activities for this story chapter (targetId or details legacy fallback)
+    // Filter to activities for this specific story chapter
     const chapterActivities = userActivities.filter((activity) => {
-      // Modern target-id based record
-      if (activity.targetId.startsWith(`${storyId}_${chapterNumber}_mcq_`)) {
-        return true;
+      let details = activity.details as any;
+      if (typeof details === "string") {
+        try {
+          details = JSON.parse(details);
+        } catch (e) {}
       }
-
-      // Legacy fallback
-      const details = activity.details as any;
       return (
         details?.storyId === storyId &&
-        String(details?.chapterNumber) === String(chapterNumber)
+        (details?.chapterNumber === parseInt(chapterNumber) ||
+          details?.chapter_number === parseInt(chapterNumber))
       );
     });
 
@@ -205,7 +189,6 @@ export async function getStoryMCQuestions(
 
     const progress: AnswerStatus[] = [];
     const answeredQuestionIds = new Set();
-    const questionAnswers = new Map();
     const questionData = new Map();
 
     const sortedActivities = chapterActivities.sort(
@@ -214,24 +197,30 @@ export async function getStoryMCQuestions(
     );
 
     sortedActivities.forEach((activity) => {
-      const details = activity.details as any;
-      // Activities created by answerStoryMCQuestion include questionId and isCorrect
-      if (details?.questionId) {
-        answeredQuestionIds.add(details.questionId);
-        questionAnswers.set(details.questionId, details.isCorrect);
-
+      let details = activity.details as any;
+      if (typeof details === 'string') {
+        try {
+          details = JSON.parse(details);
+        } catch (e) {}
+      }
+      
+      const qId = details?.questionId || activity.targetId;
+      if (qId) {
+        answeredQuestionIds.add(qId);
+        
+        const isCorrect = details?.isCorrect ?? false;
         const xpLog = xpLogMap.get(activity.id);
-        questionData.set(details.questionId, {
+        questionData.set(qId, {
           timer: activity.timer,
           xpEarned: xpLog?.xpEarned || 0,
-          selectedAnswer: details.selectedAnswer,
-          correctAnswer: details.correctAnswer,
-          textualEvidence: details.textualEvidence,
+          selectedAnswer: details?.selectedAnswer,
+          correctAnswer: details?.correctAnswer,
+          textualEvidence: details?.textualEvidence,
           createdAt: activity.createdAt,
         });
 
         progress.push(
-          details.isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT
+          isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT
         );
       }
     });
@@ -247,99 +236,60 @@ export async function getStoryMCQuestions(
 
     // If there are no UNANSWERED slots, the quiz is completed
     if (currentQuestionIndex === -1) {
-      const totalXpEarned = Array.from(questionData.values()).reduce(
-        (total, data) => total + (data.xpEarned || 0),
-        0
-      );
-      const totalTimer = Array.from(questionData.values()).reduce(
-        (total, data) => total + (data.timer || 0),
-        0
-      );
-
       const responseData = {
         state: QuestionState.COMPLETED,
         total: 5,
         progress,
         results: [],
         summary: {
-          totalXpEarned,
-          totalTimer,
-          correctAnswers: progress.filter((p) => p === AnswerStatus.CORRECT)
-            .length,
-          incorrectAnswers: progress.filter((p) => p === AnswerStatus.INCORRECT)
-            .length,
+          totalXpEarned: Array.from(questionData.values()).reduce((sum, d) => sum + (d.xpEarned || 0), 0),
+          totalTimer: Array.from(questionData.values()).reduce((sum, d) => sum + (d.timer || 0), 0),
+          correctAnswers: progress.filter((p) => p === AnswerStatus.CORRECT).length,
+          incorrectAnswers: progress.filter((p) => p === AnswerStatus.INCORRECT).length,
         },
       };
 
-      return new NextResponse(JSON.stringify(responseData), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      return NextResponse.json(responseData, { status: 200 });
     }
 
-    // Only consider the first 5 questions for the quiz flow (same as articles)
-    const questionsForThisChapter = questions.slice(0, 5);
+    // Identify answered and unanswered questions for the pool setup
+    const answeredQuestions = questions.filter(q => answeredQuestionIds.has(q.id));
+    const unansweredFromPool = questions.filter(q => !answeredQuestionIds.has(q.id));
+    
+    // Stable shuffle for other questions using a simple hash
+    const getSeed = (id: string) => {
+      let hash = 0;
+      const str = userId + storyId + chapterNumber + id;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return hash;
+    };
+
+    const shuffledUnanswered = unansweredFromPool.sort((a, b) => getSeed(a.id) - getSeed(b.id));
+    const questionsForThisChapter = [...answeredQuestions, ...shuffledUnanswered].slice(0, 5);
 
     if (questionsForThisChapter.length === 0) {
-      return NextResponse.json(
-        { message: "No questions found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "No questions found" }, { status: 404 });
     }
 
-    const unansweredQuestions = questionsForThisChapter.filter(
-      (q) => !answeredQuestionIds.has(q.id)
-    );
-
-    if (unansweredQuestions.length === 0) {
-      const responseData = {
-        state: QuestionState.INCOMPLETE,
-        total: 5,
-        progress,
-        results: [],
-      };
-
-      return new NextResponse(JSON.stringify(responseData), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    }
-
-    const nextQuestion = unansweredQuestions[0];
-    const options = [...nextQuestion.options];
-    const currentQuestionData = questionData.get(nextQuestion.id) || {};
-
-    const mcq = [
-      {
-        id: nextQuestion.id,
+    const mcq = questionsForThisChapter.map((q, index) => {
+      const qData = questionData.get(q.id) || {};
+      const options = [...q.options];
+      return {
+        id: q.id,
         chapter_number: chapterNumber,
-        question_number:
-          questions.findIndex((q) => q.id === nextQuestion.id) + 1,
-        question: nextQuestion.question,
+        question_number: index + 1,
+        question: q.question,
         options: options.sort(() => 0.5 - Math.random()),
-        textual_evidence: nextQuestion.textualEvidence,
-        timer: currentQuestionData.timer || null,
-        xpEarned: currentQuestionData.xpEarned || 0,
-        selectedAnswer: currentQuestionData.selectedAnswer || null,
-        correctAnswer: currentQuestionData.correctAnswer || null,
-      },
-    ];
-
-    const answeredQuestionData = Array.from(questionData.values());
-
-    const totalXpEarned = answeredQuestionData.reduce(
-      (total, data) => total + (data.xpEarned || 0),
-      0
-    );
-
-    const totalTimer = answeredQuestionData.reduce(
-      (total, data) => total + (data.timer || 0),
-      0
-    );
+        textual_evidence: q.textualEvidence,
+        timer: qData.timer || null,
+        xpEarned: qData.xpEarned || 0,
+        selectedAnswer: qData.selectedAnswer || null,
+        correctAnswer: qData.correctAnswer || null,
+      };
+    });
 
     const responseData = {
       state: QuestionState.INCOMPLETE,
@@ -347,23 +297,15 @@ export async function getStoryMCQuestions(
       progress,
       results: mcq,
       summary: {
-        totalXpEarned,
-        totalTimer,
-        correctAnswers: progress.filter((p) => p === AnswerStatus.CORRECT)
-          .length,
-        incorrectAnswers: progress.filter((p) => p === AnswerStatus.INCORRECT)
-          .length,
-        currentQuestion:
-          progress.filter((p) => p !== AnswerStatus.UNANSWERED).length + 1,
+        totalXpEarned: Array.from(questionData.values()).reduce((sum, d) => sum + (d.xpEarned || 0), 0),
+        totalTimer: Array.from(questionData.values()).reduce((sum, d) => sum + (d.timer || 0), 0),
+        correctAnswers: progress.filter((p) => p === AnswerStatus.CORRECT).length,
+        incorrectAnswers: progress.filter((p) => p === AnswerStatus.INCORRECT).length,
+        currentQuestion: progress.filter((p) => p !== AnswerStatus.UNANSWERED).length + 1,
       },
     };
 
-    return new NextResponse(JSON.stringify(responseData), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    return NextResponse.json(responseData, { status: 200 });
   } catch (error) {
     console.error("Error in getStoryMCQuestions:", error);
     return NextResponse.json(
