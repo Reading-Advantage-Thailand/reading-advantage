@@ -1,15 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Timer, ArrowLeft } from "lucide-react";
 import { Article } from "../models/article-model";
-import { useScopedI18n, useCurrentLocale } from "@/locales/client";
+import { useCurrentLocale } from "@/locales/client";
 import { useTimer } from "@/contexts/timer-context";
-import {
-  ActivityType,
-  ActivityStatus,
-} from "../models/user-activity-log-model";
 import {
   Phase1Introduction,
   Phase2VocabularyPreview,
@@ -26,6 +20,18 @@ import {
   Phase13LanguageQuestions,
   Phase14LessonSummary,
 } from "./phases";
+import LessonTimer from "./lesson-timer";
+import PhaseList from "./phase-list";
+import LessonNavButtons from "./lesson-nav-buttons";
+import {
+  buildLessonApiUrl,
+  logLessonActivity,
+  formatElapsedTime,
+} from "./utils";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface LessonProgressBarProps {
   phases: string[];
@@ -35,6 +41,10 @@ interface LessonProgressBarProps {
   classroomId?: string;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────────────────────────────────────
+
 const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
   phases,
   article,
@@ -42,65 +52,62 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
   userId,
   classroomId,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [maxHeight, setMaxHeight] = useState("0px");
-  const contentRef = useRef<HTMLDivElement>(null);
+  // ── Navigation state ───────────────────────────────────────────────────────
   const [currentPhase, setCurrentPhase] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
   const [nextPhaseContent, setNextPhaseContent] = useState<number | null>(null);
+  const [phaseLoading, setPhaseLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
-  // Use refs to access current values in useEffect without causing re-runs
+  // Refs so we can read current values in effects without stale closures
   const currentPhaseRef = useRef(currentPhase);
   const isTransitioningRef = useRef(isTransitioning);
+  useEffect(() => { currentPhaseRef.current = currentPhase; }, [currentPhase]);
+  useEffect(() => { isTransitioningRef.current = isTransitioning; }, [isTransitioning]);
 
-  // Update refs when state changes
-  useEffect(() => {
-    currentPhaseRef.current = currentPhase;
-  }, [currentPhase]);
-
-  useEffect(() => {
-    isTransitioningRef.current = isTransitioning;
-  }, [isTransitioning]);
-
-  const t = useScopedI18n("pages.student.lessonPage");
-  const locale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
-  const [showVocabularyButton, setShowVocabularyButton] = useState(true);
-  const [showSentenseButton, setShowSentenseButton] = useState(true);
-  const [sentenceActivity, setSentenceActivity] = useState("none");
+  // ── Phase completion tracking ──────────────────────────────────────────────
   const [phaseCompletion, setPhaseCompletion] = useState<boolean[]>(
     Array(phases.length).fill(false)
   );
   const [shakeButton, setShakeButton] = useState(false);
-  const { elapsedTime, startTimer, stopTimer, setTimer } = useTimer();
-  const [phaseLoading, setPhaseLoading] = useState(true);
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
+  // ── Per-phase activity toggles ─────────────────────────────────────────────
+  const [showVocabularyButton, setShowVocabularyButton] = useState(true);
+  const [showSentenseButton, setShowSentenseButton] = useState(true);
+  const [sentenceActivity, setSentenceActivity] = useState("none");
+
+  // ── Sidebar accordion (mobile) ─────────────────────────────────────────────
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [maxHeight, setMaxHeight] = useState("0px");
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // ── Timer ──────────────────────────────────────────────────────────────────
+  const locale = useCurrentLocale() as "en" | "th" | "cn" | "tw" | "vi";
+  const { elapsedTime, startTimer, stopTimer, setTimer } = useTimer();
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Initial fetch: restore current phase from server
+  // ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
     let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const fetchCurrentPhase = async () => {
       try {
         if (!isMounted) return;
-
         setPhaseLoading(true);
+
         const response = await fetch(
           `/api/v1/lesson/${userId}?articleId=${articleId}`
         );
-
         if (!isMounted) return;
 
         if (response.ok) {
           const phase = await response.json();
-          // Ensure we get a valid phase number
           const phaseNumber = parseInt(phase.currentPhase) || 1;
           const validPhase = Math.max(1, Math.min(phaseNumber, phases.length));
-
-          // Update phase on initial load
-          if (isMounted) {
-            setCurrentPhase(validPhase);
-          }
+          if (isMounted) setCurrentPhase(validPhase);
           setTimer(phase.elapsedTime || 0);
           setInitialLoadComplete(true);
         } else {
@@ -117,36 +124,43 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
           setInitialLoadComplete(true);
         }
       } finally {
-        if (isMounted) {
-          setPhaseLoading(false);
-        }
+        if (isMounted) setPhaseLoading(false);
       }
     };
 
-    // Only fetch on initial load - don't refetch after transitions
     if (!initialLoadComplete) {
-      timeoutId = setTimeout(() => {
-        fetchCurrentPhase();
-      }, 100); // Quick initial load
+      timeoutId = setTimeout(fetchCurrentPhase, 100);
     }
 
     return () => {
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [userId, articleId, setTimer, phases.length, initialLoadComplete]); // Add initialLoadComplete to dependencies
+  }, [userId, articleId, setTimer, phases.length, initialLoadComplete]);
 
-  const LessonTimer = React.memo(() => {
-    const { elapsedTime } = useTimer();
+  // ─────────────────────────────────────────────────────────────────────────
+  // Timer: run only during active phases (2–13)
+  // ─────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (currentPhase >= 2 && currentPhase < 14) {
+      startTimer();
+    } else {
+      stopTimer();
+    }
+  }, [currentPhase, startTimer, stopTimer]);
 
-    return (
-      <div className="text-sm font-medium">
-        {`${Math.floor(elapsedTime / 60)}m ${elapsedTime % 60}s`}
-      </div>
-    );
-  });
-  LessonTimer.displayName = "LessonTimer";
+  // ─────────────────────────────────────────────────────────────────────────
+  // Sidebar accordion height
+  // ─────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (contentRef.current) {
+      setMaxHeight(isExpanded ? `${contentRef.current.scrollHeight}px` : "0px");
+    }
+  }, [isExpanded]);
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Phase completion callback (memoised per-phase to avoid infinite fetches)
+  // ─────────────────────────────────────────────────────────────────────────
   const updatePhaseCompletion = useCallback(
     (phaseIndex: number, isComplete: boolean) => {
       setPhaseCompletion((prev) => {
@@ -161,265 +175,133 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
     []
   );
 
-  // Memoize stable callbacks for each phase to prevent re-renders from timer updates 
-  // from recreating these functions and triggering infinite fetch loops in child components.
-  const phaseCallbacks = useMemo(() => {
-    return Array.from({ length: phases.length + 1 }, (_, i) => (complete: boolean) => 
-      updatePhaseCompletion(i, complete)
-    );
-  }, [phases.length, updatePhaseCompletion]);
+  const phaseCallbacks = useMemo(
+    () =>
+      Array.from({ length: phases.length + 1 }, (_, i) => (complete: boolean) =>
+        updatePhaseCompletion(i, complete)
+      ),
+    [phases.length, updatePhaseCompletion]
+  );
 
-  useEffect(() => {
-    if (currentPhase >= 2 && currentPhase < 14) {
-      startTimer();
-    } else {
-      stopTimer();
+  // ─────────────────────────────────────────────────────────────────────────
+  // Shared transition helper
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /** Animate out → update server → animate in */
+  const performTransition = async (
+    newPhase: number,
+    serverCall: () => Promise<Response>
+  ): Promise<boolean> => {
+    setFadeOut(true);
+    setNextPhaseContent(newPhase);
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    setPhaseLoading(true);
+
+    const response = await serverCall();
+
+    if (response.ok) {
+      setCurrentPhase(newPhase);
+      setPhaseLoading(false);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      setFadeOut(false);
+      setNextPhaseContent(null);
+      return true;
     }
-  }, [currentPhase, startTimer, stopTimer]);
 
-  useEffect(() => {
-    const logActivity = async () => {
-      if (currentPhase === 14) {
-        await fetch(`/api/v1/users/${userId}/activitylog`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            articleId: article.id,
-            activityType: ActivityType.LessonRead,
-            activityStatus: ActivityStatus.Completed,
-            timeTaken: elapsedTime,
-            details: {
-              title: article.title,
-              level: article.ra_level,
-              cefr_level: article.cefr_level,
-              type: article.type,
-              genre: article.genre,
-              subgenre: article.subgenre,
-            },
-          }),
-        });
-      }
-    };
+    // Rollback animation on failure
+    setFadeOut(false);
+    setNextPhaseContent(null);
+    setPhaseLoading(false);
+    return false;
+  };
 
-    logActivity();
-  }, [currentPhase, userId, article, elapsedTime]);
+  // ─────────────────────────────────────────────────────────────────────────
+  // Navigation handlers
+  // ─────────────────────────────────────────────────────────────────────────
 
   const startLesson = async () => {
+    if (phaseLoading || isTransitioning) return;
+    setIsTransitioning(true);
+
     try {
-      // Prevent multiple clicks and transitions
-      if (phaseLoading || isTransitioning) return;
-
-      setIsTransitioning(true);
-
-      // Start fade out animation
-      setFadeOut(true);
-      setNextPhaseContent(2);
-
-      // Wait for fade out animation
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      setPhaseLoading(true);
-      const newPhase = 2; // Always go to phase 2 from phase 1
-
-      // Call API to update server state
-      const url = classroomId
-        ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
-        : `/api/v1/lesson/${userId}?articleId=${articleId}`;
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phase: 1, // Starting from phase 1
-          status: 2, // Completed status
-          elapsedTime: 0,
-        }),
-      });
-
-      // Only update local state if API call succeeds
-      if (response.ok) {
-        const responseData = await response.json();
-
-        // Update to new phase
-        setCurrentPhase(newPhase);
-
-        // Start fade in animation
-        setPhaseLoading(false);
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        setFadeOut(false);
-        setNextPhaseContent(null);
-      } else {
-        console.error(
-          "Failed to start lesson, response not ok:",
-          response.status,
-          response.statusText
-        );
-        // Reset fade state on error
-        setFadeOut(false);
-        setNextPhaseContent(null);
-        setPhaseLoading(false);
-      }
+      const url = buildLessonApiUrl(userId, articleId, classroomId);
+      await performTransition(2, () =>
+        fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phase: 1, status: 2, elapsedTime: 0 }),
+        })
+      );
     } catch (error) {
       console.error("Error starting lesson:", error);
-      // Reset fade state on error
       setFadeOut(false);
       setNextPhaseContent(null);
       setPhaseLoading(false);
     } finally {
-      // Keep transition state for a bit longer to prevent rapid changes and fetching
       setTimeout(() => setIsTransitioning(false), 500);
     }
   };
 
-  const nextPhase = async (Phase: number, elapsedTime: number) => {
-    // Check if current phase is completed before proceeding
-    if (!phaseCompletion[Phase - 1]) {
+  const nextPhase = async (phase: number, elapsed: number) => {
+    if (!phaseCompletion[phase - 1]) {
       setShakeButton(true);
       setTimeout(() => setShakeButton(false), 500);
       return;
     }
+    if (phaseLoading || isTransitioning) return;
 
-    // Prevent multiple clicks and transitions
-    if (phaseLoading || isTransitioning) {
-      return;
-    }
-
+    setIsTransitioning(true);
     try {
-      setIsTransitioning(true);
-      const newPhase = Phase + 1;
+      const newPhase = phase + 1;
 
-      // Start fade out animation
-      setFadeOut(true);
-      setNextPhaseContent(newPhase);
+      // Log completion when leaving the last content phase
+      if (phase === 13) {
+        await logLessonActivity({ userId, article, elapsedTime: elapsed });
+      }
 
-      // Wait for fade out animation
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      setPhaseLoading(true);
-
-      // Handle final phase logging
-      if (Phase === 13) {
-        await fetch(`/api/v1/users/${userId}/activitylog`, {
+      const url = buildLessonApiUrl(userId, articleId, classroomId);
+      await performTransition(newPhase, () =>
+        fetch(url, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            articleId: article.id,
-            activityType: ActivityType.LessonRead,
-            activityStatus: ActivityStatus.Completed,
-            timeTaken: elapsedTime,
-            details: {
-              title: article.title,
-              level: article.ra_level,
-              cefr_level: article.cefr_level,
-              type: article.type,
-              genre: article.genre,
-              subgenre: article.subgenre,
-            },
-          }),
-        });
-      }
-
-      // Update server state
-      const url = classroomId
-        ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
-        : `/api/v1/lesson/${userId}?articleId=${articleId}`;
-
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phase: Phase,
-          status: 2,
-          elapsedTime: elapsedTime,
-        }),
-      });
-
-      // Only update local state if API call succeeds
-      if (response.ok) {
-        const responseData = await response.json();
-
-        // Update to new phase
-        setCurrentPhase(newPhase);
-
-        // Start fade in animation
-        setPhaseLoading(false);
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        setFadeOut(false);
-        setNextPhaseContent(null);
-      } else {
-        console.error(
-          "Failed to update phase, API response not ok:",
-          response.status,
-          response.statusText
-        );
-        // Reset fade state on error
-        setFadeOut(false);
-        setNextPhaseContent(null);
-        setPhaseLoading(false);
-      }
+          body: JSON.stringify({ phase, status: 2, elapsedTime: elapsed }),
+        })
+      );
     } catch (error) {
       console.error("Error updating phase:", error);
-      // Reset fade state on error
       setFadeOut(false);
       setNextPhaseContent(null);
       setPhaseLoading(false);
     } finally {
-      // Keep transition state for a bit longer to prevent rapid changes and fetching
       setTimeout(() => setIsTransitioning(false), 500);
     }
   };
 
   const previousPhase = async () => {
-    // Prevent going back from phase 1 or 2 
-    if (currentPhase <= 2 || phaseLoading || isTransitioning) {
-      return;
-    }
+    if (currentPhase <= 2 || phaseLoading || isTransitioning) return;
 
+    setIsTransitioning(true);
     try {
-      setIsTransitioning(true);
       const newPhase = currentPhase - 1;
+      const url = buildLessonApiUrl(userId, articleId, classroomId);
 
-      // Start fade out animation
-      setFadeOut(true);
-      setNextPhaseContent(newPhase);
+      const ok = await performTransition(newPhase, () =>
+        fetch(url, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phase: newPhase,
+            status: 1,
+            elapsedTime,
+          }),
+        })
+      );
 
-      // Wait for fade out animation
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      setPhaseLoading(true);
-
-      const url = classroomId
-        ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
-        : `/api/v1/lesson/${userId}?articleId=${articleId}`;
-
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phase: newPhase,
-          status: 1, // In progress status for going back
-          elapsedTime: elapsedTime,
-        }),
-      });
-
-      if (response.ok) {
-        setCurrentPhase(newPhase);
-        // Reset phase completion for the current phase since we're going back
+      if (ok) {
         const updatedCompletion = [...phaseCompletion];
         updatedCompletion[currentPhase - 1] = false;
         setPhaseCompletion(updatedCompletion);
-        
-        setPhaseLoading(false);
-
-        // Start fade in animation
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        setFadeOut(false);
-        setNextPhaseContent(null);
-      } else {
-        console.error("Failed to go back to previous phase");
-        setFadeOut(false);
-        setNextPhaseContent(null);
-        setPhaseLoading(false);
       }
     } catch (error) {
       console.error("Error going back to previous phase:", error);
@@ -431,7 +313,25 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
     }
   };
 
-  // Helper function for smooth phase transitions
+  const skipPhase = async (phase: number) => {
+    if (phase === 13) {
+      await logLessonActivity({ userId, article, elapsedTime });
+    }
+
+    setCurrentPhase(phase + 1);
+
+    const url = buildLessonApiUrl(userId, articleId, classroomId);
+    await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phase, status: 2, elapsedTime }),
+    });
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Phase component renderer (switch kept here as it needs local state)
+  // ─────────────────────────────────────────────────────────────────────────
+
   const getPhaseComponent = (phaseNum: number) => {
     switch (phaseNum) {
       case 1:
@@ -560,7 +460,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
           <Phase14LessonSummary
             articleId={articleId}
             userId={userId}
-            elapsedTime={`${Math.floor(elapsedTime / 60)}m ${elapsedTime % 60}s`}
+            elapsedTime={formatElapsedTime(elapsedTime)}
           />
         );
       default:
@@ -568,67 +468,29 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
     }
   };
 
-  const skipPhase = async (Phase: number) => {
-    if (Phase === 13) {
-      await fetch(`/api/v1/users/${userId}/activitylog`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          articleId: article.id,
-          activityType: ActivityType.LessonRead,
-          activityStatus: ActivityStatus.Completed,
-          timeTaken: elapsedTime,
-          details: {
-            title: article.title,
-            level: article.ra_level,
-            cefr_level: article.cefr_level,
-            type: article.type,
-            genre: article.genre,
-            subgenre: article.subgenre,
-          },
-        }),
-      });
-    }
-    setCurrentPhase(Phase + 1);
-
-    const url = classroomId
-      ? `/api/v1/lesson/${userId}?articleId=${articleId}&classroomId=${classroomId}`
-      : `/api/v1/lesson/${userId}?articleId=${articleId}`;
-
-    await fetch(url, {
-      method: "PUT",
-      body: JSON.stringify({
-        phase: Phase,
-        status: 2,
-        elapsedTime: elapsedTime,
-      }),
-    });
-  };
-
-  useEffect(() => {
-    if (contentRef.current) {
-      setMaxHeight(isExpanded ? `${contentRef.current.scrollHeight}px` : "0px");
-    }
-  }, [isExpanded]);
+  // ─────────────────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-      {/* Main Content Area */}
+      {/* ── Main Content ─────────────────────────────────────────────────── */}
       <div className="xl:col-span-3">
         {phaseLoading && !fadeOut ? (
+          /* Loading skeleton */
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
             <div className="animate-pulse space-y-6">
-              <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded-lg w-1/2"></div>
+              <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded-lg w-1/2" />
               <div className="space-y-4">
-                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-3/4" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/2" />
               </div>
             </div>
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Phase Content */}
+            {/* Phase content */}
             <div
               className={`transition-all duration-300 ease-in-out transform ${
                 fadeOut
@@ -639,104 +501,32 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
               {getPhaseComponent(currentPhase)}
             </div>
 
-            {/* Navigation Buttons */}
+            {/* Navigation buttons */}
             <div
               className={`mt-6 transition-all duration-300 ease-in-out ${
                 fadeOut ? "opacity-50 pointer-events-none" : "opacity-100"
               }`}
             >
-              {currentPhase === 1 && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                  <Button
-                    size="lg"
-                    className="w-full group relative overflow-hidden bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 text-white py-4 px-6 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                    onClick={startLesson}
-                    disabled={phaseLoading || isTransitioning}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-center justify-center">
-                      {phaseLoading || isTransitioning ? (
-                        <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3" />
-                          <span>Starting...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>{t("startLesson")}</span>
-                          <ArrowLeft className="h-5 w-5 ml-3 rotate-180 transition-transform group-hover:translate-x-1" />
-                        </>
-                      )}
-                    </div>
-                  </Button>
-                </div>
-              )}
-
-              {currentPhase < phases.length && currentPhase > 1 && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                  <div className="flex gap-4">
-                    {/* Back Button - Only show if phase > 2 */}
-                    {currentPhase > 2 && (
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="flex-1 group relative overflow-hidden border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-slate-200 py-4 px-6 text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                        onClick={previousPhase}
-                        disabled={phaseLoading || isTransitioning}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div className="relative flex items-center justify-center">
-                          {phaseLoading || isTransitioning ? (
-                            <>
-                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-slate-400 border-t-transparent mr-3" />
-                              <span>Processing...</span>
-                            </>
-                          ) : (
-                            <>
-                              <ArrowLeft className="h-5 w-5 mr-3 transition-transform group-hover:-translate-x-1" />
-                              <span>{t("previousPhase")}</span>
-                            </>
-                          )}
-                        </div>
-                      </Button>
-                    )}
-                    
-                    {/* Next Button */}
-                    <Button
-                      size="lg"
-                      className={`${currentPhase > 2 ? 'flex-1' : 'w-full'} group relative overflow-hidden bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white py-4 px-6 text-base font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
-                        shakeButton ? "animate-shake" : ""
-                      }`}
-                      onClick={() => nextPhase(currentPhase, elapsedTime)}
-                      disabled={phaseLoading || isTransitioning}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <div className="relative flex items-center justify-center">
-                        {phaseLoading || isTransitioning ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3" />
-                            <span>Processing...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>{t("nextPhase")}</span>
-                            <ArrowLeft className="h-5 w-5 ml-3 rotate-180 transition-transform group-hover:translate-x-1" />
-                          </>
-                        )}
-                      </div>
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <LessonNavButtons
+                currentPhase={currentPhase}
+                totalPhases={phases.length}
+                isLoading={phaseLoading}
+                isTransitioning={isTransitioning}
+                shakeButton={shakeButton}
+                onStart={startLesson}
+                onNext={() => nextPhase(currentPhase, elapsedTime)}
+                onPrevious={previousPhase}
+              />
             </div>
           </div>
         )}
       </div>
 
-      {/* Sidebar - Progress Tracker */}
+      {/* ── Sidebar: Progress Tracker ─────────────────────────────────────── */}
       <div className="xl:col-span-1">
         <div className="sticky top-6">
           <div className="bg-gray-200 dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
-            {/* Progress Header */}
+            {/* Progress header */}
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6">
               <div className="flex items-center justify-between text-white">
                 <div>
@@ -746,14 +536,11 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
                   </p>
                 </div>
                 {currentPhase >= 2 && currentPhase < 14 && (
-                  <div className="flex items-center gap-2 bg-white/20 rounded-lg px-3 py-1">
-                    <Timer className="h-4 w-4" />
-                    <LessonTimer />
-                  </div>
+                  <LessonTimer />
                 )}
               </div>
 
-              {/* Progress Bar */}
+              {/* Progress bar */}
               <div className="mt-4 bg-white/20 rounded-full h-2 overflow-hidden">
                 <div
                   className="bg-white h-2 rounded-full transition-all duration-700 ease-out"
@@ -762,102 +549,15 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
               </div>
             </div>
 
-            {/* Phase List */}
-            <div className="p-6">
-              {/* Mobile Accordion */}
-              <div className="xl:hidden">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    Current: {phases[currentPhase - 1]}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                  >
-                    {isExpanded ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-
-                <div
-                  ref={contentRef}
-                  style={{ maxHeight }}
-                  className="transition-all duration-500 ease-in-out overflow-hidden"
-                >
-                  <div className="space-y-3">
-                    {phases.map((phase, index) => {
-                      const isActive = index + 1 === currentPhase;
-                      const isCompleted = index + 1 < currentPhase;
-
-                      return (
-                        <div
-                          key={index}
-                          className="flex items-center space-x-3"
-                        >
-                          <div
-                            className={`w-3 h-3 rounded-full flex-shrink-0 transition-all duration-300 ${
-                              isActive
-                                ? "bg-blue-500 ring-4 ring-blue-100 dark:ring-blue-900 scale-110"
-                                : isCompleted
-                                  ? "bg-green-500 scale-100"
-                                  : "bg-gray-300 dark:bg-gray-600 scale-90"
-                            }`}
-                          />
-                          <span
-                            className={`text-sm transition-all duration-200 ${
-                              isCompleted
-                                ? "text-gray-400 line-through"
-                                : isActive
-                                  ? "text-blue-600 dark:text-blue-400 font-medium"
-                                  : "text-gray-600 dark:text-gray-400"
-                            }`}
-                          >
-                            {index + 1}. {phase}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Desktop List */}
-              <div className="hidden xl:block space-y-3">
-                {phases.map((phase, index) => {
-                  const isActive = index + 1 === currentPhase;
-                  const isCompleted = index + 1 < currentPhase;
-
-                  return (
-                    <div key={index} className="flex items-center space-x-3">
-                      <div
-                        className={`w-3 h-3 rounded-full flex-shrink-0 transition-all duration-300 ${
-                          isActive
-                            ? "bg-blue-500 ring-4 ring-blue-100 dark:ring-blue-900 scale-110"
-                            : isCompleted
-                              ? "bg-green-500 scale-100"
-                              : "bg-gray-300 dark:bg-gray-600 scale-90"
-                        }`}
-                      />
-                      <span
-                        className={`text-sm leading-tight transition-all duration-200 ${
-                          isCompleted
-                            ? "text-gray-400 line-through"
-                            : isActive
-                              ? "text-blue-600 dark:text-blue-400 font-medium"
-                              : "text-gray-600 dark:text-gray-400"
-                        }`}
-                      >
-                        {index + 1}. {phase}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {/* Phase list */}
+            <PhaseList
+              phases={phases}
+              currentPhase={currentPhase}
+              isExpanded={isExpanded}
+              onToggleExpanded={() => setIsExpanded((v) => !v)}
+              contentRef={contentRef}
+              maxHeight={maxHeight}
+            />
           </div>
         </div>
       </div>

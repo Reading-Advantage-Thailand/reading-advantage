@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import LessonSAQ from "../practics/lesson-saq";
+import LessonSAQ from "../activities/lesson-saq";
 import { Article } from "../../models/article-model";
 import { Book } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
