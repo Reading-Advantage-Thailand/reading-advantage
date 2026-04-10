@@ -69,6 +69,9 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
   const [retryCount, setRetryCount] = useState(0);
   const [isLoadingAudio, setIsLoadingAudio] = useState(true);
   const sentenceRefs = useRef<{ [key: number]: HTMLElement | null }>({});
+  // Refs to avoid stale closures inside audio event handlers
+  const currentSentenceRef = useRef(0);
+  const highlightModeRef = useRef(highlightMode);
 
   // Get data from article
   const timepoints = useMemo(
@@ -199,11 +202,51 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
         );
       };
 
+      // Single timing source: ontimeupdate drives sentence highlighting
+      const handleTimeUpdate = () => {
+        if (!audio || audio.paused) return;
+        const currentTime = audio.currentTime;
+
+        let newIndex = 0;
+        for (let i = timepoints.length - 1; i >= 0; i--) {
+          if (currentTime >= timepoints[i].timeSeconds) {
+            newIndex = i;
+            break;
+          }
+        }
+
+        if (newIndex !== currentSentenceRef.current) {
+          currentSentenceRef.current = newIndex;
+          setCurrentSentence(newIndex);
+
+          // Scroll to current sentence when highlight mode is on
+          const el = sentenceRefs.current[newIndex];
+          if (el && highlightModeRef.current) {
+            el.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
+        }
+      };
+
+      const handleEnded = () => {
+        setIsPlaying(false);
+      };
+
+      const handleAudioPause = () => {
+        setIsPlaying(false);
+      };
+
       // Add event listeners
       audio.addEventListener("progress", handleProgress);
       audio.addEventListener("canplaythrough", handleCanPlayThrough);
       audio.addEventListener("loadeddata", handleLoadedData);
       audio.addEventListener("error", handleError);
+      audio.addEventListener("timeupdate", handleTimeUpdate);
+      audio.addEventListener("ended", handleEnded);
+      audio.addEventListener("pause", handleAudioPause);
 
       audioRef.current = audio;
 
@@ -215,6 +258,9 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
         audio.removeEventListener("canplaythrough", handleCanPlayThrough);
         audio.removeEventListener("loadeddata", handleLoadedData);
         audio.removeEventListener("error", handleError);
+        audio.removeEventListener("timeupdate", handleTimeUpdate);
+        audio.removeEventListener("ended", handleEnded);
+        audio.removeEventListener("pause", handleAudioPause);
         audio.pause();
       };
     }
@@ -224,6 +270,15 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     onCompleteChange(true);
   }, [onCompleteChange]);
 
+  // Keep refs in sync to avoid stale closures inside audio event handlers
+  useEffect(() => {
+    currentSentenceRef.current = currentSentence;
+  }, [currentSentence]);
+
+  useEffect(() => {
+    highlightModeRef.current = highlightMode;
+  }, [highlightMode]);
+
   useEffect(() => {
     // Update playback rate when speed changes
     if (audioRef.current) {
@@ -231,127 +286,23 @@ const Phase3FirstReading: React.FC<Phase3FirstReadingProps> = ({
     }
   }, [readingSpeed]);
 
-  // Track current sentence during playback
-  useEffect(() => {
-    if (isPlaying && audioRef.current && highlightMode) {
-      const interval = setInterval(() => {
-        if (audioRef.current && !audioRef.current.paused) {
-          const currentTime = audioRef.current.currentTime;
-
-          // Find current sentence based on time
-          let newSentenceIndex = 0;
-          for (let i = timepoints.length - 1; i >= 0; i--) {
-            if (currentTime >= timepoints[i].timeSeconds) {
-              newSentenceIndex = i;
-              break;
-            }
-          }
-
-          if (newSentenceIndex !== currentSentence) {
-            setCurrentSentence(newSentenceIndex);
-          }
-        }
-      }, 100); // Check every 100ms for smoother tracking
-
-      return () => clearInterval(interval);
-    }
-  }, [isPlaying, highlightMode, currentSentence, timepoints]);
+  // Sentence tracking is handled by the single ontimeupdate listener
+  // registered in the audio init useEffect above.
 
   const handlePlayPause = () => {
     if (!audioRef.current || !isAudioLoaded) return;
 
     if (isPlaying) {
-      // Pause reading
+      // Pause — the "pause" event listener will set isPlaying(false)
       audioRef.current.pause();
-      setIsPlaying(false);
     } else {
-      // Start reading
-      setIsPlaying(true);
+      // Play — ontimeupdate drives sentence highlighting automatically
       audioRef.current.play();
-      startTimeTracking();
+      setIsPlaying(true);
     }
   };
 
-  const startTimeTracking = () => {
-    if (!audioRef.current || !timepoints.length) {
-      console.log("No audio or timepoints available for tracking");
-      return;
-    }
 
-    console.log("Starting time tracking with", timepoints.length, "timepoints");
-
-    const updateCurrentSentence = () => {
-      if (!audioRef.current || !isPlaying) return;
-
-      const currentTime = audioRef.current.currentTime;
-
-      // Find current sentence based on time with improved logic
-      let newSentenceIndex = -1;
-
-      // Find the most recent timepoint that has passed
-      for (let i = timepoints.length - 1; i >= 0; i--) {
-        if (currentTime >= timepoints[i].timeSeconds) {
-          newSentenceIndex = i;
-          break;
-        }
-      }
-
-      // If no timepoint has been reached yet, start with first sentence
-      if (newSentenceIndex === -1) {
-        newSentenceIndex = 0;
-      }
-
-      // Only update if sentence has changed and it's a valid index
-      if (
-        newSentenceIndex !== currentSentence &&
-        newSentenceIndex >= 0 &&
-        newSentenceIndex < sentences.length
-      ) {
-        console.log(
-          `Sentence changed: ${currentSentence} -> ${newSentenceIndex} at time ${currentTime.toFixed(2)}s`,
-        );
-        setCurrentSentence(newSentenceIndex);
-
-        // Scroll to current sentence
-        const sentenceElement = sentenceRefs.current[newSentenceIndex];
-        if (sentenceElement && highlightMode) {
-          sentenceElement.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "nearest",
-          });
-        }
-      }
-
-      if (isPlaying && audioRef.current && !audioRef.current.paused) {
-        requestAnimationFrame(updateCurrentSentence);
-      }
-    };
-
-    // Set up audio event listeners
-    audioRef.current.onended = () => {
-      console.log("Audio ended");
-      setIsPlaying(false);
-      // Don't reset sentence to 0, keep it at the last sentence
-    };
-
-    audioRef.current.onpause = () => {
-      console.log("Audio paused");
-      setIsPlaying(false);
-    };
-
-    audioRef.current.onplay = () => {
-      console.log("Audio playing");
-    };
-
-    audioRef.current.ontimeupdate = () => {
-      // Additional tracking through timeupdate event
-      updateCurrentSentence();
-    };
-
-    // Start tracking immediately
-    updateCurrentSentence();
-  };
 
   const retryAudioLoad = () => {
     if (retryCount < 3) {

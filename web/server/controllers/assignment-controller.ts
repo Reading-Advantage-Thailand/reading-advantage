@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ExtendedNextRequest } from "./auth-controller";
-import { Status } from "@prisma/client";
+import { ExtendedNextRequest, assertSelfOrAllowedStaff } from "./auth-controller";
+import { Status, Role } from "@prisma/client";
 import {
   AssignmentMetrics,
   MetricsAssignmentsResponse,
@@ -22,6 +22,27 @@ interface StudentAssignment {
   teacherDisplayName?: string;
 }
 
+async function checkClassroomAccess(classroomId: string, user: any) {
+  if (!user || !user.role) return false;
+  if (user.role === Role.SYSTEM) return true;
+  
+  const classroom = await prisma.classroom.findUnique({
+    where: { id: classroomId },
+    include: { teachers: true }
+  });
+  
+  if (!classroom) return false;
+  
+  if (user.role === Role.TEACHER) {
+    return classroom.teachers.some((t: any) => t.teacherId === user.id);
+  } else if (user.role === Role.ADMIN) {
+    const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { schoolId: true }});
+    return dbUser?.schoolId === classroom.schoolId;
+  }
+  
+  return false;
+}
+
 export async function getAssignments(req: ExtendedNextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -36,6 +57,16 @@ export async function getAssignments(req: ExtendedNextRequest) {
         { message: "Missing classroomId in query parameters" },
         { status: 400 }
       );
+    }
+
+    const sessionUser = req.session?.user;
+    if (!sessionUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const hasAccess = await checkClassroomAccess(classroomId, sessionUser);
+    if (!hasAccess) {
+      return NextResponse.json({ message: "Forbidden - You do not have access to this classroom" }, { status: 403 });
     }
 
     if (articleId) {
@@ -229,6 +260,28 @@ export async function postAssignment(req: ExtendedNextRequest) {
       );
     }
 
+    const sessionUser = req.session?.user;
+    if (!sessionUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const hasAccess = await checkClassroomAccess(classroomId, sessionUser);
+    if (!hasAccess) {
+      return NextResponse.json({ message: "Forbidden - You do not have access to this classroom" }, { status: 403 });
+    }
+
+    // Verify all selectedStudents belong to the classroom
+    const validStudentsCount = await prisma.classroomStudent.count({
+      where: {
+        classroomId,
+        studentId: { in: selectedStudents }
+      }
+    });
+
+    if (validStudentsCount !== selectedStudents.length) {
+      return NextResponse.json({ message: "One or more selected students do not belong to the target classroom" }, { status: 400 });
+    }
+
     // Check if classroom exists
     const classroom = await prisma.classroom.findUnique({
       where: { id: classroomId },
@@ -344,6 +397,16 @@ export async function updateAssignment(req: ExtendedNextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    const sessionUser = req.session?.user;
+    if (!sessionUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const hasAccess = await checkClassroomAccess(classroomId, sessionUser);
+    if (!hasAccess) {
+      return NextResponse.json({ message: "Forbidden - You do not have access to this classroom" }, { status: 403 });
     }
 
     if (studentId === "meta") {
@@ -491,23 +554,19 @@ export async function getStudentAssignments(req: ExtendedNextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
 
-    if (studentId) {
-      const userExists = await prisma.user.findUnique({
-        where: { id: studentId },
-        select: { id: true, name: true, email: true },
-      });
+    const sessionUser = req.session?.user;
+    if (!sessionUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    if (!studentId) {
-      return NextResponse.json(
-        { message: "Missing studentId in query parameters" },
-        { status: 400 }
-      );
+    let targetStudentId = studentId;
+    if (!targetStudentId || !assertSelfOrAllowedStaff(req, targetStudentId)) {
+      targetStudentId = sessionUser.id;
     }
 
     // Build where clause for StudentAssignment
     let studentAssignmentWhere: any = {
-      studentId: studentId,
+      studentId: targetStudentId,
     };
 
     // Apply status filter
@@ -689,6 +748,16 @@ export async function deleteAssignment(req: ExtendedNextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    const sessionUser = req.session?.user;
+    if (!sessionUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const hasAccess = await checkClassroomAccess(classroomId, sessionUser);
+    if (!hasAccess) {
+      return NextResponse.json({ message: "Forbidden - You do not have access to this classroom" }, { status: 403 });
     }
 
     // Find the assignment

@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { generateObject, streamText } from "ai";
+import { generateObject, generateText } from "ai";
 import fs, { stat } from "fs";
 import path from "path";
 import { z } from "zod";
@@ -19,12 +19,8 @@ interface RequestContext {
   }>;
 }
 
-// Define the schema for the request body
 const createChatbotSchema = z.object({
-  title: z.string(),
-  passage: z.string(),
-  summary: z.string(),
-  image_description: z.string(),
+  articleId: z.string(),
   blacklistedQuestions: z.array(z.string()),
   newMessage: z.object({
     text: z.string(),
@@ -146,12 +142,16 @@ export async function getFeedbackWritter(res: object) {
 }
 
 export async function getWordlist(req: ExtendedNextRequest) {
-  const { articleId, article } = await req.json();
+  const { articleId } = await req.json();
 
   const articleData = await prisma.article.findUnique({
     where: { id: articleId },
-    select: { words: true },
+    select: { words: true, passage: true },
   });
+
+  if (!articleData) {
+    return NextResponse.json({ message: "Article not found" }, { status: 404 });
+  }
 
   const fileExtension = ".mp3";
 
@@ -181,8 +181,50 @@ export async function getWordlist(req: ExtendedNextRequest) {
 
     return NextResponse.json(wordList, { status: 200 });
   } else {
+    const sessionUser = req.session?.user;
+    const isStaff = sessionUser && ["ADMIN", "STAFF", "TEACHER", "SUPERADMIN"].includes(sessionUser.role as string);
+
+    if (!isStaff) {
+      // Queue background generation for cold cache miss by normal users
+      const triggerBackgroundGeneration = async () => {
+        try {
+          const wordList = await generateWordList({
+            passage: articleData.passage || "",
+          });
+
+          const enhancedWordList = wordList.word_list.map(
+            (word: any, index: number) => ({
+              ...word,
+              markName: `word${index + 1}`,
+              timeSeconds: index * 2,
+            })
+          );
+
+          await prisma.article.update({
+            where: { id: articleId },
+            data: {
+              words: {
+                wordlist: enhancedWordList,
+              },
+            },
+          });
+
+          await generateAudioForWord({
+            wordList: wordList.word_list,
+            articleId: articleId,
+          });
+        } catch (error) {
+          console.error("Background wordlist generation failed:", error);
+        }
+      };
+
+      triggerBackgroundGeneration();
+
+      return NextResponse.json([], { status: 200 });
+    }
+
     const wordList = await generateWordList({
-      passage: article.passage,
+      passage: articleData.passage || "",
     });
 
     const enhancedWordList = wordList.word_list.map(
@@ -301,17 +343,27 @@ export async function chatBot(req: ExtendedNextRequest) {
   try {
     const param = await req.json();
     const validatedData = createChatbotSchema.parse(param);
-    const { textStream } = streamText({
+    
+    const article = await prisma.article.findUnique({
+      where: { id: validatedData.articleId },
+      select: { title: true, passage: true, summary: true, imageDescription: true }
+    });
+
+    if (!article) {
+       return NextResponse.json({ error: "Article not found" }, { status: 404 });
+    }
+
+    const { text } = await generateText({
       model: openai(openaiModel),
       messages: [
         {
           role: "system",
           content: `${promptChatBot}
           {                                                                  
-          "title": ${validatedData?.title},
-          "passage": ${validatedData?.passage},
-          "summary": ${validatedData?.summary},
-          "image-description": ${validatedData?.image_description},   
+          "title": ${article.title},
+          "passage": ${article.passage},
+          "summary": ${article.summary},
+          "image-description": ${article.imageDescription},   
           "blacklisted-questions": ${validatedData?.blacklistedQuestions}
           }`,
         },
@@ -319,16 +371,7 @@ export async function chatBot(req: ExtendedNextRequest) {
       ],
     });
 
-    const messages = [];
-    for await (const textPart of textStream) {
-      messages.push(textPart);
-    }
-
-    const filteredMessages = messages.filter(
-      (item) =>
-        item !== undefined && item !== "" && item !== "}" && item !== "{"
-    );
-    const fullMessage = filteredMessages.join("");
+    const fullMessage = text.replace(/[{}]/g, "").trim();
 
     return NextResponse.json(
       { messages: "success", sender: "bot", text: fullMessage },
@@ -435,22 +478,13 @@ Image Description: "${image_description}"${blacklistedQuestionsText}`,
     //console.log("Chat Messages:", chatMessages);
 
     // ส่ง prompt เข้า OpenAI พร้อมประวัติ
-    const { textStream } = await streamText({
+    const { text } = await generateText({
       model: openai(openaiModel),
       messages: [systemMessage, ...chatMessages],
     });
 
-    const streamChunks: string[] = [];
+    const fullMessage = text.replace(/[{}]/g, "").trim();
 
-    for await (const chunk of textStream) {
-      if (chunk && chunk !== "{" && chunk !== "}") {
-        streamChunks.push(chunk);
-      }
-    }
-
-    const fullMessage = streamChunks.join("").trim();
-
-    //console.log("Stream Chunks:", streamChunks);
     //console.log("Full Message:", fullMessage);
 
     return NextResponse.json(

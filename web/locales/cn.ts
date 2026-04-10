@@ -2767,6 +2767,7 @@ export default {
         descriptionSuccess: "你已经完成了测验",
         descriptionSuccess2: "你的分数是 {score}/{total}",
         descriptionLoading: "正在获取本文的问题，请稍等。",
+        descriptionFailure: "加载测验时出错，请刷新页面后重试。",
         quiz: "测验",
         reQuiz: "重新测验",
         quizDescription:

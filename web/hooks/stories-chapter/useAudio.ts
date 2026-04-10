@@ -15,7 +15,7 @@ export default function useAudio(sentenceList: Sentence[]) {
     const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
     const [speed, setSpeed] = useState<string>("1");
     const [selectedIndex, setSelectedIndex] = useState(-1);
-    const [currentTime, setCurrentTime] = useState(0);
+    const currentTimeRef = useRef(0);
     const [selectedSentence, setSelectedSentence] = useState<number>(-1);
     const [togglePlayer, setTogglePlayer] = useState<Boolean>(false);
 
@@ -146,7 +146,7 @@ export default function useAudio(sentenceList: Sentence[]) {
 
     const handleTimeUpdate = () => {
         if (audioRef.current) {
-            setCurrentTime(audioRef.current.currentTime);
+            currentTimeRef.current = audioRef.current.currentTime;
             const currentSentence = sentenceList[currentAudioIndex];
             if (audioRef.current.currentTime >= currentSentence.endTime) {
                 handleAudioEnded();
@@ -213,7 +213,6 @@ export default function useAudio(sentenceList: Sentence[]) {
         currentAudioIndex,
         speed,
         selectedIndex,
-        currentTime,
         selectedSentence,
         togglePlayer,
         setSelectedIndex,

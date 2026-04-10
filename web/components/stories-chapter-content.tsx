@@ -113,6 +113,21 @@ export default function ChapterContent({
       };
     });
   }, [story.timepoints, story.storyId, chapterNumber, sentences]);
+
+  useEffect(() => {
+    // Log chapter read explicitly as a client mutation outside the rendering flow
+    const logRead = async () => {
+      try {
+        await fetch(`/api/v1/stories/${story.storyId}/${chapterNumber}`, {
+          method: "POST",
+        });
+      } catch (error) {
+        console.error("Failed to log chapter read", error);
+      }
+    };
+    logRead();
+  }, [story.storyId, chapterNumber]);
+
   const {
     audioRef,
     currentAudioIndex,

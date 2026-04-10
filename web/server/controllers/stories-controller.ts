@@ -676,28 +676,6 @@ export async function getChapter(
 
     const timepoints = chapter.sentences || [];
 
-    // Check if CHAPTER_READ activity exists, create if not
-    let chapterReadActivity = await prisma.userActivity.findUnique({
-      where: {
-        userId_activityType_targetId: {
-          userId,
-          activityType: ActivityType.CHAPTER_READ,
-          targetId: `${storyId}_${chapterNumber}`,
-        },
-      },
-    });
-
-    if (!chapterReadActivity) {
-      chapterReadActivity = await prisma.userActivity.create({
-        data: {
-          userId,
-          activityType: ActivityType.CHAPTER_READ,
-          targetId: `${storyId}_${chapterNumber}`,
-          completed: false,
-        },
-      });
-    }
-
     const totalChapters = await prisma.chapter.count({
       where: { storyId },
     });
@@ -744,6 +722,53 @@ export async function deleteStories(
       { status: 200 }
     );
   } catch (error) {
+    return NextResponse.json(
+      { message: "Internal server error", error },
+      { status: 500 }
+    );
+  }
+}
+
+export async function logChapterRead(
+  req: ExtendedNextRequest,
+  ctx: RequestContext
+) {
+  const { storyId, chapterNumber: chapterNumberStr } = await ctx.params;
+  const chapterNumber = parseInt(chapterNumberStr, 10);
+  const userId = req.session?.user.id as string;
+
+  if (!storyId || isNaN(chapterNumber)) {
+    return NextResponse.json(
+      { message: "Missing storyId or invalid chapterNumber", result: null },
+      { status: 400 }
+    );
+  }
+
+  try {
+    let chapterReadActivity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId,
+          activityType: ActivityType.CHAPTER_READ,
+          targetId: `${storyId}_${chapterNumber}`,
+        },
+      },
+    });
+
+    if (!chapterReadActivity) {
+      chapterReadActivity = await prisma.userActivity.create({
+        data: {
+          userId,
+          activityType: ActivityType.CHAPTER_READ,
+          targetId: `${storyId}_${chapterNumber}`,
+          completed: false, // Initially false until questions are answered
+        },
+      });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error logging chapter read:", error);
     return NextResponse.json(
       { message: "Internal server error", error },
       { status: 500 }

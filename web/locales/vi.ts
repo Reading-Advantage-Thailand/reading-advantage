@@ -2967,6 +2967,8 @@ export default {
       descriptionSuccess2: "Điểm số của bạn là {score} trên {total}",
       descriptionLoading:
         "Đang lấy câu hỏi cho bài viết này. Vui lòng chờ trong giây lát.",
+      descriptionFailure:
+        "Đã xảy ra lỗi khi tải bài kiểm tra. Vui lòng làm mới trang và thử lại.",
       // Headings
       quiz: "Bài kiểm tra",
       reQuiz: "Làm lại bài kiểm tra",

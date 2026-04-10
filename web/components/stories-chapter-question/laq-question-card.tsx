@@ -235,6 +235,7 @@ function QuestionCardIncomplete({
         userId={userId}
         storyId={storyId}
         disabled={false}
+        activityType="la_question"
       >
         <QuizContextProvider>
           <LAQuestion

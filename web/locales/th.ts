@@ -2889,6 +2889,8 @@ export default {
       descriptionSuccess: "คุณทำแบบทดสอบเสร็จแล้ว",
       descriptionSuccess2: "คะแนนของคุณคือ {score} จากทั้งหมด {total}",
       descriptionLoading: "กำลังดึงคำถามสำหรับบทความนี้ โปรดรอสักครู่",
+      descriptionFailure:
+        "เกิดข้อผิดพลาดในการโหลดแบบทดสอบ กรุณารีเฟรชหน้าและลองอีกครั้ง",
       //headings
       quiz: "แบบทดสอบ",
       reQuiz: "ลองทำแบบทดสอบอีกครั้ง",

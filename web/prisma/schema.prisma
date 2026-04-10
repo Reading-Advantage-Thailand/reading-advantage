@@ -350,7 +350,9 @@ model StudentAssignment {
 model UserWordRecord {
   id              String   @id @default(cuid())
   userId          String   @map("user_id")
-  articleId       String   @map("article_id")
+  articleId       String?  @map("article_id")
+  storyId         String?  @map("story_id")
+  chapterNumber   Int?     @map("chapter_number")
   word            Json
   saveToFlashcard Boolean  @default(true) @map("save_to_flashcard")
   difficulty      Float    @default(0)
@@ -363,10 +365,11 @@ model UserWordRecord {
   state           Int      @default(0)
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
-  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  article         Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, articleId, word])
+  @@index([userId, articleId])
+  @@index([userId, storyId, chapterNumber])
   @@map("user_word_records")
 }
 

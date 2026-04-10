@@ -2,7 +2,6 @@
 import React from "react";
 import { useCurrentLocale } from "@/locales/client";
 import { StoryChapter } from "./models/article-model";
-import { number } from "zod";
 
 type Props = {
   story: StoryChapter;
@@ -12,12 +11,13 @@ type Props = {
 
 async function getTranslate(
   storyId: string,
+  chapterNumber: string,
   targetLanguage: string
 ): Promise<{ message: string; translated_sentences: string[] }> {
   try {
-    const res = await fetch(`/api/v1/assistant/stories-translate/${storyId}`, {
+    const res = await fetch(`/api/v1/assistant/stories-translate/${storyId}/${chapterNumber}`, {
       method: "POST",
-      body: JSON.stringify({ type: "chapter", targetLanguage }),
+      body: JSON.stringify({ type: "summary", targetLanguage }),
     });
     const data = await res.json();
     return data;
@@ -29,7 +29,6 @@ async function getTranslate(
 export function ChapterSummary({ story, storyId, chapterNumber }: Props) {
   const [summarySentence, setSummarySentence] = React.useState<string[]>([]);
   const locale = useCurrentLocale();
-  const chapterIndex = Number(chapterNumber) - 1;
 
   React.useEffect(() => {
     handleTranslateSummary();
@@ -50,9 +49,15 @@ export function ChapterSummary({ story, storyId, chapterNumber }: Props) {
         break;
     }
 
-    const res = await getTranslate(storyId, localeTarget);
+    const existingTranslationData = (story.chapter as any).translatedSummary;
+    if (existingTranslationData && existingTranslationData[localeTarget] && existingTranslationData[localeTarget].length > 0) {
+      setSummarySentence(existingTranslationData[localeTarget]);
+      return;
+    }
 
-    setSummarySentence([res.translated_sentences[chapterIndex]]);
+    const res = await getTranslate(storyId, chapterNumber, localeTarget);
+
+    setSummarySentence(res.translated_sentences);
   }
 
   return <>{locale == "en" ? story.chapter.summary : summarySentence}</>;

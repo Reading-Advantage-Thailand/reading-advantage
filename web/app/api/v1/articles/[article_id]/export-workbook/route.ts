@@ -2,12 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createEdgeRouter } from "next-connect";
 import { logRequest } from "@/server/middleware";
-import { protect } from "@/server/controllers/auth-controller";
+import { restrictTo } from "@/server/controllers/auth-controller";
+import { Role } from "@prisma/client";
 import { WorkbookJSON } from "@/utils/workbook-data-mapper";
-import {
-  translate,
-  LanguageType,
-} from "@/server/controllers/translation-controller";
 
 interface RequestContext {
   params: Promise<{
@@ -18,7 +15,7 @@ interface RequestContext {
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
-router.use(protect);
+router.use(restrictTo(Role.ADMIN, Role.SYSTEM, Role.TEACHER));
 
 router.get(async (req, ctx) => {
   try {
@@ -66,96 +63,8 @@ router.get(async (req, ctx) => {
       }));
     }
 
-    // 3. Check if translatedPassage exists, if not, call translate function
+    // 3. Check if translatedPassage exists
     let translatedPassage = article.translatedPassage;
-
-    const hasEN =
-      translatedPassage &&
-      typeof translatedPassage === "object" &&
-      !Array.isArray(translatedPassage) &&
-      (translatedPassage as any).en?.length > 0;
-
-    const hasTH =
-      translatedPassage &&
-      typeof translatedPassage === "object" &&
-      !Array.isArray(translatedPassage) &&
-      (translatedPassage as any).th?.length > 0;
-
-    // Translate both EN and TH if missing
-    if (!hasEN || !hasTH) {
-      console.log(
-        `Article ${article_id} missing translations (EN: ${hasEN}, TH: ${hasTH}), translating...`
-      );
-
-      try {
-        const translationPromises = [];
-
-        // Translate to English if missing
-        if (!hasEN) {
-          const enRequest = new NextRequest(
-            `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/v1/assistant/translate/${article_id}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                type: "passage",
-                targetLanguage: LanguageType.EN,
-              }),
-            }
-          );
-          translationPromises.push(translate(enRequest, ctx));
-        }
-
-        // Translate to Thai if missing
-        if (!hasTH) {
-          const thRequest = new NextRequest(
-            `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/v1/assistant/translate/${article_id}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                type: "passage",
-                targetLanguage: LanguageType.TH,
-              }),
-            }
-          );
-          translationPromises.push(translate(thRequest, ctx));
-        }
-
-        // Wait for all translations to complete
-        const results = await Promise.all(translationPromises);
-
-        // Check if all translations succeeded
-        const allSucceeded = results.every((r) => r.status === 200);
-
-        if (allSucceeded) {
-          // Fetch the updated article with translations
-          let updatedArticle: any = await prisma.article.findUnique({
-            where: { id: article_id },
-            select: { translatedPassage: true },
-          });
-
-          if (!updatedArticle) {
-            updatedArticle = await prisma.chapter.findUnique({
-              where: { id: article_id },
-              select: { translatedPassage: true },
-            });
-          }
-
-          if (updatedArticle?.translatedPassage) {
-            translatedPassage = updatedArticle.translatedPassage;
-            console.log(
-              `Successfully translated passage for article ${article_id}`
-            );
-          }
-        } else {
-          console.warn(`Some translations failed for article ${article_id}`);
-        }
-      } catch (translateError) {
-        console.error("Error calling translate function:", translateError);
-        // Continue without translations
-      }
-    }
 
     // 4. Parse translatedPassage to align EN and TH arrays
     let enSentences: string[] = [];

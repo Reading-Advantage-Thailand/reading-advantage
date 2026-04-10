@@ -57,8 +57,8 @@ async function checkAndUpdateArticleCompletion(
   try {
     // ตรวจสอบระดับ license ของ user
     const licenseLevel = await getUserLicenseLevel(userId);
-
-    const mcqActivities = await prisma.userActivity.findMany({
+    // Find all MC_QUESTION activities for this user and filter for this article
+    const userMcqActivities = await prisma.userActivity.findMany({
       where: {
         userId: userId,
         activityType: "MC_QUESTION",
@@ -66,7 +66,7 @@ async function checkAndUpdateArticleCompletion(
       },
     });
 
-    const mcqForThisArticle = mcqActivities.filter((activity) => {
+    const mcqForThisArticle = userMcqActivities.filter((activity) => {
       const details = activity.details as any;
       return details?.articleId === articleId;
     });
@@ -75,11 +75,8 @@ async function checkAndUpdateArticleCompletion(
       where: {
         userId: userId,
         activityType: "SA_QUESTION",
+        targetId: articleId,
         completed: true,
-        details: {
-          path: ["articleId"],
-          equals: articleId,
-        },
       },
     });
 
@@ -235,7 +232,9 @@ export async function getMCQuestions(
       });
     }
 
-    const userActivities = await prisma.userActivity.findMany({
+    // Fetch all MCQ activities for this user and filter by articleId in details
+    // to ensure we find activities regardless of how targetId is set.
+    const allUserActivities = await prisma.userActivity.findMany({
       where: {
         userId: userId,
         activityType: "MC_QUESTION",
@@ -245,7 +244,7 @@ export async function getMCQuestions(
       },
     });
 
-    const articleActivities = userActivities.filter((activity) => {
+    const articleActivities = allUserActivities.filter((activity) => {
       const details = activity.details as any;
       return details?.articleId === article_id;
     });
@@ -272,13 +271,14 @@ export async function getMCQuestions(
     );
 
     sortedActivities.forEach((activity) => {
-      const details = activity.details as any;
-      if (details?.questionId) {
-        answeredQuestionIds.add(details.questionId);
-        questionAnswers.set(details.questionId, details.isCorrect);
+      const details = typeof activity.details === 'string' ? JSON.parse(activity.details) : activity.details as any;
+      const questionId = details?.questionId || activity.targetId;
+      if (questionId) {
+        answeredQuestionIds.add(questionId);
+        questionAnswers.set(questionId, details.isCorrect);
         
         const xpLog = xpLogMap.get(activity.id);
-        questionData.set(details.questionId, {
+        questionData.set(questionId, {
           timer: activity.timer,
           xpEarned: xpLog?.xpEarned || 0,
           selectedAnswer: details.selectedAnswer,
@@ -333,7 +333,16 @@ export async function getMCQuestions(
       });
     }
 
-    const questionsForThisArticle = questions.slice(0, 5);
+    // Identify answered and unanswered questions
+    const answeredQuestions = questions.filter(q => answeredQuestionIds.has(q.id));
+    const unansweredFromPool = questions.filter(q => !answeredQuestionIds.has(q.id));
+    
+    // Shuffle the pool of unanswered questions to provide variety from the database
+    const shuffledUnanswered = unansweredFromPool.sort(() => Math.random() - 0.5);
+    
+    // Construct the set of 5 questions: prioritize questions already answered, 
+    // then fill with random questions from the pool.
+    const questionsForThisArticle = [...answeredQuestions, ...shuffledUnanswered].slice(0, 5);
 
     const unansweredQuestions = questionsForThisArticle.filter(
       (question) => !answeredQuestionIds.has(question.id)
@@ -355,22 +364,21 @@ export async function getMCQuestions(
       });
     }
 
-    const nextQuestion = unansweredQuestions[0];
-    const options = [...nextQuestion.options];
-    const currentQuestionData = questionData.get(nextQuestion.id) || {};
-
-    const mcq = [
-      {
-        id: nextQuestion.id,
-        question: nextQuestion.question,
+    const mcq = questionsForThisArticle.map((q, index) => {
+      const qData = questionData.get(q.id) || {};
+      const options = [...q.options];
+      return {
+        id: q.id,
+        question: q.question,
         options: options.sort(() => 0.5 - Math.random()),
-        textual_evidence: nextQuestion.textualEvidence,
-        timer: currentQuestionData.timer || null,
-        xpEarned: currentQuestionData.xpEarned || 0,
-        selectedAnswer: currentQuestionData.selectedAnswer || null,
-        correctAnswer: currentQuestionData.correctAnswer || null,
-      },
-    ];
+        textual_evidence: q.textualEvidence,
+        timer: qData.timer || null,
+        xpEarned: qData.xpEarned || 0,
+        selectedAnswer: qData.selectedAnswer || null,
+        correctAnswer: qData.correctAnswer || null,
+        question_number: index + 1,
+      };
+    });
 
     // คำนวณ summary สำหรับคำถามที่ตอบไปแล้ว
     const answeredQuestionData = Array.from(questionData.values());
@@ -851,14 +859,15 @@ export async function retakeMCQuestion(
   try {
     const userId = req.session?.user.id as string;
 
-    const activitiesToDelete = await prisma.userActivity.findMany({
+    // Delete all MC_QUESTION activities for this user that belong to this article
+    const allUserActivities = await prisma.userActivity.findMany({
       where: {
         userId: userId,
         activityType: "MC_QUESTION",
       },
     });
 
-    const articleActivityIds = activitiesToDelete
+    const articleActivityIds = allUserActivities
       .filter((activity) => {
         const details = activity.details as any;
         return details?.articleId === article_id;

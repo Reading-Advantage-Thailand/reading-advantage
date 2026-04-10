@@ -5,17 +5,20 @@ import React from "react";
 import { getScopedI18n } from "@/locales/server";
 import { fetchData } from "@/utils/fetch-data";
 import CustomError from "./custom-error";
-import AssignDialog from "@/components/teacher/assign-dialog";
-import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
 import { Article } from "@/components/models/article-model";
-import ArticleActions from "@/components/article-actions";
+import { prisma } from "@/lib/prisma";
 import WordList from "@/components/word-list";
 import LAQuestionCard from "@/components/questions/laq-question-card";
 import MCQuestionCard from "@/components/questions/mc-question-card";
 import SAQuestionCard from "@/components/questions/sa-question-card";
-import PrintArticle from "@/components/teacher/print-article";
-import ExportWorkbookButton from "@/components/teacher/export-workbook-button";
 import ArticleLesson from "@/components/lesson/lesson-button";
+import ChatBotFloatingChatButton from "@/components/chatbot-floating-button";
+import dynamic from "next/dynamic";
+
+const AssignDialog = dynamic(() => import("@/components/teacher/assign-dialog"));
+const PrintArticle = dynamic(() => import("@/components/teacher/print-article"));
+const ExportWorkbookButton = dynamic(() => import("@/components/teacher/export-workbook-button"));
+const ArticleActions = dynamic(() => import("@/components/article-actions"));
 
 export const metadata = {
   title: "Article",
@@ -26,8 +29,26 @@ async function getArticle(articleId: string) {
   return fetchData(`/api/v1/articles/${articleId}`);
 }
 
-async function getClassroom() {
-  return fetchData(`/api/v1/classrooms`);
+/** ดึง rating เก่าของ user สำหรับบทความนี้โดยตรงจาก DB (server-side) */
+async function getArticleRating(
+  articleId: string,
+  userId: string
+): Promise<number> {
+  try {
+    const activity = await prisma.userActivity.findUnique({
+      where: {
+        userId_activityType_targetId: {
+          userId,
+          activityType: "ARTICLE_RATING",
+          targetId: articleId,
+        },
+      },
+      select: { details: true },
+    });
+    return (activity?.details as any)?.rating ?? 0;
+  } catch {
+    return 0;
+  }
 }
 
 export default async function ArticleQuizPage({
@@ -36,10 +57,21 @@ export default async function ArticleQuizPage({
   params: Promise<{ articleId: string }>;
 }) {
   const { articleId } = await params;
-  const t = await getScopedI18n("pages.student.readPage.article");
 
-  const user = await getCurrentUser();
+  // Parallelize unavoidable server fetches
+  // user ถูก resolve ก่อนเพื่อใช้ userId ใน getArticleRating
+  const [t, user, articleResponse] = await Promise.all([
+    getScopedI18n("pages.student.readPage.article"),
+    getCurrentUser(),
+    getArticle(articleId),
+  ]);
+
   if (!user) return redirect("/auth/signin");
+
+  // Resolve rating เก่าที่ server แทนที่จะให้ client fetch activitylog ทั้งก้อน
+  const initialRating = await getArticleRating(articleId, user.id);
+
+  // guard ถูกย้ายขึ้นไปอยู่หลัง Promise.all แล้ว
 
   const isAtLeastTeacher = (role: string) =>
     role.includes("TEACHER") ||
@@ -48,8 +80,6 @@ export default async function ArticleQuizPage({
 
   const isAboveTeacher = (role: string) =>
     role.includes("ADMIN") || role.includes("SYSTEM");
-
-  const articleResponse = await getArticle(articleId);
 
   if (articleResponse.message)
     return (
@@ -63,6 +93,7 @@ export default async function ArticleQuizPage({
           article={articleResponse.article}
           articleId={articleId}
           userId={user.id}
+          initialRating={initialRating}
         />
         <div className="flex flex-col gap-4 mb-40 mt-4 max-w-[400px]">
           {/* Teacher Tools Section */}

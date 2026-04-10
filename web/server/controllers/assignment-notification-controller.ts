@@ -9,13 +9,18 @@ import { ExtendedNextRequest } from "./auth-controller";
  */
 export async function getAssignmentNotifications(req: ExtendedNextRequest) {
   try {
+    const user = req.session?.user;
+    if (!user) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
-    const studentId = searchParams.get("studentId");
-    const teacherId = searchParams.get("teacherId");
     const history = searchParams.get("history") === "true";
+    const userId = user.id;
 
     // Student view - get their unnoticed notifications
-    if (studentId) {
+    if (!history) {
+      const studentId = userId;
       const notifications = await prisma.assignmentNotification.findMany({
         where: {
           studentId,
@@ -56,7 +61,12 @@ export async function getAssignmentNotifications(req: ExtendedNextRequest) {
     }
 
     // Teacher view - get notification history
-    if (teacherId && history) {
+    if (history) {
+      if (!["TEACHER", "ADMIN", "SYSTEM", "SUPERADMIN"].includes(user.role as string)) {
+        return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+      }
+
+      const teacherId = userId;
       const notifications = await prisma.assignmentNotification.findMany({
         where: {
           teacherId,
@@ -128,21 +138,35 @@ export async function getAssignmentNotifications(req: ExtendedNextRequest) {
  */
 export async function sendAssignmentNotifications(req: ExtendedNextRequest) {
   try {
-    const body = await req.json();
-    const { assignmentIds, studentIds, teacherId } = body;
+    const user = req.session?.user;
+    if (!user || !["TEACHER", "ADMIN", "SYSTEM", "SUPERADMIN"].includes(user.role as string)) {
+      return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+    }
 
-    if (!assignmentIds || !studentIds || !teacherId) {
+    const body = await req.json();
+    const { assignmentIds, studentIds } = body;
+    const teacherId = user.id;
+
+    if (!assignmentIds || !studentIds) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Validate that assignments exist
+    // Validate that assignments exist and verify classroom scope
     const assignments = await prisma.assignment.findMany({
       where: {
         id: { in: assignmentIds },
       },
+      include: {
+        classroom: {
+          include: {
+            teachers: true,
+            students: true,
+          }
+        }
+      }
     });
 
     if (assignments.length !== assignmentIds.length) {
@@ -150,6 +174,31 @@ export async function sendAssignmentNotifications(req: ExtendedNextRequest) {
         { success: false, message: "Some assignments not found" },
         { status: 404 }
       );
+    }
+
+    for (const assignment of assignments) {
+      // Validate teacher has access to the classroom
+      const isAuthorized =
+        assignment.classroom.teacherId === teacherId ||
+        assignment.classroom.teachers.some((t) => t.teacherId === teacherId);
+      
+      if (!isAuthorized) {
+        return NextResponse.json(
+          { success: false, message: "Forbidden - Not authorized for this classroom" },
+          { status: 403 }
+        );
+      }
+
+      // Verify all studentIds belong to this classroom
+      const validStudentIds = new Set(assignment.classroom.students.map(s => s.studentId));
+      for (const studentId of studentIds) {
+        if (!validStudentIds.has(studentId)) {
+          return NextResponse.json(
+            { success: false, message: `Forbidden - Student ${studentId} not in classroom` },
+            { status: 403 }
+          );
+        }
+      }
     }
 
     // Create notifications for each combination of assignment and student
@@ -191,6 +240,11 @@ export async function sendAssignmentNotifications(req: ExtendedNextRequest) {
  */
 export async function updateNotificationStatus(req: ExtendedNextRequest) {
   try {
+    const user = req.session?.user;
+    if (!user) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+    }
+
     const body = await req.json();
     const { notificationId, isNoticed } = body;
 
@@ -198,6 +252,17 @@ export async function updateNotificationStatus(req: ExtendedNextRequest) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
         { status: 400 }
+      );
+    }
+
+    const existing = await prisma.assignmentNotification.findUnique({
+      where: { id: notificationId },
+    });
+
+    if (!existing || existing.studentId !== user.id) {
+      return NextResponse.json(
+        { success: false, message: "Forbidden" },
+        { status: 403 }
       );
     }
 
@@ -229,6 +294,11 @@ export async function updateNotificationStatus(req: ExtendedNextRequest) {
  */
 export async function getNotificationHistory(req: ExtendedNextRequest) {
   try {
+    const user = req.session?.user;
+    if (!user || !["TEACHER", "ADMIN", "SYSTEM", "SUPERADMIN"].includes(user.role as string)) {
+      return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const assignmentId = searchParams.get("assignmentId");
 
@@ -237,6 +307,27 @@ export async function getNotificationHistory(req: ExtendedNextRequest) {
         { success: false, message: "Missing assignmentId" },
         { status: 400 }
       );
+    }
+
+    const assignment = await prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      include: {
+        classroom: {
+          include: { teachers: true }
+        }
+      }
+    });
+
+    if (!assignment) {
+      return NextResponse.json({ success: false, message: "Not found" }, { status: 404 });
+    }
+
+    const isAuthorized =
+      assignment.classroom.teacherId === user.id ||
+      assignment.classroom.teachers.some((t) => t.teacherId === user.id);
+
+    if (!isAuthorized) {
+      return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
     }
 
     const notifications = await prisma.assignmentNotification.findMany({

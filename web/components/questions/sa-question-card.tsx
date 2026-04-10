@@ -104,19 +104,12 @@ export default function SAQuestionCard({
       });
   }, [articleId]);
 
-  const handleCompleted = () => {
-    // Re-fetch data to get updated state
-    fetch(`/api/v1/articles/${articleId}/questions/sa`)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setState(data.state);
-        useQuestionStore.setState({ saQuestion: data });
-      })
-      .catch((error) => {
-        console.error("error: ", error);
-        setState(QuestionState.ERROR);
-      });
+  const handleCompleted = (answerData?: Partial<QuestionResponse>) => {
+    // Merge ผลลัพธ์ที่ได้จาก submit โดยตรง ไม่ต้อง re-fetch จาก server
+    const updatedData = { ...data, ...answerData, state: QuestionState.COMPLETED };
+    setData(updatedData);
+    setState(QuestionState.COMPLETED);
+    useQuestionStore.setState({ saQuestion: updatedData });
   };
 
   useEffect(() => {
@@ -157,11 +150,11 @@ export default function SAQuestionCard({
     case QuestionState.COMPLETED:
       return <QuestionCardComplete resp={data} page={page} />;
     default:
-      return <QuestionCardError data={data} />;
+      return <QuestionCardError error="Failed to load question. Please refresh the page." />;
   }
 }
 
-function QuestionCardError(data: any) {
+function QuestionCardError({ error }: { error?: string }) {
   const t = useScopedI18n("components.saq");
   return (
     <Card className="mt-3">
@@ -170,7 +163,7 @@ function QuestionCardError(data: any) {
           {t("title")}
         </CardTitle>
         <CardDescription className="text-red-500 dark:text-red-400">
-          {t("descriptionFailure", { error: data.error })}
+          {t("descriptionFailure", { error: error ?? "" })}
         </CardDescription>
       </CardHeader>
     </Card>
@@ -310,7 +303,7 @@ function QuestionCardIncomplete({
   userId: string;
   resp: QuestionResponse;
   articleId: string;
-  handleCompleted: () => void;
+  handleCompleted: (answerData?: Partial<QuestionResponse>) => void;
   articleTitle: string;
   articleLevel: number;
   page: "article" | "lesson";
@@ -327,6 +320,7 @@ function QuestionCardIncomplete({
             userId={userId}
             articleId={articleId}
             disabled={false}
+            activityType="sa_question"
           >
             <QuizContextProvider>
               <SAQuestion
@@ -378,7 +372,7 @@ function SAQuestion({
   resp: QuestionResponse;
   articleId: string;
   userId: string;
-  handleCompleted: () => void;
+  handleCompleted: (answerData?: Partial<QuestionResponse>) => void;
   articleTitle: string;
   articleLevel: number;
   page: "article" | "lesson";
@@ -477,7 +471,13 @@ function SAQuestion({
         description: `Congratulations!, You received ${rating} XP for completing this activity.`,
       });
 
-      handleCompleted();
+      // ส่ง submitData ที่มีอยู่แล้วเข้า handleCompleted แทนการ re-fetch
+      handleCompleted({
+        state: QuestionState.COMPLETED,
+        suggested_answer: data.suggested_answer,
+        answer: data.answer,
+        result: resp.result,
+      });
       router.refresh();
     } catch (error) {
       console.error("Error submitting rating:", error);

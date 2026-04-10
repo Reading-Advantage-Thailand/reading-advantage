@@ -1,7 +1,7 @@
 import { getOne, updateOne } from "../handlers/handler-factory";
 import { DBCollection } from "../models/enum";
 import { levelCalculation } from "@/lib/utils";
-import { ExtendedNextRequest } from "./auth-controller";
+import { ExtendedNextRequest, assertSelfOrAllowedStaff } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ActivityType, LicenseType } from "@prisma/client";
@@ -52,7 +52,13 @@ interface RequestContext {
 
 export async function getUser(req: ExtendedNextRequest, ctx: RequestContext) {
   try {
-    const { id } = await ctx.params;
+    const { id: routeId } = await ctx.params;
+    
+    // Auth check
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
     const user = await prisma.user.findUnique({
       where: { id },
       include: {
@@ -104,7 +110,13 @@ export async function updateUser(
   ctx: RequestContext,
 ) {
   try {
-    const { id } = await ctx.params;
+    const { id: routeId } = await ctx.params;
+    
+    // Auth check
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
     const data = await req.json();
 
     const user = await prisma.user.update({
@@ -172,7 +184,14 @@ export async function postActivityLog(
   ctx: RequestContext,
 ) {
   try {
-    const { id } = await ctx.params;
+    const { id: routeId } = await ctx.params;
+    
+    // Auth check
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
+
     // Data from frontend
     const data = await req.json();
 
@@ -285,10 +304,19 @@ export async function postActivityLog(
       activity = existingActivity;
     }
 
+    let hasExistingXpLog = false;
+    if (existingActivity) {
+      const existingXpLog = await prisma.xPLog.findFirst({
+        where: { activityId: existingActivity.id },
+      });
+      hasExistingXpLog = !!existingXpLog;
+    }
+
     // Create XP log if XP is earned or if it's an initial level test (even with 0 XP)
     if (
-      (data.xpEarned && data.xpEarned > 0) ||
-      (data.isInitialLevelTest && typeof data.xpEarned === "number")
+      !hasExistingXpLog &&
+      ((data.xpEarned && data.xpEarned > 0) ||
+        (data.isInitialLevelTest && typeof data.xpEarned === "number"))
     ) {
       await prisma.xPLog.create({
         data: {
@@ -344,7 +372,13 @@ export async function putActivityLog(
   ctx: RequestContext,
 ) {
   try {
-    const { id } = await ctx.params;
+    const { id: routeId } = await ctx.params;
+    
+    // Auth check
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
     // Data from frontend
     const data = await req.json();
 
@@ -459,8 +493,16 @@ export async function putActivityLog(
       });
     }
 
+    let hasExistingXpLog = false;
+    if (existingActivity) {
+      const existingXpLog = await prisma.xPLog.findFirst({
+        where: { activityId: existingActivity.id },
+      });
+      hasExistingXpLog = !!existingXpLog;
+    }
+
     // Create XP log if XP is earned
-    if (data.xpEarned && data.xpEarned > 0) {
+    if (!hasExistingXpLog && data.xpEarned && data.xpEarned > 0) {
       await prisma.xPLog.create({
         data: {
           userId: id,
@@ -506,7 +548,14 @@ export async function getActivityLog(
   req: ExtendedNextRequest,
   ctx: RequestContext,
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  
+  // Auth check
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
+
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -516,6 +565,7 @@ export async function getActivityLog(
     // Get query parameters
     const articleId = req.nextUrl.searchParams.get("articleId");
     const activityType = req.nextUrl.searchParams.get("activityType");
+    const isFiltered = !!(articleId || activityType);
 
     // Build where condition
     const whereCondition: any = {
@@ -537,10 +587,17 @@ export async function getActivityLog(
       },
     });
 
+    const xpWhereCondition: any = {
+      userId: id,
+    };
+
+    if (isFiltered) {
+      const activityIds = activities.map((a) => a.id);
+      xpWhereCondition.activityId = { in: activityIds };
+    }
+
     const allXpLogs = await prisma.xPLog.findMany({
-      where: {
-        userId: id,
-      },
+      where: xpWhereCondition,
       orderBy: {
         createdAt: "asc",
       },
@@ -575,11 +632,13 @@ export async function getActivityLog(
     const xpProgressionMap = new Map();
 
     allXpLogs.forEach((xpLog) => {
-      cumulativeXp += xpLog.xpEarned || 0;
+      if (!isFiltered) {
+        cumulativeXp += xpLog.xpEarned || 0;
+      }
       if (xpLog.activityId) {
         xpProgressionMap.set(xpLog.activityId, {
           xpEarned: xpLog.xpEarned || 0,
-          cumulativeXp: cumulativeXp,
+          cumulativeXp: isFiltered ? 0 : cumulativeXp,
         });
       }
     });
@@ -648,7 +707,14 @@ export async function getUserRecords(
   req: ExtendedNextRequest,
   ctx: RequestContext,
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  
+  // Auth check
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
+  
   try {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10");
     const nextPage = req.nextUrl.searchParams.get("nextPage");

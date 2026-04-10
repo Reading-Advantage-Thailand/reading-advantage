@@ -120,7 +120,8 @@ export default function StoriesWordList({
       if (foundWordsList.length > 0) {
         const param = {
           ...card,
-          articleId: storyId,
+          storyId: storyId,
+          chapterNumber: Number(chapterNumber),
           saveToFlashcard: true,
           foundWordsList: foundWordsList,
         };
