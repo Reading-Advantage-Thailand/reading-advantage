@@ -36,20 +36,26 @@ export function ArticleSummary({ article, articleId }: Props) {
     if (!locale || locale === "en") {
       return;
     }
-    type ExtendedLocale = "th" | "cn" | "tw" | "vi" | "zh-CN" | "zh-TW";
-    let localeTarget: ExtendedLocale = locale as ExtendedLocale;
-    switch (locale) {
-      case "cn":
-        localeTarget = "zh-CN";
-        break;
-      case "tw":
-        localeTarget = "zh-TW";
-        break;
+
+    // Normalize locale key ให้ตรงกับ key ที่บันทึกใน DB
+    const localeTarget =
+      locale === "cn" ? "zh-CN" : locale === "tw" ? "zh-TW" : locale;
+
+    // ตรวจ cache จาก article payload ก่อน — ถ้ามีแล้วไม่ต้องเรียก API
+    const cachedSummary = (
+      article.translatedSummary as Record<string, string[]> | null
+    )?.[localeTarget];
+
+    if (cachedSummary && cachedSummary.length > 0) {
+      setSummarySentence(cachedSummary);
+      return;
     }
 
+    // เรียก API เฉพาะตอนที่ locale นั้นยังไม่มีใน cache
     const res = await getTranslate(articleId, localeTarget);
-
-    setSummarySentence(res.translated_sentences);
+    if (res.message !== "error") {
+      setSummarySentence(res.translated_sentences);
+    }
   }
 
   return <>{locale == "en" ? article.summary : summarySentence}</>;

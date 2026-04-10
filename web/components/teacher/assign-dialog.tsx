@@ -115,6 +115,7 @@ export default function AssignDialog({
   }, [pageType, classroomId]);
 
   useEffect(() => {
+    if (!isOpen) return;
     async function fetchCourses() {
       try {
         const res = await fetch("/api/v1/classroom");
@@ -130,10 +131,10 @@ export default function AssignDialog({
       }
     }
     fetchCourses();
-  }, [setClassrooms]);
+  }, [isOpen, setClassrooms]);
 
   useEffect(() => {
-    if (!form.classroomId || !articleId) {
+    if (!form.classroomId || !articleId || !isOpen) {
       return;
     }
 
@@ -195,7 +196,7 @@ export default function AssignDialog({
 
   useEffect(() => {
     async function fetchStudents() {
-      if (!form.classroomId) {
+      if (!form.classroomId || !isOpen) {
         setStudents([]);
         return;
       }

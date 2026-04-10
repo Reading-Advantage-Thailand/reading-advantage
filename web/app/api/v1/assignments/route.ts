@@ -1,4 +1,5 @@
-import { protect } from "@/server/controllers/auth-controller";
+import { protect, restrictTo } from "@/server/controllers/auth-controller";
+import { Role } from "@prisma/client";
 import {
   getAssignments,
   postAssignment,
@@ -16,7 +17,8 @@ interface RequestContext {
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
 router.use(logRequest);
-router.use(protect);
+// restrict to STAFF/ADMIN/TEACHER equivalent to assignments management
+router.use(restrictTo(Role.TEACHER, Role.ADMIN, Role.SYSTEM) as any);
 //GET /api/v1/assignments?classroomId=abc123&articleId=xyz456
 router.get(getAssignments) as any;
 // POST /api/v1/assignments {request body with classroomId, articleId, title, description, dueDate, selectedStudents, userId}

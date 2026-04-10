@@ -14,9 +14,10 @@ export async function checkStoryCompletion(
     const activityResponse = await fetch(`/api/v1/users/${userId}/activitylog`);
     let wasAlreadyCompleted = false;
     if (activityResponse.ok) {
-      const activities = await activityResponse.json();
+      const responseData = await activityResponse.json();
+      const activities = responseData.activityLogs || [];
       wasAlreadyCompleted = activities.some((activity: any) =>
-        activity.activityType === 'STORIES_READ' && activity.targetId?.startsWith(storyId) && activity.completed
+        activity.activityType === 'stories_read' && activity.targetId?.startsWith(storyId) && activity.completed
       );
     }
 

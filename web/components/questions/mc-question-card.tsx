@@ -176,7 +176,9 @@ export default function MCQuestionCard({
         }
       })
       .catch((error) => {
-        setState(QuestionState.LOADING);
+        // à¹ƒà¸Šà¹‰ ERROR à¹à¸—à¸™ LOADING à¹€à¸žà¸·à¹ˆà¸­à¸›à¹‰à¸­à¸‡à¸à¸±à¸™ fetch loop
+        console.error("Error fetching MCQ:", error);
+        setState(QuestionState.ERROR);
       });
   }, [articleId]);
 
@@ -212,7 +214,8 @@ export default function MCQuestionCard({
         console.error("Error clearing session storage:", e);
       }
     } else {
-      setState(QuestionState.LOADING);
+      // à¹ƒà¸Šà¹‰ INCOMPLETE à¹à¸—à¸™ LOADING à¹€à¸žà¸·à¹ˆà¸­à¹„à¸¡à¹ˆà¹ƒà¸«à¹‰ trigger fetch loop
+      setState(QuestionState.INCOMPLETE);
     }
 
     setHasStarted(true);
@@ -265,7 +268,7 @@ export default function MCQuestionCard({
         }, 10);
       })
       .catch((error) => {
-        console.error("❌ Error during retake:", error);
+        console.error("âŒ Error during retake:", error);
         setState(QuestionState.INCOMPLETE);
       });
   };
@@ -310,6 +313,8 @@ export default function MCQuestionCard({
       return (
         <QuestionCardComplete resp={data} onRetake={onRetake} page={page} />
       );
+    case QuestionState.ERROR:
+      return <QuestionCardError page={page} />;
     default:
       return <QuestionCardLoading page={page} />;
   }
@@ -375,6 +380,34 @@ function QuestionCardComplete({
             </Button>
           </div>
         </>
+      )}
+    </>
+  );
+}
+
+function QuestionCardError({ page }: { page?: "lesson" | "article" }) {
+  const t = useScopedI18n("components.mcq");
+  return (
+    <>
+      {page === "article" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-bold text-3xl md:text-3xl text-muted-foreground">
+              {t("title")}
+            </CardTitle>
+            <CardDescription className="text-red-500 dark:text-red-400">
+              {t("descriptionFailure")}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
+      {page === "lesson" && (
+        <div className="flex items-start xl:h-[400px] w-full md:w-[725px] xl:w-[710px] space-x-4 mt-5">
+          <div className="space-y-4 w-full">
+            <p className="font-bold text-3xl text-muted-foreground">{t("title")}</p>
+            <p className="text-red-500 dark:text-red-400">{t("descriptionFailure")}</p>
+          </div>
+        </div>
       )}
     </>
   );
@@ -485,6 +518,7 @@ function QuestionCardIncomplete({
             userId={userId}
             articleId={articleId}
             disabled={false}
+            activityType="mc_question"
           >
             <QuizContextProvider>
               <MCQeustion
@@ -564,9 +598,22 @@ function MCQeustion({
   const { timer, setPaused } = useContext(QuizContext);
   const t = useScopedI18n("components.mcq");
   const router = useRouter();
+  const [fullResults, setFullResults] = useState(resp.results || []);
   const [currentResp, setCurrentResp] = useState(resp);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Initialize currentIndex to the first unanswered question when data loads
+  useEffect(() => {
+    if (progress && progress.length > 0) {
+      const firstUnanswered = progress.findIndex(p => p === AnswerStatus.UNANSWERED);
+      if (firstUnanswered !== -1) {
+        setCurrentIndex(firstUnanswered);
+      }
+    }
+  }, [fullResults, progress]); 
 
   React.useEffect(() => {
+    setFullResults(resp.results || []);
     setCurrentResp(resp);
 
     if (resp.results && resp.results[0]) {
@@ -587,7 +634,7 @@ function MCQeustion({
       initialProgress.every((status) => status === AnswerStatus.CORRECT)
     ) {
       console.warn(
-        "🚨 MCQeustion: Detected suspicious server progress, resetting to unanswered"
+        "ðŸš¨ MCQeustion: Detected suspicious server progress, resetting to unanswered"
       );
       initialProgress = [
         AnswerStatus.UNANSWERED,
@@ -647,9 +694,8 @@ function MCQeustion({
     }
   }, [resp, articleId]);
 
-  const currentQuestionIndex = progress.findIndex(
-    (p) => p === AnswerStatus.UNANSWERED
-  );
+  const activeQuestion = fullResults[currentIndex];
+  const isAnswered = progress[currentIndex] !== AnswerStatus.UNANSWERED;
 
   const onSubmitted = async (questionId: string, option: string, i: number) => {
     setPaused(true);
@@ -685,9 +731,9 @@ function MCQeustion({
           setCorrectAnswer(data.correctAnswer || "");
           setSelectedOption(i);
           const newProgress = [...progress];
-          if (currentQuestionIndex !== -1) {
+          if (currentIndex !== -1) {
             const actuallyCorrect = isCorrect;
-            newProgress[currentQuestionIndex] = actuallyCorrect
+            newProgress[currentIndex] = actuallyCorrect
               ? AnswerStatus.CORRECT
               : AnswerStatus.INCORRECT;
             setProgress(newProgress);
@@ -760,60 +806,21 @@ function MCQeustion({
         router.refresh();
       }, 100);
     }
-  }, [progress, router, toast, page, setPaused, handleCompleted, currentResp, articleId]);
+  }, [progress, router, page, setPaused, handleCompleted, currentResp, articleId]);
 
   const handleNext = () => {
     setSelectedOption(-1);
     setCorrectAnswer("");
     setPaused(false);
-
-    const answeredCount = progress.filter(
-      (p) => p !== AnswerStatus.UNANSWERED
-    ).length;
-
-    if (answeredCount < currentResp.total) {
-      setLoadingAnswer(true);
-
-      const timestamp = new Date().getTime();
-      fetch(`/api/v1/articles/${articleId}/questions/mcq?_t=${timestamp}`)
-        .then((res) => res.json())
-        .then((data) => {
-          try {
-            const savedProgress = sessionStorage.getItem(
-              `quiz_progress_${articleId}`
-            );
-            if (savedProgress) {
-              const parsedProgress = JSON.parse(savedProgress);
-              setProgress(parsedProgress);
-              data.progress = parsedProgress;
-            } else {
-              setProgress(data.progress || []);
-            }
-          } catch (e) {
-            console.error("Error handling progress for next question:", e);
-            setProgress(data.progress || []);
-          }
-
-          setCurrentResp(data);
-
-          try {
-            sessionStorage.setItem(`quiz_started_${articleId}`, "true");
-          } catch (e) {
-            console.error("Failed to save to sessionStorage:", e);
-          }
-
-          useQuestionStore.setState({ mcQuestion: data });
-        })
-        .catch((error) => {
-          console.error("Error fetching next question:", error);
-        })
-        .finally(() => {
-          setLoadingAnswer(false);
-        });
-    } else {
-      setLoadingAnswer(false);
+    
+    // Find the next unanswered question to advance the index
+    const nextUnanswered = progress.findIndex((p, idx) => p === AnswerStatus.UNANSWERED);
+    if (nextUnanswered !== -1) {
+      setCurrentIndex(nextUnanswered);
     }
   };
+
+  const effectiveResults = [activeQuestion];
 
   return (
     <CardContent>
@@ -848,14 +855,14 @@ function MCQeustion({
       </div>
       <CardTitle className="font-bold text-3xl md:text-3xl mt-3">
         {t("questionHeading", {
-          number: currentQuestionIndex + 1,
+          number: currentIndex + 1,
           total: currentResp.total,
         })}
       </CardTitle>
       <CardDescription className="text-2xl md:text-2xl mt-3">
-        {currentResp.results[0]?.question || "Question not available"}
+        {effectiveResults[0]?.question || "Question not available"}
         <span className="hidden">
-          Question ID: {currentResp.results[0]?.id}
+          Question ID: {effectiveResults[0]?.id}
         </span>
       </CardDescription>
 
@@ -869,13 +876,13 @@ function MCQeustion({
           <div className="p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
             <p className="font-bold text-blue-800 dark:text-blue-200">
               Your Answer:{" "}
-              {(currentResp.results[0]?.options || [])[selectedOption]}
+              {(effectiveResults[0]?.options || [])[selectedOption]}
             </p>
           </div>
         </div>
       )}
 
-      {(currentResp.results[0]?.options || [])
+      {(effectiveResults[0]?.options || [])
         .filter(
           (option) =>
             option && typeof option === "string" && option.trim() !== ""
@@ -884,7 +891,7 @@ function MCQeustion({
           const optionText = option || "";
           return (
             <Button
-              key={`${currentResp.results[0]?.id}-${i}`}
+              key={`${effectiveResults[0]?.id}-${i}`}
               className={cn(
                 "mt-2 h-auto w-full",
                 selectedOption === i && "bg-red-500 hover:bg-red-600",
@@ -894,7 +901,7 @@ function MCQeustion({
               disabled={isLoadingAnswer || selectedOption !== -1}
               onClick={() => {
                 if (selectedOption === -1) {
-                  onSubmitted(currentResp.results[0].id, optionText, i);
+                  onSubmitted(effectiveResults[0].id, optionText, i);
                 }
               }}
             >

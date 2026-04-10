@@ -45,16 +45,23 @@ export default function ChapterRatingPopup({
       const ratingData = await fetch(
         `/api/v1/users/${userId}/activitylog`
       ).then((data) => data.json());
-      const filterRating = ratingData.results.filter(
+      
+      const logs = ratingData.activityLogs || [];
+      const filterRating = logs.filter(
         (data: any) =>
-          data.storyId === storyId &&
-          data.chapterNumber === chapterNumber &&
+          (data.storyId === storyId || data.targetId === storyId || data.details?.storyId === storyId) &&
+          (String(data.chapterNumber) === String(chapterNumber) || String(data.details?.chapter_number) === String(chapterNumber) || String(data.details?.chapterNumber) === String(chapterNumber)) &&
           data.activityType === ActivityType.ChapterRating
       );
       
-      setOldRating(filterRating[0].details.rating);
+      if (filterRating.length > 0 && filterRating[0].details?.rating) {
+        setOldRating(filterRating[0].details.rating);
+      } else {
+        setOldRating(0);
+      }
     } catch (error) {
       console.log("Error fetching rating: ", error);
+      setOldRating(0);
     }
   };
 
@@ -129,9 +136,8 @@ export default function ChapterRatingPopup({
         body: JSON.stringify({
           storyId: storyId,
           chapterNumber: chapterNumber,
-          activityType: ActivityType.ChapterRead,
+          activityType: ActivityType.ChapterRating,
           activityStatus: ActivityStatus.Completed,
-          xpEarned: UserXpEarned.Chapter_Rating,
           details: {
             title: story.chapter.title,
             raLevel: story.ra_Level,

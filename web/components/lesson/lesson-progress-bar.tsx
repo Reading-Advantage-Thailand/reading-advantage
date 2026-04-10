@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Timer, ArrowLeft } from "lucide-react";
 import { Article } from "../models/article-model";
@@ -155,11 +155,19 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
           updated[phaseIndex] = isComplete;
           return updated;
         }
-        return prev; // Return previous state if no change to prevent unnecessary re-renders
+        return prev;
       });
     },
     []
   );
+
+  // Memoize stable callbacks for each phase to prevent re-renders from timer updates 
+  // from recreating these functions and triggering infinite fetch loops in child components.
+  const phaseCallbacks = useMemo(() => {
+    return Array.from({ length: phases.length + 1 }, (_, i) => (complete: boolean) => 
+      updatePhaseCompletion(i, complete)
+    );
+  }, [phases.length, updatePhaseCompletion]);
 
   useEffect(() => {
     if (currentPhase >= 2 && currentPhase < 14) {
@@ -432,9 +440,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             article={article}
             articleId={articleId}
             userId={userId}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(0, complete)
-            }
+            onCompleteChange={phaseCallbacks[0]}
           />
         );
       case 2:
@@ -443,9 +449,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             article={article}
             articleId={articleId}
             userId={userId}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(1, complete)
-            }
+            onCompleteChange={phaseCallbacks[1]}
           />
         );
       case 3:
@@ -455,9 +459,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             articleId={articleId}
             userId={userId}
             locale={locale}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(2, complete)
-            }
+            onCompleteChange={phaseCallbacks[2]}
           />
         );
       case 4:
@@ -466,9 +468,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             article={article}
             articleId={articleId}
             userId={userId}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(3, complete)
-            }
+            onCompleteChange={phaseCallbacks[3]}
           />
         );
       case 5:
@@ -478,9 +478,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             articleId={articleId}
             userId={userId}
             locale={locale}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(4, complete)
-            }
+            onCompleteChange={phaseCallbacks[4]}
           />
         );
       case 6:
@@ -490,9 +488,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             articleId={articleId}
             userId={userId}
             locale={locale}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(5, complete)
-            }
+            onCompleteChange={phaseCallbacks[5]}
           />
         );
       case 7:
@@ -501,9 +497,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             article={article}
             articleId={articleId}
             userId={userId}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(6, complete)
-            }
+            onCompleteChange={phaseCallbacks[6]}
           />
         );
       case 8:
@@ -512,9 +506,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             article={article}
             articleId={articleId}
             userId={userId}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(7, complete)
-            }
+            onCompleteChange={phaseCallbacks[7]}
           />
         );
       case 9:
@@ -524,9 +516,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             userId={userId}
             showVocabularyButton={showVocabularyButton}
             setShowVocabularyButton={setShowVocabularyButton}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(8, complete)
-            }
+            onCompleteChange={phaseCallbacks[8]}
           />
         ) : null;
       case 10:
@@ -534,9 +524,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
           <Phase10VocabularyMatching
             articleId={articleId}
             userId={userId}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(9, complete)
-            }
+            onCompleteChange={phaseCallbacks[9]}
           />
         );
       case 11:
@@ -546,9 +534,7 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             userId={userId}
             showSentenseButton={showSentenseButton}
             setShowSentenseButton={setShowSentenseButton}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(10, complete)
-            }
+            onCompleteChange={phaseCallbacks[10]}
           />
         );
       case 12:
@@ -558,18 +544,14 @@ const LessonProgressBar: React.FC<LessonProgressBarProps> = ({
             userId={userId}
             sentenceActivity={sentenceActivity}
             setSentenceActivity={setSentenceActivity}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(11, complete)
-            }
+            onCompleteChange={phaseCallbacks[11]}
           />
         );
       case 13:
         return (
           <Phase13LanguageQuestions
             article={article}
-            onCompleteChange={(complete: boolean) =>
-              updatePhaseCompletion(12, complete)
-            }
+            onCompleteChange={phaseCallbacks[12]}
             skipPhase={() => skipPhase(currentPhase)}
           />
         );

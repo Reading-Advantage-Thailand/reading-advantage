@@ -108,3 +108,23 @@ export const restrictAccessKey = async (
   }
   return next();
 };
+
+// Check if user is accessing their own resource or is an allowed staff member
+export const assertSelfOrAllowedStaff = (
+  req: ExtendedNextRequest,
+  routeUserId: string
+): boolean => {
+  const sessionUser = req.session?.user;
+  if (!sessionUser) return false;
+  
+  if (sessionUser.id === routeUserId) return true;
+  
+  const role = sessionUser.role as string;
+  const allowedRoles = ["ADMIN", "STAFF", "TEACHER", "SUPERADMIN"];
+  if (allowedRoles.includes(role)) {
+    // Optionally validate if the requested user is in the caller's allowed scope
+    return true;
+  }
+  
+  return false;
+};

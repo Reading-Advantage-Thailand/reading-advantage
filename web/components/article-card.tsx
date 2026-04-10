@@ -18,12 +18,14 @@ type Props = {
   article: Article;
   articleId: string;
   userId: string;
+  initialRating?: number;
 };
 
 export default async function ArticleCard({
   article,
   articleId,
   userId,
+  initialRating = 0,
 }: Props) {
   const t = await getScopedI18n("components.articleCard");
   return (
@@ -51,7 +53,7 @@ export default async function ArticleCard({
           <div className="flex justify-center">
             <Image
               src={`https://storage.googleapis.com/artifacts.reading-advantage.appspot.com/images/${articleId}.png`}
-              alt="Malcolm X"
+              alt={article.image_description || article.title || "Article image"}
               width={640}
               height={640}
             />
@@ -69,6 +71,7 @@ export default async function ArticleCard({
         averageRating={article.average_rating}
         articleId={articleId}
         article={article}
+        initialRating={initialRating}
       />
     </div>
   );

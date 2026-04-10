@@ -12,15 +12,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "./ui/context-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "./ui/alert-dialog";
+
 import { toast } from "./ui/use-toast";
 import {
   PlayIcon,
@@ -93,7 +85,7 @@ export default function ArticleContent({
   const [isTranslate, setIsTranslate] = React.useState(false);
   const [isTranslateOpen, setIsTranslateOpen] = React.useState(false);
   const locale = useCurrentLocale();
-  const [isTranslateClicked, setIsTranslateClicked] = React.useState(false);
+
   // Use article.id as cache key to ensure consistency between server and client renders
   const cacheKey = useMemo(() => article.id, [article.id]);
 
@@ -142,7 +134,6 @@ export default function ArticleContent({
     handleTogglePlayer,
     audioRef,
     currentAudioIndex,
-    currentTime,
     isPlaying,
     selectedIndex,
     speed,
@@ -182,14 +173,28 @@ export default function ArticleContent({
 
   const saveToFlashcard = async () => {
     try {
+      let targetIndex = selectedSentence as number;
+      // Fall back to currently highlighted sentence
+      if (targetIndex === -1) {
+        if (selectedIndex !== -1) {
+          targetIndex = selectedIndex;
+        } else if (isPlaying && currentAudioIndex !== -1) {
+          targetIndex = currentAudioIndex;
+        }
+      }
+
+      if (targetIndex === -1) {
+        toast({
+          title: "No sentence selected",
+          description: "Please select a sentence first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setLoading(true);
       let card: Card = createEmptyCard();
-      let endTimepoint = 0;
-      if (selectedSentence !== -1) {
-        endTimepoint = sentenceList[selectedSentence as number].endTime;
-      } else {
-        endTimepoint = audioRef.current?.duration as number;
-      }
+      let endTimepoint = sentenceList[targetIndex].endTime;
 
       // Get translations for all supported languages
       const supportedLanguages = ["th", "zh-CN", "zh-TW", "vi"];
@@ -206,7 +211,7 @@ export default function ArticleContent({
         // Check cache first
         if (translatedPassage && translatedPassage[lang]) {
           translationObj[lang] =
-            translatedPassage[lang][selectedSentence as number];
+            translatedPassage[lang][targetIndex];
           return;
         }
 
@@ -215,7 +220,7 @@ export default function ArticleContent({
           const response = await getTranslateSentence(article.id, lang);
           if (response.message !== "error" && response.translated_sentences) {
             translationObj[lang] =
-              response.translated_sentences[selectedSentence as number];
+              response.translated_sentences[targetIndex];
           }
         } catch (error) {
           console.warn(`Failed to translate to ${lang}:`, error);
@@ -240,15 +245,15 @@ export default function ArticleContent({
         {
           method: "POST",
           body: JSON.stringify({
-            sentence: sentenceList[selectedSentence as number].sentence.replace(
+            sentence: sentenceList[targetIndex].sentence.replace(
               "~~",
               "",
             ),
-            sn: selectedSentence,
+            sn: targetIndex,
             articleId: article.id,
             translation: translationObj,
-            audioUrl: sentenceList[selectedSentence as number].audioUrl,
-            timepoint: sentenceList[selectedSentence as number].startTime,
+            audioUrl: sentenceList[targetIndex].audioUrl,
+            timepoint: sentenceList[targetIndex].startTime,
             endTimepoint: endTimepoint,
             saveToFlashcard: true,
             ...card,
@@ -260,7 +265,7 @@ export default function ArticleContent({
         toast({
           title: "Success",
           description: `You have saved "${sentenceList[
-            selectedSentence as number
+            targetIndex
           ].sentence.replace("~~", "")}" to flashcard`,
         });
       } else if (resSaveSentences.status === 400) {
@@ -329,9 +334,8 @@ export default function ArticleContent({
   const handleTranslate = async () => {
     if (isTranslate === false) {
       await handleTranslateSentence();
-      setIsTranslateClicked(!isTranslateClicked);
     } else {
-      setIsTranslateClicked(!isTranslateClicked);
+      setIsTranslateOpen(!isTranslateOpen);
     }
   };
 
@@ -388,7 +392,7 @@ export default function ArticleContent({
         <div id="onborda-translate">
           <Button
             variant="default"
-            onClick={handleTranslateSentence}
+            onClick={handleTranslate}
             disabled={loading}
           >
             {loading
@@ -514,31 +518,7 @@ export default function ArticleContent({
           )}
         </ContextMenuContent>
       </ContextMenu>
-      <AlertDialog open={isTranslateClicked}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Translate</AlertDialogTitle>
-            <AlertDialogDescription>
-              <span className="block">
-                {selectedSentence !== -1
-                  ? sentenceList[selectedSentence as number].sentence.replace(
-                      "~~",
-                      "",
-                    )
-                  : ""}
-              </span>
-              <span className="block text-green-500 mt-3">
-                {translate[selectedIndex]}
-              </span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsTranslateClicked(false)}>
-              Cancel
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
     </div>
   );
 }

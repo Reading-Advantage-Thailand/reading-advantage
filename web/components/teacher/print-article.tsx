@@ -22,8 +22,16 @@ export default function PrintArticle({
   const reactToPrintFn = useReactToPrint({ contentRef });
   const locale = useCurrentLocale();
   const t = useScopedI18n("components.article");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  useEffect(() => {
+  const handlePrint = async () => {
+    if (isDataLoaded) {
+      reactToPrintFn();
+      return;
+    }
+    
+    setIsLoading(true);
     const fetchLAQQuestions = async () => {
       const response = await fetch(
         `/api/v1/articles/${articleId}/questions/laq`
@@ -95,12 +103,21 @@ export default function PrintArticle({
         setTranslated(data.translated_sentences);
       }
     };
-    fetchTranslate();
-    fetchWordList();
-    fetchSAQQuestions();
-    fetchMAQQuestions();
-    fetchLAQQuestions();
-  }, []);
+    await Promise.all([
+      fetchTranslate(),
+      fetchWordList(),
+      fetchSAQQuestions(),
+      fetchMAQQuestions(),
+      fetchLAQQuestions()
+    ]);
+    
+    setIsDataLoaded(true);
+    setIsLoading(false);
+    
+    setTimeout(() => {
+      reactToPrintFn();
+    }, 500);
+  };
 
   const highlightVocabulary = (text: string, vocabularyList: string[]) => {
     const escapedWords = vocabularyList.map((word) =>
@@ -131,16 +148,17 @@ export default function PrintArticle({
 
   return (
     <div className="flex items-center">
-      <Button size="sm" onClick={() => reactToPrintFn()}>
-        {t("printButton")}
+      <Button size="sm" onClick={handlePrint} disabled={isLoading}>
+        {isLoading ? "Loading..." : t("printButton")}
       </Button>
-      <div className="hidden">
-        <div
-          ref={contentRef}
-          className="w-[210mm] h-[297mm] mx-auto bg-white print:p-4 print:w-[210mm] print:h-[297mm] relative"
-        >
-          {/* Persistent Print Header */}
-          <div className="hidden print:flex fixed justify-center top-0 left-[35%] text-xs text-gray-600">
+      {isDataLoaded && (
+        <div className="hidden">
+          <div
+            ref={contentRef}
+            className="w-[210mm] h-[297mm] mx-auto bg-white print:p-4 print:w-[210mm] print:h-[297mm] relative"
+          >
+            {/* Persistent Print Header */}
+            <div className="hidden print:flex fixed justify-center top-0 left-[35%] text-xs text-gray-600">
             <div className="flex items-end gap-2">
               <img
                 src="/android-chrome-192x192.png"
@@ -339,6 +357,7 @@ export default function PrintArticle({
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

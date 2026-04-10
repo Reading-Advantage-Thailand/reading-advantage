@@ -1,4 +1,4 @@
-import { ExtendedNextRequest } from "./auth-controller";
+import { ExtendedNextRequest, assertSelfOrAllowedStaff } from "./auth-controller";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fsrs, generatorParameters, Rating, State } from "ts-fsrs";
@@ -32,7 +32,11 @@ export async function getFlashcardStats(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const type = req.nextUrl.searchParams.get("type"); // "vocabulary" or "sentences"
 
@@ -136,7 +140,11 @@ export async function updateFlashcardProgress(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const { cardId, rating, type } = await req.json();
 
@@ -246,7 +254,11 @@ export async function postSaveWordList(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const {
       due,
@@ -258,6 +270,8 @@ export async function postSaveWordList(
       lapses,
       state,
       articleId,
+      storyId,
+      chapterNumber,
       saveToFlashcard,
       foundWordsList,
     } = await req.json();
@@ -266,35 +280,51 @@ export async function postSaveWordList(
 
     await Promise.all(
       foundWordsList.map(async (word: WordList) => {
-        const existingRecord = await prisma.userWordRecord.findFirst({
-          where: {
-            userId: id,
-            articleId: articleId,
-            word: {
-              path: ["vocabulary"],
-              equals: word.vocabulary,
-            },
+        const whereClause: any = {
+          userId: id,
+          word: {
+            path: ["vocabulary"],
+            equals: word.vocabulary,
           },
+        };
+
+        if (articleId) {
+          whereClause.articleId = articleId;
+        } else if (storyId && chapterNumber !== undefined) {
+          whereClause.storyId = storyId;
+          whereClause.chapterNumber = Number(chapterNumber);
+        }
+
+        const existingRecord = await prisma.userWordRecord.findFirst({
+          where: whereClause,
         });
 
         if (existingRecord) {
           wordAllReadySaved.push(word.vocabulary);
         } else {
+          const recordData: any = {
+            userId: id,
+            saveToFlashcard,
+            word: word,
+            difficulty,
+            due,
+            elapsedDays: elapsed_days,
+            lapses,
+            reps,
+            scheduledDays: scheduled_days,
+            stability,
+            state,
+          };
+
+          if (articleId) {
+            recordData.articleId = articleId;
+          } else if (storyId && chapterNumber !== undefined) {
+            recordData.storyId = storyId;
+            recordData.chapterNumber = Number(chapterNumber);
+          }
+
           await prisma.userWordRecord.create({
-            data: {
-              userId: id,
-              articleId,
-              saveToFlashcard,
-              word: word,
-              difficulty,
-              due,
-              elapsedDays: elapsed_days,
-              lapses,
-              reps,
-              scheduledDays: scheduled_days,
-              stability,
-              state,
-            },
+            data: recordData,
           });
         }
       })
@@ -325,14 +355,22 @@ export async function getWordList(
   req: NextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req as ExtendedNextRequest, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const articleId = req.nextUrl.searchParams.get("articleId");
+    const storyId = req.nextUrl.searchParams.get("storyId");
+    const chapterNumber = req.nextUrl.searchParams.get("chapterNumber");
 
     const word = await prisma.userWordRecord.findMany({
       where: {
         userId: id,
         ...(articleId && { articleId }),
+        ...(storyId && { storyId }),
+        ...(chapterNumber && { chapterNumber: Number(chapterNumber) }),
       },
       orderBy: {
         createdAt: "desc",
@@ -353,13 +391,29 @@ export async function getWordList(
   }
 }
 
-export async function deleteWordlist(req: ExtendedNextRequest) {
+export async function deleteWordlist(
+  req: ExtendedNextRequest,
+  ctx: RequestContext
+) {
   try {
-    const { id } = await req.json();
+    const { id: routeId } = await ctx.params;
+    
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
+    
+    const { id: recordId } = await req.json();
+
+    // Verify ownership
+    const record = await prisma.userWordRecord.findUnique({ where: { id: recordId } });
+    if (!record || record.userId !== id) {
+      return NextResponse.json({ message: "Forbidden - Not your record" }, { status: 403 });
+    }
 
     await prisma.userWordRecord.delete({
       where: {
-        id: id,
+        id: recordId,
       },
     });
 
@@ -380,7 +434,11 @@ export async function postSentendcesFlashcard(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const {
       articleId,
@@ -525,7 +583,13 @@ export async function getSentencesFlashcard(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
+  
   const articleId = req.nextUrl.searchParams.get("articleId");
   try {
     const sentences = await prisma.userSentenceRecord.findMany({
@@ -538,133 +602,10 @@ export async function getSentencesFlashcard(
       },
     });
 
-    // Check if any sentence has empty translation and fix it
-    if (articleId && sentences.length > 0) {
-      const sentencesNeedingTranslation = sentences.filter((sentence) => {
-        const translation = sentence.translation as Record<string, any>;
-        return !translation || Object.keys(translation).length === 0;
-      });
-
-      if (sentencesNeedingTranslation.length > 0) {
-        console.log(`Found ${sentencesNeedingTranslation.length} sentences without translation, fetching article translations...`);
-
-        // Get the article to fetch translatedPassage
-        const article = await prisma.article.findUnique({
-          where: { id: articleId },
-          select: {
-            translatedPassage: true,
-          },
-        });
-
-        if (article?.translatedPassage) {
-          const translatedPassage = article.translatedPassage as Record<
-            string,
-            string[]
-          >;
-
-          // Map language codes
-          const languageMapping: Record<string, string> = {
-            "zh-CN": "cn",
-            "zh-TW": "tw",
-            th: "th",
-            vi: "vi",
-            en: "en",
-          };
-
-          // Update each sentence that needs translation
-          const updatePromises = sentencesNeedingTranslation.map(async (sentence) => {
-            const sentenceTranslation: Record<string, string> = {};
-
-            // Extract translations from translatedPassage based on sentence number (sn)
-            Object.entries(translatedPassage).forEach(([langCode, translations]) => {
-              const mappedLangCode = languageMapping[langCode] || langCode;
-              if (Array.isArray(translations) && translations[sentence.sn]) {
-                sentenceTranslation[mappedLangCode] = translations[sentence.sn];
-              }
-            });
-
-            // Only update if we found translations
-            if (Object.keys(sentenceTranslation).length > 0) {
-              await prisma.userSentenceRecord.update({
-                where: { id: sentence.id },
-                data: { translation: sentenceTranslation },
-              });
-
-              console.log(`Updated translation for sentence ID: ${sentence.id}`);
-              
-              // Update the sentence object in our array
-              sentence.translation = sentenceTranslation as any;
-            } else {
-              // If no translation in translatedPassage, generate it
-              console.log(`No translation in translatedPassage for sentence ${sentence.sn}, generating...`);
-              
-              try {
-                const translatedResult = await generateTranslatedPassageFromSentences({
-                  sentences: [sentence.sentence],
-                });
-
-                const newTranslation = {
-                  cn: translatedResult.cn[0] || sentence.sentence,
-                  en: translatedResult.en[0] || sentence.sentence,
-                  th: translatedResult.th[0] || sentence.sentence,
-                  tw: translatedResult.tw[0] || sentence.sentence,
-                  vi: translatedResult.vi[0] || sentence.sentence,
-                };
-
-                await prisma.userSentenceRecord.update({
-                  where: { id: sentence.id },
-                  data: { translation: newTranslation },
-                });
-
-                console.log(`Generated and saved translation for sentence ID: ${sentence.id}`);
-                
-                // Update the sentence object in our array
-                sentence.translation = newTranslation as any;
-              } catch (translationError) {
-                console.error(`Failed to generate translation for sentence ${sentence.id}:`, translationError);
-              }
-            }
-          });
-
-          await Promise.all(updatePromises);
-          console.log(`Updated ${sentencesNeedingTranslation.length} sentences with translations`);
-        } else {
-          // No translatedPassage in article, generate translations for sentences
-          console.log(`No translatedPassage in article ${articleId}, generating translations for sentences...`);
-          
-          const updatePromises = sentencesNeedingTranslation.map(async (sentence) => {
-            try {
-              const translatedResult = await generateTranslatedPassageFromSentences({
-                sentences: [sentence.sentence],
-              });
-
-              const newTranslation = {
-                cn: translatedResult.cn[0] || sentence.sentence,
-                en: translatedResult.en[0] || sentence.sentence,
-                th: translatedResult.th[0] || sentence.sentence,
-                tw: translatedResult.tw[0] || sentence.sentence,
-                vi: translatedResult.vi[0] || sentence.sentence,
-              };
-
-              await prisma.userSentenceRecord.update({
-                where: { id: sentence.id },
-                data: { translation: newTranslation },
-              });
-
-              console.log(`Generated and saved translation for sentence ID: ${sentence.id}`);
-              
-              // Update the sentence object in our array
-              sentence.translation = newTranslation as any;
-            } catch (translationError) {
-              console.error(`Failed to generate translation for sentence ${sentence.id}:`, translationError);
-            }
-          });
-
-          await Promise.all(updatePromises);
-        }
-      }
-    }
-
+    // Translation backfill has been moved out of the read path to improve performance
+    // and prevent race conditions. If translations are missing, the frontend will
+    // display a fallback state or prompt the user.
+    
     return NextResponse.json({
       message: "User sentence retrieved",
       sentences,
@@ -680,13 +621,29 @@ export async function getSentencesFlashcard(
   }
 }
 
-export async function deleteSentencesFlashcard(req: ExtendedNextRequest) {
+export async function deleteSentencesFlashcard(
+  req: ExtendedNextRequest,
+  ctx: RequestContext
+) {
   try {
-    const { id } = await req.json();
+    const { id: routeId } = await ctx.params;
+    
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
+    
+    const { id: recordId } = await req.json();
+
+    // Verify ownership
+    const record = await prisma.userSentenceRecord.findUnique({ where: { id: recordId } });
+    if (!record || record.userId !== id) {
+      return NextResponse.json({ message: "Forbidden - Not your record" }, { status: 403 });
+    }
 
     await prisma.userSentenceRecord.delete({
       where: {
-        id: id,
+        id: recordId,
       },
     });
 
@@ -707,7 +664,11 @@ export async function getVocabulariesFlashcard(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const vocabularies = await prisma.userWordRecord.findMany({
       where: {
@@ -737,10 +698,16 @@ export async function postVocabulariesFlashcard(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
-  const { id } = await ctx.params;
+  const { id: routeId } = await ctx.params;
+  if (!assertSelfOrAllowedStaff(req, routeId)) {
+    return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+  }
+  const id = routeId;
   try {
     const {
       articleId,
+      storyId,
+      chapterNumber,
       word,
       difficulty = 0,
       due = new Date(),
@@ -753,15 +720,23 @@ export async function postVocabulariesFlashcard(
       saveToFlashcard = true,
     } = await req.json();
 
-    const existingVocab = await prisma.userWordRecord.findFirst({
-      where: {
-        userId: id,
-        articleId: articleId,
-        word: {
-          path: ["vocabulary"],
-          equals: word.vocabulary,
-        },
+    const whereClause: any = {
+      userId: id,
+      word: {
+        path: ["vocabulary"],
+        equals: word.vocabulary,
       },
+    };
+
+    if (articleId) {
+      whereClause.articleId = articleId;
+    } else if (storyId && chapterNumber !== undefined) {
+      whereClause.storyId = storyId;
+      whereClause.chapterNumber = Number(chapterNumber);
+    }
+
+    const existingVocab = await prisma.userWordRecord.findFirst({
+      where: whereClause,
     });
 
     if (existingVocab) {
@@ -771,21 +746,29 @@ export async function postVocabulariesFlashcard(
       );
     }
 
+    const recordData: any = {
+      userId: id,
+      word,
+      difficulty,
+      due: new Date(due),
+      elapsedDays: elapsed_days,
+      lapses,
+      reps,
+      scheduledDays: scheduled_days,
+      stability,
+      state,
+      saveToFlashcard,
+    };
+
+    if (articleId) {
+      recordData.articleId = articleId;
+    } else if (storyId && chapterNumber !== undefined) {
+      recordData.storyId = storyId;
+      recordData.chapterNumber = Number(chapterNumber);
+    }
+
     await prisma.userWordRecord.create({
-      data: {
-        userId: id,
-        articleId,
-        word,
-        difficulty,
-        due: new Date(due),
-        elapsedDays: elapsed_days,
-        lapses,
-        reps,
-        scheduledDays: scheduled_days,
-        stability,
-        state,
-        saveToFlashcard,
-      },
+      data: recordData,
     });
 
     return NextResponse.json({
@@ -801,13 +784,29 @@ export async function postVocabulariesFlashcard(
   }
 }
 
-export async function deleteVocabulariesFlashcard(req: ExtendedNextRequest) {
+export async function deleteVocabulariesFlashcard(
+  req: ExtendedNextRequest,
+  ctx: RequestContext
+) {
   try {
-    const { id } = await req.json();
+    const { id: routeId } = await ctx.params;
+    
+    if (!assertSelfOrAllowedStaff(req, routeId)) {
+      return NextResponse.json({ message: "Forbidden - Access denied to this resource" }, { status: 403 });
+    }
+    const id = routeId;
+
+    const { id: recordId } = await req.json();
+
+    // Verify ownership
+    const record = await prisma.userWordRecord.findUnique({ where: { id: recordId } });
+    if (!record || record.userId !== id) {
+      return NextResponse.json({ message: "Forbidden - Not your record" }, { status: 403 });
+    }
 
     await prisma.userWordRecord.delete({
       where: {
-        id: id,
+        id: recordId,
       },
     });
 
