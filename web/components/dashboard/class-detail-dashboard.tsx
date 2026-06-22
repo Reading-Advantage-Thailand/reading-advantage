@@ -31,10 +31,11 @@ import {
   BarChart3,
   Target,
   Zap,
-  TrendingUp,
+  Loader2,
 } from "lucide-react";
 import { useScopedI18n } from "@/locales/client";
 import { ScopedI18n } from "@/locales/locales";
+import { useToast } from "@/components/ui/use-toast";
 
 export interface ClassDetailDashboardProps {
   classroomId: string;
@@ -53,19 +54,22 @@ export function ClassDetailDashboard({
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
+
   const handleBack = () => {
     router.push("/th/teacher/dashboard");
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    // Trigger a refresh of all data
     window.location.reload();
   };
 
   const handleExportCSV = async () => {
-    // TODO: Implement CSV export
     try {
+      setIsExporting(true);  // เริ่มแสดงสถานะ Loading
+
       const res = await fetch(
         `/api/v1/teacher/class/${classroomId}/export?format=csv`
       );
@@ -78,10 +82,27 @@ export function ClassDetailDashboard({
       a.download = `class-${classCode}-export-${new Date().toISOString().split("T")[0]}.csv`;
       document.body.appendChild(a);
       a.click();
+
+      // คลีนอัพ
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+
+      // แสดง Toast แจ้งเตือนเมื่อสำเร็จ
+      toast({
+        title: (t as any)("exportSuccess") || "Export Successful",
+        description: "Your class data has been downloaded as CSV.",
+      });
     } catch (error) {
       console.error("Export failed:", error);
+      
+      // แสดงแจ้งเตือนเมื่อล้มเหลว
+      toast({
+        title: (t as any)("exportFailed") || "Export Failed",
+        description: "There was a problem exporting the class data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false); // ปิด Loading เสมอไม่ว่าจะสำเร็จหรือล้มเหลว
     }
   };
 
@@ -113,10 +134,20 @@ export function ClassDetailDashboard({
             />
             {t("refresh")}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-2" />
-            {t("exportCSV")}
+
+          <Button
+            variant="outline" 
+            onClick={handleExportCSV}
+            disabled={isExporting} // ปิดการกดซ้ำระหว่างที่โหลดอยู่
+> 
+            {isExporting ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+            <Download className="w-4 h-4 mr-2" />
+            )}
+            {t("exportCsv") || "Export CSV"}
           </Button>
+
           <Button
             variant="outline"
             size="sm"
@@ -133,7 +164,7 @@ export function ClassDetailDashboard({
       {/* KPI Strip */}
       <ClassDashboardKPIs classroomId={classroomId} />
 
-      {/* AI Insights for this classroom */}
+      {/* AI Insights */}
       <AIInsights scope="classroom" contextId={classroomId} />
 
       {/* Main Content Tabs */}
@@ -208,7 +239,6 @@ export function ClassDetailDashboard({
         <TabsContent value="alignment" className="space-y-4">
           <ClassAlignmentMatrix classroomId={classroomId} />
         </TabsContent>
-
 
         <TabsContent value="activity" className="space-y-4">
           <ClassActivityHeatmap classroomId={classroomId} expanded />
