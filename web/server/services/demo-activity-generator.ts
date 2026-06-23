@@ -102,8 +102,20 @@ async function generateArticleReadActivity(
   xpEarned: number
 ) {
   // Create user activity
-  const activity = await prisma.userActivity.create({
-    data: {
+  const activity = await prisma.userActivity.upsert({
+    where: {
+      userId_activityType_targetId: {
+        userId,
+        activityType: ActivityType.ARTICLE_READ,
+        targetId: articleId,
+      },
+    },
+    update: {
+      timer: randomBetween(60, 360), // 1-6 minutes
+      completed: true,
+      createdAt,
+    },
+    create: {
       userId,
       activityType: ActivityType.ARTICLE_READ,
       targetId: articleId,
@@ -112,6 +124,7 @@ async function generateArticleReadActivity(
       createdAt,
     },
   });
+
 
   // Create XP log
   await prisma.xPLog.create({
@@ -159,8 +172,28 @@ async function generateQuestionActivity(
   const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
 
   // Create user activity with detailed accuracy data
-  const activity = await prisma.userActivity.create({
-    data: {
+  const activity = await prisma.userActivity.upsert({
+    where: {
+      userId_activityType_targetId: {
+        userId,
+        activityType,
+        targetId: articleId,
+      },
+    },
+    update: {
+      timer: randomBetween(30, 180), // 30 seconds - 3 minutes
+      completed: true,
+      details: {
+        score: accuracy,
+        accuracy: accuracy,
+        totalQuestions,
+        correctAnswers,
+        incorrectAnswers,
+        questionsAnswered: totalQuestions,
+      },
+      createdAt,
+    },
+    create: {
       userId,
       activityType,
       targetId: articleId,
@@ -177,6 +210,7 @@ async function generateQuestionActivity(
       createdAt,
     },
   });
+
 
   // Create XP log
   await prisma.xPLog.create({
@@ -202,8 +236,24 @@ async function generateFlashcardActivity(
   xpEarned: number
 ) {
   // Create user activity
-  const activity = await prisma.userActivity.create({
-    data: {
+  const activity = await prisma.userActivity.upsert({
+    where: {
+      userId_activityType_targetId: {
+        userId,
+        activityType: ActivityType.VOCABULARY_FLASHCARDS,
+        targetId: articleId,
+      },
+    },
+    update: {
+      timer: randomBetween(120, 300), // 2-5 minutes
+      completed: true,
+      details: {
+        cardsReviewed: randomBetween(5, 20),
+        correctAnswers: randomBetween(3, 18),
+      },
+      createdAt,
+    },
+    create: {
       userId,
       activityType: ActivityType.VOCABULARY_FLASHCARDS,
       targetId: articleId,
@@ -216,6 +266,7 @@ async function generateFlashcardActivity(
       createdAt,
     },
   });
+
 
   // Create XP log
   await prisma.xPLog.create({

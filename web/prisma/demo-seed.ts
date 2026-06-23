@@ -322,14 +322,32 @@ async function createDemoClassrooms(
   console.log("🎓 Creating demo classrooms...");
 
   // Delete existing demo classrooms first
-  await prisma.classroom.deleteMany({
+  // Get matching classroom IDs first to delete associated assignments
+  const classroomsToDelete = await prisma.classroom.findMany({
     where: {
       schoolId,
       classroomName: {
         in: ["Beginner Class", "Advanced Class"],
       },
     },
+    select: { id: true },
   });
+  const classroomIds = classroomsToDelete.map((c) => c.id);
+
+  if (classroomIds.length > 0) {
+    await prisma.assignment.deleteMany({
+      where: {
+        classroomId: { in: classroomIds },
+      },
+    });
+  }
+
+  await prisma.classroom.deleteMany({
+    where: {
+      id: { in: classroomIds },
+    },
+  });
+
 
   const classrooms = [];
 
