@@ -86,9 +86,25 @@ async function refreshDemoData() {
     console.log(`✓ Found ${students.length} demo students`);
 
     // Delete existing demo classrooms (cascade will delete classroom_students)
-    const deletedClassrooms = await prisma.classroom.deleteMany({
+    // Get classroom IDs first to delete associated assignments
+    const classroomsToDelete = await prisma.classroom.findMany({
       where: { schoolId: demoSchoolId },
+      select: { id: true },
     });
+    const classroomIds = classroomsToDelete.map((c) => c.id);
+
+    if (classroomIds.length > 0) {
+      await prisma.assignment.deleteMany({
+        where: {
+          classroomId: { in: classroomIds },
+        },
+      });
+    }
+
+    const deletedClassrooms = await prisma.classroom.deleteMany({
+      where: { id: { in: classroomIds } },
+    });
+
 
     console.log(`✓ Deleted ${deletedClassrooms.count} existing classrooms`);
 
