@@ -1694,6 +1694,8 @@ export default {
           classCodePrefix: "Mã lớp:",
           refresh: "Làm mới",
           exportCSV: "Xuất CSV",
+          exportSuccess : "Xuất dữ liệu thành công",
+          exportFailed : "Xuất dữ liệu thất bại",
           settings: "Cài đặt",
           tabs: {
             overview: "Tổng quan",

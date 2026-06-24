@@ -54,6 +54,7 @@ export function ClassDetailDashboard({
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
+  // 1. สเตตควบคุมสถานะการดาวน์โหลด CSV
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
 
@@ -68,7 +69,8 @@ export function ClassDetailDashboard({
 
   const handleExportCSV = async () => {
     try {
-      setIsExporting(true);  // เริ่มแสดงสถานะ Loading
+      // 2. เริ่มแสดงสถานะดาวโหลด
+      setIsExporting(true); 
 
       const res = await fetch(
         `/api/v1/teacher/class/${classroomId}/export?format=csv`
@@ -82,7 +84,7 @@ export function ClassDetailDashboard({
       a.download = `class-${classCode}-export-${new Date().toISOString().split("T")[0]}.csv`;
       document.body.appendChild(a);
       a.click();
-
+      
       // คลีนอัพ
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
@@ -95,14 +97,14 @@ export function ClassDetailDashboard({
     } catch (error) {
       console.error("Export failed:", error);
       
-      // แสดงแจ้งเตือนเมื่อล้มเหลว
+      // 3. แจ้งเตือนเมื่อล้มเหลว
       toast({
         title: (t as any)("exportFailed") || "Export Failed",
         description: "There was a problem exporting the class data. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsExporting(false); // ปิด Loading เสมอไม่ว่าจะสำเร็จหรือล้มเหลว
+      setIsExporting(false);  // ปิด Loading เสมอไม่ว่าจะสำเร็จหรือล้มเหลว
     }
   };
 
@@ -134,18 +136,20 @@ export function ClassDetailDashboard({
             />
             {t("refresh")}
           </Button>
-
-          <Button
+          
+          {/* 5. ปุ่มดาวน์โหลดที่ผูกเงื่อนไข (Conditional States) ป้องกันการสแปมปุ่มและสลับไอคอนรูปหมุน */}
+          <Button 
             variant="outline" 
+            size="sm" 
             onClick={handleExportCSV}
             disabled={isExporting} // ปิดการกดซ้ำระหว่างที่โหลดอยู่
-> 
+          >
             {isExporting ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="h-4 w-4 mr-2 animate-spin text-blue-500" /> // แสดง Spinner หมุนติ้วสีฟ้าเรืองแสง
             ) : (
-            <Download className="w-4 h-4 mr-2" />
+              <Download className="h-4 w-4 mr-2 text-slate-400" /> // แสดงไอคอนดาวน์โหลดปกติ
             )}
-            {t("exportCsv") || "Export CSV"}
+            {(t as any)("exportCSV") || "Export CSV"} 
           </Button>
 
           <Button

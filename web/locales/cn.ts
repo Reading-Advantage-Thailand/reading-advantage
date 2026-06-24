@@ -1597,6 +1597,8 @@ export default {
           classCodePrefix: "班级代码：",
           refresh: "刷新",
           exportCSV: "导出CSV",
+          exportSuccess : "导出成功", 
+          exportFailed : "导出失败",
           settings: "设置",
           tabs: {
             overview: "概览",
