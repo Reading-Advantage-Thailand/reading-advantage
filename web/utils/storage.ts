@@ -1,9 +1,12 @@
 import { Storage } from '@google-cloud/storage';
 
-const serviceAcoountKeyJSON = JSON.parse(process.env.SERVICE_ACCOUNT_KEY as string);
+const rawServiceAccount = process.env.SERVICE_ACCOUNT_KEY;
+const serviceAcoountKeyJSON = rawServiceAccount ? JSON.parse(rawServiceAccount) : null;
 const storage = new Storage({
     projectId: 'reading-advantage',
-    credentials: serviceAcoountKeyJSON,
+    ...(serviceAcoountKeyJSON?.private_key && serviceAcoountKeyJSON?.client_email
+        ? { credentials: serviceAcoountKeyJSON }
+        : {}),
 });
 
 export default storage;
