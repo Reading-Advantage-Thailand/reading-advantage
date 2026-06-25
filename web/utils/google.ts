@@ -1,9 +1,4 @@
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
-
-// const google = createGoogleGenerativeAI({
-//   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-// });
 
 const google = createVertex({
   project: process.env.FIREBASE_PROJECT_ID,

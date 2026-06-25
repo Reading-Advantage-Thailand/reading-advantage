@@ -1,11 +1,16 @@
 import admin from "firebase-admin";
-const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY as string);
+
+const rawServiceAccount = process.env.SERVICE_ACCOUNT_KEY;
+const serviceAccount = rawServiceAccount ? JSON.parse(rawServiceAccount) : null;
 
 // Check if the app has already been initialized
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-  });
+  const appOptions =
+    serviceAccount?.private_key && serviceAccount?.client_email
+      ? { credential: admin.credential.cert(serviceAccount as admin.ServiceAccount) }
+      : { projectId: process.env.FIREBASE_PROJECT_ID };
+
+  admin.initializeApp(appOptions);
 }
 
 const db = admin.firestore();
