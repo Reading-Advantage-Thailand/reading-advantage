@@ -1600,6 +1600,8 @@ export default {
           classCodePrefix: "班級代碼：",
           refresh: "重新整理",
           exportCSV: "匯出 CSV",
+          exportSuccess : "匯出成功",
+          exportFailed : "匯出失敗",
           settings: "設定",
           tabs: {
             overview: "概覽",

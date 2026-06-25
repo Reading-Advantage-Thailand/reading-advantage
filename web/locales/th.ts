@@ -1659,6 +1659,8 @@ export default {
           classCodePrefix: "รหัสชั้นเรียน:",
           refresh: "รีเฟรช",
           exportCSV: "ส่งออก CSV",
+          exportSuccess: "ส่งออกข้อมูลสำเร็จ",
+          exportFailed: "ส่งออกข้อมูลล้มเหลว",
           settings: "การตั้งค่า",
           tabs: {
             overview: "ภาพรวม",

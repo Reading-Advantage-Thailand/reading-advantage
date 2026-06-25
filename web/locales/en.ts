@@ -1713,6 +1713,8 @@ export default {
           classCodePrefix: "Class Code:",
           refresh: "Refresh",
           exportCSV: "Export CSV",
+          exportSuccess: "Export Successful",
+          exportFailed: "Export Failed",
           settings: "Settings",
           tabs: {
             overview: "Overview",
