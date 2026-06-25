@@ -1176,9 +1176,15 @@ export async function deleteClassroom(
       );
     }
 
+    // Delete associated assignments first
+    await prisma.assignment.deleteMany({
+      where: { classroomId },
+    });
+
     await prisma.classroom.delete({
       where: { id: classroomId },
     });
+
 
     return NextResponse.json({ message: "success deleted" }, { status: 200 });
   } catch (error) {
