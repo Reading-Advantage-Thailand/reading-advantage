@@ -53,7 +53,6 @@ import Link from "next/link";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { cn } from "@/lib/utils";
-import { array } from "zod";
 import { ClassroomTeachers } from "@/components/classroom-teachers";
 
 type Classes = {
@@ -79,24 +78,20 @@ type Classes = {
 };
 
 type Schema$Course = classroom_v1.Schema$Course;
-
 type CourseWithCount = Schema$Course & {
   studentCount?: any[];
 };
 
 export default function MyClasses() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const t = useScopedI18n("components.articleRecordsTable");
   const tc = useScopedI18n("components.myClasses");
   const router = useRouter();
-  const { courses, setCourses, selectedCourses, setSelectedCourses } =
-    useCourseStore();
+  
+  const { courses, setCourses, selectedCourses, setSelectedCourses } = useCourseStore();
   const { classrooms, fetchClassrooms } = useClassroomStore();
   const [loading, setLoading] = useState<boolean>(false);
   const [coursesOpen, setCoursesOpen] = useState<boolean>(false);
@@ -104,6 +99,18 @@ export default function MyClasses() {
   const [selected, setSelected] = useState("");
   const [isTeachersOpen, setIsTeachersOpen] = useState<boolean>(false);
   const [selectedClassroomId, setSelectedClassroomId] = useState<string>("");
+
+  // Add class status filter (active, archived, all)
+  const [statusFilter, setStatusFilter] = useState<"active" | "archived" | "all">("active");
+
+  // Filter classrooms locally based on selected statusFilter
+  const filteredClassrooms = React.useMemo(() => {
+    return (classrooms || []).filter((classroom) => {
+      if (statusFilter === "active") return !classroom.archived;
+      if (statusFilter === "archived") return classroom.archived;
+      return true; // "all"
+    });
+  }, [classrooms, statusFilter]);
 
   const columns: ColumnDef<Classes>[] = [
     {
@@ -122,9 +129,18 @@ export default function MyClasses() {
       cell: ({ row }) => {
         const classroomName: string = row.getValue("classroomName");
         const checkImported = row.original.importedFromGoogle;
+        const isArchived = row.original.archived;
+
         return (
-          <div className="captoliza ml-4 flex gap-4">
-            {classroomName ? classroomName : "Unknown"}{" "}
+          <div className="captoliza ml-4 flex items-center gap-4">
+            <span className={cn(isArchived && "opacity-60 italic")}>
+              {classroomName ? classroomName : "Unknown"}
+            </span>
+            {isArchived && (
+              <span className="bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                Archived
+              </span>
+            )}
             {checkImported ? (
               <Link href={row.original.alternateLink} target="_blank">
                 <Image
@@ -145,7 +161,7 @@ export default function MyClasses() {
         return <div className="text-center">{tc("classCode")}</div>;
       },
       cell: ({ row }) => (
-        <div className="captoliza text-center">{row.getValue("classCode")}</div>
+        <div className="captoliza text-center font-mono text-sm">{row.getValue("classCode")}</div>
       ),
     },
     {
@@ -166,11 +182,14 @@ export default function MyClasses() {
       },
       cell: ({ row }) => {
         const payment = row.original;
+        const isArchived = payment.archived;
+
         return (
           <div className="text-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="default" className="ml-auto">
+                {/* Disable actions other than restore for archived classes */}
+                <Button variant="default" className="ml-auto" disabled={isArchived}>
                   {tc("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -216,13 +235,19 @@ export default function MyClasses() {
       },
       cell: ({ row }) => {
         const payment = row.original;
+        const isArchived = payment.archived;
 
         return (
           <div className="captoliza justify-center flex gap-2">
-            {payment.importedFromGoogle ? null : (
+            {/* Do not show the Edit action for archived classes */}
+            {payment.importedFromGoogle || isArchived ? null : (
               <EditClass classroomData={payment} />
             )}
+            
+            {/* Archive / Restore actions mapped inside the ArchiveClass component */}
             <ArchiveClass classroomData={payment} />
+            
+            {/* Keep existing delete teacher action */}
             <DeleteClass classroomData={payment} />
           </div>
         );
@@ -230,12 +255,9 @@ export default function MyClasses() {
     },
   ];
 
-  useEffect(() => {
-    fetchClassrooms();
-  }, []);
-
+  // Pass filteredClassrooms as table data
   const table = useReactTable({
-    data: classrooms,
+    data: filteredClassrooms,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -252,6 +274,10 @@ export default function MyClasses() {
       rowSelection,
     },
   });
+
+  useEffect(() => {
+    fetchClassrooms();
+  }, []);
 
   const syncClassroom = async () => {
     setLoading(true);
@@ -309,24 +335,56 @@ export default function MyClasses() {
     <>
       <div className="flex flex-col gap-4">
         <Header heading={tc("title")} />
-        <div className="flex justify-between items-end">
-          <Input
-            placeholder={tc("search")}
-            value={
-              (table.getColumn("classroomName")?.getFilterValue() as string) ??
-              ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn("classroomName")
-                ?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-          <div className="flex items-end space-x-2">
-            <div className="flex-col space-y-2">
-              <p className="text-xs opacity-70">Import a new class from</p>
-              <Button onClick={() => syncClassroom()} disabled={loading}>
+        
+        {/* Layout adjustments to accommodate the status filter UI */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Input
+              placeholder={tc("search")}
+              value={
+                (table.getColumn("classroomName")?.getFilterValue() as string) ??
+                ""
+              }
+              onChange={(event) =>
+                table
+                  .getColumn("classroomName")
+                  ?.setFilterValue(event.target.value)
+              }
+              className="max-w-xs"
+            />
+            {/* Requirement 1: UI controls for Active, Archived, and All views */}
+            <div className="flex items-center bg-muted/40 p-1 rounded-lg border border-muted">
+              <Button
+                variant={statusFilter === "active" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter("active")}
+                className="h-8 px-3 rounded-md text-xs font-semibold"
+              >
+                Active
+              </Button>
+              <Button
+                variant={statusFilter === "archived" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter("archived")}
+                className="h-8 px-3 rounded-md text-xs font-semibold"
+              >
+                Archived
+              </Button>
+              <Button
+                variant={statusFilter === "all" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter("all")}
+                className="h-8 px-3 rounded-md text-xs font-semibold"
+              >
+                All
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-end space-x-2 justify-end">
+            <div className="flex-col space-y-1">
+              <p className="text-[10px] opacity-70">Import a new class from</p>
+              <Button onClick={() => syncClassroom()} disabled={loading} variant="outline" size="sm" className="h-9">
                 {loading ? (
                   <>
                     <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -338,8 +396,8 @@ export default function MyClasses() {
                       className="mr-2"
                       src={"/96x96_yellow_stroke_icon@1x.png"}
                       alt="google-classroom"
-                      width={20}
-                      height={20}
+                      width={18}
+                      height={18}
                     />
                     Google Classroom
                   </>
@@ -349,6 +407,7 @@ export default function MyClasses() {
             <CreateNewClass />
           </div>
         </div>
+
         <div className="rounded-md border">
           <Table style={{ tableLayout: "fixed", width: "100%" }}>
             <TableHeader className="font-bold">
@@ -390,15 +449,16 @@ export default function MyClasses() {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center"
+                    className="h-24 text-center text-muted-foreground italic"
                   >
-                    Empty
+                    {statusFilter === "archived" ? "No archived classrooms found" : "No classrooms discovered"}
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
+        
         <div className="flex items-center justify-end space-x-2">
           <div className="space-x-2">
             <Button
@@ -517,7 +577,7 @@ export default function MyClasses() {
                   Sync Completed!
                 </h2>
                 {selectedCourses.map((course: CourseWithCount) => (
-                  <>
+                  <React.Fragment key={course.id}>
                     <p className="text-gray-600 text-center mb-6 ">
                       Successfully imported {course?.studentCount?.length ?? 0}{" "}
                       students from {course.name}.
@@ -544,7 +604,7 @@ export default function MyClasses() {
                         <p>No students found</p>
                       )}
                     </div>
-                  </>
+                  </React.Fragment>
                 ))}
 
                 <div className="flex justify-between pt-4 border-t border-gray-200">
@@ -576,12 +636,12 @@ export default function MyClasses() {
             )}
           </div>
           <DialogFooter>
-            <div className="border rounded-md p-4">
-              <h3 className="font-medium mb-1 flex gap-2 items-center">
+            <div className="border rounded-md p-4 w-full">
+              <h3 className="font-medium mb-1 flex gap-2 items-center text-sm">
                 <Icons.CircleAlert width={16} height={16} /> About Google
                 Classroom Sync
               </h3>
-              <p className="text-sm">
+              <p className="text-xs text-muted-foreground">
                 This feature allows teachers to easily import their Google
                 Classroom students into Reading Advantage. Students will be
                 automatically enrolled in your class.
@@ -628,7 +688,7 @@ function ImportStateSlider({ currentLevel }: { currentLevel: number }) {
             >
               {level.no}
             </div>
-            <span>{level.name}</span>
+            <span className="text-xs mt-1">{level.name}</span>
           </div>
         ))}
       </div>

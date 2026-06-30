@@ -1089,7 +1089,10 @@ function generateClassCode(): string {
 }
 
 // achive classroom
-export async function achivedClassroom(
+// archived classroom
+// ฟังก์ชันสำหรับจัดการจัดเก็บห้องเรียน (เวอร์ชันแก้ไขตัวสะกดถูกต้อง)
+// รองรับการทำงานของ API Route เส้นใหม่: /api/v1/classroom/[classroomId]/archived
+export async function archivedClassroom(
   req: ExtendedNextRequest,
   ctx: RequestContext
 ) {
@@ -1097,6 +1100,7 @@ export async function achivedClassroom(
   try {
     const { archived } = await req.json();
 
+    // ค้นหาข้อมูลห้องเรียนปัจจุบันในระบบ
     const classroom = await prisma.classroom.findUnique({
       where: { id: classroomId },
     });
@@ -1108,6 +1112,7 @@ export async function achivedClassroom(
       );
     }
 
+    // ทำการอัปเดตสถานะการเก็บถาวรของห้องเรียนลงในฐานข้อมูล
     await prisma.classroom.update({
       where: { id: classroomId },
       data: { archived },
@@ -1120,6 +1125,19 @@ export async function achivedClassroom(
   } catch (error) {
     return NextResponse.json({ message: error }, { status: 500 });
   }
+}
+
+/**
+ * @deprecated ฟังก์ชันนี้มีการสะกดคำผิด ("achived")
+ * แนะนำให้ย้ายไปใช้ฟังก์ชัน `archivedClassroom` และเรียกผ่านเส้นทาง API `/archived` แทน
+ * ฟังก์ชันเดิมนี้ยังคงรักษาไว้เพื่อรองรับการใช้งานกับหน้าบ้านเวอร์ชันเก่า (Backward Compatibility)
+ */
+export async function achivedClassroom(
+  req: ExtendedNextRequest,
+  ctx: RequestContext
+) {
+  // ส่งต่อไปประมวลผลผ่านฟังก์ชันสะกดถูกต้องโดยตรง เพื่อลดความซ้ำซ้อนของโค้ด
+  return archivedClassroom(req, ctx);
 }
 
 // update classroom
