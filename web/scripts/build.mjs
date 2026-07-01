@@ -22,11 +22,13 @@ const bytesPerMB = 1024 * 1024;
 const totalMemoryMB = os.totalmem() / bytesPerMB;
 const freeMemoryMB = os.freemem() / bytesPerMB;
 
-// Keep enough memory available for Windows, SWC, TypeScript, and other native
-// processes. V8's heap is only one part of the build's total memory usage.
+// Base the heap limit on installed RAM. Free RAM is only a momentary snapshot
+// and using it as a hard limit can give an otherwise capable 16 GB machine a
+// heap too small to compile the application.
+const minimumHeapMB = totalMemoryMB >= 12 * 1024 ? 4096 : 2048;
 const heapSizeMB = Math.max(
-  2048,
-  Math.floor(Math.min(totalMemoryMB * 0.4, freeMemoryMB * 0.7, 8192)),
+  minimumHeapMB,
+  Math.floor(Math.min(totalMemoryMB * 0.4, 8192)),
 );
 
 console.log(
@@ -36,6 +38,13 @@ console.log(
     `Node heap limit: ${heapSizeMB} MB`,
   ].join(" | "),
 );
+
+if (freeMemoryMB < heapSizeMB) {
+  console.warn(
+    "Warning: Free physical RAM is below the Node heap limit. " +
+      "Close memory-heavy applications and ensure the Windows page file is enabled.",
+  );
+}
 
 const result = spawnSync(
   process.execPath,
