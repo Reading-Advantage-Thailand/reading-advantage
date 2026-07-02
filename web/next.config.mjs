@@ -44,7 +44,7 @@ const nextConfig = {
     workerThreads: false,
     cpus: 1,
     webpackMemoryOptimizations: true,
-    webpackBuildWorker: true,
+    webpackBuildWorker: false,
   },
   // Reduce build output size
   productionBrowserSourceMaps: false,
