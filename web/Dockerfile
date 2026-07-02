@@ -50,7 +50,7 @@ ENV ACCESS_KEY=""
 ENV DISCORD_WEBHOOK_URL=""
 ENV VERTEX_PRIVATE_KEY=""
 ENV CLASSROOM_CLIENT_SECRET=""
-ENV NODE_OPTIONS="--max-old-space-size=32768"
+ENV NODE_OPTIONS="--max-old-space-size=6144"
 
 # Copy package files
 COPY package*.json ./
