@@ -55,11 +55,15 @@ interface ClassroomStore {
   classrooms: Classes[];
   setClassrooms: (classrooms: Classes[]) => void;
   fetchClassrooms: () => Promise<void>;
+  archiveClassroom: (classroomId: string) => Promise<void>;
+  restoreClassroom: (classroomId: string) => Promise<void>;
 }
 
 export const useClassroomStore = create<ClassroomStore>((set) => ({
   classrooms: [],
   setClassrooms: (classrooms) => set({ classrooms }),
+  
+  // Fetch classrooms list from backend database
   fetchClassrooms: async () => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom`,
@@ -69,6 +73,44 @@ export const useClassroomStore = create<ClassroomStore>((set) => ({
     const fetchdata = await res.json();
     set({ classrooms: fetchdata.data });
   },
+
+  // Set classroom status as archived in backend and local state
+  archiveClassroom: async (classroomId: string) => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${classroomId}/archived`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived: true }),
+      }
+    );
+    if (!res.ok) throw new Error("Failed to archive classroom");
+    
+    set((state) => ({
+      classrooms: state.classrooms.map((c) =>
+        c.id === classroomId ? { ...c, archived: true } : c
+      ),
+    }));
+  },
+
+  // Set classroom status as unarchived/active in backend and local state
+  restoreClassroom: async (classroomId: string) => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${classroomId}/archived`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived: false }),
+      }
+    );
+    if (!res.ok) throw new Error("Failed to restore classroom");
+
+    set((state) => ({
+      classrooms: state.classrooms.map((c) =>
+        c.id === classroomId ? { ...c, archived: false } : c
+      ),
+    }));
+  },
 }));
 
 export const useCourseStore = create<CourseStore>((set) => ({
@@ -77,18 +119,6 @@ export const useCourseStore = create<CourseStore>((set) => ({
   setCourses: (courses) => set({ courses }),
   setSelectedCourses: (selected) => set({ selectedCourses: selected }),
 }));
-
-// export const useCourseStore = create(
-//   persist<CourseStore>(
-//     (set) => ({
-//       courses: [],
-//       selectedCourses: [],
-//       setCourses: (courses) => set({ courses }),
-//       setSelectedCourses: (selected) => set({ selectedCourses: selected }),
-//     }),
-//     { name: "classroom-store" } // Stores in localStorage
-//   )
-// );
 
 export const useClassroomState = create<ClassroomState>((set) => ({
   classes: {} as Classes,

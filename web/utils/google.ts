@@ -11,11 +11,13 @@ const google = createVertex({
   },
 });
 
-const googleModelAudio = "gemini-2.0-flash-lite";
-const googleModel = "gemini-2.0-flash-001";
-const googleFlashThinking = "gemini-2.0-flash-thinking-exp-01-21";
+const googleModelAudio =
+  process.env.VERTEX_GEMINI_AUDIO_MODEL || "gemini-2.5-flash-lite";
+const googleModel = process.env.VERTEX_GEMINI_MODEL || "gemini-2.5-flash";
+const googleFlashThinking =
+  process.env.VERTEX_GEMINI_THINKING_MODEL || "gemini-2.5-flash";
 const googleImages = "imagen-4.0-generate-001";
-const googleProPrewiew = "gemini-2.5-pro";
+const googleProPrewiew = process.env.VERTEX_GEMINI_PRO_MODEL || "gemini-2.5-pro";
 
 export {
   google,

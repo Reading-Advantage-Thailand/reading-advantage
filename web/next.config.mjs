@@ -43,15 +43,8 @@ const nextConfig = {
     // Optimize memory during build
     workerThreads: false,
     cpus: 1,
-  },
-  // Force development mode for safer build
-  webpack: (config, { isServer }) => {
-    // Disable minification in webpack
-    config.optimization = {
-      ...config.optimization,
-      minimize: false,
-    };
-    return config;
+    webpackMemoryOptimizations: true,
+    webpackBuildWorker: true,
   },
   // Reduce build output size
   productionBrowserSourceMaps: false,

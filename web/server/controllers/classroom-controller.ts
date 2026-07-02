@@ -368,9 +368,6 @@ export async function getClassroom(req: ExtendedNextRequest) {
       const ownedClassrooms = await prisma.classroom.findMany({
         where: {
           teacherId: user.id,
-          archived: {
-            not: true,
-          },
         },
         include: {
           students: {
@@ -404,7 +401,6 @@ export async function getClassroom(req: ExtendedNextRequest) {
         JOIN "classroomTeachers" ct ON c.id = ct.classroom_id
         LEFT JOIN "users" t ON c.teacher_id = t.id
         WHERE ct.teacher_id = ${user.id}
-          AND c.archived != true
         ORDER BY c."createdAt" DESC
       `) as any[];
 
@@ -1089,14 +1085,17 @@ function generateClassCode(): string {
 }
 
 // achive classroom
-export async function achivedClassroom(
-  req: ExtendedNextRequest,
-  ctx: RequestContext
-) {
+// archived classroom
+/**
+ * Controller function to handle classroom archiving and restoring.
+ * Maps to the corrected API path: /api/v1/classroom/[classroomId]/archived
+ */
+export async function archivedClassroom(req: any, ctx: any) {
   const { classroomId } = await ctx.params;
   try {
     const { archived } = await req.json();
 
+    // Verify if target classroom exists in the database
     const classroom = await prisma.classroom.findUnique({
       where: { id: classroomId },
     });
@@ -1108,6 +1107,7 @@ export async function achivedClassroom(
       );
     }
 
+    // Update the archived status of the target classroom
     await prisma.classroom.update({
       where: { id: classroomId },
       data: { archived },
@@ -1118,8 +1118,22 @@ export async function achivedClassroom(
       { status: 200 }
     );
   } catch (error) {
-    return NextResponse.json({ message: error }, { status: 500 });
+    console.error("Archive DB Error:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
+}
+
+/**
+ * @deprecated This API function contains a spelling error ("achived").
+ * It remains active solely to support legacy client versions for backward compatibility.
+ * Please transition to use the corrected `archivedClassroom` function instead.
+ */
+export async function achivedClassroom(req: any, ctx: any) {
+  // Forward request directly to the correctly spelled controller function
+  return archivedClassroom(req, ctx);
 }
 
 // update classroom

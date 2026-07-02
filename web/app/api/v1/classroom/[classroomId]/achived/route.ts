@@ -1,3 +1,9 @@
+/**
+ * @deprecated This API route path contains a spelling error ("achived").
+ * It has been replaced by the corrected route: /api/v1/classroom/[classroomId]/archived
+ * This file is kept only for backward compatibility to support older client versions.
+ */
+
 import { logRequest } from "@/server/middleware";
 import { createEdgeRouter } from "next-connect";
 import { NextRequest, NextResponse } from "next/server";
@@ -12,10 +18,8 @@ interface RequestContext {
 
 const router = createEdgeRouter<NextRequest, RequestContext>();
 
-// Middleware
 router.use(logRequest);
 router.use(protect);
-// router.use(restrictAccess);
 
 router.patch(achivedClassroom) as any;
 
@@ -24,8 +28,6 @@ export async function GET(request: NextRequest, ctx: RequestContext) {
   if (result instanceof NextResponse) {
     return result;
   }
-  // Handle the case where result is not a NextResponse
-  // You might want to return a default NextResponse or throw an error
   throw new Error("Expected a NextResponse from router.run");
 }
 
@@ -34,7 +36,5 @@ export async function PATCH(request: NextRequest, ctx: RequestContext) {
   if (result instanceof NextResponse) {
     return result;
   }
-  // Handle the case where result is not a NextResponse
-  // You might want to return a default NextResponse or throw an error
   throw new Error("Expected a NextResponse from router.run");
 }
