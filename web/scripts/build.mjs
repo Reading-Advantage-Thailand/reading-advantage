@@ -28,7 +28,7 @@ const freeMemoryMB = os.freemem() / bytesPerMB;
 const minimumHeapMB = totalMemoryMB >= 12 * 1024 ? 4096 : 2048;
 const heapSizeMB = Math.max(
   minimumHeapMB,
-  Math.floor(Math.min(totalMemoryMB * 0.4, 8192)),
+  Math.floor(Math.min(totalMemoryMB * 0.75, 8192)),
 );
 
 console.log(
