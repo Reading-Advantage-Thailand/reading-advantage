@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   Dialog,
@@ -9,80 +11,90 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Icons } from "@/components/icons";
-import { toast } from "@/components/ui/use-toast";
-import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
 import { useScopedI18n } from "@/locales/client";
-import { useClassroomStore } from "@/store/classroom-store";
-
-// กำหนดโครงสร้างข้อมูลสำหรับห้องเรียนที่ส่งเข้ามาใช้งานในคอมโพเนนต์
-type Classes = {
-  classroomName: string;
-  grade: string;
-  id: string;
-  archived: boolean;
-};
+import { useClassroomStore, Classes } from "@/store/classroom-store";
+import { Loader2, Archive, RefreshCw } from "lucide-react";
 
 interface ArchiveClassProps {
   classroomData: Classes;
 }
 
-function ArchiveClass({ classroomData }: ArchiveClassProps) {
-  // กำหนดสถานะการเปิดปิดของหน้าต่างและการประมวลผลคำสั่งส่งข้อมูล
+export default function ArchiveClass({ classroomData }: ArchiveClassProps) {
   const [open, setOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const fetchClassrooms = useClassroomStore((state) => state.fetchClassrooms);
+  
+  const scope = "components.myClasses" as const;
+  const t = useScopedI18n(scope);
+  
+  // Determine current archive state
+  const isArchived = classroomData.archived;
 
-  const router = useRouter();
-  const t = useScopedI18n("components.myClasses.archieve");
-  const { fetchClassrooms } = useClassroomStore();
-
-  // ตรวจสอบสถานะว่าห้องเรียนดังกล่าวถูกเก็บถาวรแล้วหรือไม่
-  const isArchived = !!classroomData.archived;
-
-  // ฟังก์ชันหลักในการจัดเก็บหรือกู้คืนสถานะของห้องเรียน
-  const handleArchiveClass = async (classroomId: string) => {
-    setIsPending(true);
+  const handleArchiveClass = async () => {
+    setLoading(true);
     try {
-      // เรียกใช้ API เส้นใหม่ที่แก้ไขตัวสะกดคำว่า archived ถูกต้อง
-      const res = await fetch(`/api/v1/classroom/${classroomId}/archived`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ archived: !isArchived }),
-      });
+      const targetStatus = !isArchived;
+      const apiBody = JSON.stringify({ archived: targetStatus });
+
+      // Step 1: Attempt to use the new corrected API path
+      let res = await fetch(
+        `/api/v1/classroom/${classroomData.id}/archived`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: apiBody,
+        }
+      );
+
+      // Step 2: Fallback to the legacy API path if the new one is not yet registered (404)
+      if (res.status === 404) {
+        console.warn("New API path not registered yet. Falling back to legacy API.");
+        res = await fetch(
+          `/api/v1/classroom/${classroomData.id}/achived`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: apiBody,
+          }
+        );
+      }
 
       if (res.status === 200) {
-        // แสดงกล่องแจ้งเตือนความสำเร็จโดยอ้างอิงข้อความแปลตามสถานะปัจจุบัน
+        // Safe type assertion to avoid i18n key type mismatches during build
+        const successTitle = isArchived 
+          ? (t as any)("toast.successRestore") || "Restore Successful" 
+          : (t as any)("toast.successArchive") || "Archive Successful";
+
         toast({
-          title: isArchived 
-            ? t("toast.successRestore") || "Restore Successful" 
-            : t("toast.successArchive") || "Archive Successful",
+          title: successTitle,
           description: isArchived 
-            ? t("toast.successRestoreDescription") || `Successfully restored ${classroomData.classroomName}`
-            : t("toast.successArchiveDescription") || `Successfully archived ${classroomData.classroomName}`,
-          variant: "default",
+            ? `Successfully restored ${classroomData.classroomName}`
+            : `Successfully archived ${classroomData.classroomName}`,
         });
-        
-        // ดึงข้อมูลห้องเรียนล่าสุดในระบบมาอัปเดตตารางแสดงผลทันทีโดยไม่ต้องรีเฟรชหน้าเว็บ
+
+        // Refetch updated status and close dialog
         await fetchClassrooms();
-        router.refresh();
         setOpen(false);
       } else {
-        throw new Error(isArchived ? "Failed to restore class" : "Failed to archive class");
+        const errorText = await res.text();
+        throw new Error(errorText || "Server responded with an error status");
       }
     } catch (error) {
-      console.error(error);
-      // แสดงกล่องข้อความเตือนความล้มเหลวหากเกิดข้อผิดพลาดในการส่งข้อมูล
+      console.error("Archive operation failed:", error);
+      
+      const errorTitle = isArchived 
+        ? (t as any)("toast.errorRestore") || "Restore Failed" 
+        : (t as any)("toast.errorArchive") || "Archive Failed";
+
       toast({
-        title: isArchived 
-          ? t("toast.errorRestore") || "Restore Failed" 
-          : t("toast.errorArchive") || "Archive Failed",
-        description: isArchived 
-          ? t("toast.errorRestoreDescription") || "Could not complete restore action. Please try again."
-          : t("toast.errorArchiveDescription") || "Could not complete archive action. Please try again.",
+        title: errorTitle,
+        description: "Please check your database connection and try again.",
         variant: "destructive",
       });
     } finally {
-      setIsPending(false);
+      setLoading(false);
     }
   };
 
@@ -90,72 +102,76 @@ function ArchiveClass({ classroomData }: ArchiveClassProps) {
     setOpen(false);
   };
 
-  // กำหนดตัวแปรสำหรับแสดงผลข้อความคำอธิบายในหน้าต่างตามสถานะการทำงานปัจจุบัน
+  // Setup UI text from translation fallback properties
   const titleText = isArchived 
-    ? t("restoreTitle") || "Restore Class" 
-    : t("title") || "Archive Class";
+    ? (t as any)("restoreTitle") || "Restore Class" 
+    : (t as any)("title") || "Archive Class";
 
   const descriptionBefore = isArchived 
-    ? t("restoreDescriptionBefore") || "Are you sure you want to restore " 
-    : t("descriptionBefore") || "Are you sure you want to archive ";
-
-  const descriptionAfter = isArchived 
-    ? t("restoreDescriptionAfter") || "?" 
-    : t("descriptionAfter") || "?";
+    ? (t as any)("restoreDescriptionBefore") || "Are you sure you want to restore " 
+    : (t as any)("descriptionBefore") || "Are you sure you want to archive ";
 
   const actionButtonText = isArchived 
-    ? t("restore") || "Restore" 
-    : t("archive") || "Archive";
+    ? (t as any)("restore") || "Restore" 
+    : (t as any)("archive") || "Archive";
 
-  const cancelButtonText = t("cancel") || "Cancel";
+  const cancelButtonText = (t as any)("cancel") || "Cancel";
 
   return (
-    <div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          {/* สลับการแสดงผลหน้าตารูปแบบปุ่มและไอคอนตามสถานะการจัดเก็บข้อมูลปัจจุบัน */}
-          {isArchived ? (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border-emerald-200 dark:hover:bg-emerald-950/20"
-            >
-              Restore
-            </Button>
-          ) : (
-            <Icons.archive
-              className="h-4 w-4 cursor-pointer text-slate-500 hover:text-rose-600"
-              aria-label="archive class"
-            />
-          )}
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{titleText}</DialogTitle>
-          </DialogHeader>
-          <DialogDescription>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {isArchived ? (
+          <Button variant="ghost" size="sm" className="h-9 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 font-semibold gap-1">
+            <RefreshCw className="w-4 h-4" />
+            Restore
+          </Button>
+        ) : (
+          <Button variant="ghost" size="sm" className="h-9 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20 font-semibold gap-1">
+            <Archive className="w-4 h-4" />
+            Archive
+          </Button>
+        )}
+      </DialogTrigger>
+      
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {isArchived ? (
+              <RefreshCw className="w-5 h-5 text-emerald-600" />
+            ) : (
+              <Archive className="w-5 h-5 text-amber-600" />
+            )}
+            {titleText}
+          </DialogTitle>
+          <DialogDescription className="pt-2 text-sm text-slate-500 dark:text-slate-400">
             {descriptionBefore}
-            <span className="font-bold">{classroomData.classroomName}</span>
-            {descriptionAfter}
+            <strong className="text-slate-900 dark:text-slate-100 font-semibold">
+              {classroomData.classroomName}
+            </strong>
+            ?
           </DialogDescription>
-          <DialogFooter>
-            {/* แสดงปุ่มยืนยันทำรายการพร้อมทั้งล็อกสถานะการส่งข้อมูลซ้ำในระหว่างโหลดข้อมูล */}
-            <Button
-              variant={isArchived ? "default" : "secondary"}
-              onClick={() => handleArchiveClass(classroomData.id)}
-              disabled={isPending}
-              className={isArchived ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}
-            >
-              {actionButtonText}
-            </Button>
-            <Button variant="outline" onClick={handleClose} disabled={isPending}>
-              {cancelButtonText}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        </DialogHeader>
+        
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button 
+            variant="outline" 
+            onClick={handleClose}
+            disabled={loading}
+          >
+            {cancelButtonText}
+          </Button>
+          
+          <Button
+            variant={isArchived ? "default" : "destructive"}
+            onClick={handleArchiveClass}
+            disabled={loading}
+            className={isArchived ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}
+          >
+            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {actionButtonText}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
-
-export default ArchiveClass;

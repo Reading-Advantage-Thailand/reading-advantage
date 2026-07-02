@@ -368,9 +368,6 @@ export async function getClassroom(req: ExtendedNextRequest) {
       const ownedClassrooms = await prisma.classroom.findMany({
         where: {
           teacherId: user.id,
-          archived: {
-            not: true,
-          },
         },
         include: {
           students: {
@@ -404,7 +401,6 @@ export async function getClassroom(req: ExtendedNextRequest) {
         JOIN "classroomTeachers" ct ON c.id = ct.classroom_id
         LEFT JOIN "users" t ON c.teacher_id = t.id
         WHERE ct.teacher_id = ${user.id}
-          AND c.archived != true
         ORDER BY c."createdAt" DESC
       `) as any[];
 
@@ -1090,17 +1086,16 @@ function generateClassCode(): string {
 
 // achive classroom
 // archived classroom
-// ฟังก์ชันสำหรับจัดการจัดเก็บห้องเรียน (เวอร์ชันแก้ไขตัวสะกดถูกต้อง)
-// รองรับการทำงานของ API Route เส้นใหม่: /api/v1/classroom/[classroomId]/archived
-export async function archivedClassroom(
-  req: ExtendedNextRequest,
-  ctx: RequestContext
-) {
+/**
+ * Controller function to handle classroom archiving and restoring.
+ * Maps to the corrected API path: /api/v1/classroom/[classroomId]/archived
+ */
+export async function archivedClassroom(req: any, ctx: any) {
   const { classroomId } = await ctx.params;
   try {
     const { archived } = await req.json();
 
-    // ค้นหาข้อมูลห้องเรียนปัจจุบันในระบบ
+    // Verify if target classroom exists in the database
     const classroom = await prisma.classroom.findUnique({
       where: { id: classroomId },
     });
@@ -1112,7 +1107,7 @@ export async function archivedClassroom(
       );
     }
 
-    // ทำการอัปเดตสถานะการเก็บถาวรของห้องเรียนลงในฐานข้อมูล
+    // Update the archived status of the target classroom
     await prisma.classroom.update({
       where: { id: classroomId },
       data: { archived },
@@ -1123,20 +1118,21 @@ export async function archivedClassroom(
       { status: 200 }
     );
   } catch (error) {
-    return NextResponse.json({ message: error }, { status: 500 });
+    console.error("Archive DB Error:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
 /**
- * @deprecated ฟังก์ชันนี้มีการสะกดคำผิด ("achived")
- * แนะนำให้ย้ายไปใช้ฟังก์ชัน `archivedClassroom` และเรียกผ่านเส้นทาง API `/archived` แทน
- * ฟังก์ชันเดิมนี้ยังคงรักษาไว้เพื่อรองรับการใช้งานกับหน้าบ้านเวอร์ชันเก่า (Backward Compatibility)
+ * @deprecated This API function contains a spelling error ("achived").
+ * It remains active solely to support legacy client versions for backward compatibility.
+ * Please transition to use the corrected `archivedClassroom` function instead.
  */
-export async function achivedClassroom(
-  req: ExtendedNextRequest,
-  ctx: RequestContext
-) {
-  // ส่งต่อไปประมวลผลผ่านฟังก์ชันสะกดถูกต้องโดยตรง เพื่อลดความซ้ำซ้อนของโค้ด
+export async function achivedClassroom(req: any, ctx: any) {
+  // Forward request directly to the correctly spelled controller function
   return archivedClassroom(req, ctx);
 }
 

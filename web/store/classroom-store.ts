@@ -63,7 +63,7 @@ export const useClassroomStore = create<ClassroomStore>((set) => ({
   classrooms: [],
   setClassrooms: (classrooms) => set({ classrooms }),
   
-  // ฟังก์ชันดึงข้อมูลรายการห้องเรียนทั้งหมดจากระบบหลังบ้าน
+  // Fetch classrooms list from backend database
   fetchClassrooms: async () => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom`,
@@ -74,7 +74,7 @@ export const useClassroomStore = create<ClassroomStore>((set) => ({
     set({ classrooms: fetchdata.data });
   },
 
-  // ฟังก์ชันส่งคำขอจัดเก็บห้องเรียนถาวรและอัปเดตสถานะในหน่วยความจำของหน้าบ้านทันที
+  // Set classroom status as archived in backend and local state
   archiveClassroom: async (classroomId: string) => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${classroomId}/archived`,
@@ -93,7 +93,7 @@ export const useClassroomStore = create<ClassroomStore>((set) => ({
     }));
   },
 
-  // ฟังก์ชันส่งคำขอกู้คืนห้องเรียนกลับมาใช้งานใหม่และอัปเดตสถานะในหน่วยความจำของหน้าบ้านทันที
+  // Set classroom status as unarchived/active in backend and local state
   restoreClassroom: async (classroomId: string) => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/classroom/${classroomId}/archived`,

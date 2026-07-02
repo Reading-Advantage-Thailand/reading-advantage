@@ -46,12 +46,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Checkbox } from "../ui/checkbox";
 import { ScrollArea } from "../ui/scroll-area";
 import { classroom_v1 } from "googleapis";
 import Link from "next/link";
-import { Label } from "../ui/label";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { RadioGroup } from "../ui/radio-group";
 import { cn } from "@/lib/utils";
 import { ClassroomTeachers } from "@/components/classroom-teachers";
 
@@ -100,15 +98,15 @@ export default function MyClasses() {
   const [isTeachersOpen, setIsTeachersOpen] = useState<boolean>(false);
   const [selectedClassroomId, setSelectedClassroomId] = useState<string>("");
 
-  // Add class status filter (active, archived, all)
+  // Filter state for Active, Archived, or All classes
   const [statusFilter, setStatusFilter] = useState<"active" | "archived" | "all">("active");
 
-  // Filter classrooms locally based on selected statusFilter
+  // Local filtering based on the selected status
   const filteredClassrooms = React.useMemo(() => {
     return (classrooms || []).filter((classroom) => {
       if (statusFilter === "active") return !classroom.archived;
       if (statusFilter === "archived") return classroom.archived;
-      return true; // "all"
+      return true;
     });
   }, [classrooms, statusFilter]);
 
@@ -188,7 +186,6 @@ export default function MyClasses() {
           <div className="text-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                {/* Disable actions other than restore for archived classes */}
                 <Button variant="default" className="ml-auto" disabled={isArchived}>
                   {tc("actions")} <ChevronDownIcon className="ml-2 h-4 w-4" />
                 </Button>
@@ -239,15 +236,14 @@ export default function MyClasses() {
 
         return (
           <div className="captoliza justify-center flex gap-2">
-            {/* Do not show the Edit action for archived classes */}
+            {/* Hide EditClass button if the class is archived or imported from Google */}
             {payment.importedFromGoogle || isArchived ? null : (
               <EditClass classroomData={payment} />
             )}
             
-            {/* Archive / Restore actions mapped inside the ArchiveClass component */}
+            {/* Archive / Restore actions */}
             <ArchiveClass classroomData={payment} />
             
-            {/* Keep existing delete teacher action */}
             <DeleteClass classroomData={payment} />
           </div>
         );
@@ -255,7 +251,6 @@ export default function MyClasses() {
     },
   ];
 
-  // Pass filteredClassrooms as table data
   const table = useReactTable({
     data: filteredClassrooms,
     columns,
@@ -336,7 +331,6 @@ export default function MyClasses() {
       <div className="flex flex-col gap-4">
         <Header heading={tc("title")} />
         
-        {/* Layout adjustments to accommodate the status filter UI */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <Input
@@ -352,7 +346,8 @@ export default function MyClasses() {
               }
               className="max-w-xs"
             />
-            {/* Requirement 1: UI controls for Active, Archived, and All views */}
+            
+            {/* ชุดปุ่มกดกรองสถานะ (Status Filter UI) */}
             <div className="flex items-center bg-muted/40 p-1 rounded-lg border border-muted">
               <Button
                 variant={statusFilter === "active" ? "default" : "ghost"}
